@@ -1,32 +1,29 @@
 package linksawakening.world.room;
 
-import linksawakening.world.object.BombObjectInteraction;
-import linksawakening.world.object.OverworldBushInteraction;
+import static linksawakening.world.room.RoomSession.*;
 
-import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.event.BombExplosionEvent;
-
-import linksawakening.world.entity.RoomEntity;
-
-import linksawakening.world.entity.event.MagicPowderObjectAction;
-
-import linksawakening.world.transition.Warp;
-
-import linksawakening.world.entity.event.BoomerangObjectRequest;
-import linksawakening.world.entity.event.MagicPowderObjectRequest;
-import linksawakening.world.entity.event.MagicRodObjectRequest;
-import linksawakening.rom.RomTables;
-import linksawakening.vfx.TransientVfxType;
 import java.util.List;
 import java.util.Map;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomSession.*;
+import linksawakening.rom.RomTables;
+import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.event.BombExplosionEvent;
+import linksawakening.world.entity.event.BoomerangObjectRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.MagicPowderObjectAction;
+import linksawakening.world.entity.event.MagicPowderObjectRequest;
+import linksawakening.world.entity.event.MagicRodObjectRequest;
+import linksawakening.world.object.BombObjectInteraction;
+import linksawakening.world.object.OverworldBushInteraction;
+import linksawakening.world.transition.Warp;
 
 /** RoomObjectMutations operations for the live room session. */
 final class RoomObjectMutations {
     private final RoomSession session;
-    RoomObjectMutations(RoomSession session) { this.session = session; }
+
+    RoomObjectMutations(RoomSession session) {
+        this.session = session;
+    }
 
     /**
      * ApplyLinkMotionState ($00:1794) calls func_002_753A after XY movement.
@@ -57,20 +54,20 @@ final class RoomObjectMutations {
         if (!bypassEntry) {
             sampleLinkGround(frame.pixelX(), frame.pixelY()); // GetObjectUnderLink $02:75C7
             context.linkGroundObjectPhysics = context.overworldCollision.objectPhysicsFlagAtPoint(
-                (frame.pixelX() + 8) & 0xFF, (frame.pixelY() + 12) & 0xFF);
+                    (frame.pixelX() + 8) & 0xFF, (frame.pixelY() + 12) & 0xFF);
             // $02:75D2-75D4/$75DA-75E5 bypass Default for these hazards.
-            if ((!context.overworldCollision.usesIndoorPhysicsTable()
-                    && context.linkGroundObjectUnderEntity == 0x61)
-                || (context.overworldCollision.usesIndoorPhysicsTable()
-                    && context.linkGroundObjectUnderEntity == 0x4C
-                    && (((frame.pixelY() + 15) & 15) >= 12))) return false;
+            if ((!context.overworldCollision.usesIndoorPhysicsTable() && context.linkGroundObjectUnderEntity == 0x61)
+                    || (context.overworldCollision.usesIndoorPhysicsTable()
+                            && context.linkGroundObjectUnderEntity == 0x4C
+                            && (((frame.pixelY() + 15) & 15) >= 12))) return false;
         }
-        if (!reachesDefaultGroundPhysics(context.linkGroundObjectPhysics, bypassEntry,
-                frame.slowWalkingSpeed(), frame.itemUsageContext())) return false;
+        if (!reachesDefaultGroundPhysics(
+                context.linkGroundObjectPhysics, bypassEntry, frame.slowWalkingSpeed(), frame.itemUsageContext()))
+            return false;
         // Default can return at $02:77E8 while standing on a raised switch block.
         if (linksawakening.world.object.SwitchBlockLinkInteraction.marksStanding(
-                context.linkGroundObjectUnderEntity, context.linkGroundObjectPhysics,
-                context.switchBlocksState)) return false;
+                context.linkGroundObjectUnderEntity, context.linkGroundObjectPhysics, context.switchBlocksState))
+            return false;
         // $02:77F7-77FB gates on wIsIndoor, NOT hIsSideScrolling. Overworld
         // $DF has solid physics ($01), but still exits here without resetting.
         if (!context.overworldCollision.usesIndoorPhysicsTable()) return false;
@@ -80,8 +77,10 @@ final class RoomObjectMutations {
         // $02:7804-783B returns while an unpressed floor button is sinking.
         if (context.linkGroundObjectUnderEntity == 0xAA && context.switchButtonPressed == 0) return false;
         if (context.linkGroundRoomPosition != context.linkGroundFinalRoomPosition
-            || context.linkGroundObjectUnderEntity != 0xDF || frame.interactionBlocked()
-            || dialogGotItemActive || frame.dialogActive()) {
+                || context.linkGroundObjectUnderEntity != 0xDF
+                || frame.interactionBlocked()
+                || dialogGotItemActive
+                || frame.dialogActive()) {
             context.crackedFloorCounter = 0; // $02:7851-785D/$786C
             return false;
         }
@@ -108,8 +107,8 @@ final class RoomObjectMutations {
     }
 
     /** Only the control-flow decision; movement, damage and water effects stay with Link. */
-    static boolean reachesDefaultGroundPhysics(int physics, boolean bypassEntry,
-                                               int slowWalkingSpeed, int itemUsageContext) {
+    static boolean reachesDefaultGroundPhysics(
+            int physics, boolean bypassEntry, int slowWalkingSpeed, int itemUsageContext) {
         if (!bypassEntry) {
             if (physics == 0 || physics == 0xFF) return true; // $75EE/$763A
             if (physics == 0xE0 || physics >= 0xF0 || physics == 0x50 || physics == 0x51) return false;
@@ -127,26 +126,30 @@ final class RoomObjectMutations {
     /** CheckStaticSwordCollision $00:161A-1679; RevealObjectUnderObject $14:5584-55E3. */
     boolean breakIndoorSwordCrystal(int location) {
         if (session.context.activeRoom == null
-            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || location < 0 || (location & 15) >= 10 || (location >> 4) >= 8
-            || session.objectAtRoomLocation(location) != 0xDD) return false;
+                || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                || location < 0
+                || (location & 15) >= 10
+                || (location >> 4) >= 8
+                || session.objectAtRoomLocation(location) != 0xDD) return false;
         session.context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0x0D;
         session.refreshActiveRoomTilemap();
         if (session.context.entityBridge.entityRuntime != null) {
             // Variant zero uses LiftableRockStartSmashingAnimation ($03:53E4):
             // fifteen frames of rock debris and NOISE_SFX_POT_SMASHED ($09).
             session.context.entityBridge.entityRuntime.spawnLiftableRockSmash(
-                ((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
+                    ((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
             // Link runs before the entity tick, which clears its frame outbox.
             session.context.entityBridge.pendingRoomEntityEvents.addAll(
-                session.context.entityBridge.entityRuntime.consumePendingEntityEvents());
+                    session.context.entityBridge.entityRuntime.consumePendingEntityEvents());
         }
         return true;
     }
 
     void applyBombObjectInteractions(List<BombExplosionEvent> events) {
-        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            || events == null || events.isEmpty()) {
+        if (session.context.activeRoom == null
+                || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+                || events == null
+                || events.isEmpty()) {
             return;
         }
 
@@ -154,19 +157,23 @@ final class RoomObjectMutations {
             if (!event.targetsRoomObjects()) {
                 continue;
             }
-            RoomEntity bomb = event.bombSlot() < session.context.activeRoom.entities().slots().size()
-                ? session.context.activeRoom.entities().slots().get(event.bombSlot()) : null;
+            RoomEntity bomb = event.bombSlot()
+                            < session.context.activeRoom.entities().slots().size()
+                    ? session.context.activeRoom.entities().slots().get(event.bombSlot())
+                    : null;
             if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                BombObjectInteraction.Candidate candidate = BombObjectInteraction.basicCandidate(
-                    event.bombX(), event.bombVisualY(), event.countdown());
+                BombObjectInteraction.Candidate candidate =
+                        BombObjectInteraction.basicCandidate(event.bombX(), event.bombVisualY(), event.countdown());
                 session.applyBasicBombObjectCandidate(candidate);
                 if (bomb != null && bomb.loaded()) {
-                    session.applyPuzzleBombObjectCandidate(BombObjectInteraction.puzzleCandidate(
-                        event.bombX(), bomb.y(), event.countdown()), event.bombSlot(), bomb.z());
+                    session.applyPuzzleBombObjectCandidate(
+                            BombObjectInteraction.puzzleCandidate(event.bombX(), bomb.y(), event.countdown()),
+                            event.bombSlot(),
+                            bomb.z());
                 }
             } else if (bomb != null && bomb.loaded()) {
-                BombObjectInteraction.Candidate candidate = BombObjectInteraction.puzzleCandidate(
-                    event.bombX(), bomb.y(), event.countdown());
+                BombObjectInteraction.Candidate candidate =
+                        BombObjectInteraction.puzzleCandidate(event.bombX(), bomb.y(), event.countdown());
                 if (!session.applyIndoorBombableBlockCandidate(candidate)) {
                     session.applyIndoorBombableWallCandidate(candidate, event.bombSlot());
                 }
@@ -179,8 +186,7 @@ final class RoomObjectMutations {
             return;
         }
         int location = candidate.location();
-        OverworldBushInteraction.CutResult result =
-            session.context.overworldBushInteraction.revealObjectAtLocation(
+        OverworldBushInteraction.CutResult result = session.context.overworldBushInteraction.revealObjectAtLocation(
                 location,
                 session.context.activeRoom.roomId(),
                 true,
@@ -196,40 +202,45 @@ final class RoomObjectMutations {
         if (result.bushLeavesVisible() && session.context.entityBridge.entityRuntime != null) {
             int sourceSpriteVariant = result.originalObjectId() == 0x0A ? 0xFF : 0x01;
             session.context.entityBridge.entityRuntime.spawnLiftableRockSmash(
-                session.context.overworldBushInteraction.effectOriginXForLocation(location),
-                session.context.overworldBushInteraction.effectOriginYForLocation(location),
-                sourceSpriteVariant);
+                    session.context.overworldBushInteraction.effectOriginXForLocation(location),
+                    session.context.overworldBushInteraction.effectOriginYForLocation(location),
+                    sourceSpriteVariant);
         }
         session.refreshOverworldCollisionAfterObjectMutation();
     }
 
-    void applyBoomerangObjectInteractions( List<BoomerangObjectRequest> requests) {
-        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
-            || requests == null || requests.isEmpty()) {
+    void applyBoomerangObjectInteractions(List<BoomerangObjectRequest> requests) {
+        if (session.context.activeRoom == null
+                || session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+                || requests == null
+                || requests.isEmpty()) {
             return;
         }
 
         for (BoomerangObjectRequest request : requests) {
-            OverworldBushInteraction.CutResult result =
-                session.context.overworldBushInteraction.revealObjectAtLocation(
-                    request.location(), session.context.activeRoom.roomId(), true,
-                    session.context.activeRoom.roomObjectsArea(), session.context.activeRoom.renderValues(),
-                    session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
+            OverworldBushInteraction.CutResult result = session.context.overworldBushInteraction.revealObjectAtLocation(
+                    request.location(),
+                    session.context.activeRoom.roomId(),
+                    true,
+                    session.context.activeRoom.roomObjectsArea(),
+                    session.context.activeRoom.renderValues(),
+                    session.context.activeRoom.gbcOverlay(),
+                    session.context.activeRoom.tileIds(),
+                    session.context.activeRoom.tileAttrs());
             if (!result.changed()) {
                 continue;
             }
             if (session.context.transientVfxSystem != null) {
-                session.context.transientVfxSystem.spawn(TransientVfxType.SMOKE,
-                    request.objectLeft() + 0x08, request.objectTop() + 0x10);
+                session.context.transientVfxSystem.spawn(
+                        TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
             session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                request.sourceSlot(), 0x01, 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                    request.sourceSlot(), 0x01, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
             session.refreshOverworldCollisionAfterObjectMutation();
         }
     }
 
-    void applyMagicRodObjectInteractions( List<MagicRodObjectRequest> requests) {
+    void applyMagicRodObjectInteractions(List<MagicRodObjectRequest> requests) {
         if (session.context.activeRoom == null || requests == null || requests.isEmpty()) {
             return;
         }
@@ -238,20 +249,25 @@ final class RoomObjectMutations {
             boolean changed = false;
             if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 OverworldBushInteraction.CutResult result =
-                    session.context.overworldBushInteraction.revealObjectAtLocation(
-                        request.location(), session.context.activeRoom.roomId(), true,
-                        session.context.activeRoom.roomObjectsArea(), session.context.activeRoom.renderValues(),
-                        session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
+                        session.context.overworldBushInteraction.revealObjectAtLocation(
+                                request.location(),
+                                session.context.activeRoom.roomId(),
+                                true,
+                                session.context.activeRoom.roomObjectsArea(),
+                                session.context.activeRoom.renderValues(),
+                                session.context.activeRoom.gbcOverlay(),
+                                session.context.activeRoom.tileIds(),
+                                session.context.activeRoom.tileAttrs());
                 changed = result.changed();
             } else if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-                && session.objectAtRoomLocation(request.location()) == 0x8A) {
-                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
-                    + (request.location() & 0xF0) + (request.location() & 0x0F);
+                    && session.objectAtRoomLocation(request.location()) == 0x8A) {
+                int areaIndex =
+                        RoomConstants.ROOM_OBJECTS_BASE + (request.location() & 0xF0) + (request.location() & 0x0F);
                 int[] objects = session.context.activeRoom.roomObjectsArea();
                 if (areaIndex >= 0 && areaIndex < objects.length) {
                     objects[areaIndex] = 0x04; // OBJECT_SIDE_VIEW_EMPTY
                     if (session.context.activeRoom.renderValues() != null
-                        && areaIndex < session.context.activeRoom.renderValues().length) {
+                            && areaIndex < session.context.activeRoom.renderValues().length) {
                         session.context.activeRoom.renderValues()[areaIndex] = 0x04;
                     }
                     session.refreshActiveRoomTilemap();
@@ -265,39 +281,47 @@ final class RoomObjectMutations {
                 continue;
             }
             if (session.context.transientVfxSystem != null) {
-                session.context.transientVfxSystem.spawn(TransientVfxType.SMOKE,
-                    request.objectLeft() + 0x08, request.objectTop() + 0x10);
+                session.context.transientVfxSystem.spawn(
+                        TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
             session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                request.sourceSlot(), 0x04, 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                    request.sourceSlot(), 0x04, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
             if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 session.refreshOverworldCollisionAfterObjectMutation();
             }
         }
     }
 
-    void applyMagicPowderObjectInteractions( List<MagicPowderObjectRequest> requests) {
+    void applyMagicPowderObjectInteractions(List<MagicPowderObjectRequest> requests) {
         if (session.context.activeRoom == null || requests == null || requests.isEmpty()) {
             return;
         }
 
         for (MagicPowderObjectRequest request : requests) {
-            boolean changed = switch (request.action()) {
-                case REVEAL -> session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-                    && session.context.overworldBushInteraction.revealObjectAtLocation(
-                        request.location(), session.context.activeRoom.roomId(), true,
-                        session.context.activeRoom.roomObjectsArea(), session.context.activeRoom.renderValues(),
-                        session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs())
-                        .changed();
-                case IGNITE_TORCH -> session.writeMagicPowderTorchObject(
-                    request.location(), 0xAB, 0xAC, true);
-                case EXTINGUISH_TORCH -> session.writeMagicPowderTorchObject(
-                    request.location(), -1, 0xAB,
-                    session.context.activeRoom.roomId() != 0x74
-                        && (session.context.indoorTorchPaletteEffect.targetAddress() >= 0x0C
-                            || session.context.currentLinkMotionState != 0x05));
-            };
+            boolean changed =
+                    switch (request.action()) {
+                        case REVEAL -> session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                                && session.context
+                                        .overworldBushInteraction
+                                        .revealObjectAtLocation(
+                                                request.location(),
+                                                session.context.activeRoom.roomId(),
+                                                true,
+                                                session.context.activeRoom.roomObjectsArea(),
+                                                session.context.activeRoom.renderValues(),
+                                                session.context.activeRoom.gbcOverlay(),
+                                                session.context.activeRoom.tileIds(),
+                                                session.context.activeRoom.tileAttrs())
+                                        .changed();
+                        case IGNITE_TORCH -> session.writeMagicPowderTorchObject(request.location(), 0xAB, 0xAC, true);
+                        case EXTINGUISH_TORCH -> session.writeMagicPowderTorchObject(
+                                request.location(),
+                                -1,
+                                0xAB,
+                                session.context.activeRoom.roomId() != 0x74
+                                        && (session.context.indoorTorchPaletteEffect.targetAddress() >= 0x0C
+                                                || session.context.currentLinkMotionState != 0x05));
+                    };
 
             if (!changed) {
                 continue;
@@ -305,11 +329,11 @@ final class RoomObjectMutations {
             if (request.action() == MagicPowderObjectAction.IGNITE_TORCH) {
                 session.context.roomTriggerCount = (session.context.roomTriggerCount + 1) & 0xFF;
                 session.context.indoorTorchPaletteEffect.igniteTorch();
-            } else if (request.action()
-                == MagicPowderObjectAction.EXTINGUISH_TORCH
-                && session.context.activeRoom.roomId() != 0x74) {
+            } else if (request.action() == MagicPowderObjectAction.EXTINGUISH_TORCH
+                    && session.context.activeRoom.roomId() != 0x74) {
                 session.context.roomTriggerCount = (session.context.roomTriggerCount - 1) & 0xFF;
-                session.context.indoorTorchPaletteEffect.extinguishTorch(session.context.currentLinkMotionState != 0x05);
+                session.context.indoorTorchPaletteEffect.extinguishTorch(
+                        session.context.currentLinkMotionState != 0x05);
             }
             if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 session.refreshOverworldCollisionAfterObjectMutation();
@@ -325,8 +349,7 @@ final class RoomObjectMutations {
         if (expectedObject >= 0 && session.objectAtRoomLocation(location) != expectedObject) {
             return false;
         }
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
-            + (location & 0x0F);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return false;
@@ -337,8 +360,9 @@ final class RoomObjectMutations {
             session.retainTorchTiles(areaIndex);
         }
         objects[areaIndex] = replacementObject & 0xFF;
-        if (redraw && session.context.activeRoom.renderValues() != null
-            && areaIndex < session.context.activeRoom.renderValues().length) {
+        if (redraw
+                && session.context.activeRoom.renderValues() != null
+                && areaIndex < session.context.activeRoom.renderValues().length) {
             session.context.activeRoom.renderValues()[areaIndex] = replacementObject & 0xFF;
         }
         if (redraw) {
@@ -349,8 +373,7 @@ final class RoomObjectMutations {
 
     void retainTorchTiles(int areaIndex) {
         int location = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
-        int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH
-            + (location & 0x0F) * 2;
+        int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH + (location & 0x0F) * 2;
         int[] saved = new int[8];
         for (int tile = 0; tile < 4; tile++) {
             int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
@@ -361,12 +384,13 @@ final class RoomObjectMutations {
     }
 
     void applyRetainedTorchTiles() {
-        session.context.retainedTorchTiles.keySet().removeIf(
-            areaIndex -> session.context.activeRoom.roomObjectsArea()[areaIndex] != 0xAB);
+        session.context
+                .retainedTorchTiles
+                .keySet()
+                .removeIf(areaIndex -> session.context.activeRoom.roomObjectsArea()[areaIndex] != 0xAB);
         for (Map.Entry<Integer, int[]> entry : session.context.retainedTorchTiles.entrySet()) {
             int location = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
-            int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH
-                + (location & 0x0F) * 2;
+            int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH + (location & 0x0F) * 2;
             int[] saved = entry.getValue();
             for (int tile = 0; tile < 4; tile++) {
                 int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
@@ -377,16 +401,16 @@ final class RoomObjectMutations {
     }
 
     int countUnlitTorches() {
-        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || session.context.activeRoom.roomId() == 0xC4) {
+        if (session.context.activeRoom == null
+                || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                || session.context.activeRoom.roomId() == 0xC4) {
             return 0;
         }
         int count = 0;
         int[] objects = session.context.activeRoom.roomObjectsArea();
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int index = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int index = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 if (index < objects.length && objects[index] == 0xAB) {
                     count++;
                 }
@@ -408,8 +432,8 @@ final class RoomObjectMutations {
             if (target[palette] == null) {
                 continue;
             }
-            System.arraycopy(source[palette], 0, target[palette], 0,
-                Math.min(source[palette].length, target[palette].length));
+            System.arraycopy(
+                    source[palette], 0, target[palette], 0, Math.min(source[palette].length, target[palette].length));
         }
     }
 
@@ -418,8 +442,7 @@ final class RoomObjectMutations {
             return;
         }
         int objectId = session.objectAtRoomLocation(candidate.location());
-        if (objectId < session.OBJECT_GIANT_SKULL_TOP_LEFT
-            || objectId > session.OBJECT_GIANT_SKULL_BOTTOM_RIGHT) {
+        if (objectId < session.OBJECT_GIANT_SKULL_TOP_LEFT || objectId > session.OBJECT_GIANT_SKULL_BOTTOM_RIGHT) {
             session.applyOutdoorBombableCaveDoorCandidate(candidate, sourceSlot);
             return;
         }
@@ -431,8 +454,7 @@ final class RoomObjectMutations {
         if (session.context.entityBridge.entityRuntime != null) {
             for (int index = 0; index < rubbleXOffsets.length; index++) {
                 session.context.entityBridge.entityRuntime.spawnLiftableRockRubble(
-                    blockLeft + rubbleXOffsets[index],
-                    blockTop + rubbleYOffsets[index] - sourceZ);
+                        blockLeft + rubbleXOffsets[index], blockTop + rubbleYOffsets[index] - sourceZ);
             }
         }
         session.queuePuzzleSolvedJingle(sourceSlot);
@@ -440,25 +462,27 @@ final class RoomObjectMutations {
         int blockLocation = blockTop | (blockLeft >>> 4);
         for (int row = 0; row < 2; row++) {
             for (int column = 0; column < 2; column++) {
-                session.writeBombPuzzleObject(blockLocation
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column,
-                    session.OBJECT_ROCKY_GROUND);
+                session.writeBombPuzzleObject(
+                        blockLocation + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column,
+                        session.OBJECT_ROCKY_GROUND);
             }
         }
-        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |= (byte) session.OW_ROOM_STATUS_OPENED;
+        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |=
+                (byte) session.OW_ROOM_STATUS_OPENED;
         session.refreshOverworldCollisionAfterObjectMutation();
     }
 
     void applyOutdoorBombableCaveDoorCandidate(BombObjectInteraction.Candidate candidate, int sourceSlot) {
         int objectId = session.objectAtRoomLocation(candidate.location());
         int doorIndex = session.context.romTables.objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
-            - session.BOMBABLE_WALL_PHYSICS_BASE;
+                - session.BOMBABLE_WALL_PHYSICS_BASE;
         if (objectId != session.OBJECT_BOMBABLE_CAVE_DOOR || doorIndex < 0 || doorIndex >= 4) {
             return;
         }
 
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (candidate.objectTop() & 0xF0)
-            + ((candidate.objectLeft() & 0xF0) >>> 4);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                + (candidate.objectTop() & 0xF0)
+                + ((candidate.objectLeft() & 0xF0) >>> 4);
         int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
@@ -466,15 +490,15 @@ final class RoomObjectMutations {
 
         session.writeBombPuzzleObject(candidate.location(), session.OBJECT_ROCKY_CAVE_DOOR);
         session.context.bombedCaveDoorTileOverrides.add(areaIndex);
-        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |= (byte) session.OW_ROOM_STATUS_OPENED;
+        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |=
+                (byte) session.OW_ROOM_STATUS_OPENED;
         session.queuePuzzleSolvedJingle(sourceSlot);
         session.refreshActiveRoomTilemap();
         session.refreshOverworldCollisionAfterObjectMutation();
     }
 
     void writeBombPuzzleObject(int location, int objectId) {
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
-            + (location & 0x0F);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
@@ -484,8 +508,13 @@ final class RoomObjectMutations {
             session.context.activeRoom.renderValues()[areaIndex] = objectId & 0xFF;
         }
         session.context.overworldBushInteraction.refreshRoomObjectCell(
-            session.context.activeRoom.roomId(), location, objects, session.context.activeRoom.renderValues(),
-            session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
+                session.context.activeRoom.roomId(),
+                location,
+                objects,
+                session.context.activeRoom.renderValues(),
+                session.context.activeRoom.gbcOverlay(),
+                session.context.activeRoom.tileIds(),
+                session.context.activeRoom.tileAttrs());
     }
 
     void refreshOverworldCollisionAfterObjectMutation() {
@@ -500,37 +529,39 @@ final class RoomObjectMutations {
         int location = candidate.location();
         int objectId = session.objectAtRoomLocation(location);
         int physicsTable = session.context.activeRoom.mapId() == 0xFF
-            ? RomTables.PHYSICS_TABLE_INDOORS2 : RomTables.PHYSICS_TABLE_INDOORS1;
+                ? RomTables.PHYSICS_TABLE_INDOORS2
+                : RomTables.PHYSICS_TABLE_INDOORS1;
         int wallIndex = session.context.romTables.objectPhysicsFlag(physicsTable, objectId)
-            - session.BOMBABLE_WALL_PHYSICS_BASE;
+                - session.BOMBABLE_WALL_PHYSICS_BASE;
         if (wallIndex < 0 || wallIndex >= 4) {
             return;
         }
 
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
-            + (location & 0x0F);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
-        objects[areaIndex] = wallIndex < 2
-            ? session.OBJECT_BOMBED_PASSAGE_VERTICAL : session.OBJECT_BOMBED_PASSAGE_HORIZONTAL;
+        objects[areaIndex] =
+                wallIndex < 2 ? session.OBJECT_BOMBED_PASSAGE_VERTICAL : session.OBJECT_BOMBED_PASSAGE_HORIZONTAL;
 
         byte[] status = session.indoorStatusTableForMap(session.context.activeRoom.mapId());
-        int currentStatus = switch (wallIndex) {
-            case 0 -> 0x04;
-            case 1 -> 0x08;
-            case 2 -> 0x02;
-            case 3 -> 0x01;
-            default -> throw new AssertionError(wallIndex);
-        };
-        int adjacentStatus = switch (wallIndex) {
-            case 0 -> 0x08;
-            case 1 -> 0x04;
-            case 2 -> 0x01;
-            case 3 -> 0x02;
-            default -> throw new AssertionError(wallIndex);
-        };
+        int currentStatus =
+                switch (wallIndex) {
+                    case 0 -> 0x04;
+                    case 1 -> 0x08;
+                    case 2 -> 0x02;
+                    case 3 -> 0x01;
+                    default -> throw new AssertionError(wallIndex);
+                };
+        int adjacentStatus =
+                switch (wallIndex) {
+                    case 0 -> 0x08;
+                    case 1 -> 0x04;
+                    case 2 -> 0x01;
+                    case 3 -> 0x02;
+                    default -> throw new AssertionError(wallIndex);
+                };
         int adjacentRoom = session.adjacentIndoorRoomIdForBombWall(wallIndex);
         status[session.context.activeRoom.roomId()] |= (byte) currentStatus;
         status[adjacentRoom] |= (byte) adjacentStatus;
@@ -543,9 +574,8 @@ final class RoomObjectMutations {
     }
 
     void queuePuzzleSolvedJingle(int sourceSlot) {
-        session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
-            sourceSlot, 0x02, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x02));
+        session.context.entityBridge.pendingRoomEntityEvents.add(
+                new EntityCombatEvent(sourceSlot, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
     }
 
     boolean applyIndoorBombableBlockCandidate(BombObjectInteraction.Candidate candidate) {
@@ -556,21 +586,20 @@ final class RoomObjectMutations {
         if (session.objectAtRoomLocation(location) != session.OBJECT_BOMBABLE_BLOCK) {
             return false;
         }
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
-            + (location & 0x0F);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return false;
         }
 
         objects[areaIndex] = session.OBJECT_FLOOR_OD;
-        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()]
-            |= (byte) session.INDOOR_ROOM_STATUS_EVENT_3;
+        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()] |=
+                (byte) session.INDOOR_ROOM_STATUS_EVENT_3;
         session.context.bombedBlockTileOverrides.add(areaIndex);
 
         if (session.context.entityBridge.entityRuntime != null) {
             session.context.entityBridge.entityRuntime.spawnLiftableRockSmash(
-                candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
+                    candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
         }
 
         session.refreshActiveRoomTilemap();

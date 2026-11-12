@@ -1,7 +1,7 @@
 package linksawakening.equipment;
 
-import linksawakening.rom.*;
 import linksawakening.gpu.Tile;
+import linksawakening.rom.*;
 
 /**
  * Sword blade OAM tiles, sourced from {@code LinkCharacterTiles} (bank $0C /

@@ -1,26 +1,24 @@
 package linksawakening.ui;
 
-import linksawakening.cutscene.IntroSprite;
-
 import java.util.List;
+import linksawakening.cutscene.IntroSprite;
 
 /**
  * Immutable render state for one file-selection or New Game frame.
  */
 public record FileMenuFrameSnapshot(
-    String sceneId,
-    int selectedSlot,
-    boolean commandRowArrowShifted,
-    boolean creation,
-    int selectedCharacter,
-    int namePosition,
-    int[] nameBytes,
-    int[] tilemap,
-    int[] attrmap,
-    int[][] bgPalettes,
-    int[][] objectPalettes,
-    List<IntroSprite> sprites
-) {
+        String sceneId,
+        int selectedSlot,
+        boolean commandRowArrowShifted,
+        boolean creation,
+        int selectedCharacter,
+        int namePosition,
+        int[] nameBytes,
+        int[] tilemap,
+        int[] attrmap,
+        int[][] bgPalettes,
+        int[][] objectPalettes,
+        List<IntroSprite> sprites) {
 
     public FileMenuFrameSnapshot {
         nameBytes = nameBytes.clone();

@@ -1,25 +1,20 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.EnemyDropResolver;
-
-import linksawakening.world.entity.EnemyDropResolver.Context;
-import linksawakening.world.entity.EnemyDropResolver.CounterState;
-import linksawakening.world.entity.EnemyDropResolver.Result;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.IntSupplier;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.EnemyDropResolver.Context;
+import linksawakening.world.entity.EnemyDropResolver.CounterState;
+import linksawakening.world.entity.EnemyDropResolver.Result;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class EnemyDropResolverTest {
@@ -31,35 +26,27 @@ final class EnemyDropResolverTest {
         0x06, 0x00, 0x02, 0x0E, 0x0E
     };
     private static final int[] DROP_TABLE_BY_INDEX = {
-        0x2E, 0x2E, 0x2D, 0x2D, 0x37, 0x2D, 0xFF, 0xFF, 0x2F, 0x37, 0x38, 0x2E,
-        0x2F, 0x2F
+        0x2E, 0x2E, 0x2D, 0x2D, 0x37, 0x2D, 0xFF, 0xFF, 0x2F, 0x37, 0x38, 0x2E, 0x2F, 0x2F
     };
     private static final int[] RANDOM_DROP_CHANCE = {
-        0x03, 0x01, 0x01, 0x00, 0x03, 0x03, 0x03, 0x03, 0x01, 0x00, 0x00, 0x00,
-        0x03, 0x00
+        0x03, 0x01, 0x01, 0x00, 0x03, 0x03, 0x03, 0x03, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00
     };
     private static final int[] RANDOM_DROP_CHANCE_LOW_HEALTH = {
-        0x01, 0x01, 0x01, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00,
-        0x01, 0x00
+        0x01, 0x01, 0x01, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00
     };
-    private static final int[] DROP_TABLE_RANDOM = {
-        0x2E, 0x2D, 0x38, 0x2F, 0x2E, 0x2D, 0x38, 0x37
-    };
+    private static final int[] DROP_TABLE_RANDOM = {0x2E, 0x2D, 0x38, 0x2F, 0x2E, 0x2D, 0x38, 0x37};
     private static final int[] THRESHOLD_LOW_HEALTH = {
-        0x00, 0x22, 0xC9, 0x05, 0x05, 0x05, 0x09, 0x09, 0x09, 0x11, 0x11, 0x11,
-        0x19, 0x19, 0x19
+        0x00, 0x22, 0xC9, 0x05, 0x05, 0x05, 0x09, 0x09, 0x09, 0x11, 0x11, 0x11, 0x19, 0x19, 0x19
     };
 
     @Test
     void decodesAllDropTablesFromTheShippedRom() throws IOException {
         EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
 
-        assertArrayEquals(DESTROYED_HEALTH_GROUP_OFFSETS,
-            resolver.destroyedHealthGroupOffsets());
+        assertArrayEquals(DESTROYED_HEALTH_GROUP_OFFSETS, resolver.destroyedHealthGroupOffsets());
         assertArrayEquals(DROP_TABLE_BY_INDEX, resolver.dropTableByIndex());
         assertArrayEquals(RANDOM_DROP_CHANCE, resolver.randomDropChanceTable());
-        assertArrayEquals(RANDOM_DROP_CHANCE_LOW_HEALTH,
-            resolver.randomDropChanceTableLowHealth());
+        assertArrayEquals(RANDOM_DROP_CHANCE_LOW_HEALTH, resolver.randomDropChanceTableLowHealth());
         assertArrayEquals(DROP_TABLE_RANDOM, resolver.dropTableRandom());
         assertArrayEquals(THRESHOLD_LOW_HEALTH, resolver.thresholdLowHealthTable());
     }
@@ -74,8 +61,7 @@ final class EnemyDropResolverTest {
 
         assertNotSame(first, second);
         assertEquals(DESTROYED_HEALTH_GROUP_OFFSETS[0], second[0]);
-        assertEquals(DESTROYED_HEALTH_GROUP_OFFSETS[0],
-            resolver.destroyedHealthGroupOffsets()[0]);
+        assertEquals(DESTROYED_HEALTH_GROUP_OFFSETS[0], resolver.destroyedHealthGroupOffsets()[0]);
     }
 
     @Test
@@ -84,8 +70,8 @@ final class EnemyDropResolverTest {
         CounterState counters = new CounterState(0x03, 0x04);
 
         RecordingRandom noneRandom = new RecordingRandom(0x12);
-        Result none = resolver.resolve(context(0x09, 0x01, EnemyDropResolver.ENTITY_NONE,
-            0x08, 0x04, false, false, false, counters, noneRandom));
+        Result none = resolver.resolve(context(
+                0x09, 0x01, EnemyDropResolver.ENTITY_NONE, 0x08, 0x04, false, false, false, counters, noneRandom));
         assertEquals(EnemyDropResolver.ENTITY_NONE, none.itemType());
         assertEquals(counters, none.counters());
         assertEquals(0, none.randomReads());
@@ -93,8 +79,8 @@ final class EnemyDropResolverTest {
         assertFalse(none.dropped());
 
         RecordingRandom directRandom = new RecordingRandom(0x34);
-        Result direct = resolver.resolve(context(0x09, 0x01, 0x2A,
-            0x08, 0x04, true, true, true, counters, directRandom));
+        Result direct =
+                resolver.resolve(context(0x09, 0x01, 0x2A, 0x08, 0x04, true, true, true, counters, directRandom));
         assertEquals(0x2A, direct.itemType());
         assertEquals(counters, direct.counters());
         assertEquals(0, direct.randomReads());
@@ -107,18 +93,16 @@ final class EnemyDropResolverTest {
         EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
 
         RecordingRandom belowThresholdRandom = new RecordingRandom(0x01);
-        Result belowThreshold = resolver.resolve(context(0x09, 0x02, 0,
-            0x08, 0x08, false, false, false,
-            new CounterState(0x0A, 0x00), belowThresholdRandom));
+        Result belowThreshold = resolver.resolve(context(
+                0x09, 0x02, 0, 0x08, 0x08, false, false, false, new CounterState(0x0A, 0x00), belowThresholdRandom));
         assertEquals(EnemyDropResolver.ENTITY_NONE, belowThreshold.itemType());
         assertEquals(new CounterState(0x0B, 0x01), belowThreshold.counters());
         assertEquals(List.of(0x01), belowThresholdRandom.valuesRead());
         assertEquals(1, belowThreshold.randomReads());
 
         RecordingRandom acornRandom = new RecordingRandom(0xFF);
-        Result acorn = resolver.resolve(context(0x09, 0x02, 0,
-            0x08, 0x08, false, false, false,
-            new CounterState(0x0B, 0x00), acornRandom));
+        Result acorn = resolver.resolve(
+                context(0x09, 0x02, 0, 0x08, 0x08, false, false, false, new CounterState(0x0B, 0x00), acornRandom));
         assertEquals(0x34, acorn.itemType());
         assertEquals(new CounterState(0x00, 0x00), acorn.counters());
         assertEquals(0, acorn.randomReads());
@@ -126,9 +110,17 @@ final class EnemyDropResolverTest {
 
         for (Gate gate : Gate.values()) {
             RecordingRandom gatedRandom = new RecordingRandom(0x01);
-            Result gated = resolver.resolve(context(0x09, 0x02, 0,
-                0x08, 0x08, gate.bossBattle(), gate.activePowerUp(), gate.sideScrolling(),
-                new CounterState(0x0B, 0x00), gatedRandom));
+            Result gated = resolver.resolve(context(
+                    0x09,
+                    0x02,
+                    0,
+                    0x08,
+                    0x08,
+                    gate.bossBattle(),
+                    gate.activePowerUp(),
+                    gate.sideScrolling(),
+                    new CounterState(0x0B, 0x00),
+                    gatedRandom));
             assertEquals(EnemyDropResolver.ENTITY_NONE, gated.itemType(), gate.name());
             assertEquals(new CounterState(0x00, 0x01), gated.counters(), gate.name());
             assertEquals(1, gated.randomReads(), gate.name());
@@ -146,9 +138,17 @@ final class EnemyDropResolverTest {
 
         for (Gate gate : Gate.values()) {
             RecordingRandom gatedRandom = new RecordingRandom(0x01);
-            Result gated = resolver.resolve(context(0x09, 0x02, 0,
-                0x06, 0x08, gate.bossBattle(), gate.activePowerUp(), gate.sideScrolling(),
-                new CounterState(0x00, 0x1D), gatedRandom));
+            Result gated = resolver.resolve(context(
+                    0x09,
+                    0x02,
+                    0,
+                    0x06,
+                    0x08,
+                    gate.bossBattle(),
+                    gate.activePowerUp(),
+                    gate.sideScrolling(),
+                    new CounterState(0x00, 0x1D),
+                    gatedRandom));
             assertEquals(EnemyDropResolver.ENTITY_NONE, gated.itemType(), gate.name());
             assertEquals(new CounterState(0x01, 0x00), gated.counters(), gate.name());
             assertEquals(1, gated.randomReads(), gate.name());
@@ -161,9 +161,8 @@ final class EnemyDropResolverTest {
         EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
         RecordingRandom random = new RecordingRandom(0x00);
 
-        Result result = resolver.resolve(context(0x09, 0x0C, 0,
-            0x08, 0x08, false, false, false,
-            new CounterState(0x04, 0x1D), random));
+        Result result = resolver.resolve(
+                context(0x09, 0x0C, 0, 0x08, 0x08, false, false, false, new CounterState(0x04, 0x1D), random));
 
         assertEquals(EnemyDropResolver.ENTITY_NONE, result.itemType());
         assertEquals(new CounterState(0x05, 0x1D), result.counters());
@@ -174,12 +173,38 @@ final class EnemyDropResolverTest {
     @Test
     void latchedLowHealthOverridesLiveHealthForDropChance() throws IOException {
         EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
-        assertEquals(0x2E, resolver.resolve(context(0x09, 0x02, 0,
-            3, 24, false, false, false,
-            new CounterState(0, 0), new RecordingRandom(0x02)), true).itemType());
-        assertEquals(EnemyDropResolver.ENTITY_NONE, resolver.resolve(context(0x09, 0x02, 0,
-            3, 1, false, false, false,
-            new CounterState(0, 0), new RecordingRandom(0x02)), false).itemType());
+        assertEquals(
+                0x2E,
+                resolver.resolve(
+                                context(
+                                        0x09,
+                                        0x02,
+                                        0,
+                                        3,
+                                        24,
+                                        false,
+                                        false,
+                                        false,
+                                        new CounterState(0, 0),
+                                        new RecordingRandom(0x02)),
+                                true)
+                        .itemType());
+        assertEquals(
+                EnemyDropResolver.ENTITY_NONE,
+                resolver.resolve(
+                                context(
+                                        0x09,
+                                        0x02,
+                                        0,
+                                        3,
+                                        1,
+                                        false,
+                                        false,
+                                        false,
+                                        new CounterState(0, 0),
+                                        new RecordingRandom(0x02)),
+                                false)
+                        .itemType());
     }
 
     @Test
@@ -193,17 +218,15 @@ final class EnemyDropResolverTest {
         assertFalse(resolver.isLowHealth(0xFF, 0x19));
 
         RecordingRandom normalRandom = new RecordingRandom(0x02);
-        Result normal = resolver.resolve(context(0x09, 0x02, 0,
-            0x03, 0x05, false, false, false,
-            new CounterState(0x00, 0x00), normalRandom));
+        Result normal = resolver.resolve(
+                context(0x09, 0x02, 0, 0x03, 0x05, false, false, false, new CounterState(0x00, 0x00), normalRandom));
         assertEquals(EnemyDropResolver.ENTITY_NONE, normal.itemType());
         assertEquals(new CounterState(0x01, 0x01), normal.counters());
         assertEquals(1, normal.randomReads());
 
         RecordingRandom lowHealthRandom = new RecordingRandom(0x02);
-        Result lowHealth = resolver.resolve(context(0x09, 0x02, 0,
-            0x03, 0x04, false, false, false,
-            new CounterState(0x00, 0x00), lowHealthRandom));
+        Result lowHealth = resolver.resolve(
+                context(0x09, 0x02, 0, 0x03, 0x04, false, false, false, new CounterState(0x00, 0x00), lowHealthRandom));
         assertEquals(0x2E, lowHealth.itemType());
         assertEquals(new CounterState(0x01, 0x01), lowHealth.counters());
         assertEquals(1, lowHealth.randomReads());
@@ -215,9 +238,8 @@ final class EnemyDropResolverTest {
         EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
         RecordingRandom random = new RecordingRandom(0x100, -1);
 
-        Result result = resolver.resolve(context(0x09, 0x0A, 0,
-            0x08, 0x08, false, false, false,
-            new CounterState(0x00, 0x00), random));
+        Result result = resolver.resolve(
+                context(0x09, 0x0A, 0, 0x08, 0x08, false, false, false, new CounterState(0x00, 0x00), random));
 
         assertEquals(0x37, result.itemType());
         assertEquals(new CounterState(0x01, 0x01), result.counters());
@@ -234,10 +256,8 @@ final class EnemyDropResolverTest {
 
         CounterState counters = new CounterState(0, 0);
         RecordingRandom random = new RecordingRandom(0);
-        assertThrows(NullPointerException.class, () -> context(0, 0, 0,
-            0, 0, false, false, false, null, random));
-        assertThrows(NullPointerException.class, () -> context(0, 0, 0,
-            0, 0, false, false, false, counters, null));
+        assertThrows(NullPointerException.class, () -> context(0, 0, 0, 0, 0, false, false, false, null, random));
+        assertThrows(NullPointerException.class, () -> context(0, 0, 0, 0, 0, false, false, false, counters, null));
 
         int[][] invalidFields = {
             {-1, 0, 0, 0, 0},
@@ -252,18 +272,18 @@ final class EnemyDropResolverTest {
             {0, 0, 0, 0, 0x100}
         };
         for (int[] fields : invalidFields) {
-            assertThrows(IllegalArgumentException.class, () -> context(
-                fields[0], fields[1], fields[2], fields[3], fields[4],
-                false, false, false, counters, random));
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> context(
+                            fields[0], fields[1], fields[2], fields[3], fields[4], false, false, false, counters,
+                            random));
         }
     }
 
-    private static void assertPieceOfPowerAtThreshold(EnemyDropResolver resolver,
-                                                       int maxHearts, int threshold) {
+    private static void assertPieceOfPowerAtThreshold(EnemyDropResolver resolver, int maxHearts, int threshold) {
         RecordingRandom random = new RecordingRandom(0xFF);
-        Result result = resolver.resolve(context(0x09, 0x02, 0,
-            maxHearts, 0x08, false, false, false,
-            new CounterState(0x00, threshold - 1), random));
+        Result result = resolver.resolve(context(
+                0x09, 0x02, 0, maxHearts, 0x08, false, false, false, new CounterState(0x00, threshold - 1), random));
 
         assertEquals(0x33, result.itemType());
         assertEquals(new CounterState(0x01, 0x00), result.counters());
@@ -271,12 +291,28 @@ final class EnemyDropResolverTest {
         assertTrue(random.valuesRead().isEmpty());
     }
 
-    private static Context context(int entityType, int healthGroup, int droppedItem,
-                                   int maxHearts, int health, boolean bossBattle,
-                                   boolean activePowerUp, boolean sideScrolling,
-                                   CounterState counters, IntSupplier randomByteSupplier) {
-        return new Context(entityType, healthGroup, droppedItem, maxHearts, health,
-            bossBattle, activePowerUp, sideScrolling, counters, randomByteSupplier);
+    private static Context context(
+            int entityType,
+            int healthGroup,
+            int droppedItem,
+            int maxHearts,
+            int health,
+            boolean bossBattle,
+            boolean activePowerUp,
+            boolean sideScrolling,
+            CounterState counters,
+            IntSupplier randomByteSupplier) {
+        return new Context(
+                entityType,
+                healthGroup,
+                droppedItem,
+                maxHearts,
+                health,
+                bossBattle,
+                activePowerUp,
+                sideScrolling,
+                counters,
+                randomByteSupplier);
     }
 
     private static byte[] loadRom() throws IOException {

@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 PeaHatEntityHandler's rest, takeoff, and flying states. */
 public final class PeaHatMotion {
@@ -49,8 +48,11 @@ public final class PeaHatMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -66,12 +68,10 @@ public final class PeaHatMotion {
         int variant = entity.spriteVariant();
 
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
-                    directionForX(speedX[slot]), x, y)) {
+            if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, y)) {
                 x = entity.x();
             }
-            if (y != entity.y() && backgroundCollision.blocks(entity,
-                    directionForY(speedY[slot]), x, y)) {
+            if (y != entity.y() && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
                 y = entity.y();
             }
         }
@@ -100,8 +100,7 @@ public final class PeaHatMotion {
                     }
                     variant = animate(slot);
                 } else {
-                    slowTransitionCountdown[slot] = 0x80
-                        + (randomByteSupplier.getAsInt() & 0x1F);
+                    slowTransitionCountdown[slot] = 0x80 + (randomByteSupplier.getAsInt() & 0x1F);
                     state[slot] = 2;
                 }
             }
@@ -122,9 +121,20 @@ public final class PeaHatMotion {
             default -> throw new IllegalStateException("Invalid PeaHat state: " + state[slot]);
         }
 
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -220,8 +230,7 @@ public final class PeaHatMotion {
         return (speed & 0x80) != 0 ? 2 : 3;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;

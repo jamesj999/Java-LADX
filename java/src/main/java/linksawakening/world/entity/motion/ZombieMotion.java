@@ -1,14 +1,13 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityObjectQuery;
 import linksawakening.world.entity.RoomEntityObjectSample;
-
-import java.util.Objects;
-import java.util.function.IntSupplier;
 
 /** Bank-$18 ZombieEntityHandler hidden-parent and child state machine. */
 public final class ZombieMotion {
@@ -18,12 +17,8 @@ public final class ZombieMotion {
     public static final int PROJECTILE_NOCLIP_FLAG = 0x40;
 
     // Data_018_637D and Data_018_6385.
-    private static final int[] SPAWN_Y = {
-        0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80
-    };
-    private static final int[] SPAWN_X = {
-        0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88
-    };
+    private static final int[] SPAWN_Y = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80};
+    private static final int[] SPAWN_X = {0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -34,14 +29,19 @@ public final class ZombieMotion {
     private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record SpawnRequest(int x, int y) {
-    }
+    public record SpawnRequest(int x, int y) {}
 
-    public record Update(RoomEntity entity, int state, int privateState1,
-                  int transitionCountdown, int physicsFlags, int speedX, int speedY,
-                  SpawnRequest spawnRequest, boolean unloadRequested,
-                  boolean appliesBackgroundInteraction) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int privateState1,
+            int transitionCountdown,
+            int physicsFlags,
+            int speedX,
+            int speedY,
+            SpawnRequest spawnRequest,
+            boolean unloadRequested,
+            boolean appliesBackgroundInteraction) {}
 
     public void initialize(int slot) {
         reset(slot);
@@ -55,11 +55,17 @@ public final class ZombieMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   int physicsFlags, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, RoomEntityObjectQuery objectQuery,
-                   RoomEntityBackgroundInteraction backgroundInteraction,
-                   int ignoreHitsCountdown) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            int physicsFlags,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityObjectQuery objectQuery,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown) {
         checkType(entity);
         Objects.requireNonNull(randomByteSupplier, "Zombie random-byte supplier");
         validateByte(transitionCountdown, "Zombie transition countdown");
@@ -89,8 +95,7 @@ public final class ZombieMotion {
                 int x = SPAWN_X[index];
                 int y = SPAWN_Y[index];
                 updated = withPositionAndVariant(entity, x, y, variant);
-                RoomEntityObjectSample object = objectQuery == null
-                    ? null : objectQuery.sample(updated);
+                RoomEntityObjectSample object = objectQuery == null ? null : objectQuery.sample(updated);
                 if (object != null && isAllowedSpawnPhysics(object.physicsFlag())) {
                     countdown = (randomByteSupplier.getAsInt() & 0x3F) + 0x40;
                     spawnRequest = new SpawnRequest(x, y);
@@ -98,8 +103,15 @@ public final class ZombieMotion {
             } else {
                 updated = withVariant(entity, variant);
             }
-            return update(updated, countdown, nextPhysicsFlags, nextSpeedX, nextSpeedY,
-                spawnRequest, false, appliesBackgroundInteraction);
+            return update(
+                    updated,
+                    countdown,
+                    nextPhysicsFlags,
+                    nextSpeedX,
+                    nextSpeedY,
+                    spawnRequest,
+                    false,
+                    appliesBackgroundInteraction);
         }
 
         // $640F renders before any state handler writes the next stored frame.
@@ -115,8 +127,7 @@ public final class ZombieMotion {
                 if (countdown == 0) {
                     countdown = (randomByteSupplier.getAsInt() & 0x3F) + 0x70;
                     int vectorLength = (randomByteSupplier.getAsInt() & 0x07) + 0x05;
-                    Vector vector = vectorTowardsLink(entity.x(), entity.y(),
-                        linkEntityX, linkEntityY, vectorLength);
+                    Vector vector = vectorTowardsLink(entity.x(), entity.y(), linkEntityX, linkEntityY, vectorLength);
                     speedX[slot] = vector.x();
                     speedY[slot] = vector.y();
                     nextSpeedX = speedX[slot];
@@ -132,13 +143,11 @@ public final class ZombieMotion {
             case 2 -> {
                 appliesBackgroundInteraction = true;
                 PositionAndCollision moved = backgroundInteraction == null
-                    ? new PositionAndCollision(
-                        addSpeedToPosition(entity.x(), speedX[slot],
-                            speedXAccumulator, slot),
-                        addSpeedToPosition(entity.y(), speedY[slot],
-                            speedYAccumulator, slot), 0)
-                    : moveWithBackground(entity, backgroundInteraction,
-                        ignoreHitsCountdown, frameCounter);
+                        ? new PositionAndCollision(
+                                addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot),
+                                addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot),
+                                0)
+                        : moveWithBackground(entity, backgroundInteraction, ignoreHitsCountdown, frameCounter);
                 int x = moved.x();
                 int y = moved.y();
                 int collisionMask = moved.collisionMask();
@@ -162,8 +171,15 @@ public final class ZombieMotion {
 
         selectedVariant[slot] = variant;
         updated = withVariant(updated, renderedVariant);
-        return update(updated, countdown, nextPhysicsFlags, nextSpeedX, nextSpeedY,
-            null, unloadRequested, appliesBackgroundInteraction);
+        return update(
+                updated,
+                countdown,
+                nextPhysicsFlags,
+                nextSpeedX,
+                nextSpeedY,
+                null,
+                unloadRequested,
+                appliesBackgroundInteraction);
     }
 
     boolean isChild(int slot) {
@@ -196,18 +212,30 @@ public final class ZombieMotion {
         initialized[slot] = false;
     }
 
-    private Update update(RoomEntity entity, int countdown, int physicsFlags,
-                          int nextSpeedX, int nextSpeedY, SpawnRequest spawnRequest,
-                          boolean unloadRequested, boolean appliesBackgroundInteraction) {
-        return new Update(entity, state[entity.slot()], privateState1[entity.slot()],
-            countdown & 0xFF, physicsFlags & 0xFF, nextSpeedX & 0xFF,
-            nextSpeedY & 0xFF, spawnRequest, unloadRequested,
-            appliesBackgroundInteraction);
+    private Update update(
+            RoomEntity entity,
+            int countdown,
+            int physicsFlags,
+            int nextSpeedX,
+            int nextSpeedY,
+            SpawnRequest spawnRequest,
+            boolean unloadRequested,
+            boolean appliesBackgroundInteraction) {
+        return new Update(
+                entity,
+                state[entity.slot()],
+                privateState1[entity.slot()],
+                countdown & 0xFF,
+                physicsFlags & 0xFF,
+                nextSpeedX & 0xFF,
+                nextSpeedY & 0xFF,
+                spawnRequest,
+                unloadRequested,
+                appliesBackgroundInteraction);
     }
 
-    private PositionAndCollision moveWithBackground(RoomEntity entity,
-                                                     RoomEntityBackgroundInteraction interaction,
-                                                     int ignoreHitsCountdown, int frameCounter) {
+    private PositionAndCollision moveWithBackground(
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int ignoreHitsCountdown, int frameCounter) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -216,22 +244,20 @@ public final class ZombieMotion {
         // ApplyEntityInteractionWithBackground probes nonzero speeds even
         // when fixed-point movement has not advanced a complete pixel.
         if (speedX[slot] != 0) {
-            int direction = speedX[slot] < 0x80
-                ? EntityBackgroundCollisionResult.RIGHT
-                : EntityBackgroundCollisionResult.LEFT;
-            EntityBackgroundCollisionResult result = interaction.probe(entity, direction,
-                x, y, ignoreHitsCountdown, frameCounter);
+            int direction =
+                    speedX[slot] < 0x80 ? EntityBackgroundCollisionResult.RIGHT : EntityBackgroundCollisionResult.LEFT;
+            EntityBackgroundCollisionResult result =
+                    interaction.probe(entity, direction, x, y, ignoreHitsCountdown, frameCounter);
             if (result.blocked()) {
                 collisionMask |= result.collisionFlag();
                 x = entity.x();
             }
         }
         if (speedY[slot] != 0) {
-            int direction = speedY[slot] < 0x80
-                ? EntityBackgroundCollisionResult.DOWN
-                : EntityBackgroundCollisionResult.UP;
-            EntityBackgroundCollisionResult result = interaction.probe(entity, direction,
-                x, y, ignoreHitsCountdown, frameCounter);
+            int direction =
+                    speedY[slot] < 0x80 ? EntityBackgroundCollisionResult.DOWN : EntityBackgroundCollisionResult.UP;
+            EntityBackgroundCollisionResult result =
+                    interaction.probe(entity, direction, x, y, ignoreHitsCountdown, frameCounter);
             if (result.blocked()) {
                 collisionMask |= result.collisionFlag();
                 y = entity.y();
@@ -244,8 +270,7 @@ public final class ZombieMotion {
         return physicsFlag == 0x00 || physicsFlag == 0x06 || physicsFlag == 0x09;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -260,8 +285,7 @@ public final class ZombieMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                            int linkEntityX, int linkEntityY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkEntityX, int linkEntityY, int length) {
         int distanceX = signedByte(linkEntityX - entityX);
         int distanceY = signedByte(linkEntityY - entityY);
         int absoluteX = Math.abs(distanceX);
@@ -290,24 +314,55 @@ public final class ZombieMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private void reset(int slot) {
@@ -337,9 +392,7 @@ public final class ZombieMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 
-    private record PositionAndCollision(int x, int y, int collisionMask) {
-    }
+    private record PositionAndCollision(int x, int y, int collisionMask) {}
 }

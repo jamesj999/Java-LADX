@@ -1,8 +1,9 @@
 package linksawakening.render;
 
-import linksawakening.world.transition.ScrollController;
-import linksawakening.world.transition.TransitionController;
-
+import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import javax.imageio.ImageIO;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.equipment.ItemRegistry;
@@ -20,11 +21,8 @@ import linksawakening.ui.InventoryTilemapLoader;
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 /** Offline opening scene through production room, entity, bed and HUD rendering. */
 @linksawakening.testing.RequiresRom
@@ -39,16 +37,16 @@ public final class HouseEmulatorCapture {
         gpu.loadBaseTiles(rom);
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var session = new RoomSession(rom, gpu, new RoomLoader(rom),
-            new OverworldTilesetTable(rom), collision, null, null);
+        var session =
+                new RoomSession(rom, gpu, new RoomLoader(rom), new OverworldTilesetTable(rom), collision, null, null);
         var profile = NewGameStartProfile.romDefaults();
         session.loadIndoor(profile.mapId(), profile.roomId());
         var player = new PlayerState();
         profile.initializePlayerState(player);
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        var link = new Link(input, config, tables, collision,
-            LinkSpriteSheet.loadFromRom(rom), player, new ItemRegistry());
+        var link = new Link(
+                input, config, tables, collision, LinkSpriteSheet.loadFromRom(rom), player, new ItemRegistry());
         var motion = new MarinWakeUpMotion();
         var marinSource = session.activeRoom().entities().slots().get(0);
         var clocks = Files.readAllLines(out.resolve("clocks.tsv"));
@@ -62,12 +60,12 @@ public final class HouseEmulatorCapture {
         for (int i = 127; i > slowCountdown; i--) motion.tick(0, false, false);
         var marin = motion.tickMarinPresentation(1, marinSource.x(), marinSource.y(), 0x38, 0x34);
         for (int i = inertia - 2; i > 0; i--) {
-            marin = motion.tickMarinPresentation((firstFrame - i + 1) & 255,
-                marinSource.x(), marinSource.y(), 0x38, 0x34);
+            marin = motion.tickMarinPresentation(
+                    (firstFrame - i + 1) & 255, marinSource.x(), marinSource.y(), 0x38, 0x34);
         }
         session.updateHouseTarinPresentation(0, 0x38, 0x34);
-        var inventory = new InventoryController(input, config,
-            new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
+        var inventory = new InventoryController(
+                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
         Path folder = out.resolve("ours");
         Files.createDirectories(folder);
         for (int f = 0; f < clocks.size(); f++) {
@@ -80,16 +78,28 @@ public final class HouseEmulatorCapture {
             session.updateHouseTarinPresentation(frame, 0x38, 0x34);
             link.showMarinWakeUpBed(wake.bedSpriteVariant());
             byte[] pixels = new byte[160 * 144 * 4];
-            new GameFrameSceneBuilder().build(GameFrameState.empty().withScreen(RenderScreen.OVERWORLD)
-                .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())
-                .withLink(link).withInventoryController(inventory).withFrameCounter(frame)).drawTo(pixels, gpu);
+            new GameFrameSceneBuilder()
+                    .build(GameFrameState.empty()
+                            .withScreen(RenderScreen.OVERWORLD)
+                            .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())
+                            .withLink(link)
+                            .withInventoryController(inventory)
+                            .withFrameCounter(frame))
+                    .drawTo(pixels, gpu);
             BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
-            for (int y = 0; y < 144; y++) for (int x = 0; x < 160; x++) {
-                int i = (y * 160 + x) * 4;
-                image.setRGB(x, y, 0xff000000 | ((pixels[i] & 255) << 16)
-                    | ((pixels[i + 1] & 255) << 8) | (pixels[i + 2] & 255));
-            }
-            ImageIO.write(image, "png", folder.resolve(String.format("%03d.png", f)).toFile());
+            for (int y = 0; y < 144; y++)
+                for (int x = 0; x < 160; x++) {
+                    int i = (y * 160 + x) * 4;
+                    image.setRGB(
+                            x,
+                            y,
+                            0xff000000
+                                    | ((pixels[i] & 255) << 16)
+                                    | ((pixels[i + 1] & 255) << 8)
+                                    | (pixels[i + 2] & 255));
+                }
+            ImageIO.write(
+                    image, "png", folder.resolve(String.format("%03d.png", f)).toFile());
         }
     }
 }

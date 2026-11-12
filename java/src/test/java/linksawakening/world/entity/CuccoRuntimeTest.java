@@ -1,27 +1,16 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class CuccoRuntimeTest {
@@ -29,8 +18,7 @@ final class CuccoRuntimeTest {
     @Test
     void decodesCuccoDisplayListFromBankFive() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO,
-                EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertEquals(0x05, definition.bank());
         assertEquals(0x4514, definition.address());
@@ -46,12 +34,27 @@ final class CuccoRuntimeTest {
     void routesCuccoThroughItsHarmlessHandlerAndPowerBraceletLift() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_CUCCO,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        EntitySpriteDefinition definition =
+                catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        EntitySpriteHandlerCatalog.ENTITY_CUCCO,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
@@ -59,25 +62,41 @@ final class CuccoRuntimeTest {
         runtime.configuration().setLikeLikeLinkInventory(0x03, 0x00);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
-        assertEquals(EntityStatus.LIFTED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.LIFTED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertTrue(runtime.consumePendingEntityEvents().stream()
-            .noneMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE));
+                .noneMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE));
     }
 
     @Test
     void harmlessPhysicsSuppressesCuccoContactDamageButKeepsEnemyCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_CUCCO,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        EntitySpriteDefinition definition =
+                catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        EntitySpriteHandlerCatalog.ENTITY_CUCCO,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x00, () -> 0));
-        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x40, 0x50,
-            false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0);
 
         assertFalse(events.isEmpty());
         assertEquals(0, events.getFirst().linkDamage());

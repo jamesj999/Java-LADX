@@ -1,15 +1,18 @@
 package linksawakening.audio.apu;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 /** Register sequences exercise the hardware clocks without ROM or audio devices. */
 class ChannelClockEdgeTest {
-    @Test void noiseFifteenBitSequenceAndTriggerReseed() {
+    @Test
+    void noiseFifteenBitSequenceAndTriggerReseed() {
         assertNoiseSequence(0, 15);
     }
 
-    @Test void noiseSevenBitSequenceAndTriggerReseed() {
+    @Test
+    void noiseSevenBitSequenceAndTriggerReseed() {
         assertNoiseSequence(8, 7);
     }
 
@@ -26,7 +29,8 @@ class ChannelClockEdgeTest {
         for (int i = 0; i < width; i++) assertEquals(1.0, channel.render());
     }
 
-    @Test void sweepOverflowDisablesAtTrigger() {
+    @Test
+    void sweepOverflowDisablesAtTrigger() {
         SquareChannel channel = new SquareChannel(65536);
         channel.writeEnvelope(0xF0);
         channel.writeSweep(0x11); // 1500 + 750 exceeds eleven-bit range.
@@ -35,7 +39,8 @@ class ChannelClockEdgeTest {
         assertFalse(channel.isActive());
     }
 
-    @Test void removingNegateAfterSubtractionDisablesPulse() {
+    @Test
+    void removingNegateAfterSubtractionDisablesPulse() {
         SquareChannel channel = new SquareChannel(65536);
         channel.writeEnvelope(0xF0);
         channel.writeSweep(0x19);
@@ -46,7 +51,8 @@ class ChannelClockEdgeTest {
         assertFalse(channel.isActive());
     }
 
-    @Test void loadingLengthAndRetriggeringDoesNotReloadNonzeroCounter() {
+    @Test
+    void loadingLengthAndRetriggeringDoesNotReloadNonzeroCounter() {
         LengthCounter counter = new LengthCounter(64, 256);
         counter.load(62);
         counter.trigger();

@@ -1,5 +1,10 @@
 package linksawakening.app;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 import linksawakening.app.screen.Screen;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
@@ -8,12 +13,6 @@ import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 
 @RequiresRom
 final class EscapeSaveScreenTest {
@@ -36,7 +35,13 @@ final class EscapeSaveScreenTest {
         assertEquals(RenderScreen.OVERWORLD, screen(game));
     }
 
-    enum Blocker { DIALOG, INVENTORY, SCROLL, TRANSITION, PASS_OUT }
+    enum Blocker {
+        DIALOG,
+        INVENTORY,
+        SCROLL,
+        TRANSITION,
+        PASS_OUT
+    }
 
     @ParameterizedTest
     @EnumSource(Blocker.class)
@@ -50,8 +55,8 @@ final class EscapeSaveScreenTest {
                 frames(game, 60);
                 assertTrue(state.inventoryMenu().isFullyOpen());
             }
-            case SCROLL -> state.scrollController().start(ScrollController.RIGHT, 80, 80,
-                state.roomSession().renderSnapshot(), 160);
+            case SCROLL -> state.scrollController()
+                    .start(ScrollController.RIGHT, 80, 80, state.roomSession().renderSnapshot(), 160);
             case TRANSITION -> state.transitionController().startFadeOut(() -> {});
             case PASS_OUT -> state.link().beginPassOut();
         }
@@ -94,7 +99,12 @@ final class EscapeSaveScreenTest {
         assertEquals(RenderScreen.FILE_SAVE, screen(game));
     }
 
-    enum QuitScreen { INTRO, TITLE, FILE_SELECTION, NAME_ENTRY }
+    enum QuitScreen {
+        INTRO,
+        TITLE,
+        FILE_SELECTION,
+        NAME_ENTRY
+    }
 
     @ParameterizedTest
     @EnumSource(QuitScreen.class)
@@ -133,7 +143,8 @@ final class EscapeSaveScreenTest {
         assertTrue(menu.isFullyOpen());
         menu.requestToggle();
         game.headlessButton("down", true);
-        int x = game.diagnostics().headlessState().x(), y = game.diagnostics().headlessState().y();
+        int x = game.diagnostics().headlessState().x(),
+                y = game.diagnostics().headlessState().y();
         for (int frame = 0; menu.shouldBlockOverworldInput(); frame++) {
             assertTrue(frame < 60, "DX return must finish");
             game.headlessButton("escape", true);
@@ -161,8 +172,10 @@ final class EscapeSaveScreenTest {
 
     private static void finishWakeUp(GameSession game) throws Exception {
         // Replay only the existing opening route's wake-up and bed-exit prefix.
-        for (String command : Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv"))
-            .stream().filter(line -> !line.isBlank() && !line.startsWith("#")).limit(8).toList()) {
+        for (String command : Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()
+                .filter(line -> !line.isBlank() && !line.startsWith("#"))
+                .limit(8)
+                .toList()) {
             String[] fields = command.split("\\s+");
             int held = Integer.parseInt(fields[1]);
             if (held > 0) game.headlessButton(fields[0], true);

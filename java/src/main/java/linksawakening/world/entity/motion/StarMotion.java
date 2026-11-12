@@ -1,11 +1,10 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 StarEntityHandler's random diagonal movement and bounce loop. */
 public final class StarMotion {
@@ -27,9 +26,12 @@ public final class StarMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundInteraction backgroundInteraction,
-                       int ignoreHitsCountdown) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, randomByteSupplier);
@@ -42,8 +44,12 @@ public final class StarMotion {
         if (backgroundInteraction != null) {
             if (x != entity.x()) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, directionForHorizontalSpeed(speedX[slot]), x, entity.y(),
-                    ignoreHitsCountdown, frameCounter);
+                        entity,
+                        directionForHorizontalSpeed(speedX[slot]),
+                        x,
+                        entity.y(),
+                        ignoreHitsCountdown,
+                        frameCounter);
                 if (result.blocked()) {
                     x = entity.x();
                     horizontalCollision = true;
@@ -51,8 +57,7 @@ public final class StarMotion {
             }
             if (y != entity.y()) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, directionForVerticalSpeed(speedY[slot]), x, y,
-                    ignoreHitsCountdown, frameCounter);
+                        entity, directionForVerticalSpeed(speedY[slot]), x, y, ignoreHitsCountdown, frameCounter);
                 if (result.blocked()) {
                     y = entity.y();
                     verticalCollision = true;
@@ -69,9 +74,20 @@ public final class StarMotion {
         }
 
         int variant = (frameCounter >>> 3) & 0x03;
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -99,17 +115,14 @@ public final class StarMotion {
     }
 
     private static int directionForHorizontalSpeed(int speed) {
-        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.LEFT
-            : EntityBackgroundCollisionResult.RIGHT;
+        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
     }
 
     private static int directionForVerticalSpeed(int speed) {
-        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.UP
-            : EntityBackgroundCollisionResult.DOWN;
+        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;

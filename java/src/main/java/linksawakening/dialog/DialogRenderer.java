@@ -17,11 +17,10 @@ public final class DialogRenderer {
     private static final int TEXT_COLOR = 0xF8F8F8;
     private static final DialogFont FONT = DialogFont.loadDefault();
 
-    private DialogRenderer() {
-    }
+    private DialogRenderer() {}
 
     public static void render(byte[] buffer, DialogController dialog) {
-        render(buffer, dialog, new int[] { TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR });
+        render(buffer, dialog, new int[] {TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR});
     }
 
     public static void render(byte[] buffer, DialogController dialog, int[] palette) {
@@ -36,7 +35,13 @@ public final class DialogRenderer {
                 fillRect(buffer, BOX_X, boxY + row * CELL_SIZE, BOX_WIDTH, CELL_SIZE, palette[3]);
             }
         }
-        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET + dialog.textScrollOffset(), palette, dialog);
+        drawText(
+                buffer,
+                dialog.visibleText(),
+                TEXT_X,
+                boxY + TEXT_Y_OFFSET + dialog.textScrollOffset(),
+                palette,
+                dialog);
     }
 
     private static void drawText(byte[] buffer, String text, int x, int y, int[] palette, DialogController dialog) {
@@ -95,33 +100,42 @@ public final class DialogRenderer {
         buffer[offset + 3] = (byte) 0xFF;
     }
     /** Indexed counterpart; dialog_letters.asm $4A84 writes attribute $01 (no priority bit). */
-    public static void submitWindow(linksawakening.render.HardwareFrame frame,
-                                    DialogController dialog, int[] suppliedPalette) {
+    public static void submitWindow(
+            linksawakening.render.HardwareFrame frame, DialogController dialog, int[] suppliedPalette) {
         if (!dialog.isActive()) return;
-        int[] palette = suppliedPalette == null
-            ? new int[] { TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR } : suppliedPalette;
+        int[] palette =
+                suppliedPalette == null ? new int[] {TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR} : suppliedPalette;
         int boxY = dialog.boxY();
         for (int row = 0; row < BOX_HEIGHT / CELL_SIZE; row++) {
             if (!dialog.isBoxRowVisible(row)) continue;
-            for (int y = 0; y < CELL_SIZE; y++) for (int x = 0; x < BOX_WIDTH; x++)
-                frame.backgroundPixel(BOX_X + x, boxY + row * CELL_SIZE + y, 3, palette, -1, 0x01);
+            for (int y = 0; y < CELL_SIZE; y++)
+                for (int x = 0; x < BOX_WIDTH; x++)
+                    frame.backgroundPixel(BOX_X + x, boxY + row * CELL_SIZE + y, 3, palette, -1, 0x01);
         }
         int column = 0, row = 0;
         String text = dialog.visibleText();
         int originY = boxY + TEXT_Y_OFFSET + dialog.textScrollOffset();
         for (int i = 0; i < text.length() && row < VISIBLE_LINES; i++) {
             char codepoint = text.charAt(i);
-            if (codepoint == '\n') { column = 0; row++; continue; }
-            if (column >= LINE_WIDTH) { column = 0; if (++row >= VISIBLE_LINES) break; }
+            if (codepoint == '\n') {
+                column = 0;
+                row++;
+                continue;
+            }
+            if (column >= LINE_WIDTH) {
+                column = 0;
+                if (++row >= VISIBLE_LINES) break;
+            }
             int y = originY + row * LINE_HEIGHT;
             int boxRow = (y - boxY) / CELL_SIZE;
             if (codepoint != ' ' && dialog.isBoxRowVisible(boxRow)) {
                 byte[] tile = FONT.tileFor(codepoint);
-                for (int ty = 0; ty < 8; ty++) for (int tx = 0; tx < 8; tx++) {
-                    int bit = 7 - tx;
-                    int index = ((tile[ty * 2] >> bit) & 1) | (((tile[ty * 2 + 1] >> bit) & 1) << 1);
-                    frame.backgroundPixel(TEXT_X + column * CELL_SIZE + tx, y + ty, index, palette, -1, 0x01);
-                }
+                for (int ty = 0; ty < 8; ty++)
+                    for (int tx = 0; tx < 8; tx++) {
+                        int bit = 7 - tx;
+                        int index = ((tile[ty * 2] >> bit) & 1) | (((tile[ty * 2 + 1] >> bit) & 1) << 1);
+                        frame.backgroundPixel(TEXT_X + column * CELL_SIZE + tx, y + ty, index, palette, -1, 0x01);
+                    }
             }
             column++;
         }

@@ -14,6 +14,5 @@ public interface PcmSoundOutput extends AutoCloseable {
     }
 
     @Override
-    default void close() {
-    }
+    default void close() {}
 }

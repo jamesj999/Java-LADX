@@ -2,22 +2,24 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
 import linksawakening.world.entity.event.ScreenShakeRequest;
 
 /** Bank-$06 ArmosKnightEntityHandler's active state machine. */
 public final class ArmosKnightMotion {
-    public record RubbleRequest(int x, int y) {
-    }
+    public record RubbleRequest(int x, int y) {}
 
-    public record ScreenShakeRequest(int countdown, int phase) {
-    }
+    public record ScreenShakeRequest(int countdown, int phase) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags,
-                  int hitboxFlags, int options1, int jingleId,
-                  boolean linkMotionBlocked, ScreenShakeRequest screenShakeRequest,
-                  RubbleRequest rubbleRequest) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            int physicsFlags,
+            int hitboxFlags,
+            int options1,
+            int jingleId,
+            boolean linkMotionBlocked,
+            ScreenShakeRequest screenShakeRequest,
+            RubbleRequest rubbleRequest) {}
 
     private static final int STATE_WAKE = 0;
     private static final int STATE_CHARGE = 1;
@@ -54,9 +56,16 @@ public final class ArmosKnightMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ,
-                   int transitionCountdown, int physicsFlags, int hitboxFlags,
-                   int options1, int health) {
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ,
+            int transitionCountdown,
+            int physicsFlags,
+            int hitboxFlags,
+            int options1,
+            int health) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -101,8 +110,7 @@ public final class ArmosKnightMotion {
         int jingleId = -1;
         switch (state[slot]) {
             case STATE_WAKE -> {
-                if (withinDistance(x, linkEntityX, 0x20)
-                    && withinDistance(y, linkEntityY, 0x20)) {
+                if (withinDistance(x, linkEntityX, 0x20) && withinDistance(y, linkEntityY, 0x20)) {
                     state[slot] = STATE_CHARGE;
                     transitionCountdown = 0x30;
                 }
@@ -139,8 +147,7 @@ public final class ArmosKnightMotion {
                     if (landed) {
                         speedZ[slot] = 0x0C;
                         int length = health < 0x05 ? 0x0C : 0x08;
-                        Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY,
-                            length);
+                        Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY, length);
                         speedX[slot] = vector.x();
                         speedY[slot] = vector.y();
                         jingleId = 0x20;
@@ -191,11 +198,30 @@ public final class ArmosKnightMotion {
             }
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
-        return new Update(updated, transitionCountdown, physicsFlags, hitboxFlags, options1,
-            jingleId, linkMotionBlocked, screenShakeRequest, rubbleRequest);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
+        return new Update(
+                updated,
+                transitionCountdown,
+                physicsFlags,
+                hitboxFlags,
+                options1,
+                jingleId,
+                linkMotionBlocked,
+                screenShakeRequest,
+                rubbleRequest);
     }
 
     public void clear(int slot) {
@@ -233,8 +259,7 @@ public final class ArmosKnightMotion {
         return absolute < distance;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         int absoluteX = Math.abs(distanceX);
@@ -264,8 +289,7 @@ public final class ArmosKnightMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -286,6 +310,5 @@ public final class ArmosKnightMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

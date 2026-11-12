@@ -1,16 +1,14 @@
 package linksawakening.equipment;
 
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
 
 final class OcarinaTest {
 
@@ -120,9 +118,7 @@ final class OcarinaTest {
             this.sound = switch (selectedSong) {
                 case 1 -> GameplaySoundEvent.OCARINA_MAMBO;
                 case 2 -> GameplaySoundEvent.OCARINA_FROG;
-                default -> songFlags == 0
-                    ? GameplaySoundEvent.OCARINA_NO_SONG
-                    : GameplaySoundEvent.OCARINA_BALLAD;
+                default -> songFlags == 0 ? GameplaySoundEvent.OCARINA_NO_SONG : GameplaySoundEvent.OCARINA_BALLAD;
             };
             return true;
         }

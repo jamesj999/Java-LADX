@@ -1,5 +1,10 @@
 package linksawakening.entity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -10,11 +15,6 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
 @linksawakening.testing.RequiresRom
 final class MarinWakeUpLinkStateTest {
@@ -48,8 +48,14 @@ final class MarinWakeUpLinkStateTest {
 
     @Test
     void leavingBedAppliesMarinsSourceLinkMotion() {
-        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
-            null, null, null, new PlayerState(), new ItemRegistry());
+        Link link = new Link(
+                new InputState(),
+                new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                null,
+                null,
+                null,
+                new PlayerState(),
+                new ItemRegistry());
 
         link.showMarinWakeUpBed(4);
         assertTrue(link.isMarinWakeUpBedVisible());
@@ -78,8 +84,7 @@ final class MarinWakeUpLinkStateTest {
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState input = new InputState();
         input.onKeyEvent(config.leftKey(), GLFW_PRESS);
-        Link link = new Link(input, config, tables, collision, null,
-            new PlayerState(), new ItemRegistry());
+        Link link = new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
         link.setPixelPosition(0x40, 0x40);
         link.leaveMarinWakeUpBed();
 

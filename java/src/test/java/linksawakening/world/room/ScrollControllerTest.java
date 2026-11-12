@@ -1,23 +1,18 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.RoomRenderSnapshot;
-
-import linksawakening.world.transition.ScrollController;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.world.transition.ScrollController;
+import org.junit.jupiter.api.Test;
+
 final class ScrollControllerTest {
 
     @Test
     void tracksActiveScrollAndClearsPreviousRoomWhenFinished() {
-        RoomRenderSnapshot previous = new RoomRenderSnapshot(new int[] { 1 }, new int[] { 2 }, new int[][] {{ 3 }});
+        RoomRenderSnapshot previous = new RoomRenderSnapshot(new int[] {1}, new int[] {2}, new int[][] {{3}});
         ScrollController scroll = new ScrollController();
 
         scroll.start(ScrollController.RIGHT, 10, 20, previous, 8);

@@ -1,5 +1,8 @@
 package linksawakening.app;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.nio.file.Path;
 import linksawakening.app.screen.Screen;
 import linksawakening.render.RenderScreen;
 import linksawakening.save.SaveRamStore;
@@ -9,10 +12,6 @@ import linksawakening.testing.RequiresRom;
 import linksawakening.world.room.RoomSession;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import java.nio.file.Path;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /** Real session gather/restore with a fresh host store and session on reload. */
 @RequiresRom
@@ -77,13 +76,16 @@ final class SaveRoundTripTest {
             call(game, "router", ScreenRouter.class).startFileSelection();
             press(game, "a");
             press(game, "start");
-            assertEquals(RenderScreen.FILE_MENU, get(game, "currentScreen", Screen.class).renderScreen());
+            assertEquals(
+                    RenderScreen.FILE_MENU,
+                    get(game, "currentScreen", Screen.class).renderScreen());
             SaveRamStore reopened = SaveRamStore.open(path);
             assertEquals(0, reopened.saveFilesMask());
             assertArrayEquals(new int[5], reopened.savedNames()[0]);
             press(game, "a");
             assertTrue(get(game, "fileMenuController", linksawakening.ui.FileMenuController.class)
-                .snapshot().creation());
+                    .snapshot()
+                    .creation());
         } finally {
             call(game, "cleanup", Void.class);
         }
@@ -99,9 +101,13 @@ final class SaveRoundTripTest {
             press(game, "a"); // empty file -> name entry
             press(game, "a"); // enter first ROM character
             press(game, "start");
-            assertEquals(RenderScreen.FILE_MENU, get(game, "currentScreen", Screen.class).renderScreen());
+            assertEquals(
+                    RenderScreen.FILE_MENU,
+                    get(game, "currentScreen", Screen.class).renderScreen());
             press(game, "a");
-            assertEquals(RenderScreen.OVERWORLD, get(game, "currentScreen", Screen.class).renderScreen());
+            assertEquals(
+                    RenderScreen.OVERWORLD,
+                    get(game, "currentScreen", Screen.class).renderScreen());
             PlayerState player = get(game, "playerState", PlayerState.class);
             RoomSession room = get(game, "roomSession", RoomSession.class);
             // Represent progress made during play; exercise the session snapshot, not just the codec.
@@ -118,7 +124,9 @@ final class SaveRoundTripTest {
                 game.headlessFrame();
                 game.headlessButton(chord, false);
                 game.headlessFrame();
-                assertEquals(RenderScreen.FILE_SAVE, get(game, "currentScreen", Screen.class).renderScreen());
+                assertEquals(
+                        RenderScreen.FILE_SAVE,
+                        get(game, "currentScreen", Screen.class).renderScreen());
                 press(game, "down");
                 press(game, "a");
             } else {
@@ -138,14 +146,17 @@ final class SaveRoundTripTest {
                 set(relaunched, "saveRamStore", reopened);
                 call(relaunched, "router", ScreenRouter.class).startFileSelection();
                 press(relaunched, "a");
-                assertEquals(RenderScreen.OVERWORLD,
-                    get(relaunched, "currentScreen", Screen.class).renderScreen());
+                assertEquals(
+                        RenderScreen.OVERWORLD,
+                        get(relaunched, "currentScreen", Screen.class).renderScreen());
                 PlayerState restored = get(relaunched, "playerState", PlayerState.class);
                 assertEquals(expected.rupees(), restored.rupees());
                 assertEquals(expected.health(), restored.health());
                 assertEquals(expected.itemB(), restored.itemB());
                 assertEquals(expected.shieldLevel(), restored.shieldLevel());
-                assertEquals(expected.tarinFlag(), get(relaunched, "roomSession", RoomSession.class).tarinFlag());
+                assertEquals(
+                        expected.tarinFlag(),
+                        get(relaunched, "roomSession", RoomSession.class).tarinFlag());
                 RoomSession restoredRoom = get(relaunched, "roomSession", RoomSession.class);
                 assertArrayEquals(expected.overworldRoomStatus(), restoredRoom.overworldRoomStatusSnapshot());
                 assertArrayEquals(expected.indoorARoomStatus(), restoredRoom.indoorARoomStatusSnapshot());
@@ -168,8 +179,10 @@ final class SaveRoundTripTest {
 
     private static void playWakeUpPrefix(GameSession game) throws Exception {
         // Existing opening replay through the bed exit (first eight commands).
-        var commands = java.nio.file.Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv"))
-            .stream().filter(line -> !line.isBlank() && !line.startsWith("#")).limit(8).toList();
+        var commands = java.nio.file.Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()
+                .filter(line -> !line.isBlank() && !line.startsWith("#"))
+                .limit(8)
+                .toList();
         for (String command : commands) {
             String[] fields = command.split("\\s+");
             int held = Integer.parseInt(fields[1]);
@@ -179,7 +192,8 @@ final class SaveRoundTripTest {
             if (held > 0) game.headlessButton(fields[0], false);
             for (int frame = 0; frame < idle; frame++) game.headlessFrame();
         }
-        assertFalse(get(game, "dialogController", linksawakening.dialog.DialogController.class).isActive());
+        assertFalse(get(game, "dialogController", linksawakening.dialog.DialogController.class)
+                .isActive());
     }
 
     private static void press(GameSession game, String button) {

@@ -23,9 +23,10 @@ final class GameOverPresentation {
         background = room.palettes();
         objects = room.entities().spriteSelection().objectPalettes();
         // LoadTileset0F ($01:6CE3): only the 20 visible columns are written.
-        for (int y = 0; y < 32; y++) for (int x = 0; x < 20; x++) {
-            tiles[y * 32 + x] = 0xAE + ((x ^ y) & 1);
-        }
+        for (int y = 0; y < 32; y++)
+            for (int x = 0; x < 20; x++) {
+                tiles[y * 32 + x] = 0xAE + ((x ^ y) & 1);
+            }
         Arrays.fill(attributes, 5); // GAMEPLAY_WORLD path, $01:6D11.
         context.playerState().incrementDeathCount();
         context.roomSession().clearGameOverPowerCounter();
@@ -61,14 +62,16 @@ final class GameOverPresentation {
                     return;
                 }
             }
-            default -> { }
+            default -> {}
         }
         context.link().presentGameOverStage(stage, countdown);
         // Stage 2 restores original palettes via LoadFileMenuBG ($20:6C00).
         refresh(stage < 3);
     }
 
-    FileMenuFrameSnapshot snapshot() { return snapshot; }
+    FileMenuFrameSnapshot snapshot() {
+        return snapshot;
+    }
 
     private void refresh(boolean white) {
         int[][] palettes = background;
@@ -76,7 +79,18 @@ final class GameOverPresentation {
             palettes = new int[8][4];
             for (int[] palette : palettes) Arrays.fill(palette, 0xF8F8F8);
         }
-        snapshot = new FileMenuFrameSnapshot("game_over", menu.selected(), false, false, 0, 0,
-            new int[5], tiles, attributes, palettes, objects, cursorVisible ? List.of(menu.cursor()) : List.of());
+        snapshot = new FileMenuFrameSnapshot(
+                "game_over",
+                menu.selected(),
+                false,
+                false,
+                0,
+                0,
+                new int[5],
+                tiles,
+                attributes,
+                palettes,
+                objects,
+                cursorVisible ? List.of(menu.cursor()) : List.of());
     }
 }

@@ -9,13 +9,14 @@ public final class RollingBonesMotion {
     static final int ENTITY_BOSS = 0x81;
     static final int ENTITY_BAR = 0x82;
 
-    public record BossUpdate(RoomEntity entity, int transitionCountdown, int jingleId) {
-    }
+    public record BossUpdate(RoomEntity entity, int transitionCountdown, int jingleId) {}
 
-    public record BarUpdate(RoomEntity entity, int animationVariant,
-                     boolean rollingSound, boolean strongBump,
-                     int screenShakeCountdown) {
-    }
+    public record BarUpdate(
+            RoomEntity entity,
+            int animationVariant,
+            boolean rollingSound,
+            boolean strongBump,
+            int screenShakeCountdown) {}
 
     private static final int STATE_APPROACH_BAR = 0;
     private static final int STATE_PREPARE_ROLL = 1;
@@ -62,8 +63,12 @@ public final class RollingBonesMotion {
         barTransitionCountdown[slot] = 0;
     }
 
-    public BossUpdate advanceBoss(RoomEntity entity, RoomEntity bar, int transitionCountdown,
-                           int health, RoomEntityBackgroundCollision backgroundCollision) {
+    public BossUpdate advanceBoss(
+            RoomEntity entity,
+            RoomEntity bar,
+            int transitionCountdown,
+            int health,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int x = entity.x();
         int y = entity.y();
@@ -97,8 +102,8 @@ public final class RollingBonesMotion {
                         transitionCountdown = 0x18;
                         bossState[slot] = STATE_PREPARE_ROLL;
                     } else {
-                        x = moveX(entity, x, y, bossSpeedX[slot],
-                            bossXAccumulator, slot, backgroundCollision).position();
+                        x = moveX(entity, x, y, bossSpeedX[slot], bossXAccumulator, slot, backgroundCollision)
+                                .position();
                         if (landed) {
                             bossSpeedZ[slot] = 0x0C;
                         }
@@ -126,18 +131,17 @@ public final class RollingBonesMotion {
                     int length = health < 5 ? 0x14 : 0x10;
                     bossSpeedZ[slot] = health < 5 ? 0x16 : 0x19;
                     bossSpeedX[slot] = bossDirection[slot] == 0 ? -length : length;
-                    bossSpeedY[slot] = ((entity.y() - entity.z()) & 0xFF) < 0x50
-                        ? length : -length;
+                    bossSpeedY[slot] = ((entity.y() - entity.z()) & 0xFF) < 0x50 ? length : -length;
                 } else if (transitionCountdown == 0 && landed) {
                     transitionCountdown = 0x10;
                 }
                 // $06:6DD4 falls through to $6E04 on the launch frame.
                 if (transitionCountdown == 1 || (transitionCountdown == 0 && !landed)) {
-                    MoveResult xMove = moveX(entity, x, y, bossSpeedX[slot],
-                        bossXAccumulator, slot, backgroundCollision);
+                    MoveResult xMove =
+                            moveX(entity, x, y, bossSpeedX[slot], bossXAccumulator, slot, backgroundCollision);
                     x = xMove.position();
-                    MoveResult yMove = moveY(entity, x, y, bossSpeedY[slot],
-                        bossYAccumulator, slot, backgroundCollision);
+                    MoveResult yMove =
+                            moveY(entity, x, y, bossSpeedY[slot], bossYAccumulator, slot, backgroundCollision);
                     y = yMove.position();
                     if (xMove.blocked()) {
                         bossState[slot] = STATE_APPROACH_BAR;
@@ -154,12 +158,11 @@ public final class RollingBonesMotion {
         // direction-table value (0 or 3) to the handler's animation variant.
         bossSpriteVariant[slot] = variant;
         int displayVariant = variant + bossDirection[slot];
-        return new BossUpdate(withPositionAndVariant(entity, x, y, z, displayVariant),
-            transitionCountdown, jingleId);
+        return new BossUpdate(withPositionAndVariant(entity, x, y, z, displayVariant), transitionCountdown, jingleId);
     }
 
-    public BarUpdate advanceBar(RoomEntity entity, int frameCounter,
-                         RoomEntityBackgroundCollision backgroundCollision) {
+    public BarUpdate advanceBar(
+            RoomEntity entity, int frameCounter, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (barTransitionCountdown[slot] > 0) {
             barTransitionCountdown[slot]--;
@@ -172,11 +175,10 @@ public final class RollingBonesMotion {
         boolean blockedWhileRolling = false;
 
         if (barState[slot] != BAR_STATE_RESTING) {
-            MoveResult movement = moveX(entity, x, entity.y(), barSpeedX[slot],
-                barXAccumulator, slot, backgroundCollision);
+            MoveResult movement =
+                    moveX(entity, x, entity.y(), barSpeedX[slot], barXAccumulator, slot, backgroundCollision);
             x = movement.position();
-            blockedWhileRolling = barState[slot] == BAR_STATE_ROLLING
-                && movement.blocked();
+            blockedWhileRolling = barState[slot] == BAR_STATE_ROLLING && movement.blocked();
         }
 
         // The source updates wEntitiesSpriteVariant after movement/background
@@ -185,8 +187,7 @@ public final class RollingBonesMotion {
         // SetEntitySpriteVariant and therefore retains its last animation bit.
         if (barSpeedX[slot] != 0) {
             int absoluteSpeed = Math.abs(barSpeedX[slot]);
-            int cadenceMask = absoluteSpeed >= 8 ? 4 : absoluteSpeed >= 4 ? 8
-                : absoluteSpeed >= 2 ? 0x10 : 0x20;
+            int cadenceMask = absoluteSpeed >= 8 ? 4 : absoluteSpeed >= 4 ? 8 : absoluteSpeed >= 2 ? 0x10 : 0x20;
             barAnimationVariant[slot] = (frameCounter & cadenceMask) == 0 ? 0 : 1;
         }
 
@@ -203,8 +204,7 @@ public final class RollingBonesMotion {
                 rollingSoundCounter = 0;
                 rollingSound = true;
             }
-        } else if (barState[slot] == BAR_STATE_DECELERATING
-            && (frameCounter & 0x07) == 0) {
+        } else if (barState[slot] == BAR_STATE_DECELERATING && (frameCounter & 0x07) == 0) {
             if (barSpeedX[slot] == 0) {
                 barState[slot] = BAR_STATE_RESTING;
                 barTransitionCountdown[slot] = 0x50;
@@ -217,8 +217,12 @@ public final class RollingBonesMotion {
         // dynamic definition. Keep the RoomEntity's definition index at zero
         // and carry the source animation bit separately until that definition
         // is rebuilt by RoomEntityRuntime.
-        return new BarUpdate(withPositionAndVariant(entity, x, entity.y(), entity.z(), 0),
-            barAnimationVariant[slot], rollingSound, strongBump, screenShake);
+        return new BarUpdate(
+                withPositionAndVariant(entity, x, entity.y(), entity.z(), 0),
+                barAnimationVariant[slot],
+                rollingSound,
+                strongBump,
+                screenShake);
     }
 
     void launchBar(int slot, int speedX) {
@@ -246,22 +250,34 @@ public final class RollingBonesMotion {
         return barTransitionCountdown[slot];
     }
 
-    private static MoveResult moveX(RoomEntity entity, int x, int y, int speed,
-                                    int[] accumulators, int slot,
-                                    RoomEntityBackgroundCollision collision) {
+    private static MoveResult moveX(
+            RoomEntity entity,
+            int x,
+            int y,
+            int speed,
+            int[] accumulators,
+            int slot,
+            RoomEntityBackgroundCollision collision) {
         int next = addSpeed(x, speed, accumulators, slot);
         int direction = speed < 0 ? 1 : 0;
         return collision != null && collision.blocks(entity, direction, next, y)
-            ? new MoveResult(x, true) : new MoveResult(next, false);
+                ? new MoveResult(x, true)
+                : new MoveResult(next, false);
     }
 
-    private static MoveResult moveY(RoomEntity entity, int x, int y, int speed,
-                                    int[] accumulators, int slot,
-                                    RoomEntityBackgroundCollision collision) {
+    private static MoveResult moveY(
+            RoomEntity entity,
+            int x,
+            int y,
+            int speed,
+            int[] accumulators,
+            int slot,
+            RoomEntityBackgroundCollision collision) {
         int next = addSpeed(y, speed, accumulators, slot);
         int direction = speed < 0 ? 2 : 3;
         return collision != null && collision.blocks(entity, direction, x, next)
-            ? new MoveResult(y, true) : new MoveResult(next, false);
+                ? new MoveResult(y, true)
+                : new MoveResult(next, false);
     }
 
     private static int addSpeed(int position, int speed, int[] accumulators, int slot) {
@@ -270,11 +286,21 @@ public final class RollingBonesMotion {
         return (fixed >> 4) & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                      int z, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {
@@ -282,6 +308,5 @@ public final class RollingBonesMotion {
         return unsigned >= 0x80 ? unsigned - 0x100 : unsigned;
     }
 
-    private record MoveResult(int position, boolean blocked) {
-    }
+    private record MoveResult(int position, boolean blocked) {}
 }

@@ -1,15 +1,13 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class BoomerangMotionTest {
 
@@ -62,9 +60,20 @@ final class BoomerangMotionTest {
     @Test
     void returningVectorUsesTheBoomerangHeight() {
         BoomerangMotion motion = new BoomerangMotion();
-        RoomEntity airborne = new RoomEntity(0, -1, BoomerangMotion.ENTITY_TYPE,
-            0x40, 0x40, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE), 0, 0, 0, 8, -1, false);
+        RoomEntity airborne = new RoomEntity(
+                0,
+                -1,
+                BoomerangMotion.ENTITY_TYPE,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                8,
+                -1,
+                false);
 
         motion.setVectorTowardsLink(0, airborne, 0x50, 0x40, 8);
 
@@ -87,13 +96,12 @@ final class BoomerangMotionTest {
     @ParameterizedTest
     @CsvSource({"5, 16, -16, 1, 0", "10, -16, 16, 0, 1"})
     void steeringPreservesFractionalMovementOnBothAxes(
-        int buttons, int targetDeltaX, int targetDeltaY, int stepX, int stepY) {
+            int buttons, int targetDeltaX, int targetDeltaY, int stepX, int stepY) {
         BoomerangMotion motion = new BoomerangMotion();
         motion.initializeSpawn(0, 0, buttons);
         // A diagonal $18/$E8 step leaves $80 in both position accumulators.
         RoomEntity first = motion.advancePosition(entity(0x40, 0x40));
-        motion.setVectorTowardsLink(0, first, first.x() + targetDeltaX,
-            first.y() + targetDeltaY, 8);
+        motion.setVectorTowardsLink(0, first, first.x() + targetDeltaX, first.y() + targetDeltaY, 8);
         RoomEntity steered = motion.advancePosition(first);
         assertEquals(first.x() + stepX, steered.x());
         assertEquals(first.y() + stepY, steered.y());
@@ -123,8 +131,19 @@ final class BoomerangMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, -1, BoomerangMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE),
-            0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0,
+                -1,
+                BoomerangMotion.ENTITY_TYPE,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

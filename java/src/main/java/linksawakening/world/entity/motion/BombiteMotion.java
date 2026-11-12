@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$04 motion and state machines shared by the two Bombite handlers. */
 public final class BombiteMotion {
@@ -24,10 +23,14 @@ public final class BombiteMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int transitionCountdown,
-                  int slowTransitionCountdown, int privateCountdown1,
-                  int spriteVariant, boolean explode, boolean bumpJingle) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            int slowTransitionCountdown,
+            int privateCountdown1,
+            int spriteVariant,
+            boolean explode,
+            boolean bumpJingle) {}
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -38,12 +41,18 @@ public final class BombiteMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   int transitionCountdown, int slowTransitionCountdown,
-                   int privateCountdown1, int enemyIgnoreHitsCountdown,
-                   boolean runningWithPegasusBoots,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int transitionCountdown,
+            int slowTransitionCountdown,
+            int privateCountdown1,
+            int enemyIgnoreHitsCountdown,
+            boolean runningWithPegasusBoots,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -56,8 +65,7 @@ public final class BombiteMotion {
         boolean explode = false;
         boolean bumpJingle = false;
 
-        if (entity.type() == ENTITY_TIMER_BOMBITE
-            && enemyIgnoreHitsCountdown == 0x08 && state[slot] == 0) {
+        if (entity.type() == ENTITY_TIMER_BOMBITE && enemyIgnoreHitsCountdown == 0x08 && state[slot] == 0) {
             // TimerBombiteEntityHandler's pre-movement hit-countdown trigger.
             state[slot] = 1;
             nextSlowTransition = 0x6F;
@@ -68,13 +76,12 @@ public final class BombiteMotion {
         boolean blockedX = false;
         boolean blockedY = false;
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
-                horizontalDirection(speedX[slot]), x, entity.y())) {
+            if (x != entity.x()
+                    && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
                 x = entity.x();
                 blockedX = true;
             }
-            if (y != entity.y() && backgroundCollision.blocks(entity,
-                verticalDirection(speedY[slot]), x, y)) {
+            if (y != entity.y() && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
                 y = entity.y();
                 blockedY = true;
             }
@@ -99,9 +106,8 @@ public final class BombiteMotion {
                     int yDistance = unsignedByteAbs(linkEntityY - moved.y());
                     if (xDistance >= 0x12 || yDistance >= 0x12) {
                         if (((frameCounter ^ slot) & 0x03) == 0) {
-                            Vector vector = vectorTowardsLink(
-                                moved.x(), moved.y(), moved.z(),
-                                linkEntityX, linkEntityY, 0x0E);
+                            Vector vector =
+                                    vectorTowardsLink(moved.x(), moved.y(), moved.z(), linkEntityX, linkEntityY, 0x0E);
                             speedX[slot] = vector.x();
                             speedY[slot] = vector.y();
                         }
@@ -119,8 +125,7 @@ public final class BombiteMotion {
                             nextPrivateCountdown1 = 0x30;
                         }
                         spriteVariant = TIMER_COUNTDOWN_VARIANTS[
-                            Math.min(originalSlowTransition >>> 4,
-                                TIMER_COUNTDOWN_VARIANTS.length - 1)];
+                                Math.min(originalSlowTransition >>> 4, TIMER_COUNTDOWN_VARIANTS.length - 1)];
                     }
                 }
             }
@@ -135,8 +140,8 @@ public final class BombiteMotion {
                 case 1 -> {
                     int directionChoice = randomByteSupplier.getAsInt() & 0x03;
                     int direction = directionChoice == 0
-                        ? directionToLink(moved.x(), moved.y(), linkEntityX, linkEntityY)
-                        : randomByteSupplier.getAsInt() & 0x03;
+                            ? directionToLink(moved.x(), moved.y(), linkEntityX, linkEntityY)
+                            : randomByteSupplier.getAsInt() & 0x03;
                     speedX[slot] = BOUNCING_SPEED_X[direction];
                     speedY[slot] = BOUNCING_SPEED_Y[direction];
                     nextTransition = 0x20 + (randomByteSupplier.getAsInt() & 0x0F);
@@ -156,23 +161,20 @@ public final class BombiteMotion {
                         spriteVariant = (frameCounter >>> 1) & 0x01;
                     }
                 }
-                default -> throw new IllegalStateException(
-                    "Invalid Bombite state: " + state[slot]);
+                default -> throw new IllegalStateException("Invalid Bombite state: " + state[slot]);
             }
         }
 
-        return new Update(moved, nextTransition, nextSlowTransition,
-            nextPrivateCountdown1, spriteVariant, explode, bumpJingle);
+        return new Update(
+                moved, nextTransition, nextSlowTransition, nextPrivateCountdown1, spriteVariant, explode, bumpJingle);
     }
 
     /** Starts the BouncingBombite state-$02 sword-recoil path. */
-    public void enterBouncingLitFromSword(int slot, RoomEntity entity,
-                                   int linkEntityX, int linkEntityY) {
+    public void enterBouncingLitFromSword(int slot, RoomEntity entity, int linkEntityX, int linkEntityY) {
         if (!initialized[slot]) {
             initialize(slot);
         }
-        Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(),
-            linkEntityX, linkEntityY, 0x30);
+        Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x30);
         speedX[slot] = negate(vector.x());
         speedY[slot] = negate(vector.y());
         state[slot] = 2;
@@ -183,8 +185,7 @@ public final class BombiteMotion {
      * active Bombite's current speed bytes directly; it does not recalculate
      * the vector or reset the fixed-point movement accumulators.
      */
-    public void enterBouncingLitFromEntityCollision(int slot, int sourceSpeedX,
-                                              int sourceSpeedY) {
+    public void enterBouncingLitFromEntityCollision(int slot, int sourceSpeedX, int sourceSpeedY) {
         if (!initialized[slot]) {
             initialize(slot);
         }
@@ -219,8 +220,7 @@ public final class BombiteMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                             int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
@@ -256,8 +256,7 @@ public final class BombiteMotion {
         return result;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -294,11 +293,21 @@ public final class BombiteMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

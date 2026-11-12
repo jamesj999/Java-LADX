@@ -8,46 +8,45 @@ import java.util.Objects;
  * Counts and capacities are decimal integers; rawSlot retains their packed BCD bytes.
  */
 public record SaveSlotState(
-    int slot,
-    int[] nameBytes,
-    int health,
-    int maxHearts,
-    int heartPieces,
-    int rupees,
-    int itemA,
-    int itemB,
-    int[] subscreen,
-    int seashells,
-    int hasFlippers,
-    int hasMedicine,
-    int tradeSequenceItem,
-    int medicineCount,
-    int tailKeyCount,
-    int anglerKeyCount,
-    int faceKeyCount,
-    int birdKeyCount,
-    int goldenLeavesCount,
-    int powerBraceletLevel,
-    int shieldLevel,
-    int swordLevel,
-    int arrowCount,
-    int maxArrows,
-    int bombCount,
-    int maxBombs,
-    int magicPowderCount,
-    int maxMagicPowder,
-    int ocarinaSongFlags,
-    int selectedSongIndex,
-    int hasToadstool,
-    int tunicType,
-    int spawnIsIndoor,
-    int spawnMapId,
-    int spawnMapRoom,
-    int spawnPositionX,
-    int spawnPositionY,
-    int spawnIndoorRoom,
-    byte[] rawSlot
-) {
+        int slot,
+        int[] nameBytes,
+        int health,
+        int maxHearts,
+        int heartPieces,
+        int rupees,
+        int itemA,
+        int itemB,
+        int[] subscreen,
+        int seashells,
+        int hasFlippers,
+        int hasMedicine,
+        int tradeSequenceItem,
+        int medicineCount,
+        int tailKeyCount,
+        int anglerKeyCount,
+        int faceKeyCount,
+        int birdKeyCount,
+        int goldenLeavesCount,
+        int powerBraceletLevel,
+        int shieldLevel,
+        int swordLevel,
+        int arrowCount,
+        int maxArrows,
+        int bombCount,
+        int maxBombs,
+        int magicPowderCount,
+        int maxMagicPowder,
+        int ocarinaSongFlags,
+        int selectedSongIndex,
+        int hasToadstool,
+        int tunicType,
+        int spawnIsIndoor,
+        int spawnMapId,
+        int spawnMapRoom,
+        int spawnPositionX,
+        int spawnPositionY,
+        int spawnIndoorRoom,
+        byte[] rawSlot) {
 
     public SaveSlotState {
         SaveRamLayout.checkSlot(slot);
@@ -78,58 +77,53 @@ public record SaveSlotState(
     }
 
     public byte[] overworldRoomStatus() {
-        return roomStatus(SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET,
-            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        return roomStatus(
+                SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET,
+                SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
     }
 
     public byte[] indoorARoomStatus() {
-        return roomStatus(SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_INDOOR_A_ROOM_STATUS_OFFSET,
-            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        return roomStatus(
+                SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_INDOOR_A_ROOM_STATUS_OFFSET,
+                SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
     }
 
     public byte[] indoorBRoomStatus() {
-        return roomStatus(SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_INDOOR_B_ROOM_STATUS_OFFSET,
-            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        return roomStatus(
+                SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_INDOOR_B_ROOM_STATUS_OFFSET,
+                SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
     }
 
     public byte[] colorDungeonRoomStatus() {
-        return roomStatus(SaveRamLayout.dx2Offset(),
-            SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
+        return roomStatus(SaveRamLayout.dx2Offset(), SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
     }
 
     public int richardSpokenFlag() {
-        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_RICHARD_SPOKEN_FLAG_OFFSET]);
+        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_RICHARD_SPOKEN_FLAG_OFFSET]);
     }
 
     public byte[] dungeonItemFlags() {
-        return roomStatus(SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET,
-            SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE);
+        return roomStatus(
+                SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET,
+                SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE);
     }
 
     public byte[] colorDungeonItemFlags() {
-        return roomStatus(SaveRamLayout.dx1Offset(),
-            SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
+        return roomStatus(SaveRamLayout.dx1Offset(), SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
     }
 
     public byte[] dungeonProgressFlags() {
-        return roomStatus(SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
-            SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
+        return roomStatus(
+                SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
+                SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
     }
 
     public int bowWowState() {
-        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_BOW_WOW_STATE_OFFSET]);
+        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_BOW_WOW_STATE_OFFSET]);
     }
 
     public int tarinFlag() {
-        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset()
-            + SaveRamLayout.MAIN_TARIN_FLAG_OFFSET]);
+        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_TARIN_FLAG_OFFSET]);
     }
 
     private byte[] roomStatus(int offset, int length) {
@@ -139,8 +133,8 @@ public record SaveSlotState(
     private static int[] copyExact(int[] values, int expectedLength, String label) {
         Objects.requireNonNull(values, label);
         if (values.length != expectedLength) {
-            throw new IllegalArgumentException(label + " must contain " + expectedLength
-                + " bytes, got " + values.length);
+            throw new IllegalArgumentException(
+                    label + " must contain " + expectedLength + " bytes, got " + values.length);
         }
         return values.clone();
     }
@@ -148,8 +142,8 @@ public record SaveSlotState(
     private static byte[] copyExact(byte[] values, int expectedLength, String label) {
         Objects.requireNonNull(values, label);
         if (values.length != expectedLength) {
-            throw new IllegalArgumentException(label + " must contain " + expectedLength
-                + " bytes, got " + values.length);
+            throw new IllegalArgumentException(
+                    label + " must contain " + expectedLength + " bytes, got " + values.length);
         }
         return values.clone();
     }

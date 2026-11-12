@@ -1,11 +1,10 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.event.EntityCombatEvent;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 /** Bank-$06 SpikeTrapEntityHandler's launch, travel, and return loop. */
 public final class SpikeTrapMotion {
@@ -14,9 +13,7 @@ public final class SpikeTrapMotion {
     private static final int[] SPEED_X_BY_DIRECTION = {0x20, 0xE0, 0x00, 0x00};
     private static final int[] RETURN_SPEED_X_BY_DIRECTION = {0xF8, 0x08, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xE0, 0x20};
-    private static final int[] RETURN_SPEED_Y_BY_DIRECTION = {
-        0x00, 0x00, 0x08, 0xF8, 0x30, 0x20
-    };
+    private static final int[] RETURN_SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0x08, 0xF8, 0x30, 0x20};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -36,8 +33,8 @@ public final class SpikeTrapMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(
+            RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             // A directly-created ACTIVE snapshot has no EntityInitHandler pass.
@@ -55,8 +52,7 @@ public final class SpikeTrapMotion {
             case 1 -> launch(entity, slot, linkEntityX, linkEntityY, backgroundCollision);
             case 2 -> advanceForward(entity, slot, backgroundCollision);
             case 3 -> advanceReturn(entity, slot);
-            default -> throw new IllegalStateException("Invalid Spike Trap state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Spike Trap state: " + state[slot]);
         };
     }
 
@@ -100,8 +96,12 @@ public final class SpikeTrapMotion {
         return Update.silent(entity);
     }
 
-    private Update launch(RoomEntity entity, int slot, int linkEntityX, int linkEntityY,
-                          RoomEntityBackgroundCollision backgroundCollision) {
+    private Update launch(
+            RoomEntity entity,
+            int slot,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityBackgroundCollision backgroundCollision) {
         if (transitionCountdown[slot] != 0) {
             return Update.silent(entity);
         }
@@ -139,8 +139,7 @@ public final class SpikeTrapMotion {
         return Update.sound(entity, EntityCombatEvent.SoundChannel.NOISE, 0x0A);
     }
 
-    private Update advanceForward(RoomEntity entity, int slot,
-                                  RoomEntityBackgroundCollision backgroundCollision) {
+    private Update advanceForward(RoomEntity entity, int slot, RoomEntityBackgroundCollision backgroundCollision) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         RoomEntity moved = withPosition(entity, x, y);
@@ -175,8 +174,8 @@ public final class SpikeTrapMotion {
         return Update.silent(moved);
     }
 
-    private static boolean hasBackgroundCollision(RoomEntity entity, int direction,
-                                                   RoomEntityBackgroundCollision backgroundCollision) {
+    private static boolean hasBackgroundCollision(
+            RoomEntity entity, int direction, RoomEntityBackgroundCollision backgroundCollision) {
         if (backgroundCollision == null) {
             return false;
         }
@@ -190,8 +189,7 @@ public final class SpikeTrapMotion {
         return (((distance & 0xFF) + 0x12) & 0xFF) < 0x24;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -220,10 +218,20 @@ public final class SpikeTrapMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {
@@ -236,8 +244,7 @@ public final class SpikeTrapMotion {
             return new Update(entity, EntityCombatEvent.SoundChannel.NONE, NO_SOUND);
         }
 
-        private static Update sound(RoomEntity entity, EntityCombatEvent.SoundChannel channel,
-                                    int id) {
+        private static Update sound(RoomEntity entity, EntityCombatEvent.SoundChannel channel, int id) {
             return new Update(entity, channel, id);
         }
     }

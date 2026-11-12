@@ -31,50 +31,54 @@ public final class CutLeavesEffectRenderer {
     // source X offset, tile, attributes; the four variants are eight bytes
     // each and the second table is the flashing palette variant.
     private static final int[][] SWORD_BEAM_SPRITE_RECT = {
-        {0, 0, 0x08, 0x20, 0, 8, 0x06, 0x20,
-         0, 0, 0x06, 0x00, 0, 8, 0x08, 0x00,
-         0, 4, 0x04, 0x40, 0, 4, 0x04, 0x40,
-         0, 4, 0x04, 0x00, 0, 4, 0x04, 0x00},
-        {0, 0, 0x08, 0x30, 0, 8, 0x06, 0x30,
-         0, 0, 0x06, 0x10, 0, 8, 0x08, 0x10,
-         0, 4, 0x04, 0x50, 0, 4, 0x04, 0x50,
-         0, 4, 0x04, 0x10, 0, 4, 0x04, 0x10}
+        {
+            0, 0, 0x08, 0x20, 0, 8, 0x06, 0x20,
+            0, 0, 0x06, 0x00, 0, 8, 0x08, 0x00,
+            0, 4, 0x04, 0x40, 0, 4, 0x04, 0x40,
+            0, 4, 0x04, 0x00, 0, 4, 0x04, 0x00
+        },
+        {
+            0, 0, 0x08, 0x30, 0, 8, 0x06, 0x30,
+            0, 0, 0x06, 0x10, 0, 8, 0x08, 0x10,
+            0, 4, 0x04, 0x50, 0, 4, 0x04, 0x50,
+            0, 4, 0x04, 0x10, 0, 4, 0x04, 0x10
+        }
     };
     // bank-$02 Data_002_57DD: two four-byte OAM entries per phase. The
     // phase is selected from the transient countdown's bit $08.
     private static final int[][] SWORD_POKE_SPRITE_RECT = {
         // Stored as source Y offset, source X offset, tile, attributes.
-        { 0, -1, 0x3C, 0x00, 0, 7, 0x3C, 0x20 },
-        { 0, -1, 0x3A, 0x00, 0, 7, 0x3A, 0x20 }
+        {0, -1, 0x3C, 0x00, 0, 7, 0x3C, 0x20},
+        {0, -1, 0x3A, 0x00, 0, 7, 0x3A, 0x20}
     };
     // bank-$02 Data_002_57FD, two OAM entries per countdown phase. Stored as
     // source Y offset, source X offset, tile, attributes.
     private static final int[][] WATER_SPLASH_SPRITE_RECT = {
         {-10, -2, 0x18, 0x00, -8, 10, 0x18, 0x20},
-        {-4,   0, 0x18, 0x00, -2,  8, 0x18, 0x20}
+        {-4, 0, 0x18, 0x00, -2, 8, 0x18, 0x20}
     };
     private static final int[][] POOF_SPRITE_RECT = {
-        { 0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21 },
-        { 0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21 },
-        { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21 },
-        { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21 }
+        {0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21},
+        {0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21},
+        {0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21},
+        {0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21}
     };
     // bank-$02 Data_002_5736, used by RenderTranscientSmoke. Stored as
     // source Y offset, source X offset, tile, attributes.
     private static final int[][] SMOKE_SPRITE_RECT = {
-        { 0, 0, 0x1E, 0x01, 0, 8, 0x1E, 0x61 },
-        { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x61 }
+        {0, 0, 0x1E, 0x01, 0, 8, 0x1E, 0x61},
+        {0, 0, 0x30, 0x01, 0, 8, 0x30, 0x61}
     };
 
     private static final int[][] CUT_LEAVES_SPRITE_RECT = {
-        { 2, -4, TILE_ID, 0x00, -5,  4, TILE_ID, 0x60,  5,  6, TILE_ID, 0x00,  1, 10, TILE_ID, 0x20 },
-        { 1, -1, TILE_ID, 0x00, -7,  4, TILE_ID, 0x60,  8,  6, TILE_ID, 0x00,  2,  7, TILE_ID, 0x20 },
-        { 0,  0, TILE_ID, 0x20, -8,  2, TILE_ID, 0x60,  4,  4, TILE_ID, 0x20, 10,  7, TILE_ID, 0x20 },
-        { -2, 1, TILE_ID, 0x20,  4,  1, TILE_ID, 0x60,  4,  5, TILE_ID, 0x20, 12,  7, TILE_ID, 0x20 },
-        { -3, 0, TILE_ID, 0x20,  4, -2, TILE_ID, 0x60,  8,  8, TILE_ID, 0x20, 14,  9, TILE_ID, 0x20 },
-        { -4, -1, TILE_ID, 0x00, 4, -6, TILE_ID, 0x40,  8,  9, TILE_ID, 0x20, 15, 10, TILE_ID, 0x00 },
-        { -5, -2, TILE_ID, 0x00, 3, -7, TILE_ID, 0x40,  8, 12, TILE_ID, 0x00, 17, 11, TILE_ID, 0x00 },
-        { -6, -3, TILE_ID, 0x00, 1, -9, TILE_ID, 0x40,  9, 13, TILE_ID, 0x00, 15, 12, TILE_ID, 0x00 }
+        {2, -4, TILE_ID, 0x00, -5, 4, TILE_ID, 0x60, 5, 6, TILE_ID, 0x00, 1, 10, TILE_ID, 0x20},
+        {1, -1, TILE_ID, 0x00, -7, 4, TILE_ID, 0x60, 8, 6, TILE_ID, 0x00, 2, 7, TILE_ID, 0x20},
+        {0, 0, TILE_ID, 0x20, -8, 2, TILE_ID, 0x60, 4, 4, TILE_ID, 0x20, 10, 7, TILE_ID, 0x20},
+        {-2, 1, TILE_ID, 0x20, 4, 1, TILE_ID, 0x60, 4, 5, TILE_ID, 0x20, 12, 7, TILE_ID, 0x20},
+        {-3, 0, TILE_ID, 0x20, 4, -2, TILE_ID, 0x60, 8, 8, TILE_ID, 0x20, 14, 9, TILE_ID, 0x20},
+        {-4, -1, TILE_ID, 0x00, 4, -6, TILE_ID, 0x40, 8, 9, TILE_ID, 0x20, 15, 10, TILE_ID, 0x00},
+        {-5, -2, TILE_ID, 0x00, 3, -7, TILE_ID, 0x40, 8, 12, TILE_ID, 0x00, 17, 11, TILE_ID, 0x00},
+        {-6, -3, TILE_ID, 0x00, 1, -9, TILE_ID, 0x40, 9, 13, TILE_ID, 0x00, 15, 12, TILE_ID, 0x00}
     };
 
     private final TransientVfxSpriteSheet spriteSheet;
@@ -95,12 +99,11 @@ public final class CutLeavesEffectRenderer {
         for (int i = 0; i < SPRITES_PER_FRAME; i++) {
             int offset = i * 4;
             placements.add(new SpritePlacement(
-                worldX + frame[offset] - OAM_X_BIAS,
-                worldY + frame[offset + 1] - OAM_Y_BIAS,
-                frame[offset + 2],
-                frame[offset + 3],
-                leafTile
-            ));
+                    worldX + frame[offset] - OAM_X_BIAS,
+                    worldY + frame[offset + 1] - OAM_Y_BIAS,
+                    frame[offset + 2],
+                    frame[offset + 3],
+                    leafTile));
         }
         return List.copyOf(placements);
     }
@@ -113,12 +116,11 @@ public final class CutLeavesEffectRenderer {
         for (int i = 0; i < 2; i++) {
             int offset = i * 4;
             placements.add(new SpritePlacement(
-                worldX + frame[offset] - POOF_OAM_X_BIAS,
-                worldY + frame[offset + 1] - POOF_OAM_Y_BIAS,
-                frame[offset + 2],
-                frame[offset + 3],
-                spriteSheet.tile(frame[offset + 2])
-            ));
+                    worldX + frame[offset] - POOF_OAM_X_BIAS,
+                    worldY + frame[offset + 1] - POOF_OAM_Y_BIAS,
+                    frame[offset + 2],
+                    frame[offset + 3],
+                    spriteSheet.tile(frame[offset + 2])));
         }
         return List.copyOf(placements);
     }
@@ -132,12 +134,11 @@ public final class CutLeavesEffectRenderer {
             int offset = i * 4;
             int tileId = frame[offset + 2];
             placements.add(new SpritePlacement(
-                worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
-                worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
-                tileId,
-                frame[offset + 3],
-                spriteSheet.tile(tileId)
-            ));
+                    worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
+                    worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
+                    tileId,
+                    frame[offset + 3],
+                    spriteSheet.tile(tileId)));
         }
         return List.copyOf(placements);
     }
@@ -151,12 +152,11 @@ public final class CutLeavesEffectRenderer {
             int offset = i * 4;
             int tileId = frame[offset + 2];
             placements.add(new SpritePlacement(
-                worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
-                worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
-                tileId,
-                frame[offset + 3],
-                spriteSheet.tile(tileId)
-            ));
+                    worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
+                    worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
+                    tileId,
+                    frame[offset + 3],
+                    spriteSheet.tile(tileId)));
         }
         return List.copyOf(placements);
     }
@@ -170,32 +170,29 @@ public final class CutLeavesEffectRenderer {
             int offset = i * 4;
             int tileId = frame[offset + 2];
             placements.add(new SpritePlacement(
-                worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
-                worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
-                tileId,
-                frame[offset + 3],
-                spriteSheet.tile(tileId)
-            ));
+                    worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
+                    worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
+                    tileId,
+                    frame[offset + 3],
+                    spriteSheet.tile(tileId)));
         }
         return List.copyOf(placements);
     }
 
     /** ROM bank-$02 RenderTranscientLaserBeam and its one-entry OAM write. */
-    public List<SpritePlacement> renderLaserBeam(int worldX, int worldY, int countdown,
-                                                 int frameCounter, int slotIndex) {
+    public List<SpritePlacement> renderLaserBeam(
+            int worldX, int worldY, int countdown, int frameCounter, int slotIndex) {
         int attributes = ((frameCounter ^ slotIndex) & 0x01) << 4;
         return List.of(new SpritePlacement(
-            worldX - LASER_BEAM_OAM_X_BIAS,
-            worldY - LASER_BEAM_OAM_Y_BIAS,
-            LASER_BEAM_TILE_ID,
-            attributes,
-            spriteSheet.tile(LASER_BEAM_TILE_ID)
-        ));
+                worldX - LASER_BEAM_OAM_X_BIAS,
+                worldY - LASER_BEAM_OAM_Y_BIAS,
+                LASER_BEAM_TILE_ID,
+                attributes,
+                spriteSheet.tile(LASER_BEAM_TILE_ID)));
     }
 
     /** ROM bank-$02 RenderTranscientMovingSparkle and Data_002_5756/575A. */
-    public List<SpritePlacement> renderMovingSparkle(int worldX, int worldY, int countdown,
-                                                      int variant) {
+    public List<SpritePlacement> renderMovingSparkle(int worldX, int worldY, int countdown, int variant) {
         int direction = variant & 0x03;
         int[] speedX = {1, -1, 1, -1};
         int[] speedY = {1, 1, -1, -1};
@@ -204,17 +201,23 @@ public final class CutLeavesEffectRenderer {
         int y = worldY + speedY[direction] * movementTicks;
         int tileId = countdown < 0x07 ? 0x3C : 0x3A;
         return List.of(
-            new SpritePlacement(x - MOVING_SPARKLE_OAM_X_BIAS,
-                y - MOVING_SPARKLE_OAM_Y_BIAS, tileId, 0x00, spriteSheet.tile(tileId)),
-            new SpritePlacement(x + 8 - MOVING_SPARKLE_OAM_X_BIAS,
-                y - MOVING_SPARKLE_OAM_Y_BIAS, tileId, 0x20, spriteSheet.tile(tileId))
-        );
+                new SpritePlacement(
+                        x - MOVING_SPARKLE_OAM_X_BIAS,
+                        y - MOVING_SPARKLE_OAM_Y_BIAS,
+                        tileId,
+                        0x00,
+                        spriteSheet.tile(tileId)),
+                new SpritePlacement(
+                        x + 8 - MOVING_SPARKLE_OAM_X_BIAS,
+                        y - MOVING_SPARKLE_OAM_Y_BIAS,
+                        tileId,
+                        0x20,
+                        spriteSheet.tile(tileId)));
     }
 
     /** ROM bank-$02 RenderTranscientSwordBeam and Data_002_559C/55BC. */
-    public List<SpritePlacement> renderSwordBeam(int worldX, int worldY, int countdown,
-                                                  int frameCounter, int slotIndex,
-                                                  int variant) {
+    public List<SpritePlacement> renderSwordBeam(
+            int worldX, int worldY, int countdown, int frameCounter, int slotIndex, int variant) {
         if (((frameCounter ^ slotIndex) & 0x01) == 0) {
             return List.of();
         }
@@ -227,12 +230,11 @@ public final class CutLeavesEffectRenderer {
             int offset = base + i * 4;
             int tileId = data[offset + 2];
             placements.add(new SpritePlacement(
-                worldX + data[offset + 1] - SWORD_BEAM_OAM_X_BIAS,
-                worldY + data[offset] - SWORD_BEAM_OAM_Y_BIAS,
-                tileId,
-                data[offset + 3],
-                spriteSheet.tile(tileId)
-            ));
+                    worldX + data[offset + 1] - SWORD_BEAM_OAM_X_BIAS,
+                    worldY + data[offset] - SWORD_BEAM_OAM_Y_BIAS,
+                    tileId,
+                    data[offset + 3],
+                    spriteSheet.tile(tileId)));
         }
         return List.copyOf(placements);
     }

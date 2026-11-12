@@ -1,9 +1,10 @@
 package linksawakening.entity;
 
+import static linksawakening.entity.Link.*;
+
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.state.PlayerState;
-import static linksawakening.entity.Link.*;
 
 final class LinkMotion {
     private final Link link;
@@ -20,7 +21,9 @@ final class LinkMotion {
     final int[] collisionProbePixelX = new int[4];
     final int[] collisionProbePixelY = new int[4];
 
-    LinkMotion(Link link) { this.link = link; }
+    LinkMotion(Link link) {
+        this.link = link;
+    }
 
     void tryMoveAxis(int signedSpeed, boolean isXAxis) {
         int previousSubX = subX;
@@ -40,9 +43,12 @@ final class LinkMotion {
 
         // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too:
         // BackgroundCollisionHandler ($02:6E45) skips all probes until landing.
-        int probeMask = link.collision != null && !link.linkStateMachine.debugNoClip
-            && !link.linkEntityEffects.marinBedJumpMotionLocked && !link.linkAirborne.directionalLedgeJumpMotionLocked
-            ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection) : 0;
+        int probeMask = link.collision != null
+                        && !link.linkStateMachine.debugNoClip
+                        && !link.linkEntityEffects.marinBedJumpMotionLocked
+                        && !link.linkAirborne.directionalLedgeJumpMotionLocked
+                ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection)
+                : 0;
         if (probeMask != 0) {
             // BackgroundCollisionHandler $02:6EC6 / $02:6F01 restores the
             // blocked axis, then Data_002_6E39 shifts the other axis by
@@ -92,9 +98,11 @@ final class LinkMotion {
             int physicsFlag = link.collision.objectPhysicsFlagAtPoint(pointX, pointY);
             int objectId = link.collision.objectIdAtPoint(pointX, pointY);
             // $02:716B/$7468: the top six pixels of the revolving doorway.
-            if (link.collision.usesIndoorPhysicsTable() && (physicsFlag == 0x7C || physicsFlag == 0x7D)
-                && (objectId == 0xB1 || objectId == 0xB2) && (pointY & 15) < 6
-                && link.linkStateMachine.motionState != 0x05) {
+            if (link.collision.usesIndoorPhysicsTable()
+                    && (physicsFlag == 0x7C || physicsFlag == 0x7D)
+                    && (objectId == 0xB1 || objectId == 0xB2)
+                    && (pointY & 15) < 6
+                    && link.linkStateMachine.motionState != 0x05) {
                 link.linkStateMachine.motionState = 0x05;
                 link.linkStateMachine.revolvingDoorFrame = 0;
                 link.linkStateMachine.revolvingDoorTransitionPending = false;
@@ -103,8 +111,9 @@ final class LinkMotion {
                 link.linkAirborne.airborne = false;
                 link.linkDamage.collisionIgnoreFramesRemaining = 0;
                 if (link.playerState != null) link.playerState.setInvincibilityCounter(0);
-                if (link.itemRegistry != null && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
-                    instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+                if (link.itemRegistry != null
+                        && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
+                                instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
                 link.soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
             }
             if (physicsFlag == PhysicsFlags.DOOR) {
@@ -127,14 +136,13 @@ final class LinkMotion {
                 }
                 blocked |= applyDirectionalLedgeCollision(physicsFlag, dir);
             } else if (link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers())
-                && !link.collision.pointNormalPit(pointX, pointY)) {
+                    && !link.collision.pointNormalPit(pointX, pointY)) {
                 blocked = true;
                 // ApplyCollisionWithSolid $02:72FA-7338: holding the sword
                 // follows its poke path; a raised shield suppresses the write.
-                var sword = link.itemRegistry == null ? null
-                    : link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+                var sword = link.itemRegistry == null ? null : link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
                 boolean swordHolding = sword instanceof linksawakening.equipment.Sword blade
-                    && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
+                        && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
                 boolean running = link.playerState != null && link.playerState.runningWithPegasusBoots();
                 if (!link.linkEquipment.isUsingShield() && (!swordHolding || running)) {
                     link.markRomLinkPushing(3);
@@ -150,15 +158,18 @@ final class LinkMotion {
     }
 
     boolean applyDirectionalLedgeCollision(int physicsFlag, int moveDirection) {
-        int ledgeDirection = switch (physicsFlag - PhysicsFlags.CAT_LEDGE) {
-            case 0 -> Link.DIRECTION_RIGHT;
-            case 1 -> Link.DIRECTION_LEFT;
-            case 2 -> Link.DIRECTION_UP;
-            case 3 -> Link.DIRECTION_DOWN;
-            default -> -1;
-        };
-        if (link.linkAirborne.airborne || link.direction != ledgeDirection || moveDirection != ledgeDirection
-            || (link.buildJoypadMask() & joypadBitForDirection(ledgeDirection)) == 0) {
+        int ledgeDirection =
+                switch (physicsFlag - PhysicsFlags.CAT_LEDGE) {
+                    case 0 -> Link.DIRECTION_RIGHT;
+                    case 1 -> Link.DIRECTION_LEFT;
+                    case 2 -> Link.DIRECTION_UP;
+                    case 3 -> Link.DIRECTION_DOWN;
+                    default -> -1;
+                };
+        if (link.linkAirborne.airborne
+                || link.direction != ledgeDirection
+                || moveDirection != ledgeDirection
+                || (link.buildJoypadMask() & joypadBitForDirection(ledgeDirection)) == 0) {
             link.linkAirborne.directionalLedgeCollisionCounter = 0;
             return true;
         }
@@ -200,8 +211,7 @@ final class LinkMotion {
         }
         int ledgeDirection = physicsFlag - PhysicsFlags.CAT_LEDGE;
         int xWithinTile = pointX & 0x0F;
-        return (ledgeDirection == 0 && xWithinTile < 8)
-            || (ledgeDirection == 1 && xWithinTile >= 8);
+        return (ledgeDirection == 0 && xWithinTile < 8) || (ledgeDirection == 1 && xWithinTile >= 8);
     }
 
     boolean applyOverworldLedgeCollision(int pointY) {
@@ -266,8 +276,7 @@ final class LinkMotion {
     }
 
     static boolean isDirectionalLedgePhysics(int physicsFlag) {
-        return physicsFlag >= PhysicsFlags.CAT_LEDGE
-            && physicsFlag <= PhysicsFlags.CAT_LEDGE + 3;
+        return physicsFlag >= PhysicsFlags.CAT_LEDGE && physicsFlag <= PhysicsFlags.CAT_LEDGE + 3;
     }
 
     static int joypadBitForDirection(int direction) {
@@ -431,8 +440,7 @@ final class LinkMotion {
 
     /** ROM hLinkFinalPositionX captured before the current Link update. */
     int romFinalPositionX() {
-        return hasRomFinalPosition ? (romFinalSubX >> Link.SUB_PIXEL_SHIFT) + 0x08
-            : romEntityX();
+        return hasRomFinalPosition ? (romFinalSubX >> Link.SUB_PIXEL_SHIFT) + 0x08 : romEntityX();
     }
 
     /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */

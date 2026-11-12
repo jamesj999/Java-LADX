@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 SnakeEntityHandler states 0, 1, and 2. */
 public final class SnakeMotion {
@@ -36,12 +35,17 @@ public final class SnakeMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
-                   int transitionCountdown) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown) {
         if ((entity.type() & 0xFF) != ENTITY_SNAKE) {
-            throw new IllegalArgumentException("Unsupported Snake motion entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Snake motion entity type: 0x" + Integer.toHexString(entity.type()));
         }
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Snake random-byte supplier cannot be null");
@@ -88,8 +92,7 @@ public final class SnakeMotion {
                     // the previous base animation variant in place.
                 } else {
                     clearSpeed(slot);
-                    countdown = startDashIfNeeded(slot, x, y, linkEntityX, linkEntityY,
-                        countdown);
+                    countdown = startDashIfNeeded(slot, x, y, linkEntityX, linkEntityY, countdown);
                     setAnimationVariant(slot, crawlingAnimation(frameCounter));
                 }
             }
@@ -98,8 +101,7 @@ public final class SnakeMotion {
                     countdown = 0x18;
                     state[slot] = 2;
                 }
-                countdown = startDashIfNeeded(slot, x, y, linkEntityX, linkEntityY,
-                    countdown);
+                countdown = startDashIfNeeded(slot, x, y, linkEntityX, linkEntityY, countdown);
                 setAnimationVariant(slot, crawlingAnimation(frameCounter));
             }
             case 2 -> {
@@ -113,9 +115,20 @@ public final class SnakeMotion {
             default -> throw new IllegalStateException("Invalid Snake state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                renderedVariant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
         return new Update(updated, countdown);
     }
 
@@ -140,8 +153,7 @@ public final class SnakeMotion {
         return speedY[slot];
     }
 
-    private int startDashIfNeeded(int slot, int entityX, int entityY,
-                                  int linkEntityX, int linkEntityY, int countdown) {
+    private int startDashIfNeeded(int slot, int entityX, int entityY, int linkEntityX, int linkEntityY, int countdown) {
         if (privateCountdown1[slot] != 0) {
             return countdown;
         }
@@ -169,19 +181,20 @@ public final class SnakeMotion {
         // the state-2 dash window.
     }
 
-    private Position move(RoomEntity entity, int x, int y,
-                          RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
+        if (backgroundCollision != null
+                && nextX != x
+                && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
+        if (backgroundCollision != null
+                && nextY != y
+                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }
@@ -227,8 +240,7 @@ public final class SnakeMotion {
         return (frameCounter >>> 2) & 0x01;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -248,9 +260,7 @@ public final class SnakeMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y, boolean collided) {
-    }
+    private record Position(int x, int y, boolean collided) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown) {}
 }

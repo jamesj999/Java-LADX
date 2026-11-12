@@ -9,6 +9,7 @@ public final class MusicTrackIds {
     public static final int MUSIC_OVERWORLD = 0x05;
     /** Extended intro followed by the ROM overworld loop, used by the beach sword event. */
     public static final int MUSIC_OVERWORLD_INTRO = 0x31;
+
     public static final int MUSIC_TAL_TAL_RANGE = 0x06;
     public static final int MUSIC_SHOP = 0x07;
     public static final int MUSIC_RAFT_RIDE_RAPIDS = 0x08;
@@ -28,6 +29,5 @@ public final class MusicTrackIds {
     public static final int MUSIC_COLOR_DUNGEON = 0x61;
     public static final int MUSIC_SILENCE = 0xFF;
 
-    private MusicTrackIds() {
-    }
+    private MusicTrackIds() {}
 }

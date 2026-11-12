@@ -1,13 +1,13 @@
 package linksawakening.app;
 
-import linksawakening.app.GameSession;
-import linksawakening.config.AppConfig;
-import linksawakening.testing.RequiresRom;
-import linksawakening.state.PlayerState;
-import linksawakening.world.room.RoomConstants;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.*;
+
+import linksawakening.config.AppConfig;
+import linksawakening.state.PlayerState;
+import linksawakening.testing.RequiresRom;
+import linksawakening.world.room.RoomConstants;
+import org.junit.jupiter.api.Test;
 
 @RequiresRom
 class ObjectInteractionSessionTest {
@@ -23,7 +23,8 @@ class ObjectInteractionSessionTest {
         return game;
     }
 
-    @Test void crackedFloorGivesWayThenLinkFallsThroughNormalPitPhysics() throws Exception {
+    @Test
+    void crackedFloorGivesWayThenLinkFallsThroughNormalPitPhysics() throws Exception {
         var game = session();
         var room = game.diagnostics().roomSession().activeRoom();
         int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
@@ -37,7 +38,8 @@ class ObjectInteractionSessionTest {
         assertTrue(game.diagnostics().link().isFallingIntoPit());
     }
 
-    @Test void dialogStillRunsTheCachedGroundPhysicsResetWhileLinkMotionIsPaused() throws Exception {
+    @Test
+    void dialogStillRunsTheCachedGroundPhysicsResetWhileLinkMotionIsPaused() throws Exception {
         var game = session();
         var roomSession = game.diagnostics().roomSession();
         game.headlessFrame();
@@ -52,7 +54,8 @@ class ObjectInteractionSessionTest {
         assertEquals(0xDF, roomSession.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
     }
 
-    @Test void toadstoolGotItemPresentationResetsTheCrackedFloorCounter() throws Exception {
+    @Test
+    void toadstoolGotItemPresentationResetsTheCrackedFloorCounter() throws Exception {
         var game = session();
         var roomSession = game.diagnostics().roomSession();
         var player = game.diagnostics().playerState();
@@ -74,7 +77,8 @@ class ObjectInteractionSessionTest {
         assertEquals(0xDF, roomSession.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
     }
 
-    @Test void externalPositionChangeIsComparedAgainstTheLastGroundProbe() throws Exception {
+    @Test
+    void externalPositionChangeIsComparedAgainstTheLastGroundProbe() throws Exception {
         var game = session();
         var roomSession = game.diagnostics().roomSession();
         game.headlessFrame();
@@ -88,7 +92,8 @@ class ObjectInteractionSessionTest {
         assertEquals(1, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
     }
 
-    @Test void levelOneSwordBreaksIndoorCrystalThroughGameplayPhase() throws Exception {
+    @Test
+    void levelOneSwordBreaksIndoorCrystalThroughGameplayPhase() throws Exception {
         var game = session();
         var player = game.diagnostics().playerState();
         player.setSwordLevel(1);

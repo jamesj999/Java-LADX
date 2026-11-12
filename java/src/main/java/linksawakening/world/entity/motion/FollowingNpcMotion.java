@@ -20,8 +20,7 @@ public final class FollowingNpcMotion {
     // four direction values to the first variant in each directional pair.
     private static final int[] MARIN_DIRECTION_VARIANTS = {6, 4, 2, 0};
 
-    private static final int[] GHOST_Z = {0x0C, 0x0D, 0x0E, 0x0F,
-        0x0F, 0x0E, 0x0D, 0x0C};
+    private static final int[] GHOST_Z = {0x0C, 0x0D, 0x0E, 0x0F, 0x0F, 0x0E, 0x0D, 0x0C};
 
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -39,24 +38,37 @@ public final class FollowingNpcMotion {
         clear(slot);
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0,
-            null, backgroundCollision);
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision);
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       int linkEntityZ, int linkDirection, int entityYOffset,
-                       LinkPositionHistory linkPositionHistory,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int linkDirection,
+            int entityYOffset,
+            LinkPositionHistory linkPositionHistory,
+            RoomEntityBackgroundCollision backgroundCollision) {
         return switch (entity.type()) {
-            case ENTITY_GHOST -> advanceGhost(entity, frameCounter, linkEntityX, linkEntityY,
-                backgroundCollision);
-            case ENTITY_ROOSTER -> advanceRooster(entity, frameCounter, linkEntityX, linkEntityY,
-                backgroundCollision);
-            case ENTITY_MARIN_AT_THE_SHORE -> advanceMarin(entity, frameCounter, linkEntityX,
-                linkEntityY, linkEntityZ, linkDirection, entityYOffset,
-                linkPositionHistory == null ? fallbackHistory : linkPositionHistory);
+            case ENTITY_GHOST -> advanceGhost(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);
+            case ENTITY_ROOSTER -> advanceRooster(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);
+            case ENTITY_MARIN_AT_THE_SHORE -> advanceMarin(
+                    entity,
+                    frameCounter,
+                    linkEntityX,
+                    linkEntityY,
+                    linkEntityZ,
+                    linkDirection,
+                    entityYOffset,
+                    linkPositionHistory == null ? fallbackHistory : linkPositionHistory);
             default -> entity;
         };
     }
@@ -74,15 +86,16 @@ public final class FollowingNpcMotion {
         marinLinkInitialized[slot] = false;
     }
 
-    private RoomEntity advanceGhost(RoomEntity entity, int frameCounter,
-                                    int linkEntityX, int linkEntityY,
-                                    RoomEntityBackgroundCollision backgroundCollision) {
+    private RoomEntity advanceGhost(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityBackgroundCollision backgroundCollision) {
         // GhostEntityHandler writes the current bob height before aiming ($19:5E56).
         int z = GHOST_Z[(frameCounter >>> 3) & 0x07];
-        int variant = ghostVariant(entity.x(), entity.y(), linkEntityX, linkEntityY,
-            frameCounter);
-        boolean outsideFollowWindow = !withinGhostWindow(
-            entity.x(), entity.y(), linkEntityX, linkEntityY);
+        int variant = ghostVariant(entity.x(), entity.y(), linkEntityX, linkEntityY, frameCounter);
+        boolean outsideFollowWindow = !withinGhostWindow(entity.x(), entity.y(), linkEntityX, linkEntityY);
         int x = entity.x();
         int y = entity.y();
         if (outsideFollowWindow) {
@@ -101,13 +114,15 @@ public final class FollowingNpcMotion {
         return withPositionAndVariant(entity, x, y, z, variant);
     }
 
-    private RoomEntity advanceRooster(RoomEntity entity, int frameCounter,
-                                      int linkEntityX, int linkEntityY,
-                                      RoomEntityBackgroundCollision backgroundCollision) {
+    private RoomEntity advanceRooster(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int direction = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
         int variant = direction * 2 + ((frameCounter >>> 3) & 0x01);
-        boolean outsideFollowWindow = !withinRoosterWindow(
-            entity.x(), entity.y(), linkEntityX, linkEntityY);
+        boolean outsideFollowWindow = !withinRoosterWindow(entity.x(), entity.y(), linkEntityX, linkEntityY);
         int x = entity.x();
         int y = entity.y();
         if (outsideFollowWindow) {
@@ -130,18 +145,22 @@ public final class FollowingNpcMotion {
      * from the following position and Z entries. Position-history and Z-history
      * use separate indices in the original WRAM tables.
      */
-    private RoomEntity advanceMarin(RoomEntity entity, int frameCounter,
-                                    int linkEntityX, int linkEntityY, int linkEntityZ,
-                                    int linkDirection, int entityYOffset,
-                                    LinkPositionHistory history) {
+    private RoomEntity advanceMarin(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int linkDirection,
+            int entityYOffset,
+            LinkPositionHistory history) {
         int slot = entity.slot();
         int currentPositionIndex = marinInertia[slot] & 0x0F;
         int currentZIndex = marinPrivateState1[slot] & 0x0F;
         int adjustedLinkY = (linkEntityY + entityYOffset) & 0xFF;
         int previousDirection = history.directionAt(currentPositionIndex) & 0x03;
 
-        history.writePositionAndDirection(currentPositionIndex, linkEntityX, adjustedLinkY,
-            linkDirection);
+        history.writePositionAndDirection(currentPositionIndex, linkEntityX, adjustedLinkY, linkDirection);
         history.writeZ(currentZIndex, linkEntityZ);
 
         if (!marinLinkInitialized[slot]) {
@@ -152,8 +171,7 @@ public final class FollowingNpcMotion {
         }
 
         int displayDirection = marinDisplayDirection[slot] & 0x03;
-        int variant = MARIN_DIRECTION_VARIANTS[displayDirection]
-            + ((frameCounter >>> 3) & 0x01);
+        int variant = MARIN_DIRECTION_VARIANTS[displayDirection] + ((frameCounter >>> 3) & 0x01);
         int nextPositionIndex = (currentPositionIndex + 1) & 0x0F;
         int nextZIndex = (currentZIndex + 1) & 0x0F;
         int x = history.xAt(nextPositionIndex);
@@ -164,8 +182,7 @@ public final class FollowingNpcMotion {
         // The source increments wEntitiesInertia only while Link has speed.
         // RoomSession calls this handler after Link movement, so a changed ROM
         // coordinate is the host-side equivalent for this history cadence.
-        if (marinLastLinkX[slot] != (linkEntityX & 0xFF)
-            || marinLastLinkY[slot] != adjustedLinkY) {
+        if (marinLastLinkX[slot] != (linkEntityX & 0xFF) || marinLastLinkY[slot] != adjustedLinkY) {
             marinInertia[slot] = (currentPositionIndex + 1) & 0x0F;
         }
         marinPrivateState1[slot] = nextZIndex;
@@ -174,8 +191,7 @@ public final class FollowingNpcMotion {
         return withPositionAndVariant(entity, x, y, z, variant);
     }
 
-    private int[] move(RoomEntity entity, int x, int y,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    private int[] move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         if (backgroundCollision != null && nextX != x) {
@@ -196,15 +212,13 @@ public final class FollowingNpcMotion {
         return new int[] {nextX, nextY};
     }
 
-    private static boolean withinGhostWindow(int entityX, int entityY,
-                                              int linkX, int linkY) {
+    private static boolean withinGhostWindow(int entityX, int entityY, int linkX, int linkY) {
         int dx = signedByte((linkX - entityX) & 0xFF);
         int dy = signedByte((linkY + 0x0C - entityY) & 0xFF);
         return inSignedWindow(dx, 0x18) && inSignedWindow(dy, 0x18);
     }
 
-    private static boolean withinRoosterWindow(int entityX, int entityY,
-                                                int linkX, int linkY) {
+    private static boolean withinRoosterWindow(int entityX, int entityY, int linkX, int linkY) {
         int dx = signedByte((linkX - entityX) & 0xFF);
         int dy = signedByte((linkY - entityY) & 0xFF);
         return inSignedWindow(dx, 0x12) && inSignedWindow(dy, 0x12);
@@ -214,8 +228,7 @@ public final class FollowingNpcMotion {
         return distance >= -halfOpen && distance < halfOpen;
     }
 
-    private static int ghostVariant(int entityX, int entityY, int linkX, int linkY,
-                                    int frameCounter) {
+    private static int ghostVariant(int entityX, int entityY, int linkX, int linkY, int frameCounter) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         int base;
@@ -236,14 +249,12 @@ public final class FollowingNpcMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                             int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
-        int result = divideComponent(Math.min(absoluteX, absoluteY),
-            Math.max(absoluteX, absoluteY), length);
+        int result = divideComponent(Math.min(absoluteX, absoluteY), Math.max(absoluteX, absoluteY), length);
         int x = absoluteX >= absoluteY ? length : result;
         int y = absoluteY > absoluteX ? length : result;
         if (distanceX < 0) {
@@ -271,8 +282,7 @@ public final class FollowingNpcMotion {
         return result;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -292,13 +302,22 @@ public final class FollowingNpcMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z,
-                                                     int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

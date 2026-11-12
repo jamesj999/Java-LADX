@@ -3,16 +3,20 @@ package linksawakening.world.entity;
 import static linksawakening.world.entity.EntityMotionMath.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import linksawakening.entity.EntitySpriteSelection;
-import linksawakening.entity.EntitySpriteDefinition;
+import static linksawakening.world.entity.RoomEntityRuntime.*;
+
 import java.util.Objects;
 import java.util.function.IntUnaryOperator;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteSelection;
 
 /** Room entity configuration preserving source-shaped handler inputs. */
 public final class EntityRuntimeConfiguration {
     private final RoomEntityRuntime runtime;
-    EntityRuntimeConfiguration(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityRuntimeConfiguration(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     public void setBoomerangSoundCounterForFrame(int counter) {
         if (counter < 0 || counter >= runtime.BOOMERANG_SFX_COUNTER_PERIOD) {
@@ -38,9 +42,9 @@ public final class EntityRuntimeConfiguration {
 
     public void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) {
         runtime.groundInteraction = groundInteraction == null
-            ? (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
-                RoomEntityGroundInteraction.Result.unchanged(entity, 0)
-            : groundInteraction;
+                ? (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.unchanged(entity, 0)
+                : groundInteraction;
     }
 
     public void setBackgroundInteraction(RoomEntityBackgroundInteraction backgroundInteraction) {
@@ -134,8 +138,7 @@ public final class EntityRuntimeConfiguration {
 
     public void setLiftedLinkC13B(int linkC13B) {
         if ((linkC13B & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Lifted Link C13B must be an unsigned byte: "
-                + linkC13B);
+            throw new IllegalArgumentException("Lifted Link C13B must be an unsigned byte: " + linkC13B);
         }
         runtime.liftedLinkC13B = linkC13B;
     }
@@ -166,11 +169,9 @@ public final class EntityRuntimeConfiguration {
         runtime.enemyDropLowHealth = lowHealth;
     }
 
-
     public void setEntityMapId(int mapId) {
         if (mapId < -1 || mapId > 0xFF) {
-            throw new IllegalArgumentException("Entity map id must be -1 or an unsigned byte: "
-                + mapId);
+            throw new IllegalArgumentException("Entity map id must be -1 or an unsigned byte: " + mapId);
         }
         runtime.entityMapId = mapId;
     }
@@ -181,8 +182,9 @@ public final class EntityRuntimeConfiguration {
         for (RoomEntity entity : runtime.slots) {
             if (entity.loaded() && entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
                 runtime.secretSeashellMotion.ensureInitialized(entity.slot(), roomId);
-                runtime.entityOptions1Override[entity.slot()] =
-                    runtime.secretSeashellMotion.privateState3(entity.slot()) != 0
+                runtime.entityOptions1Override[entity.slot()] = runtime.secretSeashellMotion.privateState3(
+                                        entity.slot())
+                                != 0
                         ? runtime.SECRET_SEASHELL_HIDDEN_OPTIONS1
                         : runtime.SECRET_SEASHELL_REVEALED_OPTIONS1;
             }
@@ -198,11 +200,12 @@ public final class EntityRuntimeConfiguration {
         runtime.dungeonMinibossReady = ready;
     }
 
-    public void setScreenShakeCountdown(int countdown) { runtime.slimeEye.setScreenShakeCountdown(countdown); }
+    public void setScreenShakeCountdown(int countdown) {
+        runtime.slimeEye.setScreenShakeCountdown(countdown);
+    }
 
-    public void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
-                                                 boolean collisionActive,
-                                                 int collisionX, int collisionY) {
+    public void setSecretSeashellPegasusCollisionState(
+            boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
         EntitySlotValidation.validateByte(collisionX, "Pegasus collision X");
         EntitySlotValidation.validateByte(collisionY, "Pegasus collision Y");
         runtime.secretSeashellScreenShakeActive = screenShakeActive;
@@ -212,8 +215,7 @@ public final class EntityRuntimeConfiguration {
         runtime.secretSeashellPegasusCollisionY = collisionY;
     }
 
-    public void setHouseNpcStoryState(int tarinFlag, int tradeItem, int instrument3Flags,
-                                      int walrusStatus) {
+    public void setHouseNpcStoryState(int tarinFlag, int tradeItem, int instrument3Flags, int walrusStatus) {
         EntitySlotValidation.validateByte(tarinFlag, "Tarin flag");
         EntitySlotValidation.validateByte(tradeItem, "Trade item");
         EntitySlotValidation.validateByte(instrument3Flags, "Instrument 3 flags");
@@ -233,12 +235,11 @@ public final class EntityRuntimeConfiguration {
         runtime.chestPowerBraceletLevel = powerBraceletLevel;
         runtime.chestPlayerLevelsKnown = true;
         if (runtime.spriteHandlers != null) {
-            EntitySpriteDefinition pickupDefinition =
-                runtime.spriteHandlers.forSwordShieldPickup(swordLevel == 0);
+            EntitySpriteDefinition pickupDefinition = runtime.spriteHandlers.forSwordShieldPickup(swordLevel == 0);
             for (int index = 0; index < runtime.slots.length; index++) {
                 if (runtime.slots[index].type() == runtime.ENTITY_SWORD_SHIELD_PICKUP) {
-                    runtime.slots[index] = withDefinition(runtime.slots[index], pickupDefinition,
-                        runtime.slots[index].spriteVariant());
+                    runtime.slots[index] = withDefinition(
+                            runtime.slots[index], pickupDefinition, runtime.slots[index].spriteVariant());
                 }
             }
         }
@@ -286,16 +287,15 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setOwlDefaultMusicResolver(IntUnaryOperator resolver) {
-        runtime.owlDefaultMusicResolver = Objects.requireNonNull(resolver,
-            "Owl default music resolver");
+        runtime.owlDefaultMusicResolver = Objects.requireNonNull(resolver, "Owl default music resolver");
     }
 
     public void setOcarinaPlayback(int countdown, int songFlags, int selectedSong) {
         setOcarinaPlayback(countdown, songFlags, selectedSong, 0, 0);
     }
 
-    public void setOcarinaPlayback(int countdown, int songFlags, int selectedSong,
-                            int animationCounter, int animationPhase) {
+    public void setOcarinaPlayback(
+            int countdown, int songFlags, int selectedSong, int animationCounter, int animationPhase) {
         EntitySlotValidation.validateByte(countdown, "Ocarina playback countdown");
         EntitySlotValidation.validateByte(songFlags, "Ocarina song flags");
         EntitySlotValidation.validateByte(selectedSong, "Selected Ocarina song");
@@ -330,8 +330,7 @@ public final class EntityRuntimeConfiguration {
         runtime.booBuddyTriggerCount = value;
     }
 
-    public void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags,
-                             int defaultMusicTrack) {
+    public void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags, int defaultMusicTrack) {
         EntitySlotValidation.validateByte(bgPaletteEffectAddress, "BG palette effect address");
         EntitySlotValidation.validateByte(paletteDataFlags, "Palette data flags");
         EntitySlotValidation.validateByte(defaultMusicTrack, "Default music track");

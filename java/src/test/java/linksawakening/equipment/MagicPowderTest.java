@@ -1,16 +1,15 @@
 package linksawakening.equipment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MagicPowderTest {
 
@@ -107,8 +106,7 @@ final class MagicPowderTest {
     void itemGateAndExistingAttackWindowAreCheckedBeforePowderCount() {
         PlayerState player = playerWithPowder(1);
         RecordingTarget target = new RecordingTarget();
-        MagicPowder blocked = new MagicPowder(player, GameplaySoundSink.none(), target,
-            () -> false);
+        MagicPowder blocked = new MagicPowder(player, GameplaySoundSink.none(), target, () -> false);
 
         blocked.onPress();
         assertEquals(0, target.sprinkleRequests);
@@ -124,11 +122,9 @@ final class MagicPowderTest {
     void constructorRejectsNullDependencies() {
         PlayerState player = playerWithPowder(1);
         RecordingTarget target = new RecordingTarget();
-        assertThrows(NullPointerException.class, () -> new MagicPowder(null,
-            GameplaySoundSink.none(), target));
+        assertThrows(NullPointerException.class, () -> new MagicPowder(null, GameplaySoundSink.none(), target));
         assertThrows(NullPointerException.class, () -> new MagicPowder(player, null, target));
-        assertThrows(NullPointerException.class, () -> new MagicPowder(player,
-            GameplaySoundSink.none(), null));
+        assertThrows(NullPointerException.class, () -> new MagicPowder(player, GameplaySoundSink.none(), null));
     }
 
     private static PlayerState playerWithPowder(int count) {
@@ -142,8 +138,17 @@ final class MagicPowderTest {
     private static final class RecordingTarget implements MagicPowder.SprinkleTarget {
         private int z;
         private int toadstoolPresentations;
-        @Override public int linkPositionZ() { return z; }
-        @Override public void presentToadstool() { toadstoolPresentations++; }
+
+        @Override
+        public int linkPositionZ() {
+            return z;
+        }
+
+        @Override
+        public void presentToadstool() {
+            toadstoolPresentations++;
+        }
+
         private int sprinkleRequests;
         private int attackStepRequests;
         private boolean sprinkleResult = true;

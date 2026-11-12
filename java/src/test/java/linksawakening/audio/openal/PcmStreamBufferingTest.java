@@ -1,10 +1,12 @@
 package linksawakening.audio.openal;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 class PcmStreamBufferingTest {
-    @Test void startupAndRecoveryPrefillBeforePlayingAndCountEachUnderrunOnce() {
+    @Test
+    void startupAndRecoveryPrefillBeforePlayingAndCountEachUnderrunOnce() {
         var buffering = new PcmStreamBuffering();
         buffering.observePlaying(false);
         assertFalse(buffering.ready(800, 48000));
@@ -24,7 +26,8 @@ class PcmStreamBufferingTest {
         assertEquals(1, buffering.underrunCount(), "explicit stop is not an underrun");
     }
 
-    @Test void prefillUsesAudioDurationAtNonDivisibleSampleRates() {
+    @Test
+    void prefillUsesAudioDurationAtNonDivisibleSampleRates() {
         var buffering = new PcmStreamBuffering();
         assertFalse(buffering.ready(2205, 44101));
         assertTrue(buffering.ready(2206, 44101));

@@ -113,8 +113,8 @@ public final class LaserMotion {
         return new ParentUpdate(withVariant(entity, direction[slot] >>> 1), true, false);
     }
 
-    public SensorUpdate advanceSensor(RoomEntity sensor, RoomEntity parent,
-                                int linkX, int linkY, int invincibilityCounter) {
+    public SensorUpdate advanceSensor(
+            RoomEntity sensor, RoomEntity parent, int linkX, int linkY, int invincibilityCounter) {
         int slot = sensor.slot();
         if (!isSensor(slot)) {
             initializeSensor(slot, parent == null ? 0 : parent.slot(), 0);
@@ -125,12 +125,10 @@ public final class LaserMotion {
         }
 
         if (withinWindow(sensor.x(), linkX) && withinWindow(sensor.y(), linkY)) {
-            boolean triggerParent = invincibilityCounter == 0
-                && transitionCountdown[owner] == 0;
+            boolean triggerParent = invincibilityCounter == 0 && transitionCountdown[owner] == 0;
             if (triggerParent) {
                 transitionCountdown[owner] = 0x20;
-                Vector vector = vectorTowardsLink(parent.x(), parent.y(), parent.z(),
-                    linkX, linkY, 0x40);
+                Vector vector = vectorTowardsLink(parent.x(), parent.y(), parent.z(), linkX, linkY, 0x40);
                 speedX[owner] = vector.x();
                 speedY[owner] = vector.y();
             }
@@ -157,13 +155,15 @@ public final class LaserMotion {
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
-        if (backgroundCollision != null && x != entity.x()
-            && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
+        if (backgroundCollision != null
+                && x != entity.x()
+                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
             return new BeamUpdate(entity, true);
         }
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null && y != entity.y()
-            && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
+        if (backgroundCollision != null
+                && y != entity.y()
+                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
             return new BeamUpdate(entity, true);
         }
         return new BeamUpdate(withPosition(entity, x, y), false);
@@ -231,8 +231,7 @@ public final class LaserMotion {
         return ((entityPosition - linkPosition + 0x10) & 0xFF) < 0x20;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
@@ -262,8 +261,7 @@ public final class LaserMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                           int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -311,26 +309,44 @@ public final class LaserMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(),
-            entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    public record ParentUpdate(RoomEntity entity, boolean spawnSensor, boolean spawnBeam) {
-    }
+    public record ParentUpdate(RoomEntity entity, boolean spawnSensor, boolean spawnBeam) {}
 
-    public record SensorUpdate(RoomEntity entity, boolean unloaded, boolean triggeredParent) {
-    }
+    public record SensorUpdate(RoomEntity entity, boolean unloaded, boolean triggeredParent) {}
 
-    public record BeamUpdate(RoomEntity entity, boolean unloaded) {
-    }
+    public record BeamUpdate(RoomEntity entity, boolean unloaded) {}
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

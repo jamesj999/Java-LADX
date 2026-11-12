@@ -1,5 +1,7 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.entity.LinkTunicPalette;
@@ -7,9 +9,6 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
-
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
 
 /** Port of {@code UseMagicRod} and {@code label_002_5310}. */
 public final class MagicRod implements EquipmentItem {
@@ -45,25 +44,31 @@ public final class MagicRod implements EquipmentItem {
         this(soundSink, target, () -> true, null, null, null);
     }
 
-    public MagicRod(GameplaySoundSink soundSink, LaunchTarget target,
-                    BooleanSupplier itemUseAllowed) {
+    public MagicRod(GameplaySoundSink soundSink, LaunchTarget target, BooleanSupplier itemUseAllowed) {
         this(soundSink, target, itemUseAllowed, null, null, null);
     }
 
-    public MagicRod(RomTables romTables, LinkSpriteSheet spriteSheet,
-                    LinkTunicPalette tunicPalette, GameplaySoundSink soundSink,
-                    LaunchTarget target, BooleanSupplier itemUseAllowed) {
+    public MagicRod(
+            RomTables romTables,
+            LinkSpriteSheet spriteSheet,
+            LinkTunicPalette tunicPalette,
+            GameplaySoundSink soundSink,
+            LaunchTarget target,
+            BooleanSupplier itemUseAllowed) {
         this(soundSink, target, itemUseAllowed, romTables, spriteSheet, tunicPalette);
     }
 
-    private MagicRod(GameplaySoundSink soundSink, LaunchTarget target,
-                     BooleanSupplier itemUseAllowed, RomTables romTables,
-                     LinkSpriteSheet spriteSheet, LinkTunicPalette tunicPalette) {
+    private MagicRod(
+            GameplaySoundSink soundSink,
+            LaunchTarget target,
+            BooleanSupplier itemUseAllowed,
+            RomTables romTables,
+            LinkSpriteSheet spriteSheet,
+            LinkTunicPalette tunicPalette) {
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");
         this.itemUseAllowed = Objects.requireNonNull(itemUseAllowed, "itemUseAllowed");
-        if ((romTables == null) != (spriteSheet == null)
-            || (romTables == null) != (tunicPalette == null)) {
+        if ((romTables == null) != (spriteSheet == null) || (romTables == null) != (tunicPalette == null)) {
             throw new IllegalArgumentException("Magic Rod rendering dependencies must be complete");
         }
         this.romTables = romTables;
@@ -73,8 +78,9 @@ public final class MagicRod implements EquipmentItem {
 
     @Override
     public void onPress() {
-        if (!itemUseAllowed.getAsBoolean() || attackStepCountdown != 0
-            || target.activeProjectileCount() >= MAX_ACTIVE_PROJECTILES) {
+        if (!itemUseAllowed.getAsBoolean()
+                || attackStepCountdown != 0
+                || target.activeProjectileCount() >= MAX_ACTIVE_PROJECTILES) {
             return;
         }
         attackStepCountdown = ATTACK_STEP_MAGIC_ROD;
@@ -111,14 +117,12 @@ public final class MagicRod implements EquipmentItem {
     }
 
     @Override
-    public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY,
-                       int direction, int offsetX, int offsetY) {
+    public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {
         if (attackStepCountdown == 0 || romTables == null) {
             return;
         }
 
-        int rowOffset = (attackStepCountdown & ATTACK_STEP_DURATION_MASK)
-            < FORWARD_SWING_THRESHOLD ? 0 : 4;
+        int rowOffset = (attackStepCountdown & ATTACK_STEP_DURATION_MASK) < FORWARD_SWING_THRESHOLD ? 0 : 4;
         int romDirection = toRomDirection(direction);
         int tableIndex = rowOffset + romDirection;
         int x = linkPixelX + romTables.magicRodXOffset(tableIndex) + offsetX;
@@ -128,23 +132,31 @@ public final class MagicRod implements EquipmentItem {
         int attr0 = romTables.magicRodAttribute(tableIndex, 0);
         int attr1 = romTables.magicRodAttribute(tableIndex, 1);
         if (tile0 != 0xFF) {
-            drawTile(displayBuffer, spriteSheet.tile(tile0), x, y, attr0,
-                tunicPalette.forObjectPalette(attr0 & 0x07));
+            drawTile(displayBuffer, spriteSheet.tile(tile0), x, y, attr0, tunicPalette.forObjectPalette(attr0 & 0x07));
         }
         if (tile1 != 0xFF) {
-            drawTile(displayBuffer, spriteSheet.tile(tile1), x + 8, y, attr1,
-                tunicPalette.forObjectPalette(attr1 & 0x07));
+            drawTile(
+                    displayBuffer,
+                    spriteSheet.tile(tile1),
+                    x + 8,
+                    y,
+                    attr1,
+                    tunicPalette.forObjectPalette(attr1 & 0x07));
         }
     }
 
-    public void submitOam(linksawakening.render.OamSink sink, int linkPixelX, int linkPixelY,
-                       int direction, int offsetX, int offsetY) {
+    public void submitOam(
+            linksawakening.render.OamSink sink,
+            int linkPixelX,
+            int linkPixelY,
+            int direction,
+            int offsetX,
+            int offsetY) {
         if (attackStepCountdown == 0 || romTables == null) {
             return;
         }
 
-        int rowOffset = (attackStepCountdown & ATTACK_STEP_DURATION_MASK)
-            < FORWARD_SWING_THRESHOLD ? 0 : 4;
+        int rowOffset = (attackStepCountdown & ATTACK_STEP_DURATION_MASK) < FORWARD_SWING_THRESHOLD ? 0 : 4;
         int romDirection = toRomDirection(direction);
         int tableIndex = rowOffset + romDirection;
         int x = linkPixelX + romTables.magicRodXOffset(tableIndex) + offsetX;
@@ -154,10 +166,24 @@ public final class MagicRod implements EquipmentItem {
         int attr0 = romTables.magicRodAttribute(tableIndex, 0);
         int attr1 = romTables.magicRodAttribute(tableIndex, 1);
         if (tile0 != 0xFF) {
-            sink.append(spriteSheet.tile(tile0), x, y, (attr0 & 32) != 0, (attr0 & 64) != 0, tunicPalette.forObjectPalette(attr0 & 0x07), false);
+            sink.append(
+                    spriteSheet.tile(tile0),
+                    x,
+                    y,
+                    (attr0 & 32) != 0,
+                    (attr0 & 64) != 0,
+                    tunicPalette.forObjectPalette(attr0 & 0x07),
+                    false);
         }
         if (tile1 != 0xFF) {
-            sink.append(spriteSheet.tile(tile1), x + 8, y, (attr1 & 32) != 0, (attr1 & 64) != 0, tunicPalette.forObjectPalette(attr1 & 0x07), false);
+            sink.append(
+                    spriteSheet.tile(tile1),
+                    x + 8,
+                    y,
+                    (attr1 & 32) != 0,
+                    (attr1 & 64) != 0,
+                    tunicPalette.forObjectPalette(attr1 & 0x07),
+                    false);
         }
     }
 
@@ -171,14 +197,18 @@ public final class MagicRod implements EquipmentItem {
             case Link.DIRECTION_LEFT -> 1;
             case Link.DIRECTION_UP -> 2;
             case Link.DIRECTION_DOWN -> 3;
-            default -> throw new IllegalArgumentException("Link direction out of range: "
-                + javaDirection);
+            default -> throw new IllegalArgumentException("Link direction out of range: " + javaDirection);
         };
     }
 
-    private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY,
-                                 int attributes, int[] palette) {
-        ItemSpriteRenderer.drawTile(buffer, tile, screenX, screenY,
-            (attributes & ATTR_FLIP_X) != 0, (attributes & ATTR_FLIP_Y) != 0, palette);
+    private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY, int attributes, int[] palette) {
+        ItemSpriteRenderer.drawTile(
+                buffer,
+                tile,
+                screenX,
+                screenY,
+                (attributes & ATTR_FLIP_X) != 0,
+                (attributes & ATTR_FLIP_Y) != 0,
+                palette);
     }
 }

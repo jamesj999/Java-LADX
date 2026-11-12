@@ -1,13 +1,12 @@
 package linksawakening.render;
 
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.GPU;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.gpu.Framebuffer;
+import linksawakening.gpu.GPU;
+import org.junit.jupiter.api.Test;
 
 final class FrameSceneTest {
 
@@ -21,15 +20,14 @@ final class FrameSceneTest {
         List<String> calls = new ArrayList<>();
 
         FrameScene scene = FrameScene.of(List.of(
-            context -> {
-                calls.add("first");
-                writePixel(context.buffer(), 0, 0, 0x112233);
-            },
-            context -> {
-                calls.add("second");
-                writePixel(context.buffer(), 1, 0, 0x445566);
-            }
-        ));
+                context -> {
+                    calls.add("first");
+                    writePixel(context.buffer(), 0, 0, 0x112233);
+                },
+                context -> {
+                    calls.add("second");
+                    writePixel(context.buffer(), 1, 0, 0x445566);
+                }));
 
         scene.drawTo(buffer, gpu);
 
@@ -51,7 +49,7 @@ final class FrameSceneTest {
     private static int pixelColor(byte[] buffer, int x, int y) {
         int index = (y * Framebuffer.WIDTH + x) * 4;
         return (Byte.toUnsignedInt(buffer[index]) << 16)
-            | (Byte.toUnsignedInt(buffer[index + 1]) << 8)
-            | Byte.toUnsignedInt(buffer[index + 2]);
+                | (Byte.toUnsignedInt(buffer[index + 1]) << 8)
+                | Byte.toUnsignedInt(buffer[index + 2]);
     }
 }

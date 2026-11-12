@@ -6,8 +6,7 @@ import linksawakening.world.entity.RoomEntity;
 public record LinkAttackStepRequest(int sourceSlot) implements EntityRequest {
     public LinkAttackStepRequest {
         if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
-            throw new IllegalArgumentException(
-                "Link attack-step source slot out of range: " + sourceSlot);
+            throw new IllegalArgumentException("Link attack-step source slot out of range: " + sourceSlot);
         }
     }
 }

@@ -1,8 +1,8 @@
 package linksawakening.world.room;
 
-import linksawakening.rom.RomBank;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
 public final class RoomPaletteLoader {
@@ -54,11 +54,12 @@ public final class RoomPaletteLoader {
     public int[][] loadOverworldObjectPalettes(int roomId) {
         int[][] palettes = composeObjectPalettes(overworldPaletteOffset(roomId));
         if (roomId == 0x0E) {
-            palettes[5] = loadPalette(RomBank.romOffset(RomSymbols.OverworldPalettes.bank(), EAGLES_TOWER_PALETTE_ADDR));
+            palettes[5] =
+                    loadPalette(RomBank.romOffset(RomSymbols.OverworldPalettes.bank(), EAGLES_TOWER_PALETTE_ADDR));
         }
         if (roomId == ROOM_MABE_VILLAGE_SQUARE) {
-            int[] source = loadPalette(RomBank.romOffset(
-                OVERWORLD_PALETTE_TABLE_BANK, MABE_VILLAGE_SQUARE_COLORS_ADDR));
+            int[] source =
+                    loadPalette(RomBank.romOffset(OVERWORLD_PALETTE_TABLE_BANK, MABE_VILLAGE_SQUARE_COLORS_ADDR));
             palettes[7][1] = source[3];
             palettes[7][2] = source[1];
             palettes[7][3] = source[0];
@@ -70,18 +71,16 @@ public final class RoomPaletteLoader {
         return loadIndoor(mapId, roomId, fallbackPalettes, 0);
     }
 
-    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
-                              int tarinFlag) {
+    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int tarinFlag) {
         return loadIndoor(mapId, roomId, fallbackPalettes, tarinFlag, 0);
     }
 
-    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
-                              int tarinFlag, int shieldLevel) {
+    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int tarinFlag, int shieldLevel) {
         return loadIndoor(mapId, roomId, fallbackPalettes, tarinFlag, shieldLevel, false);
     }
 
-    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
-                              int tarinFlag, int shieldLevel, boolean sideScrolling) {
+    public int[][] loadIndoor(
+            int mapId, int roomId, int[][] fallbackPalettes, int tarinFlag, int shieldLevel, boolean sideScrolling) {
         int offset = indoorPaletteOffset(mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
         return offset < 0 ? fallbackPalettes : loadPaletteBlock(offset);
     }
@@ -89,23 +88,27 @@ public final class RoomPaletteLoader {
     public record TransitionPalettes(int[][] background, int[][] objects) {}
 
     /** $21:5185 and $21:425E: room/direction selectors update BG or OBJ 6/7. */
-    public TransitionPalettes indoorTransition(int mapId, int roomId, int direction,
-                                               int[][] baseBackground, int[][] baseObjects,
-                                               int[][] previousBackground, int[][] previousObjects) {
+    public TransitionPalettes indoorTransition(
+            int mapId,
+            int roomId,
+            int direction,
+            int[][] baseBackground,
+            int[][] baseObjects,
+            int[][] previousBackground,
+            int[][] previousObjects) {
         boolean entering = direction == 4;
-        int[][] background = copyPalettes(entering || previousBackground == null
-            ? baseBackground : previousBackground);
-        int[][] objects = copyPalettes(entering || previousObjects == null
-            ? baseObjects : previousObjects);
+        int[][] background = copyPalettes(entering || previousBackground == null ? baseBackground : previousBackground);
+        int[][] objects = copyPalettes(entering || previousObjects == null ? baseObjects : previousObjects);
         int records = RomSymbols.IndoorSpritePaletteIndexData.offset();
         for (int i = 0; i < 0x2D; i++) {
             int record = records + i * 4;
             if ((readRomByte(record)) != mapId
-                || (readRomByte(record + 1)) != roomId
-                || (readRomByte(record + 2)) != direction) continue;
+                    || (readRomByte(record + 1)) != roomId
+                    || (readRomByte(record + 2)) != direction) continue;
             int selector = readRomByte(record + 3);
             if ((selector & 0x80) == 0) break;
-            int pointer = readPointer(RomSymbols.TilemapPaletteTable.plus((selector & 0x3F) * 2).offset());
+            int pointer = readPointer(
+                    RomSymbols.TilemapPaletteTable.plus((selector & 0x3F) * 2).offset());
             int offset = RomBank.romOffset(RomSymbols.OverworldPalettes.bank(), pointer);
             if (entering || (selector & 0x40) == 0) background = loadPaletteBlock(offset);
             if (entering || (selector & 0x40) != 0) {
@@ -136,17 +139,15 @@ public final class RoomPaletteLoader {
         return loadIndoorObjectPalettes(mapId, roomId, sideScrolling, 0);
     }
 
-    public int[][] loadIndoorObjectPalettes(int mapId, int roomId, boolean sideScrolling,
-                                            int tarinFlag) {
+    public int[][] loadIndoorObjectPalettes(int mapId, int roomId, boolean sideScrolling, int tarinFlag) {
         return loadIndoorObjectPalettes(mapId, roomId, sideScrolling, tarinFlag, 0);
     }
 
-    public int[][] loadIndoorObjectPalettes(int mapId, int roomId, boolean sideScrolling,
-                                            int tarinFlag, int shieldLevel) {
+    public int[][] loadIndoorObjectPalettes(
+            int mapId, int roomId, boolean sideScrolling, int tarinFlag, int shieldLevel) {
         // palettes.asm also rewrites indoor room $AA according to wTunicType.
         // Preserve the ROM base row until tunic state is part of this loader's context.
-        int paletteOffset = indoorPaletteOffset(
-            mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
+        int paletteOffset = indoorPaletteOffset(mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
         return paletteOffset < 0 ? loadGlobalObjectPalettes() : composeObjectPalettes(paletteOffset);
     }
 
@@ -157,48 +158,40 @@ public final class RoomPaletteLoader {
         return RomBank.romOffset(RomSymbols.OverworldPalettes.bank(), readPointer(table + paletteIndex * 2));
     }
 
-    private int indoorPaletteOffset(int mapId, int roomId, boolean sideScrolling,
-                                    int tarinFlag, int shieldLevel) {
+    private int indoorPaletteOffset(int mapId, int roomId, boolean sideScrolling, int tarinFlag, int shieldLevel) {
         if (mapId == MAP_COLOR_DUNGEON) {
             return RomBank.romOffset(COLOR_DUNGEON_PALETTE_BANK, COLOR_DUNGEON_PALETTE_ADDR);
         }
-        if (mapId == 0x10 && roomId == 0xA3
-            && usesMarinHouseSpecialPalette(tarinFlag, shieldLevel)) {
-            return RomBank.romOffset(INTERIOR_PALETTES_BANK,
-                marinHousePaletteAddress(tarinFlag));
+        if (mapId == 0x10 && roomId == 0xA3 && usesMarinHouseSpecialPalette(tarinFlag, shieldLevel)) {
+            return RomBank.romOffset(INTERIOR_PALETTES_BANK, marinHousePaletteAddress(tarinFlag));
         }
         if (mapId >= 0 && mapId <= LAST_DUNGEON_PALETTE_MAP) {
-            if (sideScrolling && mapId == MAP_TURTLE_ROCK
-                && usesTurtleRockSideScrollPalette(roomId)) {
-                return RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK,
-                    TURTLE_ROCK_SIDE_SCROLL_PALETTE_ADDR);
+            if (sideScrolling && mapId == MAP_TURTLE_ROCK && usesTurtleRockSideScrollPalette(roomId)) {
+                return RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK, TURTLE_ROCK_SIDE_SCROLL_PALETTE_ADDR);
             }
-            int tableAddress = sideScrolling
-                ? DUNGEON_PALETTES_B_ADDR : DUNGEON_PALETTES_A_ADDR;
-            int table = RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK,
-                tableAddress + mapId * 2);
+            int tableAddress = sideScrolling ? DUNGEON_PALETTES_B_ADDR : DUNGEON_PALETTES_A_ADDR;
+            int table = RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK, tableAddress + mapId * 2);
             return RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK, readPointer(table));
         }
         if (mapId < INDOOR_PALETTE_MAPS_BASE_MAP) {
             return -1;
         }
-        int mapsEntry = RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK,
-            INDOOR_PALETTE_MAPS_ADDR + (mapId - INDOOR_PALETTE_MAPS_BASE_MAP) * 2);
+        int mapsEntry = RomBank.romOffset(
+                INDOOR_PALETTE_MAPS_BANK, INDOOR_PALETTE_MAPS_ADDR + (mapId - INDOOR_PALETTE_MAPS_BASE_MAP) * 2);
         int mapPointer = readPointer(mapsEntry);
         if (mapPointer == 0) {
             return -1;
         }
-        int paletteIndex = readRomByte(
-            RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK, mapPointer + roomId));
-        int palettePointer = readPointer(RomBank.romOffset(INTERIOR_PALETTES_BANK,
-            INTERIOR_PALETTES_ADDR + paletteIndex * 2));
+        int paletteIndex = readRomByte(RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK, mapPointer + roomId));
+        int palettePointer =
+                readPointer(RomBank.romOffset(INTERIOR_PALETTES_BANK, INTERIOR_PALETTES_ADDR + paletteIndex * 2));
         return palettePointer == 0 ? -1 : RomBank.romOffset(INTERIOR_PALETTES_BANK, palettePointer);
     }
 
     private static int marinHousePaletteAddress(int tarinFlag) {
         return tarinFlag == 1 || tarinFlag == 2
-            ? MARIN_HOUSE_TRANSFORMED_PALETTE_ADDR
-            : MARIN_HOUSE_INITIAL_PALETTE_ADDR;
+                ? MARIN_HOUSE_TRANSFORMED_PALETTE_ADDR
+                : MARIN_HOUSE_INITIAL_PALETTE_ADDR;
     }
 
     private static boolean usesMarinHouseSpecialPalette(int tarinFlag, int shieldLevel) {
@@ -230,16 +223,14 @@ public final class RoomPaletteLoader {
     private int[] loadPalette(int offset) {
         int[] palette = new int[4];
         for (int color = 0; color < palette.length; color++) {
-            int encoded = readRomByte(offset++)
-                | (readRomByte(offset++) << 8);
+            int encoded = readRomByte(offset++) | (readRomByte(offset++) << 8);
             palette[color] = RomBank.decodeRgb555(encoded);
         }
         return palette;
     }
 
     private int readPointer(int offset) {
-        return readRomByte(offset)
-            | (readRomByte(offset + 1) << 8);
+        return readRomByte(offset) | (readRomByte(offset + 1) << 8);
     }
 
     private int[][] loadPaletteBlock(int paletteOffset) {

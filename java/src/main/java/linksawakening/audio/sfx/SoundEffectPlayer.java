@@ -1,11 +1,10 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.audio.apu.GameBoyApu;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
+import linksawakening.audio.apu.GameBoyApu;
 
 public final class SoundEffectPlayer {
     private static final String ROM_RESOURCE = "rom/azle.gbc";
@@ -75,9 +74,13 @@ public final class SoundEffectPlayer {
         return isPlaying() ? currentEffect : null;
     }
 
-    public boolean ownsChannel(int channel) { return engine.ownsChannel(channel); }
+    public boolean ownsChannel(int channel) {
+        return engine.ownsChannel(channel);
+    }
 
-    public boolean takeWaveRestoreRequest() { return engine.takeWaveRestoreRequest(); }
+    public boolean takeWaveRestoreRequest() {
+        return engine.takeWaveRestoreRequest();
+    }
 
     public void stop() {
         currentEffect = null;

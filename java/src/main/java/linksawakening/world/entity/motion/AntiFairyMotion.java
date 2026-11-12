@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 AntiFairyEntityHandler's random-speed bounce loop. */
 public final class AntiFairyMotion {
@@ -26,9 +25,11 @@ public final class AntiFairyMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter,
-                       RoomEntityBackgroundCollision backgroundCollision,
-                       IntSupplier randomByteSupplier) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            RoomEntityBackgroundCollision backgroundCollision,
+            IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, randomByteSupplier);
@@ -40,21 +41,32 @@ public final class AntiFairyMotion {
         // ApplyEntityInteractionWithBackground populates directional flags;
         // the handler prioritizes a horizontal collision over a vertical one.
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
-                directionForHorizontalSpeed(speedX[slot]), x, y)) {
+            if (x != entity.x()
+                    && backgroundCollision.blocks(entity, directionForHorizontalSpeed(speedX[slot]), x, y)) {
                 x = entity.x();
                 speedX[slot] = negateByte(speedX[slot]);
-            } else if (y != entity.y() && backgroundCollision.blocks(entity,
-                directionForVerticalSpeed(speedY[slot]), x, y)) {
+            } else if (y != entity.y()
+                    && backgroundCollision.blocks(entity, directionForVerticalSpeed(speedY[slot]), x, y)) {
                 y = entity.y();
                 speedY[slot] = negateByte(speedY[slot]);
             }
         }
 
         int variant = (frameCounter >>> 3) & 0x01;
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -89,8 +101,7 @@ public final class AntiFairyMotion {
         return signedByte(speed) < 0 ? 2 : 3;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;

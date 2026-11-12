@@ -1,10 +1,12 @@
 package linksawakening.audio.apu;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 class NoiseEnvelopeWriteTest {
-    @Test void initialVolumeWriteWaitsForTriggerButDacOffTakesEffectImmediately() {
+    @Test
+    void initialVolumeWriteWaitsForTriggerButDacOffTakesEffectImmediately() {
         NoiseChannel channel = new NoiseChannel(65536);
         NoiseChannel reference = new NoiseChannel(65536);
         for (NoiseChannel noise : new NoiseChannel[] {channel, reference}) {
@@ -25,7 +27,8 @@ class NoiseEnvelopeWriteTest {
         assertEquals(0, channel.render());
     }
 
-    @Test void squareInitialVolumeAlsoWaitsForTrigger() {
+    @Test
+    void squareInitialVolumeAlsoWaitsForTrigger() {
         SquareChannel channel = new SquareChannel(65536);
         SquareChannel reference = new SquareChannel(65536);
         for (SquareChannel square : new SquareChannel[] {channel, reference}) {

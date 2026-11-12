@@ -1,11 +1,10 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
-
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
 
 /** Port of {@code UseMagicPowder} and {@code SprinkleMagicPowder}. */
 public final class MagicPowder implements EquipmentItem {
@@ -21,6 +20,7 @@ public final class MagicPowder implements EquipmentItem {
         boolean magicPowderAttackStepActive();
 
         int linkPositionZ();
+
         void presentToadstool();
     }
 
@@ -29,13 +29,15 @@ public final class MagicPowder implements EquipmentItem {
     private final SprinkleTarget target;
     private final BooleanSupplier itemUseAllowed;
 
-    public MagicPowder(PlayerState playerState, GameplaySoundSink soundSink,
-                       SprinkleTarget target) {
+    public MagicPowder(PlayerState playerState, GameplaySoundSink soundSink, SprinkleTarget target) {
         this(playerState, soundSink, target, () -> true);
     }
 
-    public MagicPowder(PlayerState playerState, GameplaySoundSink soundSink,
-                       SprinkleTarget target, BooleanSupplier itemUseAllowed) {
+    public MagicPowder(
+            PlayerState playerState,
+            GameplaySoundSink soundSink,
+            SprinkleTarget target,
+            BooleanSupplier itemUseAllowed) {
         this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");

@@ -1,10 +1,9 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
-
-import java.util.Objects;
 
 /**
  * The edge-triggered Ocarina use path from {@code UseOcarina} in bank $02.
@@ -33,8 +32,7 @@ public final class Ocarina implements EquipmentItem {
     private final GameplaySoundSink soundSink;
     private final PlaybackTarget target;
 
-    public Ocarina(PlayerState playerState, GameplaySoundSink soundSink,
-                   PlaybackTarget target) {
+    public Ocarina(PlayerState playerState, GameplaySoundSink soundSink, PlaybackTarget target) {
         this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");

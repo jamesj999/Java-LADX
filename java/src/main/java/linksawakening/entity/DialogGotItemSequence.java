@@ -34,9 +34,23 @@ final class DialogGotItemSequence {
         return openForItem;
     }
 
-    void clear() { item = 0; }
-    void reset() { item = countdown = presentedItem = 0; }
-    int item() { return item; }
-    int countdown() { return countdown; }
-    int presentedItem() { return presentedItem; }
+    void clear() {
+        item = 0;
+    }
+
+    void reset() {
+        item = countdown = presentedItem = 0;
+    }
+
+    int item() {
+        return item;
+    }
+
+    int countdown() {
+        return countdown;
+    }
+
+    int presentedItem() {
+        return presentedItem;
+    }
 }

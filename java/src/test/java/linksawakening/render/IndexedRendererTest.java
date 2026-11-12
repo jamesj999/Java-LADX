@@ -1,11 +1,11 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.world.room.RoomConstants;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class IndexedRendererTest {
 
@@ -23,15 +23,12 @@ final class IndexedRendererTest {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         int rawTileColor = 0x112233;
         int signedTileColor = 0x445566;
-        int[][] palettes = {
-            { 0, rawTileColor, signedTileColor, 0 }
-        };
+        int[][] palettes = {{0, rawTileColor, signedTileColor, 0}};
 
         writeSolidTile(gpu, 0x000, 1);
         writeSolidTile(gpu, 0x100, 2);
 
-        IndexedRenderer.renderBackground(buffer, gpu, new int[] { 0x00 }, new int[] { 0x00 },
-            palettes, 1, 1);
+        IndexedRenderer.renderBackground(buffer, gpu, new int[] {0x00}, new int[] {0x00}, palettes, 1, 1);
 
         assertEquals(signedTileColor, firstPixelColor(buffer));
     }
@@ -42,19 +39,16 @@ final class IndexedRendererTest {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         int leftColor = 0x112233;
         int rightColor = 0x445566;
-        int[][] palettes = {
-            { 0, leftColor, rightColor, 0 }
-        };
-        int[] tilemap = { 0x80, 0x81 };
-        int[] attrmap = { 0x00, 0x00 };
+        int[][] palettes = {{0, leftColor, rightColor, 0}};
+        int[] tilemap = {0x80, 0x81};
+        int[] attrmap = {0x00, 0x00};
         int[] lineScrollX = new int[Framebuffer.HEIGHT];
 
         writeSolidTile(gpu, 0x80, 1);
         writeSolidTile(gpu, 0x81, 2);
         lineScrollX[8] = 8;
 
-        IndexedRenderer.renderBackgroundLineScroll(buffer, gpu, tilemap, attrmap,
-            palettes, 2, 1, 2, 2, lineScrollX, 0);
+        IndexedRenderer.renderBackgroundLineScroll(buffer, gpu, tilemap, attrmap, palettes, 2, 1, 2, 2, lineScrollX, 0);
 
         assertEquals(leftColor, pixelColor(buffer, 0, 0));
         assertEquals(rightColor, pixelColor(buffer, 0, 8));
@@ -64,9 +58,7 @@ final class IndexedRendererTest {
     void roomLineScrollAddsTheHardwareBgOffsetsToTheRomSourceCoordinates() {
         GPU gpu = new GPU();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        int[][] palettes = {
-            { 0, 0x112233, 0x445566, 0x778899 }
-        };
+        int[][] palettes = {{0, 0x112233, 0x445566, 0x778899}};
         int[] tilemap = new int[20 * 16];
         int[] attrmap = new int[tilemap.length];
         tilemap[0] = 0x80;
@@ -78,8 +70,8 @@ final class IndexedRendererTest {
         writeSolidTile(gpu, 0x82, 1);
         writeSolidTile(gpu, 0x83, 3);
 
-        IndexedRenderer.renderRoomLineScroll(buffer, gpu, tilemap, attrmap, palettes,
-            new int[RoomConstants.ROOM_PIXEL_HEIGHT], 8, 8);
+        IndexedRenderer.renderRoomLineScroll(
+                buffer, gpu, tilemap, attrmap, palettes, new int[RoomConstants.ROOM_PIXEL_HEIGHT], 8, 8);
 
         assertEquals(0x778899, pixelColor(buffer, 0, 0));
     }
@@ -90,7 +82,7 @@ final class IndexedRendererTest {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         int topColor = 0x112233;
         int bottomColor = 0x445566;
-        int[] palette = { 0, topColor, bottomColor, 0 };
+        int[] palette = {0, topColor, bottomColor, 0};
 
         writeSolidTile(gpu, 0x20, 1);
         writeSolidTile(gpu, 0x21, 2);
@@ -118,7 +110,7 @@ final class IndexedRendererTest {
     private static int pixelColor(byte[] buffer, int x, int y) {
         int index = (y * Framebuffer.WIDTH + x) * 4;
         return (Byte.toUnsignedInt(buffer[index]) << 16)
-            | (Byte.toUnsignedInt(buffer[index + 1]) << 8)
-            | Byte.toUnsignedInt(buffer[index + 2]);
+                | (Byte.toUnsignedInt(buffer[index + 1]) << 8)
+                | Byte.toUnsignedInt(buffer[index + 2]);
     }
 }

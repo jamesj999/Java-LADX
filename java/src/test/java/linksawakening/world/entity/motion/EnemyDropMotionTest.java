@@ -1,16 +1,13 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class EnemyDropMotionTest {
 
@@ -72,18 +69,20 @@ final class EnemyDropMotionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"0, 224, 12, 48, 64, 15, 6", "0, 224, 12, 80, 96, 15, 250",
-        "0, 224, 1, 80, 96, 15, 0", "0, 244, 12, 48, 64, 0, 0",
-        "2, 224, 12, 48, 64, 0, 0"})
+    @CsvSource({
+        "0, 224, 12, 48, 64, 15, 6",
+        "0, 224, 12, 80, 96, 15, 250",
+        "0, 224, 1, 80, 96, 15, 0",
+        "0, 244, 12, 48, 64, 0, 0",
+        "2, 224, 12, 48, 64, 0, 0"
+    })
     void landingAppliesRomPlanarDampingAndClearsBothAxesWhenSettled(
-        int ground, int fallingSpeedZ, int planarLength, int linkX, int linkY,
-        int nextZ, int nextPlanar) {
+            int ground, int fallingSpeedZ, int planarLength, int linkX, int linkY, int nextZ, int nextPlanar) {
         EnemyDropMotion motion = new EnemyDropMotion();
         motion.initialize(0, false, fallingSpeedZ);
         motion.initializeAwayFromLink(0, 0x40, 0x50, linkX, linkY, planarLength);
 
-        RoomEntity drop = motion.bounce(entity(0, 0x2E, 0x40, 0x50, 0xFF),
-            ground, false, false);
+        RoomEntity drop = motion.bounce(entity(0, 0x2E, 0x40, 0x50, 0xFF), ground, false, false);
 
         assertEquals(0, drop.z());
         assertEquals(nextZ, motion.speedZ(0));
@@ -116,10 +115,8 @@ final class EnemyDropMotionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"1, 48, 7, 12", "1, 48, 8, 11", "1, 80, 8, 245",
-        "0, 48, 8, 12", "2, 48, 8, 11", "3, 48, 8, 11"})
-    void sideViewNonzeroGroundStatusSlowsXEveryEighthFrame(
-        int ground, int linkX, int frame, int speedX) {
+    @CsvSource({"1, 48, 7, 12", "1, 48, 8, 11", "1, 80, 8, 245", "0, 48, 8, 12", "2, 48, 8, 11", "3, 48, 8, 11"})
+    void sideViewNonzeroGroundStatusSlowsXEveryEighthFrame(int ground, int linkX, int frame, int speedX) {
         EnemyDropMotion motion = new EnemyDropMotion();
         motion.initialize(0, true);
         motion.initializeAwayFromLink(0, 0x40, 0x50, linkX, 0x50, 0x0C);
@@ -128,7 +125,19 @@ final class EnemyDropMotionTest {
     }
 
     private static RoomEntity entity(int slot, int type, int x, int y, int z) {
-        return new RoomEntity(slot, -1, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1, 0, 0, z, -1, false);
+        return new RoomEntity(
+                slot,
+                -1,
+                type,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(type),
+                -1,
+                0,
+                0,
+                z,
+                -1,
+                false);
     }
 }

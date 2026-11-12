@@ -1,11 +1,10 @@
 package linksawakening.audio.browser;
 
-import linksawakening.audio.sfx.SoundEffect;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import linksawakening.audio.sfx.SoundEffect;
 
 public final class SoundEffectBrowserModel {
     private final List<SoundEffect> effects;

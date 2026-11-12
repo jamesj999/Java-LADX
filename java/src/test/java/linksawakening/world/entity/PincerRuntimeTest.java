@@ -1,34 +1,22 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class PincerRuntimeTest {
 
     @Test
     void catalogReadsPincersTenPairDisplayListFromBankSeven() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(0xB0, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition definition =
+                new EntitySpriteHandlerCatalog(loadRom()).forEntityType(0xB0, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertEquals(0x07, definition.bank());
         assertEquals(0x542B, definition.address());
@@ -53,15 +41,23 @@ final class PincerRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(0xB0,
-            EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xB0, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 48, 40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(48, 40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                48,
+                40,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(
+                        48, 40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, runtime.enemies().pincerState(0));
         assertEquals(0, runtime.enemies().transitionCountdown(0));
@@ -78,11 +74,13 @@ final class PincerRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(0xB0,
-            EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xB0, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, () -> 0));

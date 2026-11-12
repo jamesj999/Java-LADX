@@ -1,10 +1,10 @@
 package linksawakening.entity;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
 import linksawakening.rom.RomBank;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 final class LinkTunicPaletteTest {
 
@@ -17,16 +17,20 @@ final class LinkTunicPaletteTest {
 
         LinkTunicPalette palette = LinkTunicPalette.loadFromRom(rom);
 
-        assertArrayEquals(new int[] {0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF},
-            palette.forTunic(PlayerState.TUNIC_GREEN));
-        assertArrayEquals(new int[] {
-                RomBank.decodeRgb555(0x0210), RomBank.decodeRgb555(0x0421),
-                RomBank.decodeRgb555(0x0632), RomBank.decodeRgb555(0x0843)},
-            palette.forTunic(PlayerState.TUNIC_RED));
-        assertArrayEquals(new int[] {
-                RomBank.decodeRgb555(0x0A54), RomBank.decodeRgb555(0x0C65),
-                RomBank.decodeRgb555(0x0E76), RomBank.decodeRgb555(0x1087)},
-            palette.forTunic(PlayerState.TUNIC_BLUE));
+        assertArrayEquals(
+                new int[] {0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF}, palette.forTunic(PlayerState.TUNIC_GREEN));
+        assertArrayEquals(
+                new int[] {
+                    RomBank.decodeRgb555(0x0210), RomBank.decodeRgb555(0x0421),
+                    RomBank.decodeRgb555(0x0632), RomBank.decodeRgb555(0x0843)
+                },
+                palette.forTunic(PlayerState.TUNIC_RED));
+        assertArrayEquals(
+                new int[] {
+                    RomBank.decodeRgb555(0x0A54), RomBank.decodeRgb555(0x0C65),
+                    RomBank.decodeRgb555(0x0E76), RomBank.decodeRgb555(0x1087)
+                },
+                palette.forTunic(PlayerState.TUNIC_BLUE));
     }
 
     @Test
@@ -38,18 +42,16 @@ final class LinkTunicPaletteTest {
         int[] returned = palette.forTunic(PlayerState.TUNIC_GREEN);
         returned[2] = 0;
 
-        assertArrayEquals(new int[] {0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF},
-            palette.forTunic(PlayerState.TUNIC_GREEN));
+        assertArrayEquals(
+                new int[] {0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF}, palette.forTunic(PlayerState.TUNIC_GREEN));
     }
 
     @Test
     void noRomCompatibilityKeepsLegacyTunicStatesVisible() {
         LinkTunicPalette palette = LinkTunicPalette.greenCompatibility();
 
-        assertArrayEquals(palette.forTunic(PlayerState.TUNIC_GREEN),
-            palette.forTunic(PlayerState.TUNIC_RED));
-        assertArrayEquals(palette.forTunic(PlayerState.TUNIC_GREEN),
-            palette.forTunic(PlayerState.TUNIC_BLUE));
+        assertArrayEquals(palette.forTunic(PlayerState.TUNIC_GREEN), palette.forTunic(PlayerState.TUNIC_RED));
+        assertArrayEquals(palette.forTunic(PlayerState.TUNIC_GREEN), palette.forTunic(PlayerState.TUNIC_BLUE));
     }
 
     private static byte[] syntheticRom() {

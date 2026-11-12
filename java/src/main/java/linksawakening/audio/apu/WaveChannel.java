@@ -102,7 +102,9 @@ final class WaveChannel {
         return 1.0 - digitalSum / steps / 7.5;
     }
 
-    boolean dacEnabled() { return (dacRegister & 0x80) != 0; }
+    boolean dacEnabled() {
+        return (dacRegister & 0x80) != 0;
+    }
 
     private void trigger() {
         length.trigger();

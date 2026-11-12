@@ -15,9 +15,13 @@ public final class InventoryRenderLayer implements HardwareRenderLayer {
         this.roomPalettes = roomPalettes;
     }
 
+    @Override
+    public boolean supportsHardware() {
+        return true;
+    }
 
-    @Override public boolean supportsHardware() { return true; }
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (inventoryController.inventoryAppearing())
             frame.hideGameplayObjectsUnderWindow(inventoryController.windowY());
         inventoryController.submit(frame, gpu, roomPalettes);

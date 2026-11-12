@@ -1,11 +1,10 @@
 package linksawakening.world.object;
 
+import linksawakening.entity.Link;
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-
-import linksawakening.entity.Link;
-import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.RomTables;
 
 /**
@@ -48,26 +47,32 @@ public final class OverworldBushInteraction {
     private final byte[] romData;
     private final RomTables romTables;
 
-    public record CutResult(boolean changed, int originalObjectId, int revealedObjectId,
-                            boolean bushLeavesVisible, GameplaySoundEvent soundEvent) {
+    public record CutResult(
+            boolean changed,
+            int originalObjectId,
+            int revealedObjectId,
+            boolean bushLeavesVisible,
+            GameplaySoundEvent soundEvent) {
         public static CutResult unchanged(int originalObjectId) {
             return new CutResult(false, originalObjectId, originalObjectId, false, null);
         }
     }
 
-    private record StaticObjectRule(int objectId, boolean bushLeavesVisible,
-                                    RevealedObjectResolver revealedObjectResolver) {
+    private record StaticObjectRule(
+            int objectId, boolean bushLeavesVisible, RevealedObjectResolver revealedObjectResolver) {
         private CutResult cut(OverworldBushInteraction interaction, int roomId, boolean isGbcOverworld) {
             return apply(interaction, roomId, isGbcOverworld, GameplaySoundEvent.CUT_GRASS);
         }
 
-        private CutResult reveal(OverworldBushInteraction interaction, int roomId,
-                                 boolean isGbcOverworld) {
+        private CutResult reveal(OverworldBushInteraction interaction, int roomId, boolean isGbcOverworld) {
             return apply(interaction, roomId, isGbcOverworld, null);
         }
 
-        private CutResult apply(OverworldBushInteraction interaction, int roomId,
-                                boolean isGbcOverworld, GameplaySoundEvent soundEvent) {
+        private CutResult apply(
+                OverworldBushInteraction interaction,
+                int roomId,
+                boolean isGbcOverworld,
+                GameplaySoundEvent soundEvent) {
             int revealed = revealedObjectResolver.resolve(interaction, roomId, isGbcOverworld);
             return new CutResult(true, objectId, revealed, bushLeavesVisible, soundEvent);
         }
@@ -80,8 +85,10 @@ public final class OverworldBushInteraction {
 
     private static final StaticObjectRule[] CUTTABLE_OBJECT_RULES = {
         new StaticObjectRule(OBJECT_BUSH, true, OverworldBushInteraction::revealGroundAfterCut),
-        new StaticObjectRule(OBJECT_BUSH_GROUND_STAIRS, true,
-            (interaction, roomId, isGbcOverworld) -> interaction.revealBushCoveredStairs(roomId)),
+        new StaticObjectRule(
+                OBJECT_BUSH_GROUND_STAIRS,
+                true,
+                (interaction, roomId, isGbcOverworld) -> interaction.revealBushCoveredStairs(roomId)),
         new StaticObjectRule(OBJECT_TALL_GRASS, true, OverworldBushInteraction::revealGroundAfterCut),
     };
 
@@ -95,10 +102,9 @@ public final class OverworldBushInteraction {
      * Returns {@code -1} when static-object sword collision is inactive or the
      * hit point falls outside the active 10x8 room area.
      */
-    public int swordHitRoomObjectLocation(boolean swordActive, int javaDirection,
-                                          int linkPixelX, int linkPixelY) {
+    public int swordHitRoomObjectLocation(boolean swordActive, int javaDirection, int linkPixelX, int linkPixelY) {
         return swordHitRoomObjectLocationForCollisionIndex(
-            swordActive, toRomDirection(javaDirection), linkPixelX, linkPixelY);
+                swordActive, toRomDirection(javaDirection), linkPixelX, linkPixelY);
     }
 
     /**
@@ -106,8 +112,8 @@ public final class OverworldBushInteraction {
      * the ROM collision-map index:
      * 0-3 = cardinal swing, 4-11 = spin-attack angles.
      */
-    public int swordHitRoomObjectLocationForCollisionIndex(boolean swordActive, int collisionIndex,
-                                                           int linkPixelX, int linkPixelY) {
+    public int swordHitRoomObjectLocationForCollisionIndex(
+            boolean swordActive, int collisionIndex, int linkPixelX, int linkPixelY) {
         if (!swordActive) {
             return -1;
         }
@@ -131,41 +137,66 @@ public final class OverworldBushInteraction {
      * Apply the overworld bush reveal logic for the current sword-hit cell.
      * Returns {@code true} if a supported bush object was changed.
      */
-    public boolean cutBush(boolean swordActive, int javaDirection,
-                           int linkPixelX, int linkPixelY,
-                           int roomId, boolean isGbcOverworld,
-                           int[] roomObjectsArea,
-                           int[] mutableRenderValues,
-                           int[] fallbackOverlay,
-                           int[] roomTileIds,
-                           int[] roomTileAttrs) {
+    public boolean cutBush(
+            boolean swordActive,
+            int javaDirection,
+            int linkPixelX,
+            int linkPixelY,
+            int roomId,
+            boolean isGbcOverworld,
+            int[] roomObjectsArea,
+            int[] mutableRenderValues,
+            int[] fallbackOverlay,
+            int[] roomTileIds,
+            int[] roomTileAttrs) {
         int location = swordHitRoomObjectLocation(swordActive, javaDirection, linkPixelX, linkPixelY);
         if (location < 0) {
             return false;
         }
-        return cutBushAtLocation(location, roomId, isGbcOverworld, roomObjectsArea,
-            mutableRenderValues, fallbackOverlay, roomTileIds, roomTileAttrs);
+        return cutBushAtLocation(
+                location,
+                roomId,
+                isGbcOverworld,
+                roomObjectsArea,
+                mutableRenderValues,
+                fallbackOverlay,
+                roomTileIds,
+                roomTileAttrs);
     }
 
     /**
      * Apply bush reveal logic at a specific YX-packed room-object location.
      */
-    public boolean cutBushAtLocation(int location, int roomId, boolean isGbcOverworld,
-                                     int[] roomObjectsArea,
-                                     int[] mutableRenderValues,
-                                     int[] fallbackOverlay,
-                                     int[] roomTileIds,
-                                     int[] roomTileAttrs) {
-        return cutObjectAtLocation(location, roomId, isGbcOverworld, roomObjectsArea,
-            mutableRenderValues, fallbackOverlay, roomTileIds, roomTileAttrs).changed();
+    public boolean cutBushAtLocation(
+            int location,
+            int roomId,
+            boolean isGbcOverworld,
+            int[] roomObjectsArea,
+            int[] mutableRenderValues,
+            int[] fallbackOverlay,
+            int[] roomTileIds,
+            int[] roomTileAttrs) {
+        return cutObjectAtLocation(
+                        location,
+                        roomId,
+                        isGbcOverworld,
+                        roomObjectsArea,
+                        mutableRenderValues,
+                        fallbackOverlay,
+                        roomTileIds,
+                        roomTileAttrs)
+                .changed();
     }
 
-    public CutResult cutObjectAtLocation(int location, int roomId, boolean isGbcOverworld,
-                                         int[] roomObjectsArea,
-                                         int[] mutableRenderValues,
-                                         int[] fallbackOverlay,
-                                         int[] roomTileIds,
-                                         int[] roomTileAttrs) {
+    public CutResult cutObjectAtLocation(
+            int location,
+            int roomId,
+            boolean isGbcOverworld,
+            int[] roomObjectsArea,
+            int[] mutableRenderValues,
+            int[] fallbackOverlay,
+            int[] roomTileIds,
+            int[] roomTileAttrs) {
         int areaIndex = ROOM_OBJECTS_BASE + location;
         if (roomObjectsArea == null || areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
             return CutResult.unchanged(0xFF);
@@ -183,8 +214,8 @@ public final class OverworldBushInteraction {
             mutableRenderValues[areaIndex] = result.revealedObjectId();
         }
 
-        refreshRoomObjectCell(roomId, location, roomObjectsArea, mutableRenderValues,
-            fallbackOverlay, roomTileIds, roomTileAttrs);
+        refreshRoomObjectCell(
+                roomId, location, roomObjectsArea, mutableRenderValues, fallbackOverlay, roomTileIds, roomTileAttrs);
         return result;
     }
 
@@ -193,12 +224,15 @@ public final class OverworldBushInteraction {
      * Bombs use the same reveal resolver as sword cuts, but do not emit the
      * sword's cut-grass sound; the spawned bomb-side effect owns its sound.
      */
-    public CutResult revealObjectAtLocation(int location, int roomId, boolean isGbcOverworld,
-                                            int[] roomObjectsArea,
-                                            int[] mutableRenderValues,
-                                            int[] fallbackOverlay,
-                                            int[] roomTileIds,
-                                            int[] roomTileAttrs) {
+    public CutResult revealObjectAtLocation(
+            int location,
+            int roomId,
+            boolean isGbcOverworld,
+            int[] roomObjectsArea,
+            int[] mutableRenderValues,
+            int[] fallbackOverlay,
+            int[] roomTileIds,
+            int[] roomTileAttrs) {
         int areaIndex = ROOM_OBJECTS_BASE + location;
         if (roomObjectsArea == null || areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
             return CutResult.unchanged(0xFF);
@@ -215,8 +249,8 @@ public final class OverworldBushInteraction {
             mutableRenderValues[areaIndex] = result.revealedObjectId();
         }
 
-        refreshRoomObjectCell(roomId, location, roomObjectsArea, mutableRenderValues,
-            fallbackOverlay, roomTileIds, roomTileAttrs);
+        refreshRoomObjectCell(
+                roomId, location, roomObjectsArea, mutableRenderValues, fallbackOverlay, roomTileIds, roomTileAttrs);
         return result;
     }
 
@@ -224,12 +258,14 @@ public final class OverworldBushInteraction {
      * Refresh the 2x2 tile ids and attrs for one room-object cell from the
      * authoritative object/render-value tables.
      */
-    public void refreshRoomObjectCell(int roomId, int location,
-                                      int[] roomObjectsArea,
-                                      int[] mutableRenderValues,
-                                      int[] fallbackOverlay,
-                                      int[] roomTileIds,
-                                      int[] roomTileAttrs) {
+    public void refreshRoomObjectCell(
+            int roomId,
+            int location,
+            int[] roomObjectsArea,
+            int[] mutableRenderValues,
+            int[] fallbackOverlay,
+            int[] roomTileIds,
+            int[] roomTileAttrs) {
         if (roomObjectsArea == null || roomTileIds == null || roomTileAttrs == null) {
             return;
         }
@@ -247,8 +283,10 @@ public final class OverworldBushInteraction {
 
         int objectId = roomObjectsArea[areaIndex];
         int renderValue = objectId;
-        if (mutableRenderValues != null && areaIndex < mutableRenderValues.length
-            && mutableRenderValues[areaIndex] >= 0 && mutableRenderValues[areaIndex] <= 0xFF) {
+        if (mutableRenderValues != null
+                && areaIndex < mutableRenderValues.length
+                && mutableRenderValues[areaIndex] >= 0
+                && mutableRenderValues[areaIndex] <= 0xFF) {
             renderValue = mutableRenderValues[areaIndex];
         } else if (fallbackOverlay != null) {
             int overlayIndex = cellY * OBJECTS_PER_ROW + cellX;

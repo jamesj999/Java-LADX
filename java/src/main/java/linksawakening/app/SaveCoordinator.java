@@ -1,26 +1,22 @@
 package linksawakening.app;
 
+import static linksawakening.world.room.RoomConstants.*;
 
-
+import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
 import linksawakening.scene.BackgroundScene;
-import linksawakening.state.PlayerState;
 import linksawakening.startup.NewGameStartProfile;
+import linksawakening.state.PlayerState;
 import linksawakening.ui.FileSaveController;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
-
-import java.io.IOException;
-
-import static linksawakening.world.room.RoomConstants.*;
-
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /** Persistence and room-entry orchestration, using the current session snapshot. */
 public record SaveCoordinator(
@@ -41,8 +37,7 @@ public record SaveCoordinator(
         Runnable startFileSelection,
         Runnable enterFileSave,
         Consumer<FileSaveController> showFileSave,
-        Function<String,
-        BackgroundScene> fileMenuBackground) {
+        Function<String, BackgroundScene> fileMenuBackground) {
     public void startNewGame() {
         enterGameplay.run();
 
@@ -55,8 +50,15 @@ public record SaveCoordinator(
         link.setDirection(Link.DIRECTION_DOWN);
         gpu.loadBaseTiles(romData);
         roomSession.loadIndoor(profile.mapId(), profile.roomId());
-        roomSession.setRespawnPoint(new Warp(Warp.CATEGORY_INDOOR, profile.mapId(), profile.roomId(),
-            profile.entryX(), profile.entryY(), -1), 0);
+        roomSession.setRespawnPoint(
+                new Warp(
+                        Warp.CATEGORY_INDOOR,
+                        profile.mapId(),
+                        profile.roomId(),
+                        profile.entryX(),
+                        profile.entryY(),
+                        -1),
+                0);
         link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());
         initializeOpening.run();
         playHouseMusic.run();
@@ -69,38 +71,45 @@ public record SaveCoordinator(
         playerState.applySavedGame(saved);
         roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
         roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
-        roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
-            saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
-        roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),
-            saved.colorDungeonItemFlags());
+        roomSession.restoreRoomStatuses(
+                saved.overworldRoomStatus(),
+                saved.indoorARoomStatus(),
+                saved.indoorBRoomStatus(),
+                saved.colorDungeonRoomStatus());
+        roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(), saved.colorDungeonItemFlags());
         roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
         roomSession.setBowWowState(saved.bowWowState());
         roomSession.setTarinFlag(saved.tarinFlag());
         roomSession.setRichardSpokenFlag(saved.richardSpokenFlag());
         roomSession.setHouseNpcTradeItem(playerState.tradeSequenceItem());
-        roomSession.setChestPlayerLevels(playerState.shieldLevel(), playerState.swordLevel(),
-            playerState.powerBraceletLevel());
+        roomSession.setChestPlayerLevels(
+                playerState.shieldLevel(), playerState.swordLevel(), playerState.powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {
             gpu.loadBaseTiles(romData);
-            roomSession.loadIndoorFromSavedPosition(
-                saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
+            roomSession.loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
             link.setDirection(Link.DIRECTION_UP);
         } else {
             roomSession.loadInitialOverworld(saved.spawnMapRoom());
             link.setDirection(Link.DIRECTION_DOWN);
         }
         link.setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
-        roomSession.setRespawnPoint(new Warp(saved.spawnIsIndoor() != 0 ? 1 : 0,
-            saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnPositionX(), saved.spawnPositionY(), -1),
-            saved.spawnIndoorRoom());
+        roomSession.setRespawnPoint(
+                new Warp(
+                        saved.spawnIsIndoor() != 0 ? 1 : 0,
+                        saved.spawnMapId(),
+                        saved.spawnMapRoom(),
+                        saved.spawnPositionX(),
+                        saved.spawnPositionY(),
+                        -1),
+                saved.spawnIndoorRoom());
         restoreOpening.accept(saved);
     }
 
     /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */
     public void finishGameOver(int option) {
         if (playerState.health() == 0) {
-            playerState.setHealth(new linksawakening.rom.Rom(romData).u8(
-                new linksawakening.rom.RomAddress(1, 0x5295).plus(playerState.maxHearts())));
+            playerState.setHealth(new linksawakening.rom.Rom(romData)
+                    .u8(new linksawakening.rom.RomAddress(1, 0x5295).plus(playerState.maxHearts())));
         }
         if (option != 2) saveCurrentPlayerState();
         clearOpening.run();
@@ -123,7 +132,8 @@ public record SaveCoordinator(
                 roomSession.loadInitialOverworld(spawn.destRoom());
                 link.setDirection(Link.DIRECTION_DOWN);
             } else {
-                roomSession.loadIndoorFromSavedPosition(spawn.destMap(), spawn.destRoom(), roomSession.respawnIndoorRoom());
+                roomSession.loadIndoorFromSavedPosition(
+                        spawn.destMap(), spawn.destRoom(), roomSession.respawnIndoorRoom());
                 link.setDirection(Link.DIRECTION_UP);
             }
             link.setRoomEntryRomPosition(spawn.destX(), spawn.destY());
@@ -157,20 +167,20 @@ public record SaveCoordinator(
         saveRamStore.writePlayerState(currentSaveSlot, playerState);
         saveCurrentSpawnLocation();
         if (roomSession != null) {
-            saveRamStore.writeRoomStatuses(currentSaveSlot,
-                roomSession.overworldRoomStatusSnapshot(),
-                roomSession.indoorARoomStatusSnapshot(),
-                roomSession.indoorBRoomStatusSnapshot(),
-                roomSession.colorDungeonRoomStatusSnapshot());
-            saveRamStore.writeDungeonItemFlags(currentSaveSlot,
-                roomSession.dungeonItemFlagsSnapshot(),
-                roomSession.colorDungeonItemFlagsSnapshot());
-            saveRamStore.writeDungeonProgressFlags(currentSaveSlot,
-                roomSession.dungeonProgressFlagsSnapshot());
+            saveRamStore.writeRoomStatuses(
+                    currentSaveSlot,
+                    roomSession.overworldRoomStatusSnapshot(),
+                    roomSession.indoorARoomStatusSnapshot(),
+                    roomSession.indoorBRoomStatusSnapshot(),
+                    roomSession.colorDungeonRoomStatusSnapshot());
+            saveRamStore.writeDungeonItemFlags(
+                    currentSaveSlot,
+                    roomSession.dungeonItemFlagsSnapshot(),
+                    roomSession.colorDungeonItemFlagsSnapshot());
+            saveRamStore.writeDungeonProgressFlags(currentSaveSlot, roomSession.dungeonProgressFlagsSnapshot());
             saveRamStore.writeBowWowState(currentSaveSlot, roomSession.bowWowState());
             saveRamStore.writeTarinFlag(currentSaveSlot, roomSession.tarinFlag());
-            saveRamStore.writeRichardSpokenFlag(
-                currentSaveSlot, roomSession.richardSpokenFlag());
+            saveRamStore.writeRichardSpokenFlag(currentSaveSlot, roomSession.richardSpokenFlag());
         }
         try {
             saveRamStore.flush();
@@ -186,8 +196,14 @@ public record SaveCoordinator(
 
         Warp spawn = roomSession.respawnPoint();
         if (spawn != null) {
-            saveRamStore.writeSpawnLocation(currentSaveSlot, spawn.category() == 0 ? 0 : 1,
-                spawn.destMap(), spawn.destRoom(), spawn.destX(), spawn.destY(), roomSession.respawnIndoorRoom());
+            saveRamStore.writeSpawnLocation(
+                    currentSaveSlot,
+                    spawn.category() == 0 ? 0 : 1,
+                    spawn.destMap(),
+                    spawn.destRoom(),
+                    spawn.destX(),
+                    spawn.destY(),
+                    roomSession.respawnIndoorRoom());
             return;
         }
         ActiveRoom room = roomSession.activeRoom();
@@ -199,12 +215,12 @@ public record SaveCoordinator(
             indoorRoom = saveRamStore.readSlot(currentSaveSlot).spawnIndoorRoom();
         }
         saveRamStore.writeSpawnLocation(
-            currentSaveSlot,
-            isIndoor ? 1 : 0,
-            isIndoor ? room.mapId() : 0,
-            room.roomId(),
-            link.roomEntryRomPositionX(),
-            link.roomEntryRomPositionY(),
-            indoorRoom);
+                currentSaveSlot,
+                isIndoor ? 1 : 0,
+                isIndoor ? room.mapId() : 0,
+                room.roomId(),
+                link.roomEntryRomPositionX(),
+                link.roomEntryRomPositionY(),
+                indoorRoom);
     }
 }

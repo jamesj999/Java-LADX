@@ -1,21 +1,16 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.DroppableRupeeSystem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.function.IntSupplier;
-
 import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @linksawakening.testing.RequiresRom
 final class DroppableRupeeSystemTest {
@@ -113,8 +108,8 @@ final class DroppableRupeeSystemTest {
             for (int x = DROP_WORLD_X - 4; x < DROP_WORLD_X + 4; x++) {
                 int offset = (y * 160 + x) * 4;
                 if ((buffer[offset] & 0xFF) != 0
-                    || (buffer[offset + 1] & 0xFF) != 0
-                    || (buffer[offset + 2] & 0xFF) != 0) {
+                        || (buffer[offset + 1] & 0xFF) != 0
+                        || (buffer[offset + 2] & 0xFF) != 0) {
                     nonTransparentPixels++;
                 }
             }

@@ -1,17 +1,19 @@
 package linksawakening.audio.sfx;
 
+import static linksawakening.audio.sfx.SfxRegisterTrace.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import java.util.ArrayList;
-import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
-import static linksawakening.audio.sfx.SfxRegisterTrace.*;
 
 @linksawakening.testing.RequiresRom
 class JumpLandingTraceTest {
     private static byte[] rom() throws Exception {
-        try (var stream = linksawakening.testing.TestRom.open()) { return stream.readAllBytes(); }
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            return stream.readAllBytes();
+        }
     }
 
     @ParameterizedTest
@@ -33,7 +35,8 @@ class JumpLandingTraceTest {
         assertFalse(trace.player.isPlaying());
     }
 
-    @Test void landingFootstepMatchesNoiseHandTrace() throws Exception {
+    @Test
+    void landingFootstepMatchesNoiseHandTrace() throws Exception {
         var trace = new SfxRegisterTrace(rom());
         trace.start(SoundEffectNamespace.NOISE, 7);
         var expected = new ArrayList<SfxRegisterTrace.Write>();
@@ -50,7 +53,8 @@ class JumpLandingTraceTest {
         assertFalse(trace.apu.isChannelActive(4));
     }
 
-    @Test void landingNoiseDoesNotAbandonTheLedgeJumpJingle() throws Exception {
+    @Test
+    void landingNoiseDoesNotAbandonTheLedgeJumpJingle() throws Exception {
         byte[] data = rom();
         var jump = new SfxRegisterTrace(data);
         var landing = new SfxRegisterTrace(data);
@@ -71,9 +75,12 @@ class JumpLandingTraceTest {
                 assertFalse(combined.player.ownsChannel(4));
             }
         }
-        assertEquals(jump.writes(), combined.writes().stream().filter(w -> w.register() <= 0x14).toList());
-        assertEquals(landing.writes(), combined.writes().stream().filter(w -> w.register() >= 0x20).toList());
+        assertEquals(
+                jump.writes(),
+                combined.writes().stream().filter(w -> w.register() <= 0x14).toList());
+        assertEquals(
+                landing.writes(),
+                combined.writes().stream().filter(w -> w.register() >= 0x20).toList());
         assertFalse(combined.player.isPlaying());
     }
-
 }

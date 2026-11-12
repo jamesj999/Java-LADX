@@ -172,8 +172,7 @@ public final class DialogController {
             }
         }
         // The ROM also scrolls a full odd final line before checking its terminator.
-        if (romTimed && shiftedPage && visibleCharactersOnPage == lineWidth
-                && currentPageLength() >= lineWidth) {
+        if (romTimed && shiftedPage && visibleCharactersOnPage == lineWidth && currentPageLength() >= lineWidth) {
             beginScroll(visibleText());
             scrollBase = lineWidth;
         }
@@ -191,9 +190,13 @@ public final class DialogController {
         return scrollAge > 0 ? 8 : 0;
     }
 
-    public int characterIndex() { return pageStart + visibleCharactersOnPage; }
+    public int characterIndex() {
+        return pageStart + visibleCharactersOnPage;
+    }
 
-    public void setInteractionLocked(boolean locked) { interactionLocked = locked; }
+    public void setInteractionLocked(boolean locked) {
+        interactionLocked = locked;
+    }
 
     public void advance() {
         if (interactionLocked) return;
@@ -526,6 +529,5 @@ public final class DialogController {
         return value.substring(0, terminator);
     }
 
-    private record ParsedText(String text) {
-    }
+    private record ParsedText(String text) {}
 }

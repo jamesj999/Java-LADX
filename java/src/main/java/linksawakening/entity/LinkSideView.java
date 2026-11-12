@@ -1,11 +1,10 @@
 package linksawakening.entity;
 
-import linksawakening.world.transition.Warp;
+import static linksawakening.entity.Link.*;
+import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.PlayerState;
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
 
 final class LinkSideView {
     private final Link link;
@@ -20,7 +19,9 @@ final class LinkSideView {
     /** One-frame hLinkSpeedY write supplied by the side-view platform handler. */
     int sideViewPlatformVerticalSpeedPending = -1;
 
-    LinkSideView(Link link) { this.link = link; }
+    LinkSideView(Link link) {
+        this.link = link;
+    }
 
     /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
     void setSideScrolling(boolean enabled) {
@@ -74,21 +75,23 @@ final class LinkSideView {
         if (platformSpeedY >= 0) sideViewSpeedY = (byte) platformSpeedY;
         int oldX = link.linkMotion.subX, oldY = link.linkMotion.subY;
         moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
-        int centerPhysics = link.collision == null ? 0
-            : link.collision.objectPhysicsFlagAtPoint(link.linkMotion.romEntityX(), link.linkMotion.romEntityY() - 5);
+        int centerPhysics = link.collision == null
+                ? 0
+                : link.collision.objectPhysicsFlagAtPoint(
+                        link.linkMotion.romEntityX(), link.linkMotion.romEntityY() - 5);
         if (!recoiling) {
             if (sideViewModifier == 1 && centerPhysics != 0xB1) sideViewModifier = 0;
-            else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0)
-                sideViewModifier = 1;
+            else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0) sideViewModifier = 1;
         }
         if (!ladderFrame || recoiling) {
             if (recoiling) sideViewSpeedY = (byte) (sideViewSpeedY + 3);
             else if (sideViewSpeedY < 0x40) {
                 sideViewSpeedY++;
-                boolean featherHeld = link.playerState != null && link.inputState != null
-                    && (link.playerState.itemB() == PlayerState.INVENTORY_ROCS_FEATHER
-                        ? link.inputState.isDown(link.inputConfig.bKey())
-                        : link.inputState.isDown(link.inputConfig.aKey()));
+                boolean featherHeld = link.playerState != null
+                        && link.inputState != null
+                        && (link.playerState.itemB() == PlayerState.INVENTORY_ROCS_FEATHER
+                                ? link.inputState.isDown(link.inputConfig.bKey())
+                                : link.inputState.isDown(link.inputConfig.aKey()));
                 if (sideViewSpeedY >= 0 || !featherHeld) sideViewSpeedY++;
             }
         }
@@ -116,18 +119,24 @@ final class LinkSideView {
         link.linkMotion.subX += speedX;
         link.linkMotion.subY += speedY;
         sideViewGrounded = standingOnSideViewEntity;
-        if (link.collision == null || link.linkMotion.romEntityX() < 4 || link.linkMotion.romEntityX() >= 156
-            || link.linkMotion.romEntityY() < 12 || link.linkMotion.romEntityY() >= 128) return;
+        if (link.collision == null
+                || link.linkMotion.romEntityX() < 4
+                || link.linkMotion.romEntityX() >= 156
+                || link.linkMotion.romEntityY() < 12
+                || link.linkMotion.romEntityY() >= 128) return;
         int x = link.linkMotion.romEntityX(), y = link.linkMotion.romEntityY();
-        if (speedX != 0 && (sideViewSolidAt(x + (speedX > 0 ? 3 : -3), y - 8)
-            || link.collision.objectIdAtPoint(x + (speedX > 0 ? 3 : -3), y - 8) == 0xFF)) {
+        if (speedX != 0
+                && (sideViewSolidAt(x + (speedX > 0 ? 3 : -3), y - 8)
+                        || link.collision.objectIdAtPoint(x + (speedX > 0 ? 3 : -3), y - 8) == 0xFF)) {
             link.linkMotion.subX = oldX;
             link.linkMotion.romCollisionType |= speedX > 0 ? 1 : 2;
         }
         int sampleY = y + (speedY < 0 ? -12 : 0);
         int object = link.collision.objectIdAtPoint(x, sampleY);
-        boolean ladderTop = speedY >= 0 && (mask & 8) == 0 && (sampleY & 15) < 3
-            && (object == 0x62 || object == 0x64 || object == 0x66);
+        boolean ladderTop = speedY >= 0
+                && (mask & 8) == 0
+                && (sampleY & 15) < 3
+                && (object == 0x62 || object == 0x64 || object == 0x66);
         if (sideViewSolidAt(x, sampleY) || ladderTop) {
             if (speedY >= 0) {
                 link.linkMotion.subY = (((y & ~15) - 16) << Link.SUB_PIXEL_SHIFT) | (link.linkMotion.subY & 15);
@@ -148,8 +157,7 @@ final class LinkSideView {
 
     /** Applies the side-view platform handler's Link position and speed writes. */
     /** Applies a standing platform contact (the common side-view case). */
-    void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
-                                              int romSpeedY, boolean standing) {
+    void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY, boolean standing) {
         if (horizontalDelta < -0x80 || horizontalDelta > 0x7F) {
             throw new IllegalArgumentException("Side-view platform X delta must be a signed byte");
         }
@@ -170,8 +178,7 @@ final class LinkSideView {
         sideViewPlatformVerticalSpeedPending = standing ? romSpeedY & 0xFF : -1;
     }
 
-    void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
-                                              int romSpeedY) {
+    void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY) {
         applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, true);
     }
 

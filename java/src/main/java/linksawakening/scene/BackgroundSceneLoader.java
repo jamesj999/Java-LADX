@@ -27,10 +27,9 @@ public final class BackgroundSceneLoader {
             attrmap = RomBank.decodeBackgroundMap(romData, spec.attrmapBank(), spec.attrmapAddr(), initial);
         }
         return new BackgroundScene(
-            tilemap,
-            attrmap,
-            RomBank.loadPalettes(romData, spec.palettesBank(), spec.palettesAddr(), 8),
-            RomBank.loadPalettes(romData, spec.palettesBank(), spec.palettesAddr() + 0x40, 8)
-        );
+                tilemap,
+                attrmap,
+                RomBank.loadPalettes(romData, spec.palettesBank(), spec.palettesAddr(), 8),
+                RomBank.loadPalettes(romData, spec.palettesBank(), spec.palettesAddr() + 0x40, 8));
     }
 }

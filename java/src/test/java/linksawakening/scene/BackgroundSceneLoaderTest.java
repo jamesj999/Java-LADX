@@ -1,25 +1,29 @@
 package linksawakening.scene;
 
-import linksawakening.cutscene.IntroCutsceneScript;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.cutscene.IntroCutsceneScript;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class BackgroundSceneLoaderTest {
 
     @Test
     void introSceneSpecsPointAtDisassemblyBackgrounds() {
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6C37, 0x24, 0x5D18, 0x21, 0x7536),
-            BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_SEA));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6D80, 0x24, 0x5D69, 0x21, 0x7536),
-            BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_LINK_FACE));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6F8B, 0x24, 0x7BA7, 0x21, 0x7DEE),
-            BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_BEACH));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x710A, 0x24, 0x7BF0, 0x21, 0x7DEE),
-            BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_TITLE));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6C37, 0x24, 0x5D18, 0x21, 0x7536),
+                BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_SEA));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6D80, 0x24, 0x5D69, 0x21, 0x7536),
+                BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_LINK_FACE));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6F8B, 0x24, 0x7BA7, 0x21, 0x7DEE),
+                BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_BEACH));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x710A, 0x24, 0x7BF0, 0x21, 0x7DEE),
+                BackgroundSceneCatalog.forCutsceneScene(IntroCutsceneScript.SCENE_TITLE));
     }
 
     @Test
@@ -32,18 +36,24 @@ final class BackgroundSceneLoaderTest {
 
     @Test
     void fileMenuSceneSpecsPointAtDisassemblyBackgrounds() {
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6336, 0x24, 0x5F80, 0x21, 0x75B6),
-            BackgroundSceneCatalog.forFileMenuScene("selection"));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6328, 0x24, 0x5F74, 0x21, 0x75B6),
-            BackgroundSceneCatalog.forFileMenuScene("selection_commands"));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x644D, 0x24, 0x6045, 0x21, 0x75B6),
-            BackgroundSceneCatalog.forFileMenuScene("creation"));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6589, 0x24, 0x6115, 0x21, 0x75B6),
-            BackgroundSceneCatalog.forFileMenuScene("erase"));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6660, 0x24, 0x617D, 0x21, 0x75B6),
-            BackgroundSceneCatalog.forFileMenuScene("copy"));
-        assertEquals(new BackgroundSceneSpec(0x08, 0x6A6D, 0x24, 0x6262, 0x21, 0x75B6),
-            BackgroundSceneCatalog.forFileMenuScene("save"));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6336, 0x24, 0x5F80, 0x21, 0x75B6),
+                BackgroundSceneCatalog.forFileMenuScene("selection"));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6328, 0x24, 0x5F74, 0x21, 0x75B6),
+                BackgroundSceneCatalog.forFileMenuScene("selection_commands"));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x644D, 0x24, 0x6045, 0x21, 0x75B6),
+                BackgroundSceneCatalog.forFileMenuScene("creation"));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6589, 0x24, 0x6115, 0x21, 0x75B6),
+                BackgroundSceneCatalog.forFileMenuScene("erase"));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6660, 0x24, 0x617D, 0x21, 0x75B6),
+                BackgroundSceneCatalog.forFileMenuScene("copy"));
+        assertEquals(
+                new BackgroundSceneSpec(0x08, 0x6A6D, 0x24, 0x6262, 0x21, 0x75B6),
+                BackgroundSceneCatalog.forFileMenuScene("save"));
     }
 
     @Test
@@ -85,9 +95,7 @@ final class BackgroundSceneLoaderTest {
         BackgroundScene copy = loader.load(BackgroundSceneCatalog.FILE_COPY);
         BackgroundScene save = loader.load(BackgroundSceneCatalog.FILE_SAVE);
 
-        for (BackgroundScene scene : new BackgroundScene[] {
-            selection, commands, creation, erase, copy, save
-        }) {
+        for (BackgroundScene scene : new BackgroundScene[] {selection, commands, creation, erase, copy, save}) {
             assertEquals(32 * 32, scene.tilemap().length);
             assertEquals(32 * 32, scene.attrmap().length);
             assertEquals(8, scene.palettes().length);
@@ -99,7 +107,8 @@ final class BackgroundSceneLoaderTest {
     void partialFileMenuAttrmapsPreserveSelectionHeartAndBorderColors() {
         var loader = new BackgroundSceneLoader(loadRom());
         // Observed in original CGB VRAM after navigating selection -> erase/copy.
-        for (var spec : new BackgroundSceneSpec[]{BackgroundSceneCatalog.FILE_ERASE, BackgroundSceneCatalog.FILE_COPY}) {
+        for (var spec :
+                new BackgroundSceneSpec[] {BackgroundSceneCatalog.FILE_ERASE, BackgroundSceneCatalog.FILE_COPY}) {
             var scene = loader.load(spec);
             assertEquals(2, scene.attrmap()[0xCB]);
             assertEquals(3, scene.attrmap()[0x1D1]);

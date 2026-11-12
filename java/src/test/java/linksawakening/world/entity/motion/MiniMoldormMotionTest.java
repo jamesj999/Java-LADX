@@ -1,17 +1,14 @@
 package linksawakening.world.entity.motion;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class MiniMoldormMotionTest {
 
@@ -26,8 +23,7 @@ final class MiniMoldormMotionTest {
         assertEquals(0x50, motion.historyX(entity.sourceLoadOrder(), 1));
         assertEquals(0x60, motion.historyY(entity.sourceLoadOrder(), 1));
 
-        MiniMoldormMotion.Update update = motion.advanceAfterHistory(
-            entity, 0, 0, 0, null, () -> 0, 0);
+        MiniMoldormMotion.Update update = motion.advanceAfterHistory(entity, 0, 0, 0, null, () -> 0, 0);
 
         assertEquals(0x50, update.entity().x());
         assertEquals(0x60, update.entity().y());
@@ -46,16 +42,15 @@ final class MiniMoldormMotionTest {
         motion.beginFrame(entity, false);
         motion.advanceAfterHistory(entity, 0, 0, 0, null, () -> 0, 0);
 
-        RoomEntity moved = new RoomEntity(0, 7, 0x29, 0x50, 0x60,
-            EntityStatus.ACTIVE, entity.spriteDefinition(), 0, 0, 0, 0, -1, false);
+        RoomEntity moved = new RoomEntity(
+                0, 7, 0x29, 0x50, 0x60, EntityStatus.ACTIVE, entity.spriteDefinition(), 0, 0, 0, 0, -1, false);
         motion.beginFrame(moved, true);
         assertEquals(2, motion.inertia(moved.slot()));
         assertEquals(0, motion.historyX(moved.sourceLoadOrder(), 0));
         assertEquals(0, motion.historyX(moved.sourceLoadOrder(), 1));
         assertEquals(0x50, motion.historyX(moved.sourceLoadOrder(), 2));
 
-        MiniMoldormMotion.Update update = motion.advanceAfterHistory(
-            moved, 0x0F, 0, 0, null, () -> 0, 1);
+        MiniMoldormMotion.Update update = motion.advanceAfterHistory(moved, 0x0F, 0, 0, null, () -> 0, 1);
 
         assertEquals(0x51, update.entity().x());
         assertEquals(0x60, update.entity().y());
@@ -75,16 +70,15 @@ final class MiniMoldormMotionTest {
         RoomEntityBackgroundInteraction blockedRight = (candidate, direction, nextX, nextY) -> {
             probes.incrementAndGet();
             return direction == EntityBackgroundCollisionResult.RIGHT
-                ? EntityBackgroundCollisionResult.blocked(direction,
-                    EntityBackgroundCollisionResult.NO_OBJECT, 0, nextX, nextY)
-                : EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+                    ? EntityBackgroundCollisionResult.blocked(
+                            direction, EntityBackgroundCollisionResult.NO_OBJECT, 0, nextX, nextY)
+                    : EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
         };
 
-        RoomEntity moved = new RoomEntity(0, 0, 0x29, 0x50, 0x60,
-            EntityStatus.ACTIVE, entity.spriteDefinition(), 0, 0, 0, 0, -1, false);
+        RoomEntity moved = new RoomEntity(
+                0, 0, 0x29, 0x50, 0x60, EntityStatus.ACTIVE, entity.spriteDefinition(), 0, 0, 0, 0, -1, false);
         motion.beginFrame(moved, false);
-        MiniMoldormMotion.Update update = motion.advanceAfterHistory(
-            moved, 0x0F, 0, 0, blockedRight, () -> 0, 1);
+        MiniMoldormMotion.Update update = motion.advanceAfterHistory(moved, 0x0F, 0, 0, blockedRight, () -> 0, 1);
 
         assertEquals(0x50, update.entity().x());
         assertEquals(0x10, update.transitionCountdown());
@@ -95,13 +89,29 @@ final class MiniMoldormMotionTest {
     }
 
     private static RoomEntity entity(int slot, int loadOrder, int x, int y, int variant) {
-        return new RoomEntity(slot, loadOrder, 0x29, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.dynamic(0x29, 0x04, 0x5A49, 0,
-                java.util.List.of(java.util.List.of(
-                    new EntitySpriteDefinition.DynamicSprite(0, 0,
-                        new EntitySpriteDefinition.OamAttribute(0x70, 0),
-                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
-                        true)))),
-            variant, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                slot,
+                loadOrder,
+                0x29,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.dynamic(
+                        0x29,
+                        0x04,
+                        0x5A49,
+                        0,
+                        java.util.List.of(java.util.List.of(new EntitySpriteDefinition.DynamicSprite(
+                                0,
+                                0,
+                                new EntitySpriteDefinition.OamAttribute(0x70, 0),
+                                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                                true)))),
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

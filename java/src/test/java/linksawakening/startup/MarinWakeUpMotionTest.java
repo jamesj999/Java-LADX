@@ -1,10 +1,10 @@
 package linksawakening.startup;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 final class MarinWakeUpMotionTest {
     @Test
@@ -54,8 +54,7 @@ final class MarinWakeUpMotionTest {
     void shiftsMarinOnceAndUpdatesHerFacingEveryThirtyTwoFrames() {
         MarinWakeUpMotion motion = new MarinWakeUpMotion();
 
-        MarinWakeUpMotion.MarinPresentation initial = motion.tickMarinPresentation(
-            1, 0x58, 0x60, 0x38, 0x34);
+        MarinWakeUpMotion.MarinPresentation initial = motion.tickMarinPresentation(1, 0x58, 0x60, 0x38, 0x34);
         assertEquals(0x50, initial.romX());
         assertEquals(0x58, initial.romY());
         assertEquals(1, initial.romDirection());
@@ -69,7 +68,7 @@ final class MarinWakeUpMotionTest {
         assertEquals(7, facing.spriteVariant());
 
         MarinWakeUpMotion.MarinPresentation frameBoundaryInitial =
-            new MarinWakeUpMotion().tickMarinPresentation(32, 0x58, 0x60, 0x70, 0x60);
+                new MarinWakeUpMotion().tickMarinPresentation(32, 0x58, 0x60, 0x70, 0x60);
         assertEquals(1, frameBoundaryInitial.romDirection());
 
         MarinWakeUpMotion inertiaMotion = new MarinWakeUpMotion();
@@ -79,8 +78,9 @@ final class MarinWakeUpMotionTest {
             beforeToggle = inertiaMotion.tickMarinPresentation(frame, 0x50, 0x58, 0x38, 0x34);
         }
         assertEquals(4, beforeToggle.spriteVariant());
-        assertEquals(5, inertiaMotion.tickMarinPresentation(
-            17, 0x50, 0x58, 0x38, 0x34).spriteVariant());
+        assertEquals(
+                5,
+                inertiaMotion.tickMarinPresentation(17, 0x50, 0x58, 0x38, 0x34).spriteVariant());
     }
 
     @Test
@@ -89,12 +89,9 @@ final class MarinWakeUpMotionTest {
         for (int frame = 509; frame <= 572; frame++) motion.tick(frame, false, false);
         motion.tick(573, false, true);
 
-        assertTrue(motion.canOpenFollowUpDialog(0x40, 0x50,
-            0x40, 0x60, 2, false, true, false));
-        assertFalse(motion.canOpenFollowUpDialog(0x40, 0x50,
-            0x40, 0x60, 2, true, true, false));
-        assertFalse(motion.canOpenFollowUpDialog(0x40, 0x50,
-            0x40, 0x60, 3, false, true, false));
+        assertTrue(motion.canOpenFollowUpDialog(0x40, 0x50, 0x40, 0x60, 2, false, true, false));
+        assertFalse(motion.canOpenFollowUpDialog(0x40, 0x50, 0x40, 0x60, 2, true, true, false));
+        assertFalse(motion.canOpenFollowUpDialog(0x40, 0x50, 0x40, 0x60, 3, false, true, false));
         assertEquals(0x02, motion.followUpDialogLowId());
     }
 
@@ -107,8 +104,7 @@ final class MarinWakeUpMotionTest {
         assertTrue(motion.complete());
         assertFalse(update.openWakeDialog());
         assertFalse(update.linkMotionBlocked());
-        assertTrue(motion.canOpenFollowUpDialog(0x40, 0x50,
-            0x40, 0x60, 2, false, true, false));
+        assertTrue(motion.canOpenFollowUpDialog(0x40, 0x50, 0x40, 0x60, 2, false, true, false));
     }
 
     private static MarinWakeUpMotion awakeMotion() {

@@ -17,8 +17,7 @@ public final class MimicMotion {
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity) {
-    }
+    public record Update(RoomEntity entity) {}
 
     public void initialize(int slot) {
         validateSlot(slot);
@@ -33,15 +32,23 @@ public final class MimicMotion {
      * method is called, so the current speed advances first; only then does
      * the handler inspect the background collision byte and joypad mask.
      */
-    public Update advance(RoomEntity entity, int frameCounter, int pressedButtonsMask,
-                   int collisionType, RoomEntityBackgroundInteraction backgroundInteraction) {
-        return advance(entity, frameCounter, pressedButtonsMask, collisionType,
-            backgroundInteraction, 0, frameCounter);
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int pressedButtonsMask,
+            int collisionType,
+            RoomEntityBackgroundInteraction backgroundInteraction) {
+        return advance(entity, frameCounter, pressedButtonsMask, collisionType, backgroundInteraction, 0, frameCounter);
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int pressedButtonsMask,
-                   int collisionType, RoomEntityBackgroundInteraction backgroundInteraction,
-                   int ignoreHitsCountdown, int currentFrame) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int pressedButtonsMask,
+            int collisionType,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int currentFrame) {
         int slot = entity.slot();
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
@@ -51,8 +58,9 @@ public final class MimicMotion {
         if (nextX != x) {
             int direction = horizontalDirection(speedX[slot]);
             if (backgroundInteraction != null
-                && backgroundInteraction.probe(entity, direction, nextX, y,
-                    ignoreHitsCountdown, currentFrame).blocked()) {
+                    && backgroundInteraction
+                            .probe(entity, direction, nextX, y, ignoreHitsCountdown, currentFrame)
+                            .blocked()) {
                 blocked = true;
             } else {
                 x = nextX;
@@ -63,8 +71,9 @@ public final class MimicMotion {
         if (nextY != y) {
             int direction = verticalDirection(speedY[slot]);
             if (backgroundInteraction != null
-                && backgroundInteraction.probe(entity, direction, x, nextY,
-                    ignoreHitsCountdown, currentFrame).blocked()) {
+                    && backgroundInteraction
+                            .probe(entity, direction, x, nextY, ignoreHitsCountdown, currentFrame)
+                            .blocked()) {
                 blocked = true;
             } else {
                 y = nextY;
@@ -128,8 +137,7 @@ public final class MimicMotion {
     }
 
     /** Port of AddEntitySpeedToPos_19 for one axis. */
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -144,21 +152,28 @@ public final class MimicMotion {
     }
 
     private static int horizontalDirection(int speed) {
-        return (speed & 0x80) != 0
-            ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
+        return (speed & 0x80) != 0 ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
     }
 
     private static int verticalDirection(int speed) {
-        return (speed & 0x80) != 0
-            ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
+        return (speed & 0x80) != 0 ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                      int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static int signedByte(int value) {

@@ -1,16 +1,16 @@
 package linksawakening.vfx;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import linksawakening.gpu.Tile;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @linksawakening.testing.RequiresRom
 final class TransientVfxSystemTest {
@@ -24,9 +24,8 @@ final class TransientVfxSystemTest {
         assertEquals(0, slotIndex);
         assertEquals(1, system.activeCount());
         assertEquals(
-            List.of(new TransientVfxSystem.Slot(0, TransientVfxType.BUSH_LEAVES, 0x1F, 0x34, 0x78)),
-            system.activeSlots()
-        );
+                List.of(new TransientVfxSystem.Slot(0, TransientVfxType.BUSH_LEAVES, 0x1F, 0x34, 0x78)),
+                system.activeSlots());
     }
 
     @Test
@@ -37,10 +36,8 @@ final class TransientVfxSystemTest {
 
         assertEquals(0, slotIndex);
         assertEquals(
-            List.of(new TransientVfxSystem.Slot(0, TransientVfxType.SWORD_POKE,
-                0x0F, 0x40, 0x50)),
-            system.activeSlots()
-        );
+                List.of(new TransientVfxSystem.Slot(0, TransientVfxType.SWORD_POKE, 0x0F, 0x40, 0x50)),
+                system.activeSlots());
 
         system.tick();
 
@@ -54,9 +51,8 @@ final class TransientVfxSystemTest {
         system.spawn(TransientVfxType.LASER_BEAM, 0x44, 0x60);
 
         assertEquals(
-            List.of(new TransientVfxSystem.Slot(0, TransientVfxType.LASER_BEAM,
-                0x10, 0x44, 0x60)),
-            system.activeSlots());
+                List.of(new TransientVfxSystem.Slot(0, TransientVfxType.LASER_BEAM, 0x10, 0x44, 0x60)),
+                system.activeSlots());
     }
 
     @Test
@@ -65,7 +61,8 @@ final class TransientVfxSystemTest {
 
         system.spawn(TransientVfxType.SWORD_BEAM, 0x44, 0x60, 3);
 
-        assertEquals(TransientVfxType.SWORD_BEAM, system.activeSlots().getFirst().type());
+        assertEquals(
+                TransientVfxType.SWORD_BEAM, system.activeSlots().getFirst().type());
         assertEquals(0x08, system.activeSlots().getFirst().countdown());
         assertEquals(3, system.activeSlots().getFirst().variant());
     }
@@ -102,9 +99,8 @@ final class TransientVfxSystemTest {
         assertEquals(0, firstSlot);
         assertEquals(0, secondSlot);
         assertEquals(
-            List.of(new TransientVfxSystem.Slot(0, TransientVfxType.BUSH_LEAVES, 0x1F, 0x30, 0x40)),
-            system.activeSlots()
-        );
+                List.of(new TransientVfxSystem.Slot(0, TransientVfxType.BUSH_LEAVES, 0x1F, 0x30, 0x40)),
+                system.activeSlots());
     }
 
     @Test
@@ -168,12 +164,9 @@ final class TransientVfxSystemTest {
         TransientVfxSpriteSheet spriteSheet = TransientVfxSpriteSheet.loadFromRom(loadRom());
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(spriteSheet);
 
-        List<CutLeavesEffectRenderer.SpritePlacement> firstFrame = renderer.renderLaserBeam(
-            0x44, 0x60, 0x10, 0, 0);
-        List<CutLeavesEffectRenderer.SpritePlacement> alternateFrame = renderer.renderLaserBeam(
-            0x44, 0x60, 0x10, 1, 0);
-        List<CutLeavesEffectRenderer.SpritePlacement> alternateSlot = renderer.renderLaserBeam(
-            0x44, 0x60, 0x10, 0, 1);
+        List<CutLeavesEffectRenderer.SpritePlacement> firstFrame = renderer.renderLaserBeam(0x44, 0x60, 0x10, 0, 0);
+        List<CutLeavesEffectRenderer.SpritePlacement> alternateFrame = renderer.renderLaserBeam(0x44, 0x60, 0x10, 1, 0);
+        List<CutLeavesEffectRenderer.SpritePlacement> alternateSlot = renderer.renderLaserBeam(0x44, 0x60, 0x10, 0, 1);
 
         assertEquals(1, firstFrame.size());
         assertEquals(0x44 - 0x08, firstFrame.get(0).x());
@@ -187,8 +180,7 @@ final class TransientVfxSystemTest {
 
     @Test
     void swordBeamRendererUsesTheRomTwoSpriteVariantAndFlickerTables() throws IOException {
-        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(
-            TransientVfxSpriteSheet.loadFromRom(loadRom()));
+        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(loadRom()));
 
         assertTrue(renderer.renderSwordBeam(0x44, 0x60, 0x08, 0, 0, 0).isEmpty());
         var firstFrame = renderer.renderSwordBeam(0x44, 0x60, 0x08, 1, 0, 0);
@@ -206,8 +198,7 @@ final class TransientVfxSystemTest {
 
     @Test
     void waterSplashRendererUsesRomTwoSpritePhases() throws IOException {
-        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(
-            TransientVfxSpriteSheet.loadFromRom(loadRom()));
+        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(loadRom()));
 
         var first = renderer.renderWaterSplash(0x40, 0x60, 0x07);
         var second = renderer.renderWaterSplash(0x40, 0x60, 0x0F);

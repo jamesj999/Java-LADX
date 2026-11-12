@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 BushCrawlerEntityHandler movement and lift trigger. */
 public final class BushCrawlerMotion {
@@ -16,10 +15,8 @@ public final class BushCrawlerMotion {
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF0, 0x10};
     // Data_007_41E6 is immediately followed by Data_007_41E8 in bank $07.
     // The handler intentionally indexes across that label boundary for Y.
-    private static final int[] SPECIAL_SPEED_X = {0x00, 0x0C, 0x10, 0x0C,
-        0x00, 0xF4, 0xF0, 0xF4};
-    private static final int[] SPECIAL_SPEED_Y = {0xF0, 0xF4, 0x00, 0x0C,
-        0x10, 0x0C, 0x00, 0xF4};
+    private static final int[] SPECIAL_SPEED_X = {0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4, 0xF0, 0xF4};
+    private static final int[] SPECIAL_SPEED_Y = {0xF0, 0xF4, 0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -32,11 +29,16 @@ public final class BushCrawlerMotion {
     private final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int state, int transitionCountdown,
-                  int privateState1, int privateState4, int visualYOffset,
-                  boolean liftRequested, boolean specialState,
-                  boolean crawlOverlayRendered) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int transitionCountdown,
+            int privateState1,
+            int privateState4,
+            int visualYOffset,
+            boolean liftRequested,
+            boolean specialState,
+            boolean crawlOverlayRendered) {}
 
     public void initialize(int slot) {
         clear(slot);
@@ -48,14 +50,22 @@ public final class BushCrawlerMotion {
         privateState1[slot] = 2;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
-                   int transitionCountdown, boolean linkCollision,
-                   boolean actionButtonAHeld, boolean actionButtonBHeld,
-                   int linkItemA, int linkItemB) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown,
+            boolean linkCollision,
+            boolean actionButtonAHeld,
+            boolean actionButtonBHeld,
+            int linkItemA,
+            int linkItemB) {
         if ((entity.type() & 0xFF) != ENTITY_BUSH_CRAWLER) {
-            throw new IllegalArgumentException("Unsupported Bush Crawler motion entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Bush Crawler motion entity type: 0x" + Integer.toHexString(entity.type()));
         }
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Bush Crawler random-byte supplier cannot be null");
@@ -71,11 +81,10 @@ public final class BushCrawlerMotion {
             privateState4[slot] = ((entity.x() & 0xFF) >>> 4) & 0x01;
         }
 
-        boolean crawlOverlayRendered = privateState1[slot] != 2
-            && privateState2[slot] == 4;
+        boolean crawlOverlayRendered = privateState1[slot] != 2 && privateState2[slot] == 4;
         int renderedVariant = privateState1[slot] == 2 || crawlOverlayRendered
-            ? (wasInitialized ? presentationVariant[slot] : entity.spriteVariant())
-            : privateState4[slot];
+                ? (wasInitialized ? presentationVariant[slot] : entity.spriteVariant())
+                : privateState4[slot];
         int renderedVisualYOffset = privateState2[slot] == 4 ? -4 : 0;
         int countdown = transitionCountdown & 0xFF;
         int x = entity.x() & 0xFF;
@@ -104,8 +113,8 @@ public final class BushCrawlerMotion {
                         speedX[slot] = SPEED_X_BY_DIRECTION[direction];
                         speedY[slot] = SPEED_Y_BY_DIRECTION[direction];
                         countdown = 0x30;
-                    } else if (linkCollision && powerBraceletHeld(
-                        actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB)) {
+                    } else if (linkCollision
+                            && powerBraceletHeld(actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB)) {
                         liftRequested = true;
                     }
                 }
@@ -126,17 +135,34 @@ public final class BushCrawlerMotion {
                         }
                     }
                 }
-                default -> throw new IllegalStateException("Invalid Bush Crawler state: "
-                    + state[slot]);
+                default -> throw new IllegalStateException("Invalid Bush Crawler state: " + state[slot]);
             }
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
-        return new Update(updated, state[slot], countdown, privateState1[slot],
-            privateState4[slot], renderedVisualYOffset, liftRequested,
-            privateState1[slot] == 2, crawlOverlayRendered);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                renderedVariant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
+        return new Update(
+                updated,
+                state[slot],
+                countdown,
+                privateState1[slot],
+                privateState4[slot],
+                renderedVisualYOffset,
+                liftRequested,
+                privateState1[slot] == 2,
+                crawlOverlayRendered);
     }
 
     public void clear(int slot) {
@@ -152,9 +178,14 @@ public final class BushCrawlerMotion {
         initialized[slot] = false;
     }
 
-    void forceStateForTest(int slot, int newState, int transitionCountdown,
-                           int newPrivateState1, int newPrivateState4,
-                           int newSpeedX, int newSpeedY) {
+    void forceStateForTest(
+            int slot,
+            int newState,
+            int transitionCountdown,
+            int newPrivateState1,
+            int newPrivateState4,
+            int newSpeedX,
+            int newSpeedY) {
         state[slot] = newState & 0xFF;
         privateState1[slot] = newPrivateState1 & 0xFF;
         privateState2[slot] = newState == 1 ? 4 : 0;
@@ -212,28 +243,28 @@ public final class BushCrawlerMotion {
         return directionToLink(x, y, linkX, linkY) != 2;
     }
 
-    private static boolean powerBraceletHeld(boolean actionButtonAHeld,
-                                               boolean actionButtonBHeld,
-                                               int linkItemA, int linkItemB) {
+    private static boolean powerBraceletHeld(
+            boolean actionButtonAHeld, boolean actionButtonBHeld, int linkItemA, int linkItemB) {
         if ((linkItemB & 0xFF) == ENTITY_POWER_BRACELET) {
             return actionButtonBHeld;
         }
         return (linkItemA & 0xFF) == ENTITY_POWER_BRACELET && actionButtonAHeld;
     }
 
-    private Position move(RoomEntity entity, int x, int y,
-                          RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
+        if (backgroundCollision != null
+                && nextX != x
+                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
+        if (backgroundCollision != null
+                && nextY != y
+                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }
@@ -253,8 +284,7 @@ public final class BushCrawlerMotion {
         return distance >= -halfOpen && distance < halfOpen;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -282,6 +312,5 @@ public final class BushCrawlerMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y, boolean collided) {
-    }
+    private record Position(int x, int y, boolean collided) {}
 }

@@ -1,13 +1,8 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.RoomPointerTable;
-import linksawakening.world.room.IndoorRoomPointerTables;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class IndoorRoomPointerTablesTest {
 

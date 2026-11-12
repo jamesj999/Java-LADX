@@ -1,69 +1,87 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.room.ChestContentsTable;
-import linksawakening.world.entity.event.EntityCombatEvent;
+import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntitySnapshots.*;
+import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.RoomEntityRuntime.*;
 
+import java.util.List;
+import java.util.function.IntSupplier;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
 import linksawakening.world.entity.motion.BowWowMotion;
 import linksawakening.world.entity.motion.FloatingItemMotion;
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 import linksawakening.world.entity.motion.KeyDropPointMotion;
 import linksawakening.world.entity.motion.ZolGelMotion;
-
-import linksawakening.world.entity.event.DialogRequest;
-import linksawakening.world.entity.event.KeyRewardEvent;
-
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import java.util.List;
-import java.util.function.IntSupplier;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
+import linksawakening.world.room.ChestContentsTable;
 
 /** Slot clearing, status countdowns and persistence lifecycle. */
 public final class EntitySlotLifecycle {
     private final RoomEntityRuntime runtime;
-    EntitySlotLifecycle(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
-    public int transitionSequenceCounter() { return runtime.transitionSequenceCounter; }
-
-    EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkEntityX,
-                                             int linkEntityY,
-                                             boolean linkAirborne,
-                                             boolean linkInteractive) {
-        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, 0, 0);
+    EntitySlotLifecycle(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
     }
 
-    EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkEntityX,
-                                             int linkEntityY,
-                                             boolean linkAirborne,
-                                             boolean linkInteractive,
-                                             int linkDirection) {
-        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, linkDirection, 0);
+    public int transitionSequenceCounter() {
+        return runtime.transitionSequenceCounter;
     }
 
-    EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkEntityX,
-                                             int linkEntityY,
-                                             boolean linkAirborne,
-                                             boolean linkInteractive,
-                                             int linkDirection,
-                                             int linkZ) {
-        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ, false, 0, 0, 0, 0);
+    EntityPickupEvent collectIfNeeded(
+            int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, 0, 0);
     }
 
-    EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkEntityX,
-                                             int linkEntityY,
-                                             boolean linkAirborne,
-                                             boolean linkInteractive,
-                                             int linkDirection,
-                                             int linkZ, boolean swordActive, int swordX, int swordWidth, int swordY, int swordHeight) {
+    EntityPickupEvent collectIfNeeded(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            boolean linkInteractive,
+            int linkDirection) {
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, 0);
+    }
+
+    EntityPickupEvent collectIfNeeded(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            boolean linkInteractive,
+            int linkDirection,
+            int linkZ) {
+        return collectIfNeeded(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkInteractive,
+                linkDirection,
+                linkZ,
+                false,
+                0,
+                0,
+                0,
+                0);
+    }
+
+    EntityPickupEvent collectIfNeeded(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            boolean linkInteractive,
+            int linkDirection,
+            int linkZ,
+            boolean swordActive,
+            int swordX,
+            int swordWidth,
+            int swordY,
+            int swordHeight) {
         if (!linkInteractive) {
             return null;
         }
@@ -74,45 +92,48 @@ public final class EntitySlotLifecycle {
             if (entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
                 runtime.secretSeashellMotion.ensureInitialized(entity.slot(), runtime.entityRoomId);
             }
-            boolean swordPickup = swordActive
-                && RoomEntityPickupRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight);
+            boolean swordPickup =
+                    swordActive && RoomEntityPickupRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight);
             boolean floatingType = FloatingItemMotion.isFloatingItem(entity.type());
             boolean floating = isRuntimeFloatingItem(entity);
-            if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
-                || !RoomEntityPickupRules.isPickable(entity.type())
-                || (floatingType && !floating)
-                || (entity.type() == 0x35 && runtime.heartPiecePickup[entity.slot()] != null)
-                || runtime.powerUpPickupCountdown[entity.slot()] != 0
-                || runtime.dropPrivateCountdown1[entity.slot()] > 0
-                || (entity.type() == runtime.ENTITY_HEART_CONTAINER
-                    && runtime.enemyTransitionCountdown[entity.slot()] != 0)
-                || (entity.type() == runtime.ENTITY_SLEEPY_TOADSTOOL
-                    && runtime.toadstoolPickupSequenceActive[entity.slot()])
-                || (isCommonDroppableType(entity.type())
-                    && runtime.droppablePrivateState3[entity.slot()] != 0)
-                || (entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL
-                    && (runtime.secretSeashellMotion.privateState3(entity.slot()) != 0
-                        || runtime.secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
-                || (!swordPickup && !floating && !RoomEntityPickupRules.collisionCadenceMatches(
-                    frameCounter, entity.slot()))
-                || (!swordPickup && !floating && linkAirborne)
-                || (floating && !FloatingItemMotion.linkZAllowsCollection(
-                    runtime.groundInteractionSideScrolling, linkZ))
-                || !(swordPickup || (floating
-                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
-                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)))) {
+            if (!entity.loaded()
+                    || entity.status() != EntityStatus.ACTIVE
+                    || !RoomEntityPickupRules.isPickable(entity.type())
+                    || (floatingType && !floating)
+                    || (entity.type() == 0x35 && runtime.heartPiecePickup[entity.slot()] != null)
+                    || runtime.powerUpPickupCountdown[entity.slot()] != 0
+                    || runtime.dropPrivateCountdown1[entity.slot()] > 0
+                    || (entity.type() == runtime.ENTITY_HEART_CONTAINER
+                            && runtime.enemyTransitionCountdown[entity.slot()] != 0)
+                    || (entity.type() == runtime.ENTITY_SLEEPY_TOADSTOOL
+                            && runtime.toadstoolPickupSequenceActive[entity.slot()])
+                    || (isCommonDroppableType(entity.type()) && runtime.droppablePrivateState3[entity.slot()] != 0)
+                    || (entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL
+                            && (runtime.secretSeashellMotion.privateState3(entity.slot()) != 0
+                                    || runtime.secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
+                    || (!swordPickup
+                            && !floating
+                            && !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot()))
+                    || (!swordPickup && !floating && linkAirborne)
+                    || (floating
+                            && !FloatingItemMotion.linkZAllowsCollection(runtime.groundInteractionSideScrolling, linkZ))
+                    || !(swordPickup
+                            || (floating
+                                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
+                                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)))) {
                 continue;
             }
 
-            int persistentClearMask = entity.type() == runtime.ENTITY_SWORD_SHIELD_PICKUP
-                && runtime.chestSwordLevel == 0 ? 0 : persistentClearMask(entity);
+            int persistentClearMask =
+                    entity.type() == runtime.ENTITY_SWORD_SHIELD_PICKUP && runtime.chestSwordLevel == 0
+                            ? 0
+                            : persistentClearMask(entity);
             if (entity.type() == runtime.ENTITY_KEY_DROP_POINT) {
                 if (runtime.entityRoomId == 0x80 || entity.spriteVariant() != 0) {
-                    runtime.enemyTransitionCountdown[entity.slot()] =
-                        KeyDropPointMotion.TRANSITION_COUNTDOWN;
+                    runtime.enemyTransitionCountdown[entity.slot()] = KeyDropPointMotion.TRANSITION_COUNTDOWN;
                 } else {
-                    runtime.events.pendingKeyRewardEvents.add(new KeyRewardEvent(
-                        entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
+                    runtime.events.pendingKeyRewardEvents.add(
+                            new KeyRewardEvent(entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
                     clearEntity(entity.slot());
                 }
             } else if (entity.type() == 0x35) {
@@ -121,13 +142,11 @@ public final class EntitySlotLifecycle {
                 runtime.pendingMusicTrack = 0x10;
             } else if (entity.type() == runtime.ENTITY_HEART_CONTAINER) {
                 runtime.enemyTransitionCountdown[entity.slot()] = 0x70;
-            } else if (entity.type() == runtime.ENTITY_SWORD_SHIELD_PICKUP
-                && runtime.chestSwordLevel == 0) {
+            } else if (entity.type() == runtime.ENTITY_SWORD_SHIELD_PICKUP && runtime.chestSwordLevel == 0) {
                 runtime.startSwordPickup(entity.slot());
             } else if (entity.type() == runtime.ENTITY_SLEEPY_TOADSTOOL) {
                 runtime.startToadstoolPickup(entity.slot());
-            } else if (entity.type()
-                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
+            } else if (entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
                 runtime.rewards.startInstrumentPickup(entity.slot());
             } else if (entity.type() == 0x33 || entity.type() == 0x34) {
                 runtime.powerUpPickupCountdown[entity.slot()] = 0x30;
@@ -138,8 +157,8 @@ public final class EntitySlotLifecycle {
             } else {
                 clearEntity(entity.slot());
             }
-            return new EntityPickupEvent(entity.slot(), entity.type(), persistentClearMask,
-                floating ? entity.spriteVariant() : -1);
+            return new EntityPickupEvent(
+                    entity.slot(), entity.type(), persistentClearMask, floating ? entity.spriteVariant() : -1);
         }
         return null;
     }
@@ -329,27 +348,35 @@ public final class EntitySlotLifecycle {
         }
         runtime.slots[slot] = RoomEntity.disabled(slot);
         runtime.slotProperties.updatePincerBodyOam();
-        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
-            ? 1 << entity.sourceLoadOrder() : 0;
+        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8 ? 1 << entity.sourceLoadOrder() : 0;
     }
 
-    public RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
-                                      ZolGelMotion.Split split) {
+    public RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated, ZolGelMotion.Split split) {
         EntitySpriteDefinition gelDefinition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GEL);
         int gelVariant = gelDefinition.supported() ? 0 : -1;
         int slot = original.slot();
-        RoomEntity gel = new RoomEntity(slot, original.sourceLoadOrder(), runtime.ENTITY_GEL,
-            (split.originalX() - 4) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
-            gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
-            split.originalZ(), -1, false);
+        RoomEntity gel = new RoomEntity(
+                slot,
+                original.sourceLoadOrder(),
+                runtime.ENTITY_GEL,
+                (split.originalX() - 4) & 0xFF,
+                split.originalY(),
+                EntityStatus.ACTIVE,
+                gelDefinition,
+                gelVariant,
+                original.entityFlipAttribute(),
+                original.spriteTileOffset(),
+                split.originalZ(),
+                -1,
+                false);
         // ConfigureNewEntity ($03:485B) reloads these for the new type.
         runtime.enemyPhysicsFlags[slot] = initialPhysicsFlags(runtime.ENTITY_GEL);
         runtime.enemyHitboxFlags[slot] = initialHitboxFlags(runtime.ENTITY_GEL);
         runtime.entityOptions1Override[slot] = -1;
         runtime.enemyTransitionCountdown[slot] = 0;
         runtime.enemyStunnedCountdown[slot] = 0;
-        runtime.enemyHealthGroup[slot] = runtime.enemyCombatTables == null ? 0
-            : runtime.enemyCombatTables.healthGroup(runtime.ENTITY_GEL);
+        runtime.enemyHealthGroup[slot] =
+                runtime.enemyCombatTables == null ? 0 : runtime.enemyCombatTables.healthGroup(runtime.ENTITY_GEL);
         runtime.enemyHealth[slot] = runtime.initialHealth(runtime.ENTITY_GEL);
         runtime.enemyFlashCountdown[slot] = 0;
         runtime.enemyIgnoreHitsCountdown[slot] = 0;
@@ -360,10 +387,20 @@ public final class EntitySlotLifecycle {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot >= 0) {
             runtime.baseEntityFlipAttribute[freeSlot] = runtime.baseEntityFlipAttribute[original.slot()];
-            RoomEntity spawnedGel = new RoomEntity(freeSlot, original.sourceLoadOrder(), runtime.ENTITY_GEL,
-                (split.originalX() + 8) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
-                gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
-                split.originalZ(), -1, false);
+            RoomEntity spawnedGel = new RoomEntity(
+                    freeSlot,
+                    original.sourceLoadOrder(),
+                    runtime.ENTITY_GEL,
+                    (split.originalX() + 8) & 0xFF,
+                    split.originalY(),
+                    EntityStatus.ACTIVE,
+                    gelDefinition,
+                    gelVariant,
+                    original.entityFlipAttribute(),
+                    original.spriteTileOffset(),
+                    split.originalZ(),
+                    -1,
+                    false);
             runtime.slots[freeSlot] = spawnedGel;
             runtime.initializeHealthGroup(freeSlot);
             runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_GEL);
@@ -383,9 +420,8 @@ public final class EntitySlotLifecycle {
         return gel;
     }
 
-    void handleBowWowTargetContact(RoomEntity source,
-                                           BowWowMotion.TargetContact contact,
-                                           IntSupplier randomByteSupplier) {
+    void handleBowWowTargetContact(
+            RoomEntity source, BowWowMotion.TargetContact contact, IntSupplier randomByteSupplier) {
         int targetSlot = contact.slot();
         if (targetSlot < 0 || targetSlot >= runtime.slots.length) {
             return;
@@ -396,8 +432,9 @@ public final class EntitySlotLifecycle {
         }
 
         if (target.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            if (runtime.entityPrivateState4[targetSlot] == 0 || runtime.linkState.dialogActive
-                || runtime.bowWowMotion.privateCountdown2(source.slot()) != 0) {
+            if (runtime.entityPrivateState4[targetSlot] == 0
+                    || runtime.linkState.dialogActive
+                    || runtime.bowWowMotion.privateCountdown2(source.slot()) != 0) {
                 return;
             }
             runtime.bowWowMotion.setTransitionCountdown(source.slot(), 0);
@@ -410,8 +447,7 @@ public final class EntitySlotLifecycle {
             return;
         }
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-            source.slot(), source.type(), 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x03));
+                source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x03));
         if (target.type() == runtime.ENTITY_KIKI_THE_MONKEY) {
             runtime.enemyFlashCountdown[targetSlot] = 0x18;
             runtime.entityInertia[targetSlot] = (runtime.entityInertia[targetSlot] + 1) & 0xFF;
@@ -424,7 +460,8 @@ public final class EntitySlotLifecycle {
         int slot = entity.slot();
         runtime.enemyTransitionCountdown[slot] = 0;
         if (entity.type() == runtime.ENTITY_GIBDO) {
-            EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_STALFOS_EVASIVE);
+            EntitySpriteDefinition definition =
+                    runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_STALFOS_EVASIVE);
             RoomEntity stalfos = withType(entity, runtime.ENTITY_STALFOS_EVASIVE, definition);
             runtime.slots[slot] = withStatus(stalfos, EntityStatus.ACTIVE);
             runtime.initializeHealthGroup(slot); // $03:4C89 reconfigures attributes/health.
@@ -443,21 +480,22 @@ public final class EntitySlotLifecycle {
         runtime.enemyPhysicsFlags[slot] = 0x04;
         runtime.dyingCountdown[slot] = 0x1F;
         runtime.powerRecoilDeath[slot] = false;
-        runtime.slots[slot] = withDeathPresentation(
-            withStatus(entity, EntityStatus.DYING), 3, false);
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-            slot, entity.type(), 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        runtime.slots[slot] = withDeathPresentation(withStatus(entity, EntityStatus.DYING), 3, false);
+        runtime.events.pendingEntityEvents.add(
+                new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
 
     void decrementSlowTransitionCountdown(int slot, int frameCounter) {
-        if ((frameCounter & 0x03) == 0 && runtime.slowTimerInitialized[slot]
-            && runtime.slowTransitionCountdown[slot] > 0) {
+        if ((frameCounter & 0x03) == 0
+                && runtime.slowTimerInitialized[slot]
+                && runtime.slowTransitionCountdown[slot] > 0) {
             runtime.slowTransitionCountdown[slot]--;
         }
     }
 
-    boolean shouldDisappear(RoomEntity entity) { return runtime.enemyInspection.shouldDisappear(entity); }
+    boolean shouldDisappear(RoomEntity entity) {
+        return runtime.enemyInspection.shouldDisappear(entity);
+    }
 
     public void disableEntityWithoutPersistence(int slot) {
         runtime.slimeEye.clear(slot);
@@ -617,8 +655,9 @@ public final class EntitySlotLifecycle {
         if (runtime.enemyFlashCountdown[slot] > 0) {
             runtime.enemyFlashCountdown[slot]--;
         }
-        if (decrementIgnoreHits && !runtime.enemyRecoilMotion.isActive(slot)
-            && runtime.enemyIgnoreHitsCountdown[slot] > 0) {
+        if (decrementIgnoreHits
+                && !runtime.enemyRecoilMotion.isActive(slot)
+                && runtime.enemyIgnoreHitsCountdown[slot] > 0) {
             runtime.enemyIgnoreHitsCountdown[slot]--;
             return true;
         }
@@ -651,16 +690,48 @@ public final class EntitySlotLifecycle {
         runtime.blooperMotion.decrementPrivateCountdown3(slot);
         runtime.wingedOctorokMotion.decrementPrivateCountdown2(slot);
     }
-  public void requestPersistentClearMask(int mask) { runtime.pendingClearedEntityMask |= mask; }
-  public void delayInteractions(int countdown) { runtime.entityInteractionCountdown = countdown; }
-  public void recordGelClinging(boolean clinging) { runtime.gelClingingToLink |= clinging; }
 
-  public void setDroppedItemBySlot(int slot, int value) { runtime.droppedItemBySlot[slot] = value; }
-  public void setDyingCountdown(int slot, int value) { runtime.dyingCountdown[slot] = value; }
-  public void setDropPrivateCountdown3(int slot, int value) { runtime.dropPrivateCountdown3[slot] = value; }
-  public int warpState(int slot) { return runtime.warpState[slot]; }
-  public void setWarpState(int slot, int value) { runtime.warpState[slot] = value; }
-  public int warpTransitionCountdown(int slot) { return runtime.warpTransitionCountdown[slot]; }
-  public void setWarpTransitionCountdown(int slot, int value) { runtime.warpTransitionCountdown[slot] = value; }
-  public int droppablePrivateState3(int slot) { return runtime.droppablePrivateState3[slot]; }
+    public void requestPersistentClearMask(int mask) {
+        runtime.pendingClearedEntityMask |= mask;
+    }
+
+    public void delayInteractions(int countdown) {
+        runtime.entityInteractionCountdown = countdown;
+    }
+
+    public void recordGelClinging(boolean clinging) {
+        runtime.gelClingingToLink |= clinging;
+    }
+
+    public void setDroppedItemBySlot(int slot, int value) {
+        runtime.droppedItemBySlot[slot] = value;
+    }
+
+    public void setDyingCountdown(int slot, int value) {
+        runtime.dyingCountdown[slot] = value;
+    }
+
+    public void setDropPrivateCountdown3(int slot, int value) {
+        runtime.dropPrivateCountdown3[slot] = value;
+    }
+
+    public int warpState(int slot) {
+        return runtime.warpState[slot];
+    }
+
+    public void setWarpState(int slot, int value) {
+        runtime.warpState[slot] = value;
+    }
+
+    public int warpTransitionCountdown(int slot) {
+        return runtime.warpTransitionCountdown[slot];
+    }
+
+    public void setWarpTransitionCountdown(int slot, int value) {
+        runtime.warpTransitionCountdown[slot] = value;
+    }
+
+    public int droppablePrivateState3(int slot) {
+        return runtime.droppablePrivateState3[slot];
+    }
 }

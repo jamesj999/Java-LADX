@@ -12,19 +12,17 @@ public final class IntroCutsceneScript {
     public static final int BEACH_DURATION_FRAMES = 160;
     public static final int TITLE_DURATION_FRAMES = 160;
 
-    private IntroCutsceneScript() {
-    }
+    private IntroCutsceneScript() {}
 
     public static CutsceneScript create() {
         return CutsceneScript.of(
-            CutsceneStep.run(context -> context.setScene(SCENE_SEA)),
-            CutsceneStep.waitFrames(SEA_DURATION_FRAMES + 1),
-            CutsceneStep.run(context -> context.setScene(SCENE_LINK_FACE)),
-            CutsceneStep.waitFrames(LINK_FACE_DURATION_FRAMES),
-            CutsceneStep.run(context -> context.setScene(SCENE_BEACH)),
-            CutsceneStep.waitFrames(BEACH_DURATION_FRAMES),
-            CutsceneStep.run(context -> context.setScene(SCENE_TITLE)),
-            CutsceneStep.waitFrames(TITLE_DURATION_FRAMES)
-        );
+                CutsceneStep.run(context -> context.setScene(SCENE_SEA)),
+                CutsceneStep.waitFrames(SEA_DURATION_FRAMES + 1),
+                CutsceneStep.run(context -> context.setScene(SCENE_LINK_FACE)),
+                CutsceneStep.waitFrames(LINK_FACE_DURATION_FRAMES),
+                CutsceneStep.run(context -> context.setScene(SCENE_BEACH)),
+                CutsceneStep.waitFrames(BEACH_DURATION_FRAMES),
+                CutsceneStep.run(context -> context.setScene(SCENE_TITLE)),
+                CutsceneStep.waitFrames(TITLE_DURATION_FRAMES));
     }
 }

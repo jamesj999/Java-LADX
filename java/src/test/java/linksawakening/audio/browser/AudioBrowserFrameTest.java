@@ -1,12 +1,11 @@
 package linksawakening.audio.browser;
 
-import linksawakening.audio.music.MusicTrack;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import linksawakening.audio.music.MusicTrack;
+import org.junit.jupiter.api.Test;
 
 final class AudioBrowserFrameTest {
     @Test

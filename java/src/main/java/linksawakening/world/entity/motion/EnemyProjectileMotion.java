@@ -58,13 +58,19 @@ public final class EnemyProjectileMotion {
         int direction = checkedDirection(projectileDirection);
         return switch (projectileType & 0xFF) {
             case ENTITY_MOBLIN_ARROW -> new SpawnData(
-                MOBLIN_OFFSET_X[direction], MOBLIN_OFFSET_Y[direction],
-                MOBLIN_SPEED_X[direction], MOBLIN_SPEED_Y[direction], direction);
+                    MOBLIN_OFFSET_X[direction],
+                    MOBLIN_OFFSET_Y[direction],
+                    MOBLIN_SPEED_X[direction],
+                    MOBLIN_SPEED_Y[direction],
+                    direction);
             case ENTITY_OCTOROK_ROCK -> new SpawnData(
-                OCTOROK_OFFSET_X[direction], OCTOROK_OFFSET_Y[direction],
-                OCTOROK_SPEED_X[direction], OCTOROK_SPEED_Y[direction], 0);
+                    OCTOROK_OFFSET_X[direction],
+                    OCTOROK_OFFSET_Y[direction],
+                    OCTOROK_SPEED_X[direction],
+                    OCTOROK_SPEED_Y[direction],
+                    0);
             default -> throw new IllegalArgumentException(
-                "Unsupported enemy projectile type: " + Integer.toHexString(projectileType));
+                    "Unsupported enemy projectile type: " + Integer.toHexString(projectileType));
         };
     }
 
@@ -94,21 +100,38 @@ public final class EnemyProjectileMotion {
      * ROM still performs this frame's position update, then starts the wall
      * transition without restoring either coordinate.
      */
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
-                   boolean preexistingCollision) {
+    public Update advance(
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean preexistingCollision) {
         return advance(entity, backgroundCollision, preexistingCollision, 0, 0, false);
     }
 
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
-                   boolean preexistingCollision, int frameCounter, int groundStatus,
-                   boolean sideScrolling) {
-        return advance(entity, backgroundCollision, preexistingCollision, frameCounter,
-            groundStatus, sideScrolling, true, true);
+    public Update advance(
+            RoomEntity entity,
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean preexistingCollision,
+            int frameCounter,
+            int groundStatus,
+            boolean sideScrolling) {
+        return advance(
+                entity,
+                backgroundCollision,
+                preexistingCollision,
+                frameCounter,
+                groundStatus,
+                sideScrolling,
+                true,
+                true);
     }
 
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
-                   boolean preexistingCollision, int frameCounter, int groundStatus,
-                   boolean sideScrolling, boolean handlerInteractive, boolean timersInteractive) {
+    public Update advance(
+            RoomEntity entity,
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean preexistingCollision,
+            int frameCounter,
+            int groundStatus,
+            boolean sideScrolling,
+            boolean handlerInteractive,
+            boolean timersInteractive) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initializeSpawn(slot, entity.type(), 0);
@@ -129,8 +152,10 @@ public final class EnemyProjectileMotion {
         // must not move, choose another spin frame, or unload at countdown 1.
         if (!handlerInteractive) {
             pendingLinkCollision[slot] |= preexistingCollision;
-            return new Update(withPositionAndVariant(entity, entity.x(), entity.y(),
-                entity.z(), selectedVariant[slot]), false, false);
+            return new Update(
+                    withPositionAndVariant(entity, entity.x(), entity.y(), entity.z(), selectedVariant[slot]),
+                    false,
+                    false);
         }
         if (transitionCountdown[slot] == 1) {
             return new Update(entity, false, true);
@@ -143,16 +168,19 @@ public final class EnemyProjectileMotion {
         pendingLinkCollision[slot] = false;
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         boolean collidedWithWall = preexistingCollision;
-        if (!preexistingCollision && backgroundCollision != null && x != entity.x()
-            && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x,
-                entity.y())) {
+        if (!preexistingCollision
+                && backgroundCollision != null
+                && x != entity.x()
+                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
             x = entity.x();
             collidedWithWall = true;
         }
 
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (!preexistingCollision && backgroundCollision != null && y != entity.y()
-            && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
+        if (!preexistingCollision
+                && backgroundCollision != null
+                && y != entity.y()
+                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
             y = entity.y();
             collidedWithWall = true;
         }
@@ -170,8 +198,7 @@ public final class EnemyProjectileMotion {
             speedX[slot] = bounceSpeed(speedX[slot]);
         }
 
-        return new Update(withPositionAndVariant(entity, x, y,
-            entity.spriteVariant()), collidedWithWall, false);
+        return new Update(withPositionAndVariant(entity, x, y, entity.spriteVariant()), collidedWithWall, false);
     }
 
     public boolean pendingLinkCollision(int slot) {
@@ -214,7 +241,7 @@ public final class EnemyProjectileMotion {
     }
 
     /* Package-private hooks keep physics tests deterministic without exposing
-       WRAM-like state as part of the runtime API. */
+    WRAM-like state as part of the runtime API. */
     void setSpeedForTest(int slot, int newSpeedX, int newSpeedY, int newSpeedZ) {
         speedX[slot] = newSpeedX & 0xFF;
         speedY[slot] = newSpeedY & 0xFF;
@@ -233,15 +260,14 @@ public final class EnemyProjectileMotion {
         initialized[slot] = true;
     }
 
-    private Update advanceWallTransition(RoomEntity entity, int frameCounter,
-                                         int groundStatus, boolean sideScrolling) {
+    private Update advanceWallTransition(RoomEntity entity, int frameCounter, int groundStatus, boolean sideScrolling) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int z = zPosition[slot];
         if (sideScrolling) {
-            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
-                speedX[slot], speedY[slot], frameCounter, groundStatus);
+            EntitySideViewGravity.Speeds speeds =
+                    EntitySideViewGravity.advance(speedX[slot], speedY[slot], frameCounter, groundStatus);
             speedX[slot] = speeds.x();
             speedY[slot] = speeds.y();
         } else {
@@ -253,14 +279,12 @@ public final class EnemyProjectileMotion {
         // The shared handler renders before writing the next spin frame.
         int variant = selectedVariant[slot];
         if ((entity.type() & 0xFF) == ENTITY_MOBLIN_ARROW) {
-            selectedVariant[slot] = ARROW_SPIN_VARIANTS[
-                (transitionCountdown[slot] >>> 3) & 0x03];
+            selectedVariant[slot] = ARROW_SPIN_VARIANTS[(transitionCountdown[slot] >>> 3) & 0x03];
         }
         return new Update(withPositionAndVariant(entity, x, y, z, variant), false, false);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                           int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -300,21 +324,28 @@ public final class EnemyProjectileMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int variant) {
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
         return withPositionAndVariant(entity, x, y, entity.z(), variant);
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
-    public record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {
-    }
+    public record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {}
 
-    public record Update(RoomEntity entity, boolean collidedWithWall, boolean unloaded) {
-    }
+    public record Update(RoomEntity entity, boolean collidedWithWall, boolean unloaded) {}
 }

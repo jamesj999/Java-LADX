@@ -1,19 +1,19 @@
 package linksawakening.world.entity;
 
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.event.EntityCombatEvent;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.*;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import org.junit.jupiter.api.Test;
 
 final class LeeverContactRecoilTest {
     @Test
     void acceptedContactKeepsCachedHitboxButUsesMovedPositionForRecoil() {
         var runtime = chasingLeever(110, 40);
-        var contact = runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0).getFirst();
+        var contact = runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0)
+                .getFirst();
         assertEquals(4, contact.linkDamage());
         assertTrue(runtime.deferContactRecoil(contact.slot(), 109, 39));
 
@@ -30,8 +30,7 @@ final class LeeverContactRecoilTest {
         runtime.resolveCombat(35, 63, 64, false, true, false, 0, 0, 0, 0);
         assertTrue(runtime.deferContactRecoil(2, 63, 64));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 35, 63, 64, () -> 0,
-            (entity, direction, x, y) -> true));
+        runtime.tick(EntityTestFrames.frame(runtime, 35, 63, 64, () -> 0, (entity, direction, x, y) -> true));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(2).x());
         assertResponse(runtime.consumePendingEntityEvents().getFirst(), 0xEC, 0xEC);
@@ -68,9 +67,17 @@ final class LeeverContactRecoilTest {
     private static RoomEntityRuntime chasingLeever(int x, int y) {
         var slots = new ArrayList<RoomEntity>();
         for (int slot = 0; slot < 16; slot++) slots.add(RoomEntity.disabled(slot));
-        var sprite = new EntitySpriteDefinition(0x0E, 4, 0x7EE5, EntitySpriteDefinition.Shape.PAIR, 0,
-            Collections.nCopies(4, new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(0, 0), new EntitySpriteDefinition.OamAttribute(0, 0))));
+        var sprite = new EntitySpriteDefinition(
+                0x0E,
+                4,
+                0x7EE5,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                Collections.nCopies(
+                        4,
+                        new EntitySpriteDefinition.Variant(
+                                new EntitySpriteDefinition.OamAttribute(0, 0),
+                                new EntitySpriteDefinition.OamAttribute(0, 0))));
         slots.set(2, new RoomEntity(2, 0, 0x0E, x, y, EntityStatus.ACTIVE, sprite, 0, 0, 0, 0, -1, false));
         var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
         for (int frame = 0; frame <= 34; frame++)

@@ -40,9 +40,12 @@ public final class MagicRodFireballMotion {
 
     public static SpawnData spawnData(int projectileDirection, boolean pieceOfPower) {
         int direction = checkedDirection(projectileDirection);
-        return new SpawnData(OFFSET_X[direction], OFFSET_Y[direction],
-            PlayerProjectileLaunchSpeed.x(direction, pieceOfPower),
-            PlayerProjectileLaunchSpeed.y(direction, pieceOfPower), 0);
+        return new SpawnData(
+                OFFSET_X[direction],
+                OFFSET_Y[direction],
+                PlayerProjectileLaunchSpeed.x(direction, pieceOfPower),
+                PlayerProjectileLaunchSpeed.y(direction, pieceOfPower),
+                0);
     }
 
     static int frameVariant(int frameCounter) {
@@ -156,8 +159,7 @@ public final class MagicRodFireballMotion {
         initialized[slot] = false;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -172,10 +174,20 @@ public final class MagicRodFireballMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static int checkedDirection(int direction) {

@@ -11,8 +11,8 @@ public final class EquipmentController {
     private final PlayerState playerState;
     private final ItemRegistry itemRegistry;
 
-    public EquipmentController(InputState inputState, InputConfig inputConfig,
-                               PlayerState playerState, ItemRegistry itemRegistry) {
+    public EquipmentController(
+            InputState inputState, InputConfig inputConfig, PlayerState playerState, ItemRegistry itemRegistry) {
         this.inputState = inputState;
         this.inputConfig = inputConfig;
         this.playerState = playerState;

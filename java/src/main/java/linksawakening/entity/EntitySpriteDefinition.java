@@ -42,9 +42,8 @@ public final class EntitySpriteDefinition {
     }
 
     /** One handler-generated OAM entry with offsets relative to hActiveEntityPosX/Y. */
-    public record DynamicSprite(int yOffset, int xOffset, OamAttribute oam,
-                                TileSource tileSource,
-                                boolean appliesEntityFlipAttribute) {
+    public record DynamicSprite(
+            int yOffset, int xOffset, OamAttribute oam, TileSource tileSource, boolean appliesEntityFlipAttribute) {
         public enum TileSource {
             ENTITY_SHEETS,
             GPU
@@ -70,47 +69,84 @@ public final class EntitySpriteDefinition {
     private final List<List<DynamicSprite>> dynamicVariants;
     private final DynamicSprite.TileSource pairTileSource;
 
-    public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
-                                  int initialVariant, List<Variant> variants) {
-        this(entityType, bank, address, shape, initialVariant, variants, List.of(), List.of(),
-            DynamicSprite.TileSource.ENTITY_SHEETS);
+    public EntitySpriteDefinition(
+            int entityType, int bank, int address, Shape shape, int initialVariant, List<Variant> variants) {
+        this(
+                entityType,
+                bank,
+                address,
+                shape,
+                initialVariant,
+                variants,
+                List.of(),
+                List.of(),
+                DynamicSprite.TileSource.ENTITY_SHEETS);
     }
 
-    public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
-                                  int initialVariant, List<Variant> variants,
-                                  List<List<RectangleSprite>> rectangleVariants) {
-        this(entityType, bank, address, shape, initialVariant, variants, rectangleVariants,
-            List.of(), DynamicSprite.TileSource.ENTITY_SHEETS);
+    public EntitySpriteDefinition(
+            int entityType,
+            int bank,
+            int address,
+            Shape shape,
+            int initialVariant,
+            List<Variant> variants,
+            List<List<RectangleSprite>> rectangleVariants) {
+        this(
+                entityType,
+                bank,
+                address,
+                shape,
+                initialVariant,
+                variants,
+                rectangleVariants,
+                List.of(),
+                DynamicSprite.TileSource.ENTITY_SHEETS);
     }
 
-    public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
-                                  int initialVariant, List<Variant> variants,
-                                  DynamicSprite.TileSource pairTileSource) {
-        this(entityType, bank, address, shape, initialVariant, variants, List.of(), List.of(),
-            pairTileSource);
+    public EntitySpriteDefinition(
+            int entityType,
+            int bank,
+            int address,
+            Shape shape,
+            int initialVariant,
+            List<Variant> variants,
+            DynamicSprite.TileSource pairTileSource) {
+        this(entityType, bank, address, shape, initialVariant, variants, List.of(), List.of(), pairTileSource);
     }
 
-    private EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
-                                   int initialVariant, List<Variant> variants,
-                                   List<List<RectangleSprite>> rectangleVariants,
-                                   List<List<DynamicSprite>> dynamicVariants,
-                                   DynamicSprite.TileSource pairTileSource) {
+    private EntitySpriteDefinition(
+            int entityType,
+            int bank,
+            int address,
+            Shape shape,
+            int initialVariant,
+            List<Variant> variants,
+            List<List<RectangleSprite>> rectangleVariants,
+            List<List<DynamicSprite>> dynamicVariants,
+            DynamicSprite.TileSource pairTileSource) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte");
         }
-        if (shape == null || variants == null || rectangleVariants == null
-            || dynamicVariants == null || pairTileSource == null) {
+        if (shape == null
+                || variants == null
+                || rectangleVariants == null
+                || dynamicVariants == null
+                || pairTileSource == null) {
             throw new IllegalArgumentException("Entity shape and variants cannot be null");
         }
         if (shape == Shape.UNSUPPORTED) {
-            if (!variants.isEmpty() || !rectangleVariants.isEmpty() || !dynamicVariants.isEmpty()
-                || initialVariant != -1) {
+            if (!variants.isEmpty()
+                    || !rectangleVariants.isEmpty()
+                    || !dynamicVariants.isEmpty()
+                    || initialVariant != -1) {
                 throw new IllegalArgumentException("Unsupported definitions cannot have variants");
             }
         } else if (shape == Shape.RECTANGLE) {
-            if (!variants.isEmpty() || rectangleVariants.isEmpty()
-                || !dynamicVariants.isEmpty()
-                || initialVariant < 0 || initialVariant >= rectangleVariants.size()) {
+            if (!variants.isEmpty()
+                    || rectangleVariants.isEmpty()
+                    || !dynamicVariants.isEmpty()
+                    || initialVariant < 0
+                    || initialVariant >= rectangleVariants.size()) {
                 throw new IllegalArgumentException("Rectangle definition has invalid variants");
             }
             for (List<RectangleSprite> variant : rectangleVariants) {
@@ -119,8 +155,11 @@ public final class EntitySpriteDefinition {
                 }
             }
         } else if (shape == Shape.DYNAMIC) {
-            if (!variants.isEmpty() || !rectangleVariants.isEmpty() || dynamicVariants.isEmpty()
-                || initialVariant < 0 || initialVariant >= dynamicVariants.size()) {
+            if (!variants.isEmpty()
+                    || !rectangleVariants.isEmpty()
+                    || dynamicVariants.isEmpty()
+                    || initialVariant < 0
+                    || initialVariant >= dynamicVariants.size()) {
                 throw new IllegalArgumentException("Dynamic definition has invalid variants");
             }
             for (List<DynamicSprite> variant : dynamicVariants) {
@@ -147,17 +186,22 @@ public final class EntitySpriteDefinition {
         this.pairTileSource = pairTileSource;
     }
 
-    public static EntitySpriteDefinition dynamic(int entityType, int bank, int address,
-                                                 int initialVariant,
-                                                 List<List<DynamicSprite>> variants) {
-        return new EntitySpriteDefinition(entityType, bank, address, Shape.DYNAMIC,
-            initialVariant, List.of(), List.of(), variants,
-            DynamicSprite.TileSource.ENTITY_SHEETS);
+    public static EntitySpriteDefinition dynamic(
+            int entityType, int bank, int address, int initialVariant, List<List<DynamicSprite>> variants) {
+        return new EntitySpriteDefinition(
+                entityType,
+                bank,
+                address,
+                Shape.DYNAMIC,
+                initialVariant,
+                List.of(),
+                List.of(),
+                variants,
+                DynamicSprite.TileSource.ENTITY_SHEETS);
     }
 
     public static EntitySpriteDefinition unsupported(int entityType) {
-        return new EntitySpriteDefinition(entityType, -1, -1, Shape.UNSUPPORTED,
-            -1, List.of());
+        return new EntitySpriteDefinition(entityType, -1, -1, Shape.UNSUPPORTED, -1, List.of());
     }
 
     public int entityType() {
@@ -221,8 +265,7 @@ public final class EntitySpriteDefinition {
         return dynamicVariants;
     }
 
-    private static List<List<RectangleSprite>> copyRectangleVariants(
-                                                                List<List<RectangleSprite>> source) {
+    private static List<List<RectangleSprite>> copyRectangleVariants(List<List<RectangleSprite>> source) {
         List<List<RectangleSprite>> copy = new java.util.ArrayList<>(source.size());
         for (List<RectangleSprite> variant : source) {
             copy.add(List.copyOf(variant));
@@ -230,8 +273,7 @@ public final class EntitySpriteDefinition {
         return List.copyOf(copy);
     }
 
-    private static List<List<DynamicSprite>> copyDynamicVariants(
-        List<List<DynamicSprite>> source) {
+    private static List<List<DynamicSprite>> copyDynamicVariants(List<List<DynamicSprite>> source) {
         java.util.ArrayList<List<DynamicSprite>> copy = new java.util.ArrayList<>(source.size());
         for (List<DynamicSprite> variant : source) {
             copy.add(List.copyOf(variant));

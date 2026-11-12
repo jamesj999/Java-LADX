@@ -1,18 +1,15 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
 
 final class FishMotionTest {
 
@@ -29,8 +26,7 @@ final class FishMotionTest {
         assertEquals(0x52, started.physicsFlags());
         assertFalse(started.waterSplash());
 
-        FishMotion.Update swimming = motion.advance(
-            started.entity(), started.transitionCountdown() - 1, () -> 0, null);
+        FishMotion.Update swimming = motion.advance(started.entity(), started.transitionCountdown() - 1, () -> 0, null);
         assertEquals(6, swimming.entity().spriteVariant());
 
         FishMotion.Update launched = motion.advance(swimming.entity(), 0, () -> 0, null);
@@ -61,16 +57,13 @@ final class FishMotionTest {
     @Test
     void reversesHorizontalSpeedOnlyWhenTheRomCollisionByteIsSet() {
         FishMotion motion = new FishMotion();
-        FishMotion.Update started = motion.advance(entity(0x40, 0x50, 0),
-            0, () -> 0, null);
-        FishMotion.Update swimming = motion.advance(started.entity(), 1,
-            () -> 0, null);
+        FishMotion.Update started = motion.advance(entity(0x40, 0x50, 0), 0, () -> 0, null);
+        FishMotion.Update swimming = motion.advance(started.entity(), 1, () -> 0, null);
 
-        FishMotion.Update blocked = motion.advance(swimming.entity(), 1,
-            () -> 0, (entity, direction, nextX, nextY) -> {
-                assertEquals(EntityBackgroundCollisionResult.RIGHT, direction);
-                return true;
-            });
+        FishMotion.Update blocked = motion.advance(swimming.entity(), 1, () -> 0, (entity, direction, nextX, nextY) -> {
+            assertEquals(EntityBackgroundCollisionResult.RIGHT, direction);
+            return true;
+        });
 
         assertEquals(0xF8, motion.speedX(0));
         assertEquals(5, blocked.entity().spriteVariant());
@@ -78,26 +71,28 @@ final class FishMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(0, 0, FishMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0, 0, FishMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition definition() {
-        EntitySpriteDefinition.OamAttribute first =
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0);
-        EntitySpriteDefinition.OamAttribute second =
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0);
-        return new EntitySpriteDefinition(FishMotion.ENTITY_TYPE, 0x15, 0x449F,
-            EntitySpriteDefinition.Shape.PAIR, 0,
-            List.of(
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, null),
-                new EntitySpriteDefinition.Variant(first, null),
-                new EntitySpriteDefinition.Variant(first, null),
-                new EntitySpriteDefinition.Variant(first, null)));
+        EntitySpriteDefinition.OamAttribute first = new EntitySpriteDefinition.OamAttribute(0xFF, 0);
+        EntitySpriteDefinition.OamAttribute second = new EntitySpriteDefinition.OamAttribute(0xFF, 0);
+        return new EntitySpriteDefinition(
+                FishMotion.ENTITY_TYPE,
+                0x15,
+                0x449F,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, null),
+                        new EntitySpriteDefinition.Variant(first, null),
+                        new EntitySpriteDefinition.Variant(first, null),
+                        new EntitySpriteDefinition.Variant(first, null)));
     }
 }

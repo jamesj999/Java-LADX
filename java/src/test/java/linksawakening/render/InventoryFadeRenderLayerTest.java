@@ -1,14 +1,16 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.List;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 import linksawakening.ui.InventoryTransition;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 final class InventoryFadeRenderLayerTest {
-    @Test void dxFadeAppliesAlternatingBgAndObjStepsWithoutFlatteningLayerParity() {
+    @Test
+    void dxFadeAppliesAlternatingBgAndObjStepsWithoutFlatteningLayerParity() {
         var transition = new InventoryTransition();
         transition.open(false);
         for (int frame = 0; frame <= 10; frame++) transition.tick();
@@ -19,10 +21,10 @@ final class InventoryFadeRenderLayerTest {
             frame.backgroundTile(solid, 0, 0, false, false, black, false);
             frame.append(solid, 0, 0, false, false, black, false);
         };
-        HardwareRenderLayer background = (frame, gpu) ->
-            frame.backgroundTile(solid, 0, 0, false, false, black, false);
-        var scene = FrameScene.of(List.of(new InventoryFadeRenderLayer(objects, transition),
-            new InventoryFadeRenderLayer(background, transition)));
+        HardwareRenderLayer background = (frame, gpu) -> frame.backgroundTile(solid, 0, 0, false, false, black, false);
+        var scene = FrameScene.of(List.of(
+                new InventoryFadeRenderLayer(objects, transition),
+                new InventoryFadeRenderLayer(background, transition)));
         byte[] hardware = new byte[160 * 144 * 4], legacy = hardware.clone();
         scene.hardwareFrame(new GPU()).compose(hardware);
         LegacySceneReference.render(scene, legacy, new GPU());

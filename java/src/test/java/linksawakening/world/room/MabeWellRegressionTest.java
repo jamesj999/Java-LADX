@@ -1,5 +1,8 @@
 package linksawakening.world.room;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -14,19 +17,25 @@ import linksawakening.testing.TestRom;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.*;
 import org.junit.jupiter.api.Test;
-import java.util.ArrayList;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 final class MabeWellRegressionTest {
     @Test
     void jumpingOffTheWellLedgeFallsWithSoundAndWarpsWithoutDamage() throws Exception {
         byte[] rom;
-        try (var stream = TestRom.open()) { rom = stream.readAllBytes(); }
+        try (var stream = TestRom.open()) {
+            rom = stream.readAllBytes();
+        }
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var room = new RoomSession(rom, new GPU(), new RoomLoader(rom),
-            new OverworldTilesetTable(rom), collision, new TransientVfxSystem(16), null);
+        var room = new RoomSession(
+                rom,
+                new GPU(),
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                collision,
+                new TransientVfxSystem(16),
+                null);
         room.loadInitialOverworld(0xA0);
         var warp = room.activeRoom().firstWarp();
         assertEquals(0x61, collision.objectIdAtPoint(88, 88));
@@ -36,11 +45,10 @@ final class MabeWellRegressionTest {
         var player = new PlayerState();
         int health = player.health();
         var sounds = new ArrayList<GameplaySoundEvent>();
-        var link = new Link(input, config, tables, collision, null, player,
-            new ItemRegistry(), sounds::add);
+        var link = new Link(input, config, tables, collision, null, player, new ItemRegistry(), sounds::add);
         var transition = new TransitionController();
-        var coordinator = new RoomTransitionCoordinator(room, new RoomBoundaryController(),
-            transition, new ScrollController(), sounds::add);
+        var coordinator = new RoomTransitionCoordinator(
+                room, new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
         link.setRoomEntryPixelPosition(80, 32);
         input.onKeyEvent(config.downKey(), 1);
         for (int frame = 0; frame < 160 && !link.isFallingIntoPit(); frame++) {
@@ -50,7 +58,8 @@ final class MabeWellRegressionTest {
         }
         input.onKeyEvent(config.downKey(), 0);
         assertTrue(link.isFallingIntoPit(), "well fall at " + link.pixelX() + "," + link.pixelY());
-        assertEquals(1, sounds.stream().filter(s -> s == GameplaySoundEvent.PIT_FALL).count());
+        assertEquals(
+                1, sounds.stream().filter(s -> s == GameplaySoundEvent.PIT_FALL).count());
         for (int frame = 0; frame < 96 && !transition.isActive(); frame++) {
             link.update();
             coordinator.handleWarpAndIndoorBoundaries(link);

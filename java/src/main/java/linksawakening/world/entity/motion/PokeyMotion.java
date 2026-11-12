@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.Objects;
-import java.util.function.IntSupplier;
 
 /** Bank-$15 PokeyEntityHandler movement, segment spawning, and wall bounce. */
 public final class PokeyMotion {
@@ -16,14 +15,10 @@ public final class PokeyMotion {
     static final int SEGMENT_TRANSITION_COUNTDOWN = 0x18;
 
     private static final int VECTOR_LENGTH = 0x20;
-    private static final int[] SPEED_X_BY_RANDOM_INDEX = {
-        0x00, 0x04, 0x06, 0x04, 0x00, 0xFC, 0xFA, 0xFC
-    };
+    private static final int[] SPEED_X_BY_RANDOM_INDEX = {0x00, 0x04, 0x06, 0x04, 0x00, 0xFC, 0xFA, 0xFC};
     // Data_015_4BD7 is only declared as two bytes, so the handler's indexed
     // reads continue directly into Data_015_4BD9 in the assembled ROM.
-    private static final int[] SPEED_Y_BY_RANDOM_INDEX = {
-        0xFA, 0xFC, 0x00, 0x04, 0x06, 0x04, 0x00, 0xFC
-    };
+    private static final int[] SPEED_Y_BY_RANDOM_INDEX = {0xFA, 0xFC, 0x00, 0x04, 0x06, 0x04, 0x00, 0xFC};
 
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -32,14 +27,17 @@ public final class PokeyMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record SegmentSpawn(int x, int y, int z, int speedX, int speedY,
-                        int transitionCountdown) {
-    }
+    public record SegmentSpawn(int x, int y, int z, int speedX, int speedY, int transitionCountdown) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, int flashCountdown,
-                  int inertia, int renderInertia, SegmentSpawn segmentSpawn,
-                  boolean unloadRequested, boolean bumpJingle) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            int flashCountdown,
+            int inertia,
+            int renderInertia,
+            SegmentSpawn segmentSpawn,
+            boolean unloadRequested,
+            boolean bumpJingle) {}
 
     /** Mirrors the main entity's normal room initialization. */
     public void initialize(int slot) {
@@ -58,11 +56,16 @@ public final class PokeyMotion {
         initialized[slot] = true;
     }
 
-    public Update advanceMain(RoomEntity entity, int frameCounter, int inertia,
-                       int transitionCountdown, int flashCountdown,
-                       int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advanceMain(
+            RoomEntity entity,
+            int frameCounter,
+            int inertia,
+            int transitionCountdown,
+            int flashCountdown,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         checkType(entity);
         validateByte(inertia, "Pokey inertia");
         validateByte(transitionCountdown, "Pokey transition countdown");
@@ -80,10 +83,15 @@ public final class PokeyMotion {
             // no detached segment slot is available.
             nextFlashCountdown = 0x13;
             nextInertia = inertia + 1;
-            Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(),
-                linkEntityX, linkEntityY, VECTOR_LENGTH);
-            segmentSpawn = new SegmentSpawn(entity.x(), entity.y(), entity.z(),
-                negate(vector.x()), negate(vector.y()), SEGMENT_TRANSITION_COUNTDOWN);
+            Vector vector =
+                    vectorTowardsLink(entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, VECTOR_LENGTH);
+            segmentSpawn = new SegmentSpawn(
+                    entity.x(),
+                    entity.y(),
+                    entity.z(),
+                    negate(vector.x()),
+                    negate(vector.y()),
+                    SEGMENT_TRANSITION_COUNTDOWN);
         }
 
         int nextTransitionCountdown = transitionCountdown;
@@ -95,23 +103,30 @@ public final class PokeyMotion {
             speedY[entity.slot()] = SPEED_Y_BY_RANDOM_INDEX[index];
         }
 
-        int x = addSpeedToPosition(entity.x(), speedX[entity.slot()],
-            speedXAccumulator, entity.slot());
-        int y = addSpeedToPosition(entity.y(), speedY[entity.slot()],
-            speedYAccumulator, entity.slot());
-        RoomEntity moved = withPositionAndVariant(entity, x, y,
-            (frameCounter >>> 3) & 0x03);
+        int x = addSpeedToPosition(entity.x(), speedX[entity.slot()], speedXAccumulator, entity.slot());
+        int y = addSpeedToPosition(entity.y(), speedY[entity.slot()], speedYAccumulator, entity.slot());
+        RoomEntity moved = withPositionAndVariant(entity, x, y, (frameCounter >>> 3) & 0x03);
         // PokeyEntityHandler calls ApplyEntityInteractionWithBackground after
         // its position update. The room runtime owns the authoritative probe;
         // retain the probe ordering without inventing a snap coordinate in
         // this boolean-only motion seam.
         collisionMask(moved, backgroundCollision);
-        return new Update(moved, nextTransitionCountdown, nextFlashCountdown,
-            nextInertia, renderInertia, segmentSpawn, false, false);
+        return new Update(
+                moved,
+                nextTransitionCountdown,
+                nextFlashCountdown,
+                nextInertia,
+                renderInertia,
+                segmentSpawn,
+                false,
+                false);
     }
 
-    public Update advanceSegment(RoomEntity entity, int inertia, int transitionCountdown,
-                           RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advanceSegment(
+            RoomEntity entity,
+            int inertia,
+            int transitionCountdown,
+            RoomEntityBackgroundCollision backgroundCollision) {
         checkType(entity);
         validateByte(inertia, "Pokey segment inertia");
         validateByte(transitionCountdown, "Pokey segment transition countdown");
@@ -130,8 +145,7 @@ public final class PokeyMotion {
             nextInertia++;
             bumpJingle = true;
             if (nextInertia >= 0x03) {
-                return new Update(moved, transitionCountdown, 0, nextInertia,
-                    nextInertia, null, true, true);
+                return new Update(moved, transitionCountdown, 0, nextInertia, nextInertia, null, true, true);
             }
         }
         if ((collisionMask & 0x0C) != 0) {
@@ -139,12 +153,10 @@ public final class PokeyMotion {
             nextInertia++;
             bumpJingle = true;
             if (nextInertia >= 0x03) {
-                return new Update(moved, transitionCountdown, 0, nextInertia,
-                    nextInertia, null, true, bumpJingle);
+                return new Update(moved, transitionCountdown, 0, nextInertia, nextInertia, null, true, bumpJingle);
             }
         }
-        return new Update(moved, transitionCountdown, 0, nextInertia,
-            nextInertia, null, false, bumpJingle);
+        return new Update(moved, transitionCountdown, 0, nextInertia, nextInertia, null, false, bumpJingle);
     }
 
     public boolean isSegment(int slot) {
@@ -191,33 +203,27 @@ public final class PokeyMotion {
         speedYAccumulator[slot] = 0;
     }
 
-    private static int collisionMask(RoomEntity entity,
-                                     RoomEntityBackgroundCollision backgroundCollision) {
+    private static int collisionMask(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         if (backgroundCollision == null) {
             return 0;
         }
         int mask = 0;
-        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.RIGHT,
-            entity.x(), entity.y())) {
+        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y())) {
             mask |= 0x01;
         }
-        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.LEFT,
-            entity.x(), entity.y())) {
+        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.LEFT, entity.x(), entity.y())) {
             mask |= 0x02;
         }
-        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.UP,
-            entity.x(), entity.y())) {
+        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.UP, entity.x(), entity.y())) {
             mask |= 0x04;
         }
-        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.DOWN,
-            entity.x(), entity.y())) {
+        if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.DOWN, entity.x(), entity.y())) {
             mask |= 0x08;
         }
         return mask;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -232,8 +238,8 @@ public final class PokeyMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkEntityX, int linkEntityY, int length) {
+    private static Vector vectorTowardsLink(
+            int entityX, int entityY, int entityZ, int linkEntityX, int linkEntityY, int length) {
         int distanceX = signedByte(linkEntityX - entityX);
         int distanceY = signedByte(linkEntityY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
@@ -278,23 +284,42 @@ public final class PokeyMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                     int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static void checkType(RoomEntity entity) {
         if (entity.type() != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported Pokey type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException("Unsupported Pokey type: 0x" + Integer.toHexString(entity.type()));
         }
     }
 
@@ -309,6 +334,5 @@ public final class PokeyMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

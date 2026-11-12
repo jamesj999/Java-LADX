@@ -1,5 +1,9 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
@@ -10,15 +14,15 @@ import linksawakening.state.PlayerState;
 import linksawakening.testing.TestRom;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 @linksawakening.testing.RequiresRom
 final class LinkGrassRenderLayerTest {
-    @Test void grassColumnsUseSourceStepFlipPaletteAndReservedDialogPriority() throws Exception {
+    @Test
+    void grassColumnsUseSourceStepFlipPaletteAndReservedDialogPriority() throws Exception {
         RomTables tables;
-        try (var input = TestRom.open()) { tables = RomTables.loadFromRom(input.readAllBytes()); }
+        try (var input = TestRom.open()) {
+            tables = RomTables.loadFromRom(input.readAllBytes());
+        }
         var collision = new OverworldCollision(tables);
         int[] objects = new int[0x100];
         java.util.Arrays.fill(objects, 0x0A);

@@ -1,8 +1,9 @@
 package linksawakening.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 final class LinkDamageTest {
     private Link link(PlayerState player) {
@@ -11,7 +12,8 @@ final class LinkDamageTest {
         return link;
     }
 
-    @Test void recoilConsumesPendingSignedSpeedAndPreservesFractionalPosition() {
+    @Test
+    void recoilConsumesPendingSignedSpeedAndPreservesFractionalPosition() {
         Link link = link(null);
         link.applyRomSpeed(0xFF, 0x08);
         link.setCollisionIgnoreFrames(2);
@@ -26,7 +28,8 @@ final class LinkDamageTest {
         assertFalse(link.linkDamage.hasRecoil());
     }
 
-    @Test void roomBoundaryCancelsRecoilAndRestoresBothAxes() {
+    @Test
+    void roomBoundaryCancelsRecoilAndRestoresBothAxes() {
         Link link = link(null);
         link.setPixelPosition(80, 115);
         link.applyRomSpeed(8, 32);
@@ -39,7 +42,8 @@ final class LinkDamageTest {
         assertFalse(link.linkDamage.hasRecoil());
     }
 
-    @Test void invincibilityTicksIndependentlyOfRecoil() {
+    @Test
+    void invincibilityTicksIndependentlyOfRecoil() {
         PlayerState player = new PlayerState();
         Link link = link(player);
         player.setInvincibilityCounter(2);

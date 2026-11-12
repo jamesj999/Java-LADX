@@ -2,7 +2,12 @@ package linksawakening.startup;
 
 /** Source-timed state for TarinEntityHandler's indoor shield sequence. */
 public final class TarinShieldMotion {
-    public enum State { IDLE, OFFER, ITEM, COMPLETE }
+    public enum State {
+        IDLE,
+        OFFER,
+        ITEM,
+        COMPLETE
+    }
 
     private static final int DOOR_Y = 0x7B;
     private static final int DOOR_DIALOG = 0x00;
@@ -63,14 +68,19 @@ public final class TarinShieldMotion {
     }
 
     /** Mirrors ShouldLinkTalkToEntity's facing/proximity gate for Tarin. */
-    public static boolean canTalkToEntity(int entityX, int entityY, int linkX, int linkY,
-                                          int linkDirection, boolean linkAirborne,
-                                          boolean actionButtonHeld, boolean dialogActive) {
+    public static boolean canTalkToEntity(
+            int entityX,
+            int entityY,
+            int linkX,
+            int linkY,
+            int linkDirection,
+            boolean linkAirborne,
+            boolean actionButtonHeld,
+            boolean dialogActive) {
         if (linkAirborne || !actionButtonHeld || dialogActive) {
             return false;
         }
-        if (((linkY - entityY + 0x14) & 0xFF) >= 0x28
-            || ((linkX - entityX + 0x10) & 0xFF) >= 0x20) {
+        if (((linkY - entityY + 0x14) & 0xFF) >= 0x28 || ((linkX - entityX + 0x10) & 0xFF) >= 0x20) {
             return false;
         }
         int dx = (byte) (linkX - entityX);
@@ -84,9 +94,13 @@ public final class TarinShieldMotion {
         return directionToLink == (linkDirection ^ 0x01);
     }
 
-    public record Update(int linkY, int dialogLowId, boolean linkMotionBlocked,
-                         boolean grantShield, boolean playObtainItemMusic,
-                         boolean presentShield) {
+    public record Update(
+            int linkY,
+            int dialogLowId,
+            boolean linkMotionBlocked,
+            boolean grantShield,
+            boolean playObtainItemMusic,
+            boolean presentShield) {
         private static Update unblocked(int linkY) {
             return new Update(linkY, -1, false, false, false, false);
         }

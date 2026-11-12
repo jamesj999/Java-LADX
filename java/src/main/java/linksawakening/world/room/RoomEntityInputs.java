@@ -1,8 +1,7 @@
 package linksawakening.world.room;
 
-import linksawakening.world.entity.RoomEntityRuntime;
-
 import java.util.function.Supplier;
+import linksawakening.world.entity.RoomEntityRuntime;
 
 /** Cached player inputs and gates supplied to each room entity runtime. */
 final class RoomEntityInputs {
@@ -28,7 +27,9 @@ final class RoomEntityInputs {
     int secretSeashellPegasusCollisionX;
     int secretSeashellPegasusCollisionY;
 
-    RoomEntityInputs(Supplier<RoomEntityRuntime> runtime) { this.runtime = runtime; }
+    RoomEntityInputs(Supplier<RoomEntityRuntime> runtime) {
+        this.runtime = runtime;
+    }
 
     void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
         setEntityActionButtonsHeld(actionButtonsHeld, actionButtonsHeld);
@@ -45,8 +46,7 @@ final class RoomEntityInputs {
         }
     }
 
-    void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown,
-                                   int windowY) {
+    void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
         if ((dialogCooldown & ~0xFF) != 0 || (windowY & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity talk state values must be unsigned bytes");
         }
@@ -93,8 +93,8 @@ final class RoomEntityInputs {
 
     void setEntityPressedButtonsMask(int pressedButtonsMask) {
         if ((pressedButtonsMask & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Entity pressed-buttons mask must be an unsigned byte: "
-                + pressedButtonsMask);
+            throw new IllegalArgumentException(
+                    "Entity pressed-buttons mask must be an unsigned byte: " + pressedButtonsMask);
         }
         entityPressedButtonsMask = pressedButtonsMask;
         if (runtime.get() != null) {
@@ -119,8 +119,7 @@ final class RoomEntityInputs {
 
     void setEntityGoldenLeavesCount(int goldenLeavesCount) {
         if (goldenLeavesCount < 0 || goldenLeavesCount > 0xFF) {
-            throw new IllegalArgumentException("Golden leaves count must be an unsigned byte: "
-                + goldenLeavesCount);
+            throw new IllegalArgumentException("Golden leaves count must be an unsigned byte: " + goldenLeavesCount);
         }
         entityGoldenLeavesCount = goldenLeavesCount;
         if (runtime.get() != null) {
@@ -128,9 +127,8 @@ final class RoomEntityInputs {
         }
     }
 
-    void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
-                                                        boolean collisionActive,
-                                                        int collisionX, int collisionY) {
+    void setSecretSeashellPegasusCollisionState(
+            boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
         if ((collisionX & ~0xFF) != 0 || (collisionY & ~0xFF) != 0) {
             throw new IllegalArgumentException("Pegasus collision coordinates must be bytes");
         }
@@ -139,8 +137,9 @@ final class RoomEntityInputs {
         secretSeashellPegasusCollisionX = collisionX;
         secretSeashellPegasusCollisionY = collisionY;
         if (runtime.get() != null) {
-            runtime.get().configuration().setSecretSeashellPegasusCollisionState(
-                screenShakeActive, collisionActive, collisionX, collisionY);
+            runtime.get()
+                    .configuration()
+                    .setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY);
         }
     }
 
@@ -160,8 +159,8 @@ final class RoomEntityInputs {
 
     void setEntityAttackStepAnimationCountdown(int countdown) {
         if (countdown < 0 || countdown > 0xFF) {
-            throw new IllegalArgumentException("Link attack-step animation countdown must be an unsigned byte: "
-                + countdown);
+            throw new IllegalArgumentException(
+                    "Link attack-step animation countdown must be an unsigned byte: " + countdown);
         }
         if (runtime.get() != null) {
             runtime.get().configuration().setLinkAttackStepAnimationCountdown(countdown);
@@ -170,8 +169,7 @@ final class RoomEntityInputs {
 
     void setEntityFinalPositionX(int positionX) {
         if ((positionX & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Entity final Link X must be an unsigned byte: "
-                + positionX);
+            throw new IllegalArgumentException("Entity final Link X must be an unsigned byte: " + positionX);
         }
         if (runtime.get() != null) {
             runtime.get().configuration().setLinkFinalPositionX(positionX);

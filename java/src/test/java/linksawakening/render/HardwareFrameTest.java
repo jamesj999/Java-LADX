@@ -1,34 +1,44 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class HardwareFrameTest {
     private static final int[] PALETTE = {11, 22, 33, 44};
+
     private static Tile solid(int index) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) tile.setPixel(x, y, index);
         return tile;
     }
+
     private static int pixel(HardwareFrame frame, int x, int y) {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         frame.render(new RenderContext(buffer, new GPU()));
         return buffer[(y * Framebuffer.WIDTH + x) * 4 + 2] & 255;
     }
-    @Test void priorityDependsOnColorIndexAndMasterSwitch() {
-        for (boolean enabled : new boolean[]{false, true}) for (boolean bgPriority : new boolean[]{false, true})
-            for (boolean behind : new boolean[]{false, true}) for (int index : new int[]{0, 1}) {
-                HardwareFrame frame = new HardwareFrame(enabled);
-                frame.backgroundTile(solid(index), 0, 0, false, false, PALETTE, bgPriority);
-                frame.append(solid(2), 0, 0, false, false, PALETTE, behind);
-                assertEquals(enabled && index != 0 && (bgPriority || behind) ? PALETTE[index] : 33,
-                    pixel(frame, 0, 0));
-            }
+
+    @Test
+    void priorityDependsOnColorIndexAndMasterSwitch() {
+        for (boolean enabled : new boolean[] {false, true})
+            for (boolean bgPriority : new boolean[] {false, true})
+                for (boolean behind : new boolean[] {false, true})
+                    for (int index : new int[] {0, 1}) {
+                        HardwareFrame frame = new HardwareFrame(enabled);
+                        frame.backgroundTile(solid(index), 0, 0, false, false, PALETTE, bgPriority);
+                        frame.append(solid(2), 0, 0, false, false, PALETTE, behind);
+                        assertEquals(
+                                enabled && index != 0 && (bgPriority || behind) ? PALETTE[index] : 33,
+                                pixel(frame, 0, 0));
+                    }
     }
-    @Test void transparentObjectDoesNotClaimPriorityButHiddenObjectDoes() {
+
+    @Test
+    void transparentObjectDoesNotClaimPriorityButHiddenObjectDoes() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.backgroundTile(solid(1), 0, 0, false, false, PALETTE, false);
         frame.append(solid(2), 0, 0, false, false, PALETTE, false);
@@ -37,7 +47,9 @@ final class HardwareFrameTest {
         frame.append(solid(3), 0, 0, false, false, PALETTE, true);
         assertEquals(22, pixel(frame, 0, 0));
     }
-    @Test void windowColorZeroReplacesBackgroundAndClearsItsPriority() {
+
+    @Test
+    void windowColorZeroReplacesBackgroundAndClearsItsPriority() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.backgroundTile(solid(1), 0, 0, false, false, PALETTE, true);
         frame.backgroundTile(solid(0), 0, 0, false, false, PALETTE, false);
@@ -45,27 +57,34 @@ final class HardwareFrameTest {
         frame.append(solid(2), 0, 0, false, false, PALETTE, true);
         assertEquals(33, pixel(frame, 0, 0));
     }
-    @Test void flipsAndClipsAtAllFourEdges() {
-        for (boolean flipX : new boolean[]{false, true}) for (boolean flipY : new boolean[]{false, true}) {
-            Tile tile = solid(0);
-            tile.setPixel(flipX ? 7 : 0, flipY ? 7 : 0, 3);
-            HardwareFrame frame = new HardwareFrame(true);
-            frame.append(tile, 0, 0, flipX, flipY, PALETTE, false);
-            assertEquals(44, pixel(frame, 0, 0));
-            for (int[] origin : new int[][]{{-7,-7},{159,143}}) {
-                frame = new HardwareFrame(true);
-                frame.backgroundTile(solid(2), origin[0], origin[1], flipX, flipY, PALETTE, false);
-                assertEquals(33, pixel(frame, Math.max(0, origin[0]), Math.max(0, origin[1])));
+
+    @Test
+    void flipsAndClipsAtAllFourEdges() {
+        for (boolean flipX : new boolean[] {false, true})
+            for (boolean flipY : new boolean[] {false, true}) {
+                Tile tile = solid(0);
+                tile.setPixel(flipX ? 7 : 0, flipY ? 7 : 0, 3);
+                HardwareFrame frame = new HardwareFrame(true);
+                frame.append(tile, 0, 0, flipX, flipY, PALETTE, false);
+                assertEquals(44, pixel(frame, 0, 0));
+                for (int[] origin : new int[][] {{-7, -7}, {159, 143}}) {
+                    frame = new HardwareFrame(true);
+                    frame.backgroundTile(solid(2), origin[0], origin[1], flipX, flipY, PALETTE, false);
+                    assertEquals(33, pixel(frame, Math.max(0, origin[0]), Math.max(0, origin[1])));
+                }
             }
-        }
     }
-    @Test void laterPainterSubmissionWinsRegardlessOfXOrUnusedSlotMetadata() {
+
+    @Test
+    void laterPainterSubmissionWinsRegardlessOfXOrUnusedSlotMetadata() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.appendInSlot(2, solid(1), 0, 0, false, false, PALETTE, false);
         frame.appendInSlot(5, solid(2), 4, 0, false, false, PALETTE, false);
         assertEquals(33, pixel(frame, 4, 0));
     }
-    @Test void shadowSubmittedAfterLinkCoversLink() {
+
+    @Test
+    void shadowSubmittedAfterLinkCoversLink() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.appendInSlot(2, solid(2), 0, 0, false, false, PALETTE, false);
         frame.appendInSlot(3, solid(3), 8, 0, false, false, PALETTE, false);
@@ -73,7 +92,9 @@ final class HardwareFrameTest {
         assertEquals(22, pixel(frame, 4, 0));
         assertEquals(22, pixel(frame, 8, 0));
     }
-    @Test void hudColorZeroCannotHideAnObjectEvenWithBgPrioritySet() {
+
+    @Test
+    void hudColorZeroCannotHideAnObjectEvenWithBgPrioritySet() {
         // User-supplied ROM: InventoryTilemap row 0 col 8 is $7F,
         // InventoryAttrmap is $01, shared CGB tile slot $17F pixel (7,0) is index 0.
         // home/animated_tiles.asm $1D57-$1D59 rejects OAM Y >= $88,
@@ -83,7 +104,9 @@ final class HardwareFrameTest {
         frame.appendInSlot(2, solid(2), 64, 128, false, false, PALETTE, true);
         assertEquals(33, pixel(frame, 71, 128));
     }
-    @Test void fidelityClassifierRequiresHardwareVisibleObjectAndExactLegacyBgColor() {
+
+    @Test
+    void fidelityClassifierRequiresHardwareVisibleObjectAndExactLegacyBgColor() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.closedHudTile(solid(0), 0x7F, 1, 64, 128, PALETTE);
         frame.appendInSlot(2, solid(2), 64, 128, false, false, PALETTE, false);
@@ -104,8 +127,10 @@ final class HardwareFrameTest {
         frame.compose(hardware);
         org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudPriority(legacy, hardware, pixel));
     }
-    @Test void dialogHidingUsesWholeEntryYAndPreservesReservedSources() {
-        for (boolean bottom : new boolean[]{false, true}) {
+
+    @Test
+    void dialogHidingUsesWholeEntryYAndPreservesReservedSources() {
+        for (boolean bottom : new boolean[] {false, true}) {
             int hiddenY = bottom ? 72 : 45;
             int visibleY = bottom ? 71 : 46;
             HardwareFrame frame = new HardwareFrame(true);
@@ -125,7 +150,9 @@ final class HardwareFrameTest {
             assertEquals(22, pixel(frame, 48, hiddenY));
         }
     }
-    @Test void dialogFidelityClassifierNeverAcceptsAnEntitySource() {
+
+    @Test
+    void dialogFidelityClassifierNeverAcceptsAnEntitySource() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.submittingLayer("DialogRenderLayer");
         frame.backgroundPixel(0, 0, 3, PALETTE, -1, 1);
@@ -133,10 +160,13 @@ final class HardwareFrameTest {
         frame.append(solid(2), 0, 0, false, false, PALETTE, false);
         byte[] hardware = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         frame.compose(hardware);
-        byte[] legacy = hardware.clone(); legacy[2] = 44;
+        byte[] legacy = hardware.clone();
+        legacy[2] = 44;
         org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudPriority(legacy, hardware, 0));
     }
-    @Test void slidingWindowHidesWholeEntriesAtRawYThresholdAndClassifiesOnlyTracedPixels() {
+
+    @Test
+    void slidingWindowHidesWholeEntriesAtRawYThresholdAndClassifiesOnlyTracedPixels() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.submittingLayer("RoomRenderLayer");
         frame.backgroundTile(solid(1), 0, 56, false, false, PALETTE, false);
@@ -151,7 +181,8 @@ final class HardwareFrameTest {
         byte[] hardware = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         frame.compose(hardware);
         int pixel = 56 * Framebuffer.WIDTH;
-        byte[] legacy = hardware.clone(); legacy[pixel * 4 + 2] = 33;
+        byte[] legacy = hardware.clone();
+        legacy[pixel * 4 + 2] = 33;
         org.junit.jupiter.api.Assertions.assertTrue(frame.explainsInventoryHiding(legacy, hardware, pixel));
         legacy[pixel * 4 + 2] = 44;
         org.junit.jupiter.api.Assertions.assertFalse(frame.explainsInventoryHiding(legacy, hardware, pixel));

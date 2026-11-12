@@ -1,7 +1,7 @@
 package linksawakening.entity;
 
-import linksawakening.rom.*;
 import linksawakening.gpu.Tile;
+import linksawakening.rom.*;
 
 /**
  * Link's OAM sprite sheet, sourced from {@code LinkCharacter2Tiles} (base bank
@@ -18,7 +18,6 @@ import linksawakening.gpu.Tile;
  */
 public final class LinkSpriteSheet {
 
-
     private static final int LINK_CHARACTER_2_TILES_BANK = GbcBanks.adjust(RomSymbols.LinkCharacter2Tiles.bank());
     private static final int LINK_CHARACTER_2_TILES_ADDR = RomSymbols.LinkCharacter2Tiles.address();
     private static final int LINK_CHARACTER_2_TILES_COUNT = 0x100;
@@ -33,8 +32,8 @@ public final class LinkSpriteSheet {
 
     private final int[] walkingStates;
     private final Tile[] tiles;
-    private final int[] stateTable;  // 2 bytes per entry: topPair, bottomPair
-    private final int[] attrsTable;  // 2 bytes per entry: leftHalfAttrs, rightHalfAttrs
+    private final int[] stateTable; // 2 bytes per entry: topPair, bottomPair
+    private final int[] attrsTable; // 2 bytes per entry: leftHalfAttrs, rightHalfAttrs
 
     private LinkSpriteSheet(Tile[] tiles, int[] stateTable, int[] attrsTable, int[] walkingStates) {
         this.walkingStates = walkingStates;
@@ -64,7 +63,8 @@ public final class LinkSpriteSheet {
 
         int[] walkingStates = new int[6 * 8];
         int walkingOffset = RomSymbols.LinkAnimationsLists.offset();
-        for (int i = 0; i < walkingStates.length; i++) walkingStates[i] = new Rom(romData).u8(RomAddress.fromOffset(walkingOffset + i));
+        for (int i = 0; i < walkingStates.length; i++)
+            walkingStates[i] = new Rom(romData).u8(RomAddress.fromOffset(walkingOffset + i));
         return new LinkSpriteSheet(tiles, stateTable, attrsTable, walkingStates);
     }
 

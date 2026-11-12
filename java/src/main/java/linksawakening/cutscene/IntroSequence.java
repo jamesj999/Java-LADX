@@ -1,18 +1,17 @@
 package linksawakening.cutscene;
 
-import linksawakening.scene.BackgroundScene;
-import linksawakening.scene.BackgroundSceneCatalog;
-import linksawakening.scene.BackgroundSceneLoader;
-import linksawakening.scene.BackgroundSceneSpec;
-import linksawakening.rom.RomBank;
-import linksawakening.world.entity.RomRandomByteSource;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import linksawakening.rom.RomBank;
+import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneCatalog;
+import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.scene.BackgroundSceneSpec;
+import linksawakening.world.entity.RomRandomByteSource;
 
 /**
  * Domain-specific runtime for the shipped opening sequence.
@@ -39,7 +38,7 @@ public final class IntroSequence {
     private static final int BEACH_MARIN_START_X = 0xB0;
     private static final int BEACH_LINK_START_X = 0xFE;
     private static final int BEACH_LINK_Y = 0x6E;
-    private static final int[] SEA_LIGHTNING_SCROLLS = { 0x10, 0x30, 0x38, 0x58, 0x5A, 0x69 };
+    private static final int[] SEA_LIGHTNING_SCROLLS = {0x10, 0x30, 0x38, 0x58, 0x5A, 0x69};
 
     private enum Stage {
         SEA,
@@ -54,8 +53,7 @@ public final class IntroSequence {
         COMPLETE
     }
 
-    private record Lightning(int variant, int x, int y, int remaining) {
-    }
+    private record Lightning(int variant, int x, int y, int remaining) {}
 
     private final IntroRomData rom;
     private final Function<String, BackgroundScene> backgroundProvider;
@@ -90,6 +88,7 @@ public final class IntroSequence {
             seaWaveCounter = 0;
         }
     }
+
     private int stageFrame;
     // hFrameCounter is reset during the beach sequence and stalls during LCD-off loads.
     // frameCounter is the monotonic presentation clock used for captures.
@@ -199,7 +198,8 @@ public final class IntroSequence {
         visibleObj = dynamicObjPalettes();
         visibleWave = waveTiles.clone();
         sprites = pendingSprites == null || stage == Stage.TITLE_DX || stage == Stage.COMPLETE
-            ? renderSprites() : pendingSprites;
+                ? renderSprites()
+                : pendingSprites;
         pendingSprites = renderSprites();
         clock++;
         random.beginFrame(clock & 0xFF, 0);
@@ -217,7 +217,10 @@ public final class IntroSequence {
             case BEACH -> tickBeach();
             case TITLE_REVEAL -> tickTitleReveal();
             case TITLE_WAIT -> {
-                if (stageFrame >= 26) { transitionTo(Stage.TITLE_DX); clock = 1; }
+                if (stageFrame >= 26) {
+                    transitionTo(Stage.TITLE_DX);
+                    clock = 1;
+                }
             }
             case TITLE_DX -> tickTitleDx();
             case COMPLETE -> tickTitleDx();
@@ -394,16 +397,26 @@ public final class IntroSequence {
             case 0 -> {
                 updateBeachOffsets(false);
                 marinVariant = (clock >>> 3) & 1;
-                if (marinX < 0x48) { marinTimer = 0x40; marinState = 1; }
-                if (--marinInertia == 0) { marinInertia = 4; marinX--; }
+                if (marinX < 0x48) {
+                    marinTimer = 0x40;
+                    marinState = 1;
+                }
+                if (--marinInertia == 0) {
+                    marinInertia = 4;
+                    marinX--;
+                }
             }
             case 1 -> {
                 animateWaves(true);
                 marinVariant = 1;
                 if (marinTimer > 0) marinTimer--;
                 else {
-                    marinState = 2; linkVisible = true; linkX = BEACH_LINK_START_X;
-                    linkState = 0; linkTimer = 0; clock = 0;
+                    marinState = 2;
+                    linkVisible = true;
+                    linkX = BEACH_LINK_START_X;
+                    linkState = 0;
+                    linkTimer = 0;
+                    clock = 0;
                 }
             }
             case 2 -> {
@@ -412,13 +425,19 @@ public final class IntroSequence {
                 if ((clock & 1) == 0) {
                     beachScrollX++;
                     patchMountains();
-                    if (beachScrollX == 0x30) { marinTimer = 0x40; marinState = 3; }
+                    if (beachScrollX == 0x30) {
+                        marinTimer = 0x40;
+                        marinState = 3;
+                    }
                 }
                 if (marinState == 2) marinVariant = (clock >>> 2) & 1;
             }
             case 3 -> {
-                if (marinTimer > 0) { marinTimer--; marinVariant = 1; animateWaves(true); }
-                else {
+                if (marinTimer > 0) {
+                    marinTimer--;
+                    marinVariant = 1;
+                    animateWaves(true);
+                } else {
                     updateBeachOffsets(true);
                     marinVariant = (clock >>> 4) & 1;
                     if ((clock & 1) == 0) linkX = (linkX - 1) & 255;
@@ -428,7 +447,9 @@ public final class IntroSequence {
                         if (beachScrollX == 0x3A) marinTimer = 0x30;
                         if (beachScrollX == 0x40) marinTimer = 0x50;
                         if (beachScrollX == 0x56) {
-                            beachScrollX = 0xA0; marinTimer = 0xE0; marinState = 4;
+                            beachScrollX = 0xA0;
+                            marinTimer = 0xE0;
+                            marinState = 4;
                             beachScrollStoppedThisFrame = true;
                         }
                     }
@@ -440,7 +461,8 @@ public final class IntroSequence {
                     int timer = marinTimer;
                     if (marinTimer > 0) marinTimer--;
                     boolean leaning = (timer < 0xA0 && timer >= 0x90)
-                        || (timer < 0x50 && timer >= 0x4A) || (timer < 0x3C && timer >= 0x36);
+                            || (timer < 0x50 && timer >= 0x4A)
+                            || (timer < 0x3C && timer >= 0x36);
                     marinVariant = leaning ? 3 : 2;
                     linkVariant = leaning ? 1 : 0;
                 }
@@ -451,10 +473,22 @@ public final class IntroSequence {
 
     private void tickInertLink() {
         switch (linkState) {
-            case 0 -> { linkTimer = (linkTimer - 1) & 255; if (linkTimer == 0) { linkTimer = 0x90; linkState = 1; } }
-            case 1 -> { if ((clock & 3) == 0 && --linkTimer == 0) linkState = 2; }
+            case 0 -> {
+                linkTimer = (linkTimer - 1) & 255;
+                if (linkTimer == 0) {
+                    linkTimer = 0x90;
+                    linkState = 1;
+                }
+            }
+            case 1 -> {
+                if ((clock & 3) == 0 && --linkTimer == 0) linkState = 2;
+            }
             case 2 -> {
-                if (panRows == 19) { linkState = 3; linkTimer = 0x17; return; }
+                if (panRows == 19) {
+                    linkState = 3;
+                    linkTimer = 0x17;
+                    return;
+                }
                 if ((++panCounter & 3) != 0) return;
                 marinY = Math.min(0xA0, marinY + 1);
                 linkY = Math.min(0xA0, linkY + 1);
@@ -463,13 +497,16 @@ public final class IntroSequence {
                 if ((oldY & 7) == 0) {
                     int target = 0x3F4 - panRows * 32;
                     int[] rows = rom.postBeachTilemap();
-                    for (int i = 0; i < 20; i++) tilemap[(target & 0x3E0) | ((target + i) & 31)] = rows[panRows * 20 + i];
+                    for (int i = 0; i < 20; i++)
+                        tilemap[(target & 0x3E0) | ((target + i) & 31)] = rows[panRows * 20 + i];
                     for (int i = 0; i < 32; i++) attrmap[(target - 20 + i) & 1023] = 3;
                     panRows++;
                     drawCommandQueued = true;
                 }
             }
-            case 3 -> { if ((clock & 3) == 0 && --linkTimer == 0) transitionTo(Stage.TITLE_REVEAL); }
+            case 3 -> {
+                if ((clock & 3) == 0 && --linkTimer == 0) transitionTo(Stage.TITLE_REVEAL);
+            }
             default -> throw new IllegalStateException();
         }
     }
@@ -484,9 +521,12 @@ public final class IntroSequence {
         fraction4 += slow ? 0x28 : 0x50;
         fraction5 += slow ? 0x2C : 0x58;
         fractionD += slow ? 0x58 : 0xB0;
-        sectionScrollOffsets[1] += fraction4 >>> 8; fraction4 &= 255;
-        sectionScrollOffsets[2] += fraction5 >>> 8; fraction5 &= 255;
-        sectionScrollOffsets[3] += fractionD >>> 8; fractionD &= 255;
+        sectionScrollOffsets[1] += fraction4 >>> 8;
+        fraction4 &= 255;
+        sectionScrollOffsets[2] += fraction5 >>> 8;
+        fraction5 &= 255;
+        sectionScrollOffsets[3] += fractionD >>> 8;
+        fractionD &= 255;
         animateWaves(true);
     }
 
@@ -548,7 +588,7 @@ public final class IntroSequence {
                 fadeSteps = 0;
                 verticalWaveOffset = 0;
             }
-            case BEACH_FADE, BEACH -> { }
+            case BEACH_FADE, BEACH -> {}
             case TITLE_REVEAL -> {
                 titleRowIndex = 0;
                 titleRevealRows = 0;
@@ -561,7 +601,7 @@ public final class IntroSequence {
                 rom.applyDrawCommands(tilemap, 0x7364);
                 rom.applyDrawCommands(attrmap, 0x73AC);
             }
-            case TITLE_WAIT, COMPLETE, SEA -> { }
+            case TITLE_WAIT, COMPLETE, SEA -> {}
         }
     }
 
@@ -573,8 +613,8 @@ public final class IntroSequence {
             if (current.remaining() <= 1) {
                 lightning.remove(index);
             } else {
-                lightning.set(index,
-                    new Lightning(current.variant(), current.x(), current.y(), current.remaining() - 1));
+                lightning.set(
+                        index, new Lightning(current.variant(), current.x(), current.y(), current.remaining() - 1));
             }
         }
     }
@@ -592,8 +632,7 @@ public final class IntroSequence {
         if (index < 0 || index >= lightningPositions.length) {
             return;
         }
-        lightning.add(new Lightning(
-            Math.max(0, lightningStatuses[index] - 1), lightningPositions[index], 0x30, 0x20));
+        lightning.add(new Lightning(Math.max(0, lightningStatuses[index] - 1), lightningPositions[index], 0x30, 0x20));
         playThunder();
     }
 
@@ -623,12 +662,15 @@ public final class IntroSequence {
 
     private void refreshSnapshot() {
         if (snapshot == null) sprites = renderSprites();
-        boolean previousScene = stageFrame == 0 && transitionFrame != null
-            && (stage == Stage.LINK_FACE || stage == Stage.BEACH_LOAD);
-        int blank = stage == Stage.SEA && frameCounter <= 3 ? 0xFFFFFF
-            : stage == Stage.LINK_FACE && stageFrame > 0 && stageFrame <= 3 ? 0
-            : stage == Stage.SEA_FADE && stageFrame <= 2 ? 0xFFFFFF
-            : stage == Stage.BEACH_LOAD && stageFrame > 0 ? 0xFFFFFF : -1;
+        boolean previousScene =
+                stageFrame == 0 && transitionFrame != null && (stage == Stage.LINK_FACE || stage == Stage.BEACH_LOAD);
+        int blank = stage == Stage.SEA && frameCounter <= 3
+                ? 0xFFFFFF
+                : stage == Stage.LINK_FACE && stageFrame > 0 && stageFrame <= 3
+                        ? 0
+                        : stage == Stage.SEA_FADE && stageFrame <= 2
+                                ? 0xFFFFFF
+                                : stage == Stage.BEACH_LOAD && stageFrame > 0 ? 0xFFFFFF : -1;
         int[][] backgroundColors = visibleBg == null ? dynamicBgPalettes() : visibleBg;
         int[][] objectColors = visibleObj == null ? dynamicObjPalettes() : visibleObj;
         if (blank >= 0) {
@@ -636,22 +678,32 @@ public final class IntroSequence {
             objectColors = solidPalettes(blank);
         }
         snapshot = new IntroFrameSnapshot(
-            sceneId(), substate(), frameCounter,
-            previousScene && stage == Stage.LINK_FACE
-                ? (transitionFrame.scrollX() + sectionScrollOffsets[0]) & 255
-                : previousScene ? transitionFrame.scrollX() : scrollX(),
-            previousScene ? transitionFrame.scrollY() : visibleScrollY,
-            previousScene && stage == Stage.LINK_FACE ? null
-                : previousScene ? transitionFrame.lineScrollX() : lineScrollMap(),
-            verticalWaveOffset,
-            previousScene ? transitionFrame.tilemap() : visibleTilemap == null ? tilemap : visibleTilemap,
-            previousScene ? transitionFrame.attrmap() : visibleAttrmap == null ? attrmap : visibleAttrmap,
-            backgroundColors, objectColors, sprites, titleRevealRows,
-            previousScene && stage == Stage.LINK_FACE ? null
-                : previousScene ? transitionFrame.lineScrollY() : lineScrollYMap(),
-            skipped ? null : previousScene ? transitionFrame.animatedTiles()
-                : visibleWave == null ? waveTiles : visibleWave,
-            previousScene ? transitionFrame.animatedTilesDestination() : waveDestination);
+                sceneId(),
+                substate(),
+                frameCounter,
+                previousScene && stage == Stage.LINK_FACE
+                        ? (transitionFrame.scrollX() + sectionScrollOffsets[0]) & 255
+                        : previousScene ? transitionFrame.scrollX() : scrollX(),
+                previousScene ? transitionFrame.scrollY() : visibleScrollY,
+                previousScene && stage == Stage.LINK_FACE
+                        ? null
+                        : previousScene ? transitionFrame.lineScrollX() : lineScrollMap(),
+                verticalWaveOffset,
+                previousScene ? transitionFrame.tilemap() : visibleTilemap == null ? tilemap : visibleTilemap,
+                previousScene ? transitionFrame.attrmap() : visibleAttrmap == null ? attrmap : visibleAttrmap,
+                backgroundColors,
+                objectColors,
+                sprites,
+                titleRevealRows,
+                previousScene && stage == Stage.LINK_FACE
+                        ? null
+                        : previousScene ? transitionFrame.lineScrollY() : lineScrollYMap(),
+                skipped
+                        ? null
+                        : previousScene
+                                ? transitionFrame.animatedTiles()
+                                : visibleWave == null ? waveTiles : visibleWave,
+                previousScene ? transitionFrame.animatedTilesDestination() : waveDestination);
     }
 
     private static int[][] solidPalettes(int color) {
@@ -664,8 +716,8 @@ public final class IntroSequence {
         return switch (stage) {
             case SEA -> "SEA";
             case LINK_FACE -> linkFaceTimer >= LINK_FACE_LIGHTNING_FRAME
-                ? "LINK_FACE_LIGHTNING"
-                : linkFaceTimer >= LINK_FACE_SCREAM_FRAME ? "LINK_FACE_SCREAM" : "LINK_FACE";
+                    ? "LINK_FACE_LIGHTNING"
+                    : linkFaceTimer >= LINK_FACE_SCREAM_FRAME ? "LINK_FACE_SCREAM" : "LINK_FACE";
             case SEA_FADE -> "SEA_FADE";
             case BEACH_LOAD -> "BEACH_LOAD";
             case BEACH_FADE -> "BEACH_FADE";
@@ -736,8 +788,7 @@ public final class IntroSequence {
     }
 
     private void renderBeachEntities(List<IntroSprite> rendered) {
-        if (linkVisible && linkX < 0xF0)
-            addPair(rendered, inertLinkVariants.get(linkVariant), linkX, linkY);
+        if (linkVisible && linkX < 0xF0) addPair(rendered, inertLinkVariants.get(linkVariant), linkX, linkY);
         addPair(rendered, marinVariants.get(marinVariant), marinX, marinY);
     }
 
@@ -747,8 +798,11 @@ public final class IntroSequence {
         int age = clock & 63;
         if (clock >= 64 && age > 0 && age < 63) {
             int position = ((clock >>> 6) - 1) & 7;
-            addPair(rendered, sparkleVariants.get((63 - age) >>> 3),
-                rom.titleSparkleXPositions()[position], rom.titleSparkleYPositions()[position]);
+            addPair(
+                    rendered,
+                    sparkleVariants.get((63 - age) >>> 3),
+                    rom.titleSparkleXPositions()[position],
+                    rom.titleSparkleYPositions()[position]);
         }
         if (titleHoldFrame >= 60) {
             for (IntroRomData.OamEntry entry : rom.dxTiles(titleHoldFrame >= 124))
@@ -756,20 +810,34 @@ public final class IntroSequence {
         }
     }
 
-    private void addPair(List<IntroSprite> rendered, IntroRomData.SpritePair pair,
-                         int oamX, int oamY) {
-        rendered.add(new IntroSprite(pair.firstTileIndex(), oamX - 8, oamY - 16,
-            pair.firstAttributes() & 0x07, (pair.firstAttributes() & 0x20) != 0,
-            (pair.firstAttributes() & 0x40) != 0, 16));
-        rendered.add(new IntroSprite(pair.secondTileIndex(), oamX, oamY - 16,
-            pair.secondAttributes() & 0x07, (pair.secondAttributes() & 0x20) != 0,
-            (pair.secondAttributes() & 0x40) != 0, 16));
+    private void addPair(List<IntroSprite> rendered, IntroRomData.SpritePair pair, int oamX, int oamY) {
+        rendered.add(new IntroSprite(
+                pair.firstTileIndex(),
+                oamX - 8,
+                oamY - 16,
+                pair.firstAttributes() & 0x07,
+                (pair.firstAttributes() & 0x20) != 0,
+                (pair.firstAttributes() & 0x40) != 0,
+                16));
+        rendered.add(new IntroSprite(
+                pair.secondTileIndex(),
+                oamX,
+                oamY - 16,
+                pair.secondAttributes() & 0x07,
+                (pair.secondAttributes() & 0x20) != 0,
+                (pair.secondAttributes() & 0x40) != 0,
+                16));
     }
 
     private IntroSprite toSprite(IntroRomData.OamEntry entry, int oamX, int oamY) {
-        return new IntroSprite(entry.tileIndex(), oamX + entry.xOffset() - 8,
-            oamY + entry.yOffset() - 16, entry.attributes() & 0x07,
-            (entry.attributes() & 0x20) != 0, (entry.attributes() & 0x40) != 0, 16);
+        return new IntroSprite(
+                entry.tileIndex(),
+                oamX + entry.xOffset() - 8,
+                oamY + entry.yOffset() - 16,
+                entry.attributes() & 0x07,
+                (entry.attributes() & 0x20) != 0,
+                (entry.attributes() & 0x40) != 0,
+                16);
     }
 
     private int[] lineScrollMap() {
@@ -791,11 +859,10 @@ public final class IntroSequence {
         if (!sea && !beach) return null;
         int[] lines = new int[144];
         for (int y = 0; y < 144; y++) {
-            int section = sea ? (y < 32 ? 0 : y < 48 ? 1 : y < 64 ? 2
-                : y < 96 - verticalWaveOffset ? 3 : 4)
-                : (y < 48 ? 0 : y < 86 ? 1 : y < 104 ? 2 : 3);
-            lines[y] = beach && y < 48 ? topLineScroll
-                : (scrollX() + sectionScrollOffsets[section]) & 255;
+            int section = sea
+                    ? (y < 32 ? 0 : y < 48 ? 1 : y < 64 ? 2 : y < 96 - verticalWaveOffset ? 3 : 4)
+                    : (y < 48 ? 0 : y < 86 ? 1 : y < 104 ? 2 : 3);
+            lines[y] = beach && y < 48 ? topLineScroll : (scrollX() + sectionScrollOffsets[section]) & 255;
         }
         return lines;
     }
@@ -823,16 +890,17 @@ public final class IntroSequence {
 
     private static int[][] approachPalettes(int[][] source, int[][] target) {
         int[][] result = copyPalettes(source);
-        for (int p = 0; p < result.length; p++) for (int c = 0; c < 4; c++) {
-            int v = 0;
-            for (int channel = 0; channel < 3; channel++) {
-                int shift = channel * 8 + 3;
-                int a = (source[p][c] >>> shift) & 31;
-                int b = (target[p][c] >>> shift) & 31;
-                v |= Math.max(b, a - 1) << (channel == 0 ? 10 : channel == 1 ? 5 : 0);
+        for (int p = 0; p < result.length; p++)
+            for (int c = 0; c < 4; c++) {
+                int v = 0;
+                for (int channel = 0; channel < 3; channel++) {
+                    int shift = channel * 8 + 3;
+                    int a = (source[p][c] >>> shift) & 31;
+                    int b = (target[p][c] >>> shift) & 31;
+                    v |= Math.max(b, a - 1) << (channel == 0 ? 10 : channel == 1 ? 5 : 0);
+                }
+                result[p][c] = RomBank.decodeRgb555(v);
             }
-            result[p][c] = RomBank.decodeRgb555(v);
-        }
         return result;
     }
 
@@ -849,16 +917,15 @@ public final class IntroSequence {
     }
 
     private int[][] dynamicBgPalettes() {
-        if (stage == Stage.BEACH_LOAD || stage == Stage.BEACH_FADE
-                || (stage == Stage.SEA_FADE && fadeBg != null)) return copyPalettes(fadeBg);
+        if (stage == Stage.BEACH_LOAD || stage == Stage.BEACH_FADE || (stage == Stage.SEA_FADE && fadeBg != null))
+            return copyPalettes(fadeBg);
         int[][] palettes = copyPalettes(bgPalettes);
         if (paletteLightningCountdown == 0
-            || (stage != Stage.SEA && stage != Stage.LINK_FACE && stage != Stage.SEA_FADE)) {
+                || (stage != Stage.SEA && stage != Stage.LINK_FACE && stage != Stage.SEA_FADE)) {
             return palettes;
         }
         int modifierIndex = (paletteLightningCountdown >>> 1) & 0x03;
-        int modifier = colorModifiers[modifierIndex * 2]
-            | (colorModifiers[modifierIndex * 2 + 1] << 8);
+        int modifier = colorModifiers[modifierIndex * 2] | (colorModifiers[modifierIndex * 2 + 1] << 8);
         for (int palette = 0; palette < palettes.length; palette++) {
             for (int color = 0; color < Math.min(3, palettes[palette].length); color++) {
                 palettes[palette][color] = applyRgb555Modifier(palettes[palette][color], modifier);
@@ -876,8 +943,8 @@ public final class IntroSequence {
     }
 
     private int[][] dynamicObjPalettes() {
-        if (stage == Stage.BEACH_LOAD || stage == Stage.BEACH_FADE
-                || (stage == Stage.SEA_FADE && fadeObj != null)) return copyPalettes(fadeObj);
+        if (stage == Stage.BEACH_LOAD || stage == Stage.BEACH_FADE || (stage == Stage.SEA_FADE && fadeObj != null))
+            return copyPalettes(fadeObj);
         int[][] palettes = copyPalettes(objPalettes);
         if (stage != Stage.TITLE_DX && stage != Stage.COMPLETE) {
             return palettes;
@@ -899,8 +966,8 @@ public final class IntroSequence {
     private static void copyDrawRow(int[] map, int targetAddress, int[] values) {
         int offset = targetAddress - 0x9800;
         if (offset < 0 || offset >= map.length || values.length > 32) {
-            throw new IllegalArgumentException(String.format(
-                "Intro draw command target $%04X is outside the 32x32 map", targetAddress));
+            throw new IllegalArgumentException(
+                    String.format("Intro draw command target $%04X is outside the 32x32 map", targetAddress));
         }
         for (int i = 0; i < values.length; i++) {
             map[(offset & 0x3E0) | ((offset + i) & 31)] = values[i];
@@ -928,8 +995,7 @@ public final class IntroSequence {
     }
 
     private static byte[] loadBundledRom() {
-        try (InputStream stream = IntroSequence.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = IntroSequence.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }
@@ -939,9 +1005,5 @@ public final class IntroSequence {
         }
     }
 
-    private record DefaultResources(
-        byte[] romData,
-        Function<String, BackgroundScene> backgroundProvider
-    ) {
-    }
+    private record DefaultResources(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {}
 }

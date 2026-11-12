@@ -1,14 +1,15 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.audio.apu.GameBoyApu;
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.RomBank;
 
 /** Local research harness. Prints register writes, never exports ROM graphics/assets. */
 @linksawakening.testing.RequiresRom
 public final class SfxRegisterTrace {
-    public record Write(int frame, int register, int value) { }
+    public record Write(int frame, int register, int value) {}
+
     final GameBoyApu apu = new GameBoyApu(48000);
     final SoundEffectPlayer player;
     private final List<Write> writes = new ArrayList<>();
@@ -33,10 +34,17 @@ public final class SfxRegisterTrace {
         return pcm;
     }
 
-    void clearWrites() { writes.clear(); }
+    void clearWrites() {
+        writes.clear();
+    }
 
-    List<Write> writes() { return List.copyOf(writes); }
-    List<Write> frame(int frame) { return writes.stream().filter(w -> w.frame() == frame).toList(); }
+    List<Write> writes() {
+        return List.copyOf(writes);
+    }
+
+    List<Write> frame(int frame) {
+        return writes.stream().filter(w -> w.frame() == frame).toList();
+    }
 
     static void add(List<SfxRegisterTrace.Write> writes, int frame, int register, int... values) {
         for (int value : values) writes.add(new SfxRegisterTrace.Write(frame, register++, value));
@@ -54,7 +62,9 @@ public final class SfxRegisterTrace {
 
     public static void main(String[] args) throws Exception {
         byte[] rom;
-        try (var stream = linksawakening.testing.TestRom.open()) { rom = stream.readAllBytes(); }
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            rom = stream.readAllBytes();
+        }
         var trace = new SfxRegisterTrace(rom);
         var namespace = SoundEffectNamespace.valueOf(args[0].toUpperCase(java.util.Locale.ROOT));
         int id = Integer.decode(args[1]);
@@ -66,8 +76,8 @@ public final class SfxRegisterTrace {
             if (restartInterval > 0 && i % restartInterval == 0) trace.start(namespace, id);
         }
         for (var write : trace.writes()) {
-            System.out.printf("{\"frame\":%d,\"register\":%d,\"value\":%d}%n",
-                    write.frame(), write.register(), write.value());
+            System.out.printf(
+                    "{\"frame\":%d,\"register\":%d,\"value\":%d}%n", write.frame(), write.register(), write.value());
         }
     }
 }

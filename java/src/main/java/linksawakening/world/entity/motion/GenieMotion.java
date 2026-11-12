@@ -23,11 +23,9 @@ public final class GenieMotion {
     private final boolean[] transitioned = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record JarState(int privateState1, int health, int physicsFlags, int hitboxFlags) {
-    }
+    public record JarState(int privateState1, int health, int physicsFlags, int hitboxFlags) {}
 
-    public record BodySpawnRequest(int x, int y, int privateState1,
-                            int transitionCountdown, int health) {
+    public record BodySpawnRequest(int x, int y, int privateState1, int transitionCountdown, int health) {
         public BodySpawnRequest {
             x &= 0xFF;
             y &= 0xFF;
@@ -37,8 +35,7 @@ public final class GenieMotion {
         }
     }
 
-    public record RockSpawnRequest(int type, int x, int y, int spriteVariant,
-                            int privateCountdown1, int physicsFlags) {
+    public record RockSpawnRequest(int type, int x, int y, int spriteVariant, int privateCountdown1, int physicsFlags) {
         public RockSpawnRequest {
             type &= 0xFF;
             x &= 0xFF;
@@ -49,10 +46,14 @@ public final class GenieMotion {
         }
     }
 
-    public record Update(JarState jar, BodySpawnRequest bodySpawn, RockSpawnRequest rockSpawn,
-                  boolean rockSpawnSucceeded, boolean jarSmashed,
-                  boolean sourceUnloaded, int noiseSfx) {
-    }
+    public record Update(
+            JarState jar,
+            BodySpawnRequest bodySpawn,
+            RockSpawnRequest rockSpawn,
+            boolean rockSpawnSucceeded,
+            boolean jarSmashed,
+            boolean sourceUnloaded,
+            int noiseSfx) {}
 
     /** Initializes the room-loaded Genie entity as a private-state-$00 jar. */
     public JarState initialize(int slot) {
@@ -67,8 +68,14 @@ public final class GenieMotion {
     }
 
     /** Advances only GenieState0Handler's normal-build jar branch. */
-    public Update advanceState0(int slot, int jarX, int jarY, int jarZ, int privateState4,
-                         boolean bodySpawnSucceeded, boolean rockSpawnSucceeded) {
+    public Update advanceState0(
+            int slot,
+            int jarX,
+            int jarY,
+            int jarZ,
+            int privateState4,
+            boolean bodySpawnSucceeded,
+            boolean rockSpawnSucceeded) {
         validateSlot(slot);
         validateByte(jarX, "Genie jar X");
         validateByte(jarY, "Genie jar Y");
@@ -96,16 +103,13 @@ public final class GenieMotion {
             return new Update(jarState(slot), null, null, false, false, false, -1);
         }
 
-        BodySpawnRequest body = new BodySpawnRequest(
-            jarX, jarY - 0x18, BODY_PRIVATE_STATE,
-            BODY_TRANSITION_COUNTDOWN, BODY_HEALTH);
-        RockSpawnRequest rock = new RockSpawnRequest(
-            0x05, jarX, jarY - jarZ, 0x00, 0x0F, 0xC4);
+        BodySpawnRequest body =
+                new BodySpawnRequest(jarX, jarY - 0x18, BODY_PRIVATE_STATE, BODY_TRANSITION_COUNTDOWN, BODY_HEALTH);
+        RockSpawnRequest rock = new RockSpawnRequest(0x05, jarX, jarY - jarZ, 0x00, 0x0F, 0xC4);
         if (!rockSpawnSucceeded) {
             // SmashRock returns on its own slot failure, but GenieState0's
             // following noise write is unconditional in the source.
-            return new Update(jarState(slot), body, rock, false, false, false,
-                NOISE_SFX_BREAK);
+            return new Update(jarState(slot), body, rock, false, false, false, NOISE_SFX_BREAK);
         }
 
         transitioned[slot] = true;
@@ -128,8 +132,7 @@ public final class GenieMotion {
     }
 
     private JarState jarState(int slot) {
-        return new JarState(privateState1[slot], health[slot],
-            physicsFlags[slot], hitboxFlags[slot]);
+        return new JarState(privateState1[slot], health[slot], physicsFlags[slot], hitboxFlags[slot]);
     }
 
     private static void validateSlot(int slot) {

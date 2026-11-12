@@ -1,18 +1,13 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityStatus;
-
-import linksawakening.world.entity.motion.MotionTestAccess;
-
-import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import linksawakening.world.entity.motion.MotionTestAccess;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class MagicRodMotionTest {
 
@@ -45,8 +40,7 @@ final class MagicRodMotionTest {
 
         motion.beginFireTransition(0);
 
-        assertEquals(MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN,
-            motion.privateCountdown1(0));
+        assertEquals(MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN, motion.privateCountdown1(0));
         assertEquals(0, linksawakening.world.entity.motion.MotionTestAccess.frameVariant(0));
         assertEquals(1, linksawakening.world.entity.motion.MotionTestAccess.frameVariant(8));
         assertEquals(false, motion.tickFireTransition(0));
@@ -70,8 +64,19 @@ final class MagicRodMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, -1, MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(
-                MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0,
+                -1,
+                MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

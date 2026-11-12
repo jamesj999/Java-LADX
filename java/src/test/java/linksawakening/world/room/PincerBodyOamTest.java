@@ -1,21 +1,16 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.entity.PincerBodyOam;
-
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.world.entity.PincerBodyOam;
+import org.junit.jupiter.api.Test;
 
 final class PincerBodyOamTest {
 
     @Test
     void bodyUsesTheRomQuarterDisplacementAndThreeTileChain() {
-        List<PincerBodyOam.Entry> entries = PincerBodyOam.entries(
-            3, 0x40, 0x50, 0x4C, 0x58, 3);
+        List<PincerBodyOam.Entry> entries = PincerBodyOam.entries(3, 0x40, 0x50, 0x4C, 0x58, 3);
 
         assertEquals(3, entries.size());
         assertEquals(new PincerBodyOam.Entry(3, 0x44, 0x50, 0x6A, 0x02), entries.get(0));

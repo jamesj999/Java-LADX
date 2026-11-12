@@ -1,17 +1,21 @@
 package linksawakening.rom;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 class RomAddressTest {
-    @Test void bankWindowsAndExplicitOverrides() {
+    @Test
+    void bankWindowsAndExplicitOverrides() {
         assertEquals(0x100, new RomAddress(0, 0x100).offset());
         assertEquals(0x7C100, RomSymbols.SfxPointersTable1.offset());
         assertEquals(0xBC100, RomSymbols.SfxPointersTable1.inBank(0x2F).offset());
         assertThrows(IllegalArgumentException.class, () -> new RomAddress(1, 0x8000));
         assertThrows(IllegalArgumentException.class, () -> new RomAddress(0, 0x4000));
     }
-    @Test void unsignedAndLittleEndianReadsAndSliceOwnership() {
+
+    @Test
+    void unsignedAndLittleEndianReadsAndSliceOwnership() {
         byte[] bytes = {(byte) 0xFE, (byte) 0xAB};
         Rom rom = new Rom(bytes);
         RomAddress start = new RomAddress(0, 0);

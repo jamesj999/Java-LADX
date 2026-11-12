@@ -1,8 +1,7 @@
 package linksawakening.audio.music;
 
 public final class MusicOpcode {
-    private MusicOpcode() {
-    }
+    private MusicOpcode() {}
 
     public static boolean isEnd(int opcode) {
         return unsigned(opcode) == 0x00;
@@ -53,8 +52,12 @@ public final class MusicOpcode {
 
     public static int operandSize(int opcode, int channel) {
         int value = unsigned(opcode);
-        if (isEnd(value) || isRest(value) || isPitchedNote(value) || isDriverFlag(value)
-                || isNextLoop(value) || isNoteLength(value)) {
+        if (isEnd(value)
+                || isRest(value)
+                || isPitchedNote(value)
+                || isDriverFlag(value)
+                || isNextLoop(value)
+                || isNoteLength(value)) {
             return 0;
         }
         if (isNoiseNote(value)) {
@@ -84,7 +87,6 @@ public final class MusicOpcode {
 
     private static IllegalArgumentException unsupported(int opcode, int channel) {
         return new IllegalArgumentException(
-                "Unsupported music opcode 0x" + Integer.toHexString(opcode).toUpperCase()
-                        + " on channel " + channel);
+                "Unsupported music opcode 0x" + Integer.toHexString(opcode).toUpperCase() + " on channel " + channel);
     }
 }

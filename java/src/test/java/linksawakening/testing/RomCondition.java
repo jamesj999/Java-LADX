@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.*;
 public final class RomCondition implements ExecutionCondition {
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         return TestRom.class.getResource("/rom/azle.gbc") == null
-            ? ConditionEvaluationResult.disabled("Requires user ROM: -Pla.rom=/path/azle.gbc or LA_ROM")
-            : ConditionEvaluationResult.enabled("User ROM available");
+                ? ConditionEvaluationResult.disabled("Requires user ROM: -Pla.rom=/path/azle.gbc or LA_ROM")
+                : ConditionEvaluationResult.enabled("User ROM available");
     }
 }

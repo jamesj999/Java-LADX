@@ -1,10 +1,11 @@
 package linksawakening.app;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
 import linksawakening.testing.RequiresRom;
 import linksawakening.world.entity.RomRandomByteSource;
 import org.junit.jupiter.api.Test;
-import java.util.ArrayList;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 final class SharedWorldRandomTest {
@@ -24,8 +25,10 @@ final class SharedWorldRandomTest {
         rooms.tickEntities(11, 0x20, 0x60);
         assertTrue(draws.size() > 1, "The live room must consume the session's observed RNG");
         for (int i = 1; i < draws.size(); i++) {
-            assertEquals(draws.get(i - 1).value(), draws.get(i).previousSeed(),
-                "GetRandomByte $00:280D uses one wRandomSeed across callers");
+            assertEquals(
+                    draws.get(i - 1).value(),
+                    draws.get(i).previousSeed(),
+                    "GetRandomByte $00:280D uses one wRandomSeed across callers");
         }
     }
 }

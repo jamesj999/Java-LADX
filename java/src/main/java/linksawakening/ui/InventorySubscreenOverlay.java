@@ -41,11 +41,10 @@ public final class InventorySubscreenOverlay {
     private static final int BRACKET_RIGHT_OFFSET = 3;
 
     private static final int[][] ITEM_TILES = buildItemTiles();
-    private InventorySubscreenOverlay() {
-    }
 
-    public static void apply(int[] tilemap, int[] attrmap, PlayerState player,
-                             int cursorSlot, boolean cursorVisible) {
+    private InventorySubscreenOverlay() {}
+
+    public static void apply(int[] tilemap, int[] attrmap, PlayerState player, int cursorSlot, boolean cursorVisible) {
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             int col = slotColumn(slot);
             int row = slotRow(slot);
@@ -70,9 +69,9 @@ public final class InventorySubscreenOverlay {
         int itemIndex = itemId >= 0 && itemId < ITEM_TILES.length ? itemId : 0;
         int[] tiles = ITEM_TILES[itemIndex];
         int[] paletteIndexes = InventoryItemPalettes.forItem(itemId, player);
-        writeTile(tilemap, col, row,     tiles[0]); // top-left icon
+        writeTile(tilemap, col, row, tiles[0]); // top-left icon
         writeTile(tilemap, col, row + 1, tiles[3]); // bottom-left icon (with L-glyph)
-        writeAttr(attrmap, col, row,     paletteIndexes[0]);
+        writeAttr(attrmap, col, row, paletteIndexes[0]);
         writeAttr(attrmap, col, row + 1, paletteIndexes[1]);
         int[] numbers = InventoryItemNumbers.tiles(itemId, player);
         writeTile(tilemap, col + 1, row + 1, numbers[0]);
@@ -82,9 +81,9 @@ public final class InventorySubscreenOverlay {
     private static void drawCursor(int[] tilemap, int[] attrmap, int col, int row) {
         int leftCol = col - 1;
         int rightCol = col + BRACKET_RIGHT_OFFSET;
-        writeTile(tilemap, leftCol,  row,     BRACKET_TILE_TOP);
-        writeTile(tilemap, leftCol,  row + 1, BRACKET_TILE_BOTTOM);
-        writeTile(tilemap, rightCol, row,     BRACKET_TILE_TOP);
+        writeTile(tilemap, leftCol, row, BRACKET_TILE_TOP);
+        writeTile(tilemap, leftCol, row + 1, BRACKET_TILE_BOTTOM);
+        writeTile(tilemap, rightCol, row, BRACKET_TILE_TOP);
         writeTile(tilemap, rightCol, row + 1, BRACKET_TILE_BOTTOM);
         // Plain `]` on the right keeps its base attrmap; flip the left pair
         // so the same tile reads as `[`.
@@ -143,5 +142,4 @@ public final class InventorySubscreenOverlay {
             {0xA4, 0x7F, 0x7F, 0xA5, 0x7F, 0x7F}, // BOOMERANG
         };
     }
-
 }

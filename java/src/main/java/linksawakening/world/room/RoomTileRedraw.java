@@ -1,39 +1,43 @@
 package linksawakening.world.room;
 
-import linksawakening.world.entity.motion.HookshotBridgeMotion;
+import static linksawakening.world.room.RoomSession.*;
 
-import linksawakening.world.transition.Warp;
-
-import linksawakening.world.entity.event.HookshotBridgeUpdate;
+import java.util.List;
+import java.util.Map;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-import java.util.List;
-import java.util.Map;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomSession.*;
+import linksawakening.world.entity.event.HookshotBridgeUpdate;
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
+import linksawakening.world.transition.Warp;
 
 /** RoomTileRedraw operations for the live room session. */
 final class RoomTileRedraw {
     private final RoomSession session;
-    RoomTileRedraw(RoomSession session) { this.session = session; }
+
+    RoomTileRedraw(RoomSession session) {
+        this.session = session;
+    }
 
     void refreshActiveRoomTilemap() {
         RoomTilemap tilemap = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? session.context.roomTilemapBuilder.buildOverworld(session.context.activeRoom.roomId(), session.context.activeRoom.roomObjectsArea())
-            : session.context.roomTilemapBuilder.buildIndoor(session.context.activeRoom.mapId(), session.context.activeRoom.roomId(),
-                session.context.activeRoom.roomObjectsArea());
+                ? session.context.roomTilemapBuilder.buildOverworld(
+                        session.context.activeRoom.roomId(), session.context.activeRoom.roomObjectsArea())
+                : session.context.roomTilemapBuilder.buildIndoor(
+                        session.context.activeRoom.mapId(),
+                        session.context.activeRoom.roomId(),
+                        session.context.activeRoom.roomObjectsArea());
         session.context.activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
         session.applyHookshotBridgeTileOverrides();
         session.applyBombedWallTileOverrides();
         session.applyBombedBlockTileOverrides();
         session.applyBombedCaveDoorTileOverrides();
         session.applyRetainedTorchTiles();
-        session.context.shutterTileOverrides.forEach((index, tile) -> session.context.activeRoom.tileIds()[index] = tile);
+        session.context.shutterTileOverrides.forEach(
+                (index, tile) -> session.context.activeRoom.tileIds()[index] = tile);
     }
 
-    void applyHookshotBridgeUpdates( List<HookshotBridgeUpdate> updates) {
+    void applyHookshotBridgeUpdates(List<HookshotBridgeUpdate> updates) {
         if (session.context.activeRoom == null || updates == null || updates.isEmpty()) {
             return;
         }
@@ -44,8 +48,7 @@ final class RoomTileRedraw {
             if (areaIndex < 0 || areaIndex >= objects.length) {
                 continue;
             }
-            HookshotBridgeUpdate previous =
-                session.context.hookshotBridgeTileOverrides.put(areaIndex, update);
+            HookshotBridgeUpdate previous = session.context.hookshotBridgeTileOverrides.put(areaIndex, update);
             if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
                 objects[areaIndex] = 0x9D;
                 changed = true;
@@ -61,12 +64,13 @@ final class RoomTileRedraw {
             return;
         }
         int[] tileIds = session.context.activeRoom.tileIds();
-        for (HookshotBridgeUpdate update
-            : session.context.hookshotBridgeTileOverrides.values()) {
+        for (HookshotBridgeUpdate update : session.context.hookshotBridgeTileOverrides.values()) {
             int tileX = (update.objectLeft() & 0xFF) >>> 3;
             int tileY = (update.objectTop() & 0xFF) >>> 3;
-            if (tileX < 0 || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY < 0 || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+            if (tileX < 0
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY < 0
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
                 continue;
             }
             int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
@@ -97,15 +101,14 @@ final class RoomTileRedraw {
             int tileX = objectColumn * 2;
             int tileY = objectRow * 2;
             if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
-                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
-                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                    || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
                 continue;
             }
 
-            int[] replacement = entry.getValue() == 0
-                ? new int[] { 0x72, 0x72, 0x73, 0x73 }
-                : new int[] { 0x69, 0x79, 0x69, 0x79 };
+            int[] replacement =
+                    entry.getValue() == 0 ? new int[] {0x72, 0x72, 0x73, 0x73} : new int[] {0x69, 0x79, 0x69, 0x79};
             int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
             tileIds[topLeft] = replacement[0];
             tileIds[topLeft + 1] = replacement[1];
@@ -126,9 +129,9 @@ final class RoomTileRedraw {
             int tileX = objectColumn * 2;
             int tileY = objectRow * 2;
             if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
-                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
-                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                    || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
                 continue;
             }
 
@@ -152,9 +155,9 @@ final class RoomTileRedraw {
             int tileX = objectColumn * 2;
             int tileY = objectRow * 2;
             if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
-                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
-                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                    || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
                 continue;
             }
 
@@ -162,10 +165,9 @@ final class RoomTileRedraw {
             int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
             tileIds[topLeft] = new Rom(session.context.romData).u8(tileTable);
             tileIds[topLeft + 1] = new Rom(session.context.romData).u8(tileTable.plus(1));
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] =
-                new Rom(session.context.romData).u8(tileTable.plus(2));
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = new Rom(session.context.romData).u8(tileTable.plus(2));
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] =
-                new Rom(session.context.romData).u8(tileTable.plus(3));
+                    new Rom(session.context.romData).u8(tileTable.plus(3));
         }
     }
 }

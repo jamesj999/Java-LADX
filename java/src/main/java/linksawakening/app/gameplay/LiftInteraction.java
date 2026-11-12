@@ -1,14 +1,13 @@
 package linksawakening.app.gameplay;
 
+import static linksawakening.world.room.RoomConstants.*;
+
+import java.util.function.IntUnaryOperator;
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
-
-import static linksawakening.world.room.RoomConstants.*;
-
-import java.util.function.IntUnaryOperator;
 
 /** Focused frame interactions using the current session collaborators. */
 public record LiftInteraction(
@@ -25,8 +24,7 @@ public record LiftInteraction(
         if (playerState.itemB() == PlayerState.INVENTORY_POWER_BRACELET) {
             return inputState.isDown(inputConfig.bKey());
         }
-        return playerState.itemA() == PlayerState.INVENTORY_POWER_BRACELET
-            && inputState.isDown(inputConfig.aKey());
+        return playerState.itemA() == PlayerState.INVENTORY_POWER_BRACELET && inputState.isDown(inputConfig.aKey());
     }
 
     /** $14:537D uses newly pressed buttons for throws, with B-slot priority. */
@@ -45,8 +43,7 @@ public record LiftInteraction(
         if (playerState.itemB() == PlayerState.INVENTORY_BOMBS) {
             return inputState.isDown(inputConfig.bKey());
         }
-        return playerState.itemA() == PlayerState.INVENTORY_BOMBS
-            && inputState.isDown(inputConfig.aKey());
+        return playerState.itemA() == PlayerState.INVENTORY_BOMBS && inputState.isDown(inputConfig.aKey());
     }
 
     public void synchronizeLinkLiftedPresentation() {
@@ -55,8 +52,7 @@ public record LiftInteraction(
         }
         var state = roomSession.liftedEntityState();
         if (state.active()) {
-            link.setCarryingLiftedObjectState(state.carryState(),
-                state.effectiveRomDirection());
+            link.setCarryingLiftedObjectState(state.carryState(), state.effectiveRomDirection());
         } else {
             if (link.isRoosterCarryActive()) {
                 link.clearRoosterCarryState();

@@ -1,11 +1,13 @@
 package linksawakening.app.debug;
 
-import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.Test;
+
 class DebugMenuOverlayTest {
-    @Test void rendererNeverInitializesAnotherWindowToolkit() throws Exception {
+    @Test
+    void rendererNeverInitializesAnotherWindowToolkit() throws Exception {
         try (var stream = DebugMenuOverlay.class.getResourceAsStream("DebugMenuOverlay.class")) {
             assertNotNull(stream);
             String bytecode = new String(stream.readAllBytes(), StandardCharsets.ISO_8859_1);
@@ -14,7 +16,8 @@ class DebugMenuOverlayTest {
         }
     }
 
-    @Test void textWritesRgbaAndClipsAtFramebufferEdges() {
+    @Test
+    void textWritesRgbaAndClipsAtFramebufferEdges() {
         byte[] pixels = new byte[160 * 144 * 4];
         DebugMenuOverlay.text(pixels, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 :/()->.?+", 0, 0, 0x123456);
         boolean painted = false;

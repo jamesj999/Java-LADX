@@ -50,18 +50,25 @@ public final class LiftedEntityMotion {
         0x0E
     };
 
-    public record Update(int phase, int transitionCountdown, int carryState,
-                  int effectiveDirection, int x, int y, int z) {
-    }
+    public record Update(
+            int phase, int transitionCountdown, int carryState, int effectiveDirection, int x, int y, int z) {}
 
-    private LiftedEntityMotion() {
-    }
+    private LiftedEntityMotion() {}
 
     /** Advances one frame of the ROM's lifted-object presentation. */
-    public static Update advance(int phase, int transitionCountdown, int sourceRomDirection,
-                          int currentRomDirection, int linkX, int linkY, int linkZ,
-                          int linkC13B, int entityType, boolean sideScrolling,
-                          boolean fastTransition, int existingEntityZ) {
+    public static Update advance(
+            int phase,
+            int transitionCountdown,
+            int sourceRomDirection,
+            int currentRomDirection,
+            int linkX,
+            int linkY,
+            int linkZ,
+            int linkC13B,
+            int entityType,
+            boolean sideScrolling,
+            boolean fastTransition,
+            int existingEntityZ) {
         validatePhase(phase);
         validateByte(transitionCountdown, "Transition countdown");
         validateDirection(sourceRomDirection);
@@ -81,7 +88,8 @@ public final class LiftedEntityMotion {
             if (transitionCountdown == 0) {
                 nextPhase = phase + 1;
                 int[] countdownTable = fastTransition || entityType == ENTITY_BOMB
-                    ? FAST_TRANSITION_COUNTDOWN : NORMAL_TRANSITION_COUNTDOWN;
+                        ? FAST_TRANSITION_COUNTDOWN
+                        : NORMAL_TRANSITION_COUNTDOWN;
                 // The ROM's fast table is followed immediately by the first
                 // carry byte, which is the phase-three read at offset three.
                 nextCountdown = countdownTable[phase];
@@ -105,8 +113,7 @@ public final class LiftedEntityMotion {
             z = (linkZ + Z_OFFSET[tableIndex]) & 0xFF;
         }
 
-        return new Update(nextPhase, nextCountdown, CARRY_STATE[tableIndex],
-            effectiveDirection, x, y, z);
+        return new Update(nextPhase, nextCountdown, CARRY_STATE[tableIndex], effectiveDirection, x, y, z);
     }
 
     private static void validatePhase(int phase) {

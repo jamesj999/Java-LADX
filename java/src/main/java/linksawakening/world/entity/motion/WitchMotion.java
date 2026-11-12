@@ -16,20 +16,35 @@ public final class WitchMotion {
         B
     }
 
-    public record Input(boolean hasToadstool, int itemB, int itemA,
-                 boolean actionButtonAHeld, boolean actionButtonBHeld,
-                 boolean dialogActive, boolean linkAirborne,
-                 int linkX, int linkY, int linkDirection,
-                 int transitionSequenceCounter, int roomTriggerCount,
-                 int bgPaletteEffectAddress, int paletteDataFlags,
-                 int defaultMusicTrack) {
-    }
+    public record Input(
+            boolean hasToadstool,
+            int itemB,
+            int itemA,
+            boolean actionButtonAHeld,
+            boolean actionButtonBHeld,
+            boolean dialogActive,
+            boolean linkAirborne,
+            int linkX,
+            int linkY,
+            int linkDirection,
+            int transitionSequenceCounter,
+            int roomTriggerCount,
+            int bgPaletteEffectAddress,
+            int paletteDataFlags,
+            int defaultMusicTrack) {}
 
-    public record Update(RoomEntity entity, int inertia, int transitionCountdown,
-                  boolean blockLink, int dialogGlobalId, int musicTrack,
-                  int jingleId, InventorySlot clearedSlot,
-                  boolean exchangeStarted, boolean grantMagicPowder, int motionBlockValue) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int inertia,
+            int transitionCountdown,
+            boolean blockLink,
+            int dialogGlobalId,
+            int musicTrack,
+            int jingleId,
+            InventorySlot clearedSlot,
+            boolean exchangeStarted,
+            boolean grantMagicPowder,
+            int motionBlockValue) {}
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -59,8 +74,7 @@ public final class WitchMotion {
                 if (input.dialogActive()) {
                     break;
                 }
-                boolean nearbyAndFacing = !input.linkAirborne()
-                    && nearbyAndFacing(entity, input);
+                boolean nearbyAndFacing = !input.linkAirborne() && nearbyAndFacing(entity, input);
                 if (input.hasToadstool() && nearbyAndFacing) {
                     if (input.itemB() == INVENTORY_MAGIC_POWDER) {
                         if (!input.actionButtonBHeld()) {
@@ -128,8 +142,8 @@ public final class WitchMotion {
             }
             case 5 -> {
                 if (input.roomTriggerCount() != 0
-                    && input.bgPaletteEffectAddress() == 0
-                    && input.paletteDataFlags() == 0) {
+                        && input.bgPaletteEffectAddress() == 0
+                        && input.paletteDataFlags() == 0) {
                     state[slot] = 6;
                 }
             }
@@ -143,8 +157,18 @@ public final class WitchMotion {
             default -> throw new IllegalStateException("Invalid witch state: " + state[slot]);
         }
 
-        return new Update(entity, nextInertia, nextCountdown, blockLink, dialog,
-            music, jingle, clearedSlot, exchangeStarted, grantMagicPowder, motionBlockValue);
+        return new Update(
+                entity,
+                nextInertia,
+                nextCountdown,
+                blockLink,
+                dialog,
+                music,
+                jingle,
+                clearedSlot,
+                exchangeStarted,
+                grantMagicPowder,
+                motionBlockValue);
     }
 
     private static boolean nearbyAndFacing(RoomEntity entity, Input input) {
@@ -156,8 +180,7 @@ public final class WitchMotion {
         if (xWindow >= 0x20) {
             return false;
         }
-        return directionToLink(entity, input.linkX(), input.linkY())
-            == ((input.linkDirection() & 0x03) ^ 0x01);
+        return directionToLink(entity, input.linkX(), input.linkY()) == ((input.linkDirection() & 0x03) ^ 0x01);
     }
 
     private static int directionToLink(RoomEntity entity, int linkX, int linkY) {
@@ -174,9 +197,20 @@ public final class WitchMotion {
     }
 
     private static RoomEntity withPresentation(RoomEntity source, int y, int variant) {
-        return new RoomEntity(source.slot(), source.sourceLoadOrder(), source.type(),
-            source.x(), y, source.status(), source.spriteDefinition(), variant,
-            source.entityFlipAttribute(), source.spriteTileOffset(), source.z(), -1, false);
+        return new RoomEntity(
+                source.slot(),
+                source.sourceLoadOrder(),
+                source.type(),
+                source.x(),
+                y,
+                source.status(),
+                source.spriteDefinition(),
+                variant,
+                source.entityFlipAttribute(),
+                source.spriteTileOffset(),
+                source.z(),
+                -1,
+                false);
     }
 
     int stateForTest(int slot) {

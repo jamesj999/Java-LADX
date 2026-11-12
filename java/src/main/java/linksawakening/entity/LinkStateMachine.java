@@ -1,8 +1,9 @@
 package linksawakening.entity;
 
-import linksawakening.state.PlayerState;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
+
+import linksawakening.state.PlayerState;
 
 final class LinkStateMachine {
     private final Link link;
@@ -18,7 +19,9 @@ final class LinkStateMachine {
     boolean romInteractiveMotionBlocked;
     int romInteractiveMotionBlockValue;
 
-    LinkStateMachine(Link link) { this.link = link; }
+    LinkStateMachine(Link link) {
+        this.link = link;
+    }
 
     void update() {
         if (motionState == Link.LINK_MOTION_PASS_OUT) {
@@ -26,9 +29,10 @@ final class LinkStateMachine {
             return;
         }
         link.linkAnimator.bedJumpRenderZ = -1;
-        link.linkAnimator.ledgeJumpRenderY =
-            link.linkAirborne.overworldLedgeFallActive || link.linkAirborne.directionalLedgeJumpMotionLocked
-                ? link.pixelY() - link.zPixels() : Integer.MIN_VALUE;
+        link.linkAnimator.ledgeJumpRenderY = link.linkAirborne.overworldLedgeFallActive
+                        || link.linkAirborne.directionalLedgeJumpMotionLocked
+                ? link.pixelY() - link.zPixels()
+                : Integer.MIN_VALUE;
         frameCounter = (frameCounter + 1) & 0xFF;
         if (pegasusBootsCollisionCountdown > 0) {
             pegasusBootsCollisionCountdown--;
@@ -84,8 +88,7 @@ final class LinkStateMachine {
 
         if (link.linkAirborne.spinningPitWarpArrival) {
             // $02:4511 clears XY increments; $02:478C selects facing globally.
-            link.direction = Link.javaDirectionForRomDirection(
-                link.romTables.pitWarpArrivalDirection(frameCounter));
+            link.direction = Link.javaDirectionForRomDirection(link.romTables.pitWarpArrivalDirection(frameCounter));
             link.linkMotion.forcedSpeedPending = false;
             link.linkMotion.forcedSpeedXOnly = false;
             link.movingThisFrame = false;
@@ -144,10 +147,12 @@ final class LinkStateMachine {
         int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         // $02:4406 skips facing selection while link.linkAirborne.airborne; the Feather
         // launch still follows this frame's ordinary ground movement.
-        if (newDirection != -1 && (!link.linkAirborne.airborne || featherLaunchFrame)
-            && !link.linkEntityEffects.marinBedJumpMotionLocked
-            && !link.linkAirborne.directionalLedgeJumpMotionLocked
-            && !link.linkEquipment.itemsLockFacing(true) && !link.isLiftTransitionBlockingMotion()) {
+        if (newDirection != -1
+                && (!link.linkAirborne.airborne || featherLaunchFrame)
+                && !link.linkEntityEffects.marinBedJumpMotionLocked
+                && !link.linkAirborne.directionalLedgeJumpMotionLocked
+                && !link.linkEquipment.itemsLockFacing(true)
+                && !link.isLiftTransitionBlockingMotion()) {
             link.direction = newDirection;
         }
         updatePegasusBootsUse();
@@ -204,7 +209,8 @@ final class LinkStateMachine {
         } else if (link.linkMotion.forcedSpeedPending) {
             speedX = link.linkMotion.forcedSpeedX;
             speedY = link.linkMotion.forcedSpeedXOnly
-                ? (byte) link.romTables.linkSpeedY(groundSpeedIndex(mask)) : link.linkMotion.forcedSpeedY;
+                    ? (byte) link.romTables.linkSpeedY(groundSpeedIndex(mask))
+                    : link.linkMotion.forcedSpeedY;
             link.linkMotion.forcedSpeedPending = false;
             link.linkMotion.forcedSpeedXOnly = false;
         } else if (link.linkAirborne.airborne && !featherLaunchFrame) {
@@ -225,7 +231,8 @@ final class LinkStateMachine {
             // Marin sets wIsLinkInTheAir=2, so UpdateLinkAnimation skips
             // the feather/ledge flip. Walking animation precedes gravity:
             // first pose $0A, then $0B, including the landing frame.
-            link.linkAnimator.romAnimationStateOverride = LinkAnimator.ANIMATION_STATE[link.direction][link.movingThisFrame ? 1 : 0];
+            link.linkAnimator.romAnimationStateOverride =
+                    LinkAnimator.ANIMATION_STATE[link.direction][link.movingThisFrame ? 1 : 0];
             // ApplyGotItem caches wC145 before this frame changes Z.
             link.linkAnimator.bedJumpRenderZ = link.zPixels();
             link.linkAirborne.tickJump();
@@ -233,8 +240,8 @@ final class LinkStateMachine {
         link.linkMotion.lastRomSpeedX = speedX & 0xFF;
         link.linkMotion.lastRomSpeedY = speedY & 0xFF;
         link.movingThisFrame = (speedX != 0 || speedY != 0);
-        boolean applyGroundMotion = gelClinging
-            ? (gelMotionFrame & 3) == 0 : link.linkAirborne.airborne || link.shouldApplyGroundMotion();
+        boolean applyGroundMotion =
+                gelClinging ? (gelMotionFrame & 3) == 0 : link.linkAirborne.airborne || link.shouldApplyGroundMotion();
 
         if (applyGroundMotion && speedX != 0 && (!bedJumpFrame || link.linkAirborne.airborne)) {
             link.linkMotion.tryMoveAxis(speedX, true);
@@ -291,8 +298,7 @@ final class LinkStateMachine {
 
     // $02:4409-4427 selects the second row only for Piece of Power.
     private int groundSpeedIndex(int mask) {
-        return (mask & 0x0F) | (link.playerState != null
-            && link.playerState.activePowerUp() == 1 ? 0x10 : 0);
+        return (mask & 0x0F) | (link.playerState != null && link.playerState.activePowerUp() == 1 ? 0x10 : 0);
     }
 
     void updateDebugNoClip() {
@@ -326,17 +332,20 @@ final class LinkStateMachine {
             return;
         }
         boolean aHeld = link.playerState.itemA() == PlayerState.INVENTORY_PEGASUS_BOOTS
-            && link.inputState.isDown(link.inputConfig.aKey());
+                && link.inputState.isDown(link.inputConfig.aKey());
         boolean bHeld = link.playerState.itemB() == PlayerState.INVENTORY_PEGASUS_BOOTS
-            && link.inputState.isDown(link.inputConfig.bKey());
+                && link.inputState.isDown(link.inputConfig.bKey());
         if (!aHeld && !bHeld) {
             pegasusBootsChargeMeter = 0;
             return;
         }
         if (link.playerState.runningWithPegasusBoots()
-            || romInteractiveMotionBlocked || link.linkAirborne.airborne
-            || link.zPixels() != 0 || link.linkAirborne.groundStatus == Link.GROUND_STATUS_PIT
-            || link.isCarryingLiftedObject() || motionState == Link.LINK_MOTION_SWIMMING) {
+                || romInteractiveMotionBlocked
+                || link.linkAirborne.airborne
+                || link.zPixels() != 0
+                || link.linkAirborne.groundStatus == Link.GROUND_STATUS_PIT
+                || link.isCarryingLiftedObject()
+                || motionState == Link.LINK_MOTION_SWIMMING) {
             return;
         }
 
@@ -373,8 +382,9 @@ final class LinkStateMachine {
 
     /** Mirrors bank2.asm:74AD's dash collision response and func_020_49BA. */
     void handlePegasusBootsCollision() {
-        if (link.playerState == null || !link.playerState.runningWithPegasusBoots()
-            || (link.linkMotion.romCollisionType & 0x0F) == 0) {
+        if (link.playerState == null
+                || !link.playerState.runningWithPegasusBoots()
+                || (link.linkMotion.romCollisionType & 0x0F) == 0) {
             return;
         }
 
@@ -499,11 +509,13 @@ final class LinkStateMachine {
         link.linkMotion.lastRomSpeedY = 0x01;
         boolean blocked = link.linkMotion.leadingEdgeBlocked(probeX, probeY, Link.DIRECTION_DOWN);
         int object = link.collision.objectIdAtPoint(
-            probeX + COLLISION_POINTS_X[Link.DIRECTION_DOWN][1],
-            probeY + COLLISION_POINTS_Y[Link.DIRECTION_DOWN][1]);
+                probeX + COLLISION_POINTS_X[Link.DIRECTION_DOWN][1],
+                probeY + COLLISION_POINTS_Y[Link.DIRECTION_DOWN][1]);
         // Switch blocks $DB/$DC are exempt from fallback unstucking.
-        if (object != 0xDB && object != 0xDC && !link.linkAirborne.overworldLedgeFallActive
-            && (object == 0xE1 || blocked)) {
+        if (object != 0xDB
+                && object != 0xDC
+                && !link.linkAirborne.overworldLedgeFallActive
+                && (object == 0xE1 || blocked)) {
             // func_002_6EAD aligns X and enters LINK_MOTION_UNSTUCKING.
             // This transition fallback does not play the ledge jingle.
             link.linkMotion.subX = (link.linkMotion.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
@@ -520,12 +532,11 @@ final class LinkStateMachine {
      * serial also distinguishes a save/new-game reload of the same room, so a
      * prior ladder or diving modifier cannot leak across the reload.
      */
-    void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
-                                             int mapCategory) {
+    void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
         if (physicsRoomLoadToken == loadToken
-            && physicsRoomMapId == mapId
-            && physicsRoomId == roomId
-            && physicsRoomCategory == mapCategory) {
+                && physicsRoomMapId == mapId
+                && physicsRoomId == roomId
+                && physicsRoomCategory == mapCategory) {
             return;
         }
         link.clearGroundEffects();
@@ -538,8 +549,7 @@ final class LinkStateMachine {
     }
 
     /** Applies the room-entry physics default after a completed warp. */
-    void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
-                                      int mapCategory) {
+    void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
         link.clearGroundEffects();
         physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
         physicsRoomLoadToken = loadToken;
@@ -555,7 +565,9 @@ final class LinkStateMachine {
     }
 
     /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
-    void blockNextRomMotionFrame() { writeRomInteractiveMotionBlock(2); }
+    void blockNextRomMotionFrame() {
+        writeRomInteractiveMotionBlock(2);
+    }
 
     void writeRomInteractiveMotionBlock(int value) {
         if ((value & ~255) != 0) throw new IllegalArgumentException("Interaction block must be an unsigned byte");
@@ -574,8 +586,8 @@ final class LinkStateMachine {
 
     /** Returns and clears the one-shot shake request written this frame. */
     ScreenShakeRequest consumePegasusScreenShakeRequest() {
-        ScreenShakeRequest request = new ScreenShakeRequest(
-            pendingPegasusScreenShakeCountdown, pendingPegasusScreenShakePhase);
+        ScreenShakeRequest request =
+                new ScreenShakeRequest(pendingPegasusScreenShakeCountdown, pendingPegasusScreenShakePhase);
         pendingPegasusScreenShakeCountdown = 0;
         pendingPegasusScreenShakePhase = 0;
         return request.countdown() == 0 ? null : request;

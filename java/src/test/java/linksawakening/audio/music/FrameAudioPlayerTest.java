@@ -1,14 +1,16 @@
 package linksawakening.audio.music;
 
-import linksawakening.gameplay.PcmSoundOutput;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+import linksawakening.gameplay.PcmSoundOutput;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 class FrameAudioPlayerTest {
-    @Test void scriptedAudioIsDeterministic() throws Exception {
+    @Test
+    void scriptedAudioIsDeterministic() throws Exception {
         byte[] rom;
         try (var stream = linksawakening.testing.TestRom.open()) {
             assertNotNull(stream);
@@ -20,14 +22,19 @@ class FrameAudioPlayerTest {
     private short[] capture(byte[] rom) {
         List<short[]> chunks = new ArrayList<>();
         var catalog = new linksawakening.audio.sfx.SoundEffectPlayer(
-            new linksawakening.audio.apu.GameBoyApu(48000), rom).catalog();
+                        new linksawakening.audio.apu.GameBoyApu(48000), rom)
+                .catalog();
         try (var player = new FrameAudioPlayer(rom, 48000, (pcm, rate) -> chunks.add(pcm))) {
             player.play(MusicCatalog.fromRom(rom).requireTrack(1));
             for (int frame = 0; frame < 30; frame++) {
-                if (frame == 5) player.playSoundEffect(linksawakening.gameplay.DialogSoundEffectMap
-                    .fromCatalog(catalog).resolve(linksawakening.dialog.DialogController.SoundEvent.TEXT_PRINT).orElseThrow());
-                if (frame == 12) player.playSoundEffect(linksawakening.gameplay.GameplaySoundEffectMap
-                    .fromCatalog(catalog).resolve(linksawakening.gameplay.GameplaySoundEvent.SWORD_SWING_A).orElseThrow());
+                if (frame == 5)
+                    player.playSoundEffect(linksawakening.gameplay.DialogSoundEffectMap.fromCatalog(catalog)
+                            .resolve(linksawakening.dialog.DialogController.SoundEvent.TEXT_PRINT)
+                            .orElseThrow());
+                if (frame == 12)
+                    player.playSoundEffect(linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(catalog)
+                            .resolve(linksawakening.gameplay.GameplaySoundEvent.SWORD_SWING_A)
+                            .orElseThrow());
                 player.update();
             }
         }
@@ -43,7 +50,8 @@ class FrameAudioPlayerTest {
         return result;
     }
 
-    @Test void sixtyUpdatesEmitExactlyOneSecond() throws Exception {
+    @Test
+    void sixtyUpdatesEmitExactlyOneSecond() throws Exception {
         byte[] rom;
         try (var stream = linksawakening.testing.TestRom.open()) {
             assertNotNull(stream);
@@ -51,8 +59,13 @@ class FrameAudioPlayerTest {
         }
         List<short[]> chunks = new ArrayList<>();
         PcmSoundOutput output = new PcmSoundOutput() {
-            @Override public void play(short[] pcm, int rate) { fail("frame transport must use streaming output"); }
-            @Override public void playFrame(short[] pcm, int rate) {
+            @Override
+            public void play(short[] pcm, int rate) {
+                fail("frame transport must use streaming output");
+            }
+
+            @Override
+            public void playFrame(short[] pcm, int rate) {
                 assertEquals(44101, rate);
                 chunks.add(pcm);
             }

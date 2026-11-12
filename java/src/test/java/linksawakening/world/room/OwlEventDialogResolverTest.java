@@ -1,14 +1,9 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.OwlEventDialogResolver;
-
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class OwlEventDialogResolverTest {
@@ -24,8 +19,8 @@ final class OwlEventDialogResolverTest {
 
     @Test
     void rejectsRomThatCannotContainTheMusicTable() {
-        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
-            () -> new OwlEventDialogResolver(new byte[0x8000]));
+        org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class, () -> new OwlEventDialogResolver(new byte[0x8000]));
     }
 
     private static byte[] loadRom() throws IOException {

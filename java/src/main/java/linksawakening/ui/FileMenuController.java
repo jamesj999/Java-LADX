@@ -1,17 +1,16 @@
 package linksawakening.ui;
 
-import linksawakening.cutscene.IntroSprite;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.scene.BackgroundScene;
-import linksawakening.scene.BackgroundSceneCatalog;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import linksawakening.cutscene.IntroSprite;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneCatalog;
 
 /**
  * Input/state model for the ROM-backed file-selection and New Game screens.
@@ -33,11 +32,7 @@ public final class FileMenuController {
     private static final int BG_MAP_BASE = 0x9800;
     private static final int FILE_NEW_SAVE_SLOT_INDEX_OFFSET = 0x9849 - BG_MAP_BASE;
     private static final int FILE_NEW_NAME_OFFSET = 0x984A - BG_MAP_BASE;
-    private static final int[] SAVE_NAME_OFFSETS = {
-        0x98C5 - BG_MAP_BASE,
-        0x9925 - BG_MAP_BASE,
-        0x9985 - BG_MAP_BASE
-    };
+    private static final int[] SAVE_NAME_OFFSETS = {0x98C5 - BG_MAP_BASE, 0x9925 - BG_MAP_BASE, 0x9985 - BG_MAP_BASE};
     private static final int[] COPY_SOURCE_NAME_OFFSETS = {0xC4, 0x124, 0x184};
     private static final int[] COPY_TARGET_NAME_OFFSETS = {0xCD, 0x12D, 0x18D};
     private static final int QUIT_OK_OFFSET = 0x99E4 - BG_MAP_BASE;
@@ -71,17 +66,21 @@ public final class FileMenuController {
     private int[] currentName = new int[NAME_LENGTH];
     private FileMenuFrameSnapshot snapshot;
 
-    public FileMenuController(FileMenuRomData romData,
-                              Function<String, BackgroundScene> sceneProvider,
-                              int saveFilesMask,
-                              int[][] savedNames) {
+    public FileMenuController(
+            FileMenuRomData romData,
+            Function<String, BackgroundScene> sceneProvider,
+            int saveFilesMask,
+            int[][] savedNames) {
         this(romData, sceneProvider, saveFilesMask, savedNames, new int[3], new int[3]);
     }
 
-    public FileMenuController(FileMenuRomData romData,
-                              Function<String, BackgroundScene> sceneProvider,
-                              int saveFilesMask, int[][] savedNames,
-                              int[] maxHearts, int[] deathCountsBcd) {
+    public FileMenuController(
+            FileMenuRomData romData,
+            Function<String, BackgroundScene> sceneProvider,
+            int saveFilesMask,
+            int[][] savedNames,
+            int[] maxHearts,
+            int[] deathCountsBcd) {
         Objects.requireNonNull(romData, "romData");
         if (maxHearts.length != 3 || deathCountsBcd.length != 3) {
             throw new IllegalArgumentException("File summaries must contain three slots");
@@ -115,15 +114,16 @@ public final class FileMenuController {
         Objects.requireNonNull(inputConfig, "inputConfig");
         frameCounter = (frameCounter + 1) & 0xFF;
 
-        FileMenuAction action = switch (mode) {
-            case SELECT -> tickSelection(inputState, inputConfig);
-            case CREATE -> tickCreation(inputState, inputConfig);
-            case ERASE_PICK -> tickErasePick(inputState, inputConfig);
-            case ERASE_CONFIRM -> tickEraseConfirm(inputState, inputConfig);
-            case COPY_SOURCE -> tickCopySource(inputState, inputConfig);
-            case COPY_TARGET -> tickCopyTarget(inputState, inputConfig);
-            case COPY_CONFIRM -> tickCopyConfirm(inputState, inputConfig);
-        };
+        FileMenuAction action =
+                switch (mode) {
+                    case SELECT -> tickSelection(inputState, inputConfig);
+                    case CREATE -> tickCreation(inputState, inputConfig);
+                    case ERASE_PICK -> tickErasePick(inputState, inputConfig);
+                    case ERASE_CONFIRM -> tickEraseConfirm(inputState, inputConfig);
+                    case COPY_SOURCE -> tickCopySource(inputState, inputConfig);
+                    case COPY_TARGET -> tickCopyTarget(inputState, inputConfig);
+                    case COPY_CONFIRM -> tickCopyConfirm(inputState, inputConfig);
+                };
         refreshSnapshot();
         return action;
     }
@@ -137,14 +137,12 @@ public final class FileMenuController {
         }
 
         if (selectedSlot == 3) {
-            if (inputState.wasPressed(inputConfig.leftKey())
-                || inputState.wasPressed(inputConfig.rightKey())) {
+            if (inputState.wasPressed(inputConfig.leftKey()) || inputState.wasPressed(inputConfig.rightKey())) {
                 commandRowArrowShifted = !commandRowArrowShifted;
             }
         }
 
-        if (inputState.wasPressed(inputConfig.aKey())
-            || inputState.wasPressed(inputConfig.menuOpenKey())) {
+        if (inputState.wasPressed(inputConfig.aKey()) || inputState.wasPressed(inputConfig.menuOpenKey())) {
             if (selectedSlot < 3) {
                 int[] name = savedNames[selectedSlot];
                 if (hasStoredName(name)) {
@@ -193,8 +191,8 @@ public final class FileMenuController {
         mode = Mode.SELECT;
         selectedSlot = 0;
         return confirmationOk
-            ? new FileMenuAction(FileMenuAction.Type.ERASE_SLOT, sourceSlot, new int[0])
-            : FileMenuAction.none(selectedSlot);
+                ? new FileMenuAction(FileMenuAction.Type.ERASE_SLOT, sourceSlot, new int[0])
+                : FileMenuAction.none(selectedSlot);
     }
 
     private FileMenuAction tickCopySource(InputState inputState, InputConfig inputConfig) {
@@ -247,8 +245,8 @@ public final class FileMenuController {
         mode = Mode.SELECT;
         selectedSlot = 0;
         return confirmationOk
-            ? new FileMenuAction(FileMenuAction.Type.COPY_SLOT, sourceSlot, targetSlot, new int[0])
-            : FileMenuAction.none(selectedSlot);
+                ? new FileMenuAction(FileMenuAction.Type.COPY_SLOT, sourceSlot, targetSlot, new int[0])
+                : FileMenuAction.none(selectedSlot);
     }
 
     private void moveFourRowCursor(InputState inputState, InputConfig inputConfig) {
@@ -260,8 +258,7 @@ public final class FileMenuController {
     }
 
     private void toggleConfirmation(InputState inputState, InputConfig inputConfig) {
-        if (inputState.wasPressed(inputConfig.leftKey())
-            || inputState.wasPressed(inputConfig.rightKey())) {
+        if (inputState.wasPressed(inputConfig.leftKey()) || inputState.wasPressed(inputConfig.rightKey())) {
             confirmationOk = !confirmationOk;
         }
     }
@@ -273,8 +270,7 @@ public final class FileMenuController {
     }
 
     private static boolean activated(InputState inputState, InputConfig inputConfig) {
-        return inputState.wasPressed(inputConfig.aKey())
-            || inputState.wasPressed(inputConfig.menuOpenKey());
+        return inputState.wasPressed(inputConfig.aKey()) || inputState.wasPressed(inputConfig.menuOpenKey());
     }
 
     private static boolean cancelled(InputState inputState, InputConfig inputConfig) {
@@ -289,13 +285,11 @@ public final class FileMenuController {
             return new FileMenuAction(FileMenuAction.Type.CREATE_FILE, selectedSlot, currentName);
         }
         if (inputState.wasPressed(inputConfig.leftKey())) {
-            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 1)
-                % NAME_ENTRY_CHARACTER_COUNT;
+            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 1) % NAME_ENTRY_CHARACTER_COUNT;
         } else if (inputState.wasPressed(inputConfig.rightKey())) {
             selectedCharacter = (selectedCharacter + 1) % NAME_ENTRY_CHARACTER_COUNT;
         } else if (inputState.wasPressed(inputConfig.upKey())) {
-            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 0x10)
-                % NAME_ENTRY_CHARACTER_COUNT;
+            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 0x10) % NAME_ENTRY_CHARACTER_COUNT;
         } else if (inputState.wasPressed(inputConfig.downKey())) {
             selectedCharacter = (selectedCharacter + 0x10) % NAME_ENTRY_CHARACTER_COUNT;
         }
@@ -312,27 +306,27 @@ public final class FileMenuController {
 
     private void refreshSnapshot() {
         boolean creation = mode == Mode.CREATE;
-        String sceneId = switch (mode) {
-            case CREATE -> BackgroundSceneCatalog.FILE_CREATION_SCENE;
-            case ERASE_PICK, ERASE_CONFIRM -> BackgroundSceneCatalog.FILE_ERASE_SCENE;
-            case COPY_SOURCE, COPY_TARGET, COPY_CONFIRM -> BackgroundSceneCatalog.FILE_COPY_SCENE;
-            case SELECT -> hasSavedFile()
-                ? BackgroundSceneCatalog.FILE_SELECTION_COMMANDS_SCENE
-                : BackgroundSceneCatalog.FILE_SELECTION_SCENE;
-        };
-        BackgroundScene scene = sceneCache.computeIfAbsent(sceneId, id ->
-            Objects.requireNonNull(sceneProvider.apply(id), "sceneProvider returned null for " + id));
+        String sceneId =
+                switch (mode) {
+                    case CREATE -> BackgroundSceneCatalog.FILE_CREATION_SCENE;
+                    case ERASE_PICK, ERASE_CONFIRM -> BackgroundSceneCatalog.FILE_ERASE_SCENE;
+                    case COPY_SOURCE, COPY_TARGET, COPY_CONFIRM -> BackgroundSceneCatalog.FILE_COPY_SCENE;
+                    case SELECT -> hasSavedFile()
+                            ? BackgroundSceneCatalog.FILE_SELECTION_COMMANDS_SCENE
+                            : BackgroundSceneCatalog.FILE_SELECTION_SCENE;
+                };
+        BackgroundScene scene = sceneCache.computeIfAbsent(
+                sceneId,
+                id -> Objects.requireNonNull(sceneProvider.apply(id), "sceneProvider returned null for " + id));
         int[] tilemap = scene.tilemap().clone();
         int[] attrmap = scene.attrmap().clone();
         int visibleSlot = selectedSlot < 3 ? selectedSlot : 0;
         int[] visibleName = creation ? currentName.clone() : savedNames[visibleSlot].clone();
 
         if (creation) {
-            writeTile(tilemap, FILE_NEW_SAVE_SLOT_INDEX_OFFSET,
-                FILE_NEW_SAVE_SLOT_1_TILE + selectedSlot);
+            writeTile(tilemap, FILE_NEW_SAVE_SLOT_INDEX_OFFSET, FILE_NEW_SAVE_SLOT_1_TILE + selectedSlot);
             drawSaveSlotName(tilemap, FILE_NEW_NAME_OFFSET, currentName);
-        } else if (mode == Mode.COPY_SOURCE || mode == Mode.COPY_TARGET
-            || mode == Mode.COPY_CONFIRM) {
+        } else if (mode == Mode.COPY_SOURCE || mode == Mode.COPY_TARGET || mode == Mode.COPY_CONFIRM) {
             for (int slot = 0; slot < 3; slot++) {
                 drawSaveSlotName(tilemap, COPY_SOURCE_NAME_OFFSETS[slot], savedNames[slot]);
                 drawSaveSlotName(tilemap, COPY_TARGET_NAME_OFFSETS[slot], savedNames[slot]);
@@ -370,18 +364,18 @@ public final class FileMenuController {
         }
 
         snapshot = new FileMenuFrameSnapshot(
-            sceneId,
-            selectedSlot,
-            commandRowArrowShifted,
-            creation,
-            selectedCharacter,
-            namePosition,
-            visibleName,
-            tilemap,
-            attrmap,
-            scene.palettes(),
-            scene.objectPalettes(),
-            buildSprites());
+                sceneId,
+                selectedSlot,
+                commandRowArrowShifted,
+                creation,
+                selectedCharacter,
+                namePosition,
+                visibleName,
+                tilemap,
+                attrmap,
+                scene.palettes(),
+                scene.objectPalettes(),
+                buildSprites());
     }
 
     private List<IntroSprite> buildSprites() {
@@ -407,17 +401,14 @@ public final class FileMenuController {
         } else if (mode == Mode.COPY_SOURCE) {
             addCursorPair(sprites, selectedSlot, 0x10, 0x18);
         } else {
-            sprites.add(spriteFromOam(0xBE, 0x14,
-                selectionCursorYPositions[sourceSlot] + 5, false));
+            sprites.add(spriteFromOam(0xBE, 0x14, selectionCursorYPositions[sourceSlot] + 5, false));
             if (mode == Mode.COPY_CONFIRM) {
                 sprites.add(spriteFromOam(0xBE, 0x5C, selectionCursorYPositions[targetSlot] + 5, false));
             } else {
-                addCursorPair(sprites, selectedSlot, selectedSlot == 3 ? 0x10 : 0x58,
-                    selectedSlot == 3 ? 0x18 : 0x60);
+                addCursorPair(sprites, selectedSlot, selectedSlot == 3 ? 0x10 : 0x58, selectedSlot == 3 ? 0x18 : 0x60);
             }
         }
-        if ((mode == Mode.ERASE_CONFIRM || mode == Mode.COPY_CONFIRM)
-            && (frameCounter & 0x10) == 0) {
+        if ((mode == Mode.ERASE_CONFIRM || mode == Mode.COPY_CONFIRM) && (frameCounter & 0x10) == 0) {
             sprites.add(spriteFromOam(0xBE, confirmationOk ? 0x6C : 0x28, 0x88, false));
         }
         return List.copyOf(sprites);
@@ -476,8 +467,7 @@ public final class FileMenuController {
         }
         for (int slot = 0; slot < Math.min(copy.length, names.length); slot++) {
             if (names[slot] != null) {
-                System.arraycopy(names[slot], 0, copy[slot], 0,
-                    Math.min(NAME_LENGTH, names[slot].length));
+                System.arraycopy(names[slot], 0, copy[slot], 0, Math.min(NAME_LENGTH, names[slot].length));
             }
         }
         return copy;

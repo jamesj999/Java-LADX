@@ -1,33 +1,18 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.UrchinMotion;
-
-import linksawakening.world.entity.event.LinkFinalPositionRequest;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.motion.UrchinMotion;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class UrchinRuntimeTest {
@@ -36,8 +21,7 @@ final class UrchinRuntimeTest {
     @Test
     void decodesNormalAndCreditsRomSpritePairs() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        EntitySpriteDefinition normal = catalog.forEntityType(
-            ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition normal = catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
         EntitySpriteDefinition credits = catalog.forUrchinState(true);
 
         assertUrchinSprites(normal, 0x7383, new int[][] {
@@ -58,10 +42,25 @@ final class UrchinRuntimeTest {
     void exposesUrchinRomMetadataAndBigBlockCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_URCHIN,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
         assertTrue(RoomEntityCombatRules.supportsLinkCollision(ENTITY_URCHIN));
@@ -69,20 +68,34 @@ final class UrchinRuntimeTest {
         assertEquals(0x02, runtime.options1(0));
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertTrue(RoomEntityCombatRules.overlapsLink(
-            runtime.inspection().snapshot().slots().get(0), 0x4C, 0x40));
+                runtime.inspection().snapshot().slots().get(0), 0x4C, 0x40));
     }
 
     @Test
     void normalContactUsesTheSharedEnemyDamagePath() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_URCHIN,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
 
         assertEquals(1, events.size());
         EntityCombatEvent event = events.getFirst();
@@ -95,13 +108,26 @@ final class UrchinRuntimeTest {
     void normalContactKeepsItsRomDamageWhenCombatTablesAreUnavailable() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_URCHIN,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
 
         assertEquals(0x04, events.getFirst().linkDamage());
     }
@@ -111,8 +137,7 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12,
-            0x48, 0x40, 1, true, false, true, null);
+        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12, 0x48, 0x40, 1, true, false, true, null);
 
         assertEquals(0, update.direction());
         assertEquals(0xFD, update.speedX());
@@ -130,8 +155,7 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12,
-            0x40, 0x3A, 3, true, false, true, null);
+        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12, 0x40, 0x3A, 3, true, false, true, null);
 
         assertEquals(2, update.direction());
         assertEquals(0x00, update.speedX());
@@ -146,8 +170,7 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12,
-            0x48, 0x40, 0, true, false, true, null);
+        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12, 0x48, 0x40, 0, true, false, true, null);
 
         assertEquals(0, update.direction());
         assertEquals(0x12, update.physicsFlags());
@@ -164,8 +187,7 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12,
-            0x48, 0x40, 1, true, false, false, null);
+        UrchinMotion.Update update = motion.advance(urchin, 0, 0x12, 0x48, 0x40, 1, true, false, false, null);
 
         assertEquals(0x12, update.physicsFlags());
         assertFalse(update.linkCollision());
@@ -178,19 +200,39 @@ final class UrchinRuntimeTest {
     void runtimeEmitsPushJingleAndFinalPositionRequest() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_URCHIN,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true)));
 
         assertEquals(0x3F, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertEquals(List.of(new LinkFinalPositionRequest(0)),
-            runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(List.of(new LinkFinalPositionRequest(0)), runtime.consumePendingLinkFinalPositionRequests());
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
@@ -199,7 +241,7 @@ final class UrchinRuntimeTest {
         linksawakening.gameplay.EnemyCombatEventConsumer.consume(events, sounds::add);
         assertEquals(List.of(linksawakening.gameplay.GameplaySoundEvent.URCHIN_PUSH), sounds);
         var map = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(
-            linksawakening.audio.sfx.SoundEffectCatalog.fromRom(rom));
+                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(rom));
         var effect = map.resolve(sounds.getFirst()).orElseThrow();
         assertEquals(linksawakening.audio.sfx.SoundEffectNamespace.JINGLE, effect.namespace());
         assertEquals(0x3E, effect.id());
@@ -209,22 +251,41 @@ final class UrchinRuntimeTest {
     void runtimeRestoresLinkFinalPositionForNormalContactWithoutShieldPush() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_URCHIN,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false)));
 
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(List.of(new LinkFinalPositionRequest(0)),
-            runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(List.of(new LinkFinalPositionRequest(0)), runtime.consumePendingLinkFinalPositionRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
-    private static void assertUrchinSprites(EntitySpriteDefinition definition, int address,
-                                             int[][] expected) {
+    private static void assertUrchinSprites(EntitySpriteDefinition definition, int address, int[][] expected) {
         assertTrue(definition.supported());
         assertEquals(0x15, definition.bank());
         assertEquals(address, definition.address());
@@ -232,18 +293,18 @@ final class UrchinRuntimeTest {
         assertEquals(0, definition.initialVariant());
         assertEquals(4, definition.variantCount());
         for (int variant = 0; variant < expected.length; variant++) {
-            assertEquals(new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(expected[variant][0], expected[variant][1]),
-                new EntitySpriteDefinition.OamAttribute(expected[variant][2], expected[variant][3])),
-                definition.variant(variant));
+            assertEquals(
+                    new EntitySpriteDefinition.Variant(
+                            new EntitySpriteDefinition.OamAttribute(expected[variant][0], expected[variant][1]),
+                            new EntitySpriteDefinition.OamAttribute(expected[variant][2], expected[variant][3])),
+                    definition.variant(variant));
         }
     }
 
     private static RoomEntity urchin(byte[] rom) {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
-            .forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
-        return new RoomEntity(0, 0, ENTITY_URCHIN, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        EntitySpriteDefinition definition =
+                new EntitySpriteHandlerCatalog(rom).forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
+        return new RoomEntity(0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

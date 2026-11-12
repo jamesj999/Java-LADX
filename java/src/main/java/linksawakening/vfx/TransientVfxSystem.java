@@ -9,8 +9,7 @@ import java.util.List;
  */
 public final class TransientVfxSystem {
 
-    public record Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY,
-                       int variant) {
+    public record Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY, int variant) {
         public Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY) {
             this(slotIndex, type, countdown, worldX, worldY, 0);
         }
@@ -24,8 +23,7 @@ public final class TransientVfxSystem {
         private int worldY;
         private int variant;
 
-        private MutableSlot(int slotIndex, TransientVfxType type, int countdown, int worldX,
-                            int worldY, int variant) {
+        private MutableSlot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY, int variant) {
             this.slotIndex = slotIndex;
             this.type = type;
             this.countdown = countdown;
@@ -60,8 +58,7 @@ public final class TransientVfxSystem {
 
         for (int i = 0; i < slots.length; i++) {
             if (slots[i] == null) {
-                slots[i] = new MutableSlot(i, type, type.defaultCountdown(), worldX, worldY,
-                    variant);
+                slots[i] = new MutableSlot(i, type, type.defaultCountdown(), worldX, worldY, variant);
                 return i;
             }
         }
@@ -98,9 +95,7 @@ public final class TransientVfxSystem {
 
     public List<Slot> activeSlots() {
         List<Slot> active = new ArrayList<>(slots.length);
-        Arrays.stream(slots)
-            .filter(slot -> slot != null)
-            .forEach(slot -> active.add(slot.snapshot()));
+        Arrays.stream(slots).filter(slot -> slot != null).forEach(slot -> active.add(slot.snapshot()));
         return List.copyOf(active);
     }
 }

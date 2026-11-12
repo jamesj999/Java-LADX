@@ -1,11 +1,9 @@
 package linksawakening.world.room;
 
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.transition.Warp;
-
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.world.entity.RoomEntitySnapshot;
+import linksawakening.world.transition.Warp;
 
 public final class ActiveRoom {
     private final int roomId;
@@ -129,8 +127,10 @@ public final class ActiveRoom {
     }
 
     void replaceTilemap(int[] tileIds, int[] tileAttrs) {
-        if (tileIds == null || tileIds.length != this.tileIds.length
-            || tileAttrs == null || tileAttrs.length != this.tileAttrs.length) {
+        if (tileIds == null
+                || tileIds.length != this.tileIds.length
+                || tileAttrs == null
+                || tileAttrs.length != this.tileAttrs.length) {
             throw new IllegalArgumentException("Replacement tilemap dimensions must match room");
         }
         System.arraycopy(tileIds, 0, this.tileIds, 0, tileIds.length);
@@ -145,7 +145,7 @@ public final class ActiveRoom {
     }
 
     public RoomRenderSnapshot renderSnapshot() {
-        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes, entities, null, null,
-            mapCategory == 0 && roomId == 0x32 ? 6 : 0);
+        return new RoomRenderSnapshot(
+                tileIds, tileAttrs, palettes, entities, null, null, mapCategory == 0 && roomId == 0x32 ? 6 : 0);
     }
 }

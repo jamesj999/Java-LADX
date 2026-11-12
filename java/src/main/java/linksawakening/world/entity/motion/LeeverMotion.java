@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$04 LeeverEntityHandler's hide, emerge, chase, and burrow states. */
 public final class LeeverMotion {
@@ -29,9 +28,13 @@ public final class LeeverMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -46,12 +49,10 @@ public final class LeeverMotion {
         // ApplyEntityInteractionWithBackground restores blocked coordinates
         // before the Leever state handler; it does not reverse ordinary speed.
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
-                    directionForX(speedX[slot]), x, y)) {
+            if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, y)) {
                 x = entity.x();
             }
-            if (y != entity.y() && backgroundCollision.blocks(entity,
-                    directionForY(speedY[slot]), x, y)) {
+            if (y != entity.y() && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
                 y = entity.y();
             }
         }
@@ -69,12 +70,11 @@ public final class LeeverMotion {
             }
             case 1 -> {
                 if (transitionCountdown[slot] == 0) {
-                    transitionCountdown[slot] = 0x70
-                        + (randomByteSupplier.getAsInt() & 0x3F);
+                    transitionCountdown[slot] = 0x70 + (randomByteSupplier.getAsInt() & 0x3F);
                     state[slot] = 2;
                 } else {
-                    variant = EMERGING_VARIANTS[Math.min(
-                        transitionCountdown[slot] >>> 4, EMERGING_VARIANTS.length - 1)];
+                    variant =
+                            EMERGING_VARIANTS[Math.min(transitionCountdown[slot] >>> 4, EMERGING_VARIANTS.length - 1)];
                 }
             }
             case 2 -> {
@@ -86,8 +86,7 @@ public final class LeeverMotion {
                 } else {
                     int frame = frameCounter & 0xFF;
                     if (((frame ^ slot) & 0x0F) == 0) {
-                        Vector vector = vectorTowardsLink(x, y, entity.z(),
-                            linkEntityX, linkEntityY, 0x08);
+                        Vector vector = vectorTowardsLink(x, y, entity.z(), linkEntityX, linkEntityY, 0x08);
                         speedX[slot] = vector.x();
                         speedY[slot] = vector.y();
                     }
@@ -98,24 +97,33 @@ public final class LeeverMotion {
             }
             case 3 -> {
                 if (transitionCountdown[slot] == 0) {
-                    transitionCountdown[slot] = 0x30
-                        + (randomByteSupplier.getAsInt() & 0x1F);
+                    transitionCountdown[slot] = 0x30 + (randomByteSupplier.getAsInt() & 0x1F);
                     state[slot] = 0;
-                    Vector vector = vectorTowardsLink(x, y, entity.z(),
-                        linkEntityX, linkEntityY, 0x08);
+                    Vector vector = vectorTowardsLink(x, y, entity.z(), linkEntityX, linkEntityY, 0x08);
                     speedX[slot] = vector.x();
                     speedY[slot] = vector.y();
                 } else {
-                    variant = BURROWING_VARIANTS[Math.min(
-                        transitionCountdown[slot] >>> 4, BURROWING_VARIANTS.length - 1)];
+                    variant = BURROWING_VARIANTS[
+                            Math.min(transitionCountdown[slot] >>> 4, BURROWING_VARIANTS.length - 1)];
                 }
             }
             default -> throw new IllegalStateException("Invalid Leever state: " + state[slot]);
         }
 
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -143,8 +151,7 @@ public final class LeeverMotion {
         return speedY[slot];
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         boolean swapped = Math.abs(distanceX) < Math.abs(distanceY);
@@ -172,8 +179,7 @@ public final class LeeverMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -202,6 +208,5 @@ public final class LeeverMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

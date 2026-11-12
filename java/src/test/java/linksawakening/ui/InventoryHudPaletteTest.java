@@ -1,12 +1,11 @@
 package linksawakening.ui;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Arrays;
 import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @linksawakening.testing.RequiresRom
 final class InventoryHudPaletteTest {

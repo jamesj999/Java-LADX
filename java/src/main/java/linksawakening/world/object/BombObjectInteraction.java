@@ -18,11 +18,7 @@ public final class BombObjectInteraction {
         -0x08, 0x08, 0x18,
         -0x08, 0x08, 0x18
     };
-    private static final int[] BASIC_Y = {
-        -0x08, -0x08, -0x08,
-         0x08,  0x08,  0x08,
-         0x18,  0x18, 0x18
-    };
+    private static final int[] BASIC_Y = {-0x08, -0x08, -0x08, 0x08, 0x08, 0x08, 0x18, 0x18, 0x18};
 
     public record Candidate(int objectLeft, int objectTop) {
         public Candidate {
@@ -35,8 +31,7 @@ public final class BombObjectInteraction {
         }
     }
 
-    private BombObjectInteraction() {
-    }
+    private BombObjectInteraction() {}
 
     public static Candidate basicCandidate(int bombX, int bombVisualY, int countdown) {
         return candidate(bombX, bombVisualY, countdown);

@@ -1,5 +1,7 @@
 package linksawakening.world.room;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
@@ -7,20 +9,29 @@ import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import linksawakening.vfx.TransientVfxSystem;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 final class WellHeartEmulatorTrajectoryTest {
     @Test
     void neighbouringBushesStopTheWellHeartAtTheEmulatorPositionOnEveryFrame() throws Exception {
         byte[] rom;
-        try (var input = TestRom.open()) { rom = input.readAllBytes(); }
-        var session = new RoomSession(rom, new GPU(), new RoomLoader(rom),
-            new OverworldTilesetTable(rom), new OverworldCollision(RomTables.loadFromRom(rom)),
-            new TransientVfxSystem(16), null);
+        try (var input = TestRom.open()) {
+            rom = input.readAllBytes();
+        }
+        var session = new RoomSession(
+                rom,
+                new GPU(),
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                new OverworldCollision(RomTables.loadFromRom(rom)),
+                new TransientVfxSystem(16),
+                null);
         session.loadInitialOverworld(0xA0);
         int slot = session.activeRoom().entities().loadedEntities().stream()
-            .filter(e -> e.type() == 0x2D && e.x() == 72).findFirst().orElseThrow().slot();
+                .filter(e -> e.type() == 0x2D && e.x() == 72)
+                .findFirst()
+                .orElseThrow()
+                .slot();
         // Replace only this bush, just as the emulator experiment does. Keep
         // the adjacent bushes/house walls in the actual ROM room buffer.
         session.context.activeRoom.roomObjectsArea()[0x35] = 0x04;

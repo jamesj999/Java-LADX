@@ -1,11 +1,10 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$03 movement used after an Iron Mask's mask has been removed. */
 public final class UnmaskedIronMaskMotion {
@@ -19,8 +18,7 @@ public final class UnmaskedIronMaskMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public void initializeFromMasked(int slot, int maskedDirection, int maskedSpeedX,
-                              int maskedSpeedY) {
+    public void initializeFromMasked(int slot, int maskedDirection, int maskedSpeedX, int maskedSpeedY) {
         direction[slot] = maskedDirection & 0x03;
         speedX[slot] = maskedSpeedX & 0xFF;
         speedY[slot] = maskedSpeedY & 0xFF;
@@ -29,23 +27,43 @@ public final class UnmaskedIronMaskMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frame, IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundInteraction backgroundInteraction,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   int ignoreHitsCountdown, int transitionCountdown) {
+    public Update advance(
+            RoomEntity entity,
+            int frame,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int ignoreHitsCountdown,
+            int transitionCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initializeFromMasked(slot, 0, 0, 0);
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
-        if (x != entity.x() && isBlocked(entity, direction[slot], x, entity.y(),
-            backgroundInteraction, backgroundCollision, ignoreHitsCountdown, frame)) {
+        if (x != entity.x()
+                && isBlocked(
+                        entity,
+                        direction[slot],
+                        x,
+                        entity.y(),
+                        backgroundInteraction,
+                        backgroundCollision,
+                        ignoreHitsCountdown,
+                        frame)) {
             x = entity.x();
         }
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (y != entity.y() && isBlocked(entity, direction[slot], x, y,
-            backgroundInteraction, backgroundCollision, ignoreHitsCountdown, frame)) {
+        if (y != entity.y()
+                && isBlocked(
+                        entity,
+                        direction[slot],
+                        x,
+                        y,
+                        backgroundInteraction,
+                        backgroundCollision,
+                        ignoreHitsCountdown,
+                        frame)) {
             y = entity.y();
         }
 
@@ -57,10 +75,22 @@ public final class UnmaskedIronMaskMotion {
             speedY[slot] = SPEED_Y_BY_DIRECTION[direction[slot]];
         }
 
-        return new Update(new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), (frame >>> 4) & 0x01,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false),
-            nextTransitionCountdown);
+        return new Update(
+                new RoomEntity(
+                        entity.slot(),
+                        entity.sourceLoadOrder(),
+                        entity.type(),
+                        x,
+                        y,
+                        entity.status(),
+                        entity.spriteDefinition(),
+                        (frame >>> 4) & 0x01,
+                        entity.entityFlipAttribute(),
+                        entity.spriteTileOffset(),
+                        entity.z(),
+                        -1,
+                        false),
+                nextTransitionCountdown);
     }
 
     public void clear(int slot) {
@@ -84,20 +114,24 @@ public final class UnmaskedIronMaskMotion {
         return speedY[slot];
     }
 
-    private static boolean isBlocked(RoomEntity entity, int entityDirection, int nextX, int nextY,
-                                     RoomEntityBackgroundInteraction backgroundInteraction,
-                                     RoomEntityBackgroundCollision backgroundCollision,
-                                     int ignoreHitsCountdown, int frame) {
+    private static boolean isBlocked(
+            RoomEntity entity,
+            int entityDirection,
+            int nextX,
+            int nextY,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int ignoreHitsCountdown,
+            int frame) {
         if (backgroundInteraction != null) {
-            return backgroundInteraction.probe(entity, entityDirection, nextX, nextY,
-                ignoreHitsCountdown, frame).blocked();
+            return backgroundInteraction
+                    .probe(entity, entityDirection, nextX, nextY, ignoreHitsCountdown, frame)
+                    .blocked();
         }
-        return backgroundCollision != null
-            && backgroundCollision.blocks(entity, entityDirection, nextX, nextY);
+        return backgroundCollision != null && backgroundCollision.blocks(entity, entityDirection, nextX, nextY);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -113,6 +147,5 @@ public final class UnmaskedIronMaskMotion {
         return (position + delta) & 0xFF;
     }
 
-    public record Update(RoomEntity entity, int transitionCountdown) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown) {}
 }

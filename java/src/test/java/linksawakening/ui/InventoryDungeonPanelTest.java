@@ -1,14 +1,17 @@
 package linksawakening.ui;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 @linksawakening.testing.RequiresRom
 final class InventoryDungeonPanelTest {
     private byte[] rom() throws Exception {
-        try (var stream = linksawakening.testing.TestRom.open()) { return stream.readAllBytes(); }
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            return stream.readAllBytes();
+        }
     }
 
     @Test
@@ -16,13 +19,13 @@ final class InventoryDungeonPanelTest {
         byte[] rom = rom();
         var loader = InventoryTilemapLoader.loadFromRom(rom);
         int[] map = loader.copyBaseTilemap(), attrs = loader.copyAttrmap();
-        var lines = Files.readAllLines(Path.of("src/test/resources/opening/tail-cave-inventory/panel.tsv"))
-            .stream().filter(line -> !line.startsWith("#")).toList();
+        var lines = Files.readAllLines(Path.of("src/test/resources/opening/tail-cave-inventory/panel.tsv")).stream()
+                .filter(line -> !line.startsWith("#"))
+                .toList();
         String[] values = lines.getFirst().split(" ");
         byte[] status = new byte[64];
         for (int i = 0; i < 64; i++) status[i] = (byte) Integer.parseInt(values[i]);
-        new InventoryDungeonPanel(rom).apply(map, attrs, 0, false,
-            new byte[]{1, 1, 0, 0, 2}, status);
+        new InventoryDungeonPanel(rom).apply(map, attrs, 0, false, new byte[] {1, 1, 0, 0, 2}, status);
         for (String line : lines.subList(1, lines.size())) {
             String[] cell = line.split(" ");
             int x = Integer.parseInt(cell[0]), y = Integer.parseInt(cell[1]);

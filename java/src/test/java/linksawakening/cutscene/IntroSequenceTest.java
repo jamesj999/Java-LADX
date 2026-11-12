@@ -1,18 +1,17 @@
 package linksawakening.cutscene;
 
-import linksawakening.scene.BackgroundScene;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import linksawakening.scene.BackgroundScene;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class IntroSequenceTest {
@@ -37,14 +36,14 @@ final class IntroSequenceTest {
         assertEquals("SEA", snapshot.substate());
         assertEquals(0, snapshot.frameCounter());
         assertEquals(22, snapshot.sprites().size());
-        assertTrue(snapshot.sprites().stream().anyMatch(sprite ->
-            sprite.tileIndex() == 0x1C && sprite.x() == 0xB8 && sprite.y() == 0x3F));
+        assertTrue(snapshot.sprites().stream()
+                .anyMatch(sprite -> sprite.tileIndex() == 0x1C && sprite.x() == 0xB8 && sprite.y() == 0x3F));
 
         int[] tilemap = snapshot.tilemap();
         tilemap[0] = 0xFF;
         assertEquals(0x7E, intro.snapshot().tilemap()[0]);
-        assertThrows(UnsupportedOperationException.class,
-            () -> snapshot.sprites().add(snapshot.sprites().get(0)));
+        assertThrows(UnsupportedOperationException.class, () -> snapshot.sprites()
+                .add(snapshot.sprites().get(0)));
     }
 
     @Test
@@ -104,19 +103,20 @@ final class IntroSequenceTest {
         tick(intro, 2); // queued row becomes visible on the next VBlank
         IntroRomData.TitleRow firstRow = new IntroRomData(loadRom()).titleRows().get(0);
         assertEquals(2, intro.titleRevealRows());
-        assertArrayEquals(firstRow.tileBytes(), rowBytes(intro.snapshot().tilemap(),
-            firstRow.tileTargetAddress()));
-        assertArrayEquals(firstRow.attributeBytes(), rowBytes(intro.snapshot().attrmap(),
-            firstRow.attributeTargetAddress()));
+        assertArrayEquals(firstRow.tileBytes(), rowBytes(intro.snapshot().tilemap(), firstRow.tileTargetAddress()));
+        assertArrayEquals(
+                firstRow.attributeBytes(), rowBytes(intro.snapshot().attrmap(), firstRow.attributeTargetAddress()));
     }
 
     @Test
     void marinStateThreePreservesTheSourceShoreScrollPauses() {
         IntroSequence intro = newIntro();
-        tick(intro, IntroSequence.SEA_SCROLL_FRAMES
-            + IntroSequence.LINK_FACE_FRAMES
-            + IntroSequence.SEA_FADE_FRAMES
-            + IntroSequence.BEACH_FADE_FRAMES);
+        tick(
+                intro,
+                IntroSequence.SEA_SCROLL_FRAMES
+                        + IntroSequence.LINK_FACE_FRAMES
+                        + IntroSequence.SEA_FADE_FRAMES
+                        + IntroSequence.BEACH_FADE_FRAMES);
         tickUntilSubstate(intro, "MARIN_STATE_3", 3000);
 
         assertEquals(0x30, intro.snapshot().scrollX());
@@ -162,10 +162,10 @@ final class IntroSequenceTest {
 
     private static int spriteX(IntroFrameSnapshot snapshot, int tileIndex) {
         return snapshot.sprites().stream()
-            .filter(sprite -> sprite.tileIndex() == tileIndex)
-            .findFirst()
-            .orElseThrow()
-            .x();
+                .filter(sprite -> sprite.tileIndex() == tileIndex)
+                .findFirst()
+                .orElseThrow()
+                .x();
     }
 
     private static int[] rowBytes(int[] map, int targetAddress) {
@@ -183,7 +183,9 @@ final class IntroSequenceTest {
     }
 
     private static void tickUntilSubstate(IntroSequence intro, String substate, int maxFrames) {
-        for (int frame = 0; frame < maxFrames && !substate.equals(intro.snapshot().substate()); frame++) {
+        for (int frame = 0;
+                frame < maxFrames && !substate.equals(intro.snapshot().substate());
+                frame++) {
             intro.tick();
         }
         assertEquals(substate, intro.snapshot().substate());

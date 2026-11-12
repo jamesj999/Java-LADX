@@ -1,10 +1,9 @@
 package linksawakening.audio.sfx;
 
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-
-import java.util.Objects;
 
 public final class RomSoundEffectTables {
     static final int SFX_BANK = RomSymbols.SfxPointersTable1.bank();

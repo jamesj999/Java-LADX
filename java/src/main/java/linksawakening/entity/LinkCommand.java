@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import linksawakening.world.transition.Warp;
-
 /** Complete Link-side effects, independent of world event record locations. */
 public interface LinkCommand {
     void applyTo(Link link);
@@ -30,8 +28,14 @@ public interface LinkCommand {
         }
     }
 
-    public record PotContact(boolean restoreFinalX, boolean resetBoots, int speedX,
-                      int ignoreCollisionCountdown, boolean snapTop, int positionY, int speedY)
+    public record PotContact(
+            boolean restoreFinalX,
+            boolean resetBoots,
+            int speedX,
+            int ignoreCollisionCountdown,
+            boolean snapTop,
+            int positionY,
+            int speedY)
             implements LinkCommand {
         public void applyTo(Link link) {
             if (restoreFinalX) link.restoreRomFinalPositionX();
@@ -43,7 +47,10 @@ public interface LinkCommand {
     }
 
     public record MotionBlock(int deltaX, int deltaY, int value) implements LinkCommand {
-        public MotionBlock(int deltaX, int deltaY) { this(deltaX, deltaY, 2); }
+        public MotionBlock(int deltaX, int deltaY) {
+            this(deltaX, deltaY, 2);
+        }
+
         public void applyTo(Link link) {
             link.applyRomFinalPosition((deltaX * 16) & 0xFF, (deltaY * 16) & 0xFF);
             link.writeRomInteractiveMotionBlock(value);
@@ -51,7 +58,9 @@ public interface LinkCommand {
     }
 
     public record Warp(int positionX, int visualPositionY, int immunityCountdown) implements LinkCommand {
-        public void applyTo(Link link) { link.applyWarpState3(positionX, visualPositionY, immunityCountdown); }
+        public void applyTo(Link link) {
+            link.applyWarpState3(positionX, visualPositionY, immunityCountdown);
+        }
     }
 
     public record HeldItemPose(boolean powerUp) implements LinkCommand {
@@ -62,7 +71,9 @@ public interface LinkCommand {
     }
 
     public record SwordSpinPose(int countdown) implements LinkCommand {
-        public void applyTo(Link link) { link.showSwordAcquisitionSpinPose(countdown); }
+        public void applyTo(Link link) {
+            link.showSwordAcquisitionSpinPose(countdown);
+        }
     }
 
     public record RoosterFlight(int positionZ, int velocityZ, int speedX, int speedY, int romDirection)
@@ -72,17 +83,27 @@ public interface LinkCommand {
         }
     }
 
-    public record HinoxGrab(int positionX, int positionY, int positionZ, int speedX, int speedY,
-                     int velocityZ, int airborneState, boolean motionBlocked, boolean heldPose)
+    public record HinoxGrab(
+            int positionX,
+            int positionY,
+            int positionZ,
+            int speedX,
+            int speedY,
+            int velocityZ,
+            int airborneState,
+            boolean motionBlocked,
+            boolean heldPose)
             implements LinkCommand {
         public void applyTo(Link link) {
-            link.applyHinoxGrabState(positionX, positionY, positionZ, speedX, speedY,
-                velocityZ, airborneState, motionBlocked, heldPose);
+            link.applyHinoxGrabState(
+                    positionX, positionY, positionZ, speedX, speedY, velocityZ, airborneState, motionBlocked, heldPose);
         }
     }
 
     public record Capture(int positionX, int positionY, boolean pinPosition) implements LinkCommand {
-        public void applyTo(Link link) { link.applyLikeLikeCapture(positionX, positionY, pinPosition); }
+        public void applyTo(Link link) {
+            link.applyLikeLikeCapture(positionX, positionY, pinPosition);
+        }
     }
 
     public record ContactRecoil(int speedX, int speedY, int ignoreCollisionCountdown) implements LinkCommand {
@@ -92,8 +113,8 @@ public interface LinkCommand {
         }
     }
 
-    public record ProjectileResponse(int speedX, int speedY, int ignoreCollisionCountdown,
-                              boolean immediatePosition) implements LinkCommand {
+    public record ProjectileResponse(int speedX, int speedY, int ignoreCollisionCountdown, boolean immediatePosition)
+            implements LinkCommand {
         public void applyTo(Link link) {
             if (immediatePosition) link.applyRomFinalPosition(speedX, speedY);
             else {
@@ -104,7 +125,13 @@ public interface LinkCommand {
     }
 
     public enum Action implements LinkCommand {
-        BLOCK_MOTION, FALLEN_POSE, CLEAR_ATTACK, START_ATTACK, SWORD_FINAL_POSE, RELEASE_CAPTURE;
+        BLOCK_MOTION,
+        FALLEN_POSE,
+        CLEAR_ATTACK,
+        START_ATTACK,
+        SWORD_FINAL_POSE,
+        RELEASE_CAPTURE;
+
         public void applyTo(Link link) {
             switch (this) {
                 case BLOCK_MOTION -> link.blockNextRomMotionFrame();

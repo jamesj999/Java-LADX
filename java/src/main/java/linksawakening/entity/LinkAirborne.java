@@ -12,6 +12,7 @@ final class LinkAirborne {
     boolean airborne;
     /** wD475, set by the top-view pit warp and cleared at ground level. */
     boolean spinningPitWarpArrival;
+
     int zSubPixels;
     int zVelocity;
     boolean fallingIntoPit;
@@ -26,12 +27,15 @@ final class LinkAirborne {
     boolean overworldLedgeFallActive;
     /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
     boolean directionalLedgeJumpMotionLocked;
+
     int directionalLedgeJumpSpeedX;
     int directionalLedgeJumpSpeedY;
     /** Mirrors wC191, the collision-probe countdown for directional ledges. */
     int directionalLedgeCollisionCounter;
 
-    LinkAirborne(Link link) { this.link = link; }
+    LinkAirborne(Link link) {
+        this.link = link;
+    }
 
     void tickJump() {
         tickJump(true);
@@ -42,14 +46,19 @@ final class LinkAirborne {
             return;
         }
 
-        if (animate && !spinningPitWarpArrival && !link.linkEntityEffects.marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
+        if (animate
+                && !spinningPitWarpArrival
+                && !link.linkEntityEffects.marinBedJumpMotionLocked
+                && !swordSuppressesJumpAnimation()) tickJumpAnimation();
         zSubPixels += zVelocity;
         zVelocity -= 2;
         // $02:4523–4561 changes only axes with held input. With no
         // input, momentum is retained; reversing takes 32 speed steps.
-        if (!spinningPitWarpArrival && !link.linkSideView.sideScrolling && !link.linkEntityEffects.marinBedJumpMotionLocked
-            && !directionalLedgeJumpMotionLocked
-            && (link.playerState == null || !link.playerState.runningWithPegasusBoots())) {
+        if (!spinningPitWarpArrival
+                && !link.linkSideView.sideScrolling
+                && !link.linkEntityEffects.marinBedJumpMotionLocked
+                && !directionalLedgeJumpMotionLocked
+                && (link.playerState == null || !link.playerState.runningWithPegasusBoots())) {
             int mask = link.buildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
                 int target = link.romTables.airSpeedX(mask & 3);
@@ -122,8 +131,7 @@ final class LinkAirborne {
     boolean swordSuppressesJumpAnimation() {
         if (link.itemRegistry == null) return false;
         EquipmentItem item = link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
-        return item instanceof linksawakening.equipment.Sword sword
-            && sword.suppressesJumpAnimation();
+        return item instanceof linksawakening.equipment.Sword sword && sword.suppressesJumpAnimation();
     }
 
     void tickJumpAnimation() {
@@ -133,7 +141,8 @@ final class LinkAirborne {
         // The unstucking handler does not refresh walking animation, so it
         // retains the final flip pose until landing ($02:49AA-$49C7).
         if (link.linkAnimator.jumpAnimationCounter < 3 * LinkRomConstants.JUMP_FRAME_TICKS) {
-            link.linkAnimator.jumpAnimationFrame = link.linkAnimator.jumpAnimationCounter / LinkRomConstants.JUMP_FRAME_TICKS;
+            link.linkAnimator.jumpAnimationFrame =
+                    link.linkAnimator.jumpAnimationCounter / LinkRomConstants.JUMP_FRAME_TICKS;
             link.linkAnimator.jumpAnimationCounter++;
         } else if (!overworldLedgeFallActive) {
             link.linkAnimator.jumpAnimationFrame = 3;
@@ -150,8 +159,9 @@ final class LinkAirborne {
         }
         // ApplyLinkGroundPhysics ($02:75CA-75D4) bypasses the solid
         // physics byte for OBJECT_WELL and enters the fall without slipping.
-        if (link.collision != null && !link.collision.usesIndoorPhysicsTable()
-            && link.collision.objectUnderLinkFeet(link.pixelX(), link.pixelY()) == 0x61) {
+        if (link.collision != null
+                && !link.collision.usesIndoorPhysicsTable()
+                && link.collision.objectUnderLinkFeet(link.pixelX(), link.pixelY()) == 0x61) {
             if (!fallingIntoPit) {
                 pitSlipPhysicsFlag = PhysicsFlags.SOLID;
                 startPitFall(false);
@@ -167,7 +177,9 @@ final class LinkAirborne {
     void enterPitGroundState() {
         if (groundStatus != Link.GROUND_STATUS_PIT) {
             pitSlippingCounter = 0;
-            OverworldCollision.PitCell pit = link.collision == null ? null : link.collision.normalPitUnderLink(link.linkMotion.pixelX(), link.linkMotion.pixelY());
+            OverworldCollision.PitCell pit = link.collision == null
+                    ? null
+                    : link.collision.normalPitUnderLink(link.linkMotion.pixelX(), link.linkMotion.pixelY());
             if (pit != null) {
                 pitSlipTargetTopLeftX = pit.targetTopLeftX();
                 pitSlipTargetTopLeftY = pit.targetTopLeftY();
@@ -203,7 +215,7 @@ final class LinkAirborne {
         }
 
         if (Math.abs(link.linkMotion.pixelX() - pitSlipTargetTopLeftX) <= 1
-            && Math.abs(link.linkMotion.pixelY() - pitSlipTargetTopLeftY) <= 1) {
+                && Math.abs(link.linkMotion.pixelY() - pitSlipTargetTopLeftY) <= 1) {
             startPitFall();
         }
     }

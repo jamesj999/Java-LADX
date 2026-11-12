@@ -4,10 +4,10 @@ final class SquareChannel {
     private static final double SWEEP_CLOCK_HZ = 128.0;
     private static final double ENVELOPE_CLOCK_HZ = 64.0;
     private static final int[][] DUTY_PATTERNS = {
-            {0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 1, 1, 1},
-            {0, 1, 1, 1, 1, 1, 1, 0}
+        {0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 1, 1, 1},
+        {0, 1, 1, 1, 1, 1, 1, 0}
     };
 
     private final int sampleRate;
@@ -165,7 +165,9 @@ final class SquareChannel {
         return 1.0 - (highTime / steps) * volume / 7.5;
     }
 
-    boolean dacEnabled() { return (envelopeRegister & 0xF8) != 0; }
+    boolean dacEnabled() {
+        return (envelopeRegister & 0xF8) != 0;
+    }
 
     private void trigger() {
         length.trigger();

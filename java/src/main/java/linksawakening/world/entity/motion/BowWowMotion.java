@@ -1,14 +1,13 @@
 package linksawakening.world.entity.motion;
 
+import java.util.List;
+import java.util.function.IntPredicate;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.BowWowChain;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.List;
-import java.util.function.IntPredicate;
-import java.util.function.IntSupplier;
 
 /**
  * The home, kidnapped, and following motion states of bank-$05's Bow-Wow handler.
@@ -19,10 +18,8 @@ import java.util.function.IntSupplier;
  * without running a general Game Boy CPU.</p>
  */
 public final class BowWowMotion {
-    private static final int[] SPEED_X_BY_RANDOM = {0x04, 0x08, 0x0C, 0x08,
-        0xFC, 0xF8, 0xF4, 0xF8};
-    private static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08,
-        0x0C, 0x08, 0xFC, 0xF8};
+    private static final int[] SPEED_X_BY_RANDOM = {0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8, 0xF4, 0xF8};
+    private static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8};
 
     private final BowWowChain[] chains = new BowWowChain[EntityRoomLoader.MAX_ENTITIES];
 
@@ -49,41 +46,84 @@ public final class BowWowMotion {
         initialized[slot] = true;
     }
 
-    RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       int linkEntityZ, IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
-        return advanceWithTargetScan(entity, frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, randomByteSupplier, backgroundCollision, List.of(entity),
-            type -> false).entity();
+    RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        return advanceWithTargetScan(
+                        entity,
+                        frameCounter,
+                        linkEntityX,
+                        linkEntityY,
+                        linkEntityZ,
+                        randomByteSupplier,
+                        backgroundCollision,
+                        List.of(entity),
+                        type -> false)
+                .entity();
     }
 
-    Update advanceWithTargetScan(RoomEntity entity, int frameCounter, int linkEntityX,
-                                 int linkEntityY, int linkEntityZ,
-                                 IntSupplier randomByteSupplier,
-                                 RoomEntityBackgroundCollision backgroundCollision,
-                                 List<RoomEntity> entities,
-                                 IntPredicate canEatEntity) {
+    Update advanceWithTargetScan(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            List<RoomEntity> entities,
+            IntPredicate canEatEntity) {
         tickTimers(entity.slot());
-        return advanceAfterTimers(entity, frameCounter, linkEntityX, linkEntityY, linkEntityZ,
-            randomByteSupplier, backgroundCollision, entities, canEatEntity);
+        return advanceAfterTimers(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                randomByteSupplier,
+                backgroundCollision,
+                entities,
+                canEatEntity);
     }
 
-    public Update advanceAfterTimers(RoomEntity entity, int frameCounter, int linkEntityX,
-                                 int linkEntityY, int linkEntityZ,
-                                 IntSupplier randomByteSupplier,
-                                 RoomEntityBackgroundCollision backgroundCollision,
-                                 List<RoomEntity> entities,
-                                 IntPredicate canEatEntity) {
-        return advanceAfterTimers(entity, frameCounter, linkEntityX, linkEntityY, linkEntityZ,
-            randomByteSupplier, backgroundCollision, entities, canEatEntity, 1);
+    public Update advanceAfterTimers(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            List<RoomEntity> entities,
+            IntPredicate canEatEntity) {
+        return advanceAfterTimers(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                randomByteSupplier,
+                backgroundCollision,
+                entities,
+                canEatEntity,
+                1);
     }
 
-    public Update advanceAfterTimers(RoomEntity entity, int frameCounter, int linkEntityX,
-                              int linkEntityY, int linkEntityZ,
-                              IntSupplier randomByteSupplier,
-                              RoomEntityBackgroundCollision backgroundCollision,
-                              List<RoomEntity> entities, IntPredicate canEatEntity,
-                              int bowWowState) {
+    public Update advanceAfterTimers(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            List<RoomEntity> entities,
+            IntPredicate canEatEntity,
+            int bowWowState) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -119,18 +159,17 @@ public final class BowWowMotion {
                     if (bowWowState == 0) {
                         speedZ[slot] = 0x20;
                         activeState[slot] = 2;
-                        Vector vector = vectorTowardsTarget(entity,
-                            withPositionAndVariant(entity, linkEntityX, linkEntityY, 0, 0),
-                            z, 0x20);
+                        Vector vector = vectorTowardsTarget(
+                                entity, withPositionAndVariant(entity, linkEntityX, linkEntityY, 0, 0), z, 0x20);
                         speedX[slot] = vector.x();
                         speedY[slot] = vector.y();
                         break;
                     }
                     // $05:4297 skips both target scanning and its RNG read
                     // while BowWow is chained inside the hideout.
-                    int selectedTarget = bowWowState == 0x80 ? -1
-                        : findTarget(entity, linkEntityX, linkEntityY,
-                            randomByteSupplier, entities, canEatEntity);
+                    int selectedTarget = bowWowState == 0x80
+                            ? -1
+                            : findTarget(entity, linkEntityX, linkEntityY, randomByteSupplier, entities, canEatEntity);
                     if (selectedTarget >= 0) {
                         RoomEntity target = entities.get(selectedTarget);
                         targetSlot[slot] = selectedTarget;
@@ -143,8 +182,7 @@ public final class BowWowMotion {
                         transitionCountdown[slot] = 0x10;
                     }
                 } else if (privateCountdown1[slot] == 0) {
-                    privateCountdown1[slot] = 0x20
-                        + (randomByteSupplier.getAsInt() & 0x3F);
+                    privateCountdown1[slot] = 0x20 + (randomByteSupplier.getAsInt() & 0x3F);
                     activeState[slot] = 1;
                     int direction = randomByteSupplier.getAsInt() & 0x07;
                     speedX[slot] = SPEED_X_BY_RANDOM[direction];
@@ -174,7 +212,7 @@ public final class BowWowMotion {
                     // func_005_4228 returns E>1 when either axis is restored;
                     // $41F6 then enters the same pause as an expired lunge.
                     stopLunge = !inSignedWindow(signedByte(targetX[slot] - moved[0]), 0x20)
-                        || !inSignedWindow(signedByte(targetY[slot] - moved[1]), 0x20);
+                            || !inSignedWindow(signedByte(targetY[slot] - moved[1]), 0x20);
                 }
                 if (stopLunge) {
                     speedX[slot] = 0;
@@ -185,8 +223,7 @@ public final class BowWowMotion {
                 // func_005_41EB reaches label_005_4335 after every moving
                 // state-2/state-4 frame, not only when the timer expires.
                 if (bowWowState != 0) {
-                    targetContact = findTargetContact(entity.x(), entity.y(), entity.z(),
-                        targetSlot[slot], entities);
+                    targetContact = findTargetContact(entity.x(), entity.y(), entity.z(), targetSlot[slot], entities);
                 }
             }
             case 3 -> {
@@ -201,8 +238,7 @@ public final class BowWowMotion {
             default -> activeState[slot] = 0;
         }
 
-        return new Update(withPositionAndVariant(entity, x, y, z, variant), targetSlot[slot],
-            targetContact);
+        return new Update(withPositionAndVariant(entity, x, y, z, variant), targetSlot[slot], targetContact);
     }
 
     public void clear(int slot) {
@@ -289,8 +325,7 @@ public final class BowWowMotion {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException("Transition countdown must be an unsigned byte: "
-                + value);
+            throw new IllegalArgumentException("Transition countdown must be an unsigned byte: " + value);
         }
         transitionCountdown[slot] = value;
     }
@@ -300,8 +335,7 @@ public final class BowWowMotion {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException("Private countdown 2 must be an unsigned byte: "
-                + value);
+            throw new IllegalArgumentException("Private countdown 2 must be an unsigned byte: " + value);
         }
         privateCountdown2[slot] = value;
     }
@@ -345,8 +379,7 @@ public final class BowWowMotion {
         return true;
     }
 
-    private int[] move(RoomEntity entity, int x, int y, int slot,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    private int[] move(RoomEntity entity, int x, int y, int slot, RoomEntityBackgroundCollision backgroundCollision) {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         // ApplyEntityInteractionWithBackground returns before the generic wall
@@ -375,9 +408,13 @@ public final class BowWowMotion {
         return base == 6 ? 6 : base + ((frameCounter >>> 3) & 0x01);
     }
 
-    private static int findTarget(RoomEntity source, int linkEntityX, int linkEntityY,
-                                  IntSupplier randomByteSupplier, List<RoomEntity> entities,
-                                  IntPredicate canEatEntity) {
+    private static int findTarget(
+            RoomEntity source,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            List<RoomEntity> entities,
+            IntPredicate canEatEntity) {
         boolean descending = (randomByteSupplier.getAsInt() & 0x01) == 0;
         int step = descending ? -1 : 1;
         int candidate = descending ? EntityRoomLoader.MAX_ENTITIES - 1 : 0;
@@ -386,11 +423,11 @@ public final class BowWowMotion {
             if (candidate != source.slot() && candidate >= 0 && candidate < entities.size()) {
                 RoomEntity target = entities.get(candidate);
                 if (target.loaded()
-                    && target.status() != EntityStatus.DYING
-                    && target.spriteVariant() != 1
-                    && canEatEntity.test(target.type())
-                    && inUnsignedWindow(linkEntityX - target.x(), 0x2F, 0x5E)
-                    && inUnsignedWindow(linkEntityY - target.y(), 0x2F, 0x5E)) {
+                        && target.status() != EntityStatus.DYING
+                        && target.spriteVariant() != 1
+                        && canEatEntity.test(target.type())
+                        && inUnsignedWindow(linkEntityX - target.x(), 0x2F, 0x5E)
+                        && inUnsignedWindow(linkEntityY - target.y(), 0x2F, 0x5E)) {
                     return candidate;
                 }
             }
@@ -399,8 +436,7 @@ public final class BowWowMotion {
         return -1;
     }
 
-    private static Vector vectorTowardsTarget(RoomEntity source, RoomEntity target,
-                                              int sourceZ, int length) {
+    private static Vector vectorTowardsTarget(RoomEntity source, RoomEntity target, int sourceZ, int length) {
         int distanceX = signedByte(target.x() - source.x());
         // The shared vector helper reads Z after this handler's gravity update.
         int distanceY = signedByte(target.y() - source.y() + sourceZ);
@@ -440,22 +476,21 @@ public final class BowWowMotion {
     }
 
     /** Mirrors label_005_4335's final X/visual-Y contact test. */
-    private static TargetContact findTargetContact(int sourceX, int sourceY, int sourceZ,
-                                                   int targetSlot, List<RoomEntity> entities) {
+    private static TargetContact findTargetContact(
+            int sourceX, int sourceY, int sourceZ, int targetSlot, List<RoomEntity> entities) {
         if (targetSlot < 0 || targetSlot >= entities.size()) {
             return null;
         }
         RoomEntity target = entities.get(targetSlot);
         if (!target.loaded()
-            || !inUnsignedWindow(sourceX - target.x(), 0x0E, 0x1A)
-            || !inUnsignedWindow((sourceY - sourceZ) - target.y(), 0x10, 0x20)) {
+                || !inUnsignedWindow(sourceX - target.x(), 0x0E, 0x1A)
+                || !inUnsignedWindow((sourceY - sourceZ) - target.y(), 0x10, 0x20)) {
             return null;
         }
         return new TargetContact(targetSlot, target.type());
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -483,11 +518,21 @@ public final class BowWowMotion {
         return value & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int z, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     public record Update(RoomEntity entity, int targetSlot, TargetContact targetContact) {
@@ -496,9 +541,7 @@ public final class BowWowMotion {
         }
     }
 
-    public record TargetContact(int slot, int type) {
-    }
+    public record TargetContact(int slot, int type) {}
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

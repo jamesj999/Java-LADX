@@ -1,25 +1,24 @@
 package linksawakening.cutscene;
 
-import linksawakening.dialog.DialogController;
-import linksawakening.scene.BackgroundScene;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.dialog.DialogController;
+import linksawakening.scene.BackgroundScene;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class CutsceneManagerTest {
 
     @Test
     void completedIntroContinuesTitleAnimationAfterScreenHandoff() {
-        CutsceneManager manager = new CutsceneManager(new DialogController(16), id -> { });
+        CutsceneManager manager = new CutsceneManager(new DialogController(16), id -> {});
         manager.startIntro();
         for (int i = 0; i < 4000 && manager.isActive(); i++) manager.tick();
         assertFalse(manager.isActive());
@@ -60,8 +59,7 @@ final class CutsceneManagerTest {
         assertTrue(manager.skipIntroToTitle());
         assertFalse(manager.isActive());
         assertTrue(manager.isShowingTitleScene());
-        assertEquals(List.of(IntroCutsceneScript.SCENE_SEA, IntroCutsceneScript.SCENE_TITLE),
-            loadedScenes);
+        assertEquals(List.of(IntroCutsceneScript.SCENE_SEA, IntroCutsceneScript.SCENE_TITLE), loadedScenes);
     }
 
     @Test

@@ -1,14 +1,8 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.RoomEntityBackgroundCollision;
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class EntityBackgroundCollisionResultTest {
 
@@ -22,8 +16,7 @@ final class EntityBackgroundCollisionResultTest {
 
     @Test
     void passableResultCarriesNoCollisionBit() {
-        EntityBackgroundCollisionResult result = EntityBackgroundCollisionResult.passable(
-            2, 0x07, 0x34, 0x56);
+        EntityBackgroundCollisionResult result = EntityBackgroundCollisionResult.passable(2, 0x07, 0x34, 0x56);
 
         assertEquals(false, result.blocked());
         assertEquals(EntityBackgroundCollisionResult.NO_OBJECT, result.objectId());
@@ -37,11 +30,10 @@ final class EntityBackgroundCollisionResultTest {
     @Test
     void booleanCollisionAdapterAddsTheDirectionalBit() {
         RoomEntityBackgroundCollision booleanCollision = (entity, direction, nextX, nextY) -> true;
-        RoomEntityBackgroundInteraction interaction = RoomEntityBackgroundInteraction.fromBoolean(
-            booleanCollision);
+        RoomEntityBackgroundInteraction interaction = RoomEntityBackgroundInteraction.fromBoolean(booleanCollision);
 
-        EntityBackgroundCollisionResult result = interaction.probe(
-            null, EntityBackgroundCollisionResult.DOWN, 0x12, 0x34);
+        EntityBackgroundCollisionResult result =
+                interaction.probe(null, EntityBackgroundCollisionResult.DOWN, 0x12, 0x34);
 
         assertEquals(true, result.blocked());
         assertEquals(EntityBackgroundCollisionResult.NO_OBJECT, result.objectId());

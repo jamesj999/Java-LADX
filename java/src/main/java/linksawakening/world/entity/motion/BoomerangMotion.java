@@ -37,8 +37,8 @@ public final class BoomerangMotion {
 
     static SpawnData spawnData(int projectileDirection) {
         int direction = checkedDirection(projectileDirection);
-        return new SpawnData(OFFSET_X[direction], OFFSET_Y[direction],
-            SPEED_X[direction], SPEED_Y[direction], direction);
+        return new SpawnData(
+                OFFSET_X[direction], OFFSET_Y[direction], SPEED_X[direction], SPEED_Y[direction], direction);
     }
 
     public void initializeSpawn(int slot, int projectileDirection, int pressedButtonsMask) {
@@ -96,8 +96,7 @@ public final class BoomerangMotion {
         }
     }
 
-    public void setVectorTowardsLink(int slot, RoomEntity entity, int linkX, int linkY,
-                              int vectorLength) {
+    public void setVectorTowardsLink(int slot, RoomEntity entity, int linkX, int linkY, int vectorLength) {
         validateSlot(slot);
         if (!initialized[slot]) {
             initializeSpawn(slot, direction[slot]);
@@ -162,8 +161,7 @@ public final class BoomerangMotion {
     public void setState(int slot, int newState) {
         validateSlot(slot);
         if (newState < 0 || newState > 0xFF) {
-            throw new IllegalArgumentException("Boomerang state must be an unsigned byte: "
-                + newState);
+            throw new IllegalArgumentException("Boomerang state must be an unsigned byte: " + newState);
         }
         state[slot] = newState & 0xFF;
     }
@@ -171,8 +169,7 @@ public final class BoomerangMotion {
     public void setTransitionCountdown(int slot, int countdown) {
         validateSlot(slot);
         if (countdown < 0 || countdown > 0xFF) {
-            throw new IllegalArgumentException("Boomerang countdown must be an unsigned byte: "
-                + countdown);
+            throw new IllegalArgumentException("Boomerang countdown must be an unsigned byte: " + countdown);
         }
         transitionCountdown[slot] = countdown;
     }
@@ -186,8 +183,7 @@ public final class BoomerangMotion {
         if (xDistance >= 0x09) {
             return false;
         }
-        int yDistance = unsignedByteAbs(
-            entity.y() - entity.z() + 0x08 - linkY - 0x08);
+        int yDistance = unsignedByteAbs(entity.y() - entity.z() + 0x08 - linkY - 0x08);
         return yDistance < 0x09;
     }
 
@@ -214,14 +210,14 @@ public final class BoomerangMotion {
         if (value >= 0xD0 && value <= 0xD3) {
             return true;
         }
-        if (value == 0 || value == 0x50 || value == 0x51
-            || (value >= 0x7C && value < 0x90)
-            || (value >= 0xA0 && value != 0xFF)) {
+        if (value == 0
+                || value == 0x50
+                || value == 0x51
+                || (value >= 0x7C && value < 0x90)
+                || (value >= 0xA0 && value != 0xFF)) {
             return false;
         }
-        return value == 0x01 || (value >= 0x10 && value < 0x7C)
-            || (value >= 0x90 && value < 0xA0)
-            || value == 0xFF;
+        return value == 0x01 || (value >= 0x10 && value < 0x7C) || (value >= 0x90 && value < 0xA0) || value == 0xFF;
     }
 
     private static int signedResult(int magnitude, boolean negative) {
@@ -229,8 +225,7 @@ public final class BoomerangMotion {
         return negative ? (-value) & 0xFF : value;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -245,10 +240,20 @@ public final class BoomerangMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static int checkedDirection(int direction) {

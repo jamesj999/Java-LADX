@@ -1,17 +1,10 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.RoomConstants;
-import linksawakening.world.room.RoomTilemap;
-import linksawakening.world.room.RoomTilemapBuilder;
-
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class RoomTilemapBuilderTest {
@@ -78,8 +71,7 @@ final class RoomTilemapBuilderTest {
 
         int colorTile = RomBank.romOffset(0x08, 0x4760) + objectId * 4;
         int pointer = RomBank.romOffset(0x1A, 0x6276 + 0x1FE);
-        int attrAddress = Byte.toUnsignedInt(rom[pointer])
-            | (Byte.toUnsignedInt(rom[pointer + 1]) << 8);
+        int attrAddress = Byte.toUnsignedInt(rom[pointer]) | (Byte.toUnsignedInt(rom[pointer + 1]) << 8);
         int ordinaryAttr = RomBank.romOffset(0x24, attrAddress) + objectId * 4;
         assertEquals(Byte.toUnsignedInt(rom[colorTile]), result.tileIds()[0]);
         assertEquals(Byte.toUnsignedInt(rom[ordinaryAttr]), result.tileAttrs()[0]);
@@ -112,8 +104,7 @@ final class RoomTilemapBuilderTest {
         };
         for (int[] c : cases) {
             int pointer = RomBank.romOffset(0x1A, c[2] + c[3]);
-            int address = Byte.toUnsignedInt(rom[pointer])
-                | Byte.toUnsignedInt(rom[pointer + 1]) << 8;
+            int address = Byte.toUnsignedInt(rom[pointer]) | Byte.toUnsignedInt(rom[pointer + 1]) << 8;
             int source = RomBank.romOffset(c[4], address);
             // Exercise the complete ordinary indoor object table, not just
             // a floor whose palette happens to match in several groups.
@@ -124,9 +115,10 @@ final class RoomTilemapBuilderTest {
                 var result = new RoomTilemapBuilder(rom).buildIndoor(c[0], c[1], objects);
                 for (int tile = 0; tile < 4; tile++) {
                     int index = tile / 2 * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
-                    assertEquals(Byte.toUnsignedInt(rom[source + object * 4 + tile]),
-                        result.tileAttrs()[index], "map %02X room %02X object %02X tile %d"
-                            .formatted(c[0], c[1], object, tile));
+                    assertEquals(
+                            Byte.toUnsignedInt(rom[source + object * 4 + tile]),
+                            result.tileAttrs()[index],
+                            "map %02X room %02X object %02X tile %d".formatted(c[0], c[1], object, tile));
                 }
             }
         }

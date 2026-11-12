@@ -1,19 +1,16 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
 
 final class CuccoMotionTest {
 
@@ -24,11 +21,22 @@ final class CuccoMotionTest {
         AtomicInteger randomIndex = new AtomicInteger();
         int[] random = {0x02, 0x01, 0x01};
 
-        CuccoMotion.Update update = motion.advance(entity, 0, 0, 0,
-            0x40, 0x50, 0, true, false,
-            false,
-            () -> random[randomIndex.getAndIncrement()], null,
-            false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(
+                entity,
+                0,
+                0,
+                0,
+                0x40,
+                0x50,
+                0,
+                true,
+                false,
+                false,
+                () -> random[randomIndex.getAndIncrement()],
+                null,
+                false,
+                false,
+                0x04);
 
         assertEquals(1, motion.state(0));
         assertEquals(0x06, motion.speedX(0));
@@ -44,9 +52,8 @@ final class CuccoMotionTest {
         CuccoMotion motion = new CuccoMotion();
         motion.setStateForTest(0, 1, 0, 0, 0, 0, 0x80);
 
-        CuccoMotion.Update update = motion.advance(entity(0x40, 0x50, 0), 0, 0, 0,
-            0x40, 0x50, 0, true, false, false, () -> 0, null,
-            false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(
+                entity(0x40, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
 
         assertEquals(0, motion.state(0));
         assertEquals(0x30, update.transitionCountdown());
@@ -59,9 +66,8 @@ final class CuccoMotionTest {
         CuccoMotion motion = new CuccoMotion();
         motion.setStateForTest(0, 2, 0, 0, 0, 0, 0);
 
-        CuccoMotion.Update update = motion.advance(entity(0x40, 0x50, 0), 0, 0, 0,
-            0x30, 0x50, 0, true, false, false, () -> 0, null,
-            false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(
+                entity(0x40, 0x50, 0), 0, 0, 0, 0x30, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
 
         assertEquals(0x0C, motion.speedX(0));
         assertEquals(0x00, motion.speedY(0));
@@ -74,10 +80,24 @@ final class CuccoMotionTest {
         CuccoMotion motion = new CuccoMotion();
         motion.setStateForTest(0, 0, 0x20, 0, 0, 0, 0);
 
-        CuccoMotion.Update update = motion.advance(entity(0x40, 0x50, 0), 0, 0x20, 0,
-            0x40, 0x50, 0, true, true, false, () -> {
-                throw new AssertionError("Lift must return before random flight selection");
-            }, null, false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(
+                entity(0x40, 0x50, 0),
+                0,
+                0x20,
+                0,
+                0x40,
+                0x50,
+                0,
+                true,
+                true,
+                false,
+                () -> {
+                    throw new AssertionError("Lift must return before random flight selection");
+                },
+                null,
+                false,
+                false,
+                0x04);
 
         assertTrue(update.liftRequested());
         assertEquals(0, motion.state(0));
@@ -89,9 +109,8 @@ final class CuccoMotionTest {
         CuccoMotion motion = new CuccoMotion();
         motion.initializeAngry(0, 0x10, 0);
 
-        CuccoMotion.Update update = motion.advance(entity(0xA8, 0x50, 0), 0, 0, 0,
-            0x40, 0x50, 0, true, false, false, () -> 0, null,
-            false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(
+                entity(0xA8, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
 
         assertTrue(update.unloaded());
         assertTrue(update.boomerangSound());
@@ -102,9 +121,8 @@ final class CuccoMotionTest {
     void marinFlashPathRaisesDialogAndCanRequestAnAngrySpawn() {
         CuccoMotion motion = new CuccoMotion();
         motion.setPrivateStateForTest(0, 0x22);
-        CuccoMotion.Update dialog = motion.advance(entity(0x40, 0x50, 0), 1, 0, 8,
-            0x40, 0x50, 0, true, false, false, () -> 0, null,
-            false, true, 0x04);
+        CuccoMotion.Update dialog = motion.advance(
+                entity(0x40, 0x50, 0), 1, 0, 8, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, true, 0x04);
 
         assertEquals(0x23, motion.privateState1(0));
         assertEquals(2, motion.state(0));
@@ -113,9 +131,8 @@ final class CuccoMotionTest {
 
         CuccoMotion spawnMotion = new CuccoMotion();
         spawnMotion.setStateForTest(0, 2, 0, 0x23, 0, 0, 0);
-        CuccoMotion.Update spawn = spawnMotion.advance(entity(0x40, 0x50, 0), 0, 1, 0,
-            0x60, 0x50, 0, true, false, false, () -> 0, null,
-            false, false, 0x04);
+        CuccoMotion.Update spawn = spawnMotion.advance(
+                entity(0x40, 0x50, 0), 0, 1, 0, 0x60, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
 
         assertNotNull(spawn.spawnRequest());
         assertEquals(0x28, spawn.spawnRequest().x());
@@ -129,10 +146,24 @@ final class CuccoMotionTest {
         CuccoMotion motion = new CuccoMotion();
         motion.setStateForTest(0, 0, 0x20, 0, 0, 0, 0);
 
-        CuccoMotion.Update update = motion.advance(entity(0x40, 0x50, 0), 0, 0x20, 0,
-            0x40, 0x50, 0, true, true, true, () -> {
-                throw new AssertionError("Attack-step guard must return before random flight selection");
-            }, null, false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(
+                entity(0x40, 0x50, 0),
+                0,
+                0x20,
+                0,
+                0x40,
+                0x50,
+                0,
+                true,
+                true,
+                true,
+                () -> {
+                    throw new AssertionError("Attack-step guard must return before random flight selection");
+                },
+                null,
+                false,
+                false,
+                0x04);
 
         assertFalse(update.liftRequested());
         assertEquals(0, motion.state(0));
@@ -143,12 +174,27 @@ final class CuccoMotionTest {
         for (int randomX : new int[] {2, 6}) {
             CuccoMotion motion = new CuccoMotion();
             RoomEntity chicken = entity(0x40, 0x50, 0);
-            motion.advance(chicken, 0, 0, 0, 0, 0, 0, true, false, false,
-                () -> randomX, null, false, false, 4);
+            motion.advance(chicken, 0, 0, 0, 0, 0, 0, true, false, false, () -> randomX, null, false, false, 4);
             for (int frame = 1; frame <= 16; frame++) {
-                chicken = motion.advance(chicken, frame, 20, 0, 0, 0, 0,
-                    true, false, false, () -> { throw new AssertionError("No RNG during walk"); },
-                    null, false, false, 4).entity();
+                chicken = motion.advance(
+                                chicken,
+                                frame,
+                                20,
+                                0,
+                                0,
+                                0,
+                                0,
+                                true,
+                                false,
+                                false,
+                                () -> {
+                                    throw new AssertionError("No RNG during walk");
+                                },
+                                null,
+                                false,
+                                false,
+                                4)
+                        .entity();
                 assertEquals(randomX == 2 ? 2 : 0, chicken.spriteVariant() & 2);
             }
             assertTrue(randomX == 2 ? chicken.x() > 0x40 : chicken.x() < 0x40);
@@ -159,29 +205,46 @@ final class CuccoMotionTest {
     void fullAngrySpawnRangeConsumesNoRandomByte() {
         CuccoMotion motion = new CuccoMotion();
         motion.setStateForTest(0, 2, 0, 0x23, 0, 0, 0);
-        var result = motion.advance(entity(0x40, 0x50, 0), 0, 1, 0,
-            0x60, 0x50, 0, true, false, false,
-            () -> { throw new AssertionError("Spawn failure precedes GetRandomByte at $05:472B"); },
-            null, false, false, 4, false);
+        var result = motion.advance(
+                entity(0x40, 0x50, 0),
+                0,
+                1,
+                0,
+                0x60,
+                0x50,
+                0,
+                true,
+                false,
+                false,
+                () -> {
+                    throw new AssertionError("Spawn failure precedes GetRandomByte at $05:472B");
+                },
+                null,
+                false,
+                false,
+                4,
+                false);
         org.junit.jupiter.api.Assertions.assertNull(result.spawnRequest());
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(0, 0, CuccoMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0, 0, CuccoMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition definition() {
-        EntitySpriteDefinition.OamAttribute first =
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0);
-        EntitySpriteDefinition.OamAttribute second =
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0);
-        return new EntitySpriteDefinition(CuccoMotion.ENTITY_TYPE, 0x05, 0x4514,
-            EntitySpriteDefinition.Shape.PAIR, 0,
-            List.of(
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second)));
+        EntitySpriteDefinition.OamAttribute first = new EntitySpriteDefinition.OamAttribute(0xFF, 0);
+        EntitySpriteDefinition.OamAttribute second = new EntitySpriteDefinition.OamAttribute(0xFF, 0);
+        return new EntitySpriteDefinition(
+                CuccoMotion.ENTITY_TYPE,
+                0x05,
+                0x4514,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second)));
     }
 }

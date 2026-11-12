@@ -1,26 +1,21 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.IndoorTorchPaletteEffect;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.params.provider.CsvSource;
-import linksawakening.rom.RomBank;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @linksawakening.testing.RequiresRom
 final class IndoorTorchPaletteEffectTest {
 
     @ParameterizedTest
     @CsvSource({"1, 0, 0x53E3", "2, 0, 0x53EB", "1, 11, 0x53DB"})
-    void eachLightingLevelReadsItsEightScalingFactorsFromTheRom(
-        int torches, int fadeTicks, int tableAddress) {
+    void eachLightingLevelReadsItsEightScalingFactorsFromTheRom(int torches, int fadeTicks, int tableAddress) {
         byte[] rom = loadRom();
         int offset = RomBank.romOffset(0x21, tableAddress);
         for (int palette = 0; palette < 8; palette++) {
@@ -36,8 +31,8 @@ final class IndoorTorchPaletteEffectTest {
         }
         for (int palette = 0; palette < 8; palette++) {
             int factor = palette + 1;
-            assertEquals(rgb555(31 * factor / 16, 17 * factor / 16, 0),
-                effect.palettes()[palette][0], "Palette " + palette);
+            assertEquals(
+                    rgb555(31 * factor / 16, 17 * factor / 16, 0), effect.palettes()[palette][0], "Palette " + palette);
         }
     }
 

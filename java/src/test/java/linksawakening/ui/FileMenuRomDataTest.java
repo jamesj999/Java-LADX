@@ -1,10 +1,10 @@
 package linksawakening.ui;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 final class FileMenuRomDataTest {
 
@@ -20,12 +20,11 @@ final class FileMenuRomDataTest {
 
         FileMenuRomData data = new FileMenuRomData(rom);
 
-        assertArrayEquals(new int[] { 0x3B, 0x53, 0x6B, 0x83 }, data.selectionCursorYPositions());
+        assertArrayEquals(new int[] {0x3B, 0x53, 0x6B, 0x83}, data.selectionCursorYPositions());
         assertArrayEquals(sequence(0x40, 0x10), data.nameEntryCharacterTable());
         assertArrayEquals(sequence(0x40, 0x20), data.nameCursorYPositions());
         assertArrayEquals(sequence(0x40, 0x60), data.nameCursorXPositions());
-        assertArrayEquals(new int[] { 0x4C, 0x54, 0x5C, 0x64, 0x6C },
-            data.namePositionXPositions());
+        assertArrayEquals(new int[] {0x4C, 0x54, 0x5C, 0x64, 0x6C}, data.namePositionXPositions());
         assertArrayEquals(sequence(0x100, 0xA0), data.codepointToTileMap());
     }
 
@@ -50,7 +49,7 @@ final class FileMenuRomDataTest {
 
         assertNotSame(first, second);
         assertNotSame(chars, charsAgain);
-        assertArrayEquals(new int[] { 0x3B, 0x53, 0x6B, 0x83 }, second);
+        assertArrayEquals(new int[] {0x3B, 0x53, 0x6B, 0x83}, second);
         assertArrayEquals(sequence(0x40, 0x10), charsAgain);
     }
 

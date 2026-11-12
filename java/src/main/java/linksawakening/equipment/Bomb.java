@@ -1,11 +1,10 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
-
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
 
 /**
  * Edge-triggered ordinary bomb use from {@code PlaceBomb} (bank0.asm:$135A).
@@ -37,8 +36,11 @@ public final class Bomb implements EquipmentItem {
         this(playerState, soundSink, target, () -> true);
     }
 
-    public Bomb(PlayerState playerState, GameplaySoundSink soundSink, PlacementTarget target,
-                BooleanSupplier itemUseAllowed) {
+    public Bomb(
+            PlayerState playerState,
+            GameplaySoundSink soundSink,
+            PlacementTarget target,
+            BooleanSupplier itemUseAllowed) {
         this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");

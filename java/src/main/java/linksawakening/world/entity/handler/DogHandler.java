@@ -2,69 +2,57 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_DOG;
 
-
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-
-import linksawakening.world.entity.motion.DogMotion;
-
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.motion.DogMotion;
 
 /** ROM handler stages for Dog. */
 final class DogHandler {
-  static void install(EntityHandlerRegistration registry) {
-    registry.registerTick(
-        ENTITY_DOG,
-        EntityTickStage.PHASE_1_DOG,
-        state -> {
-          if (state.status == EntityStatus.ACTIVE) {
-            // DogEntityHandler writes this before ReturnIfNonInteractive_19.
-            state.slot().setHealth(state.entity.slot(), DogMotion.HANDLER_HEALTH);
-          }
-          return true;
-        });
-    registry.registerTick(
-        ENTITY_DOG,
-        EntityTickStage.PHASE_4_DOG,
-        state -> {
-          if (state.status == EntityStatus.ACTIVE
-              && !state.wasInitializing
-
-              && !state.creditsGameplay
-              && state.handlerLinkCollisionEnabled) {
-            int slot = state.entity.slot();
-            RoomEntityBackgroundInteraction dogBackgroundInteraction =
-                state.background().interaction();
-            if (dogBackgroundInteraction == null && state.backgroundCollision != null) {
-              dogBackgroundInteraction =
-                  RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+    static void install(EntityHandlerRegistration registry) {
+        registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_1_DOG, state -> {
+            if (state.status == EntityStatus.ACTIVE) {
+                // DogEntityHandler writes this before ReturnIfNonInteractive_19.
+                state.slot().setHealth(state.entity.slot(), DogMotion.HANDLER_HEALTH);
             }
-            DogMotion.Update dogUpdate =
-                state.dogMotion().advance(
-                    state.updated,
-                    state.frame,
-                    state.slot().transitionCountdown(slot),
-                    state.slot().physicsFlags(slot),
-                    state.linkEntityX,
-                    state.linkEntityY,
-                    state.romLinkDirection,
-                    state.link().actionButtonAHeld(),
-                    state.link().dialogActive(),
-                    state.randomByteSupplier,
-                    dogBackgroundInteraction);
-            state.updated = dogUpdate.entity();
-            state.slot().setTransitionCountdown(slot, dogUpdate.transitionCountdown());
-            state.slot().setPhysicsFlags(slot, dogUpdate.physicsFlags());
-            state.applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
-            if (dogUpdate.dialogRequested()) {
-              state.emit(
-                  new DialogRequest(0, dogUpdate.dialogLowId()));
-            }
-            state.preserveDogPresentation = true;
-          }
-          return true;
+            return true;
         });
-  }
+        registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_4_DOG, state -> {
+            if (state.status == EntityStatus.ACTIVE
+                    && !state.wasInitializing
+                    && !state.creditsGameplay
+                    && state.handlerLinkCollisionEnabled) {
+                int slot = state.entity.slot();
+                RoomEntityBackgroundInteraction dogBackgroundInteraction =
+                        state.background().interaction();
+                if (dogBackgroundInteraction == null && state.backgroundCollision != null) {
+                    dogBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+                }
+                DogMotion.Update dogUpdate = state.dogMotion()
+                        .advance(
+                                state.updated,
+                                state.frame,
+                                state.slot().transitionCountdown(slot),
+                                state.slot().physicsFlags(slot),
+                                state.linkEntityX,
+                                state.linkEntityY,
+                                state.romLinkDirection,
+                                state.link().actionButtonAHeld(),
+                                state.link().dialogActive(),
+                                state.randomByteSupplier,
+                                dogBackgroundInteraction);
+                state.updated = dogUpdate.entity();
+                state.slot().setTransitionCountdown(slot, dogUpdate.transitionCountdown());
+                state.slot().setPhysicsFlags(slot, dogUpdate.physicsFlags());
+                state.applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
+                if (dogUpdate.dialogRequested()) {
+                    state.emit(new DialogRequest(0, dogUpdate.dialogLowId()));
+                }
+                state.preserveDogPresentation = true;
+            }
+            return true;
+        });
+    }
 }

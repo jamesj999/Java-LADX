@@ -17,16 +17,22 @@ final class DialogPcmBufferQueue {
         this.maxBuffers = maxBuffers;
     }
 
-    void trackQueued(int buffer) { trackQueued(buffer, 0); }
+    void trackQueued(int buffer) {
+        trackQueued(buffer, 0);
+    }
 
     void trackQueued(int buffer, int frameCount) {
         liveBuffers.addLast(buffer);
         frames.put(buffer, frameCount);
     }
 
-    boolean isFull() { return liveBuffers.size() >= maxBuffers; }
+    boolean isFull() {
+        return liveBuffers.size() >= maxBuffers;
+    }
 
-    int queuedFrames() { return frames.values().stream().mapToInt(Integer::intValue).sum(); }
+    int queuedFrames() {
+        return frames.values().stream().mapToInt(Integer::intValue).sum();
+    }
 
     void markDeleted(int buffer) {
         liveBuffers.remove(buffer);

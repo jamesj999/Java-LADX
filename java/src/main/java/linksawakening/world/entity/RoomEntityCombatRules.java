@@ -194,51 +194,90 @@ public final class RoomEntityCombatRules {
     private static final int PINCER_CONTACT_DAMAGE = 0x08;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
-    private RoomEntityCombatRules() {
-    }
+    private RoomEntityCombatRules() {}
 
     static boolean supportsEnemyCollision(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD,
-                ENTITY_TEKTITE, ENTITY_LEEVER,
-                ENTITY_ANTI_FAIRY, ENTITY_SPARK_COUNTER_CLOCKWISE,
-                ENTITY_SPARK_CLOCKWISE,
-                ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
-                ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
-                ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK, ENTITY_PINCER,
-                ENTITY_BUSH_CRAWLER,
-                ENTITY_GIBDO, ENTITY_POLS_VOICE, ENTITY_LIKE_LIKE, ENTITY_PEAHAT,
-                ENTITY_GOOMBA, ENTITY_SNAKE,
-                ENTITY_WIZROBE,
-                ENTITY_ARMOS_STATUE,
-                ENTITY_ARMOS_KNIGHT, ENTITY_HINOX,
-                ENTITY_ROLLING_BONES, ENTITY_ROLLING_BONES_BAR,
-                ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
-                ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE, ENTITY_FISH,
-                ENTITY_CROW,
-                ENTITY_CUCCO, ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER,
-                ENTITY_GOPONGA_FLOWER_PROJECTILE,
-                ENTITY_POKEY, ENTITY_PIRANHA_PLANT, ENTITY_ZORA, ENTITY_ZOMBIE,
-                ENTITY_BUZZ_BLOB, ENTITY_SAND_CRAB, ENTITY_URCHIN,
-                ENTITY_BOO_BUDDY,
-                ENTITY_SPIKED_BEETLE,
-                ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
-                ENTITY_COLOR_SHELL_BLUE,
-                ENTITY_CRYSTAL_SWITCH,
-                ENTITY_OCTOROK, ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE,
-                ENTITY_MAD_BOMBER, ENTITY_BOMBER, ENTITY_MIMIC, ENTITY_MINI_MOLDORM,
-                ENTITY_MOLDORM, 0x5B,
-                ENTITY_MASKED_MIMIC_GORIYA, ENTITY_THREE_OF_A_KIND,
-                ENTITY_WITCH_RAT, 0xE4 -> true;
+            case ENTITY_KEESE,
+                    ENTITY_MOBLIN,
+                    ENTITY_IRON_MASK,
+                    ENTITY_MOBLIN_SWORD,
+                    ENTITY_TEKTITE,
+                    ENTITY_LEEVER,
+                    ENTITY_ANTI_FAIRY,
+                    ENTITY_SPARK_COUNTER_CLOCKWISE,
+                    ENTITY_SPARK_CLOCKWISE,
+                    ENTITY_STALFOS_AGGRESSIVE,
+                    ENTITY_STALFOS_EVASIVE,
+                    ENTITY_ZOL,
+                    ENTITY_GEL,
+                    ENTITY_HIDING_ZOL,
+                    ENTITY_STAR,
+                    ENTITY_BLOOPER,
+                    ENTITY_WINGED_OCTOROK,
+                    ENTITY_PINCER,
+                    ENTITY_BUSH_CRAWLER,
+                    ENTITY_GIBDO,
+                    ENTITY_POLS_VOICE,
+                    ENTITY_LIKE_LIKE,
+                    ENTITY_PEAHAT,
+                    ENTITY_GOOMBA,
+                    ENTITY_SNAKE,
+                    ENTITY_WIZROBE,
+                    ENTITY_ARMOS_STATUE,
+                    ENTITY_ARMOS_KNIGHT,
+                    ENTITY_HINOX,
+                    ENTITY_ROLLING_BONES,
+                    ENTITY_ROLLING_BONES_BAR,
+                    ENTITY_HIDING_GHINI,
+                    ENTITY_GIANT_GHINI,
+                    ENTITY_GHINI,
+                    ENTITY_HARDHAT_BEETLE,
+                    ENTITY_SPIKE_TRAP,
+                    ENTITY_WATER_TEKTITE,
+                    ENTITY_FISH,
+                    ENTITY_CROW,
+                    ENTITY_CUCCO,
+                    ENTITY_GOPONGA_FLOWER,
+                    ENTITY_GIANT_GOPONGA_FLOWER,
+                    ENTITY_GOPONGA_FLOWER_PROJECTILE,
+                    ENTITY_POKEY,
+                    ENTITY_PIRANHA_PLANT,
+                    ENTITY_ZORA,
+                    ENTITY_ZOMBIE,
+                    ENTITY_BUZZ_BLOB,
+                    ENTITY_SAND_CRAB,
+                    ENTITY_URCHIN,
+                    ENTITY_BOO_BUDDY,
+                    ENTITY_SPIKED_BEETLE,
+                    ENTITY_PAIRODD,
+                    ENTITY_COLOR_SHELL_RED,
+                    ENTITY_COLOR_SHELL_GREEN,
+                    ENTITY_COLOR_SHELL_BLUE,
+                    ENTITY_CRYSTAL_SWITCH,
+                    ENTITY_OCTOROK,
+                    ENTITY_BOUNCING_BOMBITE,
+                    ENTITY_TIMER_BOMBITE,
+                    ENTITY_MAD_BOMBER,
+                    ENTITY_BOMBER,
+                    ENTITY_MIMIC,
+                    ENTITY_MINI_MOLDORM,
+                    ENTITY_MOLDORM,
+                    0x5B,
+                    ENTITY_MASKED_MIMIC_GORIYA,
+                    ENTITY_THREE_OF_A_KIND,
+                    ENTITY_WITCH_RAT,
+                    0xE4 -> true;
             default -> false;
         };
     }
 
     static boolean supportsLinkCollision(int type) {
         return supportsEnemyCollision(type)
-            || EntityLinkCollisionRules.policyFor(type).restoreFinalPosition()
-            || (type & 0xFF) == ENTITY_ARMOS_STATUE || (type & 0xFF) == ENTITY_ROOSTER
-            || (type & 0xFF) == ENTITY_URCHIN;
+                || EntityLinkCollisionRules.policyFor(type).restoreFinalPosition()
+                || (type & 0xFF) == ENTITY_ARMOS_STATUE
+                || (type & 0xFF) == ENTITY_ROOSTER
+                || (type & 0xFF) == ENTITY_URCHIN;
     }
 
     /**
@@ -249,7 +288,7 @@ public final class RoomEntityCombatRules {
      */
     static boolean supportsFriendlyNpcCollision(int type) {
         return !supportsEnemyCollision(type)
-            && EntityLinkCollisionRules.genericPolicyFor(type).restoreFinalPosition();
+                && EntityLinkCollisionRules.genericPolicyFor(type).restoreFinalPosition();
     }
 
     /**
@@ -259,28 +298,39 @@ public final class RoomEntityCombatRules {
      */
     static boolean usesStandardLinkContactResponse(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_GEL, ENTITY_STAR, ENTITY_ANTI_FAIRY,
-                ENTITY_BOUNCING_BOMBITE -> false;
+            case ENTITY_GEL, ENTITY_STAR, ENTITY_ANTI_FAIRY, ENTITY_BOUNCING_BOMBITE -> false;
             default -> true;
         };
     }
 
     static int contactDamage(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
-                ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
-                ENTITY_HIDING_ZOL, ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
-                ENTITY_GOOMBA, ENTITY_SNAKE, ENTITY_BUSH_CRAWLER, ENTITY_POKEY,
-                ENTITY_PIRANHA_PLANT, ENTITY_ZORA, ENTITY_ZOMBIE ->
-                OCTOROK_AND_KEESE_CONTACT_DAMAGE;
+            case ENTITY_KEESE,
+                    ENTITY_OCTOROK,
+                    ENTITY_PEAHAT,
+                    ENTITY_ZOL,
+                    ENTITY_GEL,
+                    ENTITY_WATER_TEKTITE,
+                    ENTITY_PAIRODD,
+                    ENTITY_HIDING_ZOL,
+                    ENTITY_STAR,
+                    ENTITY_BLOOPER,
+                    ENTITY_WINGED_OCTOROK,
+                    ENTITY_GOOMBA,
+                    ENTITY_SNAKE,
+                    ENTITY_BUSH_CRAWLER,
+                    ENTITY_POKEY,
+                    ENTITY_PIRANHA_PLANT,
+                    ENTITY_ZORA,
+                    ENTITY_ZOMBIE -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_BUZZ_BLOB -> 0x08;
             case ENTITY_SAND_CRAB -> 0x04;
             case ENTITY_URCHIN -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
-            // Cucco's static health-group table points at the ordinary enemy
-            // damage row; physics_flags.asm marks it harmless, and the
-            // runtime suppresses this raw value at the entity boundary.
+                // Cucco's static health-group table points at the ordinary enemy
+                // damage row; physics_flags.asm marks it harmless, and the
+                // runtime suppresses this raw value at the entity boundary.
             case ENTITY_CUCCO -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER -> 0x08;
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_CONTACT_DAMAGE;
@@ -289,15 +339,18 @@ public final class RoomEntityCombatRules {
             case ENTITY_HINOX -> 0x08;
             case ENTITY_ROLLING_BONES -> 0x08;
             case ENTITY_ROLLING_BONES_BAR -> 0x04;
-            case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
-                ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
-                ENTITY_MINI_MOLDORM ->
-                MOBLIN_CONTACT_DAMAGE;
+            case ENTITY_MOBLIN,
+                    ENTITY_IRON_MASK,
+                    ENTITY_MOBLIN_SWORD,
+                    ENTITY_TEKTITE,
+                    ENTITY_LEEVER,
+                    ENTITY_STALFOS_AGGRESSIVE,
+                    ENTITY_STALFOS_EVASIVE,
+                    ENTITY_MINI_MOLDORM -> MOBLIN_CONTACT_DAMAGE;
             case ENTITY_MIMIC -> 0x18;
             case ENTITY_MASKED_MIMIC_GORIYA -> 0x04;
             case ENTITY_THREE_OF_A_KIND -> 0x04;
-            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
-                OCTOROK_AND_KEESE_CONTACT_DAMAGE;
+            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_CONTACT_DAMAGE;
             case ENTITY_BOMBER -> BOMBER_CONTACT_DAMAGE;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_CONTACT_DAMAGE;
@@ -305,8 +358,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_POLS_VOICE -> 0x08;
             case ENTITY_LIKE_LIKE -> 0;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
-            case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
-                GHINI_CONTACT_DAMAGE;
+            case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI -> GHINI_CONTACT_DAMAGE;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
             case ENTITY_SPIKED_BEETLE -> 0x04;
             case ENTITY_WIZROBE -> WIZROBE_CONTACT_DAMAGE;
@@ -322,11 +374,19 @@ public final class RoomEntityCombatRules {
 
     static int initialHealth(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE,
-                ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
-                ENTITY_GOOMBA, ENTITY_SNAKE, ENTITY_POKEY, ENTITY_PIRANHA_PLANT,
-                ENTITY_ZORA, ENTITY_ZOMBIE ->
-                OCTOROK_AND_KEESE_INITIAL_HEALTH;
+            case ENTITY_KEESE,
+                    ENTITY_OCTOROK,
+                    ENTITY_PEAHAT,
+                    ENTITY_WATER_TEKTITE,
+                    ENTITY_STAR,
+                    ENTITY_BLOOPER,
+                    ENTITY_WINGED_OCTOROK,
+                    ENTITY_GOOMBA,
+                    ENTITY_SNAKE,
+                    ENTITY_POKEY,
+                    ENTITY_PIRANHA_PLANT,
+                    ENTITY_ZORA,
+                    ENTITY_ZOMBIE -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_BUZZ_BLOB -> 0x04;
             case ENTITY_SAND_CRAB -> 0x02;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
@@ -340,16 +400,19 @@ public final class RoomEntityCombatRules {
             case ENTITY_ROLLING_BONES -> 0x08;
             case ENTITY_ROLLING_BONES_BAR -> 0x01;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
-            case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
-                ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
-                ENTITY_MINI_MOLDORM ->
-                MOBLIN_INITIAL_HEALTH;
+            case ENTITY_MOBLIN,
+                    ENTITY_IRON_MASK,
+                    ENTITY_MOBLIN_SWORD,
+                    ENTITY_TEKTITE,
+                    ENTITY_LEEVER,
+                    ENTITY_STALFOS_AGGRESSIVE,
+                    ENTITY_STALFOS_EVASIVE,
+                    ENTITY_MINI_MOLDORM -> MOBLIN_INITIAL_HEALTH;
             case ENTITY_MIMIC -> 0x04;
             case ENTITY_MASKED_MIMIC_GORIYA -> 0x02;
             case ENTITY_THREE_OF_A_KIND -> 0x01;
             case ENTITY_PINCER -> 0x02;
-            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
-                OCTOROK_AND_KEESE_INITIAL_HEALTH;
+            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_ZOL -> ZOL_INITIAL_HEALTH;
             case ENTITY_HIDING_ZOL -> HIDING_ZOL_INITIAL_HEALTH;
             case ENTITY_GEL -> GEL_INITIAL_HEALTH;
@@ -360,8 +423,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_BOMBER -> BOMBER_INITIAL_HEALTH;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_INITIAL_HEALTH;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
-            case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
-                GHINI_INITIAL_HEALTH;
+            case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;
             case ENTITY_SPIKED_BEETLE -> 0x02;
             case ENTITY_WIZROBE -> WIZROBE_INITIAL_HEALTH;
@@ -375,8 +437,7 @@ public final class RoomEntityCombatRules {
     }
 
     static int basicSwordDamage(int type) {
-        return (type & 0xFF) == ENTITY_WIZROBE
-            ? 0 : (supportsEnemyCollision(type) ? BASIC_SWORD_DAMAGE : 0);
+        return (type & 0xFF) == ENTITY_WIZROBE ? 0 : (supportsEnemyCollision(type) ? BASIC_SWORD_DAMAGE : 0);
     }
 
     /**
@@ -384,8 +445,7 @@ public final class RoomEntityCombatRules {
      * trap takes the EnemyCollidedWithSword sword-clink path.
      */
     static boolean swordPokeForSwordCollision(int type) {
-        return (type & 0xFF) == ENTITY_SPIKE_TRAP
-            || (type & 0xFF) == ENTITY_MOLDORM;
+        return (type & 0xFF) == ENTITY_SPIKE_TRAP || (type & 0xFF) == ENTITY_MOLDORM;
     }
 
     /** Adds a handler-owned dynamic sword-clink flag to the static exceptions. */
@@ -407,13 +467,11 @@ public final class RoomEntityCombatRules {
         int hitboxWidth = hitboxWidth(entity.type());
         int hitboxY = hitboxY(entity.type());
         int hitboxHeight = hitboxHeight(entity.type());
-        int xDistance = unsignedByteAbs(
-            entity.x() + hitboxX - linkPixelX - 0x08);
+        int xDistance = unsignedByteAbs(entity.x() + hitboxX - linkPixelX - 0x08);
         if (xDistance >= hitboxWidth + 0x04) {
             return false;
         }
-        int yDistance = unsignedByteAbs(
-            entity.y() - entity.z() + hitboxY - linkPixelY - 0x08);
+        int yDistance = unsignedByteAbs(entity.y() - entity.z() + hitboxY - linkPixelY - 0x08);
         return yDistance < hitboxHeight + 0x04;
     }
 
@@ -421,8 +479,7 @@ public final class RoomEntityCombatRules {
      * Mirrors DefaultEnemyDamageCollisionHandler's four unsigned-byte
      * comparisons against wC140..wC143.
      */
-    static boolean overlapsSword(RoomEntity entity, int swordX, int swordWidth,
-                                 int swordY, int swordHeight) {
+    static boolean overlapsSword(RoomEntity entity, int swordX, int swordWidth, int swordY, int swordHeight) {
         if (!supportsEnemyCollision(entity.type()) || swordWidth <= 0 || swordHeight <= 0) {
             return false;
         }
@@ -430,13 +487,11 @@ public final class RoomEntityCombatRules {
         int hitboxWidth = hitboxWidth(entity.type());
         int hitboxY = hitboxY(entity.type());
         int hitboxHeight = hitboxHeight(entity.type());
-        int xDistance = unsignedByteAbs(
-            entity.x() + hitboxX - swordX);
+        int xDistance = unsignedByteAbs(entity.x() + hitboxX - swordX);
         if (xDistance >= hitboxWidth + swordWidth) {
             return false;
         }
-        int yDistance = unsignedByteAbs(
-            entity.y() - entity.z() + hitboxY - swordY);
+        int yDistance = unsignedByteAbs(entity.y() - entity.z() + hitboxY - swordY);
         return yDistance < hitboxHeight + swordHeight;
     }
 
@@ -455,10 +510,14 @@ public final class RoomEntityCombatRules {
         }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
-            case ENTITY_PUSHED_BLOCK, ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
-                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
-                ENTITY_MOLDORM, ENTITY_HINOX ->
-                BIG_ENEMY_HITBOX_WIDTH;
+            case ENTITY_PUSHED_BLOCK,
+                    ENTITY_GIANT_GHINI,
+                    ENTITY_GIANT_GOPONGA_FLOWER,
+                    ENTITY_SPIKE_TRAP,
+                    ENTITY_ARMOS_KNIGHT,
+                    ENTITY_URCHIN,
+                    ENTITY_MOLDORM,
+                    ENTITY_HINOX -> BIG_ENEMY_HITBOX_WIDTH;
             default -> HITBOX_WIDTH;
         };
     }
@@ -481,10 +540,14 @@ public final class RoomEntityCombatRules {
         }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
-            case ENTITY_PUSHED_BLOCK, ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
-                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
-                ENTITY_MOLDORM, ENTITY_HINOX ->
-                BIG_ENEMY_HITBOX_HEIGHT;
+            case ENTITY_PUSHED_BLOCK,
+                    ENTITY_GIANT_GHINI,
+                    ENTITY_GIANT_GOPONGA_FLOWER,
+                    ENTITY_SPIKE_TRAP,
+                    ENTITY_ARMOS_KNIGHT,
+                    ENTITY_URCHIN,
+                    ENTITY_MOLDORM,
+                    ENTITY_HINOX -> BIG_ENEMY_HITBOX_HEIGHT;
             default -> HITBOX_HEIGHT;
         };
     }
@@ -521,16 +584,37 @@ public final class RoomEntityCombatRules {
     /** HITFLAGS_HITBOX_NPC ($18) from data/entities/hitbox_flags.asm. */
     private static boolean usesNpcHitbox(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_MARIN, ENTITY_TARIN, ENTITY_WITCH, ENTITY_OWL_EVENT,
-                ENTITY_OWL_STATUE, ENTITY_SHOP_OWNER, ENTITY_TRENDY_GAME_OWNER,
-                ENTITY_KID_70, ENTITY_KID_71, ENTITY_KID_72, ENTITY_KID_73,
-                ENTITY_PAPAHLS_WIFE, ENTITY_GRANDMA_ULRIRA, ENTITY_GRANDPA_ULRIRA,
-                ENTITY_MADAM_MEOWMEOW, ENTITY_CRAZY_TRACY, ENTITY_MR_WRITE,
-                ENTITY_HOLE_FILLER, ENTITY_PAPAHL,
-                ENTITY_TARIN_BEEKEEPER, ENTITY_MERMAID, ENTITY_MARIN_SHORE,
-                ENTITY_MARIN_TAL_TAL, ENTITY_MERMAID_STATUE, ENTITY_BANANAS_SCHULE_SALE,
-                ENTITY_ANIMAL_D0, ENTITY_ANIMAL_D1, ENTITY_ANIMAL_D2, ENTITY_BUNNY_D3,
-                ENTITY_PHOTOGRAPHER, ENTITY_ROOSTER -> true;
+            case ENTITY_MARIN,
+                    ENTITY_TARIN,
+                    ENTITY_WITCH,
+                    ENTITY_OWL_EVENT,
+                    ENTITY_OWL_STATUE,
+                    ENTITY_SHOP_OWNER,
+                    ENTITY_TRENDY_GAME_OWNER,
+                    ENTITY_KID_70,
+                    ENTITY_KID_71,
+                    ENTITY_KID_72,
+                    ENTITY_KID_73,
+                    ENTITY_PAPAHLS_WIFE,
+                    ENTITY_GRANDMA_ULRIRA,
+                    ENTITY_GRANDPA_ULRIRA,
+                    ENTITY_MADAM_MEOWMEOW,
+                    ENTITY_CRAZY_TRACY,
+                    ENTITY_MR_WRITE,
+                    ENTITY_HOLE_FILLER,
+                    ENTITY_PAPAHL,
+                    ENTITY_TARIN_BEEKEEPER,
+                    ENTITY_MERMAID,
+                    ENTITY_MARIN_SHORE,
+                    ENTITY_MARIN_TAL_TAL,
+                    ENTITY_MERMAID_STATUE,
+                    ENTITY_BANANAS_SCHULE_SALE,
+                    ENTITY_ANIMAL_D0,
+                    ENTITY_ANIMAL_D1,
+                    ENTITY_ANIMAL_D2,
+                    ENTITY_BUNNY_D3,
+                    ENTITY_PHOTOGRAPHER,
+                    ENTITY_ROOSTER -> true;
             default -> false;
         };
     }

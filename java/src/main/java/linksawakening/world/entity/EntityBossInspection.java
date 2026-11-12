@@ -8,7 +8,10 @@ import static linksawakening.world.entity.RoomEntityRuntime.*;
 /** Read-only inspection for Boss. */
 final class EntityBossInspection {
     private final RoomEntityRuntime runtime;
-    EntityBossInspection(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityBossInspection(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     int armosKnightState(int slot) {
         return runtime.armosKnightMotion.state(slot);

@@ -1,22 +1,27 @@
 package linksawakening.world.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 final class BushHeartTrajectoryTest {
     @Test
     void wellHeartMatchesEveryRomHandlerPassThroughAllThreeLandings() throws Exception {
         byte[] rom;
-        try (var input = TestRom.open()) { rom = input.readAllBytes(); }
+        try (var input = TestRom.open()) {
+            rom = input.readAllBytes();
+        }
         var initial = new EntityRoomLoader(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 0xA0);
-        var heart = initial.loadedEntities().stream().filter(e -> e.type() == 0x2D).findFirst().orElseThrow();
-        var runtime = RoomEntityRuntime.from(initial, false, () -> 0,
-            new EntitySpriteHandlerCatalog(rom), new RomEnemyCombatTables(rom));
+        var heart = initial.loadedEntities().stream()
+                .filter(e -> e.type() == 0x2D)
+                .findFirst()
+                .orElseThrow();
+        var runtime = RoomEntityRuntime.from(
+                initial, false, () -> 0, new EntitySpriteHandlerCatalog(rom), new RomEnemyCombatTables(rom));
         runtime.configuration().setObjectQuery(e -> new RoomEntityObjectSample(0x04, 0, 0, 0));
         int slot = heart.slot();
         runtime.tick(EntityTestFrames.frame(runtime, 0, heart.x() - 16, heart.y() - 16, () -> 0));

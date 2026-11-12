@@ -1,40 +1,52 @@
 package linksawakening.world.room;
 
-import linksawakening.world.transition.Warp;
-
-import linksawakening.world.entity.event.DialogRequest;
-import linksawakening.rom.RomTables;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.room.RoomSession.*;
+
+import linksawakening.rom.RomTables;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.transition.Warp;
 
 /** RoomPlayerItemActions operations for the live room session. */
 final class RoomPlayerItemActions {
     private final RoomSession session;
-    RoomPlayerItemActions(RoomSession session) { this.session = session; }
+
+    RoomPlayerItemActions(RoomSession session) {
+        this.session = session;
+    }
 
     boolean throwLiftedEntity(int linkDirection) {
         if (session.context.entityBridge.entityRuntime == null) {
             return false;
         }
         boolean thrown = session.context.entityBridge.entityRuntime.throwLiftedEntity(
-            session.romDirectionForProjectileCollision(linkDirection));
+                session.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
-            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+            session.context.activeRoom.replaceEntities(
+                    session.context.entityBridge.entityRuntime.inspection().snapshot());
         }
         return thrown;
     }
 
-    boolean fireHookshot(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean linkAirborne, boolean linkPushing) {
-        if (linkAirborne || linkPushing || session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
+    boolean fireHookshot(
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int romDirection,
+            boolean linkAirborne,
+            boolean linkPushing) {
+        if (linkAirborne
+                || linkPushing
+                || session.context.activeRoom == null
+                || session.context.entityBridge.entityRuntime == null) {
             return false;
         }
-        int slot = session.context.entityBridge.entityRuntime.spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection);
+        int slot = session.context.entityBridge.entityRuntime.spawnHookshotChain(
+                linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        session.context.activeRoom.replaceEntities(
+                session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -42,12 +54,13 @@ final class RoomPlayerItemActions {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return false;
         }
-        int slot = session.context.entityBridge.entityRuntime.spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection, pressedButtonsMask);
+        int slot = session.context.entityBridge.entityRuntime.spawnBoomerang(
+                linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        session.context.activeRoom.replaceEntities(
+                session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -55,12 +68,13 @@ final class RoomPlayerItemActions {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return false;
         }
-        int slot = session.context.entityBridge.entityRuntime.spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection);
+        int slot = session.context.entityBridge.entityRuntime.spawnSwordBeam(
+                linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        session.context.activeRoom.replaceEntities(
+                session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -68,16 +82,18 @@ final class RoomPlayerItemActions {
         return session.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
-    boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+    boolean fireMagicRodFireball(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return false;
         }
-        int slot = session.context.entityBridge.entityRuntime.spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection, pieceOfPower);
+        int slot = session.context.entityBridge.entityRuntime.spawnMagicRodFireball(
+                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        session.context.activeRoom.replaceEntities(
+                session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -86,18 +102,18 @@ final class RoomPlayerItemActions {
             return false;
         }
         int slot = session.context.entityBridge.entityRuntime.spawnMagicPowderSprinkle(
-            linkEntityX, linkEntityY, linkEntityZ, romDirection);
+                linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        session.context.activeRoom.replaceEntities(
+                session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
     ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) {
         if (romDirection < 0 || romDirection > 3) {
-            throw new IllegalArgumentException("ROM shovel direction out of range: "
-                + romDirection);
+            throw new IllegalArgumentException("ROM shovel direction out of range: " + romDirection);
         }
         if (session.context.activeRoom == null || linkAirborne || session.context.shovelUseState != 0) {
             return new ShovelStartResult(false, true, -1);
@@ -120,25 +136,30 @@ final class RoomPlayerItemActions {
             session.context.shovelUseState = session.SHOVEL_STATE_DUG;
             session.writeShovelHole(probe);
             session.context.pendingShovelDrop = new PendingShovelDrop(
-                probe.objectLeft(), probe.objectTop(), linkEntityX, linkEntityY,
-                session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
-                    || session.context.activeRoom.roomId() != 0x0E);
+                    probe.objectLeft(),
+                    probe.objectTop(),
+                    linkEntityX,
+                    linkEntityY,
+                    session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+                            || session.context.activeRoom.roomId() != 0x0E);
         } else if (normalizedTimer == session.SHOVEL_FINISH_TIMER) {
-            if (session.context.shovelUseState == session.SHOVEL_STATE_DUG && session.context.followingNpcState.marinFollowing()) {
-                session.context.entityBridge.pendingRoomDialogRequests.add(new DialogRequest(
-                    session.SHOVEL_DIALOG_TABLE, session.SHOVEL_DIALOG_ID));
+            if (session.context.shovelUseState == session.SHOVEL_STATE_DUG
+                    && session.context.followingNpcState.marinFollowing()) {
+                session.context.entityBridge.pendingRoomDialogRequests.add(
+                        new DialogRequest(session.SHOVEL_DIALOG_TABLE, session.SHOVEL_DIALOG_ID));
             }
             session.context.shovelUseState = 0;
         }
     }
 
     int shovelAnimationState(int javaDirection, int timer) {
-        return session.context.romTables.shovelAnimationState(timer,
-            session.romDirectionForProjectileCollision(javaDirection));
+        return session.context.romTables.shovelAnimationState(
+                timer, session.romDirectionForProjectileCollision(javaDirection));
     }
 
     ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) {
-        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
+        if (session.context.activeRoom == null
+                || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
             return ShovelProbe.invalid();
         }
 
@@ -149,23 +170,25 @@ final class RoomPlayerItemActions {
         int objectTop = (linkEntityY + session.SHOVEL_TARGET_Y[romDirection] - 0x10) & 0xF0;
         int cellX = objectLeft >>> 4;
         int cellY = objectTop >>> 4;
-        if (cellX < 0 || cellX >= RoomConstants.OBJECTS_PER_ROW
-            || cellY < 0 || cellY >= RoomConstants.OBJECTS_PER_COLUMN) {
+        if (cellX < 0
+                || cellX >= RoomConstants.OBJECTS_PER_ROW
+                || cellY < 0
+                || cellY >= RoomConstants.OBJECTS_PER_COLUMN) {
             return ShovelProbe.invalid();
         }
 
         int location = objectTop | cellX;
         int objectId = session.objectAtRoomLocation(location);
         int physicsTable = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? RomTables.PHYSICS_TABLE_OVERWORLD
-            : session.context.activeRoom.mapId() == 0xFF
-                ? RomTables.PHYSICS_TABLE_INDOORS2
-                : RomTables.PHYSICS_TABLE_INDOORS1;
+                ? RomTables.PHYSICS_TABLE_OVERWORLD
+                : session.context.activeRoom.mapId() == 0xFF
+                        ? RomTables.PHYSICS_TABLE_INDOORS2
+                        : RomTables.PHYSICS_TABLE_INDOORS1;
         boolean valid = session.context.romTables.objectPhysicsFlag(physicsTable, objectId) == 0;
         if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             valid &= objectId != session.OBJECT_SHOVEL_BLOCKER_A
-                && objectId != session.OBJECT_SHOVEL_BLOCKER_B
-                && objectId != session.OBJECT_SHOVEL_BLOCKER_C;
+                    && objectId != session.OBJECT_SHOVEL_BLOCKER_B
+                    && objectId != session.OBJECT_SHOVEL_BLOCKER_C;
         } else {
             valid &= objectId == session.OBJECT_SHOVEL_INDOOR_DIGGABLE;
         }
@@ -179,7 +202,8 @@ final class RoomPlayerItemActions {
             return;
         }
         objects[areaIndex] = session.OBJECT_SHOVEL_HOLE;
-        if (session.context.activeRoom.renderValues() != null && areaIndex < session.context.activeRoom.renderValues().length) {
+        if (session.context.activeRoom.renderValues() != null
+                && areaIndex < session.context.activeRoom.renderValues().length) {
             session.context.activeRoom.renderValues()[areaIndex] = session.OBJECT_SHOVEL_HOLE;
         }
         if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
@@ -187,8 +211,13 @@ final class RoomPlayerItemActions {
             // tile ids and attributes; rebuilding from the immutable ROM
             // overlay here would immediately undo the hole.
             session.context.overworldBushInteraction.refreshRoomObjectCell(
-                session.context.activeRoom.roomId(), probe.location(), objects, session.context.activeRoom.renderValues(),
-                session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
+                    session.context.activeRoom.roomId(),
+                    probe.location(),
+                    objects,
+                    session.context.activeRoom.renderValues(),
+                    session.context.activeRoom.gbcOverlay(),
+                    session.context.activeRoom.tileIds(),
+                    session.context.activeRoom.tileAttrs());
             session.refreshOverworldCollisionAfterObjectMutation();
         } else {
             session.refreshActiveRoomTilemap();
@@ -200,54 +229,65 @@ final class RoomPlayerItemActions {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return false;
         }
-        int slot = session.context.entityBridge.entityRuntime.spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = session.context.entityBridge.entityRuntime.spawnBomb(
+                linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        session.context.activeRoom.replaceEntities(
+                session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
     boolean lastBombPlacementPlayedBump() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().lastBombPlacementPlayedBump();
+        return session.context.entityBridge.entityRuntime != null
+                && session.context.entityBridge.entityRuntime.inspection().lastBombPlacementPlayedBump();
     }
 
     boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         return session.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
-            .spawned();
+                .spawned();
     }
 
     ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         return session.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
-    ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+    ArrowShotResult shootArrowResult(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return new ArrowShotResult(false, false);
         }
-        int slot = session.context.entityBridge.entityRuntime.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection,
-            pieceOfPower);
+        int slot = session.context.entityBridge.entityRuntime.spawnArrow(
+                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }
-        boolean playWhoosh = session.context.entityBridge.entityRuntime.inspection().lastArrowShotPlayedWhoosh();
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        boolean playWhoosh =
+                session.context.entityBridge.entityRuntime.inspection().lastArrowShotPlayedWhoosh();
+        session.context.activeRoom.replaceEntities(
+                session.context.entityBridge.entityRuntime.inspection().snapshot());
         return new ArrowShotResult(true, playWhoosh);
     }
 
     int activeProjectileCount() {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.inspection().activeProjectileCount();
+        return session.context.entityBridge.entityRuntime == null
+                ? 0
+                : session.context.entityBridge.entityRuntime.inspection().activeProjectileCount();
     }
 
     boolean bombActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().bombActive();
+        return session.context.entityBridge.entityRuntime != null
+                && session.context.entityBridge.entityRuntime.inspection().bombActive();
     }
 
     boolean hookshotActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().hookshotActive();
+        return session.context.entityBridge.entityRuntime != null
+                && session.context.entityBridge.entityRuntime.inspection().hookshotActive();
     }
 
     boolean boomerangActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().boomerangActive();
+        return session.context.entityBridge.entityRuntime != null
+                && session.context.entityBridge.entityRuntime.inspection().boomerangActive();
     }
 }

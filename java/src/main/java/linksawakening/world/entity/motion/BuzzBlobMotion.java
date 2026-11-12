@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.Objects;
-import java.util.function.IntSupplier;
 
 /** Bank-$18 BuzzBlobEntityHandler movement and animation state. */
 public final class BuzzBlobMotion {
@@ -15,12 +14,8 @@ public final class BuzzBlobMotion {
     public static final int OPTIONS1 = 0x00;
 
     // Data_018_777C and the bytes immediately preceding it in the ROM.
-    private static final int[] SPEED_X = {
-        0x00, 0x04, 0x06, 0x04, 0x00, 0xFC, 0xFA, 0xFC
-    };
-    private static final int[] SPEED_Y = {
-        0xFA, 0xFC, 0x00, 0x04, 0x06, 0x04, 0x00, 0xFC
-    };
+    private static final int[] SPEED_X = {0x00, 0x04, 0x06, 0x04, 0x00, 0xFC, 0xFA, 0xFC};
+    private static final int[] SPEED_Y = {0xFA, 0xFC, 0x00, 0x04, 0x06, 0x04, 0x00, 0xFC};
     private static final int[] STATE_ZERO_VARIANTS = {0x00, 0x01, 0x02, 0x01};
     private static final int[] STATE_ONE_VARIANTS = {0x03, 0x04, 0x05, 0x04};
     private static final int[] PRIVATE_STATE_VARIANTS = {0x06, 0x07, 0x08, 0x07};
@@ -34,10 +29,15 @@ public final class BuzzBlobMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int state, int privateState1, int privateState2,
-                  int transitionCountdown, int speedX, int speedY,
-                  boolean appliesBackgroundInteraction) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int privateState1,
+            int privateState2,
+            int transitionCountdown,
+            int speedX,
+            int speedY,
+            boolean appliesBackgroundInteraction) {}
 
     public void initialize(int slot) {
         reset(slot);
@@ -51,9 +51,12 @@ public final class BuzzBlobMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         checkType(entity);
         validateByte(transitionCountdown, "Buzz Blob transition countdown");
         Objects.requireNonNull(randomByteSupplier, "Buzz Blob random-byte supplier");
@@ -75,14 +78,11 @@ public final class BuzzBlobMotion {
                     speedY[slot] = SPEED_Y[directionIndex];
                 }
 
-                PositionAndCollision moved = moveWithBackground(entity,
-                    backgroundInteraction, slot);
+                PositionAndCollision moved = moveWithBackground(entity, backgroundInteraction, slot);
                 appliesBackgroundInteraction = true;
                 updated = withPosition(entity, moved.x(), moved.y());
-                int[] variants = privateState1[slot] == 0
-                    ? STATE_ZERO_VARIANTS : PRIVATE_STATE_VARIANTS;
-                updated = withVariant(updated,
-                    variants[(frameCounter >>> 3) & 0x03]);
+                int[] variants = privateState1[slot] == 0 ? STATE_ZERO_VARIANTS : PRIVATE_STATE_VARIANTS;
+                updated = withVariant(updated, variants[(frameCounter >>> 3) & 0x03]);
             }
             case 1 -> {
                 if (countdown == 0) {
@@ -90,17 +90,21 @@ public final class BuzzBlobMotion {
                     // new display variant; the next state-$00 pass does that.
                     state[slot] = 0;
                 } else {
-                    updated = withVariant(entity,
-                        STATE_ONE_VARIANTS[(frameCounter >>> 3) & 0x03]);
+                    updated = withVariant(entity, STATE_ONE_VARIANTS[(frameCounter >>> 3) & 0x03]);
                 }
             }
-            default -> throw new IllegalStateException(
-                "Invalid Buzz Blob state: " + state[slot]);
+            default -> throw new IllegalStateException("Invalid Buzz Blob state: " + state[slot]);
         }
 
-        return new Update(updated, state[slot], privateState1[slot], privateState2[slot],
-            countdown, speedX[slot] & 0xFF, speedY[slot] & 0xFF,
-            appliesBackgroundInteraction);
+        return new Update(
+                updated,
+                state[slot],
+                privateState1[slot],
+                privateState2[slot],
+                countdown,
+                speedX[slot] & 0xFF,
+                speedY[slot] & 0xFF,
+                appliesBackgroundInteraction);
     }
 
     int state(int slot) {
@@ -128,28 +132,25 @@ public final class BuzzBlobMotion {
         initialized[slot] = false;
     }
 
-    private PositionAndCollision moveWithBackground(RoomEntity entity,
-                                                     RoomEntityBackgroundInteraction interaction,
-                                                     int slot) {
+    private PositionAndCollision moveWithBackground(
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
 
         if (interaction != null && x != entity.x()) {
             int direction = signedByte(speedX[slot]) < 0
-                ? EntityBackgroundCollisionResult.LEFT
-                : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result = interaction.probe(
-                entity, direction, x, entity.y());
+                    ? EntityBackgroundCollisionResult.LEFT
+                    : EntityBackgroundCollisionResult.RIGHT;
+            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, entity.y());
             if (result.blocked()) {
                 x = entity.x() & 0xFF;
             }
         }
         if (interaction != null && y != entity.y()) {
             int direction = signedByte(speedY[slot]) < 0
-                ? EntityBackgroundCollisionResult.UP
-                : EntityBackgroundCollisionResult.DOWN;
-            EntityBackgroundCollisionResult result = interaction.probe(
-                entity, direction, x, y);
+                    ? EntityBackgroundCollisionResult.UP
+                    : EntityBackgroundCollisionResult.DOWN;
+            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, y);
             if (result.blocked()) {
                 y = entity.y() & 0xFF;
             }
@@ -157,8 +158,7 @@ public final class BuzzBlobMotion {
         return new PositionAndCollision(x, y);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -174,16 +174,37 @@ public final class BuzzBlobMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private void reset(int slot) {
@@ -213,7 +234,5 @@ public final class BuzzBlobMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record PositionAndCollision(int x, int y) {
-    }
-
+    private record PositionAndCollision(int x, int y) {}
 }

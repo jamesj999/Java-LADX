@@ -11,11 +11,15 @@ final class LinkDamage {
     boolean normalRecoilRoomBoundaries = true;
     boolean collisionDamageImmune;
 
-    LinkDamage(Link link) { this.link = link; }
+    LinkDamage(Link link) {
+        this.link = link;
+    }
 
     void applySpikeGroundPhysics() {
-        if (link.collision == null || link.debugNoClip() || link.linkAirborne.zSubPixels != 0
-            || link.linkStateMachine.motionState == 2) return;
+        if (link.collision == null
+                || link.debugNoClip()
+                || link.linkAirborne.zSubPixels != 0
+                || link.linkStateMachine.motionState == 2) return;
         int x = link.pixelX() + 8;
         int y = link.pixelY() + 12;
         int object = link.collision.objectIdAtPoint(x, y);
@@ -25,13 +29,14 @@ final class LinkDamage {
             return;
         }
         if ((indoor && object == 0x4C && ((link.romEntityY() - 1) & 15) >= 12)
-            || link.collision.objectPhysicsFlagAtPoint(x, y) == 0xE0) hurtBySpikes();
+                || link.collision.objectPhysicsFlagAtPoint(x, y) == 0xE0) hurtBySpikes();
     }
 
     void hurtBySpikes() {
         if (link.playerState == null || link.playerState.invincibilityCounter() != 0) return;
-        if (link.itemRegistry != null && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
-            instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+        if (link.itemRegistry != null
+                && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
+                        instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         link.linkMotion.lastRomSpeedX = (-link.linkMotion.lastRomSpeedX) & 0xFF;
         link.linkMotion.lastRomSpeedY = (-link.linkMotion.lastRomSpeedY) & 0xFF;
         link.linkAirborne.airborne = true;
@@ -51,7 +56,8 @@ final class LinkDamage {
         collisionIgnoreFramesRemaining--;
         int speedX = link.linkMotion.forcedSpeedPending ? link.linkMotion.forcedSpeedX : recoilSpeedX;
         int speedY = link.linkMotion.forcedSpeedPending && !link.linkMotion.forcedSpeedXOnly
-            ? link.linkMotion.forcedSpeedY : recoilSpeedY;
+                ? link.linkMotion.forcedSpeedY
+                : recoilSpeedY;
         link.linkMotion.forcedSpeedPending = false;
         link.linkMotion.forcedSpeedXOnly = false;
         int beforeRecoilX = link.linkMotion.subX;
@@ -60,17 +66,24 @@ final class LinkDamage {
         if (speedY != 0) link.linkMotion.tryMoveAxis(speedY, false);
         // CheckPositionForMapTransition restores the previous position
         // at a normal room edge, then $02:6D94 rejects active recoil.
-        if (normalRecoilRoomBoundaries && collisionIgnoreFramesRemaining > 0
-            && (link.linkMotion.romEntityX() < 0x04 || link.linkMotion.romEntityX() >= 0x9C
-                || link.linkMotion.romEntityY() < 0x0C || link.linkMotion.romEntityY() >= 0x84)) {
+        if (normalRecoilRoomBoundaries
+                && collisionIgnoreFramesRemaining > 0
+                && (link.linkMotion.romEntityX() < 0x04
+                        || link.linkMotion.romEntityX() >= 0x9C
+                        || link.linkMotion.romEntityY() < 0x0C
+                        || link.linkMotion.romEntityY() >= 0x84)) {
             link.linkMotion.subX = beforeRecoilX;
             link.linkMotion.subY = beforeRecoilY;
             collisionIgnoreFramesRemaining = 0;
             speedX = 0;
             speedY = 0;
         }
-        if ((link.linkMotion.romCollisionType & (LinkRomConstants.COLLISION_TYPE_LEFT | LinkRomConstants.COLLISION_TYPE_RIGHT)) != 0) speedX = 0;
-        if ((link.linkMotion.romCollisionType & (LinkRomConstants.COLLISION_TYPE_UP | LinkRomConstants.COLLISION_TYPE_DOWN)) != 0) speedY = 0;
+        if ((link.linkMotion.romCollisionType
+                        & (LinkRomConstants.COLLISION_TYPE_LEFT | LinkRomConstants.COLLISION_TYPE_RIGHT))
+                != 0) speedX = 0;
+        if ((link.linkMotion.romCollisionType
+                        & (LinkRomConstants.COLLISION_TYPE_UP | LinkRomConstants.COLLISION_TYPE_DOWN))
+                != 0) speedY = 0;
         recoilSpeedX = speedX;
         recoilSpeedY = speedY;
         link.linkMotion.lastRomSpeedX = speedX & 0xFF;
@@ -80,10 +93,17 @@ final class LinkDamage {
 
     void setCollisionIgnoreFrames(int frames) {
         collisionIgnoreFramesRemaining = Math.max(0, frames);
-        recoilSpeedX = link.linkMotion.forcedSpeedPending ? link.linkMotion.forcedSpeedX : (byte) link.linkMotion.lastRomSpeedX;
-        recoilSpeedY = link.linkMotion.forcedSpeedPending && !link.linkMotion.forcedSpeedXOnly ? link.linkMotion.forcedSpeedY : (byte) link.linkMotion.lastRomSpeedY;
+        recoilSpeedX = link.linkMotion.forcedSpeedPending
+                ? link.linkMotion.forcedSpeedX
+                : (byte) link.linkMotion.lastRomSpeedX;
+        recoilSpeedY = link.linkMotion.forcedSpeedPending && !link.linkMotion.forcedSpeedXOnly
+                ? link.linkMotion.forcedSpeedY
+                : (byte) link.linkMotion.lastRomSpeedY;
     }
-    boolean hasRecoil() { return collisionIgnoreFramesRemaining > 0; }
+
+    boolean hasRecoil() {
+        return collisionIgnoreFramesRemaining > 0;
+    }
 
     void tickInvincibility() {
         if (link.playerState != null) link.playerState.tickInvincibility();
@@ -94,4 +114,3 @@ final class LinkDamage {
         link.playerState.setInvincibilityCounter(0x40);
     }
 }
-

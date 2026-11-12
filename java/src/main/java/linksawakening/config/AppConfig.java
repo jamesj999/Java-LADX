@@ -1,7 +1,5 @@
 package linksawakening.config;
 
-import linksawakening.input.InputConfig;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -10,16 +8,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import linksawakening.input.InputConfig;
 
 public final class AppConfig {
 
     private static final String RESOURCE_PATH = "config/config.json";
-    private static final Pattern STRING_ENTRY_PATTERN =
-        Pattern.compile("\"([A-Za-z0-9_]+)\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern STRING_ENTRY_PATTERN = Pattern.compile("\"([A-Za-z0-9_]+)\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern BOOLEAN_ENTRY_PATTERN =
-        Pattern.compile("\"([A-Za-z0-9_]+)\"\\s*:\\s*(true|false)", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("\"([A-Za-z0-9_]+)\"\\s*:\\s*(true|false)", Pattern.CASE_INSENSITIVE);
     private static final Pattern OBJECT_PATTERN_TEMPLATE =
-        Pattern.compile("\"%s\"\\s*:\\s*\\{([^}]*)}", Pattern.DOTALL);
+            Pattern.compile("\"%s\"\\s*:\\s*\\{([^}]*)}", Pattern.DOTALL);
 
     public enum StartLocationType {
         OVERWORLD
@@ -35,8 +33,7 @@ public final class AppConfig {
         NEW_GAME
     }
 
-    public record StartLocation(StartLocationType type, int roomId) {
-    }
+    public record StartLocation(StartLocationType type, int roomId) {}
 
     private final boolean showTitleScreen;
     private final boolean playIntroStory;
@@ -46,10 +43,14 @@ public final class AppConfig {
     private final ItemProfile itemProfile;
     private final InputConfig inputConfig;
 
-    private AppConfig(boolean showTitleScreen, boolean playIntroStory, boolean debugEnabled,
-                      StartMode startMode,
-                      StartLocation startLocation, ItemProfile itemProfile,
-                      InputConfig inputConfig) {
+    private AppConfig(
+            boolean showTitleScreen,
+            boolean playIntroStory,
+            boolean debugEnabled,
+            StartMode startMode,
+            StartLocation startLocation,
+            ItemProfile itemProfile,
+            InputConfig inputConfig) {
         this.showTitleScreen = showTitleScreen;
         this.playIntroStory = playIntroStory;
         this.debugEnabled = debugEnabled;
@@ -89,14 +90,13 @@ public final class AppConfig {
 
     public static AppConfig defaults() {
         return new AppConfig(
-            true,
-            false,
-            true,
-            StartMode.CONFIGURED_LOCATION,
-            new StartLocation(StartLocationType.OVERWORLD, 0x92),
-            ItemProfile.DEBUG_ALL_ITEMS,
-            InputConfig.fromKeyNames(Map.of())
-        );
+                true,
+                false,
+                true,
+                StartMode.CONFIGURED_LOCATION,
+                new StartLocation(StartLocationType.OVERWORLD, 0x92),
+                ItemProfile.DEBUG_ALL_ITEMS,
+                InputConfig.fromKeyNames(Map.of()));
     }
 
     public static AppConfig loadFromResources() {
@@ -126,8 +126,8 @@ public final class AppConfig {
         ItemProfile itemProfile = parseItemProfile(stringEntries.get("itemProfile"));
         InputConfig inputConfig = InputConfig.fromKeyNames(readStringEntries(objectSection(content, "controls")));
 
-        return new AppConfig(showTitleScreen, playIntroStory, debugEnabled, startMode,
-                             startLocation, itemProfile, inputConfig);
+        return new AppConfig(
+                showTitleScreen, playIntroStory, debugEnabled, startMode, startLocation, itemProfile, inputConfig);
     }
 
     private static StartMode parseStartMode(String value, StartMode fallback) {
@@ -172,8 +172,8 @@ public final class AppConfig {
             }
             return Integer.parseInt(normalized) & 0xFF;
         } catch (NumberFormatException e) {
-            System.err.println("Invalid start room id: " + value + " (falling back to "
-                + String.format("0x%02X", fallback) + ")");
+            System.err.println(
+                    "Invalid start room id: " + value + " (falling back to " + String.format("0x%02X", fallback) + ")");
             return fallback;
         }
     }
@@ -191,8 +191,8 @@ public final class AppConfig {
     }
 
     private static String objectSection(String content, String name) {
-        Pattern pattern = Pattern.compile(String.format(OBJECT_PATTERN_TEMPLATE.pattern(), Pattern.quote(name)),
-                                          Pattern.DOTALL);
+        Pattern pattern =
+                Pattern.compile(String.format(OBJECT_PATTERN_TEMPLATE.pattern(), Pattern.quote(name)), Pattern.DOTALL);
         Matcher matcher = pattern.matcher(content);
         return matcher.find() ? matcher.group(1) : "";
     }

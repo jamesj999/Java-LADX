@@ -9,8 +9,7 @@ public record KeyRewardEvent(int slot, int itemType) implements EntityRequest {
             throw new IllegalArgumentException("Key entity slot out of range: " + slot);
         }
         if ((itemType & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Key item must be an unsigned byte: "
-                + itemType);
+            throw new IllegalArgumentException("Key item must be an unsigned byte: " + itemType);
         }
     }
 }

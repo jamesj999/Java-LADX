@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 StalfosAggressiveEntityHandler's pursuit and jump states. */
 public final class StalfosAggressiveMotion {
@@ -36,9 +35,13 @@ public final class StalfosAggressiveMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -105,17 +108,27 @@ public final class StalfosAggressiveMotion {
                     }
                 }
             }
-            default -> throw new IllegalStateException(
-                "Invalid aggressive Stalfos state: " + state[slot]);
+            default -> throw new IllegalStateException("Invalid aggressive Stalfos state: " + state[slot]);
         }
 
         // ApplyEntityInteractionWithBackground_06 supplies collision flags and
         // may spawn landing dust. The current room query has no equivalent
         // directional/object-under flags, so this handler leaves that side
         // effect pending instead of treating a generic collision as identical.
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -147,8 +160,7 @@ public final class StalfosAggressiveMotion {
         return distance >= -0x1C && distance < 0x1C;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceY = signedByte(linkY - entityY + entityZ);
         int distanceX = signedByte(linkX - entityX);
         boolean yNegative = distanceY < 0;
@@ -181,8 +193,7 @@ public final class StalfosAggressiveMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -203,6 +214,5 @@ public final class StalfosAggressiveMotion {
         return result < 0x80 ? result : result - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

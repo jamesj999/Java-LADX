@@ -18,7 +18,15 @@ final class PcmStreamBuffering {
         return queuedFrames >= (sampleRate * (long) PREFILL_FRAMES + 59) / 60;
     }
 
-    void started() { started = true; }
-    void reset() { started = false; }
-    long underrunCount() { return underruns; }
+    void started() {
+        started = true;
+    }
+
+    void reset() {
+        started = false;
+    }
+
+    long underrunCount() {
+        return underruns;
+    }
 }

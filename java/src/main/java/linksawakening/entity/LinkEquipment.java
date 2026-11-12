@@ -1,18 +1,21 @@
 package linksawakening.entity;
 
-import linksawakening.equipment.EquipmentItem;
-import linksawakening.state.PlayerState;
+import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
+
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
-import static linksawakening.entity.Link.*;
+import linksawakening.equipment.EquipmentItem;
+import linksawakening.state.PlayerState;
 
 /** ROM-faithful equipment collaborator for Link. */
 final class LinkEquipment {
     private final Link link;
     BooleanSupplier shieldInputAllowed = () -> true;
 
-    LinkEquipment(Link link) { this.link = link; }
+    LinkEquipment(Link link) {
+        this.link = link;
+    }
 
     /**
      * Mirrors the leading CheckItemsToUse gate used before an equipped item
@@ -40,9 +43,9 @@ final class LinkEquipment {
             return false;
         }
         boolean usingA = link.playerState.itemA() == PlayerState.INVENTORY_SHIELD
-            && link.inputState.isDown(link.inputConfig.aKey());
+                && link.inputState.isDown(link.inputConfig.aKey());
         boolean usingB = link.playerState.itemB() == PlayerState.INVENTORY_SHIELD
-            && link.inputState.isDown(link.inputConfig.bKey());
+                && link.inputState.isDown(link.inputConfig.bKey());
         return usingA || usingB;
     }
 
@@ -80,7 +83,8 @@ final class LinkEquipment {
 
     static boolean itemBlocksMotion(EquipmentItem item, boolean beforeTopDownAnimation) {
         return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
-            ? sword.blocksTopDownMotion() : item.blocksMotion();
+                ? sword.blocksTopDownMotion()
+                : item.blocksMotion();
     }
 
     boolean itemsLockFacing() {
@@ -102,7 +106,8 @@ final class LinkEquipment {
 
     static boolean itemLocksFacing(EquipmentItem item, boolean beforeTopDownAnimation) {
         return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
-            ? sword.locksTopDownFacing() : item.locksFacing();
+                ? sword.locksTopDownFacing()
+                : item.locksFacing();
     }
 
     EquipmentItem itemInSlotA() {

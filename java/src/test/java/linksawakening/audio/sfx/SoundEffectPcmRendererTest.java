@@ -1,14 +1,13 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.audio.apu.GameBoyApu;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import linksawakening.audio.apu.GameBoyApu;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class SoundEffectPcmRendererTest {
@@ -16,7 +15,8 @@ final class SoundEffectPcmRendererTest {
     void oneShotRenderStartsCleanAndLeavesApuResetForNextPreview() throws IOException {
         byte[] romData = loadRom();
         SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
-        SoundEffect breakJingle = catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();
+        SoundEffect breakJingle =
+                catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();
         SoundEffect textPrint = catalog.find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow();
         GameBoyApu reusedApu = new GameBoyApu(44_100);
         SoundEffectPlayer reusedPlayer = new SoundEffectPlayer(reusedApu, romData, catalog);
@@ -40,7 +40,8 @@ final class SoundEffectPcmRendererTest {
         GameBoyApu apu = new GameBoyApu(48000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu, rom);
         for (int id : new int[] {2, 12}) {
-            SoundEffect effect = player.catalog().find(SoundEffectNamespace.NOISE, id).orElseThrow();
+            SoundEffect effect =
+                    player.catalog().find(SoundEffectNamespace.NOISE, id).orElseThrow();
             short[] pcm = SoundEffectPcmRenderer.renderOneShot(apu, player, effect);
             assertTrue(hasNonZeroSample(pcm));
             for (short sample : pcm) assertTrue(Math.abs((int) sample) < 32767);

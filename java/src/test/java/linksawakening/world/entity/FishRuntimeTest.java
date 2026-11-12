@@ -1,30 +1,18 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.FishMotion;
-
-import linksawakening.world.entity.event.TransientVfxRequest;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.vfx.TransientVfxType;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.FishMotion;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class FishRuntimeTest {
@@ -32,14 +20,31 @@ final class FishRuntimeTest {
     @Test
     void routesFishThroughTheRomMotionHandlerAndEmitsTheWaterSplash() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            FishMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, FishMotion.ENTITY_TYPE, 0x40, 0x50,
-                EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), false, null, catalog);
+        EntitySpriteDefinition definition =
+                catalog.forEntityType(FishMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        FishMotion.ENTITY_TYPE,
+                        0x40,
+                        0x50,
+                        EntityStatus.INIT,
+                        definition,
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                null,
+                catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.flyingEnemies().fishState(0));
         assertEquals(0x52, runtime.enemies().physicsFlags(0));
 
@@ -55,15 +60,17 @@ final class FishRuntimeTest {
                 assertEquals(2, runtime.flyingEnemies().fishState(0));
                 assertEquals(0x12, runtime.enemies().physicsFlags(0));
                 RoomEntity fish = runtime.inspection().snapshot().slots().get(0);
-                assertEquals(List.of(new TransientVfxRequest(
-                    TransientVfxType.WATER_SPLASH, fish.x(), fish.y())),
-                    runtime.enemies().transientVfxRequests());
-                assertEquals(List.of(new EntityCombatEvent(0, FishMotion.ENTITY_TYPE, 0, false,
-                    EntityCombatEvent.SoundChannel.JINGLE, 0x0E)), events);
+                assertEquals(
+                        List.of(new TransientVfxRequest(TransientVfxType.WATER_SPLASH, fish.x(), fish.y())),
+                        runtime.enemies().transientVfxRequests());
+                assertEquals(
+                        List.of(new EntityCombatEvent(
+                                0, FishMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0E)),
+                        events);
 
                 int combatFrame = (frame & 0x01) == 0 ? frame + 1 : frame;
-                List<EntityCombatEvent> contact = runtime.resolveCombat(combatFrame & 0xFF,
-                    fish.x(), fish.y(), false, true, false, 0, 0, 0, 0);
+                List<EntityCombatEvent> contact =
+                        runtime.resolveCombat(combatFrame & 0xFF, fish.x(), fish.y(), false, true, false, 0, 0, 0, 0);
                 assertEquals(1, contact.size());
                 assertEquals(0x04, contact.get(0).linkDamage());
                 assertFalse(contact.get(0).swordHit());

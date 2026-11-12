@@ -1,13 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityCombatRules;
-
 import linksawakening.world.entity.event.LikeLikeEvent;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 Like LikeEntityHandler state and its shared Gibdo walk. */
 public final class LikeLikeMotion {
@@ -21,9 +19,7 @@ public final class LikeLikeMotion {
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final GibdoMotion walkMotion = new GibdoMotion();
 
-    public record Update(RoomEntity entity, int slowTransitionCountdown,
-                  LikeLikeEvent event, int spriteVariant) {
-    }
+    public record Update(RoomEntity entity, int slowTransitionCountdown, LikeLikeEvent event, int spriteVariant) {}
 
     public void initialize(int slot) {
         privateState1[slot] = 0;
@@ -41,11 +37,20 @@ public final class LikeLikeMotion {
         walkMotion.clear(slot);
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   int linkZ, int linkMotionState, boolean actionButtonsHeld,
-                   int linkItemA, int linkItemB, int shieldLevel,
-                   int slowTransitionCountdown, IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ,
+            int linkMotionState,
+            boolean actionButtonsHeld,
+            int linkItemA,
+            int linkItemB,
+            int shieldLevel,
+            int slowTransitionCountdown,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -54,16 +59,18 @@ public final class LikeLikeMotion {
 
         if (privateState3[slot] == 0) {
             if (slowTransitionCountdown == 0
-                && linkZ == 0
-                && linkMotionState < LINK_MOTION_NON_INTERACTIVE
-                && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, slot)
-                && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+                    && linkZ == 0
+                    && linkMotionState < LINK_MOTION_NON_INTERACTIVE
+                    && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, slot)
+                    && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
                 privateState3[slot] = 1;
                 inertia[slot] = 0;
             }
             return new Update(
-                walkMotion.advance(entity, randomByteSupplier, backgroundCollision),
-                slowTransitionCountdown, null, -1);
+                    walkMotion.advance(entity, randomByteSupplier, backgroundCollision),
+                    slowTransitionCountdown,
+                    null,
+                    -1);
         }
 
         if (actionButtonsHeld) {
@@ -71,10 +78,11 @@ public final class LikeLikeMotion {
             if (inertia[slot] >= 0x08) {
                 privateState3[slot] = 0;
                 slowTransitionCountdown = 0x15;
-                return new Update(entity, slowTransitionCountdown,
-                    new LikeLikeEvent(
-                        slot, LikeLikeEvent.Kind.RELEASE,
-                        entity.x(), entity.y(), -1, 0), renderedVariant);
+                return new Update(
+                        entity,
+                        slowTransitionCountdown,
+                        new LikeLikeEvent(slot, LikeLikeEvent.Kind.RELEASE, entity.x(), entity.y(), -1, 0),
+                        renderedVariant);
             }
         }
 
@@ -97,11 +105,18 @@ public final class LikeLikeMotion {
         // $7E27-$7E55 hides Link and removes the shield before checking his
         // motion state. Only the position writes and animation calls are gated.
         if (linkMotionState != LINK_MOTION_DEFAULT) {
-            return new Update(entity, slowTransitionCountdown,
-                new LikeLikeEvent(
-                    slot, LikeLikeEvent.Kind.CAPTURE,
-                    entity.x(), entity.y(), stolenInventorySlot, stolenShieldLevel, false),
-                renderedVariant);
+            return new Update(
+                    entity,
+                    slowTransitionCountdown,
+                    new LikeLikeEvent(
+                            slot,
+                            LikeLikeEvent.Kind.CAPTURE,
+                            entity.x(),
+                            entity.y(),
+                            stolenInventorySlot,
+                            stolenShieldLevel,
+                            false),
+                    renderedVariant);
         }
 
         // Both $7F05 calls use the same privateState4 counter as walking.
@@ -109,11 +124,17 @@ public final class LikeLikeMotion {
         walkMotion.advanceAnimation(slot);
         walkMotion.advanceAnimation(slot);
 
-        return new Update(entity, slowTransitionCountdown,
-            new LikeLikeEvent(
-                slot, LikeLikeEvent.Kind.CAPTURE,
-                entity.x(), entity.y(), stolenInventorySlot, stolenShieldLevel),
-            renderedVariant);
+        return new Update(
+                entity,
+                slowTransitionCountdown,
+                new LikeLikeEvent(
+                        slot,
+                        LikeLikeEvent.Kind.CAPTURE,
+                        entity.x(),
+                        entity.y(),
+                        stolenInventorySlot,
+                        stolenShieldLevel),
+                renderedVariant);
     }
 
     public int state(int slot) {

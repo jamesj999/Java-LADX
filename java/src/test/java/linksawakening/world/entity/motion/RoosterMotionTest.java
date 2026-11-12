@@ -1,19 +1,15 @@
 package linksawakening.world.entity.motion;
 
-
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class RoosterMotionTest {
 
     @Test
     void liftedHandlerUsesTheRomDpadTableAndCollisionClampedSpeeds() {
-        RoosterMotion.Update update = RoosterMotion.advanceLifted(
-            0, 0x02, 0x04, 0x03, 0x10, 0x20,
-            LiftedEntityMotion.ROM_DIRECTION_DOWN);
+        RoosterMotion.Update update =
+                RoosterMotion.advanceLifted(0, 0x02, 0x04, 0x03, 0x10, 0x20, LiftedEntityMotion.ROM_DIRECTION_DOWN);
 
         assertEquals(LiftedEntityMotion.ROM_DIRECTION_UP, update.romDirection());
         assertEquals(0x04, update.spriteVariant());
@@ -25,9 +21,8 @@ final class RoosterMotionTest {
 
     @Test
     void neutralDpadKeepsTheCurrentLinkDirection() {
-        RoosterMotion.Update update = RoosterMotion.advanceLifted(
-            4, 0x14, 0x00, 0x00, 0x00, 0xF0,
-            LiftedEntityMotion.ROM_DIRECTION_LEFT);
+        RoosterMotion.Update update =
+                RoosterMotion.advanceLifted(4, 0x14, 0x00, 0x00, 0x00, 0xF0, LiftedEntityMotion.ROM_DIRECTION_LEFT);
 
         assertEquals(LiftedEntityMotion.ROM_DIRECTION_LEFT, update.romDirection());
         assertEquals(0x03, update.spriteVariant());

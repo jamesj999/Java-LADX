@@ -1,25 +1,21 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 final class HardHatMotionTest {
     @ParameterizedTest
-    @CsvSource({"0, 96, 64, 1, 0", "1, 32, 64, 255, 0",
-        "2, 64, 32, 0, 255", "3, 64, 96, 0, 1"})
+    @CsvSource({"0, 96, 64, 1, 0", "1, 32, 64, 255, 0", "2, 64, 32, 0, 255", "3, 64, 96, 0, 1"})
     void wallContactPreservesSpeedUntilTheSteeringTickThenStopsTheBlockedAxis(
-        int direction, int linkX, int linkY, int speedX, int speedY) {
+            int direction, int linkX, int linkY, int speedX, int speedY) {
         HardHatMotion motion = new HardHatMotion();
         RoomEntity beetle = motion.advance(entity(), 0, linkX, linkY, () -> 0, null);
         assertEquals(speedX, motion.speedX(0));
@@ -53,12 +49,14 @@ final class HardHatMotionTest {
     }
 
     private static RoomEntity entity() {
-        EntitySpriteDefinition.OamAttribute tile =
-            new EntitySpriteDefinition.OamAttribute(0, 0);
-        EntitySpriteDefinition definition = new EntitySpriteDefinition(0x20, 6, 0x4F2C,
-            EntitySpriteDefinition.Shape.PAIR, 0,
-            List.of(new EntitySpriteDefinition.Variant(tile, tile)));
-        return new RoomEntity(0, 0, 0x20, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        EntitySpriteDefinition.OamAttribute tile = new EntitySpriteDefinition.OamAttribute(0, 0);
+        EntitySpriteDefinition definition = new EntitySpriteDefinition(
+                0x20,
+                6,
+                0x4F2C,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(new EntitySpriteDefinition.Variant(tile, tile)));
+        return new RoomEntity(0, 0, 0x20, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 }

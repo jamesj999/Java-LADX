@@ -1,9 +1,9 @@
 package linksawakening.app;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 final class HouseNpcReentryTest {
@@ -25,14 +25,14 @@ final class HouseNpcReentryTest {
         }
         room.setTarinFlag(1);
         room.loadIndoorFromSavedPosition(0x10, 0xA3, 0);
-        assertTrue(room.activeRoom().entities().loadedEntities().stream()
-            .anyMatch(entity -> entity.type() == 0x3F && entity.spriteVariant() >= 0),
-            "Tarin returns home after the raccoon transformation");
+        assertTrue(
+                room.activeRoom().entities().loadedEntities().stream()
+                        .anyMatch(entity -> entity.type() == 0x3F && entity.spriteVariant() >= 0),
+                "Tarin returns home after the raccoon transformation");
     }
 
     private static void assertHouseNpcsHidden(GameSession game) {
         assertFalse(game.diagnostics().roomSession().activeRoom().entities().loadedEntities().stream()
-            .anyMatch(entity -> (entity.type() == 0x3E || entity.type() == 0x3F)
-                && entity.spriteVariant() >= 0));
+                .anyMatch(entity -> (entity.type() == 0x3E || entity.type() == 0x3F) && entity.spriteVariant() >= 0));
     }
 }

@@ -1,9 +1,9 @@
 package linksawakening.gpu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @linksawakening.testing.RequiresRom
 final class GPUColorDungeonTilesTest {
@@ -31,8 +31,7 @@ final class GPUColorDungeonTilesTest {
         for (int slot = 0; slot < 4; slot++) {
             int destination = (0x40 + slot * 0x10) * GPU.TILE_DATA_SIZE;
             assertEquals(0x10 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination)));
-            assertEquals(0xE0 + slot,
-                Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
+            assertEquals(0xE0 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
         }
     }
 
@@ -86,14 +85,14 @@ final class GPUColorDungeonTilesTest {
         int source = RomBank.romOffset(0x35, 0x6600);
         int destination = 0x0F0 * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x200; index++) {
-            assertEquals(Byte.toUnsignedInt(rom[source + index]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[source + index]), Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
         }
         int sharedSource = RomBank.romOffset(0x2D, 0x4000);
         for (int tile : new int[] {0x169, 0x179}) {
             int sourceOffset = sharedSource + (tile - 0x120) * GPU.TILE_DATA_SIZE;
-            assertEquals(Byte.toUnsignedInt(rom[sourceOffset]),
-                Byte.toUnsignedInt(gpu.readVRAM(tile * GPU.TILE_DATA_SIZE)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[sourceOffset]), Byte.toUnsignedInt(gpu.readVRAM(tile * GPU.TILE_DATA_SIZE)));
         }
     }
 
@@ -108,11 +107,9 @@ final class GPUColorDungeonTilesTest {
 
         int destination = 0x040 * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x40; index++) {
-            int source = index < 0x20
-                ? RomBank.romOffset(0x35, 0x4F00) + index
-                : RomBank.romOffset(0x2C, 0x47C0) + index;
-            assertEquals(Byte.toUnsignedInt(rom[source]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+            int source =
+                    index < 0x20 ? RomBank.romOffset(0x35, 0x4F00) + index : RomBank.romOffset(0x2C, 0x47C0) + index;
+            assertEquals(Byte.toUnsignedInt(rom[source]), Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
         }
     }
 
@@ -136,8 +133,8 @@ final class GPUColorDungeonTilesTest {
         int source = RomBank.romOffset(0x2C, 0x47C0);
         int destination = 0x10C * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x40; index++) {
-            assertEquals(Byte.toUnsignedInt(rom[source + index]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[source + index]), Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
         }
     }
 
@@ -152,8 +149,10 @@ final class GPUColorDungeonTilesTest {
             gpu.loadIndoorTiles(rom, sample[0], sample[1], true);
             int source = RomBank.romOffset(0x2D, sample[2]);
             for (int i = 0; i < 0x800; i++) {
-                assertEquals(rom[source + i], gpu.readVRAM(0x1000 + i),
-                    "Side-view VRAM byte " + i + " for map " + sample[0]);
+                assertEquals(
+                        rom[source + i],
+                        gpu.readVRAM(0x1000 + i),
+                        "Side-view VRAM byte " + i + " for map " + sample[0]);
             }
         }
     }
@@ -162,8 +161,7 @@ final class GPUColorDungeonTilesTest {
         return new byte[RomBank.romOffset(0x36, 0x4000)];
     }
 
-    private static void writeTableEntry(byte[] rom, int tableAddress, int roomId,
-                                        int sourceHighByte, int sourceBank) {
+    private static void writeTableEntry(byte[] rom, int tableAddress, int roomId, int sourceHighByte, int sourceBank) {
         int offset = RomBank.romOffset(TABLE_BANK, tableAddress + roomId * 2);
         rom[offset] = (byte) sourceHighByte;
         rom[offset + 1] = (byte) sourceBank;

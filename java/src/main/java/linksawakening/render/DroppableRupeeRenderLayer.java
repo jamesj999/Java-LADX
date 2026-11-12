@@ -1,7 +1,5 @@
 package linksawakening.render;
 
-
-
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.transition.ScrollController;
 
@@ -9,14 +7,13 @@ public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
     private final DroppableRupeeSystem droppableRupeeSystem;
     private final ScrollController scrollController;
 
-    public DroppableRupeeRenderLayer(DroppableRupeeSystem droppableRupeeSystem,
-                                     ScrollController scrollController) {
+    public DroppableRupeeRenderLayer(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
         this.droppableRupeeSystem = droppableRupeeSystem;
         this.scrollController = scrollController;
     }
 
-
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (scrollController.isActive()) return;
         int tile = droppableRupeeSystem.spriteTileIndex();
         int[] palette = droppableRupeeSystem.spritePalette();

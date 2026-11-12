@@ -9,16 +9,11 @@ public final class FloatingItemMotion {
 
     private static final int INITIAL_Z = 0x13;
     // Data_006_7AFB in bank $06, selected when hIsSideScrolling is clear.
-    private static final int[] TOP_DOWN_Z = {
-        0x0F, 0x0F, 0x10, 0x11, 0x11, 0x11, 0x10, 0x0F
-    };
+    private static final int[] TOP_DOWN_Z = {0x0F, 0x0F, 0x10, 0x11, 0x11, 0x11, 0x10, 0x0F};
     // Data_006_7B03 in bank $06, selected when hIsSideScrolling is set.
-    private static final int[] SIDE_SCROLLING_Z = {
-        0x00, 0x00, 0x01, 0x02, 0x02, 0x02, 0x01, 0x00
-    };
+    private static final int[] SIDE_SCROLLING_Z = {0x00, 0x00, 0x01, 0x02, 0x02, 0x02, 0x01, 0x00};
 
-    private FloatingItemMotion() {
-    }
+    private FloatingItemMotion() {}
 
     public static boolean isFloatingItem(int entityType) {
         return entityType == ENTITY_FLOATING_ITEM || entityType == ENTITY_FLOATING_ITEM_2;

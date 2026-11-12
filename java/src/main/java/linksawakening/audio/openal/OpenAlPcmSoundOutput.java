@@ -32,39 +32,84 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         statusMessage = "OpenAL PCM output ready";
     }
 
-    public boolean isAvailable() { return available && !closed; }
-    public String statusMessage() { return statusMessage; }
-    public long underrunCount() { return buffering.underrunCount(); }
-    public long backpressureCount() { return backpressureCount; }
-    public long recoveryCount() { return recoveryCount; }
-    public Throwable lastFailure() { return lastFailure; }
-    int sourceState() { return device.state(); }
+    public boolean isAvailable() {
+        return available && !closed;
+    }
+
+    public String statusMessage() {
+        return statusMessage;
+    }
+
+    public long underrunCount() {
+        return buffering.underrunCount();
+    }
+
+    public long backpressureCount() {
+        return backpressureCount;
+    }
+
+    public long recoveryCount() {
+        return recoveryCount;
+    }
+
+    public Throwable lastFailure() {
+        return lastFailure;
+    }
+
+    int sourceState() {
+        return device.state();
+    }
 
     /** Diagnostic queries must not hide the original playback failure with a second AL error. */
     public String diagnostics() {
-        return String.format("status=%s available=%s underruns=%d backpressure=%d recoveries=%d state=%04X queued=%d processed=%d trackedFrames=%d interrupted=%s lastFailure=%s",
-                statusMessage, isAvailable(), underrunCount(), backpressureCount(), recoveryCount,
-                querySafely(() -> device.state()), querySafely(() -> device.queued()), querySafely(() -> device.processed()),
-                bufferQueue.queuedFrames(), Thread.currentThread().isInterrupted(),
+        return String.format(
+                "status=%s available=%s underruns=%d backpressure=%d recoveries=%d state=%04X queued=%d processed=%d trackedFrames=%d interrupted=%s lastFailure=%s",
+                statusMessage,
+                isAvailable(),
+                underrunCount(),
+                backpressureCount(),
+                recoveryCount,
+                querySafely(() -> device.state()),
+                querySafely(() -> device.queued()),
+                querySafely(() -> device.processed()),
+                bufferQueue.queuedFrames(),
+                Thread.currentThread().isInterrupted(),
                 lastFailure == null ? "none" : conciseMessage(lastFailure));
     }
 
     private int querySafely(java.util.function.IntSupplier query) {
         if (device == null || closed) return -1;
-        try { return query.getAsInt(); }
-        catch (RuntimeException | LinkageError ignored) { return -1; }
+        try {
+            return query.getAsInt();
+        } catch (RuntimeException | LinkageError ignored) {
+            return -1;
+        }
     }
 
-    @Override public void play(short[] pcm, int rate) { play(pcm, rate, false, false); }
-    @Override public void playReplacing(short[] pcm, int rate) { play(pcm, rate, true, false); }
-    @Override public void playFrame(short[] pcm, int rate) { play(pcm, rate, false, true); }
+    @Override
+    public void play(short[] pcm, int rate) {
+        play(pcm, rate, false, false);
+    }
+
+    @Override
+    public void playReplacing(short[] pcm, int rate) {
+        play(pcm, rate, true, false);
+    }
+
+    @Override
+    public void playFrame(short[] pcm, int rate) {
+        play(pcm, rate, false, true);
+    }
 
     private void play(short[] pcm, int rate, boolean replace, boolean streaming) {
         if (!isAvailable() || pcm == null || pcm.length == 0 || rate <= 0) return;
         if (needsRecovery && !tryRecover()) return;
         try {
             device.makeCurrent();
-            if (!device.connected()) { deviceLost(); return; }
+            if (!device.connected()) {
+                deviceLost();
+                return;
+            }
             if (replace) resetQueue();
             else {
                 if (streaming) buffering.observePlaying(device.state() == PcmAlDevice.PLAYING);
@@ -114,7 +159,10 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
 
     private boolean tryRecover() {
         try {
-            if (!device.connected()) { deviceLost(); return false; }
+            if (!device.connected()) {
+                deviceLost();
+                return false;
+            }
             device.makeCurrent();
             resetQueue();
             needsRecovery = false;
@@ -148,7 +196,7 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         // Deleting/recreating the source detaches buffers even in AL_INITIAL,
         // where alSourceStop is a no-op and unqueueing pending buffers is illegal.
         device.resetSource();
-        for (var ids = allocatedBuffers.iterator(); ids.hasNext();) {
+        for (var ids = allocatedBuffers.iterator(); ids.hasNext(); ) {
             device.deleteBuffer(ids.next());
             ids.remove();
         }
@@ -156,17 +204,21 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         buffering.reset();
     }
 
-    @Override public void close() {
+    @Override
+    public void close() {
         if (closed) return;
         closed = true;
         available = false;
         if (device == null) return;
-        try { device.makeCurrent(); resetQueue(); }
-        catch (RuntimeException | LinkageError failure) {
+        try {
+            device.makeCurrent();
+            resetQueue();
+        } catch (RuntimeException | LinkageError failure) {
             System.err.println("PCM cleanup: " + conciseMessage(failure));
         } finally {
-            try { device.close(); }
-            catch (RuntimeException | LinkageError failure) {
+            try {
+                device.close();
+            } catch (RuntimeException | LinkageError failure) {
                 System.err.println("PCM device cleanup: " + conciseMessage(failure));
             }
             allocatedBuffers.clear();

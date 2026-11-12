@@ -1,5 +1,11 @@
 package linksawakening.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gpu.Tile;
 import linksawakening.input.InputConfig;
@@ -13,13 +19,6 @@ import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
 /** Scalar expectations from bank2.asm, also checked in a local PyBoy 2.9.0 trace. */
 @RequiresRom
@@ -42,8 +41,7 @@ final class LinkLedgeParityTest {
             // $44FA adds signed Z velocity / 16 before subtracting 2.
             int z = Math.max(0, (24 * 16 - frame * (frame - 1)) >> 4);
             assertEquals(z, link.romEntityZ(), "Z frame " + frame);
-            assertEquals(frame == 20 ? 0 : (-2 * frame) & 255,
-                link.zVelocity(), "velocity frame " + frame);
+            assertEquals(frame == 20 ? 0 : (-2 * frame) & 255, link.zVelocity(), "velocity frame " + frame);
             assertEquals(Math.min(16, frame - 1), link.romSpeedY(), "speed frame " + frame);
             assertEquals(frame == 20 ? 0 : 2, link.romMotionState(), "motion frame " + frame);
             assertTrue(link.isAirborne(), "$49B6 writes airborne even on landing");
@@ -70,8 +68,10 @@ final class LinkLedgeParityTest {
             link.update();
             assertEquals(93, link.pixelY());
             assertEquals(Math.max(0, (56 * 16 - frame * (frame - 1)) >> 4), link.romEntityZ());
-            assertEquals(frame == 31 ? 0x64 : 0x64 + Math.min(2, (frame - 1) / 8),
-                link.romAnimationState(), "frame " + frame);
+            assertEquals(
+                    frame == 31 ? 0x64 : 0x64 + Math.min(2, (frame - 1) / 8),
+                    link.romAnimationState(),
+                    "frame " + frame);
         }
         assertEquals(0, link.romMotionState());
     }
@@ -110,8 +110,9 @@ final class LinkLedgeParityTest {
             link.linkAnimator.jumpAnimationCounter = 0;
             for (int frame = 0; frame < 24; frame++) {
                 link.linkAirborne.tickJumpAnimation();
-                int state = new Rom(fixture.rom).u8(new linksawakening.rom.RomAddress(0x02, 0x46B5).plus(
-                    Link.romDirectionForJavaDirection(direction) * 4 + frame / 8));
+                int state = new Rom(fixture.rom)
+                        .u8(new linksawakening.rom.RomAddress(0x02, 0x46B5)
+                                .plus(Link.romDirectionForJavaDirection(direction) * 4 + frame / 8));
                 assertEquals(state, link.romAnimationState());
                 assertOam(fixture, state, link.pixelY());
             }
@@ -121,15 +122,30 @@ final class LinkLedgeParityTest {
     private static void assertOam(Fixture fixture, int state, int y) {
         record Column(Tile top, Tile bottom, int x, int y, boolean fx, boolean fy) {}
         List<Column> columns = new ArrayList<>();
-        fixture.link.submitOam(new OamSink() {
-            @Override public void append(Tile tile, int x, int py, boolean fx, boolean fy,
-                                         int[] palette, boolean behind) { fail("Expected 8x16 entries"); }
-            @Override public void append8x16(Tile top, Tile bottom, int x, int py,
-                                            boolean fx, boolean fy, int[] palette, boolean behind) {
-                assertFalse(behind);
-                columns.add(new Column(top, bottom, x, py, fx, fy));
-            }
-        }, 0, 0);
+        fixture.link.submitOam(
+                new OamSink() {
+                    @Override
+                    public void append(
+                            Tile tile, int x, int py, boolean fx, boolean fy, int[] palette, boolean behind) {
+                        fail("Expected 8x16 entries");
+                    }
+
+                    @Override
+                    public void append8x16(
+                            Tile top,
+                            Tile bottom,
+                            int x,
+                            int py,
+                            boolean fx,
+                            boolean fy,
+                            int[] palette,
+                            boolean behind) {
+                        assertFalse(behind);
+                        columns.add(new Column(top, bottom, x, py, fx, fy));
+                    }
+                },
+                0,
+                0);
         assertEquals(2, columns.size());
         Rom rom = new Rom(fixture.rom);
         for (int half = 0; half < 2; half++) {
@@ -151,7 +167,9 @@ final class LinkLedgeParityTest {
 
     private static Fixture fixture(boolean indoor) throws Exception {
         byte[] rom;
-        try (var in = TestRom.open()) { rom = in.readAllBytes(); }
+        try (var in = TestRom.open()) {
+            rom = in.readAllBytes();
+        }
         RomTables tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
         if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
@@ -162,7 +180,16 @@ final class LinkLedgeParityTest {
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         input.onKeyEvent(config.downKey(), GLFW_PRESS);
-        return new Fixture(new Link(input, config, tables, collision,
-            LinkSpriteSheet.loadFromRom(rom), new PlayerState(), new ItemRegistry()), rom, room);
+        return new Fixture(
+                new Link(
+                        input,
+                        config,
+                        tables,
+                        collision,
+                        LinkSpriteSheet.loadFromRom(rom),
+                        new PlayerState(),
+                        new ItemRegistry()),
+                rom,
+                room);
     }
 }

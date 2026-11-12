@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityCombatRules;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$05 CuccoEntityHandler flight, lift, and angry-spawn state. */
 public final class CuccoMotion {
@@ -19,9 +18,7 @@ public final class CuccoMotion {
     public static final int CUCCO_HURT_WAVE_SFX = 0x13;
     public static final int LIFT_WAVE_SFX = 0x02;
 
-    private static final int[] SPEED_BY_RANDOM = {
-        0x00, 0x04, 0x06, 0x04, 0x00, 0xFC, 0xFA, 0xFC
-    };
+    private static final int[] SPEED_BY_RANDOM = {0x00, 0x04, 0x06, 0x04, 0x00, 0xFC, 0xFA, 0xFC};
     private static final int[] SPAWN_X = {
         0x28, 0x48, 0x68, 0x88, 0x18, 0x38, 0x58, 0x78,
         0x00, 0x00, 0x00, 0x00, 0xA0, 0xA0, 0xA0, 0xA0
@@ -53,11 +50,17 @@ public final class CuccoMotion {
         }
     }
 
-    public record Update(RoomEntity entity, int transitionCountdown, int flashCountdown,
-                  boolean liftRequested, boolean unloaded, boolean boomerangSound,
-                  int waveSoundId, int dialogTableId, int dialogLowId,
-                  SpawnRequest spawnRequest) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            int flashCountdown,
+            boolean liftRequested,
+            boolean unloaded,
+            boolean boomerangSound,
+            int waveSoundId,
+            int dialogTableId,
+            int dialogLowId,
+            SpawnRequest spawnRequest) {}
 
     public void initialize(int slot) {
         clear(slot);
@@ -76,28 +79,58 @@ public final class CuccoMotion {
      * the bytes after the shared entity-loop decrement, matching the source
      * call order in AnimateEntities.
      */
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   int flashCountdown, int linkEntityX, int linkEntityY, int linkZ,
-                   boolean linkInteractive, boolean powerBraceletHeld,
-                   boolean linkAttackStepActive,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   boolean indoorRoom, boolean marinFollowing,
-                   int transitionSequenceCounter) {
-        return advance(entity, frameCounter, transitionCountdown, flashCountdown,
-            linkEntityX, linkEntityY, linkZ, linkInteractive, powerBraceletHeld,
-            linkAttackStepActive, randomByteSupplier, backgroundCollision,
-            indoorRoom, marinFollowing, transitionSequenceCounter, true);
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            int flashCountdown,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ,
+            boolean linkInteractive,
+            boolean powerBraceletHeld,
+            boolean linkAttackStepActive,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean indoorRoom,
+            boolean marinFollowing,
+            int transitionSequenceCounter) {
+        return advance(
+                entity,
+                frameCounter,
+                transitionCountdown,
+                flashCountdown,
+                linkEntityX,
+                linkEntityY,
+                linkZ,
+                linkInteractive,
+                powerBraceletHeld,
+                linkAttackStepActive,
+                randomByteSupplier,
+                backgroundCollision,
+                indoorRoom,
+                marinFollowing,
+                transitionSequenceCounter,
+                true);
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   int flashCountdown, int linkEntityX, int linkEntityY, int linkZ,
-                   boolean linkInteractive, boolean powerBraceletHeld,
-                   boolean linkAttackStepActive,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   boolean indoorRoom, boolean marinFollowing,
-                   int transitionSequenceCounter, boolean angrySpawnSlotAvailable) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            int flashCountdown,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ,
+            boolean linkInteractive,
+            boolean powerBraceletHeld,
+            boolean linkAttackStepActive,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean indoorRoom,
+            boolean marinFollowing,
+            int transitionSequenceCounter,
+            boolean angrySpawnSlotAvailable) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Cucco motion entity");
         }
@@ -159,17 +192,28 @@ public final class CuccoMotion {
             state[slot] = 2;
         }
 
-        RoomEntity collisionEntity = new RoomEntity(entity.slot(), entity.sourceLoadOrder(),
-            entity.type(), x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z,
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
-        boolean linkCollision = linkInteractive && (linkZ & 0xFF) == 0
-            && state[slot] != 3
-            && RoomEntityCombatRules.overlapsLink(collisionEntity, linkEntityX, linkEntityY);
+        RoomEntity collisionEntity = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
+        boolean linkCollision = linkInteractive
+                && (linkZ & 0xFF) == 0
+                && state[slot] != 3
+                && RoomEntityCombatRules.overlapsLink(collisionEntity, linkEntityX, linkEntityY);
         if (linkCollision && !linkAttackStepActive && powerBraceletHeld) {
             RoomEntity updated = withPosition(entity, x, y, z, renderedVariant);
-            return new Update(updated, countdown, nextFlashCountdown, true, false, false,
-                -1, dialogTableId, dialogLowId, null);
+            return new Update(
+                    updated, countdown, nextFlashCountdown, true, false, false, -1, dialogTableId, dialogLowId, null);
         }
 
         switch (state[slot]) {
@@ -211,15 +255,12 @@ public final class CuccoMotion {
                 y = moved.y();
                 variant = (frame >>> 1) & 0x01;
                 direction[slot] = signedByte((linkEntityX - x) & 0xFF) < 0 ? 0 : 1;
-                if (privateState1[slot] == 0x23 && !indoorRoom && (frame & 0x0F) == 0
-                    && angrySpawnSlotAvailable) {
+                if (privateState1[slot] == 0x23 && !indoorRoom && (frame & 0x0F) == 0 && angrySpawnSlotAvailable) {
                     int spawnIndex = randomByteSupplier.getAsInt() & 0x0F;
                     int spawnX = SPAWN_X[spawnIndex];
                     int spawnY = SPAWN_Y[spawnIndex];
-                    Vector spawnVector = vectorTowardsLink(spawnX, spawnY, 0x10,
-                        linkEntityX, linkEntityY, 0x18);
-                    spawnRequest = new SpawnRequest(spawnX, spawnY, 0x10,
-                        spawnVector.x(), spawnVector.y());
+                    Vector spawnVector = vectorTowardsLink(spawnX, spawnY, 0x10, linkEntityX, linkEntityY, 0x18);
+                    spawnRequest = new SpawnRequest(spawnX, spawnY, 0x10, spawnVector.x(), spawnVector.y());
                 }
             }
             case 3 -> {
@@ -233,8 +274,7 @@ public final class CuccoMotion {
                 direction[slot] = signedByte(speedX[slot]) < 0 ? 1 : 0;
                 boomerangSound = true;
             }
-            default -> throw new IllegalStateException("Invalid Cucco state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Cucco state: " + state[slot]);
         }
 
         spriteVariant[slot] = variant & 1;
@@ -242,8 +282,17 @@ public final class CuccoMotion {
         if (spawnRequest != null) {
             waveSoundId = CUCCO_HURT_WAVE_SFX;
         }
-        return new Update(updated, countdown, nextFlashCountdown, false, unloaded,
-            boomerangSound, waveSoundId, dialogTableId, dialogLowId, spawnRequest);
+        return new Update(
+                updated,
+                countdown,
+                nextFlashCountdown,
+                false,
+                unloaded,
+                boomerangSound,
+                waveSoundId,
+                dialogTableId,
+                dialogLowId,
+                spawnRequest);
     }
 
     public void clear(int slot) {
@@ -260,8 +309,14 @@ public final class CuccoMotion {
         initialized[slot] = false;
     }
 
-    void setStateForTest(int slot, int newState, int transitionCountdown,
-                         int newPrivateState1, int newSpeedX, int newSpeedY, int newSpeedZ) {
+    void setStateForTest(
+            int slot,
+            int newState,
+            int transitionCountdown,
+            int newPrivateState1,
+            int newSpeedX,
+            int newSpeedY,
+            int newSpeedZ) {
         ensureInitialized(slot);
         state[slot] = newState & 0xFF;
         privateState1[slot] = newPrivateState1 & 0xFF;
@@ -302,31 +357,41 @@ public final class CuccoMotion {
         return speedZ[slot] & 0xFF;
     }
 
-    private Position move(RoomEntity entity, int x, int y,
-                          RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
+        if (backgroundCollision != null
+                && nextX != x
+                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
             nextX = x;
         }
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
+        if (backgroundCollision != null
+                && nextY != y
+                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
             nextY = y;
         }
         return new Position(nextX, nextY);
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z & 0xFF,
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -340,8 +405,7 @@ public final class CuccoMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int absoluteX = Math.abs(distanceX);
@@ -380,13 +444,11 @@ public final class CuccoMotion {
     }
 
     private static int horizontalDirection(int speed) {
-        return signedByte(speed) < 0
-            ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
+        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
     }
 
     private static int verticalDirection(int speed) {
-        return signedByte(speed) < 0
-            ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
+        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
     }
 
     private static int signedByte(int value) {
@@ -404,9 +466,7 @@ public final class CuccoMotion {
         }
     }
 
-    private record Position(int x, int y) {
-    }
+    private record Position(int x, int y) {}
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

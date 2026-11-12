@@ -6,13 +6,13 @@ package linksawakening.world.entity;
  * event code can eventually bind this value object directly to save state.
  */
 public record FollowingNpcState(
-    boolean roosterFollowing,
-    int ghostFollowingState,
-    boolean marinFollowing,
-    boolean bowWowFollowing,
-    int instrument4Flags,
-    int powerBraceletLevel,
-    boolean db10) {
+        boolean roosterFollowing,
+        int ghostFollowingState,
+        boolean marinFollowing,
+        boolean bowWowFollowing,
+        int instrument4Flags,
+        int powerBraceletLevel,
+        boolean db10) {
 
     public FollowingNpcState {
         if (ghostFollowingState < 0 || ghostFollowingState > 2) {
@@ -31,7 +31,7 @@ public record FollowingNpcState(
     }
 
     public FollowingNpcState withGhostFollowingState(int state) {
-        return new FollowingNpcState(roosterFollowing, state, marinFollowing, bowWowFollowing,
-            instrument4Flags, powerBraceletLevel, db10);
+        return new FollowingNpcState(
+                roosterFollowing, state, marinFollowing, bowWowFollowing, instrument4Flags, powerBraceletLevel, db10);
     }
 }

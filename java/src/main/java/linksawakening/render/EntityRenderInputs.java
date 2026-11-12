@@ -1,13 +1,16 @@
 package linksawakening.render;
 
-import linksawakening.world.transition.ScrollController;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
+
+import linksawakening.world.transition.ScrollController;
 
 /** Immutable render-input snapshots and screen offsets, shared by entity submission paths. */
 final class EntityRenderInputs {
     private EntityRenderInputs() {}
+
     record Offset(int x, int y) {}
+
     static Offset currentRoomOffset(ScrollController scrollController) {
         int shakeX = -scrollController.screenShakeHorizontal();
         if (!scrollController.isActive()) {
@@ -48,8 +51,7 @@ final class EntityRenderInputs {
 
     static int[] resolvePalette(int[][] palettes, int paletteIndex) {
         if (paletteIndex < 0 || paletteIndex >= palettes.length) {
-            throw new IllegalArgumentException("Object palette index is unavailable: "
-                + paletteIndex);
+            throw new IllegalArgumentException("Object palette index is unavailable: " + paletteIndex);
         }
         return palettes[paletteIndex];
     }

@@ -1,12 +1,12 @@
 package linksawakening.gpu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import linksawakening.entity.EntitySpriteCatalog;
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.rom.RomBank;
 import linksawakening.world.entity.EntityRoomLoader;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @linksawakening.testing.RequiresRom
 final class GPUEntityTilesTest {
@@ -31,8 +31,7 @@ final class GPUEntityTilesTest {
         for (int slot = 0; slot < 4; slot++) {
             int destination = (0x40 + slot * 0x10) * GPU.TILE_DATA_SIZE;
             assertEquals(0x10 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination)));
-            assertEquals(0xE0 + slot,
-                Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
+            assertEquals(0xE0 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
         }
     }
 
@@ -66,8 +65,7 @@ final class GPUEntityTilesTest {
     @Test
     void shippedRoom92UsesAdjustedGbcNpcBanksAndSixteenTileDestinations() throws Exception {
         byte[] rom = loadRom();
-        EntitySpriteSelection selection = new EntitySpriteCatalog(rom)
-            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
+        EntitySpriteSelection selection = new EntitySpriteCatalog(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
         GPU gpu = new GPU();
         gpu.loadEntitySpriteSheets(rom, selection.sheetValues());
 
@@ -78,13 +76,11 @@ final class GPUEntityTilesTest {
             if (sheet == 0xFF) {
                 continue;
             }
-            int sourceOffset = RomBank.romOffset(npcBanks[sheet >>> 6],
-                0x4000 + (sheet & 0x3F) * 0x100);
+            int sourceOffset = RomBank.romOffset(npcBanks[sheet >>> 6], 0x4000 + (sheet & 0x3F) * 0x100);
             int destination = (0x40 + slot * 0x10) * GPU.TILE_DATA_SIZE;
-            assertEquals(Byte.toUnsignedInt(rom[sourceOffset]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination)));
-            assertEquals(Byte.toUnsignedInt(rom[sourceOffset + 0xFF]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
+            assertEquals(Byte.toUnsignedInt(rom[sourceOffset]), Byte.toUnsignedInt(gpu.readVRAM(destination)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[sourceOffset + 0xFF]), Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
         }
     }
 

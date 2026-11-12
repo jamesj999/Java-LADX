@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 WizrobeEntityHandler state machine and launch timing. */
 public final class WizrobeMotion {
@@ -34,12 +33,16 @@ public final class WizrobeMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, int transitionCountdown,
-                   int currentPhysicsFlags) {
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            int transitionCountdown,
+            int currentPhysicsFlags) {
         if ((entity.type() & 0xFF) != ENTITY_WIZROBE) {
-            throw new IllegalArgumentException("Unsupported Wizrobe motion entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Wizrobe motion entity type: 0x" + Integer.toHexString(entity.type()));
         }
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Wizrobe random-byte supplier cannot be null");
@@ -64,10 +67,9 @@ public final class WizrobeMotion {
         // writes normal physics on its >=2 countdown path, but its $01/$00
         // branches return without touching the table; preserve the previous
         // value for those two frames.
-        int physicsFlags = (state[slot] & 0xFF) == 3
-            && privateCountdown1[slot] >= 0x02
-            ? 0x02 : ((state[slot] & 0xFF) == 3
-                ? currentPhysicsFlags & 0xFF : 0x42);
+        int physicsFlags = (state[slot] & 0xFF) == 3 && privateCountdown1[slot] >= 0x02
+                ? 0x02
+                : ((state[slot] & 0xFF) == 3 ? currentPhysicsFlags & 0xFF : 0x42);
         ProjectileSpawn projectileSpawn = null;
 
         switch (state[slot] & 0xFF) {
@@ -110,26 +112,40 @@ public final class WizrobeMotion {
                         state[slot] = (state[slot] - 1) & 0xFF;
                     } else {
                         privateCountdown1[slot] = 0x40;
-                        direction[slot] = directionToLink(
-                            entity.x(), entity.y(), linkEntityX, linkEntityY);
+                        direction[slot] = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
                         nextVariant = direction[slot] + 1;
                     }
                 }
             }
-            default -> throw new IllegalStateException("Invalid Wizrobe state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Wizrobe state: " + state[slot]);
         }
 
         currentSpriteVariant[slot] = normalizeVariant(nextVariant);
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                renderedVariant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
         return new Update(updated, countdown, physicsFlags, projectileSpawn);
     }
 
-    public void setForTest(int slot, int newState, int transitionCountdown,
-                    int newPrivateState1, int newPrivateCountdown1,
-                    int newDirection, int spriteVariant) {
+    public void setForTest(
+            int slot,
+            int newState,
+            int transitionCountdown,
+            int newPrivateState1,
+            int newPrivateCountdown1,
+            int newDirection,
+            int spriteVariant) {
         if (newState < 0 || newState > 3) {
             throw new IllegalArgumentException("Wizrobe state out of range: " + newState);
         }
@@ -140,8 +156,7 @@ public final class WizrobeMotion {
             throw new IllegalArgumentException("Wizrobe direction out of range: " + newDirection);
         }
         if (spriteVariant < -1 || spriteVariant > 4) {
-            throw new IllegalArgumentException("Wizrobe sprite variant out of range: "
-                + spriteVariant);
+            throw new IllegalArgumentException("Wizrobe sprite variant out of range: " + spriteVariant);
         }
         state[slot] = newState;
         privateState1[slot] = newPrivateState1;
@@ -179,9 +194,9 @@ public final class WizrobeMotion {
     private ProjectileSpawn projectileSpawn(RoomEntity source, int projectileDirection) {
         int directionIndex = projectileDirection & 0x03;
         return new ProjectileSpawn(
-            (source.x() + signedByte(PROJECTILE_OFFSET_X[directionIndex])) & 0xFF,
-            (source.y() + signedByte(PROJECTILE_OFFSET_Y[directionIndex])) & 0xFF,
-            directionIndex);
+                (source.x() + signedByte(PROJECTILE_OFFSET_X[directionIndex])) & 0xFF,
+                (source.y() + signedByte(PROJECTILE_OFFSET_Y[directionIndex])) & 0xFF,
+                directionIndex);
     }
 
     private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
@@ -216,10 +231,8 @@ public final class WizrobeMotion {
         }
     }
 
-    public record ProjectileSpawn(int x, int y, int direction) {
-    }
+    public record ProjectileSpawn(int x, int y, int direction) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags,
-                  ProjectileSpawn projectileSpawn) {
-    }
+    public record Update(
+            RoomEntity entity, int transitionCountdown, int physicsFlags, ProjectileSpawn projectileSpawn) {}
 }

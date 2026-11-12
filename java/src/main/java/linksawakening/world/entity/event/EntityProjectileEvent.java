@@ -11,41 +11,68 @@ import linksawakening.world.entity.RoomEntity;
  * the entity pass has completed.</p>
  */
 public record EntityProjectileEvent(
-    int slot,
-    int type,
-    Kind kind,
-    int collisionValue,
-    int linkDamage,
-    SoundChannel soundChannel,
-    int soundId,
-    boolean remove,
-    boolean swordPokeVfx,
-    int swordPokeX,
-    int swordPokeY,
-    int linkSpeedX,
-    int linkSpeedY,
-    int linkIgnoreCollisionCountdown) implements EntityEvent {
+        int slot,
+        int type,
+        Kind kind,
+        int collisionValue,
+        int linkDamage,
+        SoundChannel soundChannel,
+        int soundId,
+        boolean remove,
+        boolean swordPokeVfx,
+        int swordPokeX,
+        int swordPokeY,
+        int linkSpeedX,
+        int linkSpeedY,
+        int linkIgnoreCollisionCountdown)
+        implements EntityEvent {
 
     /** Source-shaped hLinkSpeedX/Y write emitted by hookshot state {@code $01}. */
     public static EntityProjectileEvent hookshotPull(int slot, int speedX, int speedY) {
-        return new EntityProjectileEvent(slot, 0x03, Kind.HOOKSHOT_PULL,
-            0, 0, SoundChannel.NONE, -1, false, false,
-            0, 0, speedX, speedY, 0);
+        return new EntityProjectileEvent(
+                slot, 0x03, Kind.HOOKSHOT_PULL, 0, 0, SoundChannel.NONE, -1, false, false, 0, 0, speedX, speedY, 0);
     }
 
-    public EntityProjectileEvent(int slot, int type, Kind kind, int collisionValue,
-                                 int linkDamage, SoundChannel soundChannel, int soundId,
-                                 boolean remove, boolean swordPokeVfx) {
-        this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId,
-            remove, swordPokeVfx, 0, 0);
+    public EntityProjectileEvent(
+            int slot,
+            int type,
+            Kind kind,
+            int collisionValue,
+            int linkDamage,
+            SoundChannel soundChannel,
+            int soundId,
+            boolean remove,
+            boolean swordPokeVfx) {
+        this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId, remove, swordPokeVfx, 0, 0);
     }
 
-    public EntityProjectileEvent(int slot, int type, Kind kind, int collisionValue,
-                                 int linkDamage, SoundChannel soundChannel, int soundId,
-                                 boolean remove, boolean swordPokeVfx,
-                                 int swordPokeX, int swordPokeY) {
-        this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId,
-            remove, swordPokeVfx, swordPokeX, swordPokeY, 0, 0, 0);
+    public EntityProjectileEvent(
+            int slot,
+            int type,
+            Kind kind,
+            int collisionValue,
+            int linkDamage,
+            SoundChannel soundChannel,
+            int soundId,
+            boolean remove,
+            boolean swordPokeVfx,
+            int swordPokeX,
+            int swordPokeY) {
+        this(
+                slot,
+                type,
+                kind,
+                collisionValue,
+                linkDamage,
+                soundChannel,
+                soundId,
+                remove,
+                swordPokeVfx,
+                swordPokeX,
+                swordPokeY,
+                0,
+                0,
+                0);
     }
 
     public EntityProjectileEvent {
@@ -59,8 +86,7 @@ public record EntityProjectileEvent(
             throw new IllegalArgumentException("Projectile event kind cannot be null");
         }
         if ((collisionValue & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Collision value must be an unsigned byte: "
-                + collisionValue);
+            throw new IllegalArgumentException("Collision value must be an unsigned byte: " + collisionValue);
         }
         if (linkDamage < 0) {
             throw new IllegalArgumentException("Link damage cannot be negative: " + linkDamage);
@@ -69,8 +95,7 @@ public record EntityProjectileEvent(
             throw new IllegalArgumentException("Projectile sound channel cannot be null");
         }
         if (soundId < -1 || soundId > 0xFF) {
-            throw new IllegalArgumentException("Sound id must be -1 or an unsigned byte: "
-                + soundId);
+            throw new IllegalArgumentException("Sound id must be -1 or an unsigned byte: " + soundId);
         }
         if (soundChannel == SoundChannel.NONE && soundId != -1) {
             throw new IllegalArgumentException("A sound id requires a sound channel");

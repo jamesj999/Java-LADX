@@ -1,24 +1,24 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.event.LiftedEntityState;
-
-import linksawakening.world.entity.motion.BombMotion;
-
-import linksawakening.world.entity.event.LinkAttackStepRequest;
-import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
-import linksawakening.world.entity.event.LinkMotionBlockRequest;
-
 import static linksawakening.world.entity.EntityMotionMath.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 import static linksawakening.world.entity.RoomEntityRuntime.*;
 
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.LiftedEntityState;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.motion.BombMotion;
+
 /** Player lift, throw, block movement and held-item presentation commands. */
 final class EntityPlayerCommands {
     private final RoomEntityRuntime runtime;
-    EntityPlayerCommands(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityPlayerCommands(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     boolean beginLift(int slot, int romDirection) {
         EntitySlotValidation.validateEntitySlot(slot);
@@ -30,8 +30,9 @@ final class EntityPlayerCommands {
         if (entity.type() == runtime.ENTITY_BOMB && runtime.bombFinalPresentationPending[slot]) {
             return false;
         }
-        if (runtime.liftedEntitySlot >= 0 && runtime.liftedEntitySlot != slot
-            && runtime.slots[runtime.liftedEntitySlot].status() == EntityStatus.LIFTED) {
+        if (runtime.liftedEntitySlot >= 0
+                && runtime.liftedEntitySlot != slot
+                && runtime.slots[runtime.liftedEntitySlot].status() == EntityStatus.LIFTED) {
             return false;
         }
 
@@ -65,8 +66,8 @@ final class EntityPlayerCommands {
         int slot = state.slot();
         RoomEntity entity = runtime.slots[slot];
         runtime.events.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
-        runtime.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, runtime.LIFTED_THROW_JINGLE_ID));
+        runtime.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(
+                slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, runtime.LIFTED_THROW_JINGLE_ID));
         if (entity.type() == runtime.ENTITY_SIDE_VIEW_POT) {
             runtime.thrownDirection[slot] = romDirection;
             runtime.sideViewPotMotion.start(slot, romDirection);
@@ -82,31 +83,41 @@ final class EntityPlayerCommands {
             return true;
         }
         runtime.thrownDirection[slot] = romDirection;
-        runtime.thrownEntityMotion.start(slot, romDirection, entity.type(),
-            runtime.groundInteractionSideScrolling);
+        runtime.thrownEntityMotion.start(slot, romDirection, entity.type(), runtime.groundInteractionSideScrolling);
         runtime.thrownMotionInitialized[slot] = true;
         runtime.liftedStateInitialized[slot] = false;
         runtime.liftedPhase[slot] = 0;
         runtime.liftedCarryState = 0;
         runtime.liftedEffectiveDirection = 0;
         runtime.liftedEntitySlot = -1;
-        runtime.enemyTransitionCountdown[slot] = entity.type() == runtime.ENTITY_BOMB
-            ? BombMotion.INITIAL_COUNTDOWN : 0;
+        runtime.enemyTransitionCountdown[slot] =
+                entity.type() == runtime.ENTITY_BOMB ? BombMotion.INITIAL_COUNTDOWN : 0;
         runtime.slots[slot] = withStatus(entity, EntityStatus.THROWN);
         return true;
     }
 
     void movePushedBlock(int slot, int x, int y) {
-        if (slot < 0 || slot >= runtime.slots.length
-            || runtime.slots[slot].type() != runtime.ENTITY_PUSHED_BLOCK
-            || runtime.slots[slot].status() == EntityStatus.DISABLED) {
+        if (slot < 0
+                || slot >= runtime.slots.length
+                || runtime.slots[slot].type() != runtime.ENTITY_PUSHED_BLOCK
+                || runtime.slots[slot].status() == EntityStatus.DISABLED) {
             return;
         }
         RoomEntity entity = runtime.slots[slot];
-        runtime.slots[slot] = new RoomEntity(slot, entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        runtime.slots[slot] = new RoomEntity(
+                slot,
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     void removePushedBlock(int slot) {
@@ -119,10 +130,20 @@ final class EntityPlayerCommands {
         for (int slot = 0; slot < runtime.slots.length; slot++) {
             RoomEntity entity = runtime.slots[slot];
             if (entity.loaded() && entity.type() == 0x3E) {
-                runtime.slots[slot] = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-                    x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), spriteVariant,
-                    entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-                    entity.deathSpriteVariant(), entity.powerRecoilDeath());
+                runtime.slots[slot] = new RoomEntity(
+                        entity.slot(),
+                        entity.sourceLoadOrder(),
+                        entity.type(),
+                        x & 0xFF,
+                        y & 0xFF,
+                        entity.status(),
+                        entity.spriteDefinition(),
+                        spriteVariant,
+                        entity.entityFlipAttribute(),
+                        entity.spriteTileOffset(),
+                        entity.z(),
+                        entity.deathSpriteVariant(),
+                        entity.powerRecoilDeath());
                 return true;
             }
         }
@@ -160,14 +181,12 @@ final class EntityPlayerCommands {
         runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
     }
 
-    void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                    int linkZ, boolean finalPose) {
+    void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
         int slot = entity.slot();
         runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
         runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
-        RoomEntity held = withPositionAndVariant(entity, x,
-            (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
+        RoomEntity held = withPositionAndVariant(entity, x, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
     }
 }

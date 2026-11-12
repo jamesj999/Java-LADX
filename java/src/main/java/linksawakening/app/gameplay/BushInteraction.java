@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay;
 
-
+import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
@@ -8,13 +8,11 @@ import linksawakening.equipment.Sword;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.room.DroppableRupeeSystem;
-import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.object.OverworldBushInteraction;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
-
-import static linksawakening.world.room.RoomConstants.*;
 
 /** Focused frame interactions using the current session collaborators. */
 public record BushInteraction(
@@ -26,11 +24,9 @@ public record BushInteraction(
         TransientVfxSystem transientVfxSystem,
         DroppableRupeeSystem droppableRupeeSystem) {
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
+
     public void maybeCutBushWithSword() {
-        if (roomSession == null
-            || !roomSession.hasActiveRoom()
-            || overworldBushInteraction == null
-            || link == null) {
+        if (roomSession == null || !roomSession.hasActiveRoom() || overworldBushInteraction == null || link == null) {
             return;
         }
         ActiveRoom room = roomSession.activeRoom();
@@ -41,7 +37,7 @@ public record BushInteraction(
         }
 
         int location = overworldBushInteraction.swordHitRoomObjectLocationForCollisionIndex(
-            true, sword.staticCollisionMapIndex(link.direction()), link.pixelX(), link.pixelY());
+                true, sword.staticCollisionMapIndex(link.direction()), link.pixelX(), link.pixelY());
         if (location < 0) {
             return;
         }
@@ -60,15 +56,14 @@ public record BushInteraction(
         int originalObjectId = room.roomObjectsArea()[areaIndex];
 
         OverworldBushInteraction.CutResult cutResult = overworldBushInteraction.cutObjectAtLocation(
-            location,
-            room.roomId(),
-            true,
-            room.roomObjectsArea(),
-            room.renderValues(),
-            room.gbcOverlay(),
-            room.tileIds(),
-            room.tileAttrs()
-        );
+                location,
+                room.roomId(),
+                true,
+                room.roomObjectsArea(),
+                room.renderValues(),
+                room.gbcOverlay(),
+                room.tileIds(),
+                room.tileAttrs());
         if (!cutResult.changed()) {
             return;
         }
@@ -77,22 +72,21 @@ public record BushInteraction(
 
         if (transientVfxSystem != null && cutResult.bushLeavesVisible()) {
             transientVfxSystem.spawn(
-                TransientVfxType.BUSH_LEAVES,
-                overworldBushInteraction.effectOriginXForLocation(location),
-                overworldBushInteraction.effectOriginYForLocation(location)
-            );
+                    TransientVfxType.BUSH_LEAVES,
+                    overworldBushInteraction.effectOriginXForLocation(location),
+                    overworldBushInteraction.effectOriginYForLocation(location));
         }
 
         if (droppableRupeeSystem != null) {
             droppableRupeeSystem.maybeSpawnFromBush(
-                originalObjectId,
-                overworldBushInteraction.effectOriginXForLocation(location),
-                overworldBushInteraction.effectOriginYForLocation(location)
-            );
+                    originalObjectId,
+                    overworldBushInteraction.effectOriginXForLocation(location),
+                    overworldBushInteraction.effectOriginYForLocation(location));
         }
 
-        if (areaIndex >= 0 && areaIndex < room.roomObjectsArea().length
-            && room.roomObjectsArea()[areaIndex] == OBJECT_GROUND_STAIRS) {
+        if (areaIndex >= 0
+                && areaIndex < room.roomObjectsArea().length
+                && room.roomObjectsArea()[areaIndex] == OBJECT_GROUND_STAIRS) {
             room.replaceFirstWarpTile(location);
         }
     }

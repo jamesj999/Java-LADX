@@ -1,31 +1,18 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntityObjectSample;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.ZoraMotion;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.motion.ZoraMotion;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class ZoraRuntimeTest {
@@ -35,7 +22,7 @@ final class ZoraRuntimeTest {
     @Test
     void decodesZorasFiveRomSpritePairs() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
         assertEquals(0x18, definition.bank());
@@ -43,31 +30,56 @@ final class ZoraRuntimeTest {
         assertEquals(EntitySpriteDefinition.Shape.PAIR, definition.shape());
         assertEquals(0, definition.initialVariant());
         assertEquals(5, definition.variantCount());
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0xFF),
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0xFF)), definition.variant(0));
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0x54, 0x02),
-            new EntitySpriteDefinition.OamAttribute(0x54, 0x62)), definition.variant(1));
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0x54, 0x42),
-            new EntitySpriteDefinition.OamAttribute(0x54, 0x22)), definition.variant(2));
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0x56, 0x02),
-            new EntitySpriteDefinition.OamAttribute(0x56, 0x22)), definition.variant(3));
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0x52, 0x02),
-            new EntitySpriteDefinition.OamAttribute(0x52, 0x22)), definition.variant(4));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0xFF, 0xFF),
+                        new EntitySpriteDefinition.OamAttribute(0xFF, 0xFF)),
+                definition.variant(0));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x54, 0x02),
+                        new EntitySpriteDefinition.OamAttribute(0x54, 0x62)),
+                definition.variant(1));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x54, 0x42),
+                        new EntitySpriteDefinition.OamAttribute(0x54, 0x22)),
+                definition.variant(2));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x56, 0x02),
+                        new EntitySpriteDefinition.OamAttribute(0x56, 0x22)),
+                definition.variant(3));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x52, 0x02),
+                        new EntitySpriteDefinition.OamAttribute(0x52, 0x22)),
+                definition.variant(4));
     }
 
     @Test
     void usesZorasRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_ZORA, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_ZORA,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_ZORA));
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_ZORA));
@@ -80,15 +92,20 @@ final class ZoraRuntimeTest {
     @Test
     void stateZeroChoosesRomWaterCoordinateAndStartsRandomTimer() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
-        RoomEntity zora = new RoomEntity(0, 0, ENTITY_ZORA, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity zora =
+                new RoomEntity(0, 0, ENTITY_ZORA, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         AtomicInteger randomCalls = new AtomicInteger();
 
-        ZoraMotion.Update update = motion.advance(zora, 0, 0x02, 0x20, 0x20,
-            () -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x15,
-            entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
+        ZoraMotion.Update update = motion.advance(
+                zora,
+                0,
+                0x02,
+                0x20,
+                0x20,
+                () -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x15,
+                entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
 
         assertEquals(1, update.state());
         assertEquals(0x55, update.transitionCountdown());
@@ -101,43 +118,58 @@ final class ZoraRuntimeTest {
     @Test
     void stateTwoRemovesProjectileNoclipAndStateThreeUsesRomZTable() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
-        RoomEntity zora = new RoomEntity(0, 0, ENTITY_ZORA, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity zora =
+                new RoomEntity(0, 0, ENTITY_ZORA, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
-        ZoraMotion.Update submerged = motion.advance(zora, 0, 0x02, 0x20, 0x20, () -> 0,
-            entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
-        ZoraMotion.Update stateTwo = motion.advance(submerged.entity(), 1, 0x42, 0x20, 0x20,
-            () -> 0, entity -> RoomEntityObjectSample.none());
+        ZoraMotion.Update submerged = motion.advance(
+                zora, 0, 0x02, 0x20, 0x20, () -> 0, entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
+        ZoraMotion.Update stateTwo = motion.advance(
+                submerged.entity(), 1, 0x42, 0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
         assertEquals(1, stateTwo.state());
         assertEquals(0x01, stateTwo.transitionCountdown());
         assertEquals(0x42, stateTwo.physicsFlags());
 
-        stateTwo = motion.advance(stateTwo.entity(), 0, 0x42, 0x20, 0x20,
-            () -> 0, entity -> RoomEntityObjectSample.none());
+        stateTwo = motion.advance(
+                stateTwo.entity(), 0, 0x42, 0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
         assertEquals(2, stateTwo.state());
         assertEquals(0x60, stateTwo.transitionCountdown());
         assertEquals(0x42, stateTwo.physicsFlags());
 
-        ZoraMotion.Update stateThree = motion.advance(stateTwo.entity(), 0,
-            stateTwo.physicsFlags(), 0x20, 0x20, () -> 0,
-            entity -> RoomEntityObjectSample.none());
+        ZoraMotion.Update stateThree = motion.advance(
+                stateTwo.entity(),
+                0,
+                stateTwo.physicsFlags(),
+                0x20,
+                0x20,
+                () -> 0,
+                entity -> RoomEntityObjectSample.none());
         assertEquals(3, stateThree.state());
         assertEquals(0x60, stateThree.transitionCountdown());
         assertEquals(0x02, stateThree.physicsFlags());
 
-        ZoraMotion.Update firing = motion.advance(stateThree.entity(), 0x58,
-            stateThree.physicsFlags(), 0x58, 0x20, () -> 0,
-            entity -> RoomEntityObjectSample.none());
+        ZoraMotion.Update firing = motion.advance(
+                stateThree.entity(),
+                0x58,
+                stateThree.physicsFlags(),
+                0x58,
+                0x20,
+                () -> 0,
+                entity -> RoomEntityObjectSample.none());
         assertEquals(3, firing.state());
         assertEquals(0x00, firing.entity().z());
         assertEquals(3, firing.entity().spriteVariant());
         assertNull(firing.projectileSpawn());
 
-        ZoraMotion.Update projectileFrame = motion.advance(firing.entity(), 0x30,
-            firing.physicsFlags(), 0x30, 0x70, () -> 0,
-            entity -> RoomEntityObjectSample.none());
+        ZoraMotion.Update projectileFrame = motion.advance(
+                firing.entity(),
+                0x30,
+                firing.physicsFlags(),
+                0x30,
+                0x70,
+                () -> 0,
+                entity -> RoomEntityObjectSample.none());
         assertEquals(4, projectileFrame.entity().spriteVariant());
         assertEquals(0x00, projectileFrame.entity().z());
         assertNotNull(projectileFrame.projectileSpawn());
@@ -146,9 +178,14 @@ final class ZoraRuntimeTest {
         assertEquals(0x06, projectileFrame.projectileSpawn().speedX());
         assertEquals(0x18, projectileFrame.projectileSpawn().speedY());
 
-        ZoraMotion.Update hidden = motion.advance(projectileFrame.entity(), 0,
-            projectileFrame.physicsFlags(), 0x00, 0x70, () -> 0,
-            entity -> RoomEntityObjectSample.none());
+        ZoraMotion.Update hidden = motion.advance(
+                projectileFrame.entity(),
+                0,
+                projectileFrame.physicsFlags(),
+                0x00,
+                0x70,
+                () -> 0,
+                entity -> RoomEntityObjectSample.none());
         assertEquals(0, hidden.state());
         assertEquals(0, hidden.entity().spriteVariant());
         assertTrue(hidden.splash());
@@ -157,22 +194,22 @@ final class ZoraRuntimeTest {
     @Test
     void usesThePreIncrementInertiaForTheRomZTable() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
-        RoomEntity zora = new RoomEntity(0, 0, ENTITY_ZORA, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity zora =
+                new RoomEntity(0, 0, ENTITY_ZORA, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
-        ZoraMotion.Update submerged = motion.advance(zora, 0, 0x02, 0x20, 0x20, () -> 0,
-            entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
-        ZoraMotion.Update stateTwo = motion.advance(submerged.entity(), 0, 0x42,
-            0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
-        ZoraMotion.Update stateThree = motion.advance(stateTwo.entity(), 0, 0x42,
-            0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
+        ZoraMotion.Update submerged = motion.advance(
+                zora, 0, 0x02, 0x20, 0x20, () -> 0, entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
+        ZoraMotion.Update stateTwo = motion.advance(
+                submerged.entity(), 0, 0x42, 0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
+        ZoraMotion.Update stateThree = motion.advance(
+                stateTwo.entity(), 0, 0x42, 0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
 
         ZoraMotion.Update boundary = stateThree;
         for (int frame = 0; frame < 16; frame++) {
-            boundary = motion.advance(boundary.entity(), 0x60, 0x02,
-                0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
+            boundary = motion.advance(
+                    boundary.entity(), 0x60, 0x02, 0x20, 0x20, () -> 0, entity -> RoomEntityObjectSample.none());
         }
         assertEquals(0x00, boundary.entity().z());
     }
@@ -181,11 +218,22 @@ final class ZoraRuntimeTest {
     void roomRuntimeSpawnsZoraProjectileInHighestFreeSlot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity zora = new RoomEntity(0, 0, ENTITY_ZORA, 0x40, 0x40,
-            EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(zora), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity zora = new RoomEntity(
+                0,
+                0,
+                ENTITY_ZORA,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(zora), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
 
         for (int frame = 0; frame <= 0xD0; frame++) {
@@ -193,8 +241,9 @@ final class ZoraRuntimeTest {
         }
 
         RoomEntity projectile = runtime.inspection().snapshot().slots().stream()
-            .filter(entity -> entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE)
+                .findFirst()
+                .orElseThrow();
         assertEquals(15, projectile.slot());
         assertEquals(0x18, projectile.x());
         assertEquals(0x0E, projectile.y());
@@ -203,8 +252,9 @@ final class ZoraRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0xD4, 0x70, 0x50, () -> 0));
         RoomEntity flashedProjectile = runtime.inspection().snapshot().slots().stream()
-            .filter(entity -> entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x10, flashedProjectile.entityFlipAttribute());
     }
 

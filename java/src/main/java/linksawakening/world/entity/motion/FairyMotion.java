@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntity;
-
 import java.util.Objects;
 import java.util.function.IntSupplier;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntity;
 
 /**
  * Bank-$03's {@code DroppableFairyEntityHandler} movement and hover state.
@@ -27,15 +26,19 @@ public final class FairyMotion {
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int transitionCountdown) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown) {}
 
     public void initialize(int slot) {
         clear(slot);
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, int transitionCountdown) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            int transitionCountdown) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         validateSlot(entity.slot());
@@ -58,8 +61,7 @@ public final class FairyMotion {
         // Y is tested only if X failed, so either axis can select that branch.
         int distanceX = (linkEntityX - x) & 0xFF;
         int distanceY = (linkEntityY - y + z) & 0xFF;
-        boolean closeToLink = distanceX < LINK_DISTANCE_LIMIT
-            || distanceY < LINK_DISTANCE_LIMIT;
+        boolean closeToLink = distanceX < LINK_DISTANCE_LIMIT || distanceY < LINK_DISTANCE_LIMIT;
         if (closeToLink) {
             if (nextTransitionCountdown == 0) {
                 nextTransitionCountdown = RANDOM_HOVER_COUNTDOWN;
@@ -67,15 +69,13 @@ public final class FairyMotion {
                 speedY[slot] = randomHoverSpeed(randomByteSupplier.getAsInt());
             }
         } else {
-            Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY,
-                LINK_VECTOR_LENGTH);
+            Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, LINK_VECTOR_LENGTH);
             // ApplyVectorTowardsLink writes Y first, then X.
             speedY[slot] = vector.y() & 0xFF;
             speedX[slot] = vector.x() & 0xFF;
         }
 
-        return new Update(withPositionAndVariant(entity, x, y, z, variant),
-            nextTransitionCountdown);
+        return new Update(withPositionAndVariant(entity, x, y, z, variant), nextTransitionCountdown);
     }
 
     public int speedX(int slot) {
@@ -126,15 +126,13 @@ public final class FairyMotion {
         return (z - 1) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         // GetVectorTowardsLink uses the same height-adjusted Y helper ($7EE9).
         int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
-        int result = divideComponent(Math.min(absoluteX, absoluteY),
-            Math.max(absoluteX, absoluteY), length);
+        int result = divideComponent(Math.min(absoluteX, absoluteY), Math.max(absoluteX, absoluteY), length);
         int x = absoluteX >= absoluteY ? length : result;
         int y = absoluteY > absoluteX ? length : result;
         if (distanceX < 0) {
@@ -163,8 +161,7 @@ public final class FairyMotion {
         return result;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -178,11 +175,21 @@ public final class FairyMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                      int z, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z & 0xFF, -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {
@@ -202,6 +209,5 @@ public final class FairyMotion {
         }
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

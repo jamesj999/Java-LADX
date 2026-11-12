@@ -13,11 +13,9 @@ public final class KeyDropPointMotion {
     public static final int TRANSITION_COUNTDOWN = 0x68;
     public static final int DIALOG_TABLE = 0;
 
-    private KeyDropPointMotion() {
-    }
+    private KeyDropPointMotion() {}
 
-    public record Update(int nextTransitionCountdown, boolean holdAboveLink,
-                  int dialogLowId, int rewardItemType) {
+    public record Update(int nextTransitionCountdown, boolean holdAboveLink, int dialogLowId, int rewardItemType) {
         public Update {
             if (nextTransitionCountdown < 0 || nextTransitionCountdown > 0xFF) {
                 throw new IllegalArgumentException("Transition countdown must be a byte");
@@ -39,20 +37,22 @@ public final class KeyDropPointMotion {
             if (hookshotRoom) {
                 return new Update(0x0F, true, 0x93, ChestContentsTable.CHEST_HOOKSHOT);
             }
-            int dialog = switch (spriteVariant) {
-                case 1 -> 0x00;
-                case 2 -> 0xA3;
-                case 3 -> 0xA4;
-                case 4 -> 0xA5;
-                default -> 0x00;
-            };
-            int reward = switch (spriteVariant) {
-                case 1 -> ChestContentsTable.CHEST_TAIL_KEY;
-                case 2 -> ChestContentsTable.CHEST_ANGLER_KEY;
-                case 3 -> ChestContentsTable.CHEST_FACE_KEY;
-                case 4 -> ChestContentsTable.CHEST_BIRD_KEY;
-                default -> -1;
-            };
+            int dialog =
+                    switch (spriteVariant) {
+                        case 1 -> 0x00;
+                        case 2 -> 0xA3;
+                        case 3 -> 0xA4;
+                        case 4 -> 0xA5;
+                        default -> 0x00;
+                    };
+            int reward =
+                    switch (spriteVariant) {
+                        case 1 -> ChestContentsTable.CHEST_TAIL_KEY;
+                        case 2 -> ChestContentsTable.CHEST_ANGLER_KEY;
+                        case 3 -> ChestContentsTable.CHEST_FACE_KEY;
+                        case 4 -> ChestContentsTable.CHEST_BIRD_KEY;
+                        default -> -1;
+                    };
             return new Update(0x0F, true, dialog, reward);
         }
         return new Update(transitionCountdown, true, -1, -1);

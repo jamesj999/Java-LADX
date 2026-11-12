@@ -1,9 +1,10 @@
 package linksawakening.audio.apu;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import static org.junit.jupiter.api.Assertions.*;
 
 /** Hardware reference: https://gbdev.io/pandocs/Audio_details.html */
 final class ApuPhaseRegressionTest {
@@ -35,8 +36,10 @@ final class ApuPhaseRegressionTest {
             audible.writeControl(0x80);
             silent.writeControl(0x80);
             for (int i = 0; i < 1024; i++) {
-                audible.tick(); silent.tick();
-                audible.render(); silent.render();
+                audible.tick();
+                silent.tick();
+                audible.render();
+                silent.render();
             }
             for (int i = 0; i < 100; i++) {
                 assertEquals((1 - audible.render()) / 14, 1 - silent.render(), 1e-9);
@@ -51,8 +54,10 @@ final class ApuPhaseRegressionTest {
             audible.writeFrequencyHigh(0x83);
             silent.writeFrequencyHigh(0x83);
             for (int i = 0; i < 1024; i++) {
-                audible.tick(); silent.tick();
-                audible.render(); silent.render();
+                audible.tick();
+                silent.tick();
+                audible.render();
+                silent.render();
             }
             for (int i = 0; i < 1000; i++) {
                 assertEquals((1 - audible.render()) / 14, 1 - silent.render(), 1e-9);

@@ -1,5 +1,8 @@
 package linksawakening.audio.browser;
 
+import java.io.IOException;
+import java.io.InputStream;
+import javax.swing.SwingUtilities;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicCatalog;
 import linksawakening.audio.music.MusicDriver;
@@ -7,16 +10,11 @@ import linksawakening.audio.openal.OpenAlMusicPlayer;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 
-import javax.swing.SwingUtilities;
-import java.io.IOException;
-import java.io.InputStream;
-
 public final class AudioBrowserMain {
     private static final int SAMPLE_RATE = 48_000;
     private static final String ROM_RESOURCE = "rom/azle.gbc";
 
-    private AudioBrowserMain() {
-    }
+    private AudioBrowserMain() {}
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(AudioBrowserMain::start);

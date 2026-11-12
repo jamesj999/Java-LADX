@@ -1,7 +1,5 @@
 package linksawakening.app.gameplay;
 
-
-
 import linksawakening.entity.Link;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
@@ -20,7 +18,8 @@ public final class TransitionPhase implements Runnable {
         this.scrollSpeed = scrollSpeed;
     }
 
-    @Override public void run() {
+    @Override
+    public void run() {
         if (scroll.isActive()) scroll.tick(scrollSpeed);
         transition.tick();
         if (link != null && (scroll.isActive() || transition.isInputBlocked())) {

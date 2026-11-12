@@ -7,27 +7,39 @@ package linksawakening.world.entity;
  * value is retained for table tests and debug states that represent the
  * strongest blade directly.</p>
  */
-public record EnemyAttackContext(int swordLevel,
-                                 boolean redTunic,
-                                 boolean pieceOfPower,
-                                 boolean spinAttack,
-                                 boolean pegasusBoots,
-                                 boolean usingShield,
-                                 int romDirection,
-                                 int linkZ) {
+public record EnemyAttackContext(
+        int swordLevel,
+        boolean redTunic,
+        boolean pieceOfPower,
+        boolean spinAttack,
+        boolean pegasusBoots,
+        boolean usingShield,
+        int romDirection,
+        int linkZ) {
     // $20:4B3A-$4B49, in ROM right/left/up/down order.
     private static final int[] SHIELD_X = {16, 0, 8, 8};
     private static final int[] SHIELD_WIDTH = {3, 3, 8, 8};
     private static final int[] SHIELD_Y = {8, 8, 0, 13};
     private static final int[] SHIELD_HEIGHT = {8, 8, 3, 4};
 
-    int shieldX(int linkX) { return (linkX + SHIELD_X[romDirection]) & 0xFF; }
-    int shieldY(int linkY) { return (linkY - linkZ + SHIELD_Y[romDirection]) & 0xFF; }
-    int shieldWidth() { return SHIELD_WIDTH[romDirection]; }
-    int shieldHeight() { return SHIELD_HEIGHT[romDirection]; }
+    int shieldX(int linkX) {
+        return (linkX + SHIELD_X[romDirection]) & 0xFF;
+    }
 
-    public EnemyAttackContext(int swordLevel, boolean redTunic, boolean pieceOfPower,
-                              boolean spinAttack, boolean pegasusBoots) {
+    int shieldY(int linkY) {
+        return (linkY - linkZ + SHIELD_Y[romDirection]) & 0xFF;
+    }
+
+    int shieldWidth() {
+        return SHIELD_WIDTH[romDirection];
+    }
+
+    int shieldHeight() {
+        return SHIELD_HEIGHT[romDirection];
+    }
+
+    public EnemyAttackContext(
+            int swordLevel, boolean redTunic, boolean pieceOfPower, boolean spinAttack, boolean pegasusBoots) {
         this(swordLevel, redTunic, pieceOfPower, spinAttack, pegasusBoots, false, 0, 0);
     }
 

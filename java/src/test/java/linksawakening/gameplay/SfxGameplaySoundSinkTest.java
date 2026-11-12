@@ -1,5 +1,12 @@
 package linksawakening.gameplay;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
@@ -7,68 +14,50 @@ import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @linksawakening.testing.RequiresRom
 final class SfxGameplaySoundSinkTest {
     @Test
     void gameplaySoundMapResolvesImplementedEventsToRealLadxEffects() {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom()));
 
-        assertMapped(map, GameplaySoundEvent.ROC_FEATHER_JUMP,
-                SoundEffectNamespace.JINGLE, 0x0D, "JINGLE_FEATHER_JUMP");
-        assertMapped(map, GameplaySoundEvent.STAIRS,
-                SoundEffectNamespace.NOISE, 0x06, "NOISE_SFX_STAIRS");
-        assertMapped(map, GameplaySoundEvent.PIT_FALL,
-                SoundEffectNamespace.WAVE, 0x0C, "WAVE_SFX_LINK_FALL");
-        assertMapped(map, GameplaySoundEvent.SWORD_SWING_A,
-                SoundEffectNamespace.NOISE, 0x02, "NOISE_SFX_SWORD_SWING_A");
-        assertMapped(map, GameplaySoundEvent.SWORD_SWING_B,
-                SoundEffectNamespace.NOISE, 0x14, "NOISE_SFX_SWORD_SWING_B");
-        assertMapped(map, GameplaySoundEvent.SWORD_SWING_C,
-                SoundEffectNamespace.NOISE, 0x15, "NOISE_SFX_SWORD_SWING_C");
-        assertMapped(map, GameplaySoundEvent.SWORD_SWING_D,
-                SoundEffectNamespace.NOISE, 0x18, "NOISE_SFX_SWORD_SWING_D");
-        assertMapped(map, GameplaySoundEvent.SWORD_FULLY_CHARGED,
-                SoundEffectNamespace.JINGLE, 0x04, "JINGLE_CHARGING_SWORD");
-        assertMapped(map, GameplaySoundEvent.SPIN_ATTACK,
-                SoundEffectNamespace.NOISE, 0x03, "NOISE_SFX_SPIN_ATTACK");
-        assertMapped(map, GameplaySoundEvent.CUT_GRASS,
-                SoundEffectNamespace.NOISE, 0x05, "NOISE_SFX_CUT_GRASS");
-        assertMapped(map, GameplaySoundEvent.INVENTORY_OPEN,
-                SoundEffectNamespace.JINGLE, 0x11, "JINGLE_OPEN_INVENTORY");
-        assertMapped(map, GameplaySoundEvent.INVENTORY_CLOSE,
-                SoundEffectNamespace.JINGLE, 0x12, "JINGLE_CLOSE_INVENTORY");
-        assertMapped(map, GameplaySoundEvent.MENU_MOVE,
-                SoundEffectNamespace.JINGLE, 0x0A, "JINGLE_MOVE_SELECTION");
-        assertMapped(map, GameplaySoundEvent.MENU_VALIDATE,
-                SoundEffectNamespace.JINGLE, 0x13, "JINGLE_VALIDATE");
-        assertMapped(map, GameplaySoundEvent.SHIELD_TING,
-                SoundEffectNamespace.JINGLE, 0x16, "JINGLE_SHIELD_TING");
-        assertMapped(map, GameplaySoundEvent.LINK_HURT,
-                SoundEffectNamespace.WAVE, 0x03, "WAVE_SFX_LINK_HURT");
-        assertMapped(map, GameplaySoundEvent.ENEMY_BUMP,
-                SoundEffectNamespace.JINGLE, 0x09, "JINGLE_BUMP");
-        assertMapped(map, GameplaySoundEvent.PUZZLE_SOLVED,
-                SoundEffectNamespace.JINGLE, 0x02, "JINGLE_PUZZLE_SOLVED");
-        assertMapped(map, GameplaySoundEvent.ENEMY_HIT,
-                SoundEffectNamespace.JINGLE, 0x03, "JINGLE_ENEMY_HIT");
-        assertMapped(map, GameplaySoundEvent.SWORD_POKE,
-                SoundEffectNamespace.JINGLE, 0x07, "JINGLE_SWORD_POKING");
-        assertMapped(map, GameplaySoundEvent.ENEMY_BURNING,
-                SoundEffectNamespace.NOISE, 0x12, "NOISE_SFX_BURSTING_FLAME");
-        assertMapped(map, GameplaySoundEvent.ENEMY_DESTROYED,
-                SoundEffectNamespace.NOISE, 0x13, "NOISE_SFX_ENEMY_DESTROYED");
-        assertMapped(map, GameplaySoundEvent.BEAMOS_LASER,
-                SoundEffectNamespace.NOISE, 0x08, "NOISE_SFX_BEAMOS_LASER");
-        assertMapped(map, GameplaySoundEvent.SPIKE_TRAP_WHOOSH,
-                SoundEffectNamespace.NOISE, 0x0A, "NOISE_SFX_WHOOSH");
+        assertMapped(
+                map, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D, "JINGLE_FEATHER_JUMP");
+        assertMapped(map, GameplaySoundEvent.STAIRS, SoundEffectNamespace.NOISE, 0x06, "NOISE_SFX_STAIRS");
+        assertMapped(map, GameplaySoundEvent.PIT_FALL, SoundEffectNamespace.WAVE, 0x0C, "WAVE_SFX_LINK_FALL");
+        assertMapped(
+                map, GameplaySoundEvent.SWORD_SWING_A, SoundEffectNamespace.NOISE, 0x02, "NOISE_SFX_SWORD_SWING_A");
+        assertMapped(
+                map, GameplaySoundEvent.SWORD_SWING_B, SoundEffectNamespace.NOISE, 0x14, "NOISE_SFX_SWORD_SWING_B");
+        assertMapped(
+                map, GameplaySoundEvent.SWORD_SWING_C, SoundEffectNamespace.NOISE, 0x15, "NOISE_SFX_SWORD_SWING_C");
+        assertMapped(
+                map, GameplaySoundEvent.SWORD_SWING_D, SoundEffectNamespace.NOISE, 0x18, "NOISE_SFX_SWORD_SWING_D");
+        assertMapped(
+                map,
+                GameplaySoundEvent.SWORD_FULLY_CHARGED,
+                SoundEffectNamespace.JINGLE,
+                0x04,
+                "JINGLE_CHARGING_SWORD");
+        assertMapped(map, GameplaySoundEvent.SPIN_ATTACK, SoundEffectNamespace.NOISE, 0x03, "NOISE_SFX_SPIN_ATTACK");
+        assertMapped(map, GameplaySoundEvent.CUT_GRASS, SoundEffectNamespace.NOISE, 0x05, "NOISE_SFX_CUT_GRASS");
+        assertMapped(
+                map, GameplaySoundEvent.INVENTORY_OPEN, SoundEffectNamespace.JINGLE, 0x11, "JINGLE_OPEN_INVENTORY");
+        assertMapped(
+                map, GameplaySoundEvent.INVENTORY_CLOSE, SoundEffectNamespace.JINGLE, 0x12, "JINGLE_CLOSE_INVENTORY");
+        assertMapped(map, GameplaySoundEvent.MENU_MOVE, SoundEffectNamespace.JINGLE, 0x0A, "JINGLE_MOVE_SELECTION");
+        assertMapped(map, GameplaySoundEvent.MENU_VALIDATE, SoundEffectNamespace.JINGLE, 0x13, "JINGLE_VALIDATE");
+        assertMapped(map, GameplaySoundEvent.SHIELD_TING, SoundEffectNamespace.JINGLE, 0x16, "JINGLE_SHIELD_TING");
+        assertMapped(map, GameplaySoundEvent.LINK_HURT, SoundEffectNamespace.WAVE, 0x03, "WAVE_SFX_LINK_HURT");
+        assertMapped(map, GameplaySoundEvent.ENEMY_BUMP, SoundEffectNamespace.JINGLE, 0x09, "JINGLE_BUMP");
+        assertMapped(map, GameplaySoundEvent.PUZZLE_SOLVED, SoundEffectNamespace.JINGLE, 0x02, "JINGLE_PUZZLE_SOLVED");
+        assertMapped(map, GameplaySoundEvent.ENEMY_HIT, SoundEffectNamespace.JINGLE, 0x03, "JINGLE_ENEMY_HIT");
+        assertMapped(map, GameplaySoundEvent.SWORD_POKE, SoundEffectNamespace.JINGLE, 0x07, "JINGLE_SWORD_POKING");
+        assertMapped(
+                map, GameplaySoundEvent.ENEMY_BURNING, SoundEffectNamespace.NOISE, 0x12, "NOISE_SFX_BURSTING_FLAME");
+        assertMapped(
+                map, GameplaySoundEvent.ENEMY_DESTROYED, SoundEffectNamespace.NOISE, 0x13, "NOISE_SFX_ENEMY_DESTROYED");
+        assertMapped(map, GameplaySoundEvent.BEAMOS_LASER, SoundEffectNamespace.NOISE, 0x08, "NOISE_SFX_BEAMOS_LASER");
+        assertMapped(map, GameplaySoundEvent.SPIKE_TRAP_WHOOSH, SoundEffectNamespace.NOISE, 0x0A, "NOISE_SFX_WHOOSH");
     }
 
     @Test
@@ -91,11 +80,7 @@ final class SfxGameplaySoundSinkTest {
     }
 
     private static void assertMapped(
-            GameplaySoundEffectMap map,
-            GameplaySoundEvent event,
-            SoundEffectNamespace namespace,
-            int id,
-            String name) {
+            GameplaySoundEffectMap map, GameplaySoundEvent event, SoundEffectNamespace namespace, int id, String name) {
         SoundEffect effect = map.resolve(event).orElseThrow();
 
         assertEquals(namespace, effect.namespace());

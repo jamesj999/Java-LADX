@@ -1,21 +1,13 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.RoomConstants;
-import linksawakening.world.room.LoadedRoom;
-import linksawakening.world.room.RoomLoader;
-
-import linksawakening.world.transition.Warp;
-
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import linksawakening.rom.RomBank;
+import linksawakening.world.transition.Warp;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class RoomLoaderTest {
@@ -23,9 +15,20 @@ final class RoomLoaderTest {
     @Test
     void loadedRoomKeepsThePreStaircaseConstructorSignature() {
         LoadedRoom room = new LoadedRoom(
-            0, Warp.CATEGORY_INDOOR, 0, 0,
-            new int[0x100], null, null, new int[0], new int[0], null,
-            List.of(), false, 0x03, null);
+                0,
+                Warp.CATEGORY_INDOOR,
+                0,
+                0,
+                new int[0x100],
+                null,
+                null,
+                new int[0],
+                new int[0],
+                null,
+                List.of(),
+                false,
+                0x03,
+                null);
 
         assertEquals(0x03, room.shutterDoorMask());
         assertEquals(-1, room.staircaseLocation());
@@ -58,8 +61,7 @@ final class RoomLoaderTest {
 
     @Test
     void indoorLoaderCanPreserveSideScrollingMapCategory() {
-        LoadedRoom loaded = new RoomLoader(loadRom()).loadIndoor(
-            0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL);
+        LoadedRoom loaded = new RoomLoader(loadRom()).loadIndoor(0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL);
 
         assertEquals(Warp.CATEGORY_SIDESCROLL, loaded.mapCategory());
     }
@@ -71,16 +73,20 @@ final class RoomLoaderTest {
         assertEquals(7, loaded.entities().loadedEntities().size());
         assertEquals(0x73, loaded.entities().loadedEntities().get(0).type());
         assertEquals(0x43, loaded.entities().spriteSelection().groupIndex());
-        assertArrayEquals(new int[] { 0xA4, 0xE5, 0xE6, 0xDC },
-            loaded.entities().spriteSelection().sheetValues());
+        assertArrayEquals(
+                new int[] {0xA4, 0xE5, 0xE6, 0xDC},
+                loaded.entities().spriteSelection().sheetValues());
     }
 
     @Test
     void ordinaryOverworldRoomAppendsItsTwoRomObjectPalettes() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(rom).loadOverworld(0x00)
-            .entities().spriteSelection().objectPalettes();
+        int[][] palettes = new RoomLoader(rom)
+                .loadOverworld(0x00)
+                .entities()
+                .spriteSelection()
+                .objectPalettes();
 
         assertEquals(8, palettes.length);
         assertArrayEquals(readPalette(rom, 0x21, 0x5BD0), palettes[6]);
@@ -93,20 +99,24 @@ final class RoomLoaderTest {
         int[] rawRoomPalette = readPalette(rom, 0x21, 0x56D8);
         int[] specialColors = readPalette(rom, 0x21, 0x56C8);
 
-        int[] palette = new RoomLoader(rom).loadOverworld(0x92)
-            .entities().spriteSelection().objectPalettes()[7];
+        int[] palette = new RoomLoader(rom)
+                .loadOverworld(0x92)
+                .entities()
+                .spriteSelection()
+                .objectPalettes()[7];
 
-        assertArrayEquals(new int[] {
-            rawRoomPalette[0], specialColors[3], specialColors[1], specialColors[0]
-        }, palette);
+        assertArrayEquals(new int[] {rawRoomPalette[0], specialColors[3], specialColors[1], specialColors[0]}, palette);
     }
 
     @Test
     void ordinaryIndoorRoomAppendsItsTwoRomObjectPalettes() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(rom).loadIndoor(0x10, 0xA4, null)
-            .entities().spriteSelection().objectPalettes();
+        int[][] palettes = new RoomLoader(rom)
+                .loadIndoor(0x10, 0xA4, null)
+                .entities()
+                .spriteSelection()
+                .objectPalettes();
 
         assertEquals(8, palettes.length);
         assertArrayEquals(readPalette(rom, 0x21, 0x69F0), palettes[6]);
@@ -131,8 +141,11 @@ final class RoomLoaderTest {
     void ordinaryDungeonRoomAppendsItsTwoRomObjectPalettes() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(rom).loadIndoor(0x00, 0x25, null)
-            .entities().spriteSelection().objectPalettes();
+        int[][] palettes = new RoomLoader(rom)
+                .loadIndoor(0x00, 0x25, null)
+                .entities()
+                .spriteSelection()
+                .objectPalettes();
 
         assertEquals(8, palettes.length);
         assertArrayEquals(readPalette(rom, 0x21, 0x6020), palettes[6]);
@@ -143,9 +156,11 @@ final class RoomLoaderTest {
     void sideScrollingDungeonRoomUsesDungeonPaletteBObjectRows() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(rom).loadIndoor(
-            0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL)
-            .entities().spriteSelection().objectPalettes();
+        int[][] palettes = new RoomLoader(rom)
+                .loadIndoor(0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL)
+                .entities()
+                .spriteSelection()
+                .objectPalettes();
 
         assertArrayEquals(readPalette(rom, 0x21, 0x6070), palettes[6]);
         assertArrayEquals(readPalette(rom, 0x21, 0x6078), palettes[7]);
@@ -155,9 +170,11 @@ final class RoomLoaderTest {
     void turtleRockSideScrollingOverrideUsesItsDedicatedObjectRows() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(rom).loadIndoor(
-            0x07, 0x64, null, Warp.CATEGORY_SIDESCROLL)
-            .entities().spriteSelection().objectPalettes();
+        int[][] palettes = new RoomLoader(rom)
+                .loadIndoor(0x07, 0x64, null, Warp.CATEGORY_SIDESCROLL)
+                .entities()
+                .spriteSelection()
+                .objectPalettes();
 
         assertArrayEquals(readPalette(rom, 0x21, 0x6790), palettes[6]);
         assertArrayEquals(readPalette(rom, 0x21, 0x6798), palettes[7]);
@@ -167,8 +184,7 @@ final class RoomLoaderTest {
         int[] palette = new int[4];
         int offset = RomBank.romOffset(bank, address);
         for (int color = 0; color < palette.length; color++) {
-            int encoded = Byte.toUnsignedInt(rom[offset++])
-                | (Byte.toUnsignedInt(rom[offset++]) << 8);
+            int encoded = Byte.toUnsignedInt(rom[offset++]) | (Byte.toUnsignedInt(rom[offset++]) << 8);
             palette[color] = RomBank.decodeRgb555(encoded);
         }
         return palette;

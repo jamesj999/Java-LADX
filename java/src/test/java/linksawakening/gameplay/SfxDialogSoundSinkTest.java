@@ -1,5 +1,13 @@
 package linksawakening.gameplay;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
@@ -8,27 +16,26 @@ import linksawakening.audio.sfx.SoundEffectPlayer;
 import linksawakening.dialog.DialogController;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @linksawakening.testing.RequiresRom
 final class SfxDialogSoundSinkTest {
     @Test
     void dialogSoundMapResolvesMessageboxEventsToRealLadxEffects() {
         DialogSoundEffectMap map = DialogSoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom()));
 
-        assertMapped(map, DialogController.SoundEvent.TEXT_PRINT,
-                SoundEffectNamespace.WAVE, 0x0F, "WAVE_SFX_TEXT_PRINT");
-        assertMapped(map, DialogController.SoundEvent.DIALOG_BREAK,
-                SoundEffectNamespace.JINGLE, 0x15, "JINGLE_DIALOG_BREAK");
-        assertMapped(map, DialogController.SoundEvent.MOVE_SELECTION,
-                SoundEffectNamespace.JINGLE, 0x0A, "JINGLE_MOVE_SELECTION");
+        assertMapped(
+                map, DialogController.SoundEvent.TEXT_PRINT, SoundEffectNamespace.WAVE, 0x0F, "WAVE_SFX_TEXT_PRINT");
+        assertMapped(
+                map,
+                DialogController.SoundEvent.DIALOG_BREAK,
+                SoundEffectNamespace.JINGLE,
+                0x15,
+                "JINGLE_DIALOG_BREAK");
+        assertMapped(
+                map,
+                DialogController.SoundEvent.MOVE_SELECTION,
+                SoundEffectNamespace.JINGLE,
+                0x0A,
+                "JINGLE_MOVE_SELECTION");
     }
 
     @Test

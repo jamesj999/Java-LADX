@@ -21,15 +21,12 @@ public final class EnemyRecoilMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] active = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, boolean blocked) {
-    }
+    public record Update(RoomEntity entity, boolean blocked) {}
 
-    public record Vector(int x, int y) {
-    }
+    public record Vector(int x, int y) {}
 
     /** Mirrors GetVectorTowardsLink ($03:7E45), including coincident positions. */
-    public static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                    int linkX, int linkY, int length) {
+    public static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         if (length < 0 || length > 0xFF) {
             throw new IllegalArgumentException("Vector length must be an unsigned byte");
         }
@@ -55,14 +52,13 @@ public final class EnemyRecoilMotion {
         return new Vector(vectorX, vectorY);
     }
 
-    public static Vector vectorTowardsLinkForLinkCollision(int entityX, int entityY, int entityZ,
-                                                    int linkX, int linkY, int length) {
+    public static Vector vectorTowardsLinkForLinkCollision(
+            int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         return vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length);
     }
 
     /** Mirrors ConfigureEntityRecoil after GetVectorTowardsLink returns. */
-    public void configure(int slot, int entityX, int entityY, int entityZ,
-                   int linkX, int linkY, int length) {
+    public void configure(int slot, int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         validateSlot(slot);
         if (length < 0 || length > 0xFF) {
             throw new IllegalArgumentException("Recoil length must be an unsigned byte");
@@ -91,8 +87,8 @@ public final class EnemyRecoilMotion {
      * Unlike {@link #configure}, the vector points from the active source
      * entity towards the target and is stored without negation.
      */
-    public void configureFromSource(int slot, int sourceX, int sourceY, int sourceZ,
-                             int targetX, int targetY, int length) {
+    public void configureFromSource(
+            int slot, int sourceX, int sourceY, int sourceZ, int targetX, int targetY, int length) {
         validateSlot(slot);
         if (length < 0 || length > 0xFF) {
             throw new IllegalArgumentException("Recoil length must be an unsigned byte");
@@ -115,8 +111,8 @@ public final class EnemyRecoilMotion {
      * block. Bank-$03 calls StopEntityRecoilOnCollision; bank-$06 Hard Hat does
      * not, so its handler uses {@code clearOnBlocked == false}.
      */
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
-                   boolean clearOnBlocked) {
+    public Update advance(
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean clearOnBlocked) {
         int slot = entity.slot();
         if (!active[slot]) {
             return new Update(entity, false);
@@ -127,14 +123,11 @@ public final class EnemyRecoilMotion {
         boolean blocked = false;
         if (backgroundCollision != null) {
             if (x != entity.x()
-                && backgroundCollision.blocks(entity, horizontalDirection(recoilSpeedX[slot]),
-                    x, entity.y())) {
+                    && backgroundCollision.blocks(entity, horizontalDirection(recoilSpeedX[slot]), x, entity.y())) {
                 x = entity.x();
                 blocked = true;
             }
-            if (y != entity.y()
-                && backgroundCollision.blocks(entity, verticalDirection(recoilSpeedY[slot]),
-                    x, y)) {
+            if (y != entity.y() && backgroundCollision.blocks(entity, verticalDirection(recoilSpeedY[slot]), x, y)) {
                 y = entity.y();
                 blocked = true;
             }
@@ -194,8 +187,7 @@ public final class EnemyRecoilMotion {
     }
 
     /** Port of AddEntitySpeedToPos_03 for one position/accumulator pair. */
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -219,9 +211,20 @@ public final class EnemyRecoilMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {

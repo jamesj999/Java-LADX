@@ -1,13 +1,12 @@
 package linksawakening.world.entity.motion;
 
+import java.util.List;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.List;
-import java.util.function.IntSupplier;
 
 /** Bank-$36 Color Shell state machine and fixed-point movement tables. */
 public final class ColorShellMotion {
@@ -54,28 +53,55 @@ public final class ColorShellMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(entity, frameCounter, linkEntityX, linkEntityY,
-            randomByteSupplier, backgroundCollision, 0,
-            ColorShellWorld.none(), List.of(entity));
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundCollision,
+                0,
+                ColorShellWorld.none(),
+                List.of(entity));
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   int ignoreHitsCountdown) {
-        return advance(entity, frameCounter, linkEntityX, linkEntityY,
-            randomByteSupplier, backgroundCollision, ignoreHitsCountdown,
-            ColorShellWorld.none(), List.of(entity));
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int ignoreHitsCountdown) {
+        return advance(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundCollision,
+                ignoreHitsCountdown,
+                ColorShellWorld.none(),
+                List.of(entity));
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   int ignoreHitsCountdown, ColorShellWorld world,
-                   List<RoomEntity> allEntities) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int ignoreHitsCountdown,
+            ColorShellWorld world,
+            List<RoomEntity> allEntities) {
         if (entity == null || randomByteSupplier == null) {
             throw new IllegalArgumentException("Color Shell motion inputs cannot be null");
         }
@@ -96,11 +122,9 @@ public final class ColorShellMotion {
         boolean unloadRequested = false;
         switch (dispatchedState) {
             case 0 -> advanceState0(linkEntityX, linkEntityY, randomByteSupplier, slot);
-            case 1 -> advanceState1(frame, linkEntityX, linkEntityY,
-                backgroundCollision, slot, entity);
+            case 1 -> advanceState1(frame, linkEntityX, linkEntityY, backgroundCollision, slot, entity);
             case 2 -> advanceState2(frame, ignoreHitsCountdown, slot);
-            case 3 -> advanceState3(frame, ignoreHitsCountdown,
-                backgroundCollision, slot, entity);
+            case 3 -> advanceState3(frame, ignoreHitsCountdown, backgroundCollision, slot, entity);
             case 4 -> nextIgnoreHitsCountdown = advanceState4(slot);
             case 5 -> nextIgnoreHitsCountdown = advanceState5(entity, ignoreHitsCountdown, slot);
             case 6 -> advanceState6(slot);
@@ -111,14 +135,23 @@ public final class ColorShellMotion {
             case 0x0B -> advanceStateB(slot);
             case 0x0C -> advanceStateC(entity, effects, entities, slot);
             case 0x0D -> unloadRequested = advanceStateD(entity, effects, slot);
-            default -> throw new IllegalStateException("Invalid Color Shell state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Color Shell state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            positionX[slot], positionY[slot], entity.status(), entity.spriteDefinition(),
-            spriteVariant[slot], entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            positionZ[slot], -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                positionX[slot],
+                positionY[slot],
+                entity.status(),
+                entity.spriteDefinition(),
+                spriteVariant[slot],
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                positionZ[slot],
+                -1,
+                false);
         return new Update(updated, nextIgnoreHitsCountdown, unloadRequested);
     }
 
@@ -173,8 +206,7 @@ public final class ColorShellMotion {
     }
 
     /** Test/fixture hook shaped like writes to the bank-$36 WRAM tables. */
-    public void setStateForTest(int slot, int state, int transitionCountdown, int direction,
-                         int speedX, int speedY) {
+    public void setStateForTest(int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
         if (state < 0 || state > 0x0D) {
             throw new IllegalArgumentException("Color Shell state out of range: " + state);
         }
@@ -196,22 +228,25 @@ public final class ColorShellMotion {
         state[slot] = 0x06;
     }
 
-    private void advanceState0(int linkEntityX, int linkEntityY,
-                               IntSupplier randomByteSupplier, int slot) {
+    private void advanceState0(int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier, int slot) {
         if (transitionCountdown[slot] == 0) {
             direction[slot] = ((randomByteSupplier.getAsInt() & 0xFF) & 0x06) >>> 1;
             transitionCountdown[slot] = 0x40;
             state[slot] = 1;
         }
         if (unsignedDistance(linkEntityX, positionX[slot]) < 0x30
-            && unsignedDistance(linkEntityY, positionY[slot]) < 0x30) {
+                && unsignedDistance(linkEntityY, positionY[slot]) < 0x30) {
             state[slot] = 1;
         }
     }
 
-    private void advanceState1(int frame, int linkEntityX, int linkEntityY,
-                               RoomEntityBackgroundCollision backgroundCollision,
-                               int slot, RoomEntity entity) {
+    private void advanceState1(
+            int frame,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int slot,
+            RoomEntity entity) {
         int currentDirection = direction[slot] & 0x03;
         speedX[slot] = SPEED_X_BY_DIRECTION[currentDirection];
         speedY[slot] = SPEED_Y_BY_DIRECTION[currentDirection];
@@ -221,9 +256,8 @@ public final class ColorShellMotion {
             transitionCountdown[slot] = 0x10;
             state[slot] = 0;
             if (unsignedDistance(linkEntityX, positionX[slot]) < 0x20
-                && unsignedDistance(linkEntityY, positionY[slot]) < 0x20) {
-                Vector vector = vectorTowardsLink(positionX[slot], positionY[slot],
-                    linkEntityX, linkEntityY, 0x0E);
+                    && unsignedDistance(linkEntityY, positionY[slot]) < 0x20) {
+                Vector vector = vectorTowardsLink(positionX[slot], positionY[slot], linkEntityX, linkEntityY, 0x0E);
                 speedX[slot] = vector.x();
                 speedY[slot] = vector.y();
                 transitionCountdown[slot] = 0x20;
@@ -247,9 +281,12 @@ public final class ColorShellMotion {
         }
     }
 
-    private void advanceState3(int frame, int ignoreHitsCountdown,
-                               RoomEntityBackgroundCollision backgroundCollision,
-                               int slot, RoomEntity entity) {
+    private void advanceState3(
+            int frame,
+            int ignoreHitsCountdown,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int slot,
+            RoomEntity entity) {
         if (transitionCountdown[slot] == 0) {
             state[slot] = 1;
             speedX[slot] = 0;
@@ -293,8 +330,7 @@ public final class ColorShellMotion {
 
     private void advanceState7(int slot) {
         speedZ[slot] = (speedZ[slot] - 1) & 0xFF;
-        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot],
-            speedZAccumulator, slot);
+        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot], speedZAccumulator, slot);
         if ((positionZ[slot] & 0x80) != 0) {
             positionZ[slot] = 0;
             speedZ[slot] = 0;
@@ -320,8 +356,7 @@ public final class ColorShellMotion {
         state[slot] = 9;
     }
 
-    private void advanceState9(RoomEntityBackgroundCollision backgroundCollision,
-                               int slot, RoomEntity entity) {
+    private void advanceState9(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
         if (transitionCountdown[slot] != 0) {
             return;
         }
@@ -329,8 +364,7 @@ public final class ColorShellMotion {
             moveWithBackground(entity, backgroundCollision, false, slot);
         }
         speedZ[slot] = (speedZ[slot] - 1) & 0xFF;
-        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot],
-            speedZAccumulator, slot);
+        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot], speedZAccumulator, slot);
         if ((positionZ[slot] & 0x80) != 0) {
             positionZ[slot] = 0;
             speedZ[slot] = 0x08;
@@ -339,12 +373,10 @@ public final class ColorShellMotion {
         }
     }
 
-    private void advanceStateA(RoomEntityBackgroundCollision backgroundCollision,
-                               int slot, RoomEntity entity) {
+    private void advanceStateA(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
         moveWithBackground(entity, backgroundCollision, false, slot);
         speedZ[slot] = (speedZ[slot] - 1) & 0xFF;
-        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot],
-            speedZAccumulator, slot);
+        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot], speedZAccumulator, slot);
         if ((positionZ[slot] & 0x80) != 0) {
             transitionCountdown[slot] = 0x20;
             state[slot]++;
@@ -362,11 +394,13 @@ public final class ColorShellMotion {
         physicsFlags[slot] &= 0x7F;
     }
 
-    private void advanceStateC(RoomEntity entity, ColorShellWorld world,
-                               List<RoomEntity> allEntities, int slot) {
+    private void advanceStateC(RoomEntity entity, ColorShellWorld world, List<RoomEntity> allEntities, int slot) {
         for (RoomEntity other : allEntities) {
-            if (other == null || !isColorShellType(other.type()) || !other.loaded()
-                || other.status().value() == 0 || state[other.slot()] >= 0x0C) {
+            if (other == null
+                    || !isColorShellType(other.type())
+                    || !other.loaded()
+                    || other.status().value() == 0
+                    || state[other.slot()] >= 0x0C) {
                 continue;
             }
             return;
@@ -397,17 +431,18 @@ public final class ColorShellMotion {
         }
     }
 
-    private void moveWithBackground(RoomEntity entity,
-                                    RoomEntityBackgroundCollision backgroundCollision,
-                                    boolean clampPosition, int slot) {
+    private void moveWithBackground(
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean clampPosition, int slot) {
         int x = addSpeedToPosition(positionX[slot], speedX[slot], speedXAccumulator, slot);
-        if (x != positionX[slot] && backgroundCollision != null
-            && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, positionY[slot])) {
+        if (x != positionX[slot]
+                && backgroundCollision != null
+                && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, positionY[slot])) {
             x = positionX[slot];
         }
         int y = addSpeedToPosition(positionY[slot], speedY[slot], speedYAccumulator, slot);
-        if (y != positionY[slot] && backgroundCollision != null
-            && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
+        if (y != positionY[slot]
+                && backgroundCollision != null
+                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
             y = positionY[slot];
         }
         positionX[slot] = clampPosition ? clamp(x, 0x16, 0x89) : x & 0xFF;
@@ -436,8 +471,7 @@ public final class ColorShellMotion {
         return Math.max(minimum, Math.min(maximum, value & 0xFF));
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -456,8 +490,7 @@ public final class ColorShellMotion {
         return (signedByte(value) >> 1) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                            int linkEntityX, int linkEntityY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkEntityX, int linkEntityY, int length) {
         int distanceX = signedByte((linkEntityX - entityX) & 0xFF);
         int distanceY = signedByte((linkEntityY - entityY) & 0xFF);
         boolean yIsLargerAxis = Math.abs(distanceY) > Math.abs(distanceX);
@@ -500,6 +533,5 @@ public final class ColorShellMotion {
         }
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

@@ -30,16 +30,14 @@ public final class PincerMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int state, int transitionCountdown, int physicsFlags) {
-    }
+    public record Update(RoomEntity entity, int state, int transitionCountdown, int physicsFlags) {}
 
     public void initialize(int slot) {
         clear(slot);
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int transitionCountdown, int physicsFlags,
-                   int linkX, int linkY) {
+    public Update advance(RoomEntity entity, int transitionCountdown, int physicsFlags, int linkX, int linkY) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -60,8 +58,7 @@ public final class PincerMotion {
                 variant = 0;
                 if (nextCountdown == 0) {
                     nextPhysicsFlags |= PROJECTILE_NOCLIP;
-                    if (withinSignedWindow(linkX - x, 0x20)
-                        && withinSignedWindow(linkY - y, 0x20)) {
+                    if (withinSignedWindow(linkX - x, 0x20) && withinSignedWindow(linkY - y, 0x20)) {
                         nextCountdown = 0x30;
                         state[slot] = 2;
                     }
@@ -77,8 +74,7 @@ public final class PincerMotion {
                     variant = 1;
                     if (nextCountdown == 0x10) {
                         Vector direction = vectorTowards(x, y, entity.z(), linkX, linkY, 0x1F);
-                        lungeVariant[slot] = lungeVariantForVector(
-                            direction.y(), direction.x());
+                        lungeVariant[slot] = lungeVariantForVector(direction.y(), direction.x());
                         Vector speed = vectorTowards(x, y, entity.z(), linkX, linkY, 0x18);
                         speedY[slot] = speed.y();
                         speedX[slot] = speed.x();
@@ -102,12 +98,10 @@ public final class PincerMotion {
                 variant = lungeVariant[slot];
             }
             case 5 -> {
-                Vector returnSpeed = vectorTowards(x, y, entity.z(),
-                    holeX[slot], holeY[slot], 0x10);
+                Vector returnSpeed = vectorTowards(x, y, entity.z(), holeX[slot], holeY[slot], 0x10);
                 speedY[slot] = returnSpeed.y();
                 speedX[slot] = returnSpeed.x();
-                boolean atHole = withinReturnWindow(holeX[slot] - x)
-                    && withinReturnWindow(holeY[slot] - y);
+                boolean atHole = withinReturnWindow(holeX[slot] - x) && withinReturnWindow(holeY[slot] - y);
                 if (atHole) {
                     x = holeX[slot];
                     y = holeY[slot];
@@ -128,9 +122,20 @@ public final class PincerMotion {
             }
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), ENTITY_TYPE,
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                ENTITY_TYPE,
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
         return new Update(updated, state[slot], nextCountdown, nextPhysicsFlags);
     }
 
@@ -170,8 +175,7 @@ public final class PincerMotion {
         initialized[slot] = false;
     }
 
-    void forceStateForTest(int slot, int newState, int transitionCountdown,
-                           int physicsFlags) {
+    void forceStateForTest(int slot, int newState, int transitionCountdown, int physicsFlags) {
         state[slot] = newState & 0xFF;
         lungeVariant[slot] = 2;
         speedX[slot] = 0;
@@ -201,8 +205,7 @@ public final class PincerMotion {
         return (direction >> 1) + 2;
     }
 
-    private static Vector vectorTowards(int entityX, int entityY, int entityZ,
-                                        int targetX, int targetY, int length) {
+    private static Vector vectorTowards(int entityX, int entityY, int entityZ, int targetX, int targetY, int length) {
         int distanceY = signedByte(targetY - entityY + entityZ);
         int distanceX = signedByte(targetX - entityX);
         int absoluteY = Math.abs(distanceY);
@@ -227,8 +230,7 @@ public final class PincerMotion {
         return new Position(nextX, nextY);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -257,9 +259,7 @@ public final class PincerMotion {
         return byteValue < 0x80 ? byteValue : byteValue - 0x100;
     }
 
-    private record Vector(int y, int x) {
-    }
+    private record Vector(int y, int x) {}
 
-    private record Position(int x, int y) {
-    }
+    private record Position(int x, int y) {}
 }

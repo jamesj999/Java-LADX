@@ -1,21 +1,21 @@
 package linksawakening.audio.sfx;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import java.util.ArrayList;
-import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
 import static linksawakening.audio.sfx.SfxRegisterTrace.*;
-import linksawakening.audio.apu.GameBoyApu;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
 import linksawakening.rom.RomBank;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @linksawakening.testing.RequiresRom
 class InventoryJingleTraceTest {
     private static byte[] rom() throws Exception {
-        try (var stream = linksawakening.testing.TestRom.open()) { return stream.readAllBytes(); }
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            return stream.readAllBytes();
+        }
     }
 
     @ParameterizedTest
@@ -87,5 +87,4 @@ class InventoryJingleTraceTest {
         music.tick60Hz();
         assertTrue(mixed.writes().size() > count, "music resumes register writes after both channels release");
     }
-
 }

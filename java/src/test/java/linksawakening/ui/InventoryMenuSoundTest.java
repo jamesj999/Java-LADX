@@ -1,15 +1,14 @@
 package linksawakening.ui;
 
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class InventoryMenuSoundTest {
@@ -22,9 +21,7 @@ final class InventoryMenuSoundTest {
         openMenu(menu);
         menu.requestToggle();
 
-        assertEquals(List.of(
-                GameplaySoundEvent.INVENTORY_OPEN,
-                GameplaySoundEvent.INVENTORY_CLOSE), soundSink.events);
+        assertEquals(List.of(GameplaySoundEvent.INVENTORY_OPEN, GameplaySoundEvent.INVENTORY_CLOSE), soundSink.events);
     }
 
     @Test
@@ -53,17 +50,18 @@ final class InventoryMenuSoundTest {
         menu.pressA();
         menu.pressB();
 
-        assertEquals(List.of(
-                GameplaySoundEvent.MENU_VALIDATE,
-                GameplaySoundEvent.MENU_VALIDATE), soundSink.events);
+        assertEquals(List.of(GameplaySoundEvent.MENU_VALIDATE, GameplaySoundEvent.MENU_VALIDATE), soundSink.events);
     }
 
     @Test
     void menuEventsUseTheRomJingleNamespaceAndIds() throws Exception {
         var map = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(
-            linksawakening.audio.sfx.SoundEffectCatalog.fromRom(loadRom()));
-        var events = List.of(GameplaySoundEvent.INVENTORY_OPEN, GameplaySoundEvent.INVENTORY_CLOSE,
-            GameplaySoundEvent.MENU_MOVE, GameplaySoundEvent.MENU_VALIDATE);
+                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(loadRom()));
+        var events = List.of(
+                GameplaySoundEvent.INVENTORY_OPEN,
+                GameplaySoundEvent.INVENTORY_CLOSE,
+                GameplaySoundEvent.MENU_MOVE,
+                GameplaySoundEvent.MENU_VALIDATE);
         int[] ids = {0x11, 0x12, 0x0A, 0x13};
         for (int i = 0; i < ids.length; i++) {
             var effect = map.resolve(events.get(i)).orElseThrow();

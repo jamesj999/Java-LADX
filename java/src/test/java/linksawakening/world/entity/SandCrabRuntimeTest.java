@@ -1,32 +1,17 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntityGroundInteraction;
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.SandCrabMotion;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.motion.SandCrabMotion;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class SandCrabRuntimeTest {
@@ -35,7 +20,7 @@ final class SandCrabRuntimeTest {
     @Test
     void decodesSandCrabsTwoRomSpritePairs() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
         assertEquals(0x15, definition.bank());
@@ -43,22 +28,41 @@ final class SandCrabRuntimeTest {
         assertEquals(EntitySpriteDefinition.Shape.PAIR, definition.shape());
         assertEquals(0, definition.initialVariant());
         assertEquals(2, definition.variantCount());
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0x58, 0x02),
-            new EntitySpriteDefinition.OamAttribute(0x58, 0x22)), definition.variant(0));
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0x5A, 0x02),
-            new EntitySpriteDefinition.OamAttribute(0x5A, 0x22)), definition.variant(1));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x58, 0x02),
+                        new EntitySpriteDefinition.OamAttribute(0x58, 0x22)),
+                definition.variant(0));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x5A, 0x02),
+                        new EntitySpriteDefinition.OamAttribute(0x5A, 0x22)),
+                definition.variant(1));
     }
 
     @Test
     void usesSandCrabsRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_SAND_CRAB, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_SAND_CRAB,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_SAND_CRAB));
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_SAND_CRAB));
@@ -69,16 +73,14 @@ final class SandCrabRuntimeTest {
     }
 
     @Test
-    void movesBeforeStartingTheRomTimerAndUsesBankFifteenDirectionTables()
-            throws IOException {
+    void movesBeforeStartingTheRomTimerAndUsesBankFifteenDirectionTables() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
-        RoomEntity crab = new RoomEntity(0, 0, ENTITY_SAND_CRAB, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity crab = new RoomEntity(
+                0, 0, ENTITY_SAND_CRAB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
-        SandCrabMotion.Update started = motion.advance(crab, 0, 0x00,
-            sequence(0x7F, 0x02), null);
+        SandCrabMotion.Update started = motion.advance(crab, 0, 0x00, sequence(0x7F, 0x02), null);
         assertEquals(0xAF, started.transitionCountdown());
         assertEquals(0x00, started.speedX());
         assertEquals(0xFB, started.speedY());
@@ -87,27 +89,27 @@ final class SandCrabRuntimeTest {
         assertEquals(0, started.entity().spriteVariant());
         assertEquals(0, started.collisionFlags());
 
-        SandCrabMotion.Update moved = motion.advance(started.entity(), 8, 0xAE,
-            sequence(0), null);
+        SandCrabMotion.Update moved = motion.advance(started.entity(), 8, 0xAE, sequence(0), null);
         assertEquals(0x3F, moved.entity().y());
         assertEquals(1, moved.entity().spriteVariant());
     }
 
     @Test
-    void blockedMovementTriggersTheRomTimerAndChoosesANewDirection()
-            throws IOException {
+    void blockedMovementTriggersTheRomTimerAndChoosesANewDirection() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
-        RoomEntity crab = new RoomEntity(0, 0, ENTITY_SAND_CRAB, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity crab = new RoomEntity(
+                0, 0, ENTITY_SAND_CRAB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
-        SandCrabMotion.Update started = motion.advance(crab, 0, 0x00,
-            sequence(0x00, 0x00), null);
-        SandCrabMotion.Update blocked = motion.advance(started.entity(), 8, 0x2F,
-            sequence(0x01, 0x03), (entity, direction, nextX, nextY) ->
-                EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40,
-                    nextX, nextY));
+        SandCrabMotion.Update started = motion.advance(crab, 0, 0x00, sequence(0x00, 0x00), null);
+        SandCrabMotion.Update blocked = motion.advance(
+                started.entity(),
+                8,
+                0x2F,
+                sequence(0x01, 0x03),
+                (entity, direction, nextX, nextY) ->
+                        EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40, nextX, nextY));
 
         assertEquals(0x40, blocked.entity().x());
         assertEquals(0x40, blocked.entity().y());
@@ -121,20 +123,40 @@ final class SandCrabRuntimeTest {
     void nonInteractiveLinkMotionSkipsSandCrabTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_SAND_CRAB, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD),
-            0, 0, 0, 0, -1, false)), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_SAND_CRAB,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
         AtomicInteger groundCalls = new AtomicInteger();
-        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
-                                       sideScrolling) -> {
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.incrementAndGet();
             return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
         });
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x40,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(
+                        0x40, 0x40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, groundCalls.get());
     }

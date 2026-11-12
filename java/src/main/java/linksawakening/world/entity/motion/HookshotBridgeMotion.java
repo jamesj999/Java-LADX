@@ -5,8 +5,10 @@ import linksawakening.world.entity.EntityRoomLoader;
 /** Fixed-point motion state for indoor hookshot bridge entity {@code $68}. */
 public final class HookshotBridgeMotion {
     public static final int ENTITY_TYPE = 0x68;
-    public static final int PULL_DOWN_DIRECTION = linksawakening.world.entity.event.HookshotBridgeUpdate.PULL_DOWN_DIRECTION;
-    public static final int PULL_UP_DIRECTION = linksawakening.world.entity.event.HookshotBridgeUpdate.PULL_UP_DIRECTION;
+    public static final int PULL_DOWN_DIRECTION =
+            linksawakening.world.entity.event.HookshotBridgeUpdate.PULL_DOWN_DIRECTION;
+    public static final int PULL_UP_DIRECTION =
+            linksawakening.world.entity.event.HookshotBridgeUpdate.PULL_UP_DIRECTION;
     public static final int SPEED_DOWN = 0x30;
     public static final int SPEED_UP = 0xD0;
 
@@ -52,8 +54,7 @@ public final class HookshotBridgeMotion {
             throw new IllegalArgumentException("Bridge state cannot be null");
         }
         SpeedStep y = addSpeed(state.y(), state.speedY(), state.speedAccumulator());
-        return new Step(new State(state.x(), y.position(), state.direction(), state.speedY(),
-            y.accumulator()));
+        return new Step(new State(state.x(), y.position(), state.direction(), state.speedY(), y.accumulator()));
     }
 
     /**
@@ -65,8 +66,7 @@ public final class HookshotBridgeMotion {
         if (state == null) {
             throw new IllegalArgumentException("Bridge state cannot be null");
         }
-        return new ObjectCell(state.x() - 0x08,
-            state.y() + 0x04 - 0x10);
+        return new ObjectCell(state.x() - 0x08, state.y() + 0x04 - 0x10);
     }
 
     public void initializeSpawn(int slot, int bridgeX, int bridgeY, int direction) {
@@ -133,6 +133,5 @@ public final class HookshotBridgeMotion {
         }
     }
 
-    private record SpeedStep(int position, int accumulator) {
-    }
+    private record SpeedStep(int position, int accumulator) {}
 }

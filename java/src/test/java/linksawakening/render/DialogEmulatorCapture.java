@@ -1,14 +1,18 @@
 package linksawakening.render;
 
-import linksawakening.world.transition.ScrollController;
-import linksawakening.world.transition.TransitionController;
-
-import linksawakening.entity.Link;
+import java.awt.image.BufferedImage;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.function.BiConsumer;
+import javax.imageio.ImageIO;
 import linksawakening.dialog.DialogController;
-import linksawakening.gameplay.DialogTextLoader;
-import linksawakening.gameplay.SignpostDialogRef;
+import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.gameplay.DialogTextLoader;
+import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -24,47 +28,52 @@ import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.io.UncheckedIOException;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 /** Settled wake-dialog pages; production rendering, with one initial NPC clock synchronization. */
 @linksawakening.testing.RequiresRom
 public final class DialogEmulatorCapture {
     public static void main(String[] args) throws Exception {
         String scenario = args.length > 1 ? args[1] : "marin";
-        Path out = "marin".equals(scenario) ? Path.of(args[0]) : Path.of(args[0]).resolve(scenario);
+        Path out =
+                "marin".equals(scenario) ? Path.of(args[0]) : Path.of(args[0]).resolve(scenario);
         Path folder = out.resolve("ours");
         Files.createDirectories(folder);
-        capture(scenario, Files.readString(out.resolve("initial.tsv")),
-            Files.readAllLines(out.resolve("frames.tsv")), (name, pixels) -> {
-                BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
-                for (int y = 0; y < 144; y++) for (int x = 0; x < 160; x++) {
-                    int i = (y * 160 + x) * 4;
-                    image.setRGB(x, y, 0xff000000 | ((pixels[i] & 255) << 16)
-                        | ((pixels[i + 1] & 255) << 8) | (pixels[i + 2] & 255));
-                }
-                try {
-                    ImageIO.write(image, "png", folder.resolve(name).toFile());
-                } catch (java.io.IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            });
+        capture(
+                scenario,
+                Files.readString(out.resolve("initial.tsv")),
+                Files.readAllLines(out.resolve("frames.tsv")),
+                (name, pixels) -> {
+                    BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
+                    for (int y = 0; y < 144; y++)
+                        for (int x = 0; x < 160; x++) {
+                            int i = (y * 160 + x) * 4;
+                            image.setRGB(
+                                    x,
+                                    y,
+                                    0xff000000
+                                            | ((pixels[i] & 255) << 16)
+                                            | ((pixels[i + 1] & 255) << 8)
+                                            | (pixels[i + 2] & 255));
+                        }
+                    try {
+                        ImageIO.write(image, "png", folder.resolve(name).toFile());
+                    } catch (java.io.IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
     }
 
-    static void capture(String initialClocks, List<String> frames,
-                        BiConsumer<String, byte[]> consumer) throws Exception {
+    static void capture(String initialClocks, List<String> frames, BiConsumer<String, byte[]> consumer)
+            throws Exception {
         capture("marin", initialClocks, frames, consumer);
     }
 
-    static void capture(String scenario, String initialClocks, List<String> frames,
-                        BiConsumer<String, byte[]> consumer) throws Exception {
-        boolean timedDialog = "marin-timing".equals(scenario) || "marin-scroll".equals(scenario) || "marin-close".equals(scenario);
+    static void capture(String scenario, String initialClocks, List<String> frames, BiConsumer<String, byte[]> consumer)
+            throws Exception {
+        boolean timedDialog =
+                "marin-timing".equals(scenario) || "marin-scroll".equals(scenario) || "marin-close".equals(scenario);
         boolean bedExit = "bed-exit".equals(scenario);
         boolean inBed = "marin".equals(scenario) || bedExit || timedDialog;
         boolean heldShield = "shield-pose".equals(scenario);
@@ -79,8 +88,8 @@ public final class DialogEmulatorCapture {
         gpu.loadBaseTiles(rom);
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var session = new RoomSession(rom, gpu, new RoomLoader(rom),
-            new OverworldTilesetTable(rom), collision, null, null);
+        var session =
+                new RoomSession(rom, gpu, new RoomLoader(rom), new OverworldTilesetTable(rom), collision, null, null);
         var profile = NewGameStartProfile.romDefaults();
         session.loadIndoor(profile.mapId(), profile.roomId());
         // Enter the normal entity init pass before synchronizing NPC clocks.
@@ -91,12 +100,12 @@ public final class DialogEmulatorCapture {
         profile.initializePlayerState(player);
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        var link = new Link(input, config, tables, collision,
-            LinkSpriteSheet.loadFromRom(rom), player, new ItemRegistry());
+        var link = new Link(
+                input, config, tables, collision, LinkSpriteSheet.loadFromRom(rom), player, new ItemRegistry());
         link.setPixelPosition(linkX - 8, linkY - 16);
         link.setRomDirection(0);
-        if (heldShield) link.showTarinShieldPresentation(
-            linksawakening.rom.RomBank.loadPalettes(rom, 0x05, 0x4C94, 1)[0]);
+        if (heldShield)
+            link.showTarinShieldPresentation(linksawakening.rom.RomBank.loadPalettes(rom, 0x05, 0x4C94, 1)[0]);
         if (receivedShield) {
             player.applyChestReward(ChestContentsTable.CHEST_SHIELD);
             link.showStandingShieldDownPose();
@@ -110,13 +119,16 @@ public final class DialogEmulatorCapture {
         // As with captureHouse, displayed OAM trails the observed clocks by two frames.
         var marin = motion.tickMarinPresentation(1, marinSource.x(), marinSource.y(), linkX, linkY);
         for (int i = inertia - 2; i > 0; i--) {
-            marin = motion.tickMarinPresentation((firstFrame - i + 1) & 255,
-                marinSource.x(), marinSource.y(), linkX, linkY);
+            marin = motion.tickMarinPresentation(
+                    (firstFrame - i + 1) & 255, marinSource.x(), marinSource.y(), linkX, linkY);
         }
         var dialog = DialogController.forGameplay();
         dialog.setPlayerName("A");
-        if (!heldShield && !bedExit) dialog.openPreformattedForLinkY(DialogTextLoader.loadFromRom(rom)
-            .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)), linkY);
+        if (!heldShield && !bedExit)
+            dialog.openPreformattedForLinkY(
+                    DialogTextLoader.loadFromRom(rom)
+                            .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)),
+                    linkY);
         if ("marin-close".equals(scenario)) {
             for (int i = 0; i < 6; i++) {
                 if (i > 0) dialog.advance();
@@ -126,8 +138,8 @@ public final class DialogEmulatorCapture {
         int page = -1;
         int elapsed = 0;
         session.updateHouseTarinPresentation(0, linkX, linkY);
-        var inventory = new InventoryController(input, config,
-            new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
+        var inventory = new InventoryController(
+                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
         for (String row : frames) {
             String[] fields = row.split("\\t");
             int nextPage = Integer.parseInt(fields[0]);
@@ -146,8 +158,8 @@ public final class DialogEmulatorCapture {
             while (elapsed < targetElapsed) {
                 elapsed++;
                 session.updateHouseTarinPresentation((firstFrame + elapsed) & 255, linkX, linkY);
-                marin = motion.tickMarinPresentation((firstFrame + elapsed) & 255,
-                    marinSource.x(), marinSource.y(), linkX, linkY);
+                marin = motion.tickMarinPresentation(
+                        (firstFrame + elapsed) & 255, marinSource.x(), marinSource.y(), linkX, linkY);
             }
             session.applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
             session.updateHouseTarinPresentation(frame, linkX, linkY);
@@ -159,9 +171,15 @@ public final class DialogEmulatorCapture {
                 }
             } else if (inBed) link.showMarinWakeUpBed(3);
             byte[] pixels = new byte[160 * 144 * 4];
-            new GameFrameSceneBuilder().build(GameFrameState.empty().withScreen(RenderScreen.OVERWORLD)
-                .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())
-                .withLink(link).withInventoryController(inventory).withDialogController(dialog).withFrameCounter((frame - 2) & 255)).drawTo(pixels, gpu);
+            new GameFrameSceneBuilder()
+                    .build(GameFrameState.empty()
+                            .withScreen(RenderScreen.OVERWORLD)
+                            .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())
+                            .withLink(link)
+                            .withInventoryController(inventory)
+                            .withDialogController(dialog)
+                            .withFrameCounter((frame - 2) & 255))
+                    .drawTo(pixels, gpu);
             consumer.accept(String.format("%02d-%02d.png", nextPage, f), pixels);
         }
     }

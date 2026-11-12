@@ -1,16 +1,18 @@
 package linksawakening.app;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.*;
+
 import linksawakening.config.AppConfig;
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 @RequiresRom
 final class ToadstoolPresentationTest {
-    @Test void equippedUseHoldsItemOpens00ePausesAndReturnsToNormalWithoutSpendingIt() throws Exception {
+    @Test
+    void equippedUseHoldsItemOpens00ePausesAndReturnsToNormalWithoutSpendingIt() throws Exception {
         var game = game();
         var d = game.diagnostics();
         d.roomSession().loadIndoorFromSavedPosition(0x10, 0xA3, 0);
@@ -22,7 +24,7 @@ final class ToadstoolPresentationTest {
         assertEquals(0, d.link().presentedDialogGotItem());
         for (int frame = 1; frame <= 40; frame++) {
             game.headlessFrame();
-            assertEquals(0x2A-frame, d.link().dialogGotItemCountdown());
+            assertEquals(0x2A - frame, d.link().dialogGotItemCountdown());
             assertEquals(0x6B, d.link().romAnimationState());
             assertEquals(40, d.link().pixelX());
             assertEquals(80, d.link().pixelY());
@@ -46,7 +48,8 @@ final class ToadstoolPresentationTest {
         assertEquals(0, d.playerState().magicPowderCount());
     }
 
-    @Test void activePresentationBypassesInventoryAndPassOutDispatch() throws Exception {
+    @Test
+    void activePresentationBypassesInventoryAndPassOutDispatch() throws Exception {
         var game = game();
         var d = game.diagnostics();
         d.roomSession().loadIndoorFromSavedPosition(0x10, 0xA3, 0);
@@ -62,7 +65,8 @@ final class ToadstoolPresentationTest {
         assertEquals(0x29, d.link().dialogGotItemCountdown());
     }
 
-    @Test void witchAcceptsPreviouslyPresentedToadstoolAndOnlyBBranchClearsPresentation() throws Exception {
+    @Test
+    void witchAcceptsPreviouslyPresentedToadstoolAndOnlyBBranchClearsPresentation() throws Exception {
         for (boolean bSlot : new boolean[] {false, true}) {
             var game = game();
             var d = game.diagnostics();
@@ -93,7 +97,9 @@ final class ToadstoolPresentationTest {
     }
 
     private static GameSession game() throws Exception {
-        try (var rom = linksawakening.testing.TestRom.open()) { assertNotNull(rom); }
+        try (var rom = linksawakening.testing.TestRom.open()) {
+            assertNotNull(rom);
+        }
         var game = new GameSession((pcm, sampleRate) -> {});
         game.initializeHeadlessIntro();
         var config = GameSession.class.getDeclaredField("appConfig");

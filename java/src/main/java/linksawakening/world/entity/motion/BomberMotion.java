@@ -1,23 +1,18 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-import java.util.function.IntSupplier;
-
 /** Bank-$18 BomberEntityHandler state and movement. */
 public final class BomberMotion {
     private static final int[] Z_BY_INERTIA = {0x10, 0x11, 0x12, 0x11};
-    private static final int[] SPEED_X_BY_RANDOM = {
-        0x00, 0x06, 0x08, 0x06, 0x00, 0xFA, 0xF8, 0xFA
-    };
+    private static final int[] SPEED_X_BY_RANDOM = {0x00, 0x06, 0x08, 0x06, 0x00, 0xFA, 0xF8, 0xFA};
 
     // Data_018_7865 is immediately before Data_018_7867. The source indexes
     // the contiguous bytes with the same 0..7 value.
-    private static final int[] SPEED_Y_BY_RANDOM = {
-        0xF8, 0xFA, 0x00, 0x06, 0x08, 0x06, 0x00, 0xFA
-    };
+    private static final int[] SPEED_Y_BY_RANDOM = {0xF8, 0xFA, 0x00, 0x06, 0x08, 0x06, 0x00, 0xFA};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -28,13 +23,9 @@ public final class BomberMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record BombSpawn(int x, int y, int z, int speedX, int speedY, int speedZ,
-                     int transitionCountdown) {
-    }
+    public record BombSpawn(int x, int y, int z, int speedX, int speedY, int speedZ, int transitionCountdown) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, BombSpawn bombSpawn,
-                  boolean playJingle) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown, BombSpawn bombSpawn, boolean playJingle) {}
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -47,11 +38,15 @@ public final class BomberMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int transitionCountdown,
-                   int linkEntityX, int linkEntityY, int romLinkDirection,
-                   boolean swordAnimationActive,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(
+            RoomEntity entity,
+            int transitionCountdown,
+            int linkEntityX,
+            int linkEntityY,
+            int romLinkDirection,
+            boolean swordAnimationActive,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -61,13 +56,11 @@ public final class BomberMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         if (backgroundCollision != null) {
             if (x != entity.x()
-                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]),
-                    x, entity.y())) {
+                    && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
                 x = entity.x();
                 speedX[slot] = 0;
             }
-            if (y != entity.y()
-                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
+            if (y != entity.y() && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
                 y = entity.y();
                 speedY[slot] = 0;
             }
@@ -87,8 +80,8 @@ public final class BomberMotion {
                     speedY[slot] = SPEED_Y_BY_RANDOM[direction];
                     privateState1[slot] = (privateState1[slot] + 1) & 0xFF;
                     if ((privateState1[slot] & 0x07) == 0) {
-                        Vector vector = vectorTowardsLink(moved.x(), moved.y(), moved.z(),
-                            linkEntityX, linkEntityY, 0x0A);
+                        Vector vector =
+                                vectorTowardsLink(moved.x(), moved.y(), moved.z(), linkEntityX, linkEntityY, 0x0A);
                         speedX[slot] = vector.x();
                         speedY[slot] = vector.y();
                     }
@@ -116,19 +109,15 @@ public final class BomberMotion {
         BombSpawn bombSpawn = null;
         boolean playJingle = false;
         if ((oldInertia & 0x7F) == 0) {
-            Vector vector = vectorTowardsLink(moved.x(), moved.y(), moved.z(),
-                linkEntityX, linkEntityY, 0x10);
-            bombSpawn = new BombSpawn(moved.x(), moved.y(), moved.z(),
-                vector.x(), vector.y(), 0x08, 0x40);
+            Vector vector = vectorTowardsLink(moved.x(), moved.y(), moved.z(), linkEntityX, linkEntityY, 0x10);
+            bombSpawn = new BombSpawn(moved.x(), moved.y(), moved.z(), vector.x(), vector.y(), 0x08, 0x40);
             playJingle = true;
         }
 
-        if (matchesSwordAttackWindow(moved, linkEntityX, linkEntityY,
-                romLinkDirection, swordAnimationActive)) {
+        if (matchesSwordAttackWindow(moved, linkEntityX, linkEntityY, romLinkDirection, swordAnimationActive)) {
             state[slot] = 2;
             nextTransitionCountdown = 0x12;
-            Vector vector = vectorTowardsLink(moved.x(), moved.y(), moved.z(),
-                linkEntityX, linkEntityY, 0x20);
+            Vector vector = vectorTowardsLink(moved.x(), moved.y(), moved.z(), linkEntityX, linkEntityY, 0x20);
             speedX[slot] = (-signedByte(vector.x())) & 0xFF;
             speedY[slot] = (-signedByte(vector.y())) & 0xFF;
         }
@@ -145,14 +134,11 @@ public final class BomberMotion {
         return inertia[slot] & 0xFF;
     }
 
-    private static boolean matchesSwordAttackWindow(RoomEntity entity,
-                                                     int linkEntityX,
-                                                     int linkEntityY,
-                                                     int romLinkDirection,
-                                                     boolean swordAnimationActive) {
+    private static boolean matchesSwordAttackWindow(
+            RoomEntity entity, int linkEntityX, int linkEntityY, int romLinkDirection, boolean swordAnimationActive) {
         if (!swordAnimationActive
-            || directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
-                != ((romLinkDirection ^ 0x01) & 0x03)) {
+                || directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
+                        != ((romLinkDirection ^ 0x01) & 0x03)) {
             return false;
         }
         int xDistance = unsignedByteAbs(entity.x() - linkEntityX);
@@ -171,8 +157,7 @@ public final class BomberMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                             int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
@@ -209,8 +194,7 @@ public final class BomberMotion {
         return result;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -233,9 +217,20 @@ public final class BomberMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {
@@ -248,6 +243,5 @@ public final class BomberMotion {
         return difference < 0x80 ? difference : 0x100 - difference;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

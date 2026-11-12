@@ -6,8 +6,7 @@ import linksawakening.world.entity.RoomEntity;
 public record LinkFallenPoseRequest(int sourceSlot) implements EntityRequest {
     public LinkFallenPoseRequest {
         if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
-            throw new IllegalArgumentException("Link fallen-pose source slot out of range: "
-                + sourceSlot);
+            throw new IllegalArgumentException("Link fallen-pose source slot out of range: " + sourceSlot);
         }
     }
 }

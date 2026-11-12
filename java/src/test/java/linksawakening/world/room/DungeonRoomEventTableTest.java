@@ -1,14 +1,9 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.DungeonRoomEventTable;
-
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class DungeonRoomEventTableTest {

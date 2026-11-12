@@ -1,27 +1,5 @@
 package linksawakening;
 
-import linksawakening.app.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-
-import linksawakening.app.screen.*;
-
-import linksawakening.config.AppConfig;
-import linksawakening.cutscene.CutsceneManager;
-import linksawakening.dialog.DialogController;
-import linksawakening.audio.music.MusicTrackIds;
-import linksawakening.scene.BackgroundSceneCatalog;
-import linksawakening.scene.BackgroundSceneLoader;
-import linksawakening.scene.BackgroundSceneSpec;
-import linksawakening.startup.StartupCoordinator;
-import linksawakening.state.PlayerState;
-import linksawakening.world.room.IndoorRoomPointerTables;
-import linksawakening.world.room.RoomPointerTable;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +8,25 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.app.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
+import linksawakening.audio.music.MusicTrackIds;
+import linksawakening.config.AppConfig;
+import linksawakening.cutscene.CutsceneManager;
+import linksawakening.dialog.DialogController;
+import linksawakening.scene.BackgroundSceneCatalog;
+import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.scene.BackgroundSceneSpec;
+import linksawakening.startup.StartupCoordinator;
+import linksawakening.state.PlayerState;
+import linksawakening.world.room.IndoorRoomPointerTables;
+import linksawakening.world.room.RoomPointerTable;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class MainTest {
@@ -45,7 +42,8 @@ final class MainTest {
 
     @Test
     void startRoomComesFromConfiguredOverworldLocation() {
-        AppConfig config = AppConfig.parse("""
+        AppConfig config = AppConfig.parse(
+                """
             { "startLocation": { "type": "OVERWORLD", "roomId": "0xA1" } }
             """);
 
@@ -54,7 +52,8 @@ final class MainTest {
 
     @Test
     void normalStartupIgnoresConfiguredDebugRoomWhenEnteringGameplay() {
-        AppConfig config = AppConfig.parse("""
+        AppConfig config = AppConfig.parse(
+                """
             {
               "startMode": "NORMAL",
               "startLocation": { "type": "OVERWORLD", "roomId": "0xA1" }
@@ -70,7 +69,8 @@ final class MainTest {
         playerState.setItemA(PlayerState.INVENTORY_BOW);
         playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
 
-        ScreenRouter.applyConfiguredItemProfile(AppConfig.parse("""
+        ScreenRouter.applyConfiguredItemProfile(
+                AppConfig.parse("""
             { "itemProfile": "NEW_GAME" }
             """), playerState);
 
@@ -84,10 +84,12 @@ final class MainTest {
 
     @Test
     void introStartupFollowsIntroStoryConfig() {
-        AppConfig introEnabled = AppConfig.parse("""
+        AppConfig introEnabled = AppConfig.parse(
+                """
             { "startMode": "CONFIGURED_LOCATION", "showTitleScreen": true, "playIntroStory": true }
             """);
-        AppConfig introDisabled = AppConfig.parse("""
+        AppConfig introDisabled = AppConfig.parse(
+                """
             { "startMode": "NORMAL", "showTitleScreen": true, "playIntroStory": false }
             """);
 
@@ -186,7 +188,9 @@ final class MainTest {
     void titleAndIntroMusicTracksMatchDisassemblyEntryPoints() {
         assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, linksawakening.app.MusicDirector.introCutsceneMusicTrack());
         assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, linksawakening.app.MusicDirector.naturalIntroTitleMusicTrack());
-        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO, linksawakening.app.MusicDirector.directTitleScreenMusicTrack());
+        assertEquals(
+                MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO,
+                linksawakening.app.MusicDirector.directTitleScreenMusicTrack());
     }
 
     private static byte[] loadRom() {

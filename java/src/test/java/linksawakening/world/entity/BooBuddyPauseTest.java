@@ -1,25 +1,14 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.BooBuddyMotion;
-
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @linksawakening.testing.RequiresRom
 final class BooBuddyPauseTest {
@@ -60,8 +49,9 @@ final class BooBuddyPauseTest {
         runtime.debug().setTransitionCountdownForTest(0, 8);
         setGate(runtime, gate, true);
         RoomEntity before = runtime.inspection().snapshot().slots().getFirst();
-        runtime.tick(EntityTestFrames.frame(runtime, 16, 0x20, 0x50,
-            () -> { throw new AssertionError("Paused handler must skip steering"); }));
+        runtime.tick(EntityTestFrames.frame(runtime, 16, 0x20, 0x50, () -> {
+            throw new AssertionError("Paused handler must skip steering");
+        }));
         assertEquals(before, runtime.inspection().snapshot().slots().getFirst());
         assertEquals(4, runtime.flyingEnemies().booBuddySpeedX(0));
         assertEquals(gate.equals("got_item") ? 7 : 8, runtime.flyingEnemies().booBuddyTransitionCountdown(0));
@@ -82,10 +72,16 @@ final class BooBuddyPauseTest {
         assertEquals(0x40, runtime.inspection().snapshot().slots().getFirst().x());
         assertEquals(2, runtime.enemies().enemyIgnoreHitsCountdown(0));
         setGate(runtime, gate, false);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x20, 0x50, () -> 0,
-            (entity, direction, x, y) -> {
-                throw new AssertionError("Boo Buddy recoil must skip background collision");
-            }, new EnemyProjectileCollision.LinkState(0x20, 0x50, 0, 0, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                0x20,
+                0x50,
+                () -> 0,
+                (entity, direction, x, y) -> {
+                    throw new AssertionError("Boo Buddy recoil must skip background collision");
+                },
+                new EnemyProjectileCollision.LinkState(0x20, 0x50, 0, 0, 0, false)));
         assertEquals(0x42, runtime.inspection().snapshot().slots().getFirst().x());
         assertEquals(1, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0, runtime.flyingEnemies().booBuddyState(0));
@@ -100,8 +96,9 @@ final class BooBuddyPauseTest {
         assertEquals(0x60, runtime.inspection().snapshot().slots().getFirst().x());
         runtime.debug().setWitchGotItemPresentationActiveForTest(true);
         for (int frame = 1; frame <= 32; frame++) {
-            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50,
-                () -> { throw new AssertionError("Got-item handler must remain paused"); }));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> {
+                throw new AssertionError("Got-item handler must remain paused");
+            }));
         }
         runtime.debug().setWitchGotItemPresentationActiveForTest(false);
         runtime.tick(EntityTestFrames.frame(runtime, 33, 0x70, 0x50, () -> 0));
@@ -119,8 +116,9 @@ final class BooBuddyPauseTest {
         }
         runtime.configuration().setDialogActive(false);
         for (int frame = 33; frame < 64; frame++) {
-            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50,
-                () -> { throw new AssertionError("Reappearance timer expired too early"); }));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> {
+                throw new AssertionError("Reappearance timer expired too early");
+            }));
         }
         assertEquals(0, runtime.flyingEnemies().booBuddySpeedX(0));
         runtime.tick(EntityTestFrames.frame(runtime, 64, 0x70, 0x50, () -> 0));
@@ -186,9 +184,22 @@ final class BooBuddyPauseTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        slots.set(0, new RoomEntity(0, 0, BooBuddyMotion.ENTITY_TYPE, 0x40, 0x50,
-            EntityStatus.ACTIVE, catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE,
-                EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false));
+        slots.set(
+                0,
+                new RoomEntity(
+                        0,
+                        0,
+                        BooBuddyMotion.ENTITY_TYPE,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false));
         return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), true, null, catalog);
     }
 }

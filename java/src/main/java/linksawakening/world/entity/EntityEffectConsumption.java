@@ -1,14 +1,19 @@
 package linksawakening.world.entity;
 
+import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntitySnapshots.*;
+import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.RoomEntityRuntime.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.world.entity.event.BombExplosionEvent;
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.event.HeartPiecePickupUpdate;
-
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.DungeonWarpRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
 import linksawakening.world.entity.event.InstrumentCompletionEvent;
 import linksawakening.world.entity.event.InstrumentRewardEvent;
@@ -40,17 +45,13 @@ import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-import java.util.ArrayList;
-import java.util.List;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
-
 /** Typed outbox consumption preserving pre-tick staging and immutable snapshots. */
 final class EntityEffectConsumption {
     private final RoomEntityRuntime runtime;
-    EntityEffectConsumption(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityEffectConsumption(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     boolean consumePendingSwitchBlockAnimationRequest() {
         boolean pending = runtime.pendingSwitchBlockAnimationRequest;
@@ -127,8 +128,7 @@ final class EntityEffectConsumption {
     }
 
     List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
-        List<LinkAttackStepRequest> pending = new ArrayList<>(
-            runtime.events.pendingPreTickLinkAttackStepRequests);
+        List<LinkAttackStepRequest> pending = new ArrayList<>(runtime.events.pendingPreTickLinkAttackStepRequests);
         pending.addAll(runtime.events.pendingLinkAttackStepRequests);
         runtime.events.pendingPreTickLinkAttackStepRequests.clear();
         runtime.events.pendingLinkAttackStepRequests.clear();
@@ -208,8 +208,7 @@ final class EntityEffectConsumption {
     }
 
     List<MadamMeowMeowFullHealRequest> consumePendingMadamMeowMeowFullHealRequests() {
-        List<MadamMeowMeowFullHealRequest> requests =
-            List.copyOf(runtime.events.pendingMadamMeowMeowFullHealRequests);
+        List<MadamMeowMeowFullHealRequest> requests = List.copyOf(runtime.events.pendingMadamMeowMeowFullHealRequests);
         runtime.events.pendingMadamMeowMeowFullHealRequests.clear();
         return requests;
     }
@@ -233,8 +232,7 @@ final class EntityEffectConsumption {
     }
 
     List<InstrumentCompletionEvent> consumePendingInstrumentCompletions() {
-        List<InstrumentCompletionEvent> completions =
-            List.copyOf(runtime.events.pendingInstrumentCompletions);
+        List<InstrumentCompletionEvent> completions = List.copyOf(runtime.events.pendingInstrumentCompletions);
         runtime.events.pendingInstrumentCompletions.clear();
         return completions;
     }

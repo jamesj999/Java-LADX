@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$03 state shared by Octorok, Moblin, and masked Iron Mask roaming. */
 public final class RoamingEnemyMotion {
@@ -53,56 +52,88 @@ public final class RoamingEnemyMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(entity, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundCollision, false).entity();
+    public RoomEntity advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision, false)
+                .entity();
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   boolean creditsGameplay) {
-        RoomEntityBackgroundInteraction interaction = backgroundCollision == null
-            ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
-        return advanceInternal(entity, linkEntityX, linkEntityY, randomByteSupplier,
-            interaction, 0, 0, creditsGameplay);
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean creditsGameplay) {
+        RoomEntityBackgroundInteraction interaction =
+                backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
+        return advanceInternal(
+                entity, linkEntityX, linkEntityY, randomByteSupplier, interaction, 0, 0, creditsGameplay);
     }
 
-    public Update advanceWithInteraction(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                   IntSupplier randomByteSupplier,
-                                   RoomEntityBackgroundInteraction backgroundInteraction,
-                                   boolean creditsGameplay) {
-        return advanceWithInteraction(entity, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundInteraction, 0, creditsGameplay);
+    public Update advanceWithInteraction(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            boolean creditsGameplay) {
+        return advanceWithInteraction(
+                entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, 0, creditsGameplay);
     }
 
-    public Update advanceWithInteraction(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                   IntSupplier randomByteSupplier,
-                                   RoomEntityBackgroundInteraction backgroundInteraction,
-                                   int ignoreHitsCountdown,
-                                   boolean creditsGameplay) {
-        return advanceWithInteraction(entity, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundInteraction, ignoreHitsCountdown, 0, creditsGameplay);
+    public Update advanceWithInteraction(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            boolean creditsGameplay) {
+        return advanceWithInteraction(
+                entity,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundInteraction,
+                ignoreHitsCountdown,
+                0,
+                creditsGameplay);
     }
 
-    public Update advanceWithInteraction(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                   IntSupplier randomByteSupplier,
-                                   RoomEntityBackgroundInteraction backgroundInteraction,
-                                   int ignoreHitsCountdown,
-                                   int frameCounter,
-                                   boolean creditsGameplay) {
-        return advanceInternal(entity, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundInteraction, ignoreHitsCountdown, frameCounter, creditsGameplay);
+    public Update advanceWithInteraction(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int frameCounter,
+            boolean creditsGameplay) {
+        return advanceInternal(
+                entity,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundInteraction,
+                ignoreHitsCountdown,
+                frameCounter,
+                creditsGameplay);
     }
 
-    private Update advanceInternal(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundInteraction backgroundInteraction,
-                   int ignoreHitsCountdown,
-                   int frameCounter,
-                   boolean creditsGameplay) {
+    private Update advanceInternal(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int frameCounter,
+            boolean creditsGameplay) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -115,8 +146,7 @@ public final class RoamingEnemyMotion {
         }
 
         if (state[slot] != 0) {
-            LaunchRequest launchRequest = launchRequestIfEligible(
-                entity, linkEntityX, linkEntityY, creditsGameplay);
+            LaunchRequest launchRequest = launchRequestIfEligible(entity, linkEntityX, linkEntityY, creditsGameplay);
             if (launchRequest != null && entity.type() == ENTITY_OCTOROK) {
                 return new Update(entity, launchRequest);
             }
@@ -125,8 +155,8 @@ public final class RoamingEnemyMotion {
                 state[slot] = 0;
                 privateState1[slot] = (privateState1[slot] + 1) & 0x03;
                 direction[slot] = privateState1[slot] == 0
-                    ? directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
-                    : randomByteSupplier.getAsInt() & 0x03;
+                        ? directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
+                        : randomByteSupplier.getAsInt() & 0x03;
                 speedX[slot] = speedXFor(entity.type(), direction[slot]);
                 speedY[slot] = speedYFor(entity.type(), direction[slot]);
             } else {
@@ -150,7 +180,7 @@ public final class RoamingEnemyMotion {
             int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
             if (nextX != x && backgroundInteraction != null) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, direction[slot], nextX, y, ignoreHitsCountdown, frameCounter);
+                        entity, direction[slot], nextX, y, ignoreHitsCountdown, frameCounter);
                 if (result.blocked()) {
                     collisionsTable[slot] |= result.collisionFlag();
                     horizontallyCollidedObject[slot] = result.objectId();
@@ -164,7 +194,7 @@ public final class RoamingEnemyMotion {
             int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
             if (nextY != y && backgroundInteraction != null) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, direction[slot], x, nextY, ignoreHitsCountdown, frameCounter);
+                        entity, direction[slot], x, nextY, ignoreHitsCountdown, frameCounter);
                 if (result.blocked()) {
                     collisionsTable[slot] |= result.collisionFlag();
                     verticallyCollidedObject[slot] = result.objectId();
@@ -181,12 +211,12 @@ public final class RoamingEnemyMotion {
         return new Update(withPositionAndVariant(entity, x, y, variant), null);
     }
 
-    private LaunchRequest launchRequestIfEligible(RoomEntity entity, int linkEntityX,
-                                                   int linkEntityY, boolean creditsGameplay) {
+    private LaunchRequest launchRequestIfEligible(
+            RoomEntity entity, int linkEntityX, int linkEntityY, boolean creditsGameplay) {
         int type = entity.type() & 0xFF;
         if (transitionCountdown[entity.slot()] != 0x0A
-            || privateCountdown1[entity.slot()] != 0
-            || type == ENTITY_IRON_MASK) {
+                || privateCountdown1[entity.slot()] != 0
+                || type == ENTITY_IRON_MASK) {
             return null;
         }
 
@@ -271,8 +301,13 @@ public final class RoamingEnemyMotion {
         return VARIANT_BY_DIRECTION[direction[slot]] | ((inertia[slot] >>> 3) & 0x01);
     }
 
-    void setStateForTest(int slot, int newState, int newTransitionCountdown,
-                         int newInertia, int newPrivateState1, int newDirection) {
+    void setStateForTest(
+            int slot,
+            int newState,
+            int newTransitionCountdown,
+            int newInertia,
+            int newPrivateState1,
+            int newDirection) {
         state[slot] = newState & 0xFF;
         transitionCountdown[slot] = newTransitionCountdown & 0xFF;
         inertia[slot] = newInertia & 0xFF;
@@ -297,8 +332,7 @@ public final class RoamingEnemyMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -321,26 +355,35 @@ public final class RoamingEnemyMotion {
 
     private static int speedXFor(int entityType, int entityDirection) {
         return entityType == ENTITY_IRON_MASK
-            ? IRON_MASK_SPEED_X_BY_DIRECTION[entityDirection]
-            : SPEED_X_BY_DIRECTION[entityDirection];
+                ? IRON_MASK_SPEED_X_BY_DIRECTION[entityDirection]
+                : SPEED_X_BY_DIRECTION[entityDirection];
     }
 
     private static int speedYFor(int entityType, int entityDirection) {
         return entityType == ENTITY_IRON_MASK
-            ? IRON_MASK_SPEED_Y_BY_DIRECTION[entityDirection]
-            : SPEED_Y_BY_DIRECTION[entityDirection];
+                ? IRON_MASK_SPEED_Y_BY_DIRECTION[entityDirection]
+                : SPEED_Y_BY_DIRECTION[entityDirection];
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z(), -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    public record Update(RoomEntity entity, LaunchRequest launchRequest) {
-    }
+    public record Update(RoomEntity entity, LaunchRequest launchRequest) {}
 
-    public record LaunchRequest(int sourceSlot, int sourceType, int projectileType) implements linksawakening.world.entity.event.EntityRequestBridge {
-    }
+    public record LaunchRequest(int sourceSlot, int sourceType, int projectileType)
+            implements linksawakening.world.entity.event.EntityRequestBridge {}
 }

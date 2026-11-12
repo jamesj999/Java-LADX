@@ -1,26 +1,31 @@
 package linksawakening.world.room;
 
-import linksawakening.world.transition.Warp;
+import static linksawakening.world.room.RoomSession.*;
 
+import java.util.List;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.InstrumentCompletionEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;
 import linksawakening.world.entity.event.RichardProgressEvent;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
-import java.util.List;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomSession.*;
+import linksawakening.world.transition.Warp;
 
 /** RoomEntityRewards operations for the live room session. */
 final class RoomEntityRewards {
     private final RoomSession session;
-    RoomEntityRewards(RoomSession session) { this.session = session; }
+
+    RoomEntityRewards(RoomSession session) {
+        this.session = session;
+    }
 
     void harvestKeyQuicksandEvents() {
         if (session.context.entityBridge.entityRuntime == null
-            || session.context.entityBridge.entityRuntime.consumePendingKeyQuicksandEvents().isEmpty()) {
+                || session.context
+                        .entityBridge
+                        .entityRuntime
+                        .consumePendingKeyQuicksandEvents()
+                        .isEmpty()) {
             return;
         }
         session.context.roomState.overworldRoomStatus[0xCE] |= (byte) session.OW_ROOM_STATUS_FLAG_CHANGED;
@@ -31,11 +36,10 @@ final class RoomEntityRewards {
         if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
-        List<KeyRewardEvent> rewards =
-            session.context.entityBridge.entityRuntime.consumePendingKeyRewardEvents();
+        List<KeyRewardEvent> rewards = session.context.entityBridge.entityRuntime.consumePendingKeyRewardEvents();
         for (KeyRewardEvent reward : rewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
-                && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
+                    && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 session.context.roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
             session.markActiveRoomCompleted();
@@ -48,7 +52,7 @@ final class RoomEntityRewards {
             return;
         }
         List<HeartContainerRewardEvent> rewards =
-            session.context.entityBridge.entityRuntime.consumePendingHeartContainerRewards();
+                session.context.entityBridge.entityRuntime.consumePendingHeartContainerRewards();
         if (rewards.isEmpty()) {
             return;
         }
@@ -61,7 +65,7 @@ final class RoomEntityRewards {
             return;
         }
         List<SwordPickupRewardEvent> rewards =
-            session.context.entityBridge.entityRuntime.consumePendingSwordPickupRewards();
+                session.context.entityBridge.entityRuntime.consumePendingSwordPickupRewards();
         if (rewards.isEmpty()) {
             return;
         }
@@ -71,19 +75,26 @@ final class RoomEntityRewards {
 
     void harvestToadstoolRewards() {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.pendingToadstoolRewards.addAll(session.context.entityBridge.entityRuntime.consumePendingToadstoolRewards());
+            session.context.entityBridge.pendingToadstoolRewards.addAll(
+                    session.context.entityBridge.entityRuntime.consumePendingToadstoolRewards());
         }
     }
 
     void harvestInstrumentRewards() {
-        if (session.context.entityBridge.entityRuntime == null || session.context.activeRoom == null
-            || session.context.entityBridge.entityRuntime.consumePendingInstrumentRewards().isEmpty()
-            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (session.context.entityBridge.entityRuntime == null
+                || session.context.activeRoom == null
+                || session.context
+                        .entityBridge
+                        .entityRuntime
+                        .consumePendingInstrumentRewards()
+                        .isEmpty()
+                || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
-        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()]
-            |= (byte) session.ROOM_STATUS_EVENT_1;
-        if (session.context.activeRoom.mapId() >= 0 && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length) {
+        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()] |=
+                (byte) session.ROOM_STATUS_EVENT_1;
+        if (session.context.activeRoom.mapId() >= 0
+                && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length) {
             session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] |= 0x02;
         }
         session.context.entityBridge.entityRuntime.configuration().setEntityRoomStatus(session.activeRoomStatusFlags());
@@ -93,8 +104,8 @@ final class RoomEntityRewards {
         if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
-        for (InstrumentCompletionEvent completion
-            : session.context.entityBridge.entityRuntime.consumePendingInstrumentCompletions()) {
+        for (InstrumentCompletionEvent completion :
+                session.context.entityBridge.entityRuntime.consumePendingInstrumentCompletions()) {
             session.context.pendingInstrumentTransition = true;
             if (completion.mapId() == 0x00) {
                 session.context.bowWowState = 0x80;
@@ -109,7 +120,7 @@ final class RoomEntityRewards {
             return;
         }
         List<RichardProgressEvent> events =
-            session.context.entityBridge.entityRuntime.consumePendingRichardProgressEvents();
+                session.context.entityBridge.entityRuntime.consumePendingRichardProgressEvents();
         for (RichardProgressEvent event : events) {
             if (event.kind() == RichardProgressEvent.Kind.START_QUEST) {
                 session.context.roomState.indoorBRoomStatus[0xC7] |= (byte) session.ROOM_STATUS_EVENT_1;
@@ -124,9 +135,9 @@ final class RoomEntityRewards {
     void harvestWitchEvents() {
         if (session.context.entityBridge.entityRuntime != null) {
             session.context.entityBridge.pendingWitchExchangeEvents.addAll(
-                session.context.entityBridge.entityRuntime.consumePendingWitchExchangeEvents());
+                    session.context.entityBridge.entityRuntime.consumePendingWitchExchangeEvents());
             session.context.entityBridge.pendingWitchRewardEvents.addAll(
-                session.context.entityBridge.entityRuntime.consumePendingWitchRewardEvents());
+                    session.context.entityBridge.entityRuntime.consumePendingWitchRewardEvents());
         }
     }
 
@@ -134,10 +145,15 @@ final class RoomEntityRewards {
         if (session.context.entityBridge.entityRuntime == null || session.context.activeRoom == null) {
             return;
         }
-        if (session.context.entityBridge.entityRuntime.consumePendingOwlEventCompletions().isEmpty()) {
+        if (session.context
+                .entityBridge
+                .entityRuntime
+                .consumePendingOwlEventCompletions()
+                .isEmpty()) {
             return;
         }
-        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |= (byte) session.ROOM_STATUS_EVENT_2;
+        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |=
+                (byte) session.ROOM_STATUS_EVENT_2;
     }
 
     void harvestSlimeKeyRewardEvents() {
@@ -145,7 +161,7 @@ final class RoomEntityRewards {
             return;
         }
         List<SlimeKeyRewardEvent> rewards =
-            session.context.entityBridge.entityRuntime.consumePendingSlimeKeyRewardEvents();
+                session.context.entityBridge.entityRuntime.consumePendingSlimeKeyRewardEvents();
         for (SlimeKeyRewardEvent reward : rewards) {
             session.context.entityInputs.entityGoldenLeavesCount = reward.goldenLeavesCount();
             session.markActiveRoomCompleted();

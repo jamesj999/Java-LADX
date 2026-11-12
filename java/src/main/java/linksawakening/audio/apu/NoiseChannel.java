@@ -2,7 +2,7 @@ package linksawakening.audio.apu;
 
 final class NoiseChannel {
     private static final double GAME_BOY_CLOCK_HZ = 4_194_304.0;
-    private static final int[] DIVIDING_RATIOS = { 8, 16, 32, 48, 64, 80, 96, 112 };
+    private static final int[] DIVIDING_RATIOS = {8, 16, 32, 48, 64, 80, 96, 112};
     private static final double ENVELOPE_CLOCK_HZ = 64.0;
 
     private final int sampleRate;
@@ -110,7 +110,9 @@ final class NoiseChannel {
         return 1.0 - ((lfsr & 1) == 0 ? volume / 7.5 : 0);
     }
 
-    boolean dacEnabled() { return (envelopeRegister & 0xF8) != 0; }
+    boolean dacEnabled() {
+        return (envelopeRegister & 0xF8) != 0;
+    }
 
     private void trigger() {
         active = (envelopeRegister & 0xF8) != 0;

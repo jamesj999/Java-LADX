@@ -5,8 +5,7 @@ public final class EntitySideViewGravity {
     private static final int[] GRAVITY = {0x02, 0x01, 0x02, 0x02};
     private static final int[] SPEED_CAP = {0x40, 0x08, 0x40, 0x40};
 
-    private EntitySideViewGravity() {
-    }
+    private EntitySideViewGravity() {}
 
     public static Speeds advance(int speedX, int speedY, int frameCounter, int groundStatus) {
         int status = groundStatusIndex(groundStatus);
@@ -30,6 +29,5 @@ public final class EntitySideViewGravity {
         return status;
     }
 
-    public record Speeds(int x, int y) {
-    }
+    public record Speeds(int x, int y) {}
 }

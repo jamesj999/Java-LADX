@@ -1,28 +1,15 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.SideViewPlatformMotion;
-
-import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.motion.SideViewPlatformMotion;
+import org.junit.jupiter.api.Test;
 
 final class SideViewPlatformRuntimeTest {
 
@@ -31,8 +18,9 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
 
-        assertEquals(List.of(new SideViewPlatformLinkRequest(
-            0, 0, 0x40, 0x02, true, true)), runtime.consumePendingSideViewPlatformLinkRequests());
+        assertEquals(
+                List.of(new SideViewPlatformLinkRequest(0, 0, 0x40, 0x02, true, true)),
+                runtime.consumePendingSideViewPlatformLinkRequests());
         assertEquals(0x10, runtime.inspection().sideViewPlatformPrivateState2ForTest(0));
         assertEquals(1, runtime.inspection().sideViewPlatformPrivateState4ForTest(0));
         assertEquals(1, runtime.inspection().sideViewPlatformSpeedYForTest(0));
@@ -44,7 +32,7 @@ final class SideViewPlatformRuntimeTest {
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
 
         SideViewPlatformLinkRequest request =
-            runtime.consumePendingSideViewPlatformLinkRequests().get(0);
+                runtime.consumePendingSideViewPlatformLinkRequests().get(0);
         assertEquals(0, request.horizontalDelta());
         assertEquals(0x40, request.positionY());
         assertTrue(request.standing());
@@ -55,8 +43,23 @@ final class SideViewPlatformRuntimeTest {
 
     @Test
     void carryingEntityActivatesPlatformOutsideRoom3B() {
-        RoomEntityRuntime runtime = runtime(0x20, platform(), new RoomEntity(1, 1, 0x05, 0x60,
-            0x50, EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x05), 0, 0, 0, 0, -1, false));
+        RoomEntityRuntime runtime = runtime(
+                0x20,
+                platform(),
+                new RoomEntity(
+                        1,
+                        1,
+                        0x05,
+                        0x60,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x05),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false));
         runtime.beginLift(1, 0);
         // Carry state is established by the existing lifted-entity tick path.
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
@@ -85,9 +88,16 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void airborneLinkDoesNotStandOnPlatform() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 1, 0, 3, false),
-            0x00, 0x00));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x48, 0x40, 1, 0, 3, false),
+                0x00,
+                0x00));
         assertTrue(runtime.consumePendingSideViewPlatformLinkRequests().isEmpty());
     }
 
@@ -108,10 +118,9 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void nonInteractiveSkipsContact() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        EnemyProjectileCollision.LinkState nonInteractive =
-            EnemyProjectileCollision.LinkState.nonInteractive();
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null, nonInteractive,
-            0x00, 0x00));
+        EnemyProjectileCollision.LinkState nonInteractive = EnemyProjectileCollision.LinkState.nonInteractive();
+        runtime.tick(
+                EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null, nonInteractive, 0x00, 0x00));
 
         assertTrue(runtime.consumePendingSideViewPlatformLinkRequests().isEmpty());
     }
@@ -120,10 +129,16 @@ final class SideViewPlatformRuntimeTest {
     void blockingMovedPlatformRestoresYStillContacts() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
-            (entity, direction, nextX, nextY) -> true,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
-            0x00, 0x00));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                (entity, direction, nextX, nextY) -> true,
+                new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
+                0x00,
+                0x00));
 
         assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
         assertEquals(0x10, runtime.inspection().sideViewPlatformSpeedYForTest(0));
@@ -134,10 +149,16 @@ final class SideViewPlatformRuntimeTest {
     void blockingVerticalMotionStillActivatesAndRampsState() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
-            (entity, direction, nextX, nextY) -> true,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
-            0x00, 0x00));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                (entity, direction, nextX, nextY) -> true,
+                new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
+                0x00,
+                0x00));
         assertEquals(1, runtime.inspection().sideViewPlatformPrivateState4ForTest(0));
         assertEquals(0x10, runtime.inspection().sideViewPlatformSpeedYForTest(0));
     }
@@ -148,18 +169,24 @@ final class SideViewPlatformRuntimeTest {
         runtime.debug().setSideViewPlatformSpeedXForTest(0, 0x10);
         runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
         List<int[]> queries = new ArrayList<>();
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
-            (entity, direction, nextX, nextY) -> {
-                queries.add(new int[] {direction, nextX, nextY});
-                return true;
-            },
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
-            0x00, 0x00));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                (entity, direction, nextX, nextY) -> {
+                    queries.add(new int[] {direction, nextX, nextY});
+                    return true;
+                },
+                new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
+                0x00,
+                0x00));
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x10, runtime.inspection().sideViewPlatformSpeedXForTest(0));
         assertTrue(queries.stream().anyMatch(q -> q[2] == 0x51));
-        assertEquals(1, runtime.consumePendingSideViewPlatformLinkRequests().get(0)
-            .horizontalDelta());
+        assertEquals(
+                1, runtime.consumePendingSideViewPlatformLinkRequests().get(0).horizontalDelta());
     }
 
     @Test
@@ -168,13 +195,19 @@ final class SideViewPlatformRuntimeTest {
         runtime.debug().setSideViewPlatformSpeedXForTest(0, 0x10);
         runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
         List<int[]> queries = new ArrayList<>();
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
-            (entity, direction, nextX, nextY) -> {
-                queries.add(new int[] {direction, nextX, nextY});
-                return queries.size() == 2;
-            },
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
-            0x00, 0x00));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                (entity, direction, nextX, nextY) -> {
+                    queries.add(new int[] {direction, nextX, nextY});
+                    return queries.size() == 2;
+                },
+                new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
+                0x00,
+                0x00));
         assertEquals(2, queries.size());
         assertEquals(0x41, queries.get(1)[1]);
         assertEquals(0x51, queries.get(1)[2]);
@@ -185,8 +218,8 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         runtime.debug().setSideViewPlatformSpeedXForTest(0, 0xF0);
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
-        assertEquals(-1, runtime.consumePendingSideViewPlatformLinkRequests().get(0)
-            .horizontalDelta());
+        assertEquals(
+                -1, runtime.consumePendingSideViewPlatformLinkRequests().get(0).horizontalDelta());
     }
 
     @Test
@@ -231,9 +264,10 @@ final class SideViewPlatformRuntimeTest {
         for (int frame = 0; frame < 4; frame++) {
             tick(runtime, frame, 0x48, 0x40, 0x00, 0x00);
         }
-        assertEquals(new EntityCombatEvent(0, SideViewPlatformMotion.ENTITY_TYPE, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x11),
-            runtime.consumePendingEntityEvents().get(0));
+        assertEquals(
+                new EntityCombatEvent(
+                        0, SideViewPlatformMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x11),
+                runtime.consumePendingEntityEvents().get(0));
     }
 
     @Test
@@ -241,8 +275,8 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         runtime.debug().setSideViewPlatformSpeedXForTest(0, 0x10);
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
-        assertEquals(1, runtime.consumePendingSideViewPlatformLinkRequests().get(0)
-            .horizontalDelta());
+        assertEquals(
+                1, runtime.consumePendingSideViewPlatformLinkRequests().get(0).horizontalDelta());
     }
 
     @Test
@@ -257,11 +291,17 @@ final class SideViewPlatformRuntimeTest {
         assertEquals(0, runtime.inspection().sideViewPlatformPrivateState4ForTest(0));
     }
 
-    private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY,
-                              int speedX, int speedY) {
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 3, false),
-            speedX, speedY));
+    private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY, int speedX, int speedY) {
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                frame,
+                linkX,
+                linkY,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 3, false),
+                speedX,
+                speedY));
     }
 
     private static RoomEntityRuntime runtime(int roomId, RoomEntity entity) {
@@ -289,8 +329,19 @@ final class SideViewPlatformRuntimeTest {
     }
 
     private static RoomEntity platform(EntityStatus status) {
-        return new RoomEntity(0, 0, SideViewPlatformMotion.ENTITY_TYPE, 0x40, 0x50,
-            status, EntitySpriteDefinition.unsupported(
-                SideViewPlatformMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0,
+                0,
+                SideViewPlatformMotion.ENTITY_TYPE,
+                0x40,
+                0x50,
+                status,
+                EntitySpriteDefinition.unsupported(SideViewPlatformMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

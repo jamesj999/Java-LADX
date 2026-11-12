@@ -6,20 +6,18 @@ import linksawakening.gpu.Tile;
 
 public final class TilemapRenderer {
 
-    private TilemapRenderer() {
-    }
+    private TilemapRenderer() {}
 
     public static void render(
-        byte[] displayBuffer,
-        GPU gpu,
-        int[] tileIds,
-        int[] tileAttrs,
-        int[][] palettes,
-        int tileWidth,
-        int tileHeight,
-        int offsetX,
-        int offsetY
-    ) {
+            byte[] displayBuffer,
+            GPU gpu,
+            int[] tileIds,
+            int[] tileAttrs,
+            int[][] palettes,
+            int tileWidth,
+            int tileHeight,
+            int offsetX,
+            int offsetY) {
         for (int y = 0; y < tileHeight; y++) {
             for (int x = 0; x < tileWidth; x++) {
                 int mapIndex = y * tileWidth + x;
@@ -39,8 +37,10 @@ public final class TilemapRenderer {
                 int tileScreenX = x * 8 + offsetX;
                 int tileScreenY = y * 8 + offsetY;
 
-                if (tileScreenX + 8 <= 0 || tileScreenX >= Framebuffer.WIDTH
-                    || tileScreenY + 8 <= 0 || tileScreenY >= Framebuffer.HEIGHT) {
+                if (tileScreenX + 8 <= 0
+                        || tileScreenX >= Framebuffer.WIDTH
+                        || tileScreenY + 8 <= 0
+                        || tileScreenY >= Framebuffer.HEIGHT) {
                     continue;
                 }
 
@@ -58,7 +58,7 @@ public final class TilemapRenderer {
                         int color = palette[tile.getPixel(sourceX, sourceY)];
 
                         int offset = (py * Framebuffer.WIDTH + px) * 4;
-                        displayBuffer[offset]     = (byte) ((color >> 16) & 0xFF);
+                        displayBuffer[offset] = (byte) ((color >> 16) & 0xFF);
                         displayBuffer[offset + 1] = (byte) ((color >> 8) & 0xFF);
                         displayBuffer[offset + 2] = (byte) (color & 0xFF);
                         displayBuffer[offset + 3] = (byte) 0xFF;
@@ -71,14 +71,28 @@ public final class TilemapRenderer {
     private static int resolveSignedBgTileIndex(int tileId) {
         return tileId < 0x80 ? tileId + 0x100 : tileId;
     }
-    public static void submit(linksawakening.render.HardwareFrame frame, GPU gpu,
-                              int[] tileIds, int[] attrs, int[][] palettes,
-                              int width, int height, int offsetX, int offsetY) {
-        for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
-            int at = y * width + x, tile = tileIds[at] & 255;
-            int attr = attrs == null ? 0 : attrs[at] & 255;
-            frame.closedHudTile(gpu.getTile(resolveSignedBgTileIndex(tile)), tile, attr,
-                x * 8 + offsetX, y * 8 + offsetY, palettes[Math.min(attr & 7, palettes.length - 1)]);
-        }
+
+    public static void submit(
+            linksawakening.render.HardwareFrame frame,
+            GPU gpu,
+            int[] tileIds,
+            int[] attrs,
+            int[][] palettes,
+            int width,
+            int height,
+            int offsetX,
+            int offsetY) {
+        for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++) {
+                int at = y * width + x, tile = tileIds[at] & 255;
+                int attr = attrs == null ? 0 : attrs[at] & 255;
+                frame.closedHudTile(
+                        gpu.getTile(resolveSignedBgTileIndex(tile)),
+                        tile,
+                        attr,
+                        x * 8 + offsetX,
+                        y * 8 + offsetY,
+                        palettes[Math.min(attr & 7, palettes.length - 1)]);
+            }
     }
 }

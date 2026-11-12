@@ -1,10 +1,9 @@
 package linksawakening.world.room;
 
-import linksawakening.world.transition.Warp;
-
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
+import linksawakening.world.transition.Warp;
 
 /** Resolves the five-byte destination copied by {@code TeleportToManboPond}. */
 public final class ManboWarpResolver {
@@ -31,21 +30,20 @@ public final class ManboWarpResolver {
     public Warp resolve(int mapCategory, int mapId) {
         int normalizedMapId = mapId & 0xFF;
         if (mapCategory != Warp.CATEGORY_OVERWORLD
-            && (normalizedMapId == MAP_COLOR_DUNGEON
-                || normalizedMapId < FIRST_UNSUPPORTED_INDOOR_MAP)) {
+                && (normalizedMapId == MAP_COLOR_DUNGEON || normalizedMapId < FIRST_UNSUPPORTED_INDOOR_MAP)) {
             int tableIndex = normalizedMapId & 0x0F;
             if (tableIndex >= MANBO_WARP_TABLE_ENTRIES) {
-                throw new IllegalStateException("Manbo warp table index out of range: "
-                    + tableIndex);
+                throw new IllegalStateException("Manbo warp table index out of range: " + tableIndex);
             }
-            int source = RomSymbols.Data_014_4DF1.plus(tableIndex * MANBO_WARP_RECORD_SIZE).offset();
+            int source = RomSymbols.Data_014_4DF1.plus(tableIndex * MANBO_WARP_RECORD_SIZE)
+                    .offset();
             return new Warp(
-                readByte(source),
-                readByte(source + 1),
-                readByte(source + 2),
-                readByte(source + 3),
-                readByte(source + 4),
-                -1);
+                    readByte(source),
+                    readByte(source + 1),
+                    readByte(source + 2),
+                    readByte(source + 3),
+                    readByte(source + 4),
+                    -1);
         }
         return new Warp(Warp.CATEGORY_OVERWORLD, 0x00, 0x45, 0x38, 0x60, 0x53);
     }

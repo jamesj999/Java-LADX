@@ -1,30 +1,52 @@
 package linksawakening.world.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.util.stream.IntStream;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
-import java.io.IOException;
-import java.util.stream.IntStream;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 class EntityBossBattleFlagTest {
     private RoomEntityRuntime runtime() throws IOException {
         byte[] rom;
-        try (var in = TestRom.open()) { rom = in.readAllBytes(); }
+        try (var in = TestRom.open()) {
+            rom = in.readAllBytes();
+        }
         var slots = IntStream.range(0, 16).mapToObj(RoomEntity::disabled).toList();
-        var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), true, () -> 0,
-            null, new RomEnemyCombatTables(rom),
-            new linksawakening.world.room.ChestContentsTable(rom),
-            linksawakening.rom.RomTables.loadFromRom(rom), rom);
+        var runtime = RoomEntityRuntime.from(
+                new RoomEntitySnapshot(slots),
+                true,
+                () -> 0,
+                null,
+                new RomEnemyCombatTables(rom),
+                new linksawakening.world.room.ChestContentsTable(rom),
+                linksawakening.rom.RomTables.loadFromRom(rom),
+                rom);
         runtime.enemyDropResolver = new EnemyDropResolver(rom);
         return runtime;
     }
+
     private RoomEntity entity(int slot, int type) {
-        return new RoomEntity(slot, slot, type, 64, 80, EntityStatus.INIT,
-            EntitySpriteDefinition.unsupported(type), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                slot,
+                slot,
+                type,
+                64,
+                80,
+                EntityStatus.INIT,
+                EntitySpriteDefinition.unsupported(type),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
+
     @Test
     void laterBossInitSetsFlagAndDeathDoesNotClearItButRoomResetDoes() throws IOException {
         var runtime = runtime();
@@ -38,6 +60,7 @@ class EntityBossBattleFlagTest {
         assertFalse(runtime.inspection().inBossBattle());
         assertFalse(runtime().inspection().inBossBattle());
     }
+
     @Test
     void nonBossAndDefeatedBossDoNotSetFlag() throws IOException {
         var runtime = runtime();
@@ -50,6 +73,7 @@ class EntityBossBattleFlagTest {
         assertFalse(runtime.inspection().inBossBattle());
         assertEquals(EntityStatus.DISABLED, runtime.slots[14].status());
     }
+
     @Test
     void battleFlagSuppressesPowerUpsButStillAllowsOrdinaryDrops() throws IOException {
         var runtime = runtime();

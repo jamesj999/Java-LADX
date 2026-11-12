@@ -1,5 +1,10 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import java.io.IOException;
+import java.io.InputStream;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSequence;
 import linksawakening.gpu.Framebuffer;
@@ -7,12 +12,6 @@ import linksawakening.gpu.GPU;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @linksawakening.testing.RequiresRom
 final class IntroFrameRegressionTest {
@@ -23,8 +22,8 @@ final class IntroFrameRegressionTest {
         GPU gpu = new GPU();
         gpu.loadIntroSequenceTiles(rom);
         BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence = new IntroSequence(rom, sceneId -> loader.load(
-            BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        IntroSequence sequence =
+                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
 
         IntroFrameSnapshot initial = sequence.snapshot();
@@ -41,10 +40,8 @@ final class IntroFrameRegressionTest {
 
     private static byte[] render(GameFrameSceneBuilder builder, GPU gpu, IntroFrameSnapshot snapshot) {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        builder.build(GameFrameState.empty()
-            .withScreen(RenderScreen.CUTSCENE)
-            .withIntroFrameSnapshot(snapshot))
-            .drawTo(buffer, gpu);
+        builder.build(GameFrameState.empty().withScreen(RenderScreen.CUTSCENE).withIntroFrameSnapshot(snapshot))
+                .drawTo(buffer, gpu);
         return buffer;
     }
 

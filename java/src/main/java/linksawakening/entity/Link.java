@@ -1,5 +1,9 @@
 package linksawakening.entity;
 
+import static linksawakening.entity.LinkRomConstants.*;
+
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -8,13 +12,8 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
-import linksawakening.state.PlayerState;
 import linksawakening.state.LinkPlayerState;
-
-import static linksawakening.entity.LinkRomConstants.*;
-
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
+import linksawakening.state.PlayerState;
 
 /**
  * Link's state and per-frame update, ported from the LADX disassembly's
@@ -86,38 +85,57 @@ public final class Link implements RocsFeather.JumpTarget {
     int romAttackStepAnimationCountdown;
     final GameplaySoundSink soundSink;
 
-    public Link(InputState inputState,
-                InputConfig inputConfig,
-                RomTables romTables,
-                OverworldCollision collision,
-                LinkSpriteSheet spriteSheet,
-                PlayerState playerState,
-                ItemRegistry itemRegistry) {
-        this(inputState, inputConfig, romTables, collision, spriteSheet, playerState,
-                itemRegistry, GameplaySoundSink.none(), LinkTunicPalette.greenCompatibility());
+    public Link(
+            InputState inputState,
+            InputConfig inputConfig,
+            RomTables romTables,
+            OverworldCollision collision,
+            LinkSpriteSheet spriteSheet,
+            PlayerState playerState,
+            ItemRegistry itemRegistry) {
+        this(
+                inputState,
+                inputConfig,
+                romTables,
+                collision,
+                spriteSheet,
+                playerState,
+                itemRegistry,
+                GameplaySoundSink.none(),
+                LinkTunicPalette.greenCompatibility());
     }
 
-    public Link(InputState inputState,
-                InputConfig inputConfig,
-                RomTables romTables,
-                OverworldCollision collision,
-                LinkSpriteSheet spriteSheet,
-                PlayerState playerState,
-                ItemRegistry itemRegistry,
-                GameplaySoundSink soundSink) {
-        this(inputState, inputConfig, romTables, collision, spriteSheet, playerState,
-            itemRegistry, soundSink, LinkTunicPalette.greenCompatibility());
+    public Link(
+            InputState inputState,
+            InputConfig inputConfig,
+            RomTables romTables,
+            OverworldCollision collision,
+            LinkSpriteSheet spriteSheet,
+            PlayerState playerState,
+            ItemRegistry itemRegistry,
+            GameplaySoundSink soundSink) {
+        this(
+                inputState,
+                inputConfig,
+                romTables,
+                collision,
+                spriteSheet,
+                playerState,
+                itemRegistry,
+                soundSink,
+                LinkTunicPalette.greenCompatibility());
     }
 
-    public Link(InputState inputState,
-                InputConfig inputConfig,
-                RomTables romTables,
-                OverworldCollision collision,
-                LinkSpriteSheet spriteSheet,
-                PlayerState playerState,
-                ItemRegistry itemRegistry,
-                GameplaySoundSink soundSink,
-                LinkTunicPalette tunicPalette) {
+    public Link(
+            InputState inputState,
+            InputConfig inputConfig,
+            RomTables romTables,
+            OverworldCollision collision,
+            LinkSpriteSheet spriteSheet,
+            PlayerState playerState,
+            ItemRegistry itemRegistry,
+            GameplaySoundSink soundSink,
+            LinkTunicPalette tunicPalette) {
         this.inputState = inputState;
         this.inputConfig = inputConfig;
         this.romTables = romTables;
@@ -211,18 +229,23 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     boolean pitWarpPending;
+
     public boolean consumePitWarp() {
         boolean result = pitWarpPending;
         pitWarpPending = false;
         return result;
     }
-    public boolean pitWarpPending() { return pitWarpPending; }
+
+    public boolean pitWarpPending() {
+        return pitWarpPending;
+    }
     /** ApplyCollisionWithDoor requested a fade during a movement probe. */
     public boolean consumeDoorWarp() {
         boolean pending = linkMotion.doorWarpPending;
         linkMotion.doorWarpPending = false;
         return pending;
     }
+
     public void setPitWarpArrival(int z) {
         linkStateMachine.motionState = LINK_MOTION_DEFAULT;
         linkAirborne.zSubPixels = z << SUB_PIXEL_SHIFT;
@@ -232,6 +255,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public record WaterSplash(int romX, int romY) {}
+
     WaterSplash pendingWaterSplash;
 
     public WaterSplash consumeWaterSplash() {
@@ -239,28 +263,56 @@ public final class Link implements RocsFeather.JumpTarget {
         pendingWaterSplash = null;
         return result;
     }
+
     private int passOutCountdown = -1;
     private int passOutPaletteEffect;
-    public boolean isPassingOut() { return romMotionState() == LINK_MOTION_PASS_OUT; }
-    public boolean gameOverScreenPending() { return isPassingOut() && passOutCountdown == 0; }
+
+    public boolean isPassingOut() {
+        return romMotionState() == LINK_MOTION_PASS_OUT;
+    }
+
+    public boolean gameOverScreenPending() {
+        return isPassingOut() && passOutCountdown == 0;
+    }
+
     private int gameOverCountdown;
-    public int gameOverStage() { return isPassingOut() ? romPhysicsModifier() : 0; }
-    public int gameOverCountdown() { return gameOverCountdown; }
+
+    public int gameOverStage() {
+        return isPassingOut() ? romPhysicsModifier() : 0;
+    }
+
+    public int gameOverCountdown() {
+        return gameOverCountdown;
+    }
+
     public void presentGameOverStage(int stage, int countdown) {
         linkStateMachine.physicsModifier = stage;
         gameOverCountdown = countdown;
     }
-    public int passOutCountdown() { return passOutCountdown; }
+
+    public int passOutCountdown() {
+        return passOutCountdown;
+    }
     /** wBGPaletteEffectAddress is held at $10 during the pass-out animation. */
-    public int passOutBgPaletteEffectAddress() { return isPassingOut() && !gameOverScreenPending() ? 0x10 : 0; }
-    public int passOutPaletteEffect() { return passOutPaletteEffect; }
-    public int passOutPaletteFrames() { return isPassingOut() ? 192 - passOutCountdown : 0; }
+    public int passOutBgPaletteEffectAddress() {
+        return isPassingOut() && !gameOverScreenPending() ? 0x10 : 0;
+    }
+
+    public int passOutPaletteEffect() {
+        return passOutPaletteEffect;
+    }
+
+    public int passOutPaletteFrames() {
+        return isPassingOut() ? 192 - passOutCountdown : 0;
+    }
+
     public void finishGameOver() {
         linkStateMachine.resetTransientStateForDebug();
         passOutCountdown = -1;
         passOutPaletteEffect = 0;
         gameOverCountdown = 0;
     }
+
     public void beginPassOut() {
         linkStateMachine.motionState = LINK_MOTION_PASS_OUT;
         linkStateMachine.physicsModifier = 0;
@@ -271,6 +323,7 @@ public final class Link implements RocsFeather.JumpTarget {
         linkMotion.lastRomSpeedY = 0;
         movingThisFrame = false;
     }
+
     public void presentPassOut(int countdown, int animationState, int paletteEffect) {
         passOutCountdown = countdown;
         passOutPaletteEffect = paletteEffect;
@@ -321,13 +374,14 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private boolean hasFacingCollision() {
-        int flag = switch (direction) {
-            case DIRECTION_UP -> COLLISION_TYPE_UP;
-            case DIRECTION_DOWN -> COLLISION_TYPE_DOWN;
-            case DIRECTION_LEFT -> COLLISION_TYPE_LEFT;
-            case DIRECTION_RIGHT -> COLLISION_TYPE_RIGHT;
-            default -> 0;
-        };
+        int flag =
+                switch (direction) {
+                    case DIRECTION_UP -> COLLISION_TYPE_UP;
+                    case DIRECTION_DOWN -> COLLISION_TYPE_DOWN;
+                    case DIRECTION_LEFT -> COLLISION_TYPE_LEFT;
+                    case DIRECTION_RIGHT -> COLLISION_TYPE_RIGHT;
+                    default -> 0;
+                };
         return (linkMotion.romCollisionType & flag) != 0;
     }
 
@@ -362,8 +416,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     /** A screen-shake write emitted by the ROM's Pegasus collision handler. */
-    public record ScreenShakeRequest(int countdown, int phase) {
-    }
+    public record ScreenShakeRequest(int countdown, int phase) {}
 
     /** Previous entity pass's Gel state and current world frame for motion gates. */
     public void setGelClinging(boolean clinging, int worldFrame) {
@@ -433,8 +486,11 @@ public final class Link implements RocsFeather.JumpTarget {
 
     @Override
     public void useRocsFeather() {
-        if (linkAirborne.airborne || linkSideView.sideViewFeatherPending || linkAirborne.groundStatus == GROUND_STATUS_PIT
-            || linkAirborne.fallingIntoPit || isSwimming()) {
+        if (linkAirborne.airborne
+                || linkSideView.sideViewFeatherPending
+                || linkAirborne.groundStatus == GROUND_STATUS_PIT
+                || linkAirborne.fallingIntoPit
+                || isSwimming()) {
             return;
         }
         if (linkSideView.sideScrolling) {
@@ -471,17 +527,31 @@ public final class Link implements RocsFeather.JumpTarget {
         linkDamage.applySpikeGroundPhysics();
         // ApplyLinkGroundPhysics uses the completed motion position. Dialogs
         // and scrolling reuse this result while ordinary Link updates pause.
-        grassGroundEffectActive = collision != null && !linkSideView.sideScrolling
-            && !linkAirborne.airborne && !linkAirborne.fallingIntoPit
-            && linkStateMachine.motionState != 0x02 && romEntityY() < 0x88
-            && collision.objectPhysicsFlagAtPoint(pixelX() + 8, pixelY() + 12)
-                == linksawakening.physics.PhysicsFlags.GRASS;
+        grassGroundEffectActive = collision != null
+                && !linkSideView.sideScrolling
+                && !linkAirborne.airborne
+                && !linkAirborne.fallingIntoPit
+                && linkStateMachine.motionState != 0x02
+                && romEntityY() < 0x88
+                && collision.objectPhysicsFlagAtPoint(pixelX() + 8, pixelY() + 12)
+                        == linksawakening.physics.PhysicsFlags.GRASS;
     }
 
-    public boolean grassGroundEffectActive() { return grassGroundEffectActive; }
-    public boolean grassGroundEffectFlipX() { return (romConsecutiveStepsCount & 8) != 0; }
-    public int romConsecutiveStepsCount() { return romConsecutiveStepsCount; }
-    void clearGroundEffects() { grassGroundEffectActive = false; }
+    public boolean grassGroundEffectActive() {
+        return grassGroundEffectActive;
+    }
+
+    public boolean grassGroundEffectFlipX() {
+        return (romConsecutiveStepsCount & 8) != 0;
+    }
+
+    public int romConsecutiveStepsCount() {
+        return romConsecutiveStepsCount;
+    }
+
+    void clearGroundEffects() {
+        grassGroundEffectActive = false;
+    }
 
     public void tickAnimation() {
         walkTickCounter++;
@@ -552,8 +622,7 @@ public final class Link implements RocsFeather.JumpTarget {
             case DIRECTION_LEFT -> 1;
             case DIRECTION_UP -> 2;
             case DIRECTION_DOWN -> 3;
-            default -> throw new IllegalArgumentException("Link direction out of range: "
-                + javaDirection);
+            default -> throw new IllegalArgumentException("Link direction out of range: " + javaDirection);
         };
     }
 
@@ -579,52 +648,175 @@ public final class Link implements RocsFeather.JumpTarget {
         };
     }
 
-    public void setPixelPosition(int pixelX, int pixelY) { linkMotion.setPixelPosition(pixelX, pixelY); }
+    public void setPixelPosition(int pixelX, int pixelY) {
+        linkMotion.setPixelPosition(pixelX, pixelY);
+    }
     /** Records a scroll landing while retaining the source fractional accumulators. */
-    public void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomScrollEntryPixelPosition(pixelX, pixelY); }
+    public void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
+        linkMotion.setRoomScrollEntryPixelPosition(pixelX, pixelY);
+    }
 
-    public void setRoomEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomEntryPixelPosition(pixelX, pixelY); }
-    public void markRoomEntryPosition() { linkMotion.markRoomEntryPosition(); }
-    public int roomEntryPixelX() { return linkMotion.roomEntryPixelX(); }
-    public int roomEntryPixelY() { return linkMotion.roomEntryPixelY(); }
-    public int roomEntryRomPositionX() { return linkMotion.roomEntryRomPositionX(); }
-    public int roomEntryRomPositionY() { return linkMotion.roomEntryRomPositionY(); }
-    public void setRoomEntryRomPosition(int romPositionX, int romPositionY) { linkMotion.setRoomEntryRomPosition(romPositionX, romPositionY); }
-    public void applyRomSpeed(int speedX, int speedY) { linkMotion.applyRomSpeed(speedX, speedY); }
-    public void applyRomSpeedX(int speedX) { linkMotion.applyRomSpeedX(speedX); }
-    public void applyRomFinalPosition(int speedX, int speedY) { linkMotion.applyRomFinalPosition(speedX, speedY); }
-    public void captureRomFinalPosition() { linkMotion.captureRomFinalPosition(); }
-    public void restoreRomFinalPosition() { linkMotion.restoreRomFinalPosition(); }
-    public void restoreRomFinalPositionX() { linkMotion.restoreRomFinalPositionX(); }
-    public void clearRomPositionIncrement() { linkMotion.clearRomPositionIncrement(); }
-    public int pixelX() { return linkMotion.pixelX(); }
-    public int pixelY() { return linkMotion.pixelY(); }
-    public int romEntityX() { return linkMotion.romEntityX(); }
-    public int romFinalPositionX() { return linkMotion.romFinalPositionX(); }
-    public int romEntityY() { return linkMotion.romEntityY(); }
-    public void applyLikeLikeCapture(int romEntityX, int romEntityY) { linkEntityEffects.applyLikeLikeCapture(romEntityX, romEntityY); }
-    public void applyLikeLikeCapture(int romEntityX, int romEntityY, boolean pinPosition) { linkEntityEffects.applyLikeLikeCapture(romEntityX, romEntityY, pinPosition); }
-    public void releaseLikeLikeCapture() { linkEntityEffects.releaseLikeLikeCapture(); }
-    public void setCarryingLiftedObjectState(int carryState, int romDirection) { linkEntityEffects.setCarryingLiftedObjectState(carryState, romDirection); }
-    public void applyRoosterFlightState(int positionZ, int velocityZ,
-                                        int speedX, int speedY, int romDirection) { linkEntityEffects.applyRoosterFlightState(positionZ, velocityZ, speedX, speedY, romDirection); }
-    public void applyHinoxGrabState(int romPositionX, int romPositionY, int positionZ,
-                                    int speedX, int speedY, int velocityZ,
-                                    int airborneState) { linkEntityEffects.applyHinoxGrabState(romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, airborneState); }
-    public void applyHinoxGrabState(int romPositionX, int romPositionY, int positionZ,
-                                    int speedX, int speedY, int velocityZ,
-                                    int airborneState, boolean motionBlocked,
-                                    boolean applyHeldLinkPose) { linkEntityEffects.applyHinoxGrabState(romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, airborneState, motionBlocked, applyHeldLinkPose); }
-    public void applyWarpState3(int romPositionX, int visualRomPositionY,
-                                int immunityCountdown) { linkEntityEffects.applyWarpState3(romPositionX, visualRomPositionY, immunityCountdown); }
-    public void leaveMarinWakeUpBed() { linkEntityEffects.leaveMarinWakeUpBed(); }
-    public void clearRoosterCarryState() { linkEntityEffects.clearRoosterCarryState(); }
-    public void showRomFallenPose() { linkAnimator.showRomFallenPose(); }
+    public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
+        linkMotion.setRoomEntryPixelPosition(pixelX, pixelY);
+    }
+
+    public void markRoomEntryPosition() {
+        linkMotion.markRoomEntryPosition();
+    }
+
+    public int roomEntryPixelX() {
+        return linkMotion.roomEntryPixelX();
+    }
+
+    public int roomEntryPixelY() {
+        return linkMotion.roomEntryPixelY();
+    }
+
+    public int roomEntryRomPositionX() {
+        return linkMotion.roomEntryRomPositionX();
+    }
+
+    public int roomEntryRomPositionY() {
+        return linkMotion.roomEntryRomPositionY();
+    }
+
+    public void setRoomEntryRomPosition(int romPositionX, int romPositionY) {
+        linkMotion.setRoomEntryRomPosition(romPositionX, romPositionY);
+    }
+
+    public void applyRomSpeed(int speedX, int speedY) {
+        linkMotion.applyRomSpeed(speedX, speedY);
+    }
+
+    public void applyRomSpeedX(int speedX) {
+        linkMotion.applyRomSpeedX(speedX);
+    }
+
+    public void applyRomFinalPosition(int speedX, int speedY) {
+        linkMotion.applyRomFinalPosition(speedX, speedY);
+    }
+
+    public void captureRomFinalPosition() {
+        linkMotion.captureRomFinalPosition();
+    }
+
+    public void restoreRomFinalPosition() {
+        linkMotion.restoreRomFinalPosition();
+    }
+
+    public void restoreRomFinalPositionX() {
+        linkMotion.restoreRomFinalPositionX();
+    }
+
+    public void clearRomPositionIncrement() {
+        linkMotion.clearRomPositionIncrement();
+    }
+
+    public int pixelX() {
+        return linkMotion.pixelX();
+    }
+
+    public int pixelY() {
+        return linkMotion.pixelY();
+    }
+
+    public int romEntityX() {
+        return linkMotion.romEntityX();
+    }
+
+    public int romFinalPositionX() {
+        return linkMotion.romFinalPositionX();
+    }
+
+    public int romEntityY() {
+        return linkMotion.romEntityY();
+    }
+
+    public void applyLikeLikeCapture(int romEntityX, int romEntityY) {
+        linkEntityEffects.applyLikeLikeCapture(romEntityX, romEntityY);
+    }
+
+    public void applyLikeLikeCapture(int romEntityX, int romEntityY, boolean pinPosition) {
+        linkEntityEffects.applyLikeLikeCapture(romEntityX, romEntityY, pinPosition);
+    }
+
+    public void releaseLikeLikeCapture() {
+        linkEntityEffects.releaseLikeLikeCapture();
+    }
+
+    public void setCarryingLiftedObjectState(int carryState, int romDirection) {
+        linkEntityEffects.setCarryingLiftedObjectState(carryState, romDirection);
+    }
+
+    public void applyRoosterFlightState(int positionZ, int velocityZ, int speedX, int speedY, int romDirection) {
+        linkEntityEffects.applyRoosterFlightState(positionZ, velocityZ, speedX, speedY, romDirection);
+    }
+
+    public void applyHinoxGrabState(
+            int romPositionX,
+            int romPositionY,
+            int positionZ,
+            int speedX,
+            int speedY,
+            int velocityZ,
+            int airborneState) {
+        linkEntityEffects.applyHinoxGrabState(
+                romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, airborneState);
+    }
+
+    public void applyHinoxGrabState(
+            int romPositionX,
+            int romPositionY,
+            int positionZ,
+            int speedX,
+            int speedY,
+            int velocityZ,
+            int airborneState,
+            boolean motionBlocked,
+            boolean applyHeldLinkPose) {
+        linkEntityEffects.applyHinoxGrabState(
+                romPositionX,
+                romPositionY,
+                positionZ,
+                speedX,
+                speedY,
+                velocityZ,
+                airborneState,
+                motionBlocked,
+                applyHeldLinkPose);
+    }
+
+    public void applyWarpState3(int romPositionX, int visualRomPositionY, int immunityCountdown) {
+        linkEntityEffects.applyWarpState3(romPositionX, visualRomPositionY, immunityCountdown);
+    }
+
+    public void leaveMarinWakeUpBed() {
+        linkEntityEffects.leaveMarinWakeUpBed();
+    }
+
+    public void clearRoosterCarryState() {
+        linkEntityEffects.clearRoosterCarryState();
+    }
+
+    public void showRomFallenPose() {
+        linkAnimator.showRomFallenPose();
+    }
     /** Read-only wDialogGotItem != 0; ground physics must use this, not dialog visibility. */
-    public boolean dialogGotItemActive() { return dialogGotItemSequence.item() != 0; }
-    public int dialogGotItem() { return dialogGotItemSequence.item(); }
-    public int dialogGotItemCountdown() { return dialogGotItemSequence.countdown(); }
-    public int presentedDialogGotItem() { return dialogGotItemSequence.presentedItem(); }
+    public boolean dialogGotItemActive() {
+        return dialogGotItemSequence.item() != 0;
+    }
+
+    public int dialogGotItem() {
+        return dialogGotItemSequence.item();
+    }
+
+    public int dialogGotItemCountdown() {
+        return dialogGotItemSequence.countdown();
+    }
+
+    public int presentedDialogGotItem() {
+        return dialogGotItemSequence.presentedItem();
+    }
 
     /** UseMagicPowder $00:1492-14A6. Ownership is unchanged by showing the item. */
     public void presentToadstool() {
@@ -633,7 +825,9 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     /** Witch's B-slot branch $05:4833-4837; already-submitted pose survives this frame. */
-    public void clearDialogGotItem() { dialogGotItemSequence.clear(); }
+    public void clearDialogGotItem() {
+        dialogGotItemSequence.clear();
+    }
 
     /** ApplyGotItem, followed by HandleGotItemB ($02:51C7-5243).
      * Returns the DIALOG_GOT_* value requesting its dialog this frame, or zero.
@@ -645,8 +839,8 @@ public final class Link implements RocsFeather.JumpTarget {
         // entry uses the updated Z. Preserve the fractional position at ground.
         linkAnimator.bedJumpRenderZ = zPixels();
         if (itemRegistry != null
-            && itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
-                instanceof linksawakening.equipment.Sword sword) {
+                && itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
+                        instanceof linksawakening.equipment.Sword sword) {
             sword.resetSpinAttack();
         }
         romAttackStepAnimationCountdown = 0;
@@ -664,53 +858,156 @@ public final class Link implements RocsFeather.JumpTarget {
         return openForItem;
     }
 
-    public void showHeldItemPose() { linkAnimator.showHeldItemPose(); }
-    public void showPowerUpPickupPose() { linkAnimator.showPowerUpPickupPose(); }
-    public void showTarinShieldPresentation(int[] palette) { linkAnimator.showTarinShieldPresentation(palette); }
-    public void clearTarinShieldPresentation() { linkAnimator.clearTarinShieldPresentation(); }
-    public void showStandingShieldDownPose() { linkAnimator.showStandingShieldDownPose(); }
-    public void showSwordAcquisitionSpinPose(int countdown) { linkAnimator.showSwordAcquisitionSpinPose(countdown); }
-    public void showSwordAcquisitionFinalPose() { linkAnimator.showSwordAcquisitionFinalPose(); }
-    public void showMarinWakeUpBed(int spriteVariant) { linkAnimator.showMarinWakeUpBed(spriteVariant); }
-    public void render(byte[] displayBuffer, int offsetX, int offsetY) { linkAnimator.render(displayBuffer, offsetX, offsetY); }
-    public void startRomItemAttackStep() { linkEquipment.startRomItemAttackStep(); }
-    public void startRomMagicPowderAttackStep() { linkEquipment.startRomMagicPowderAttackStep(); }
-    public void startRomMagicRodAttackStep() { linkEquipment.startRomMagicRodAttackStep(); }
-    public void clearRomAttackStepAnimationCountdown() { linkEquipment.clearRomAttackStepAnimationCountdown(); }
-    public boolean canUseItems() { return linkEquipment.canUseItems(); }
-    public void setShieldInputAllowed(BooleanSupplier allowed) { linkEquipment.setShieldInputAllowed(allowed); }
-    public boolean isUsingShield() { return linkEquipment.isUsingShield(); }
-    public int applyRomItemDirectionFromInput() { return linkEquipment.applyRomItemDirectionFromInput(); }
-    public void setDebugNoClip(boolean enabled) { linkStateMachine.setDebugNoClip(enabled); }
-    public void resetTransientStateForDebug() { linkStateMachine.resetTransientStateForDebug(); }
-    public void finishRoomScroll(boolean downward) { linkStateMachine.finishRoomScroll(downward); }
+    public void showHeldItemPose() {
+        linkAnimator.showHeldItemPose();
+    }
+
+    public void showPowerUpPickupPose() {
+        linkAnimator.showPowerUpPickupPose();
+    }
+
+    public void showTarinShieldPresentation(int[] palette) {
+        linkAnimator.showTarinShieldPresentation(palette);
+    }
+
+    public void clearTarinShieldPresentation() {
+        linkAnimator.clearTarinShieldPresentation();
+    }
+
+    public void showStandingShieldDownPose() {
+        linkAnimator.showStandingShieldDownPose();
+    }
+
+    public void showSwordAcquisitionSpinPose(int countdown) {
+        linkAnimator.showSwordAcquisitionSpinPose(countdown);
+    }
+
+    public void showSwordAcquisitionFinalPose() {
+        linkAnimator.showSwordAcquisitionFinalPose();
+    }
+
+    public void showMarinWakeUpBed(int spriteVariant) {
+        linkAnimator.showMarinWakeUpBed(spriteVariant);
+    }
+
+    public void render(byte[] displayBuffer, int offsetX, int offsetY) {
+        linkAnimator.render(displayBuffer, offsetX, offsetY);
+    }
+
+    public void startRomItemAttackStep() {
+        linkEquipment.startRomItemAttackStep();
+    }
+
+    public void startRomMagicPowderAttackStep() {
+        linkEquipment.startRomMagicPowderAttackStep();
+    }
+
+    public void startRomMagicRodAttackStep() {
+        linkEquipment.startRomMagicRodAttackStep();
+    }
+
+    public void clearRomAttackStepAnimationCountdown() {
+        linkEquipment.clearRomAttackStepAnimationCountdown();
+    }
+
+    public boolean canUseItems() {
+        return linkEquipment.canUseItems();
+    }
+
+    public void setShieldInputAllowed(BooleanSupplier allowed) {
+        linkEquipment.setShieldInputAllowed(allowed);
+    }
+
+    public boolean isUsingShield() {
+        return linkEquipment.isUsingShield();
+    }
+
+    public int applyRomItemDirectionFromInput() {
+        return linkEquipment.applyRomItemDirectionFromInput();
+    }
+
+    public void setDebugNoClip(boolean enabled) {
+        linkStateMachine.setDebugNoClip(enabled);
+    }
+
+    public void resetTransientStateForDebug() {
+        linkStateMachine.resetTransientStateForDebug();
+    }
+
+    public void finishRoomScroll(boolean downward) {
+        linkStateMachine.finishRoomScroll(downward);
+    }
     /** Raw source write, distinct from internal sword/presentation movement locks. */
-    public void writeRomInteractiveMotionBlock(int value) { linkStateMachine.writeRomInteractiveMotionBlock(value); }
-    public int romInteractiveMotionBlockValue() { return linkStateMachine.romInteractiveMotionBlockValue; }
-    public int romSlowWalkingSpeed() { return linkStateMachine.slowWalkingSpeed; }
-    public int romItemUsageContext() { return linkStateMachine.itemUsageContext; }
+    public void writeRomInteractiveMotionBlock(int value) {
+        linkStateMachine.writeRomInteractiveMotionBlock(value);
+    }
+
+    public int romInteractiveMotionBlockValue() {
+        return linkStateMachine.romInteractiveMotionBlockValue;
+    }
+
+    public int romSlowWalkingSpeed() {
+        return linkStateMachine.slowWalkingSpeed;
+    }
+
+    public int romItemUsageContext() {
+        return linkStateMachine.itemUsageContext;
+    }
     /** Bank2:42B2 skips top-down item dispatch and animation only for the exact value 2. */
     public boolean romItemAnimationFrameBlocked() {
         return !linkSideView.sideScrolling && romInteractiveMotionBlockValue() == 2;
     }
+
     public void setGrabbingObject(boolean grabbing, boolean pulling) {
         linkEntityEffects.grabbingObject = grabbing;
         linkEntityEffects.pullingObject = grabbing && pulling;
     }
-    public void blockNextRomMotionFrame() { linkStateMachine.blockNextRomMotionFrame(); }
-    public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
-                                             int mapCategory) { linkStateMachine.initializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory); }
-    public void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
-                                      int mapCategory) { linkStateMachine.setRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory); }
-    public void setRomPhysicsModifier(int modifier) { linkStateMachine.setRomPhysicsModifier(modifier); }
-    public ScreenShakeRequest consumePegasusScreenShakeRequest() { return linkStateMachine.consumePegasusScreenShakeRequest(); }
-    public void resetPegasusBoots() { linkStateMachine.resetPegasusBoots(); }
-    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
-                                              int romSpeedY, boolean standing) { linkSideView.applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, standing); }
-    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
-                                              int romSpeedY) { linkSideView.applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY); }
-    public void clearSideViewPlatformState() { linkSideView.clearSideViewPlatformState(); }
-    public void clearStandingOnSideViewEntity() { linkSideView.clearStandingOnSideViewEntity(); }
-    public void applySideViewPotContact(int romPositionY, int romSpeedY) { linkSideView.applySideViewPotContact(romPositionY, romSpeedY); }
-    public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) { linkAnimator.submitOam(sink, offsetX, offsetY); }
+
+    public void blockNextRomMotionFrame() {
+        linkStateMachine.blockNextRomMotionFrame();
+    }
+
+    public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
+        linkStateMachine.initializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
+    }
+
+    public void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
+        linkStateMachine.setRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
+    }
+
+    public void setRomPhysicsModifier(int modifier) {
+        linkStateMachine.setRomPhysicsModifier(modifier);
+    }
+
+    public ScreenShakeRequest consumePegasusScreenShakeRequest() {
+        return linkStateMachine.consumePegasusScreenShakeRequest();
+    }
+
+    public void resetPegasusBoots() {
+        linkStateMachine.resetPegasusBoots();
+    }
+
+    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY, boolean standing) {
+        linkSideView.applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, standing);
+    }
+
+    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY) {
+        linkSideView.applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY);
+    }
+
+    public void clearSideViewPlatformState() {
+        linkSideView.clearSideViewPlatformState();
+    }
+
+    public void clearStandingOnSideViewEntity() {
+        linkSideView.clearStandingOnSideViewEntity();
+    }
+
+    public void applySideViewPotContact(int romPositionY, int romSpeedY) {
+        linkSideView.applySideViewPotContact(romPositionY, romSpeedY);
+    }
+
+    public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
+        linkAnimator.submitOam(sink, offsetX, offsetY);
+    }
 }

@@ -51,13 +51,11 @@ public final class ItemRegistry {
     }
 
     /** Advance every registered item while exposing the global ROM frame. */
-    public void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId,
-                        int frameCounter) {
+    public void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId, int frameCounter) {
         tickAll(aHeld, bHeld, itemAId, itemBId, Integer.valueOf(frameCounter));
     }
 
-    private void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId,
-                         Integer frameCounter) {
+    private void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId, Integer frameCounter) {
         for (int id = 0; id < byInventoryId.length; id++) {
             EquipmentItem item = byInventoryId[id];
             if (item == null) {

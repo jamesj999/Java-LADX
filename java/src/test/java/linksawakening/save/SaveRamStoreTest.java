@@ -1,15 +1,14 @@
 package linksawakening.save;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 final class SaveRamStoreTest {
 
@@ -19,8 +18,8 @@ final class SaveRamStoreTest {
 
         store.createNewGame(2, new int[] {9, 8, 7, 6, 5});
         store.writeOcarinaState(2, 0x04, 0);
-        store.writeRoomStatuses(2, pattern(0x100, 0x10), pattern(0x100, 0x40),
-            pattern(0x100, 0x70), pattern(0x20, 0xA0));
+        store.writeRoomStatuses(
+                2, pattern(0x100, 0x10), pattern(0x100, 0x40), pattern(0x100, 0x70), pattern(0x20, 0xA0));
         store.writeDungeonItemFlags(2, pattern(0x2D, 0x20), pattern(0x05, 0xE0));
         store.writeDungeonProgressFlags(2, pattern(0x08, 0x01));
         store.writeBowWowState(2, 0x80);
@@ -52,8 +51,7 @@ final class SaveRamStoreTest {
     }
 
     @Test
-    void fileMenuMutationsFlushAndReopenWithRebuiltMaskAndNames(@TempDir Path tempDir)
-        throws Exception {
+    void fileMenuMutationsFlushAndReopenWithRebuiltMaskAndNames(@TempDir Path tempDir) throws Exception {
         Path savePath = tempDir.resolve("azle.sav");
         SaveRamStore store = SaveRamStore.open(savePath);
         store.createNewGame(0, new int[] {9, 8, 7, 6, 5});
@@ -72,8 +70,7 @@ final class SaveRamStoreTest {
     }
 
     @Test
-    void missingHostFileStartsWithAnInitializedEmptyImageAndFlushesExactBytes(@TempDir Path tempDir)
-        throws Exception {
+    void missingHostFileStartsWithAnInitializedEmptyImageAndFlushesExactBytes(@TempDir Path tempDir) throws Exception {
         Path savePath = tempDir.resolve("nested").resolve("azle.sav");
         SaveRamStore store = SaveRamStore.open(savePath);
         assertEquals(0, store.saveFilesMask());
@@ -95,8 +92,7 @@ final class SaveRamStoreTest {
     }
 
     @Test
-    void flushReplacesCompleteImageWithoutOverwritingExistingReaders(@TempDir Path tempDir)
-        throws Exception {
+    void flushReplacesCompleteImageWithoutOverwritingExistingReaders(@TempDir Path tempDir) throws Exception {
         Path path = tempDir.resolve("azle.sav");
         SaveRamStore store = SaveRamStore.open(path);
         store.createNewGame(0, new int[] {1, 2, 3, 4, 5});
@@ -114,8 +110,7 @@ final class SaveRamStoreTest {
     }
 
     @Test
-    void failedReplacementKeepsDestinationAndRemovesTemporaryImage(@TempDir Path tempDir)
-        throws Exception {
+    void failedReplacementKeepsDestinationAndRemovesTemporaryImage(@TempDir Path tempDir) throws Exception {
         Path path = tempDir.resolve("azle.sav");
         SaveRamStore store = SaveRamStore.open(path);
         Files.createDirectory(path);
@@ -129,8 +124,7 @@ final class SaveRamStoreTest {
     }
 
     @Test
-    void atomicFlushPreservesSymlinkAndUpdatesItsTarget(@TempDir Path tempDir)
-        throws Exception {
+    void atomicFlushPreservesSymlinkAndUpdatesItsTarget(@TempDir Path tempDir) throws Exception {
         Path target = tempDir.resolve("real.sav");
         SaveRamStore original = SaveRamStore.open(target);
         original.flush();

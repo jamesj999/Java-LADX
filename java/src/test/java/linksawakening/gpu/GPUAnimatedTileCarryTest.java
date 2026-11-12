@@ -1,16 +1,19 @@
 package linksawakening.gpu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @linksawakening.testing.RequiresRom
 final class GPUAnimatedTileCarryTest {
     @Test
     void dungeonAndLavaPingPongDoNotOverwriteTheLinearAnimationOffset() throws Exception {
         byte[] rom;
-        try (var input = linksawakening.testing.TestRom.open()) { rom = input.readAllBytes(); }
-        for (int group : new int[]{4, 6}) {
+        try (var input = linksawakening.testing.TestRom.open()) {
+            rom = input.readAllBytes();
+        }
+        for (int group : new int[] {4, 6}) {
             GPU gpu = new GPU();
             gpu.loadAnimatedTilesGroup(rom, 2);
             for (int i = 0; i < 16; i++) gpu.tickAnimatedTiles(rom); // Linear offset $40.

@@ -9,12 +9,10 @@ public record SlimeKeyRewardEvent(int slot, int goldenLeavesCount, int dialogLow
             throw new IllegalArgumentException("Slime Key entity slot out of range: " + slot);
         }
         if (goldenLeavesCount < 0 || goldenLeavesCount > 0x63) {
-            throw new IllegalArgumentException("Golden leaves count must be between 0 and 99: "
-                + goldenLeavesCount);
+            throw new IllegalArgumentException("Golden leaves count must be between 0 and 99: " + goldenLeavesCount);
         }
         if ((dialogLowId & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Slime Key dialog must be an unsigned byte: "
-                + dialogLowId);
+            throw new IllegalArgumentException("Slime Key dialog must be an unsigned byte: " + dialogLowId);
         }
     }
 }

@@ -1,11 +1,10 @@
 package linksawakening.dialog;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class DialogRendererTest {

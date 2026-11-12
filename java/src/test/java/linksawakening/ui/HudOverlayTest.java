@@ -1,13 +1,12 @@
 package linksawakening.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.InputStream;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @linksawakening.testing.RequiresRom
 final class HudOverlayTest {
@@ -34,8 +33,7 @@ final class HudOverlayTest {
             PlayerState.INVENTORY_EMPTY
         });
 
-        InventoryMenu menu = new InventoryMenu(
-            InventoryTilemapLoader.loadFromRom(rom), player);
+        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player);
         menu.requestToggle();
         for (int frame = 0; frame < 16; frame++) {
             menu.tick();
@@ -48,16 +46,17 @@ final class HudOverlayTest {
         assertRegionEquals(buffer, 48, 0, 40, 24, "A slot");
     }
 
-    private static void assertRegionEquals(byte[] buffer, int expectedX, int expectedY,
-                                            int actualX, int actualY, String label) {
+    private static void assertRegionEquals(
+            byte[] buffer, int expectedX, int expectedY, int actualX, int actualY, String label) {
         for (int y = 0; y < 16; y++) {
             for (int x = 0; x < 8; x++) {
                 int expectedOffset = pixelOffset(expectedX + x, expectedY + y);
                 int actualOffset = pixelOffset(actualX + x, actualY + y);
                 for (int channel = 0; channel < 4; channel++) {
-                    assertEquals(Byte.toUnsignedInt(buffer[expectedOffset + channel]),
-                        Byte.toUnsignedInt(buffer[actualOffset + channel]),
-                        label + " mismatch at (" + x + "," + y + ") channel " + channel);
+                    assertEquals(
+                            Byte.toUnsignedInt(buffer[expectedOffset + channel]),
+                            Byte.toUnsignedInt(buffer[actualOffset + channel]),
+                            label + " mismatch at (" + x + "," + y + ") channel " + channel);
                 }
             }
         }

@@ -1,13 +1,12 @@
 package linksawakening.world.entity.motion;
 
-
-
-
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 final class HeartPiecePickupMotionTest {
-    @Test void locksMeterAnimationAndAwardsExactlyOnceAtFrame56() {
+    @Test
+    void locksMeterAnimationAndAwardsExactlyOnceAtFrame56() {
         var motion = new HeartPiecePickupMotion();
         assertEquals(-1, motion.advance(1, false, 0).dialogId());
         motion.advance(0, false, 0);
@@ -33,7 +32,8 @@ final class HeartPiecePickupMotionTest {
         assertFalse(motion.advance(0, false, 1).complete());
     }
 
-    @Test void fourthPieceWaitsForFirstDialogBeforeAwardingContainerAndSecondDialog() {
+    @Test
+    void fourthPieceWaitsForFirstDialogBeforeAwardingContainerAndSecondDialog() {
         var motion = new HeartPiecePickupMotion();
         for (int i = 0; i < 4; i++) motion.advance(0, false, 3);
         for (int i = 0; i < 168; i++) motion.advance(0, true, 4);

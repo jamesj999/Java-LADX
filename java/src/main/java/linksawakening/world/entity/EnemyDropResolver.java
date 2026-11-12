@@ -1,11 +1,10 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-
-import java.util.Objects;
-import java.util.function.IntSupplier;
 
 /** Decodes the ROM-backed rules in bank-$03's SpawnEnemyDrop routine. */
 public final class EnemyDropResolver {
@@ -39,19 +38,26 @@ public final class EnemyDropResolver {
 
     public EnemyDropResolver(byte[] romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
-        destroyedHealthGroupOffsets = loadTable(romData,
-            RomSymbols.DestroyedEntityHealthGroupOffsetTable,
-            DESTROYED_HEALTH_GROUP_OFFSETS_LENGTH, "DestroyedEntityHealthGroupOffsetTable");
-        dropTableByIndex = loadTable(romData, RomSymbols.DropTableByIndex, DROP_TABLE_BY_INDEX_LENGTH, "DropTableByIndex");
-        randomDropChanceTable = loadTable(romData, RomSymbols.RandomDropChanceTable, RANDOM_DROP_CHANCE_TABLE_LENGTH,
-            "RandomDropChanceTable");
-        randomDropChanceTableLowHealth = loadTable(romData,
-            RomSymbols.RandomDropChanceTableLowHealth,
-            RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_LENGTH,
-            "RandomDropChanceTableLowHealth");
+        destroyedHealthGroupOffsets = loadTable(
+                romData,
+                RomSymbols.DestroyedEntityHealthGroupOffsetTable,
+                DESTROYED_HEALTH_GROUP_OFFSETS_LENGTH,
+                "DestroyedEntityHealthGroupOffsetTable");
+        dropTableByIndex =
+                loadTable(romData, RomSymbols.DropTableByIndex, DROP_TABLE_BY_INDEX_LENGTH, "DropTableByIndex");
+        randomDropChanceTable = loadTable(
+                romData, RomSymbols.RandomDropChanceTable, RANDOM_DROP_CHANCE_TABLE_LENGTH, "RandomDropChanceTable");
+        randomDropChanceTableLowHealth = loadTable(
+                romData,
+                RomSymbols.RandomDropChanceTableLowHealth,
+                RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_LENGTH,
+                "RandomDropChanceTableLowHealth");
         dropTableRandom = loadTable(romData, RomSymbols.DropTableRandom, DROP_TABLE_RANDOM_LENGTH, "DropTableRandom");
-        thresholdLowHealthTable = loadTable(romData, RomSymbols.ThresholdLowHealthTable, THRESHOLD_LOW_HEALTH_TABLE_LENGTH,
-            "ThresholdLowHealthTable");
+        thresholdLowHealthTable = loadTable(
+                romData,
+                RomSymbols.ThresholdLowHealthTable,
+                THRESHOLD_LOW_HEALTH_TABLE_LENGTH,
+                "ThresholdLowHealthTable");
     }
 
     /** The two persistent byte counters consumed by SpawnEnemyDrop. */
@@ -68,10 +74,17 @@ public final class EnemyDropResolver {
     }
 
     /** Inputs corresponding to the WRAM and hardware state used by SpawnEnemyDrop. */
-    public record Context(int entityType, int healthGroup, int droppedItem, int maxHearts,
-                          int health, boolean bossBattle, boolean activePowerUp,
-                          boolean sideScrolling, CounterState counters,
-                          IntSupplier randomByteSupplier) {
+    public record Context(
+            int entityType,
+            int healthGroup,
+            int droppedItem,
+            int maxHearts,
+            int health,
+            boolean bossBattle,
+            boolean activePowerUp,
+            boolean sideScrolling,
+            CounterState counters,
+            IntSupplier randomByteSupplier) {
         public Context {
             validateByte(entityType, "Entity type");
             validateByte(healthGroup, "Health group");
@@ -130,8 +143,8 @@ public final class EnemyDropResolver {
         }
         int tableIndex = healthGroupOffset - 1;
         if (tableIndex < 0 || tableIndex >= dropTableByIndex.length) {
-            throw new IllegalArgumentException("Destroyed entity health-group offset out of range: "
-                + healthGroupOffset);
+            throw new IllegalArgumentException(
+                    "Destroyed entity health-group offset out of range: " + healthGroupOffset);
         }
 
         int pieceOfPowerThreshold = pieceOfPowerThreshold(context.maxHearts());
@@ -145,8 +158,7 @@ public final class EnemyDropResolver {
             return new Result(0x33, counters, 0);
         }
 
-        int chanceMask = (lowHealth
-            ? randomDropChanceTableLowHealth : randomDropChanceTable)[tableIndex];
+        int chanceMask = (lowHealth ? randomDropChanceTableLowHealth : randomDropChanceTable)[tableIndex];
         int randomReads = 1;
         if ((nextRandomByte(context.randomByteSupplier()) & chanceMask) != 0) {
             return noItem(counters, randomReads);
@@ -194,8 +206,7 @@ public final class EnemyDropResolver {
 
     private int healthGroupOffset(int healthGroup) {
         if (healthGroup >= destroyedHealthGroupOffsets.length) {
-            throw new IllegalArgumentException("Health group is not in the destroyed-entity table: "
-                + healthGroup);
+            throw new IllegalArgumentException("Health group is not in the destroyed-entity table: " + healthGroup);
         }
         return destroyedHealthGroupOffsets[healthGroup];
     }
@@ -227,8 +238,7 @@ public final class EnemyDropResolver {
         return new Result(ENTITY_NONE, counters, randomReads);
     }
 
-    private static int[] loadTable(byte[] romData, RomAddress address, int length,
-                                   String tableName) {
+    private static int[] loadTable(byte[] romData, RomAddress address, int length, String tableName) {
         int offset = address.offset();
         if (offset < 0 || length < 0 || offset > romData.length - length) {
             throw new IllegalArgumentException("ROM table is truncated: " + tableName);

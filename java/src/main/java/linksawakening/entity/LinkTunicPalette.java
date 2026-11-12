@@ -1,17 +1,14 @@
 package linksawakening.entity;
 
-import linksawakening.state.PlayerState;
-
 import java.util.Arrays;
+import linksawakening.state.PlayerState;
 
 /** ROM object palettes used by Link's green, red, and blue tunics. */
 public final class LinkTunicPalette {
     private static final int GREEN_OBJECT_PALETTE = 0;
     private static final int RED_OBJECT_PALETTE = 2;
     private static final int BLUE_OBJECT_PALETTE = 3;
-    private static final int[] PALETTE_ROW_FOR_TUNIC = {
-        GREEN_OBJECT_PALETTE, RED_OBJECT_PALETTE, BLUE_OBJECT_PALETTE
-    };
+    private static final int[] PALETTE_ROW_FOR_TUNIC = {GREEN_OBJECT_PALETTE, RED_OBJECT_PALETTE, BLUE_OBJECT_PALETTE};
 
     private final int[][] objectPalettes;
 
@@ -43,8 +40,7 @@ public final class LinkTunicPalette {
     /** Returns the ROM object palette selected by an auxiliary OAM attribute. */
     public int[] forObjectPalette(int paletteIndex) {
         if (paletteIndex < 0 || paletteIndex >= objectPalettes.length) {
-            throw new IllegalArgumentException("Object palette index out of range: "
-                + paletteIndex);
+            throw new IllegalArgumentException("Object palette index out of range: " + paletteIndex);
         }
         return objectPalettes[paletteIndex].clone();
     }
@@ -52,9 +48,8 @@ public final class LinkTunicPalette {
     /** Compatibility source for isolated Link fixtures without a ROM. */
     static LinkTunicPalette greenCompatibility() {
         int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};
-        return new LinkTunicPalette(new int[][] {
-            green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()
-        });
+        return new LinkTunicPalette(
+                new int[][] {green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()});
     }
 
     private static int[][] clonePalettes(int[][] source) {

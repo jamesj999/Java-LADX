@@ -4,7 +4,6 @@ public interface GameplaySoundSink {
     void play(GameplaySoundEvent event);
 
     static GameplaySoundSink none() {
-        return event -> {
-        };
+        return event -> {};
     }
 }

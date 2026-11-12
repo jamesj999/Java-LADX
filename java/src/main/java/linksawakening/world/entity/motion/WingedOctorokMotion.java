@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 WingedOctorokEntityHandler state and WRAM fields. */
 public final class WingedOctorokMotion {
@@ -34,38 +33,67 @@ public final class WingedOctorokMotion {
     public record RockSpawn(int direction) {
         public RockSpawn {
             if (direction < 0 || direction > 3) {
-                throw new IllegalArgumentException("Winged Octorok rock direction out of range: "
-                    + direction);
+                throw new IllegalArgumentException("Winged Octorok rock direction out of range: " + direction);
             }
         }
     }
 
-    public record Update(RoomEntity entity, int state, int transitionCountdown,
-                  RockSpawn rockSpawn, boolean jumped, boolean skippedDefaultCollision) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int transitionCountdown,
+            RockSpawn rockSpawn,
+            boolean jumped,
+            boolean skippedDefaultCollision) {}
 
     public void initialize(int slot) {
         clear(slot);
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
-                   int transitionCountdown, int ignoreHitsCountdown,
-                   boolean actionButtonsHeld, int linkItemA, int linkItemB) {
-        return advance(entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundCollision, transitionCountdown, ignoreHitsCountdown,
-            actionButtonsHeld, actionButtonsHeld, linkItemA, linkItemB);
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            boolean actionButtonsHeld,
+            int linkItemA,
+            int linkItemB) {
+        return advance(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundCollision,
+                transitionCountdown,
+                ignoreHitsCountdown,
+                actionButtonsHeld,
+                actionButtonsHeld,
+                linkItemA,
+                linkItemB);
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
-                   int transitionCountdown, int ignoreHitsCountdown,
-                   boolean actionButtonAHeld, boolean actionButtonBHeld,
-                   int linkItemA, int linkItemB) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            boolean actionButtonAHeld,
+            boolean actionButtonBHeld,
+            int linkItemA,
+            int linkItemB) {
         if ((entity.type() & 0xFF) != ENTITY_WINGED_OCTOROK) {
-            throw new IllegalArgumentException("Unsupported Winged Octorok motion entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Winged Octorok motion entity type: 0x" + Integer.toHexString(entity.type()));
         }
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Winged Octorok random-byte supplier cannot be null");
@@ -81,8 +109,7 @@ public final class WingedOctorokMotion {
             zInitialized[slot] = true;
         }
 
-        int renderedVariant = wasInitialized ? presentationVariant[slot]
-            : entity.spriteVariant();
+        int renderedVariant = wasInitialized ? presentationVariant[slot] : entity.spriteVariant();
         int countdown = transitionCountdown & 0xFF;
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
@@ -96,8 +123,7 @@ public final class WingedOctorokMotion {
         Position moved = move(entity, x, y, backgroundCollision);
         x = moved.x();
         y = moved.y();
-        int z = addSpeedToPosition(zPosition[slot], speedZ[slot],
-            speedZAccumulator, slot);
+        int z = addSpeedToPosition(zPosition[slot], speedZ[slot], speedZAccumulator, slot);
         zPosition[slot] = z;
         speedZ[slot] = (speedZ[slot] - 1) & 0xFF;
         boolean landed = (z & 0x80) != 0;
@@ -122,8 +148,7 @@ public final class WingedOctorokMotion {
             }
             case 1 -> {
                 if (countdown != 0) {
-                    if (countdown == 0x0A
-                        && direction[slot] == directionToLink(x, y, linkEntityX, linkEntityY)) {
+                    if (countdown == 0x0A && direction[slot] == directionToLink(x, y, linkEntityX, linkEntityY)) {
                         rockSpawn = new RockSpawn(direction[slot]);
                     }
                     clearHorizontalSpeed(slot);
@@ -149,15 +174,15 @@ public final class WingedOctorokMotion {
                     countdown = 0x20;
                 }
             }
-            default -> throw new IllegalStateException("Invalid Winged Octorok state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Winged Octorok state: " + state[slot]);
         }
 
-        if (!stateTwoHandler && privateCountdown2[slot] == 0
-            && withinSignedWindow(linkEntityX - x)
-            && withinSignedWindow(linkEntityY - y)
-            && swordAttackHeld(actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB)
-            && direction[slot] != (directionToLink(x, y, linkEntityX, linkEntityY) ^ 0x01)) {
+        if (!stateTwoHandler
+                && privateCountdown2[slot] == 0
+                && withinSignedWindow(linkEntityX - x)
+                && withinSignedWindow(linkEntityY - y)
+                && swordAttackHeld(actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB)
+                && direction[slot] != (directionToLink(x, y, linkEntityX, linkEntityY) ^ 0x01)) {
             speedZ[slot] = 0x18;
             Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, 0x10);
             speedY[slot] = vector.y();
@@ -166,11 +191,21 @@ public final class WingedOctorokMotion {
             jumped = true;
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
-        return new Update(updated, state[slot], countdown, rockSpawn, jumped,
-            stateTwoHandler || jumped);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                renderedVariant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
+        return new Update(updated, state[slot], countdown, rockSpawn, jumped, stateTwoHandler || jumped);
     }
 
     public void decrementPrivateCountdown2(int slot) {
@@ -222,8 +257,8 @@ public final class WingedOctorokMotion {
         zInitialized[slot] = false;
     }
 
-    void forceStateForTest(int slot, int newState, int transitionCountdown,
-                           int newPrivateCountdown2, int z, int newSpeedZ) {
+    void forceStateForTest(
+            int slot, int newState, int transitionCountdown, int newPrivateCountdown2, int z, int newSpeedZ) {
         state[slot] = newState & 0xFF;
         direction[slot] = 0;
         privateState1[slot] = 0;
@@ -244,8 +279,7 @@ public final class WingedOctorokMotion {
 
     private void setVariantForDirection(int slot) {
         inertia[slot] = (inertia[slot] + 1) & 0xFF;
-        presentationVariant[slot] = BASE_VARIANT_BY_DIRECTION[direction[slot] & 0x03]
-            | ((inertia[slot] >>> 4) & 0x01);
+        presentationVariant[slot] = BASE_VARIANT_BY_DIRECTION[direction[slot] & 0x03] | ((inertia[slot] >>> 4) & 0x01);
     }
 
     private void clearHorizontalSpeed(int slot) {
@@ -253,27 +287,28 @@ public final class WingedOctorokMotion {
         speedY[slot] = 0;
     }
 
-    private static boolean swordAttackHeld(boolean actionButtonAHeld, boolean actionButtonBHeld,
-                                            int linkItemA, int linkItemB) {
+    private static boolean swordAttackHeld(
+            boolean actionButtonAHeld, boolean actionButtonBHeld, int linkItemA, int linkItemB) {
         if ((linkItemB & 0xFF) == ENTITY_SWORD) {
             return actionButtonBHeld;
         }
         return (linkItemA & 0xFF) == ENTITY_SWORD && actionButtonAHeld;
     }
 
-    private Position move(RoomEntity entity, int x, int y,
-                          RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
+        if (backgroundCollision != null
+                && nextX != x
+                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
+        if (backgroundCollision != null
+                && nextY != y
+                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }
@@ -289,8 +324,7 @@ public final class WingedOctorokMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceY = signedByte(linkY - entityY + entityZ);
         int distanceX = signedByte(linkX - entityX);
         int absoluteY = Math.abs(distanceY);
@@ -314,8 +348,7 @@ public final class WingedOctorokMotion {
         return signedDifference >= -0x20 && signedDifference < 0x20;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -342,9 +375,7 @@ public final class WingedOctorokMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Position(int x, int y, boolean collided) {
-    }
+    private record Position(int x, int y, boolean collided) {}
 
-    private record Vector(int y, int x) {
-    }
+    private record Vector(int y, int x) {}
 }

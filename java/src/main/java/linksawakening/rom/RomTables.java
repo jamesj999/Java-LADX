@@ -97,7 +97,8 @@ public final class RomTables {
     // LinkDirectionTo_wC13B — additional Y offset (bank2.asm:831)
     private static final int SWORD_Y_BASE_TABLE_ADDR = RomSymbols.LinkDirectionTo_wC13B.address();
     // Sword collision rectangle tables used by DefaultEnemyDamageCollisionHandler.
-    private static final int SWORD_COLLISION_NEEDED_TABLE_ADDR = RomSymbols.LinkDirectionToStaticSwordCollitionCheckNeeded.address();
+    private static final int SWORD_COLLISION_NEEDED_TABLE_ADDR =
+            RomSymbols.LinkDirectionToStaticSwordCollitionCheckNeeded.address();
     private static final int SWORD_COLLISION_WIDTH_TABLE_ADDR = RomSymbols.LinkDirectionTo_wC141.address();
     private static final int SWORD_COLLISION_OFFSET_TABLE_ADDR = RomSymbols.LinkDirectionToOffset.address();
     private static final int SWORD_COLLISION_HEIGHT_TABLE_ADDR = RomSymbols.LinkDirectionTo_wC143.address();
@@ -173,25 +174,44 @@ public final class RomTables {
     private final int[] revolvingDoorAnimation;
     private final int[][] revolvingDoorPalettes;
 
-    private RomTables(int[][] physicsFlags, int[] entityOptions1,
-                      int[] entityHitboxFlags, byte[] entityCollisionPointsX,
-                      byte[] entityCollisionPointsY,
-                      int[] entityFineCollisionShapes,
-                      int[] linkFineCollisionShapes,
-                      byte[] linkSpeedX, byte[] linkSpeedY, byte[] airSpeedX, byte[] airSpeedY,
-                      byte[] swimmingSpeedX, byte[] swimmingSpeedY,
-                      byte[] swimmingEntrySpeedX, byte[] swimmingEntrySpeedY,
-                      int[] swordAnimState, int[] swordDirection,
-                      int[] swordSpinAnimationState, int[] swordSpinAbsoluteDirection,
-                      byte[] swordXOffset, byte[] swordYOffset, byte[] swordYBase,
-                      int[] swordCollisionNeeded, int[] swordCollisionWidth,
-                      int[] swordCollisionOffset, int[] swordCollisionHeight,
-                      int[] swordSpriteTiles, int[] swordSpriteAttrs,
-                      byte[] magicRodXOffset, byte[] magicRodYOffset,
-                      int[] magicRodTiles, int[] magicRodAttributes,
-                      int[] shovelAnimationStates,
-                      byte[] staticSwordCollisionX, byte[] staticSwordCollisionY,
-                      int[] revolvingDoorAnimation, int[][] revolvingDoorPalettes) {
+    private RomTables(
+            int[][] physicsFlags,
+            int[] entityOptions1,
+            int[] entityHitboxFlags,
+            byte[] entityCollisionPointsX,
+            byte[] entityCollisionPointsY,
+            int[] entityFineCollisionShapes,
+            int[] linkFineCollisionShapes,
+            byte[] linkSpeedX,
+            byte[] linkSpeedY,
+            byte[] airSpeedX,
+            byte[] airSpeedY,
+            byte[] swimmingSpeedX,
+            byte[] swimmingSpeedY,
+            byte[] swimmingEntrySpeedX,
+            byte[] swimmingEntrySpeedY,
+            int[] swordAnimState,
+            int[] swordDirection,
+            int[] swordSpinAnimationState,
+            int[] swordSpinAbsoluteDirection,
+            byte[] swordXOffset,
+            byte[] swordYOffset,
+            byte[] swordYBase,
+            int[] swordCollisionNeeded,
+            int[] swordCollisionWidth,
+            int[] swordCollisionOffset,
+            int[] swordCollisionHeight,
+            int[] swordSpriteTiles,
+            int[] swordSpriteAttrs,
+            byte[] magicRodXOffset,
+            byte[] magicRodYOffset,
+            int[] magicRodTiles,
+            int[] magicRodAttributes,
+            int[] shovelAnimationStates,
+            byte[] staticSwordCollisionX,
+            byte[] staticSwordCollisionY,
+            int[] revolvingDoorAnimation,
+            int[][] revolvingDoorPalettes) {
         this.physicsFlags = physicsFlags;
         this.entityOptions1 = entityOptions1;
         this.entityHitboxFlags = entityHitboxFlags;
@@ -240,23 +260,30 @@ public final class RomTables {
             }
         }
 
-        int[] options1 = loadUnsignedTable(
-            romData, ENTITY_OPTIONS_BANK, ENTITY_OPTIONS_ADDR, ENTITY_OPTIONS_TABLE_SIZE);
+        int[] options1 =
+                loadUnsignedTable(romData, ENTITY_OPTIONS_BANK, ENTITY_OPTIONS_ADDR, ENTITY_OPTIONS_TABLE_SIZE);
         int[] hitboxFlags = loadUnsignedTable(
-            romData, ENTITY_HITBOX_FLAGS_BANK, ENTITY_HITBOX_FLAGS_ADDR,
-            ENTITY_HITBOX_FLAGS_TABLE_SIZE);
+                romData, ENTITY_HITBOX_FLAGS_BANK, ENTITY_HITBOX_FLAGS_ADDR, ENTITY_HITBOX_FLAGS_TABLE_SIZE);
         byte[] collisionPointsX = loadSignedTable(
-            romData, ENTITY_COLLISION_POINTS_BANK, ENTITY_COLLISION_POINTS_X_ADDR,
-            ENTITY_COLLISION_POINTS_TABLE_SIZE);
+                romData,
+                ENTITY_COLLISION_POINTS_BANK,
+                ENTITY_COLLISION_POINTS_X_ADDR,
+                ENTITY_COLLISION_POINTS_TABLE_SIZE);
         byte[] collisionPointsY = loadSignedTable(
-            romData, ENTITY_COLLISION_POINTS_BANK, ENTITY_COLLISION_POINTS_Y_ADDR,
-            ENTITY_COLLISION_POINTS_TABLE_SIZE);
+                romData,
+                ENTITY_COLLISION_POINTS_BANK,
+                ENTITY_COLLISION_POINTS_Y_ADDR,
+                ENTITY_COLLISION_POINTS_TABLE_SIZE);
         int[] fineCollisionShapes = loadUnsignedTable(
-            romData, ENTITY_FINE_COLLISION_SHAPES_BANK, ENTITY_FINE_COLLISION_SHAPES_ADDR,
-            ENTITY_FINE_COLLISION_SHAPES_LENGTH);
+                romData,
+                ENTITY_FINE_COLLISION_SHAPES_BANK,
+                ENTITY_FINE_COLLISION_SHAPES_ADDR,
+                ENTITY_FINE_COLLISION_SHAPES_LENGTH);
         int[] linkFineCollisionShapes = loadUnsignedTable(
-            romData, LINK_FINE_COLLISION_SHAPES_BANK, LINK_FINE_COLLISION_SHAPES_ADDR,
-            LINK_FINE_COLLISION_SHAPES_LENGTH);
+                romData,
+                LINK_FINE_COLLISION_SHAPES_BANK,
+                LINK_FINE_COLLISION_SHAPES_ADDR,
+                LINK_FINE_COLLISION_SHAPES_LENGTH);
 
         byte[] speedX = new byte[LINK_SPEED_TABLE_LENGTH];
         byte[] speedY = new byte[LINK_SPEED_TABLE_LENGTH];
@@ -269,70 +296,98 @@ public final class RomTables {
         byte[] swimmingY = new byte[SWIMMING_SPEED_TABLE_LENGTH];
         int swimmingXOffset = romOffset(LINK_SPEED_TABLE_BANK, SWIMMING_SPEED_TABLE_X_ADDR);
         int swimmingYOffset = romOffset(LINK_SPEED_TABLE_BANK, SWIMMING_SPEED_TABLE_Y_ADDR);
-        System.arraycopy(romData, swimmingXOffset, swimmingX, 0,
-            SWIMMING_SPEED_TABLE_LENGTH);
-        System.arraycopy(romData, swimmingYOffset, swimmingY, 0,
-            SWIMMING_SPEED_TABLE_LENGTH);
+        System.arraycopy(romData, swimmingXOffset, swimmingX, 0, SWIMMING_SPEED_TABLE_LENGTH);
+        System.arraycopy(romData, swimmingYOffset, swimmingY, 0, SWIMMING_SPEED_TABLE_LENGTH);
         byte[] swimmingEntryX = loadSignedTable(
-            romData, LINK_SPEED_TABLE_BANK, SWIMMING_ENTRY_SPEED_X_ADDR,
-            SWIMMING_ENTRY_SPEED_LENGTH);
+                romData, LINK_SPEED_TABLE_BANK, SWIMMING_ENTRY_SPEED_X_ADDR, SWIMMING_ENTRY_SPEED_LENGTH);
         byte[] swimmingEntryY = loadSignedTable(
-            romData, LINK_SPEED_TABLE_BANK, SWIMMING_ENTRY_SPEED_Y_ADDR,
-            SWIMMING_ENTRY_SPEED_LENGTH);
+                romData, LINK_SPEED_TABLE_BANK, SWIMMING_ENTRY_SPEED_Y_ADDR, SWIMMING_ENTRY_SPEED_LENGTH);
 
         int[] swordAnim = loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_ANIM_TABLE_ADDR, TABLE_LEN);
         int[] swordDir = loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_DIR_TABLE_ADDR, TABLE_LEN);
-        int[] swordSpinAnim = loadUnsignedTable(
-            romData, SWORD_TABLES_BANK, SWORD_SPIN_ANIM_TABLE_ADDR, SWORD_SPIN_TABLE_LEN);
-        int[] swordSpinAbsolute = loadUnsignedTable(
-            romData, SWORD_TABLES_BANK, SWORD_SPIN_ABSOLUTE_TABLE_ADDR, SWORD_SPIN_TABLE_LEN);
+        int[] swordSpinAnim =
+                loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_SPIN_ANIM_TABLE_ADDR, SWORD_SPIN_TABLE_LEN);
+        int[] swordSpinAbsolute =
+                loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_SPIN_ABSOLUTE_TABLE_ADDR, SWORD_SPIN_TABLE_LEN);
         byte[] swordX = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_X_OFFSET_TABLE_ADDR, TABLE_LEN);
         byte[] swordY = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_Y_OFFSET_TABLE_ADDR, TABLE_LEN);
         byte[] swordYBaseBytes = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_Y_BASE_TABLE_ADDR, TABLE_LEN);
-        int[] swordCollisionNeeded = loadUnsignedTable(
-            romData, SWORD_TABLES_BANK, SWORD_COLLISION_NEEDED_TABLE_ADDR, TABLE_LEN);
-        int[] swordCollisionWidth = loadUnsignedTable(
-            romData, SWORD_TABLES_BANK, SWORD_COLLISION_WIDTH_TABLE_ADDR, TABLE_LEN);
-        int[] swordCollisionOffset = loadUnsignedTable(
-            romData, SWORD_TABLES_BANK, SWORD_COLLISION_OFFSET_TABLE_ADDR, TABLE_LEN);
-        int[] swordCollisionHeight = loadUnsignedTable(
-            romData, SWORD_TABLES_BANK, SWORD_COLLISION_HEIGHT_TABLE_ADDR, TABLE_LEN);
-        int[] swordTiles = loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_TILES_ADDR, SWORD_SPRITE_TABLE_LEN);
-        int[] swordAttrs = loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_ATTRS_ADDR, SWORD_SPRITE_TABLE_LEN);
-        byte[] magicRodX = loadSignedTable(romData, MAGIC_ROD_TABLE_BANK,
-            MAGIC_ROD_X_OFFSET_ADDR, MAGIC_ROD_DIRECTION_TABLE_LEN);
-        byte[] magicRodY = loadSignedTable(romData, MAGIC_ROD_TABLE_BANK,
-            MAGIC_ROD_Y_OFFSET_ADDR, MAGIC_ROD_DIRECTION_TABLE_LEN);
-        int[] magicRodTiles = loadUnsignedTable(romData, MAGIC_ROD_TABLE_BANK,
-            MAGIC_ROD_TILES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
-        int[] magicRodAttrs = loadUnsignedTable(romData, MAGIC_ROD_TABLE_BANK,
-            MAGIC_ROD_ATTRIBUTES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
-        int[] shovelAnimationStates = loadUnsignedTable(
-            romData, SHOVEL_ANIMATION_BANK, SHOVEL_ANIMATION_ADDR,
-            SHOVEL_ANIMATION_LENGTH);
+        int[] swordCollisionNeeded =
+                loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_COLLISION_NEEDED_TABLE_ADDR, TABLE_LEN);
+        int[] swordCollisionWidth =
+                loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_COLLISION_WIDTH_TABLE_ADDR, TABLE_LEN);
+        int[] swordCollisionOffset =
+                loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_COLLISION_OFFSET_TABLE_ADDR, TABLE_LEN);
+        int[] swordCollisionHeight =
+                loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_COLLISION_HEIGHT_TABLE_ADDR, TABLE_LEN);
+        int[] swordTiles =
+                loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_TILES_ADDR, SWORD_SPRITE_TABLE_LEN);
+        int[] swordAttrs =
+                loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_ATTRS_ADDR, SWORD_SPRITE_TABLE_LEN);
+        byte[] magicRodX =
+                loadSignedTable(romData, MAGIC_ROD_TABLE_BANK, MAGIC_ROD_X_OFFSET_ADDR, MAGIC_ROD_DIRECTION_TABLE_LEN);
+        byte[] magicRodY =
+                loadSignedTable(romData, MAGIC_ROD_TABLE_BANK, MAGIC_ROD_Y_OFFSET_ADDR, MAGIC_ROD_DIRECTION_TABLE_LEN);
+        int[] magicRodTiles =
+                loadUnsignedTable(romData, MAGIC_ROD_TABLE_BANK, MAGIC_ROD_TILES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
+        int[] magicRodAttrs =
+                loadUnsignedTable(romData, MAGIC_ROD_TABLE_BANK, MAGIC_ROD_ATTRIBUTES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
+        int[] shovelAnimationStates =
+                loadUnsignedTable(romData, SHOVEL_ANIMATION_BANK, SHOVEL_ANIMATION_ADDR, SHOVEL_ANIMATION_LENGTH);
         byte[] staticSwordCollisionX = loadSignedTable(
-            romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_X_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
+                romData,
+                STATIC_SWORD_COLLISION_TABLE_BANK,
+                STATIC_SWORD_COLLISION_X_ADDR,
+                STATIC_SWORD_COLLISION_TABLE_LEN);
         byte[] staticSwordCollisionY = loadSignedTable(
-            romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_Y_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
+                romData,
+                STATIC_SWORD_COLLISION_TABLE_BANK,
+                STATIC_SWORD_COLLISION_Y_ADDR,
+                STATIC_SWORD_COLLISION_TABLE_LEN);
 
-        RomTables result = new RomTables(flags, options1, hitboxFlags, collisionPointsX,
-                             collisionPointsY, fineCollisionShapes, linkFineCollisionShapes,
-                             speedX, speedY, loadSignedTable(romData, 2, 0x68B1, 4),
-                             loadSignedTable(romData, 2, 0x44E7, 4), swimmingX, swimmingY,
-                             swimmingEntryX, swimmingEntryY,
-                             swordAnim, swordDir, swordSpinAnim, swordSpinAbsolute,
-                             swordX, swordY, swordYBaseBytes,
-                             swordCollisionNeeded, swordCollisionWidth,
-                             swordCollisionOffset, swordCollisionHeight,
-                             swordTiles, swordAttrs,
-                             magicRodX, magicRodY, magicRodTiles, magicRodAttrs,
-                             shovelAnimationStates,
-                             staticSwordCollisionX, staticSwordCollisionY,
-                             loadUnsignedTable(romData, 2, 0x4E66, 7),
-                             loadRevolvingDoorPalettes(romData));
+        RomTables result = new RomTables(
+                flags,
+                options1,
+                hitboxFlags,
+                collisionPointsX,
+                collisionPointsY,
+                fineCollisionShapes,
+                linkFineCollisionShapes,
+                speedX,
+                speedY,
+                loadSignedTable(romData, 2, 0x68B1, 4),
+                loadSignedTable(romData, 2, 0x44E7, 4),
+                swimmingX,
+                swimmingY,
+                swimmingEntryX,
+                swimmingEntryY,
+                swordAnim,
+                swordDir,
+                swordSpinAnim,
+                swordSpinAbsolute,
+                swordX,
+                swordY,
+                swordYBaseBytes,
+                swordCollisionNeeded,
+                swordCollisionWidth,
+                swordCollisionOffset,
+                swordCollisionHeight,
+                swordTiles,
+                swordAttrs,
+                magicRodX,
+                magicRodY,
+                magicRodTiles,
+                magicRodAttrs,
+                shovelAnimationStates,
+                staticSwordCollisionX,
+                staticSwordCollisionY,
+                loadUnsignedTable(romData, 2, 0x4E66, 7),
+                loadRevolvingDoorPalettes(romData));
         result.pitWarpArrivalDirections = loadSignedTable(romData, 2, 0x46C5, 4);
-        result.waterCurrentX = java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C40), RomBank.romOffset(2, 0x7C48));
-        result.waterCurrentY = java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C48), RomBank.romOffset(2, 0x7C50));
+        result.waterCurrentX =
+                java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C40), RomBank.romOffset(2, 0x7C48));
+        result.waterCurrentY =
+                java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C48), RomBank.romOffset(2, 0x7C50));
         return result;
     }
 
@@ -352,8 +407,7 @@ public final class RomTables {
             for (int color = 0; color < 4; color++) {
                 int offset = base + row * 8 + color * 2;
                 int value = (rom[offset] & 255) | ((rom[offset + 1] & 255) << 8);
-                palettes[row][color] = ((value & 31) << 19)
-                    | (((value >> 5) & 31) << 11) | (((value >> 10) & 31) << 3);
+                palettes[row][color] = ((value & 31) << 19) | (((value >> 5) & 31) << 11) | (((value >> 10) & 31) << 3);
             }
         }
         return palettes;
@@ -431,30 +485,31 @@ public final class RomTables {
     /** Unsigned fine-collision shape byte for a physics flag and quadrant. */
     public int entityFineCollisionShape(int physicsFlag, int quadrant) {
         if (physicsFlag < ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS
-            || physicsFlag > ENTITY_FINE_COLLISION_SHAPES_LAST_PHYSICS
-            || quadrant < 0 || quadrant >= ENTITY_FINE_COLLISION_SHAPES_QUADRANTS) {
+                || physicsFlag > ENTITY_FINE_COLLISION_SHAPES_LAST_PHYSICS
+                || quadrant < 0
+                || quadrant >= ENTITY_FINE_COLLISION_SHAPES_QUADRANTS) {
             return 0;
         }
         return entityFineCollisionShapes[
-            (physicsFlag - ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS)
-                * ENTITY_FINE_COLLISION_SHAPES_QUADRANTS + quadrant];
+                (physicsFlag - ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS) * ENTITY_FINE_COLLISION_SHAPES_QUADRANTS
+                        + quadrant];
     }
 
     /** Unsigned Link collision byte from Data_002_49CA[physics-$7C][quadrant]. */
     public int linkFineCollisionShape(int physicsFlag, int quadrant) {
         if (physicsFlag < LINK_FINE_COLLISION_SHAPES_FIRST_PHYSICS
-            || physicsFlag > LINK_FINE_COLLISION_SHAPES_LAST_PHYSICS
-            || quadrant < 0 || quadrant >= ENTITY_FINE_COLLISION_SHAPES_QUADRANTS) {
+                || physicsFlag > LINK_FINE_COLLISION_SHAPES_LAST_PHYSICS
+                || quadrant < 0
+                || quadrant >= ENTITY_FINE_COLLISION_SHAPES_QUADRANTS) {
             return 0;
         }
         return linkFineCollisionShapes[
-            (physicsFlag - LINK_FINE_COLLISION_SHAPES_FIRST_PHYSICS)
-                * ENTITY_FINE_COLLISION_SHAPES_QUADRANTS + quadrant];
+                (physicsFlag - LINK_FINE_COLLISION_SHAPES_FIRST_PHYSICS) * ENTITY_FINE_COLLISION_SHAPES_QUADRANTS
+                        + quadrant];
     }
 
     private static int collisionPointIndex(int collisionBoxType, int direction) {
-        if (collisionBoxType < 0 || collisionBoxType >= 4
-            || direction < 0 || direction >= 4) {
+        if (collisionBoxType < 0 || collisionBoxType >= 4 || direction < 0 || direction >= 4) {
             return 0;
         }
         return collisionBoxType * 4 + direction;
@@ -466,10 +521,17 @@ public final class RomTables {
     }
 
     /** Signed current speeds from Data_002_7C40/7C48. */
-    public int pitWarpArrivalDirection(int frameCounter) { return pitWarpArrivalDirections[(frameCounter >>> 2) & 3]; }
+    public int pitWarpArrivalDirection(int frameCounter) {
+        return pitWarpArrivalDirections[(frameCounter >>> 2) & 3];
+    }
 
-    public int waterCurrentSpeedX(int index) { return waterCurrentX[index & 7]; }
-    public int waterCurrentSpeedY(int index) { return waterCurrentY[index & 7]; }
+    public int waterCurrentSpeedX(int index) {
+        return waterCurrentX[index & 7];
+    }
+
+    public int waterCurrentSpeedY(int index) {
+        return waterCurrentY[index & 7];
+    }
 
     /** Signed ground speed for the D-Pad mask and power-up row bit. */
     public int linkSpeedX(int joypadMask) {
@@ -477,8 +539,13 @@ public final class RomTables {
     }
 
     /** ApplyLinkGroundMotion's per-axis targets, including opposite-button inputs. */
-    public int airSpeedX(int axisMask) { return airSpeedX[axisMask & 3]; }
-    public int airSpeedY(int axisMask) { return airSpeedY[axisMask & 3]; }
+    public int airSpeedX(int axisMask) {
+        return airSpeedX[axisMask & 3];
+    }
+
+    public int airSpeedY(int axisMask) {
+        return airSpeedY[axisMask & 3];
+    }
 
     public int linkSpeedY(int joypadMask) {
         return linkSpeedY[joypadMask & 0x1F];
@@ -563,8 +630,7 @@ public final class RomTables {
     /** True when the current sword pose enables the enemy collision rectangle. */
     public boolean swordEnemyCollisionEnabled(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
-        return index >= 0 && index < swordCollisionNeeded.length
-            && swordCollisionNeeded[index] != 0;
+        return index >= 0 && index < swordCollisionNeeded.length && swordCollisionNeeded[index] != 0;
     }
 
     /** wC140 offset from Link X, including LinkDirectionToStaticSword... . */
@@ -634,8 +700,7 @@ public final class RomTables {
      */
     public int shovelAnimationState(int timer, int romDirection) {
         if (romDirection < 0 || romDirection > 3) {
-            throw new IllegalArgumentException("ROM shovel direction out of range: "
-                + romDirection);
+            throw new IllegalArgumentException("ROM shovel direction out of range: " + romDirection);
         }
         int phase = ((timer & 0xFF) >>> 4) & 0x01;
         return shovelAnimationStates[(romDirection & 0x03) * 2 + phase];

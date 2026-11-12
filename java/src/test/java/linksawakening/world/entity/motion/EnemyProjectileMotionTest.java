@@ -1,17 +1,15 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 final class EnemyProjectileMotionTest {
 
@@ -58,8 +56,8 @@ final class EnemyProjectileMotionTest {
         motion.initializeSpawn(0, entity.type(), 0);
         motion.setSpeedForTest(0, 0x20, 0xE0, 0);
 
-        EnemyProjectileMotion.Update update = motion.advance(
-            entity, (candidate, direction, nextX, nextY) -> direction == 2);
+        EnemyProjectileMotion.Update update =
+                motion.advance(entity, (candidate, direction, nextX, nextY) -> direction == 2);
 
         assertTrue(update.collidedWithWall());
         assertFalse(update.unloaded());
@@ -132,10 +130,15 @@ final class EnemyProjectileMotionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"0, 0x0C, 0x0C, 0x40", "1, 0x0C, 0x0B, 8",
-        "1, 0xF4, 0xF5, 8", "2, 0x0C, 0x0B, 0x40", "3, 0xF4, 0xF5, 0x40"})
+    @CsvSource({
+        "0, 0x0C, 0x0C, 0x40",
+        "1, 0x0C, 0x0B, 8",
+        "1, 0xF4, 0xF5, 8",
+        "2, 0x0C, 0x0B, 0x40",
+        "3, 0xF4, 0xF5, 0x40"
+    })
     void sideViewReboundUsesGroundSpeedLimitAndEightFrameDrag(
-        int groundStatus, int initialX, int expectedX, int expectedY) {
+            int groundStatus, int initialX, int expectedX, int expectedY) {
         EnemyProjectileMotion motion = new EnemyProjectileMotion();
         RoomEntity entity = entity(0x0C, 0x40, 0x50, 7);
         motion.setSpeedForTest(0, initialX, expectedY - 1, 0x10);
@@ -154,8 +157,8 @@ final class EnemyProjectileMotionTest {
         EnemyProjectileMotion motion = new EnemyProjectileMotion();
         RoomEntity entity = entity(0x0C, 0x40, 0x50, 0);
         motion.initializeSpawn(0, 0x0C, 0);
-        entity = motion.advance(entity,
-            (candidate, direction, nextX, nextY) -> direction == 0).entity();
+        entity = motion.advance(entity, (candidate, direction, nextX, nextY) -> direction == 0)
+                .entity();
 
         // After impact: direction 0 once, then left for eight frames,
         // down for eight, and right until the countdown-1 unload pass.
@@ -174,10 +177,9 @@ final class EnemyProjectileMotionTest {
         assertEquals(2, motion.advance(entity, null).entity().spriteVariant());
     }
 
-    private static void assertSpawnData(int type, int direction, int offsetX, int offsetY,
-                                         int speedX, int speedY, int initialVariant) {
-        EnemyProjectileMotion.SpawnData actual =
-            EnemyProjectileMotion.spawnData(type, direction);
+    private static void assertSpawnData(
+            int type, int direction, int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {
+        EnemyProjectileMotion.SpawnData actual = EnemyProjectileMotion.spawnData(type, direction);
         assertEquals(offsetX, actual.offsetX());
         assertEquals(offsetY, actual.offsetY());
         assertEquals(speedX, actual.speedX());
@@ -186,7 +188,19 @@ final class EnemyProjectileMotionTest {
     }
 
     private static RoomEntity entity(int type, int x, int y, int z) {
-        return new RoomEntity(0, -1, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), 0, 0, 0, z, -1, false);
+        return new RoomEntity(
+                0,
+                -1,
+                type,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(type),
+                0,
+                0,
+                0,
+                z,
+                -1,
+                false);
     }
 }

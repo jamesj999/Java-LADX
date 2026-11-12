@@ -6,21 +6,28 @@ import java.util.List;
 public final class PaletteOverlayRenderLayer implements HardwareRenderLayer {
     private final List<RenderLayer> layers;
     private final int increment;
+
     public PaletteOverlayRenderLayer(List<RenderLayer> layers, int increment) {
         this.layers = List.copyOf(layers);
         this.increment = increment;
     }
 
-    @Override public boolean supportsHardware() {
-        return layers.stream().allMatch(layer -> layer instanceof HardwareRenderLayer indexed && indexed.supportsHardware());
+    @Override
+    public boolean supportsHardware() {
+        return layers.stream()
+                .allMatch(layer -> layer instanceof HardwareRenderLayer indexed && indexed.supportsHardware());
     }
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (!supportsHardware()) throw new IllegalStateException("Unmigrated palette child");
         frame.withPaletteTransform(this::transform, () -> {
-            for (RenderLayer layer : layers) frame.withLayerSource(layer.getClass().getSimpleName(),
-                () -> ((HardwareRenderLayer) layer).submit(frame, gpu));
+            for (RenderLayer layer : layers)
+                frame.withLayerSource(
+                        layer.getClass().getSimpleName(), () -> ((HardwareRenderLayer) layer).submit(frame, gpu));
         });
     }
+
     private int transform(int rgb) {
         if (increment == 0) return rgb;
         int result = 0;
@@ -31,7 +38,9 @@ public final class PaletteOverlayRenderLayer implements HardwareRenderLayer {
         }
         return result;
     }
-    @Override public void render(RenderContext context) {
+
+    @Override
+    public void render(RenderContext context) {
         if (supportsHardware()) HardwareRenderLayer.super.render(context);
         else RgbaCallbackCompatibility.renderPaletteCallbacks(layers, increment, context);
     }

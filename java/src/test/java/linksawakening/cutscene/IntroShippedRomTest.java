@@ -1,17 +1,16 @@
 package linksawakening.cutscene;
 
-import linksawakening.scene.BackgroundScene;
-import linksawakening.scene.BackgroundSceneCatalog;
-import linksawakening.scene.BackgroundSceneLoader;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneCatalog;
+import linksawakening.scene.BackgroundSceneLoader;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class IntroShippedRomTest {
@@ -28,14 +27,16 @@ final class IntroShippedRomTest {
         assertEquals(0x03, data.marinVariants().get(0).firstAttributes());
         assertEquals(0x38, data.sparkleVariants().get(0).firstTileIndex());
         assertEquals(7, data.titleRows().size());
-        assertArrayEquals(new int[] {
-            0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7,
-            0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF
-        }, data.titleRows().get(0).tileBytes());
+        assertArrayEquals(
+                new int[] {
+                    0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7,
+                    0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF
+                },
+                data.titleRows().get(0).tileBytes());
 
         BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence = new IntroSequence(rom, sceneId -> loader.load(
-            BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        IntroSequence sequence =
+                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         assertEquals(22, sequence.snapshot().sprites().size());
         assertEquals(0x1C, sequence.snapshot().sprites().get(0).tileIndex());
         sequence.tick();
@@ -46,8 +47,8 @@ final class IntroShippedRomTest {
     void lightningAppliesRomDefinedSeaPaletteModifierToTheDynamicSnapshot() {
         byte[] rom = loadRom();
         BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence = new IntroSequence(rom, sceneId -> loader.load(
-            BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        IntroSequence sequence =
+                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         int[][] initial = sequence.snapshot().bgPalettes();
 
         for (int frame = 0; frame < 130; frame++) {
@@ -75,10 +76,12 @@ final class IntroShippedRomTest {
     void titleDxFadeUsesTheRomPaletteRowsInTheDynamicSnapshot() {
         byte[] rom = loadRom();
         BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence = new IntroSequence(rom, sceneId -> loader.load(
-            BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        IntroSequence sequence =
+                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
 
-        for (int frame = 0; frame < 5000 && !"TITLE_DX".equals(sequence.snapshot().substate()); frame++) {
+        for (int frame = 0;
+                frame < 5000 && !"TITLE_DX".equals(sequence.snapshot().substate());
+                frame++) {
             sequence.tick();
         }
         int[][] initial = sequence.snapshot().objPalettes();

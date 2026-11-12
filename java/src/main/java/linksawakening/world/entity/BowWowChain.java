@@ -1,7 +1,5 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.RoomEntity;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,15 +9,14 @@ public final class BowWowChain {
     private final int[] x = new int[7];
     private final int[] y = new int[7];
 
-    public record Entry(int sourceSlot, int rawX, int rawY, int tileIndex) { }
+    public record Entry(int sourceSlot, int rawX, int rawY, int tileIndex) {}
 
     public void initialize(int entityX, int visualY) {
         Arrays.fill(x, entityX & 0xFF);
         Arrays.fill(y, visualY & 0xFF);
     }
 
-    public RoomEntity advance(RoomEntity entity, int anchorX, int anchorY,
-                       int questState, boolean linkMoving) {
+    public RoomEntity advance(RoomEntity entity, int anchorX, int anchorY, int questState, boolean linkMoving) {
         x[0] = entity.x() & 0xFF;
         y[0] = (entity.y() - entity.z()) & 0xFF;
         // First propagate BowWow's position towards the loose end.
@@ -45,10 +42,20 @@ public final class BowWowChain {
         if (pulledX) align(y, anchorY);
         if (pulledY) align(x, anchorX);
         if (!pulledX && !pulledY) return entity;
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x[0], (y[0] + entity.z()) & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x[0],
+                (y[0] + entity.z()) & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static boolean approach(int[] axis, int index, int towards, int speed) {
@@ -71,8 +78,7 @@ public final class BowWowChain {
         List<Entry> entries = new ArrayList<>(3);
         for (int i = 5; i > 0; i--) {
             if (((frame ^ i) & 1) == 0) {
-                entries.add(new Entry(slot, (x[i] + 4) & 0xFF, y[i],
-                    questState == 0 ? 0x7E : 0x4E));
+                entries.add(new Entry(slot, (x[i] + 4) & 0xFF, y[i], questState == 0 ? 0x7E : 0x4E));
             }
         }
         return List.copyOf(entries);

@@ -1,10 +1,10 @@
 package linksawakening.audio.openal;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryUtil;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 final class NativePcmAlDevice implements PcmAlDevice {
     private long device;
@@ -29,19 +29,35 @@ final class NativePcmAlDevice implements PcmAlDevice {
         }
     }
 
-    @Override public void makeCurrent() {
-        if (!ALC10.alcMakeContextCurrent(context)) throw new IllegalStateException("could not make PCM context current");
+    @Override
+    public void makeCurrent() {
+        if (!ALC10.alcMakeContextCurrent(context))
+            throw new IllegalStateException("could not make PCM context current");
     }
-    @Override public int state() { return query(AL10.AL_SOURCE_STATE); }
-    @Override public int queued() { return query(AL10.AL_BUFFERS_QUEUED); }
-    @Override public int processed() { return query(AL10.AL_BUFFERS_PROCESSED); }
+
+    @Override
+    public int state() {
+        return query(AL10.AL_SOURCE_STATE);
+    }
+
+    @Override
+    public int queued() {
+        return query(AL10.AL_BUFFERS_QUEUED);
+    }
+
+    @Override
+    public int processed() {
+        return query(AL10.AL_BUFFERS_PROCESSED);
+    }
+
     private int query(int property) {
         int result = AL10.alGetSourcei(source, property);
         check("query PCM source");
         return result;
     }
 
-    @Override public int createBuffer(short[] pcm, int sampleRate) {
+    @Override
+    public int createBuffer(short[] pcm, int sampleRate) {
         int buffer = AL10.alGenBuffers();
         try {
             check("create PCM buffer");
@@ -55,36 +71,67 @@ final class NativePcmAlDevice implements PcmAlDevice {
             throw failure;
         }
     }
-    @Override public void queue(int buffer) { AL10.alSourceQueueBuffers(source, buffer); check("queue PCM buffer"); }
-    @Override public int unqueue() {
+
+    @Override
+    public void queue(int buffer) {
+        AL10.alSourceQueueBuffers(source, buffer);
+        check("queue PCM buffer");
+    }
+
+    @Override
+    public int unqueue() {
         int buffer = AL10.alSourceUnqueueBuffers(source);
         check("unqueue PCM buffer");
         return buffer;
     }
-    @Override public void deleteBuffer(int buffer) {
+
+    @Override
+    public void deleteBuffer(int buffer) {
         if (AL10.alIsBuffer(buffer)) AL10.alDeleteBuffers(buffer);
         check("delete PCM buffer");
     }
-    @Override public void play() { AL10.alSourcePlay(source); check("play PCM source"); }
-    @Override public void stop() { AL10.alSourceStop(source); check("stop PCM source"); }
-    @Override public void rewind() { AL10.alSourceRewind(source); check("rewind PCM source"); }
-    @Override public void resetSource() {
+
+    @Override
+    public void play() {
+        AL10.alSourcePlay(source);
+        check("play PCM source");
+    }
+
+    @Override
+    public void stop() {
+        AL10.alSourceStop(source);
+        check("stop PCM source");
+    }
+
+    @Override
+    public void rewind() {
+        AL10.alSourceRewind(source);
+        check("rewind PCM source");
+    }
+
+    @Override
+    public void resetSource() {
         if (source != 0) AL10.alDeleteSources(source); // Detaches every buffer, including partially queued uploads.
         source = 0;
         check("delete PCM source");
         createSource();
     }
+
     private void createSource() {
         source = AL10.alGenSources();
         check("create PCM source");
         AL10.alSourcef(source, AL10.AL_GAIN, 1.0f);
         check("configure PCM source");
     }
-    @Override public boolean connected() {
-        return device != MemoryUtil.NULL && (!supportsDisconnect
-                || ALC10.alcGetInteger(device, EXTDisconnect.ALC_CONNECTED) != 0);
+
+    @Override
+    public boolean connected() {
+        return device != MemoryUtil.NULL
+                && (!supportsDisconnect || ALC10.alcGetInteger(device, EXTDisconnect.ALC_CONNECTED) != 0);
     }
-    @Override public void close() {
+
+    @Override
+    public void close() {
         try {
             if (context != MemoryUtil.NULL) {
                 makeCurrent();
@@ -92,12 +139,20 @@ final class NativePcmAlDevice implements PcmAlDevice {
             }
         } finally {
             source = 0;
-            if (context != MemoryUtil.NULL) { ALC10.alcDestroyContext(context); context = MemoryUtil.NULL; }
-            if (device != MemoryUtil.NULL) { ALC10.alcCloseDevice(device); device = MemoryUtil.NULL; }
+            if (context != MemoryUtil.NULL) {
+                ALC10.alcDestroyContext(context);
+                context = MemoryUtil.NULL;
+            }
+            if (device != MemoryUtil.NULL) {
+                ALC10.alcCloseDevice(device);
+                device = MemoryUtil.NULL;
+            }
         }
     }
+
     private static void check(String operation) {
         int error = AL10.alGetError();
-        if (error != AL10.AL_NO_ERROR) throw new IllegalStateException(operation + " failed with OpenAL error 0x" + Integer.toHexString(error));
+        if (error != AL10.AL_NO_ERROR)
+            throw new IllegalStateException(operation + " failed with OpenAL error 0x" + Integer.toHexString(error));
     }
 }

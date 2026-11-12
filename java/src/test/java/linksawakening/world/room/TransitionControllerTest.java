@@ -1,16 +1,12 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.transition.TransitionController;
-
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import linksawakening.world.transition.TransitionController;
+import org.junit.jupiter.api.Test;
 
 final class TransitionControllerTest {
 
@@ -35,12 +31,12 @@ final class TransitionControllerTest {
         assertEquals(1, completed.get());
         assertEquals(TransitionController.State.MANBO_OUT, controller.state());
         assertTrue(controller.isInputBlocked());
-        assertEquals(TransitionController.MANBO_OUT_INITIAL_FRAME,
-            controller.transitionFrame());
+        assertEquals(TransitionController.MANBO_OUT_INITIAL_FRAME, controller.transitionFrame());
         assertEquals(TransitionController.MAX_FADE_STEP, controller.fadeLevel());
 
         for (int frame = TransitionController.MANBO_OUT_INITIAL_FRAME;
-             frame < TransitionController.MANBO_TRANSITION_FRAMES; frame++) {
+                frame < TransitionController.MANBO_TRANSITION_FRAMES;
+                frame++) {
             controller.tick();
         }
         assertEquals(TransitionController.State.IDLE, controller.state());

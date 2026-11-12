@@ -34,8 +34,7 @@ final class EntitySlotValidation {
     }
 
     static void validateRomDirection(int direction) {
-        if (direction < LiftedEntityMotion.ROM_DIRECTION_RIGHT
-            || direction > LiftedEntityMotion.ROM_DIRECTION_DOWN) {
+        if (direction < LiftedEntityMotion.ROM_DIRECTION_RIGHT || direction > LiftedEntityMotion.ROM_DIRECTION_DOWN) {
             throw new IllegalArgumentException("ROM direction must be between 0 and 3");
         }
     }

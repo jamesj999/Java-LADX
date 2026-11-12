@@ -42,8 +42,7 @@ public final class ThrownEntityMotion {
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] active = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, boolean blockedX, boolean blockedY) {
-    }
+    public record Update(RoomEntity entity, boolean blockedX, boolean blockedY) {}
 
     /** Mirrors func_014_53A3's table-index calculation. */
     public void start(int slot, int romDirection, int entityType, boolean sideScrolling) {
@@ -51,8 +50,7 @@ public final class ThrownEntityMotion {
         validateDirection(romDirection);
         validateByte(entityType, "Entity type");
 
-        int tableIndex = (sideScrolling ? 8 : 0)
-            + (entityType == ENTITY_BOMB ? 4 : 0) + romDirection;
+        int tableIndex = (sideScrolling ? 8 : 0) + (entityType == ENTITY_BOMB ? 4 : 0) + romDirection;
         speedX[slot] = SPEED_X[tableIndex];
         speedY[slot] = SPEED_Y[tableIndex];
         speedZ[slot] = SPEED_Z[tableIndex];
@@ -91,14 +89,16 @@ public final class ThrownEntityMotion {
     }
 
     /** Applies bank-$03 BouncingEntityPhysics and BombEntityHandler.BounceOffWalls. */
-    public Update advance(RoomEntity entity, boolean sideScrolling,
-                   RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(RoomEntity entity, boolean sideScrolling, RoomEntityBackgroundCollision backgroundCollision) {
         return advance(entity, sideScrolling, backgroundCollision, 0, 0);
     }
 
-    public Update advance(RoomEntity entity, boolean sideScrolling,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   int frameCounter, int groundStatus) {
+    public Update advance(
+            RoomEntity entity,
+            boolean sideScrolling,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int frameCounter,
+            int groundStatus) {
         int slot = entity.slot();
         validateSlot(slot);
         if (!active[slot]) {
@@ -109,8 +109,8 @@ public final class ThrownEntityMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int z = entity.z();
         if (sideScrolling) {
-            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
-                speedX[slot], speedY[slot], frameCounter, groundStatus);
+            EntitySideViewGravity.Speeds speeds =
+                    EntitySideViewGravity.advance(speedX[slot], speedY[slot], frameCounter, groundStatus);
             speedX[slot] = speeds.x();
             speedY[slot] = speeds.y();
         } else {
@@ -123,14 +123,11 @@ public final class ThrownEntityMotion {
         boolean floorCollision = false;
         if (backgroundCollision != null) {
             if (speedX[slot] != 0
-                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]),
-                    x, entity.y())) {
+                    && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
                 x = entity.x();
                 blockedX = true;
             }
-            if (speedY[slot] != 0
-                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]),
-                    x, y)) {
+            if (speedY[slot] != 0 && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
                 floorCollision = (speedY[slot] & 0x80) == 0;
                 y = entity.y();
                 blockedY = true;
@@ -198,8 +195,7 @@ public final class ThrownEntityMotion {
         active[slot] = false;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -232,9 +228,20 @@ public final class ThrownEntityMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {

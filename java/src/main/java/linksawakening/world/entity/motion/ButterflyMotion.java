@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /**
  * The state used by the bank-$06 ButterflyEntityHandler.
@@ -22,8 +21,8 @@ public final class ButterflyMotion {
     private final int[] privateStateX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateStateY = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier) {
+    public RoomEntity advance(
+            RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         int state = (frameCounter + slot * 8) & 0xFF;
 
@@ -33,12 +32,10 @@ public final class ButterflyMotion {
         // The ROM refreshes X and Y independently, using the prior private
         // vector component as a bias. These writes happen after movement.
         if ((state & 0x1F) == 0) {
-            speedX[slot] = (privateStateX[slot]
-                + POSSIBLE_SPEEDS[randomByteSupplier.getAsInt() & 0x07]) & 0xFF;
+            speedX[slot] = (privateStateX[slot] + POSSIBLE_SPEEDS[randomByteSupplier.getAsInt() & 0x07]) & 0xFF;
         }
         if (((state + 0x10) & 0x1F) == 0) {
-            speedY[slot] = (privateStateY[slot]
-                + POSSIBLE_SPEEDS[randomByteSupplier.getAsInt() & 0x07]) & 0xFF;
+            speedY[slot] = (privateStateY[slot] + POSSIBLE_SPEEDS[randomByteSupplier.getAsInt() & 0x07]) & 0xFF;
         }
 
         // GetVectorTowardsLink uses an infinity-norm vector of length two and
@@ -50,9 +47,19 @@ public final class ButterflyMotion {
         }
 
         return new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -73,8 +80,7 @@ public final class ButterflyMotion {
     }
 
     /** Mirrors AddEntitySpeedToPos_06, including its negative-speed phase. */
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -130,6 +136,5 @@ public final class ButterflyMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

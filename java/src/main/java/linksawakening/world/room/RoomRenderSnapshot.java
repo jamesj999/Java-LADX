@@ -1,20 +1,30 @@
 package linksawakening.world.room;
 
+import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.HeartPieceVisual;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 
-import linksawakening.world.entity.RoomEntitySnapshot;
+public record RoomRenderSnapshot(
+        int[] tileIds,
+        int[] tileAttrs,
+        int[][] palettes,
+        RoomEntitySnapshot entities,
+        InstrumentWarpVisual instrumentWarp,
+        HeartPieceVisual heartPiece,
+        int linkGrassPalette) {
 
-public record RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes,
-                                 RoomEntitySnapshot entities, InstrumentWarpVisual instrumentWarp, HeartPieceVisual heartPiece, int linkGrassPalette) {
-
-    public RoomRenderSnapshot(int[] tiles, int[] attrs, int[][] palettes, RoomEntitySnapshot entities,
-                              InstrumentWarpVisual warp, HeartPieceVisual heartPiece) {
+    public RoomRenderSnapshot(
+            int[] tiles,
+            int[] attrs,
+            int[][] palettes,
+            RoomEntitySnapshot entities,
+            InstrumentWarpVisual warp,
+            HeartPieceVisual heartPiece) {
         this(tiles, attrs, palettes, entities, warp, heartPiece, 0);
     }
 
-    public RoomRenderSnapshot(int[] tiles, int[] attrs, int[][] palettes, RoomEntitySnapshot entities,
-                              InstrumentWarpVisual warp) {
+    public RoomRenderSnapshot(
+            int[] tiles, int[] attrs, int[][] palettes, RoomEntitySnapshot entities, InstrumentWarpVisual warp) {
         this(tiles, attrs, palettes, entities, warp, null);
     }
 

@@ -1,24 +1,28 @@
 package linksawakening.app.host;
 
+import static org.lwjgl.glfw.GLFW.*;
+
+import java.util.function.BiConsumer;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.render.OpenGlFramePresenter;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.system.MemoryStack;
-import java.util.function.BiConsumer;
-import static org.lwjgl.glfw.GLFW.*;
 
 /** Owns native window, key callback and presentation resources. */
 public final class DesktopHost implements Host {
-    @Override public linksawakening.gameplay.PcmSoundOutput createPcmOutput() {
+    @Override
+    public linksawakening.gameplay.PcmSoundOutput createPcmOutput() {
         return new linksawakening.audio.openal.OpenAlPcmSoundOutput();
     }
+
     private long window;
     private OpenGlFramePresenter framePresenter;
     private GLFWErrorCallback errorCallback;
     private GLFWKeyCallback keyCallback;
 
-    @Override public void open(BiConsumer<Integer, Integer> keys) {
+    @Override
+    public void open(BiConsumer<Integer, Integer> keys) {
         errorCallback = GLFWErrorCallback.createPrint(System.err).set();
 
         if (!glfwInit()) {
@@ -34,12 +38,11 @@ public final class DesktopHost implements Host {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
         window = glfwCreateWindow(
-            Framebuffer.WIDTH * Framebuffer.SCALE,
-            Framebuffer.HEIGHT * Framebuffer.SCALE,
-            "Link's Awakening DX",
-            0,
-            0
-        );
+                Framebuffer.WIDTH * Framebuffer.SCALE,
+                Framebuffer.HEIGHT * Framebuffer.SCALE,
+                "Link's Awakening DX",
+                0,
+                0);
 
         if (window == 0) {
             throw new IllegalStateException("Failed to create window");
@@ -75,22 +78,38 @@ public final class DesktopHost implements Host {
             // viewport, which must use framebuffer pixels on HiDPI displays.
             glfwGetMonitorWorkarea(monitor, x, y, width, height);
             glfwGetWindowSize(window, windowWidth, windowHeight);
-            glfwSetWindowPos(window,
-                x.get(0) + (width.get(0) - windowWidth.get(0)) / 2,
-                y.get(0) + (height.get(0) - windowHeight.get(0)) / 2);
+            glfwSetWindowPos(
+                    window,
+                    x.get(0) + (width.get(0) - windowWidth.get(0)) / 2,
+                    y.get(0) + (height.get(0) - windowHeight.get(0)) / 2);
         }
     }
 
-    @Override public boolean shouldClose() { return glfwWindowShouldClose(window); }
-    @Override public void pollEvents() { glfwPollEvents(); }
-    @Override public void present(byte[] pixels) { framePresenter.present(pixels); }
-    @Override public void releasePresentation() {
+    @Override
+    public boolean shouldClose() {
+        return glfwWindowShouldClose(window);
+    }
+
+    @Override
+    public void pollEvents() {
+        glfwPollEvents();
+    }
+
+    @Override
+    public void present(byte[] pixels) {
+        framePresenter.present(pixels);
+    }
+
+    @Override
+    public void releasePresentation() {
         if (framePresenter != null) {
             framePresenter.cleanup();
             framePresenter = null;
         }
     }
-    @Override public void close() {
+
+    @Override
+    public void close() {
         releasePresentation();
         if (keyCallback != null) keyCallback.free();
         glfwDestroyWindow(window);

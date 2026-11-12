@@ -1,13 +1,15 @@
 package linksawakening.audio;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.app.GameSession;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 class IntroSessionAudioTest {
-    @Test void productionIntroEmitsPcmToInjectedHostOutput() {
+    @Test
+    void productionIntroEmitsPcmToInjectedHostOutput() {
         int[] calls = {0};
         long[] samples = {0};
         boolean[] audible = {false};

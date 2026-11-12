@@ -1,11 +1,13 @@
 package linksawakening.entity;
 
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
+
 final class LinkStateMachineTest {
-    @Test void spikesReverseSpeedBufferOneHeartAndGateRepeatedHits() {
+    @Test
+    void spikesReverseSpeedBufferOneHeartAndGateRepeatedHits() {
         PlayerState player = new PlayerState();
         Link link = new Link(null, null, null, null, null, player, null);
         link.linkMotion.lastRomSpeedX = 0x14;
@@ -24,7 +26,8 @@ final class LinkStateMachineTest {
         assertEquals(0xEC, link.romSpeedX());
     }
 
-    @Test void sideViewSpikesPreserveVerticalJumpRegisters() {
+    @Test
+    void sideViewSpikesPreserveVerticalJumpRegisters() {
         PlayerState player = new PlayerState();
         Link link = new Link(null, null, null, null, null, player, null);
         link.linkSideView.sideScrolling = true;
@@ -35,7 +38,8 @@ final class LinkStateMachineTest {
         assertEquals(4, player.subtractHealthBuffer());
     }
 
-    @Test void scrollEntryPreservesBothFractionalAccumulatorsAndRecordsLanding() {
+    @Test
+    void scrollEntryPreservesBothFractionalAccumulatorsAndRecordsLanding() {
         Link link = new Link(null, null, null, null, null, null, null);
         link.linkMotion.subX = (148 << Link.SUB_PIXEL_SHIFT) + 10;
         link.linkMotion.subY = (80 << Link.SUB_PIXEL_SHIFT) + 5;
@@ -48,7 +52,8 @@ final class LinkStateMachineTest {
         assertEquals(96, link.roomEntryRomPositionY());
     }
 
-    @Test void interactiveBlockIsConsumedAfterInvincibilityTicks() {
+    @Test
+    void interactiveBlockIsConsumedAfterInvincibilityTicks() {
         PlayerState player = new PlayerState();
         Link link = new Link(null, null, null, null, null, player, null);
         link.setPixelPosition(64, 64);
@@ -63,7 +68,8 @@ final class LinkStateMachineTest {
         assertTrue(link.linkMotion.forcedSpeedPending);
     }
 
-    @Test void revolvingDoorExitsOnFrameSeventyTwoAndEmitsOneTransition() {
+    @Test
+    void revolvingDoorExitsOnFrameSeventyTwoAndEmitsOneTransition() {
         Link link = new Link(null, null, null, null, null, null, null);
         link.linkStateMachine.motionState = 5;
         link.linkStateMachine.revolvingDoorFrame = 70;

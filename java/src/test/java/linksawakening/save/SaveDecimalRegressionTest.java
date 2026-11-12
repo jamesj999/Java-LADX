@@ -1,8 +1,9 @@
 package linksawakening.save;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 /** Source: bank1.asm .initNewGame; bank0.asm PlaceBomb; bank20.asm inventory digits. */
 final class SaveDecimalRegressionTest {

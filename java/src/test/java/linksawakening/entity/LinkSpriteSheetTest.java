@@ -1,10 +1,10 @@
 package linksawakening.entity;
 
-import linksawakening.gpu.Tile;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import linksawakening.gpu.Tile;
+import org.junit.jupiter.api.Test;
 
 final class LinkSpriteSheetTest {
 

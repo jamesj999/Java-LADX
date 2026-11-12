@@ -1,5 +1,8 @@
 package linksawakening.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.*;
+
 import java.util.Arrays;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
@@ -8,8 +11,6 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 @linksawakening.testing.RequiresRom
 final class LinkSideViewMotionTest {
@@ -35,8 +36,7 @@ final class LinkSideViewMotionTest {
     private int[] floor() {
         int[] objects = new int[0xA0];
         Arrays.fill(objects, 0xFF);
-        for (int y = 0; y < 8; y++)
-            for (int x = 0; x < 10; x++) objects[0x11 + y * 16 + x] = y == 7 ? 0x60 : 0x0D;
+        for (int y = 0; y < 8; y++) for (int x = 0; x < 10; x++) objects[0x11 + y * 16 + x] = y == 7 ? 0x60 : 0x0D;
         return objects;
     }
 
@@ -72,7 +72,8 @@ final class LinkSideViewMotionTest {
     @Test
     void featherAppliesItsExtraStepAfterGroundMotionChoosesHorizontalSpeed() throws Exception {
         Link link = room(floor(), 80, 112);
-        link.update(); link.update();
+        link.update();
+        link.update();
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
         input.onKeyEvent(config.bKey(), GLFW_PRESS);
         player.setItemB(PlayerState.INVENTORY_ROCS_FEATHER);
@@ -91,7 +92,8 @@ final class LinkSideViewMotionTest {
     void featherMovesScreenYAndReturnsToTheFloor() throws Exception {
         player.setItemA(PlayerState.INVENTORY_ROCS_FEATHER);
         Link link = room(floor(), 80, 112);
-        link.update(); link.update();
+        link.update();
+        link.update();
         int startY = link.romEntityY();
         link.useRocsFeather();
         link.update();
@@ -100,7 +102,8 @@ final class LinkSideViewMotionTest {
         input.onKeyEvent(config.aKey(), GLFW_PRESS);
         int minimum = link.romEntityY();
         for (int i = 0; i < 20; i++) {
-            link.update(); minimum = Math.min(minimum, link.romEntityY());
+            link.update();
+            minimum = Math.min(minimum, link.romEntityY());
         }
         assertTrue(minimum < 96);
         input.onKeyEvent(config.aKey(), GLFW_RELEASE);

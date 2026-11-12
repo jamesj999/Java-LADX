@@ -1,24 +1,20 @@
 package linksawakening.world.object;
 
-import linksawakening.world.room.*;
-import linksawakening.world.entity.*;
-
-import linksawakening.world.object.OverworldBushInteraction;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
-import linksawakening.entity.Link;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.rom.RomTables;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import linksawakening.entity.Link;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.rom.RomTables;
+import linksawakening.world.entity.*;
+import linksawakening.world.room.*;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class OverworldBushInteractionTest {
@@ -78,18 +74,17 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_TALL_GRASS;
 
         boolean changed = INTERACTION.cutBush(
-            true,
-            Link.DIRECTION_RIGHT,
-            TARGET_LINK_X,
-            TARGET_LINK_Y,
-            roomId,
-            true,
-            roomObjectsArea,
-            mutableBackupObjects,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                true,
+                Link.DIRECTION_RIGHT,
+                TARGET_LINK_X,
+                TARGET_LINK_Y,
+                roomId,
+                true,
+                roomObjectsArea,
+                mutableBackupObjects,
+                null,
+                roomTileIds,
+                roomTileAttrs);
 
         assertTrue(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -106,15 +101,7 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[ROOM_OBJECTS_BASE + location] = OBJECT_TALL_GRASS;
 
         OverworldBushInteraction.CutResult result = INTERACTION.cutObjectAtLocation(
-            location,
-            roomId,
-            true,
-            roomObjectsArea,
-            null,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                location, roomId, true, roomObjectsArea, null, null, roomTileIds, roomTileAttrs);
 
         assertTrue(result.changed());
         assertTrue(result.bushLeavesVisible());
@@ -130,15 +117,7 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[ROOM_OBJECTS_BASE + location] = OBJECT_BUSH;
 
         OverworldBushInteraction.CutResult result = INTERACTION.cutObjectAtLocation(
-            location,
-            roomId,
-            true,
-            roomObjectsArea,
-            null,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                location, roomId, true, roomObjectsArea, null, null, roomTileIds, roomTileAttrs);
 
         assertTrue(result.changed());
         assertEquals(GameplaySoundEvent.CUT_GRASS, result.soundEvent());
@@ -154,14 +133,7 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[ROOM_OBJECTS_BASE + location] = OBJECT_BUSH;
 
         OverworldBushInteraction.CutResult result = INTERACTION.revealObjectAtLocation(
-            location,
-            roomId,
-            true,
-            roomObjectsArea,
-            null,
-            null,
-            roomTileIds,
-            roomTileAttrs);
+                location, roomId, true, roomObjectsArea, null, null, roomTileIds, roomTileAttrs);
 
         assertTrue(result.changed());
         assertEquals(OBJECT_SHORT_GRASS, result.revealedObjectId());
@@ -179,18 +151,17 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[areaIndex] = OBJECT_SHORT_GRASS;
 
         boolean changed = INTERACTION.cutBush(
-            true,
-            Link.DIRECTION_RIGHT,
-            TARGET_LINK_X,
-            TARGET_LINK_Y,
-            roomId,
-            true,
-            roomObjectsArea,
-            null,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                true,
+                Link.DIRECTION_RIGHT,
+                TARGET_LINK_X,
+                TARGET_LINK_Y,
+                roomId,
+                true,
+                roomObjectsArea,
+                null,
+                null,
+                roomTileIds,
+                roomTileAttrs);
 
         assertFalse(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -198,15 +169,20 @@ final class OverworldBushInteractionTest {
 
     @Test
     void inactiveSwordDoesNotReportAHitLocation() {
-        assertEquals(-1, INTERACTION.swordHitRoomObjectLocation(false, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
+        assertEquals(
+                -1, INTERACTION.swordHitRoomObjectLocation(false, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
     }
 
     @Test
     void swordHitLocationMatchesStaticSwordCollisionMapInAllDirections() {
-        assertEquals(0x54, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
-        assertEquals(0x53, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_LEFT, TARGET_LINK_X, TARGET_LINK_Y));
-        assertEquals(0x43, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_UP, TARGET_LINK_X, TARGET_LINK_Y));
-        assertEquals(0x63, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_DOWN, TARGET_LINK_X, TARGET_LINK_Y));
+        assertEquals(
+                0x54, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
+        assertEquals(
+                0x53, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_LEFT, TARGET_LINK_X, TARGET_LINK_Y));
+        assertEquals(
+                0x43, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_UP, TARGET_LINK_X, TARGET_LINK_Y));
+        assertEquals(
+                0x63, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_DOWN, TARGET_LINK_X, TARGET_LINK_Y));
     }
 
     @Test
@@ -216,10 +192,10 @@ final class OverworldBushInteractionTest {
 
     @Test
     void spinAttackCollisionMapReachesDiagonalBushCells() {
-        assertEquals(0x64,
-            INTERACTION.swordHitRoomObjectLocationForCollisionIndex(true, 5, TARGET_LINK_X, TARGET_LINK_Y));
-        assertEquals(0x44,
-            INTERACTION.swordHitRoomObjectLocationForCollisionIndex(true, 11, TARGET_LINK_X, TARGET_LINK_Y));
+        assertEquals(
+                0x64, INTERACTION.swordHitRoomObjectLocationForCollisionIndex(true, 5, TARGET_LINK_X, TARGET_LINK_Y));
+        assertEquals(
+                0x44, INTERACTION.swordHitRoomObjectLocationForCollisionIndex(true, 11, TARGET_LINK_X, TARGET_LINK_Y));
     }
 
     @Test
@@ -241,18 +217,17 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_BUSH;
 
         boolean changed = INTERACTION.cutBush(
-            true,
-            Link.DIRECTION_RIGHT,
-            TARGET_LINK_X,
-            TARGET_LINK_Y,
-            roomId,
-            true,
-            roomObjectsArea,
-            mutableBackupObjects,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                true,
+                Link.DIRECTION_RIGHT,
+                TARGET_LINK_X,
+                TARGET_LINK_Y,
+                roomId,
+                true,
+                roomObjectsArea,
+                mutableBackupObjects,
+                null,
+                roomTileIds,
+                roomTileAttrs);
 
         assertTrue(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -274,18 +249,17 @@ final class OverworldBushInteractionTest {
         int[] beforeAttrs = roomTileAttrs.clone();
 
         boolean changed = INTERACTION.cutBush(
-            true,
-            Link.DIRECTION_RIGHT,
-            TARGET_LINK_X,
-            TARGET_LINK_Y,
-            roomId,
-            true,
-            roomObjectsArea,
-            null,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                true,
+                Link.DIRECTION_RIGHT,
+                TARGET_LINK_X,
+                TARGET_LINK_Y,
+                roomId,
+                true,
+                roomObjectsArea,
+                null,
+                null,
+                roomTileIds,
+                roomTileAttrs);
 
         assertTrue(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -314,18 +288,17 @@ final class OverworldBushInteractionTest {
         int[] beforeAttrs = roomTileAttrs.clone();
 
         boolean changed = INTERACTION.cutBush(
-            true,
-            Link.DIRECTION_RIGHT,
-            TARGET_LINK_X,
-            TARGET_LINK_Y,
-            roomId,
-            true,
-            roomObjectsArea,
-            mutableBackupObjects,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                true,
+                Link.DIRECTION_RIGHT,
+                TARGET_LINK_X,
+                TARGET_LINK_Y,
+                roomId,
+                true,
+                roomObjectsArea,
+                mutableBackupObjects,
+                null,
+                roomTileIds,
+                roomTileAttrs);
 
         assertTrue(changed);
         assertEquals(expectedReveal, roomObjectsArea[areaIndex]);
@@ -352,18 +325,17 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_BUSH_GROUND_STAIRS;
 
         boolean changed = INTERACTION.cutBush(
-            true,
-            Link.DIRECTION_RIGHT,
-            TARGET_LINK_X,
-            TARGET_LINK_Y,
-            roomId,
-            true,
-            roomObjectsArea,
-            mutableBackupObjects,
-            null,
-            roomTileIds,
-            roomTileAttrs
-        );
+                true,
+                Link.DIRECTION_RIGHT,
+                TARGET_LINK_X,
+                TARGET_LINK_Y,
+                roomId,
+                true,
+                roomObjectsArea,
+                mutableBackupObjects,
+                null,
+                roomTileIds,
+                roomTileAttrs);
 
         assertTrue(changed);
         assertEquals(expectedReveal, roomObjectsArea[areaIndex]);

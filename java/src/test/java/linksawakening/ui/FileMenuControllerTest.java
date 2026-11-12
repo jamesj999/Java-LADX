@@ -1,14 +1,5 @@
 package linksawakening.ui;
 
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.rom.RomBank;
-import linksawakening.scene.BackgroundScene;
-import linksawakening.scene.BackgroundSceneCatalog;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,11 +15,18 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import java.util.Arrays;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.rom.RomBank;
+import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneCatalog;
+import org.junit.jupiter.api.Test;
+
 final class FileMenuControllerTest {
 
     private static final InputConfig INPUT = new InputConfig(
-        GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT,
-        GLFW_KEY_A, GLFW_KEY_B);
+            GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
 
     @Test
     void emptySlotAEntersCreationAndWritesTheSelectedSlotAndBlankName() {
@@ -39,8 +37,9 @@ final class FileMenuControllerTest {
         assertTrue(controller.snapshot().creation());
         assertEquals("creation", controller.snapshot().sceneId());
         assertEquals(0xAB, controller.snapshot().tilemap()[0x49]);
-        assertArrayEquals(new int[] { 0x7E, 0x7E, 0x7E, 0x7E, 0x7E },
-            Arrays.copyOfRange(controller.snapshot().tilemap(), 0x4A, 0x4F));
+        assertArrayEquals(
+                new int[] {0x7E, 0x7E, 0x7E, 0x7E, 0x7E},
+                Arrays.copyOfRange(controller.snapshot().tilemap(), 0x4A, 0x4F));
         assertEquals(1, controller.snapshot().sprites().size());
         assertEquals(0xE0, controller.snapshot().sprites().get(0).tileIndex());
     }
@@ -82,7 +81,8 @@ final class FileMenuControllerTest {
         press(controller, GLFW_KEY_A);
 
         assertEquals(FileMenuController.Mode.ERASE_PICK, controller.mode());
-        assertEquals(BackgroundSceneCatalog.FILE_ERASE_SCENE, controller.snapshot().sceneId());
+        assertEquals(
+                BackgroundSceneCatalog.FILE_ERASE_SCENE, controller.snapshot().sceneId());
         press(controller, GLFW_KEY_DOWN);
         assertEquals(FileMenuAction.Type.NONE, press(controller, GLFW_KEY_A).type());
         assertEquals(FileMenuController.Mode.ERASE_PICK, controller.mode());
@@ -123,7 +123,8 @@ final class FileMenuControllerTest {
         press(controller, GLFW_KEY_A);
 
         assertEquals(FileMenuController.Mode.COPY_SOURCE, controller.mode());
-        assertEquals(BackgroundSceneCatalog.FILE_COPY_SCENE, controller.snapshot().sceneId());
+        assertEquals(
+                BackgroundSceneCatalog.FILE_COPY_SCENE, controller.snapshot().sceneId());
         press(controller, GLFW_KEY_A);
         assertEquals(FileMenuController.Mode.COPY_TARGET, controller.mode());
         press(controller, GLFW_KEY_DOWN);
@@ -140,8 +141,7 @@ final class FileMenuControllerTest {
 
     @Test
     void copyAllowsOverwritingAnOccupiedDestination() {
-        FileMenuController controller = newController(0x03,
-            new int[][] {{1, 2}, {3, 4}, {}});
+        FileMenuController controller = newController(0x03, new int[][] {{1, 2}, {3, 4}, {}});
         enterCopySourceSelection(controller);
         press(controller, GLFW_KEY_A);
         press(controller, GLFW_KEY_DOWN);
@@ -252,7 +252,7 @@ final class FileMenuControllerTest {
             press(controller, GLFW_KEY_A);
         }
         assertEquals(4, controller.snapshot().namePosition());
-        assertArrayEquals(new int[] { 1, 1, 1, 1, 1 }, controller.snapshot().nameBytes());
+        assertArrayEquals(new int[] {1, 1, 1, 1, 1}, controller.snapshot().nameBytes());
 
         press(controller, GLFW_KEY_B);
         assertEquals(3, controller.snapshot().namePosition());
@@ -260,15 +260,15 @@ final class FileMenuControllerTest {
 
         assertEquals(FileMenuAction.Type.CREATE_FILE, action.type());
         assertEquals(0, action.selectedSlot());
-        assertArrayEquals(new int[] { 1, 1, 1, 1, 1 }, action.nameBytes());
+        assertArrayEquals(new int[] {1, 1, 1, 1, 1}, action.nameBytes());
     }
 
     @Test
     void existingNamesUseTheRomCodepointTileMapAndSelectionCursorUsesRomOamData() {
         int[][] names = {
-            { 1, 2, 0, 0, 0 },
-            { 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0 }
+            {1, 2, 0, 0, 0},
+            {0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0}
         };
         FileMenuController controller = newController(1, names);
 
@@ -303,25 +303,28 @@ final class FileMenuControllerTest {
     void savedFileSummaryWrapsHeartsAfterSevenAndDrawsThreeBcdDigits() {
         byte[] rom = syntheticRom();
         writeBytes(rom, 1, 0x4F3B, sequence(10, 0xB0));
-        var menu = new FileMenuController(new FileMenuRomData(rom),
-            id -> new BackgroundScene(backgroundMap(), new int[1024],
-                new int[][]{{0,0,0,0}}, new int[][]{{0,0,0,0}}),
-            2, new int[][]{new int[5], {1,2,3,4,5}, new int[5]},
-            new int[]{0,10,0}, new int[]{0,0x123,0});
+        var menu = new FileMenuController(
+                new FileMenuRomData(rom),
+                id -> new BackgroundScene(
+                        backgroundMap(), new int[1024], new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}),
+                2,
+                new int[][] {new int[5], {1, 2, 3, 4, 5}, new int[5]},
+                new int[] {0, 10, 0},
+                new int[] {0, 0x123, 0});
         int[] map = menu.snapshot().tilemap();
         for (int x = 0; x < 7; x++) assertEquals(0xAE, map[0x12B + x]);
         for (int x = 0; x < 3; x++) assertEquals(0xAE, map[0x14B + x]);
         assertEquals(0, map[0x14E]);
-        assertArrayEquals(new int[]{0xB1,0xB2,0xB3}, Arrays.copyOfRange(map, 0x147, 0x14A));
+        assertArrayEquals(new int[] {0xB1, 0xB2, 0xB3}, Arrays.copyOfRange(map, 0x147, 0x14A));
     }
 
     private static FileMenuController newController(int saveMask, int[][] names) {
         return new FileMenuController(
-            new FileMenuRomData(syntheticRom()),
-            sceneId -> new BackgroundScene(backgroundMap(), new int[32 * 32],
-                new int[][] { { 0, 0, 0, 0 } }, new int[][] { { 0, 0, 0, 0 } }),
-            saveMask,
-            names);
+                new FileMenuRomData(syntheticRom()),
+                sceneId -> new BackgroundScene(
+                        backgroundMap(), new int[32 * 32], new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}),
+                saveMask,
+                names);
     }
 
     private static void enterCopySourceSelection(FileMenuController controller) {

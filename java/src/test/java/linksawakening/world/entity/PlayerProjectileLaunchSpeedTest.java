@@ -1,28 +1,19 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityStatus;
-
-import linksawakening.world.entity.motion.MagicRodFireballMotion;
-import linksawakening.world.entity.motion.PlayerArrowMotion;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import linksawakening.world.entity.motion.PlayerArrowMotion;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 @linksawakening.testing.RequiresRom
 final class PlayerProjectileLaunchSpeedTest {
     @ParameterizedTest
-    @CsvSource({"0, false", "1, false", "2, false", "3, false",
-        "0, true", "1, true", "2, true", "3, true"})
-    void arrowAndFireballUseTheShippedRomsFinalSpeedBytes(int direction, boolean power)
-            throws IOException {
+    @CsvSource({"0, false", "1, false", "2, false", "3, false", "0, true", "1, true", "2, true", "3, true"})
+    void arrowAndFireballUseTheShippedRomsFinalSpeedBytes(int direction, boolean power) throws IOException {
         byte[] rom;
         try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
@@ -44,8 +35,20 @@ final class PlayerProjectileLaunchSpeedTest {
         assertEquals(expectedX, fireball.speedX(0));
         assertEquals(expectedY, fireball.speedY(0));
 
-        RoomEntity entity = new RoomEntity(0, -1, 0x00, 0x40, 0x50,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x00), direction, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntity(
+                0,
+                -1,
+                0x00,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x00),
+                direction,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntity movedArrow = arrow.advance(entity, null).entity();
         RoomEntity movedFireball = fireball.advancePosition(entity);
         assertEquals(0x40 + ((byte) expectedX >> 4), movedArrow.x());

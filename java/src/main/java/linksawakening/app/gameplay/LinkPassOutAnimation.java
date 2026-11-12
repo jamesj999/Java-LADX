@@ -21,19 +21,30 @@ public final class LinkPassOutAnimation {
         if (countdown > 0) countdown--;
     }
 
-    public int countdown() { return countdown; }
-    public boolean finished() { return countdown == 0; }
+    public int countdown() {
+        return countdown;
+    }
+
+    public boolean finished() {
+        return countdown == 0;
+    }
+
     public int animationState() {
         return finished() ? 0xFF : rom.u8(ANIMATION.plus(countdown >>> 3));
     }
+
     public int paletteEffect() {
         return finished() ? 0 : rom.u8(PALETTE.plus(countdown >>> 3));
     }
 
     /** Bank 0 $1104: dialog and transitions bypass this trigger. */
-    public static boolean shouldStart(int health, int blockItemUsage, int inventoryAppearing,
-                                      boolean dialog, boolean transition, boolean alreadyPassingOut) {
-        return !dialog && !transition && !alreadyPassingOut
-            && (health | blockItemUsage | inventoryAppearing) == 0;
+    public static boolean shouldStart(
+            int health,
+            int blockItemUsage,
+            int inventoryAppearing,
+            boolean dialog,
+            boolean transition,
+            boolean alreadyPassingOut) {
+        return !dialog && !transition && !alreadyPassingOut && (health | blockItemUsage | inventoryAppearing) == 0;
     }
 }

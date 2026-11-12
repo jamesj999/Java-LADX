@@ -1,13 +1,12 @@
 package linksawakening.dialog;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 final class DialogFontTest {
 
@@ -33,9 +32,8 @@ final class DialogFontTest {
 
     @Test
     void loadFromRomRejectsMissingRomData() {
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> DialogFont.loadFromRom(null));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(null));
 
         assertTrue(exception.getMessage().contains("ROM data"));
     }
@@ -44,9 +42,8 @@ final class DialogFontTest {
     void loadFromRomRejectsTruncatedFontTilesRange() {
         byte[] rom = new byte[FONT_OFFSET + TILE_SIZE - 1];
 
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> DialogFont.loadFromRom(rom));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(rom));
 
         assertTrue(exception.getMessage().contains("FontTiles"));
     }
@@ -55,9 +52,8 @@ final class DialogFontTest {
     void loadFromRomRejectsTruncatedCodepointTableRange() {
         byte[] rom = new byte[CODEPOINT_TABLE_OFFSET + 255];
 
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> DialogFont.loadFromRom(rom));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(rom));
 
         assertTrue(exception.getMessage().contains("CodepointToTileMap"));
     }

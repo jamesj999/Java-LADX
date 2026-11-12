@@ -1,30 +1,25 @@
 package linksawakening.gameplay;
 
+import static linksawakening.rom.RomBank.romOffset;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_AREA_SIZE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_X;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
-
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_AREA_SIZE;
-import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
-import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
-import static linksawakening.rom.RomBank.romOffset;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_X;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
 @linksawakening.testing.RequiresRom
 final class GameplayDialogIntegrationTest {
@@ -42,15 +37,13 @@ final class GameplayDialogIntegrationTest {
 
     @Test
     void directionalInputChangesAnActiveDialogChoiceWithoutClosingIt() {
-        InputConfig inputConfig = new InputConfig(
-            GLFW_KEY_ENTER, 1, 2, 3, 4, GLFW_KEY_Z, GLFW_KEY_X);
+        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, 1, 2, 3, 4, GLFW_KEY_Z, GLFW_KEY_X);
         DialogController dialog = new DialogController(16);
         dialog.openPreformatted("Choose?<ask>");
         dialog.advance();
         dialog.advance();
 
-        assertTrue(GameplayDialogInput.handleOverworldKeyPress(
-            inputConfig.downKey(), GLFW_PRESS, inputConfig, dialog));
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(inputConfig.downKey(), GLFW_PRESS, inputConfig, dialog));
         assertEquals(1, dialog.choiceSelectionIndex());
         assertTrue(dialog.isActive());
     }
@@ -75,8 +68,8 @@ final class GameplayDialogIntegrationTest {
         dialog.advance();
         assertTrue(dialog.isActive());
 
-        boolean consumed = GameplayDialogInput.handleOverworldKeyPress(GLFW_KEY_Z, GLFW_PRESS,
-            new InputConfig(GLFW_KEY_ENTER, 1, 2, 3, 4, GLFW_KEY_Z, GLFW_KEY_X), dialog);
+        boolean consumed = GameplayDialogInput.handleOverworldKeyPress(
+                GLFW_KEY_Z, GLFW_PRESS, new InputConfig(GLFW_KEY_ENTER, 1, 2, 3, 4, GLFW_KEY_Z, GLFW_KEY_X), dialog);
 
         assertTrue(consumed);
         assertFalse(dialog.isActive());
@@ -106,19 +99,20 @@ final class GameplayDialogIntegrationTest {
         DialogTextLoader loader = DialogTextLoader.loadFromRom(loadRom());
 
         assertEquals("Telephone Booth \u00F1 Signpost Maze \u00FF", loader.load(new SignpostDialogRef(0, 0x83)));
-        assertEquals("You are near theEagle's Tower.  Beware of the   bird!\u00FF",
-            loader.load(new SignpostDialogRef(2, 0x2D)));
-        assertEquals("MUSIC, THE FISH STIRS IN THE EGGYOU ARE THERE...\u00FF",
-            loader.load(new SignpostDialogRef(1, 0xB6)));
+        assertEquals(
+                "You are near theEagle's Tower.  Beware of the   bird!\u00FF",
+                loader.load(new SignpostDialogRef(2, 0x2D)));
+        assertEquals(
+                "MUSIC, THE FISH STIRS IN THE EGGYOU ARE THERE...\u00FF", loader.load(new SignpostDialogRef(1, 0xB6)));
     }
 
     @Test
     void dialogTextLoaderResolvesMoblinDialog190FromTheRomTable() throws Exception {
         DialogTextLoader loader = DialogTextLoader.loadFromRom(loadRom());
 
-        assertEquals("Ennh?  Who's    this suspicious-looking runt?!  Okay boys, let's"
-                + "get ridda him!\u00FF",
-            loader.load(new SignpostDialogRef(1, 0x90)));
+        assertEquals(
+                "Ennh?  Who's    this suspicious-looking runt?!  Okay boys, let's" + "get ridda him!\u00FF",
+                loader.load(new SignpostDialogRef(1, 0x90)));
     }
 
     @Test
@@ -143,21 +137,22 @@ final class GameplayDialogIntegrationTest {
     @Test
     void pressingActionFacingUpTowardSignpostOpensResolvedDialog() throws Exception {
         SignpostDialogTable table = SignpostDialogTable.loadFromRom(loadRom());
-        OverworldDialogInteraction interaction = new OverworldDialogInteraction(table, DialogTextLoader.loadFromRom(loadRom()));
+        OverworldDialogInteraction interaction =
+                new OverworldDialogInteraction(table, DialogTextLoader.loadFromRom(loadRom()));
         DialogController dialog = new DialogController(16);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         roomObjectsArea[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_SIGNPOST;
 
         boolean opened = interaction.tryOpenSignpostDialog(
-            0xA4,
-            Warp.CATEGORY_OVERWORLD,
-            roomObjectsArea,
-            4 * 16,
-            3 * 16,
-            Link.DIRECTION_UP,
-            true,
-            OverworldDialogBlockers.none(),
-            dialog);
+                0xA4,
+                Warp.CATEGORY_OVERWORLD,
+                roomObjectsArea,
+                4 * 16,
+                3 * 16,
+                Link.DIRECTION_UP,
+                true,
+                OverworldDialogBlockers.none(),
+                dialog);
 
         assertTrue(opened);
         assertTrue(dialog.isActive());
@@ -169,21 +164,21 @@ final class GameplayDialogIntegrationTest {
     @Test
     void signpostDialogOpeningUsesPreformattedRomRows() throws Exception {
         OverworldDialogInteraction interaction = new OverworldDialogInteraction(
-            SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
+                SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
         DialogController dialog = new DialogController(16);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         roomObjectsArea[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_SIGNPOST;
 
         boolean opened = interaction.tryOpenSignpostDialog(
-            0x1E,
-            Warp.CATEGORY_OVERWORLD,
-            roomObjectsArea,
-            4 * 16,
-            3 * 16,
-            Link.DIRECTION_UP,
-            true,
-            OverworldDialogBlockers.none(),
-            dialog);
+                0x1E,
+                Warp.CATEGORY_OVERWORLD,
+                roomObjectsArea,
+                4 * 16,
+                3 * 16,
+                Link.DIRECTION_UP,
+                true,
+                OverworldDialogBlockers.none(),
+                dialog);
 
         assertTrue(opened);
         dialog.advance();
@@ -193,20 +188,34 @@ final class GameplayDialogIntegrationTest {
     @Test
     void signpostDialogOpeningChoosesBoxPositionFromLinkY() throws Exception {
         OverworldDialogInteraction interaction = new OverworldDialogInteraction(
-            SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
+                SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
         int[] roomObjectsArea = emptyRoomObjectsArea();
         roomObjectsArea[ROOM_OBJECTS_BASE + 3 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_SIGNPOST;
 
         DialogController upperLinkDialog = new DialogController(16);
-        assertTrue(interaction.tryOpenSignpostDialog(0xA4, Warp.CATEGORY_OVERWORLD,
-            roomObjectsArea, 4 * 16, 0x37, Link.DIRECTION_UP, true, OverworldDialogBlockers.none(),
-            upperLinkDialog));
+        assertTrue(interaction.tryOpenSignpostDialog(
+                0xA4,
+                Warp.CATEGORY_OVERWORLD,
+                roomObjectsArea,
+                4 * 16,
+                0x37,
+                Link.DIRECTION_UP,
+                true,
+                OverworldDialogBlockers.none(),
+                upperLinkDialog));
         assertEquals(DialogController.BoxPosition.BOTTOM, upperLinkDialog.boxPosition());
 
         DialogController lowerLinkDialog = new DialogController(16);
-        assertTrue(interaction.tryOpenSignpostDialog(0xA4, Warp.CATEGORY_OVERWORLD,
-            roomObjectsArea, 4 * 16, 0x38, Link.DIRECTION_UP, true, OverworldDialogBlockers.none(),
-            lowerLinkDialog));
+        assertTrue(interaction.tryOpenSignpostDialog(
+                0xA4,
+                Warp.CATEGORY_OVERWORLD,
+                roomObjectsArea,
+                4 * 16,
+                0x38,
+                Link.DIRECTION_UP,
+                true,
+                OverworldDialogBlockers.none(),
+                lowerLinkDialog));
         assertEquals(DialogController.BoxPosition.TOP, lowerLinkDialog.boxPosition());
     }
 
@@ -245,32 +254,57 @@ final class GameplayDialogIntegrationTest {
     @Test
     void signpostInteractionRequiresOverworldActionAndUpFacingSignpost() throws Exception {
         OverworldDialogInteraction interaction = new OverworldDialogInteraction(
-            SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
+                SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
         int[] roomObjectsArea = emptyRoomObjectsArea();
         roomObjectsArea[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_SIGNPOST;
 
-        assertFalse(interaction.tryOpenSignpostDialog(0xA4, Warp.CATEGORY_OVERWORLD,
-            roomObjectsArea, 4 * 16, 3 * 16, Link.DIRECTION_UP, false, OverworldDialogBlockers.none(),
-            new DialogController(16)));
-        assertFalse(interaction.tryOpenSignpostDialog(0xA4, Warp.CATEGORY_OVERWORLD,
-            roomObjectsArea, 4 * 16, 3 * 16, Link.DIRECTION_DOWN, true, OverworldDialogBlockers.none(),
-            new DialogController(16)));
-        assertFalse(interaction.tryOpenSignpostDialog(0xA4, Warp.CATEGORY_INDOOR,
-            roomObjectsArea, 4 * 16, 3 * 16, Link.DIRECTION_UP, true, OverworldDialogBlockers.none(),
-            new DialogController(16)));
+        assertFalse(interaction.tryOpenSignpostDialog(
+                0xA4,
+                Warp.CATEGORY_OVERWORLD,
+                roomObjectsArea,
+                4 * 16,
+                3 * 16,
+                Link.DIRECTION_UP,
+                false,
+                OverworldDialogBlockers.none(),
+                new DialogController(16)));
+        assertFalse(interaction.tryOpenSignpostDialog(
+                0xA4,
+                Warp.CATEGORY_OVERWORLD,
+                roomObjectsArea,
+                4 * 16,
+                3 * 16,
+                Link.DIRECTION_DOWN,
+                true,
+                OverworldDialogBlockers.none(),
+                new DialogController(16)));
+        assertFalse(interaction.tryOpenSignpostDialog(
+                0xA4,
+                Warp.CATEGORY_INDOOR,
+                roomObjectsArea,
+                4 * 16,
+                3 * 16,
+                Link.DIRECTION_UP,
+                true,
+                OverworldDialogBlockers.none(),
+                new DialogController(16)));
     }
 
     @Test
     void signpostInteractionRespectsInventoryScrollTransitionAndDialogBlockers() throws Exception {
         OverworldDialogInteraction interaction = new OverworldDialogInteraction(
-            SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
+                SignpostDialogTable.loadFromRom(loadRom()), DialogTextLoader.loadFromRom(loadRom()));
         int[] roomObjectsArea = emptyRoomObjectsArea();
         roomObjectsArea[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_SIGNPOST;
 
-        assertSignpostBlocked(interaction, roomObjectsArea, new OverworldDialogBlockers(true, false, false, false, false));
-        assertSignpostBlocked(interaction, roomObjectsArea, new OverworldDialogBlockers(false, true, false, false, false));
-        assertSignpostBlocked(interaction, roomObjectsArea, new OverworldDialogBlockers(false, false, true, false, false));
-        assertSignpostBlocked(interaction, roomObjectsArea, new OverworldDialogBlockers(false, false, false, true, false));
+        assertSignpostBlocked(
+                interaction, roomObjectsArea, new OverworldDialogBlockers(true, false, false, false, false));
+        assertSignpostBlocked(
+                interaction, roomObjectsArea, new OverworldDialogBlockers(false, true, false, false, false));
+        assertSignpostBlocked(
+                interaction, roomObjectsArea, new OverworldDialogBlockers(false, false, true, false, false));
+        assertSignpostBlocked(
+                interaction, roomObjectsArea, new OverworldDialogBlockers(false, false, false, true, false));
     }
 
     private static void assertAdvanceKeyConsumed(InputConfig inputConfig, int key) {
@@ -292,11 +326,18 @@ final class GameplayDialogIntegrationTest {
         return roomObjectsArea;
     }
 
-    private static void assertSignpostBlocked(OverworldDialogInteraction interaction,
-                                              int[] roomObjectsArea,
-                                              OverworldDialogBlockers blockers) {
-        assertFalse(interaction.tryOpenSignpostDialog(0xA4, Warp.CATEGORY_OVERWORLD,
-            roomObjectsArea, 4 * 16, 3 * 16, Link.DIRECTION_UP, true, blockers, new DialogController(16)));
+    private static void assertSignpostBlocked(
+            OverworldDialogInteraction interaction, int[] roomObjectsArea, OverworldDialogBlockers blockers) {
+        assertFalse(interaction.tryOpenSignpostDialog(
+                0xA4,
+                Warp.CATEGORY_OVERWORLD,
+                roomObjectsArea,
+                4 * 16,
+                3 * 16,
+                Link.DIRECTION_UP,
+                true,
+                blockers,
+                new DialogController(16)));
     }
 
     private static byte[] loadRom() throws Exception {

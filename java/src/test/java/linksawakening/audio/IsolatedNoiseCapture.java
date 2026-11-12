@@ -1,8 +1,8 @@
 package linksawakening.audio;
 
-import linksawakening.audio.apu.GameBoyApu;
-import javax.sound.sampled.*;
 import java.io.*;
+import javax.sound.sampled.*;
+import linksawakening.audio.apu.GameBoyApu;
 
 /** Synthetic CH4 register scenario, independent of ROM/music/session timing. */
 public final class IsolatedNoiseCapture {
@@ -20,12 +20,15 @@ public final class IsolatedNoiseCapture {
             if (frame == 16) apu.writeRegister(GameBoyApu.NR44, 0x80);
             if (frame == 20) apu.writeRegister(GameBoyApu.NR42, 0);
             for (short sample : apu.render(800)) {
-                bytes.write(sample & 255); bytes.write((sample >>> 8) & 255);
+                bytes.write(sample & 255);
+                bytes.write((sample >>> 8) & 255);
             }
         }
         byte[] pcm = bytes.toByteArray();
-        AudioSystem.write(new AudioInputStream(new ByteArrayInputStream(pcm),
-            new AudioFormat(48000, 16, 2, true, false), pcm.length / 4),
-            AudioFileFormat.Type.WAVE, new File(args[0]));
+        AudioSystem.write(
+                new AudioInputStream(
+                        new ByteArrayInputStream(pcm), new AudioFormat(48000, 16, 2, true, false), pcm.length / 4),
+                AudioFileFormat.Type.WAVE,
+                new File(args[0]));
     }
 }

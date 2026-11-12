@@ -1,10 +1,10 @@
 package linksawakening.equipment;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 final class SwordPaletteTest {
 
@@ -16,14 +16,18 @@ final class SwordPaletteTest {
 
         SwordPalette palette = SwordPalette.loadFromRom(rom);
 
-        assertArrayEquals(new int[] {
-                RomBank.decodeRgb555(0x001F), RomBank.decodeRgb555(0x03E0),
-                RomBank.decodeRgb555(0x7C00), RomBank.decodeRgb555(0x7FFF)},
-            palette.normal());
-        assertArrayEquals(new int[] {
-                RomBank.decodeRgb555(0x0210), RomBank.decodeRgb555(0x0421),
-                RomBank.decodeRgb555(0x0632), RomBank.decodeRgb555(0x0843)},
-            palette.charged());
+        assertArrayEquals(
+                new int[] {
+                    RomBank.decodeRgb555(0x001F), RomBank.decodeRgb555(0x03E0),
+                    RomBank.decodeRgb555(0x7C00), RomBank.decodeRgb555(0x7FFF)
+                },
+                palette.normal());
+        assertArrayEquals(
+                new int[] {
+                    RomBank.decodeRgb555(0x0210), RomBank.decodeRgb555(0x0421),
+                    RomBank.decodeRgb555(0x0632), RomBank.decodeRgb555(0x0843)
+                },
+                palette.charged());
     }
 
     @Test

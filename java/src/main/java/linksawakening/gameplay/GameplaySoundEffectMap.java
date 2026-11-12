@@ -1,13 +1,12 @@
 package linksawakening.gameplay;
 
-import linksawakening.audio.sfx.SoundEffect;
-import linksawakening.audio.sfx.SoundEffectCatalog;
-import linksawakening.audio.sfx.SoundEffectNamespace;
-
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import linksawakening.audio.sfx.SoundEffect;
+import linksawakening.audio.sfx.SoundEffectCatalog;
+import linksawakening.audio.sfx.SoundEffectNamespace;
 
 public final class GameplaySoundEffectMap {
     private final Map<GameplaySoundEvent, SoundEffect> effects;
@@ -24,16 +23,13 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.LEDGE_FALL, SoundEffectNamespace.JINGLE, 0x08);
         put(effects, catalog, GameplaySoundEvent.STAIRS, SoundEffectNamespace.NOISE, 0x06);
         put(effects, catalog, GameplaySoundEvent.PIT_FALL, SoundEffectNamespace.WAVE, 0x0C);
-        put(effects, catalog, GameplaySoundEvent.WATER_SPLASH,
-            SoundEffectNamespace.JINGLE, 0x0E);
-        put(effects, catalog, GameplaySoundEvent.ITEM_FALLING,
-            SoundEffectNamespace.JINGLE, 0x18);
+        put(effects, catalog, GameplaySoundEvent.WATER_SPLASH, SoundEffectNamespace.JINGLE, 0x0E);
+        put(effects, catalog, GameplaySoundEvent.ITEM_FALLING, SoundEffectNamespace.JINGLE, 0x18);
         put(effects, catalog, GameplaySoundEvent.STRONG_BUMP, SoundEffectNamespace.JINGLE, 0x0B);
         put(effects, catalog, GameplaySoundEvent.ENEMY_BOUNCE, SoundEffectNamespace.JINGLE, 0x20);
         put(effects, catalog, GameplaySoundEvent.ENEMY_JUMP, SoundEffectNamespace.JINGLE, 0x24);
         put(effects, catalog, GameplaySoundEvent.BOSS_EXPLOSION, SoundEffectNamespace.NOISE, 0x1A);
-        put(effects, catalog, GameplaySoundEvent.ENEMY_BOMB_THROW,
-            SoundEffectNamespace.JINGLE, 0x08);
+        put(effects, catalog, GameplaySoundEvent.ENEMY_BOMB_THROW, SoundEffectNamespace.JINGLE, 0x08);
         put(effects, catalog, GameplaySoundEvent.SWORD_SWING_A, SoundEffectNamespace.NOISE, 0x02);
         put(effects, catalog, GameplaySoundEvent.SWORD_SWING_B, SoundEffectNamespace.NOISE, 0x14);
         put(effects, catalog, GameplaySoundEvent.SWORD_SWING_C, SoundEffectNamespace.NOISE, 0x15);
@@ -46,69 +42,46 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.INVENTORY_CLOSE, SoundEffectNamespace.JINGLE, 0x12);
         put(effects, catalog, GameplaySoundEvent.MENU_MOVE, SoundEffectNamespace.JINGLE, 0x0A);
         put(effects, catalog, GameplaySoundEvent.MENU_VALIDATE, SoundEffectNamespace.JINGLE, 0x13);
-        put(effects, catalog, GameplaySoundEvent.SHIELD_DRAW,
-            SoundEffectNamespace.NOISE, 0x16);
+        put(effects, catalog, GameplaySoundEvent.SHIELD_DRAW, SoundEffectNamespace.NOISE, 0x16);
         put(effects, catalog, GameplaySoundEvent.SHIELD_TING, SoundEffectNamespace.JINGLE, 0x16);
         put(effects, catalog, GameplaySoundEvent.LINK_DIES, SoundEffectNamespace.WAVE, 0x08);
         put(effects, catalog, GameplaySoundEvent.LINK_HURT, SoundEffectNamespace.WAVE, 0x03);
         put(effects, catalog, GameplaySoundEvent.ENEMY_BUMP, SoundEffectNamespace.JINGLE, 0x09);
-        put(effects, catalog, GameplaySoundEvent.TREASURE_FOUND,
-            SoundEffectNamespace.JINGLE, 0x01);
-        put(effects, catalog, GameplaySoundEvent.PUZZLE_SOLVED,
-            SoundEffectNamespace.JINGLE, 0x02);
+        put(effects, catalog, GameplaySoundEvent.TREASURE_FOUND, SoundEffectNamespace.JINGLE, 0x01);
+        put(effects, catalog, GameplaySoundEvent.PUZZLE_SOLVED, SoundEffectNamespace.JINGLE, 0x02);
         put(effects, catalog, GameplaySoundEvent.ENEMY_HIT, SoundEffectNamespace.JINGLE, 0x03);
         put(effects, catalog, GameplaySoundEvent.SWORD_POKE, SoundEffectNamespace.JINGLE, 0x07);
         put(effects, catalog, GameplaySoundEvent.ENEMY_BURNING, SoundEffectNamespace.NOISE, 0x12);
         put(effects, catalog, GameplaySoundEvent.ENEMY_DESTROYED, SoundEffectNamespace.NOISE, 0x13);
         put(effects, catalog, GameplaySoundEvent.BEAMOS_LASER, SoundEffectNamespace.NOISE, 0x08);
-        put(effects, catalog, GameplaySoundEvent.SPIKE_TRAP_WHOOSH,
-            SoundEffectNamespace.NOISE, 0x0A);
-        put(effects, catalog, GameplaySoundEvent.ARROW_SHOT,
-            SoundEffectNamespace.NOISE, 0x0A);
-        put(effects, catalog, GameplaySoundEvent.HOOKSHOT,
-            SoundEffectNamespace.NOISE, 0x0B);
-        put(effects, catalog, GameplaySoundEvent.BOOMERANG,
-            SoundEffectNamespace.NOISE, 0x2D);
-        put(effects, catalog, GameplaySoundEvent.MAGIC_ROD,
-            SoundEffectNamespace.NOISE, 0x0D);
-        put(effects, catalog, GameplaySoundEvent.MAGIC_POWDER,
-            SoundEffectNamespace.JINGLE, 0x05);
-        put(effects, catalog, GameplaySoundEvent.MAGIC_POWDER_POOF,
-            SoundEffectNamespace.JINGLE, 0x2F);
-        put(effects, catalog, GameplaySoundEvent.SHOVEL_DIG,
-            SoundEffectNamespace.NOISE, 0x0E);
-        put(effects, catalog, GameplaySoundEvent.SECRET_SEASHELL,
-            SoundEffectNamespace.WAVE, 0x01);
-        put(effects, catalog, GameplaySoundEvent.SWORD_BEAM,
-            SoundEffectNamespace.JINGLE, 0x3B);
-        put(effects, catalog, GameplaySoundEvent.BOMB_EXPLOSION,
-            SoundEffectNamespace.NOISE, 0x0C);
+        put(effects, catalog, GameplaySoundEvent.SPIKE_TRAP_WHOOSH, SoundEffectNamespace.NOISE, 0x0A);
+        put(effects, catalog, GameplaySoundEvent.ARROW_SHOT, SoundEffectNamespace.NOISE, 0x0A);
+        put(effects, catalog, GameplaySoundEvent.HOOKSHOT, SoundEffectNamespace.NOISE, 0x0B);
+        put(effects, catalog, GameplaySoundEvent.BOOMERANG, SoundEffectNamespace.NOISE, 0x2D);
+        put(effects, catalog, GameplaySoundEvent.MAGIC_ROD, SoundEffectNamespace.NOISE, 0x0D);
+        put(effects, catalog, GameplaySoundEvent.MAGIC_POWDER, SoundEffectNamespace.JINGLE, 0x05);
+        put(effects, catalog, GameplaySoundEvent.MAGIC_POWDER_POOF, SoundEffectNamespace.JINGLE, 0x2F);
+        put(effects, catalog, GameplaySoundEvent.SHOVEL_DIG, SoundEffectNamespace.NOISE, 0x0E);
+        put(effects, catalog, GameplaySoundEvent.SECRET_SEASHELL, SoundEffectNamespace.WAVE, 0x01);
+        put(effects, catalog, GameplaySoundEvent.SWORD_BEAM, SoundEffectNamespace.JINGLE, 0x3B);
+        put(effects, catalog, GameplaySoundEvent.BOMB_EXPLOSION, SoundEffectNamespace.NOISE, 0x0C);
         put(effects, catalog, GameplaySoundEvent.WRONG_ANSWER, SoundEffectNamespace.JINGLE, 0x1D);
         put(effects, catalog, GameplaySoundEvent.REVOLVING_DOOR, SoundEffectNamespace.JINGLE, 0x0C);
         put(effects, catalog, GameplaySoundEvent.DOOR_CLOSED, SoundEffectNamespace.NOISE, 0x10);
         put(effects, catalog, GameplaySoundEvent.DOOR_UNLOCKED, SoundEffectNamespace.NOISE, 0x04);
-        put(effects, catalog, GameplaySoundEvent.OPEN_KEY_CAVERN,
-            SoundEffectNamespace.NOISE, 0x2A);
-        put(effects, catalog, GameplaySoundEvent.DUNGEON_OPENED,
-            SoundEffectNamespace.JINGLE, 0x23);
+        put(effects, catalog, GameplaySoundEvent.OPEN_KEY_CAVERN, SoundEffectNamespace.NOISE, 0x2A);
+        put(effects, catalog, GameplaySoundEvent.DUNGEON_OPENED, SoundEffectNamespace.JINGLE, 0x23);
         // ApplyLinkGroundPhysics_Default $02:7865.
         put(effects, catalog, GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE, SoundEffectNamespace.NOISE, 0x2B);
         // EntityInitPushedBlock $03:5198: only after a successful movement probe.
         put(effects, catalog, GameplaySoundEvent.BLOCK_PUSH, SoundEffectNamespace.NOISE, 0x11);
-        put(effects, catalog, GameplaySoundEvent.FLOOR_SWITCH,
-            SoundEffectNamespace.WAVE, 0x0E);
-        put(effects, catalog, GameplaySoundEvent.SWITCH_BLOCK_TOGGLE,
-            SoundEffectNamespace.WAVE, 0x0E);
-        put(effects, catalog, GameplaySoundEvent.OCARINA_BALLAD,
-            SoundEffectNamespace.WAVE, 0x09);
-        put(effects, catalog, GameplaySoundEvent.OCARINA_MAMBO,
-            SoundEffectNamespace.WAVE, 0x0B);
-        put(effects, catalog, GameplaySoundEvent.OCARINA_FROG,
-            SoundEffectNamespace.WAVE, 0x0A);
-        put(effects, catalog, GameplaySoundEvent.OCARINA_NO_SONG,
-            SoundEffectNamespace.WAVE, 0x15);
-        put(effects, catalog, GameplaySoundEvent.MANBO_WARP,
-            SoundEffectNamespace.JINGLE, 0x2C);
+        put(effects, catalog, GameplaySoundEvent.FLOOR_SWITCH, SoundEffectNamespace.WAVE, 0x0E);
+        put(effects, catalog, GameplaySoundEvent.SWITCH_BLOCK_TOGGLE, SoundEffectNamespace.WAVE, 0x0E);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_BALLAD, SoundEffectNamespace.WAVE, 0x09);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_MAMBO, SoundEffectNamespace.WAVE, 0x0B);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_FROG, SoundEffectNamespace.WAVE, 0x0A);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_NO_SONG, SoundEffectNamespace.WAVE, 0x15);
+        put(effects, catalog, GameplaySoundEvent.MANBO_WARP, SoundEffectNamespace.JINGLE, 0x2C);
         put(effects, catalog, GameplaySoundEvent.RUPEE, SoundEffectNamespace.WAVE, 0x05);
         put(effects, catalog, GameplaySoundEvent.LOW_HEARTS, SoundEffectNamespace.WAVE, 0x04);
         put(effects, catalog, GameplaySoundEvent.HEART_PICKED_UP, SoundEffectNamespace.WAVE, 0x06);
@@ -128,8 +101,10 @@ public final class GameplaySoundEffectMap {
             GameplaySoundEvent event,
             SoundEffectNamespace namespace,
             int id) {
-        effects.put(event, catalog.find(namespace, id).orElseThrow(
-                () -> new IllegalStateException("Missing gameplay sound effect: " + namespace + " 0x"
-                        + Integer.toHexString(id).toUpperCase())));
+        effects.put(
+                event,
+                catalog.find(namespace, id)
+                        .orElseThrow(() -> new IllegalStateException("Missing gameplay sound effect: " + namespace
+                                + " 0x" + Integer.toHexString(id).toUpperCase())));
     }
 }

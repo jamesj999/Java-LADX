@@ -31,8 +31,7 @@ public final class EnemyDropMotion {
     public void initialize(int slot, boolean sideScrolling, int initialSpeedZ) {
         validateSlot(slot);
         if (initialSpeedZ < 0 || initialSpeedZ > 0xFF) {
-            throw new IllegalArgumentException("Initial drop Z speed out of range: "
-                + initialSpeedZ);
+            throw new IllegalArgumentException("Initial drop Z speed out of range: " + initialSpeedZ);
         }
         speedX[slot] = 0;
         speedY[slot] = sideScrolling ? 0xEC : 0;
@@ -47,12 +46,10 @@ public final class EnemyDropMotion {
      * branch's two's-complement writes. The item scatters the reward away
      * from Link using the ROM's infinity-norm vector approximation.
      */
-    public void initializeAwayFromLink(int slot, int entityX, int entityY,
-                                int linkX, int linkY, int vectorLength) {
+    public void initializeAwayFromLink(int slot, int entityX, int entityY, int linkX, int linkY, int vectorLength) {
         validateSlot(slot);
         if (vectorLength < 0 || vectorLength > 0xFF) {
-            throw new IllegalArgumentException("Drop vector length out of range: "
-                + vectorLength);
+            throw new IllegalArgumentException("Drop vector length out of range: " + vectorLength);
         }
         int dx = signedByte((linkX - entityX) & 0xFF);
         int dy = signedByte((linkY - entityY) & 0xFF);
@@ -90,8 +87,7 @@ public final class EnemyDropMotion {
         speedYAccumulator[slot] = 0;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int previousGroundStatus,
-                       boolean sideScrolling) {
+    public RoomEntity advance(RoomEntity entity, int frameCounter, int previousGroundStatus, boolean sideScrolling) {
         int slot = entity.slot();
         validateSlot(slot);
         // BouncingEntityPhysics updates both planar positions before applying
@@ -99,8 +95,8 @@ public final class EnemyDropMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         if (sideScrolling) {
-            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
-                speedX[slot], speedY[slot], frameCounter, previousGroundStatus);
+            EntitySideViewGravity.Speeds speeds =
+                    EntitySideViewGravity.advance(speedX[slot], speedY[slot], frameCounter, previousGroundStatus);
             speedX[slot] = speeds.x();
             speedY[slot] = speeds.y();
             return withPosition(entity, x, y, entity.z());
@@ -112,28 +108,32 @@ public final class EnemyDropMotion {
     }
 
     /** $03:7A36-$7A83 restores blocked axes to the cached pre-handler position. */
-    public RoomEntity resolveWalls(RoomEntity before, RoomEntity moved,
-                                   RoomEntityBackgroundInteraction background,
-                                   int ignoreHitsCountdown, int frameCounter) {
+    public RoomEntity resolveWalls(
+            RoomEntity before,
+            RoomEntity moved,
+            RoomEntityBackgroundInteraction background,
+            int ignoreHitsCountdown,
+            int frameCounter) {
         if (background == null) return moved;
         int slot = moved.slot();
         int x = moved.x();
         int y = moved.y();
-        if (speedX[slot] != 0 && background.probe(moved,
-                (speedX[slot] & 0x80) == 0 ? 0 : 1,
-                x, y, ignoreHitsCountdown, frameCounter).blocked()) {
+        if (speedX[slot] != 0
+                && background
+                        .probe(moved, (speedX[slot] & 0x80) == 0 ? 0 : 1, x, y, ignoreHitsCountdown, frameCounter)
+                        .blocked()) {
             x = before.x();
         }
-        if (speedY[slot] != 0 && background.probe(moved,
-                (speedY[slot] & 0x80) == 0 ? 3 : 2,
-                x, y, ignoreHitsCountdown, frameCounter).blocked()) {
+        if (speedY[slot] != 0
+                && background
+                        .probe(moved, (speedY[slot] & 0x80) == 0 ? 3 : 2, x, y, ignoreHitsCountdown, frameCounter)
+                        .blocked()) {
             y = before.y();
         }
         return withPosition(moved, x, y, moved.z());
     }
 
-    public RoomEntity bounce(RoomEntity entity, int groundStatus, boolean sideScrolling,
-                      boolean groundCollision) {
+    public RoomEntity bounce(RoomEntity entity, int groundStatus, boolean sideScrolling, boolean groundCollision) {
         int slot = entity.slot();
         validateSlot(slot);
         if (sideScrolling) {
@@ -160,7 +160,7 @@ public final class EnemyDropMotion {
         RoomEntity landed = withZ(entity, 0);
         int bouncedSpeed = complementAfterArithmeticShift(speedZ[slot]);
         if (EntitySideViewGravity.groundStatusIndex(groundStatus) == SHALLOW_WATER_GROUND_STATUS
-            || bouncedSpeed < 0x07) {
+                || bouncedSpeed < 0x07) {
             speedX[slot] = 0;
             speedY[slot] = 0;
             speedZ[slot] = 0;
@@ -198,8 +198,7 @@ public final class EnemyDropMotion {
         speedZAccumulator[slot] = 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -226,24 +225,54 @@ public final class EnemyDropMotion {
     }
 
     private static RoomEntity withY(RoomEntity entity, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            z & 0xFF, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                -1,
+                false);
     }
 
     private static RoomEntity withZ(RoomEntity entity, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            z & 0xFF, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {

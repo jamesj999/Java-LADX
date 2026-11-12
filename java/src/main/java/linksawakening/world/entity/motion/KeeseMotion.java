@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 KeeseEntityHandler state and movement. */
 public final class KeeseMotion {
@@ -34,8 +33,8 @@ public final class KeeseMotion {
         initialDirection[slot] = randomByteSupplier.getAsInt() & 0x03;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier) {
+    public RoomEntity advance(
+            RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
@@ -43,7 +42,7 @@ public final class KeeseMotion {
 
         if (state[slot] == 0) {
             if (transitionCountdown[slot] == 0
-                && isWithinWakeWindow(entity.x(), entity.y(), linkEntityX, linkEntityY)) {
+                    && isWithinWakeWindow(entity.x(), entity.y(), linkEntityX, linkEntityY)) {
                 int direction = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
                 angle[slot] = INITIAL_ANGLE_BY_DIRECTION[direction];
                 transitionCountdown[slot] = 0x50 + (randomByteSupplier.getAsInt() & 0x3F);
@@ -110,12 +109,10 @@ public final class KeeseMotion {
         return speedY[slot];
     }
 
-    private static boolean isWithinWakeWindow(int entityX, int entityY,
-                                               int linkX, int linkY) {
+    private static boolean isWithinWakeWindow(int entityX, int entityY, int linkX, int linkY) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
-        return distanceX >= -0x20 && distanceX < 0x20
-            && distanceY >= -0x20 && distanceY < 0x20;
+        return distanceX >= -0x20 && distanceX < 0x20 && distanceY >= -0x20 && distanceY < 0x20;
     }
 
     private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
@@ -127,8 +124,7 @@ public final class KeeseMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -153,10 +149,20 @@ public final class KeeseMotion {
         return withPositionAndVariant(entity, entity.x(), entity.y(), variant);
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                     int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z(), -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 }

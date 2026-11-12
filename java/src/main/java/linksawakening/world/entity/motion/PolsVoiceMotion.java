@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 PolsVoiceEntityHandler's alternating jump and landing states. */
 public final class PolsVoiceMotion {
@@ -35,13 +34,16 @@ public final class PolsVoiceMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   int transitionCountdown) {
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown) {
         if ((entity.type() & 0xFF) != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported Pols Voice entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Pols Voice entity type: 0x" + Integer.toHexString(entity.type()));
         }
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Pols Voice random-byte supplier cannot be null");
@@ -91,9 +93,20 @@ public final class PolsVoiceMotion {
             }
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                renderedVariant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
         return new Update(updated, countdown);
     }
 
@@ -123,27 +136,27 @@ public final class PolsVoiceMotion {
         speedY[slot] = 0;
     }
 
-    private Position move(RoomEntity entity, int x, int y,
-                          RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
+        if (backgroundCollision != null
+                && nextX != x
+                && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
+        if (backgroundCollision != null
+                && nextY != y
+                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }
         return new Position(nextX, nextY, collided);
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                             int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         int absoluteX = Math.abs(distanceX);
@@ -179,8 +192,7 @@ public final class PolsVoiceMotion {
         return result;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -207,12 +219,9 @@ public final class PolsVoiceMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y, boolean collided) {
-    }
+    private record Position(int x, int y, boolean collided) {}
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown) {}
 }

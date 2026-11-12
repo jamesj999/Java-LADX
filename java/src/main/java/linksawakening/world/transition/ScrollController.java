@@ -1,7 +1,6 @@
 package linksawakening.world.transition;
 
 import linksawakening.world.entity.ScreenShake;
-
 import linksawakening.world.room.RoomRenderSnapshot;
 
 public final class ScrollController {
@@ -22,8 +21,7 @@ public final class ScrollController {
     private boolean scriptedScreenShakeActive;
     private int scriptedScreenShakeHorizontal;
 
-    public void start(int direction, int linkScreenX, int linkScreenY,
-                      RoomRenderSnapshot previousRoom, int target) {
+    public void start(int direction, int linkScreenX, int linkScreenY, RoomRenderSnapshot previousRoom, int target) {
         this.completion = null;
         this.direction = direction;
         this.linkScreenX = linkScreenX;
@@ -97,8 +95,7 @@ public final class ScrollController {
     }
 
     public int screenShakeHorizontal() {
-        return scriptedScreenShakeActive
-            ? scriptedScreenShakeHorizontal : screenShakeMotion.horizontal();
+        return scriptedScreenShakeActive ? scriptedScreenShakeHorizontal : screenShakeMotion.horizontal();
     }
 
     public int screenShakeVertical() {

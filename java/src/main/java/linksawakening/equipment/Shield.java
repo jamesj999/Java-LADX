@@ -1,10 +1,9 @@
 package linksawakening.equipment;
 
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 
 /** Port of the pressed-button {@code UseShield} sound boundary. */
 public final class Shield implements EquipmentItem {

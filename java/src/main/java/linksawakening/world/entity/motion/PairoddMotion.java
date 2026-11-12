@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$04 PairoddEntityHandler's resting/teleport state machine. */
 public final class PairoddMotion {
@@ -31,8 +30,13 @@ public final class PairoddMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, boolean flashCountdownActive) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            boolean flashCountdownActive) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -53,9 +57,9 @@ public final class PairoddMotion {
                 if (transitionCountdown[slot] == 0x18) {
                     spawnProjectile = true;
                 } else if (transitionCountdown[slot] <= 0x18
-                    && !flashCountdownActive
-                    && inSignedWindow(linkEntityX - x, 0x20)
-                    && inSignedWindow(linkEntityY - y, 0x20)) {
+                        && !flashCountdownActive
+                        && inSignedWindow(linkEntityX - x, 0x20)
+                        && inSignedWindow(linkEntityY - y, 0x20)) {
                     transitionCountdown[slot] = 0x20;
                     state[slot] = STATE_DISAPPEARING;
                     teleportJingle = true;
@@ -70,8 +74,7 @@ public final class PairoddMotion {
                         x = (0x50 - (yByte(x) - 0x50)) & 0xFF;
                         y = (0x48 - (yByte(y) - 0x48)) & 0xFF;
                     } else {
-                        variant = DISAPPEARING_VARIANTS[
-                            (transitionCountdown[slot] >>> 3) & 0x03];
+                        variant = DISAPPEARING_VARIANTS[(transitionCountdown[slot] >>> 3) & 0x03];
                     }
                 }
             }
@@ -82,18 +85,27 @@ public final class PairoddMotion {
                         state[slot] = STATE_RESTING;
                         variant = -1;
                     } else {
-                        variant = REAPPEARING_VARIANTS[
-                            (transitionCountdown[slot] >>> 3) & 0x03];
+                        variant = REAPPEARING_VARIANTS[(transitionCountdown[slot] >>> 3) & 0x03];
                     }
                 }
             }
-            default -> throw new IllegalStateException("Invalid Pairodd state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Pairodd state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
         return new Update(updated, spawnProjectile, teleportJingle);
     }
 
@@ -120,8 +132,7 @@ public final class PairoddMotion {
             case STATE_RESTING -> true;
             case STATE_DISAPPEARING -> transitionCountdown[slot] >= 0x18;
             case STATE_REAPPEARING -> false;
-            default -> throw new IllegalStateException("Invalid Pairodd state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Pairodd state: " + state[slot]);
         };
     }
 
@@ -145,6 +156,5 @@ public final class PairoddMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    public record Update(RoomEntity entity, boolean spawnProjectile, boolean teleportJingle) {
-    }
+    public record Update(RoomEntity entity, boolean spawnProjectile, boolean teleportJingle) {}
 }

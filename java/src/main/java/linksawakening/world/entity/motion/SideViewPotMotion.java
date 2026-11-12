@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.Objects;
 
 /** Fixed-point motion for the side-view pot's dedicated throw state. */
 public final class SideViewPotMotion {
@@ -16,8 +15,7 @@ public final class SideViewPotMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int speedY) {
-    }
+    public record Update(RoomEntity entity, int speedY) {}
 
     /** Initializes the D6 side-scroll throw window from func_014_5409. */
     public void start(int slot, int romDirection) {
@@ -86,8 +84,7 @@ public final class SideViewPotMotion {
         state[slot] = 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                           int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -102,10 +99,20 @@ public final class SideViewPotMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static int signedByte(int value) {
@@ -119,8 +126,7 @@ public final class SideViewPotMotion {
     }
 
     private static void validateDirection(int direction) {
-        if (direction < ThrownEntityMotion.ROM_DIRECTION_RIGHT
-            || direction > ThrownEntityMotion.ROM_DIRECTION_DOWN) {
+        if (direction < ThrownEntityMotion.ROM_DIRECTION_RIGHT || direction > ThrownEntityMotion.ROM_DIRECTION_DOWN) {
             throw new IllegalArgumentException("ROM direction out of range: " + direction);
         }
     }

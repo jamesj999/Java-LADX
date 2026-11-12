@@ -5,28 +5,53 @@ import java.util.Objects;
 
 /** Immutable render state published by one opening-sequence frame. */
 public record IntroFrameSnapshot(
-    String sceneId,
-    String substate,
-    int frameCounter,
-    int scrollX,
-    int scrollY,
-    int[] lineScrollX,
-    int verticalWaveOffset,
-    int[] tilemap,
-    int[] attrmap,
-    int[][] bgPalettes,
-    int[][] objPalettes,
-    List<IntroSprite> sprites,
-    int titleRevealRows,
-    int[] lineScrollY,
-    byte[] animatedTiles,
-    int animatedTilesDestination
-) {
-    public IntroFrameSnapshot(String sceneId, String substate, int frameCounter, int scrollX,
-            int scrollY, int[] lineScrollX, int verticalWaveOffset, int[] tilemap, int[] attrmap,
-            int[][] bgPalettes, int[][] objPalettes, List<IntroSprite> sprites, int titleRevealRows) {
-        this(sceneId, substate, frameCounter, scrollX, scrollY, lineScrollX, verticalWaveOffset,
-            tilemap, attrmap, bgPalettes, objPalettes, sprites, titleRevealRows, null, null, 0);
+        String sceneId,
+        String substate,
+        int frameCounter,
+        int scrollX,
+        int scrollY,
+        int[] lineScrollX,
+        int verticalWaveOffset,
+        int[] tilemap,
+        int[] attrmap,
+        int[][] bgPalettes,
+        int[][] objPalettes,
+        List<IntroSprite> sprites,
+        int titleRevealRows,
+        int[] lineScrollY,
+        byte[] animatedTiles,
+        int animatedTilesDestination) {
+    public IntroFrameSnapshot(
+            String sceneId,
+            String substate,
+            int frameCounter,
+            int scrollX,
+            int scrollY,
+            int[] lineScrollX,
+            int verticalWaveOffset,
+            int[] tilemap,
+            int[] attrmap,
+            int[][] bgPalettes,
+            int[][] objPalettes,
+            List<IntroSprite> sprites,
+            int titleRevealRows) {
+        this(
+                sceneId,
+                substate,
+                frameCounter,
+                scrollX,
+                scrollY,
+                lineScrollX,
+                verticalWaveOffset,
+                tilemap,
+                attrmap,
+                bgPalettes,
+                objPalettes,
+                sprites,
+                titleRevealRows,
+                null,
+                null,
+                0);
     }
 
     public IntroFrameSnapshot {
@@ -48,10 +73,14 @@ public record IntroFrameSnapshot(
     }
 
     @Override
-    public int[] lineScrollY() { return lineScrollY == null ? null : lineScrollY.clone(); }
+    public int[] lineScrollY() {
+        return lineScrollY == null ? null : lineScrollY.clone();
+    }
 
     @Override
-    public byte[] animatedTiles() { return animatedTiles == null ? null : animatedTiles.clone(); }
+    public byte[] animatedTiles() {
+        return animatedTiles == null ? null : animatedTiles.clone();
+    }
 
     @Override
     public int[] tilemap() {

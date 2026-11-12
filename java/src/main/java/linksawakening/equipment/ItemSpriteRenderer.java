@@ -7,8 +7,8 @@ import linksawakening.gpu.Tile;
 final class ItemSpriteRenderer {
     private ItemSpriteRenderer() {}
 
-    static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY,
-                                 boolean flipX, boolean flipY, int[] palette) {
+    static void drawTile(
+            byte[] buffer, Tile tile, int screenX, int screenY, boolean flipX, boolean flipY, int[] palette) {
         if (tile == null) {
             return;
         }

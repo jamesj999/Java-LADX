@@ -16,34 +16,31 @@ public final class RoomEntityPickupRules {
     private static final int HITBOX_HEIGHT = 0x0A;
 
     private static final boolean[] PICKABLE_CAN_BE_COLLECTED_BY_SWORD = {
-        true,  // $2D droppable heart
-        true,  // $2E droppable rupee
+        true, // $2D droppable heart
+        true, // $2E droppable rupee
         false, // $2F droppable fairy
         false, // $30 key drop point
-        true,  // $31 sword/shield pickup
+        true, // $31 sword/shield pickup
         false, // $32 Iron Mask's mask (enemy hitbox, not a pickable handler)
-        true,  // $33 piece of power
-        true,  // $34 guardian acorn
+        true, // $33 piece of power
+        true, // $34 guardian acorn
         false, // $35 heart piece
         false, // $36 heart container
-        true,  // $37 arrows
-        true,  // $38 bombs
+        true, // $37 arrows
+        true, // $38 bombs
         false, // $39 instrument
         false, // $3A sleepy toadstool
-        true,  // $3B magic powder
+        true, // $3B magic powder
         false, // $3C hiding slime key
-        false  // $3D secret seashell
+        false // $3D secret seashell
     };
 
-    private RoomEntityPickupRules() {
-    }
+    private RoomEntityPickupRules() {}
 
     /** Returns whether the type uses PickableCollectIfNeeded in its handler. */
     public static boolean isPickable(int type) {
-        return (type >= FIRST_PICKABLE_TYPE
-                && type <= LAST_PICKABLE_TYPE
-                && type != IRON_MASKS_MASK)
-            || FloatingItemMotion.isFloatingItem(type);
+        return (type >= FIRST_PICKABLE_TYPE && type <= LAST_PICKABLE_TYPE && type != IRON_MASKS_MASK)
+                || FloatingItemMotion.isFloatingItem(type);
     }
 
     /** EntityInitTreeOrPotDroppable's indoor $80 slow-transition timer set. */
@@ -81,29 +78,27 @@ public final class RoomEntityPickupRules {
      * entity's visual Y is its room Y minus its current ROM Z; ordinary
      * static pickables intentionally continue using {@link #overlapsLink}.
      */
-    public static boolean overlapsFloatingItem(RoomEntity entity,
-                                                int linkEntityX,
-                                                int linkEntityY) {
+    public static boolean overlapsFloatingItem(RoomEntity entity, int linkEntityX, int linkEntityY) {
         return overlapsAtY(entity, linkEntityX, linkEntityY, entity.y() - entity.z());
     }
 
-    private static boolean overlapsAtY(RoomEntity entity, int linkEntityX,
-                                       int linkEntityY, int entityY) {
-        int xDistance = unsignedByteAbs(
-            entity.x() + HITBOX_X - linkEntityX - 0x08);
+    private static boolean overlapsAtY(RoomEntity entity, int linkEntityX, int linkEntityY, int entityY) {
+        int xDistance = unsignedByteAbs(entity.x() + HITBOX_X - linkEntityX - 0x08);
         if (xDistance >= HITBOX_WIDTH + 0x04) {
             return false;
         }
 
-        int yDistance = unsignedByteAbs(
-            entityY + HITBOX_Y - linkEntityY - 0x08);
+        int yDistance = unsignedByteAbs(entityY + HITBOX_Y - linkEntityY - 0x08);
         return yDistance < HITBOX_HEIGHT + 0x04;
     }
 
     public static boolean overlapsSword(RoomEntity entity, int x, int width, int y, int height) {
-        return canBeCollectedBySword(entity.type()) && x != 0 && width > 0 && height > 0
-            && unsignedByteAbs(entity.x() + HITBOX_X - x) < HITBOX_WIDTH + width
-            && unsignedByteAbs(entity.y() - entity.z() + HITBOX_Y - y) < HITBOX_HEIGHT + height;
+        return canBeCollectedBySword(entity.type())
+                && x != 0
+                && width > 0
+                && height > 0
+                && unsignedByteAbs(entity.x() + HITBOX_X - x) < HITBOX_WIDTH + width
+                && unsignedByteAbs(entity.y() - entity.z() + HITBOX_Y - y) < HITBOX_HEIGHT + height;
     }
 
     private static int unsignedByteAbs(int value) {

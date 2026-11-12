@@ -1,15 +1,10 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.ManboWarpResolver;
-
-import linksawakening.world.transition.Warp;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.rom.RomBank;
+import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @linksawakening.testing.RequiresRom
 final class ManboWarpResolverTest {

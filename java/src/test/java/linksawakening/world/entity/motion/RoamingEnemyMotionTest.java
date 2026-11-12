@@ -1,20 +1,17 @@
 package linksawakening.world.entity.motion;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 final class RoamingEnemyMotionTest {
 
@@ -24,8 +21,9 @@ final class RoamingEnemyMotionTest {
         var source = entity(0, 0x0B, 0x40, 0x40);
         motion.setStateForTest(0, 1, 3, 0, 1, 0);
         for (int frame = 0; frame < 2; frame++) {
-            motion.advance(source, 0x50, 0x40, () -> 0,
-                (e, d, x, y) -> { throw new AssertionError("zero-speed wall probe"); });
+            motion.advance(source, 0x50, 0x40, () -> 0, (e, d, x, y) -> {
+                throw new AssertionError("zero-speed wall probe");
+            });
             assertEquals(0, motion.collisionFlags(0));
         }
         motion.advance(source, 0x50, 0x40, () -> 0, null);
@@ -41,11 +39,16 @@ final class RoamingEnemyMotionTest {
         motion.setStateForTest(0, 1, 0x0B, 0, 0, 0);
         AtomicInteger randomCalls = new AtomicInteger();
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40,
-            () -> {
-                randomCalls.incrementAndGet();
-                return 0xFF;
-            }, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(
+                source,
+                0x50,
+                0x40,
+                () -> {
+                    randomCalls.incrementAndGet();
+                    return 0xFF;
+                },
+                null,
+                false);
 
         assertEquals(source, update.entity());
         assertEquals(0x0A, motion.transitionCountdown(0));
@@ -62,8 +65,7 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x0B, 0x40, 0x40);
         motion.setStateForTest(0, 1, 0x0B, 0, 0, 3);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x48, 0x48,
-            () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(source, 0x48, 0x48, () -> 0, null, false);
 
         assertNotNull(update.launchRequest());
         assertEquals(0x0B, update.launchRequest().sourceType());
@@ -76,8 +78,7 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x09, 0x40, 0x40);
         motion.setStateForTest(0, 1, 0x0A, 0, 0, 0);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40,
-            () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
 
         assertNull(update.launchRequest());
         assertEquals(0x09, motion.transitionCountdown(0));
@@ -88,8 +89,8 @@ final class RoamingEnemyMotionTest {
         for (int cycle = 0; cycle < 4; cycle++) {
             RoamingEnemyMotion motion = new RoamingEnemyMotion();
             motion.setStateForTest(0, 1, 0x0B, 0, cycle, 0);
-            assertNotNull(motion.advance(entity(0, 0x09, 0x40, 0x40),
-                0x50, 0x40, () -> 0, null, false).launchRequest());
+            assertNotNull(motion.advance(entity(0, 0x09, 0x40, 0x40), 0x50, 0x40, () -> 0, null, false)
+                    .launchRequest());
         }
     }
 
@@ -101,8 +102,7 @@ final class RoamingEnemyMotionTest {
 
         motion.setPrivateCountdown1ForTest(0, 2);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40,
-            () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
 
         assertNull(update.launchRequest());
     }
@@ -113,8 +113,7 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x09, 0x40, 0x40);
         motion.setStateForTest(0, 1, 0x0B, 0, 0, 1);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40,
-            () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
 
         assertNull(update.launchRequest());
     }
@@ -125,8 +124,7 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x24, 0x40, 0x40);
         motion.setStateForTest(0, 1, 0x0B, 0, 0, 0);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40,
-            () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
 
         assertNull(update.launchRequest());
     }
@@ -136,13 +134,11 @@ final class RoamingEnemyMotionTest {
         RoamingEnemyMotion motion = new RoamingEnemyMotion();
         RoomEntity octorok = entity(0, 0x09, 0x40, 0x40);
         motion.setStateForTest(0, 1, 0x0B, 0, 0, 0);
-        assertNull(motion.advance(octorok, 0x50, 0x40, () -> 0, null, true)
-            .launchRequest());
+        assertNull(motion.advance(octorok, 0x50, 0x40, () -> 0, null, true).launchRequest());
 
         RoomEntity moblin = entity(0, 0x0B, 0x40, 0x40);
         motion.setStateForTest(0, 1, 0x0B, 0, 0, 0);
-        assertNotNull(motion.advance(moblin, 0x50, 0x40, () -> 0, null, true)
-            .launchRequest());
+        assertNotNull(motion.advance(moblin, 0x50, 0x40, () -> 0, null, true).launchRequest());
     }
 
     @Test
@@ -153,15 +149,15 @@ final class RoamingEnemyMotionTest {
         AtomicReference<EntityBackgroundCollisionResult> probe = new AtomicReference<>();
 
         RoomEntityBackgroundInteraction interaction = (entity, direction, nextX, nextY) -> {
-            EntityBackgroundCollisionResult result = EntityBackgroundCollisionResult.blocked(
-                direction, 0x22, 0x01, nextX, nextY);
+            EntityBackgroundCollisionResult result =
+                    EntityBackgroundCollisionResult.blocked(direction, 0x22, 0x01, nextX, nextY);
             probe.set(result);
             return result;
         };
 
         motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, false);
-        RoamingEnemyMotion.Update blocked = motion.advanceWithInteraction(
-            source, 0x50, 0x40, () -> 0x0A, interaction, false);
+        RoamingEnemyMotion.Update blocked =
+                motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, false);
 
         assertEquals(source.x(), blocked.entity().x());
         assertEquals(0x01, motion.collisionFlags(0));
@@ -170,8 +166,8 @@ final class RoamingEnemyMotionTest {
         assertEquals(0, motion.state(0));
         assertEquals(0x01, probe.get().collisionFlag());
 
-        RoamingEnemyMotion.Update consumed = motion.advanceWithInteraction(
-            source, 0x50, 0x40, () -> 0x0A, interaction, false);
+        RoamingEnemyMotion.Update consumed =
+                motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, false);
 
         assertEquals(1, motion.state(0));
         assertEquals(0x1A, motion.transitionCountdown(0));
@@ -191,36 +187,29 @@ final class RoamingEnemyMotionTest {
 
         RoomEntityBackgroundInteraction interaction = new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                           int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                           int nextX, int nextY,
-                                                           int ignoreHitsCountdown) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
                 observedIgnoreHits.set(ignoreHitsCountdown);
-                return EntityBackgroundCollisionResult.blocked(
-                    direction, 0x22, 0x01, nextX, nextY);
+                return EntityBackgroundCollisionResult.blocked(direction, 0x22, 0x01, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                           int nextX, int nextY,
-                                                           int ignoreHitsCountdown,
-                                                           int frameCounter) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
                 observedIgnoreHits.set(ignoreHitsCountdown);
                 observedFrame.set(frameCounter);
-                return EntityBackgroundCollisionResult.blocked(
-                    direction, 0x22, 0x01, nextX, nextY);
+                return EntityBackgroundCollisionResult.blocked(direction, 0x22, 0x01, nextX, nextY);
             }
         };
 
-        motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A,
-            interaction, 0x0A, 0x15, false);
-        RoamingEnemyMotion.Update blocked = motion.advanceWithInteraction(
-            source, 0x50, 0x40, () -> 0x0A, interaction, 0x0A, 0x15, false);
+        motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, 0x0A, 0x15, false);
+        RoamingEnemyMotion.Update blocked =
+                motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, 0x0A, 0x15, false);
 
         assertEquals(0x0A, observedIgnoreHits.get());
         assertEquals(0x15, observedFrame.get());
@@ -229,7 +218,19 @@ final class RoamingEnemyMotionTest {
     }
 
     private static RoomEntity entity(int slot, int type, int x, int y) {
-        return new RoomEntity(slot, 0, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                slot,
+                0,
+                type,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(type),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

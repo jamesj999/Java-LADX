@@ -1,12 +1,11 @@
 package linksawakening.gameplay;
 
+import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 import linksawakening.dialog.DialogController;
-
-import java.util.Objects;
 
 public final class SfxDialogSoundSink implements DialogSoundSink {
     private static final int SAMPLE_RATE = 44_100;
@@ -29,10 +28,7 @@ public final class SfxDialogSoundSink implements DialogSoundSink {
     }
 
     public SfxDialogSoundSink(
-            GameBoyApu apu,
-            SoundEffectPlayer player,
-            DialogSoundEffectMap soundEffects,
-            PcmSoundOutput output) {
+            GameBoyApu apu, SoundEffectPlayer player, DialogSoundEffectMap soundEffects, PcmSoundOutput output) {
         this.apu = Objects.requireNonNull(apu, "apu");
         this.player = Objects.requireNonNull(player, "player");
         this.soundEffects = Objects.requireNonNull(soundEffects, "soundEffects");

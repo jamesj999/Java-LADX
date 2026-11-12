@@ -35,8 +35,7 @@ public final class HudOverlay {
 
     private static final int[][] INVENTORY_ITEM_TILES = buildInventoryItemTiles();
 
-    private HudOverlay() {
-    }
+    private HudOverlay() {}
 
     public static void apply(int[] tilemap, PlayerState player) {
         apply(tilemap, null, player);
@@ -56,7 +55,7 @@ public final class HudOverlay {
         // For leveled items the table sets bottom-row[1]=$BA (the "-" glyph),
         // and the actual level digit is computed at runtime.
         int[] itemTiles = INVENTORY_ITEM_TILES[itemId < INVENTORY_ITEM_TILES.length ? itemId : 0];
-        writeTile(tilemap, col, ITEM_SLOT_ROW_TOP,    itemTiles[0]);
+        writeTile(tilemap, col, ITEM_SLOT_ROW_TOP, itemTiles[0]);
         writeTile(tilemap, col, ITEM_SLOT_ROW_BOTTOM, itemTiles[3]);
         int[] paletteIndexes = InventoryItemPalettes.forItem(itemId, player);
         writePalette(attrmap, col, ITEM_SLOT_ROW_TOP, paletteIndexes[0]);
@@ -72,7 +71,7 @@ public final class HudOverlay {
         int hundreds = clamped / 100;
         int tens = (clamped / 10) % 10;
         int ones = clamped % 10;
-        writeTile(tilemap, RUPEE_DIGITS_COL,     RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + hundreds);
+        writeTile(tilemap, RUPEE_DIGITS_COL, RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + hundreds);
         writeTile(tilemap, RUPEE_DIGITS_COL + 1, RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + tens);
         writeTile(tilemap, RUPEE_DIGITS_COL + 2, RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + ones);
     }
@@ -110,8 +109,7 @@ public final class HudOverlay {
         }
         int index = row * WIDTH + col;
         if (index >= 0 && index < attrmap.length) {
-            attrmap[index] = (attrmap[index] & ~ATTR_PALETTE_MASK)
-                | (paletteIndex & ATTR_PALETTE_MASK);
+            attrmap[index] = (attrmap[index] & ~ATTR_PALETTE_MASK) | (paletteIndex & ATTR_PALETTE_MASK);
         }
     }
 

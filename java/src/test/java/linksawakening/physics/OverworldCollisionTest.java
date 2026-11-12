@@ -1,21 +1,19 @@
 package linksawakening.physics;
 
-import linksawakening.rom.RomBank;
-import linksawakening.rom.RomTables;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import linksawakening.rom.RomBank;
+import linksawakening.rom.RomTables;
+import org.junit.jupiter.api.Test;
 
 final class OverworldCollisionTest {
 
     private static final int ROOM_OBJECTS_BASE = 0x11;
     private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
-    private static final int SWITCH_BLOCK_CELL = ROOM_OBJECTS_BASE
-        + 2 * ROOM_OBJECT_ROW_STRIDE + 2;
+    private static final int SWITCH_BLOCK_CELL = ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2;
 
     @Test
     void objectIdsNeverOverrideTheSelectedRomPhysicsTable() {
@@ -147,9 +145,9 @@ final class OverworldCollisionTest {
         roomObjects[0x44] = 0x42;
         collision.setRoom(roomObjects);
 
-        assertEquals(new OverworldCollision.GroundInteractionSample(
-            0x42, 0x07, 0x30, 0x30),
-            collision.groundInteractionSample(0x40, 0x37));
+        assertEquals(
+                new OverworldCollision.GroundInteractionSample(0x42, 0x07, 0x30, 0x30),
+                collision.groundInteractionSample(0x40, 0x37));
     }
 
     @Test

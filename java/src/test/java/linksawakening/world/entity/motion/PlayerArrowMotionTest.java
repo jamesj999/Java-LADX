@@ -1,17 +1,15 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 final class PlayerArrowMotionTest {
 
@@ -48,8 +46,8 @@ final class PlayerArrowMotionTest {
         motion.initializeSpawn(0, 0);
         motion.setSpeedForTest(0, 0x20, 0xE0, 0);
 
-        PlayerArrowMotion.Update update = motion.advance(
-            entity, (candidate, direction, nextX, nextY) -> direction == 2);
+        PlayerArrowMotion.Update update =
+                motion.advance(entity, (candidate, direction, nextX, nextY) -> direction == 2);
 
         assertTrue(update.collidedWithWall());
         assertFalse(update.unloaded());
@@ -107,10 +105,15 @@ final class PlayerArrowMotionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"0, 0x0C, 0x0C, 0x40", "1, 0x0C, 0x0B, 8",
-        "1, 0xF4, 0xF5, 8", "2, 0x0C, 0x0B, 0x40", "3, 0xF4, 0xF5, 0x40"})
+    @CsvSource({
+        "0, 0x0C, 0x0C, 0x40",
+        "1, 0x0C, 0x0B, 8",
+        "1, 0xF4, 0xF5, 8",
+        "2, 0x0C, 0x0B, 0x40",
+        "3, 0xF4, 0xF5, 0x40"
+    })
     void sideViewReboundUsesGroundSpeedLimitAndEightFrameDrag(
-        int groundStatus, int initialX, int expectedX, int expectedY) {
+            int groundStatus, int initialX, int expectedX, int expectedY) {
         PlayerArrowMotion motion = new PlayerArrowMotion();
         RoomEntity entity = entity(0x40, 0x50, 7, 0);
         motion.setSpeedForTest(0, initialX, expectedY - 1, 0x10);
@@ -129,8 +132,8 @@ final class PlayerArrowMotionTest {
         PlayerArrowMotion motion = new PlayerArrowMotion();
         RoomEntity entity = entity(0x40, 0x50, 0, 0);
         motion.initializeSpawn(0, 0);
-        entity = motion.advance(entity,
-            (candidate, direction, nextX, nextY) -> direction == 0).entity();
+        entity = motion.advance(entity, (candidate, direction, nextX, nextY) -> direction == 0)
+                .entity();
 
         // After impact: direction 0 once, then left for eight frames,
         // down for eight, and right until the countdown-1 unload pass.
@@ -159,7 +162,19 @@ final class PlayerArrowMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int z, int variant) {
-        return new RoomEntity(0, -1, 0x00, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x00), variant, 0, 0, z, -1, false);
+        return new RoomEntity(
+                0,
+                -1,
+                0x00,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x00),
+                variant,
+                0,
+                0,
+                z,
+                -1,
+                false);
     }
 }

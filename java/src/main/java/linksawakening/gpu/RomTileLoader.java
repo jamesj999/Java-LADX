@@ -1,17 +1,25 @@
 package linksawakening.gpu;
 
 import linksawakening.rom.GbcBanks;
-
-import linksawakening.rom.RomSymbols;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 /** Named ROM tile uploads used by the compatibility GPU facade. */
 class RomTileLoader extends Vram {
     final AnimatedTiles animatedTiles = new AnimatedTiles(this);
-    public int animatedTilesFrameCount() { return animatedTiles.animatedTilesFrameCount(); }
-    public void loadAnimatedTilesGroup(byte[] rom, int group) { animatedTiles.loadAnimatedTilesGroup(rom, group); }
-    public void tickAnimatedTiles(byte[] rom) { animatedTiles.tickAnimatedTiles(rom); }
+
+    public int animatedTilesFrameCount() {
+        return animatedTiles.animatedTilesFrameCount();
+    }
+
+    public void loadAnimatedTilesGroup(byte[] rom, int group) {
+        animatedTiles.loadAnimatedTilesGroup(rom, group);
+    }
+
+    public void tickAnimatedTiles(byte[] rom) {
+        animatedTiles.tickAnimatedTiles(rom);
+    }
 
     // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
     // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
@@ -43,9 +51,13 @@ class RomTileLoader extends Vram {
     // Each room entry is [source address high byte, source bank], unlike the
     // standard bbtttttt selectors above.
 
-    public void loadTitleScreenTiles(byte[] romData) { new TitleIntroTileLoader(this).loadTitleScreenTiles(romData); }
+    public void loadTitleScreenTiles(byte[] romData) {
+        new TitleIntroTileLoader(this).loadTitleScreenTiles(romData);
+    }
 
-    public void loadIntroSequenceTiles(byte[] romData) { new TitleIntroTileLoader(this).loadIntroSequenceTiles(romData); }
+    public void loadIntroSequenceTiles(byte[] romData) {
+        new TitleIntroTileLoader(this).loadIntroSequenceTiles(romData);
+    }
 
     boolean powderIconIsToadstool;
 
@@ -55,46 +67,76 @@ class RomTileLoader extends Vram {
         // Match the game's LoadBaseTiles: copy 0x100 tiles from InventoryEquipmentItemsTiles
         // to vTiles1 (VRAM tile 0x080). This single bulk copy covers equipment items,
         // inventory items, instruments, and landscape tiles in the correct VRAM positions.
-        loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
-            INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
+        loadTilesFromROM(
+                romData,
+                GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
+                INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR,
+                0x100,
+                0x080);
         // Link character tiles to vTiles0
-        loadTilesFromROM(romData, GbcBanks.adjust(LINK_CHARACTER_TILES_BANK),
-            LINK_CHARACTER_TILES_ADDR, LINK_CHARACTER_TILES_COUNT, 0x000);
+        loadTilesFromROM(
+                romData,
+                GbcBanks.adjust(LINK_CHARACTER_TILES_BANK),
+                LINK_CHARACTER_TILES_ADDR,
+                LINK_CHARACTER_TILES_COUNT,
+                0x000);
     }
 
     /** Mirrors LoadBaseTiles (bank0.asm:$2BCF), used before entering an indoor room. */
     public void loadBaseTiles(byte[] romData) {
         powderIconIsToadstool = false;
         animatedTiles.currentMapId = 0;
-        loadTilesFromROM(romData, GbcBanks.adjust(LINK_CHARACTER_TILES_BANK),
-            LINK_CHARACTER_TILES_ADDR, LINK_CHARACTER_TILES_COUNT, 0x000);
-        loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
-            INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
-        loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
-            RomSymbols.Items1Tiles.address() + 0x3A0, 0x02, 0x0E0);
+        loadTilesFromROM(
+                romData,
+                GbcBanks.adjust(LINK_CHARACTER_TILES_BANK),
+                LINK_CHARACTER_TILES_ADDR,
+                LINK_CHARACTER_TILES_COUNT,
+                0x000);
+        loadTilesFromROM(
+                romData,
+                GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
+                INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR,
+                0x100,
+                0x080);
+        loadTilesFromROM(
+                romData,
+                GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
+                RomSymbols.Items1Tiles.address() + 0x3A0,
+                0x02,
+                0x0E0);
     }
 
     /** ROM $00:1E2B/$1E8D: the mushroom and powder share VRAM $88E0-$88FF. */
-    public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) { new InventoryTileLoader(this).updatePowderInventoryTiles(romData, hasToadstool); }
+    public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
+        new InventoryTileLoader(this).updatePowderInventoryTiles(romData, hasToadstool);
+    }
 
     /** Mirrors REPLACE_TILES_GOLDEN_LEAF ($09) at bank0:$1EA1. */
-    public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) { new InventoryTileLoader(this).replaceSlimeKeyTilesByGoldenLeaf(romData); }
+    public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
+        new InventoryTileLoader(this).replaceSlimeKeyTilesByGoldenLeaf(romData);
+    }
 
     /**
      * Load the base and file-menu tile sheets using the destinations in
      * LoadMenuTiles (bank0.asm:$2C03).
      */
-    public void loadMenuTiles(byte[] romData) { new TitleIntroTileLoader(this).loadMenuTiles(romData); }
+    public void loadMenuTiles(byte[] romData) {
+        new TitleIntroTileLoader(this).loadMenuTiles(romData);
+    }
 
     /** Mirrors LoadSaveMenuTiles (bank0.asm:$2E5E). */
-    public void loadSaveMenuTiles(byte[] romData) { new TitleIntroTileLoader(this).loadSaveMenuTiles(romData); }
+    public void loadSaveMenuTiles(byte[] romData) {
+        new TitleIntroTileLoader(this).loadSaveMenuTiles(romData);
+    }
 
     /**
      * Load the four standard entity sheets into the four OAM sprite slots.
      * Each selector is the ROM's {@code bbtttttt} value from
      * {@code wLoadedEntitySpritesheets}; {@code $FF} keeps that slot intact.
      */
-    public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) { new EntitySheetTileLoader(this).loadEntitySpriteSheets(romData, sheetValues); }
+    public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) {
+        new EntitySheetTileLoader(this).loadEntitySpriteSheets(romData, sheetValues);
+    }
 
     /**
      * Load the Color Dungeon's room-selected entity rows. This mirrors
@@ -102,12 +144,16 @@ class RomTileLoader extends Vram {
      * an address high byte and bank, and a zero address high byte leaves that
      * fixed OAM slot unchanged.
      */
-    public void loadColorDungeonEntitySheets(byte[] romData, int roomId) { new EntitySheetTileLoader(this).loadColorDungeonEntitySheets(romData, roomId); }
+    public void loadColorDungeonEntitySheets(byte[] romData, int roomId) {
+        new EntitySheetTileLoader(this).loadColorDungeonEntitySheets(romData, roomId);
+    }
 
     // constants/tilesets.asm encodes HIGH(label)-$40. LoadRoomSpecificTiles
     // reconstructs the source from the bank base, not Overworld2Tiles.
 
-    public void loadRoomSpecificTiles(byte[] romData, int roomId, int tilesetId) { new RoomTileLoader(this).loadRoomSpecificTiles(romData, roomId, tilesetId); }
+    public void loadRoomSpecificTiles(byte[] romData, int roomId, int tilesetId) {
+        new RoomTileLoader(this).loadRoomSpecificTiles(romData, roomId, tilesetId);
+    }
 
     // --- Indoor BG tile loading, mirroring LoadIndoorTiles (bank0.asm:4831) ---
 
@@ -122,9 +168,13 @@ class RomTileLoader extends Vram {
      * <p>Skipped vs. the original: inventory-items tile patching, Link OAM
      * tiles (unchanged from overworld) and toadstool/golden-leaf dynamic swaps.
      */
-    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId) { new RoomTileLoader(this).loadIndoorTiles(romData, mapId, roomId); }
+    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
+        new RoomTileLoader(this).loadIndoorTiles(romData, mapId, roomId);
+    }
 
-    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) { new RoomTileLoader(this).loadIndoorTiles(romData, mapId, roomId, sideScrolling); }
+    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) {
+        new RoomTileLoader(this).loadIndoorTiles(romData, mapId, roomId, sideScrolling);
+    }
 
     // Should be called once per VBlank while in gameplay. Advances the animated
     // tiles frame counter and, when the current group's timing elapses, copies
@@ -132,26 +182,38 @@ class RomTileLoader extends Vram {
     // Mirrors AnimateTiles in src/code/home/animated_tiles.asm.
 
     /** Copies one ROM switch-block frame into its gameplay VRAM slot. */
-    public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) { new RoomTileLoader(this).copySwitchBlockTiles(romData, sourceOffset, destinationTile); }
+    public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
+        new RoomTileLoader(this).copySwitchBlockTiles(romData, sourceOffset, destinationTile);
+    }
 
     /** Mirrors ReplaceTilesButtonPressed's four-tile copy to vTiles2 + $140. */
-    public void copyPressedFloorSwitchTiles(byte[] romData) { new RoomTileLoader(this).copyPressedFloorSwitchTiles(romData); }
+    public void copyPressedFloorSwitchTiles(byte[] romData) {
+        new RoomTileLoader(this).copyPressedFloorSwitchTiles(romData);
+    }
 
     // Returns the new data offset to load this frame, or -1 if the group
     // should not animate on this tick. Timing masks mirror AnimateTilesSlowSpeed
     // (0x0F), AnimateTilesMediumSpeed (0x07), and AnimateTilesFastSpeed (0x03).
 
     /** Executes the two meter uploads and two equipment-tile restorations from ROM. */
-    public void updateHeartPieceMeterTiles(byte[] rom, int command) { new InventoryTileLoader(this).updateHeartPieceMeterTiles(rom, command); }
+    public void updateHeartPieceMeterTiles(byte[] rom, int command) {
+        new InventoryTileLoader(this).updateHeartPieceMeterTiles(rom, command);
+    }
 
     /** ReplaceTradingItemTiles ($00:1E01), also restores tiles overwritten by the heart meter. */
-    public void updateTradingItemTiles(byte[] rom, int item) { new InventoryTileLoader(this).updateTradingItemTiles(rom, item); }
+    public void updateTradingItemTiles(byte[] rom, int item) {
+        new InventoryTileLoader(this).updateTradingItemTiles(rom, item);
+    }
 
     /** Copies the three Ocarina popup chunks to vTiles0+$200/$240/$260. */
-    public void loadOcarinaSymbolsTiles(byte[] romData) { new InventoryTileLoader(this).loadOcarinaSymbolsTiles(romData); }
+    public void loadOcarinaSymbolsTiles(byte[] romData) {
+        new InventoryTileLoader(this).loadOcarinaSymbolsTiles(romData);
+    }
 
     /** Restores the shared VFX chunks displaced by the Ocarina popup. */
-    public void loadSharedVfxTiles(byte[] romData) { new InventoryTileLoader(this).loadSharedVfxTiles(romData); }
+    public void loadSharedVfxTiles(byte[] romData) {
+        new InventoryTileLoader(this).loadSharedVfxTiles(romData);
+    }
 
     final void loadTilesFromROM(byte[] romData, int bank, int address, int tileCount, int vramTileIndex) {
         int romOffset = linksawakening.rom.RomBank.romOffset(bank, address);
@@ -168,12 +230,11 @@ class RomTileLoader extends Vram {
         // The legacy selector's bank-zero row uses a flat ROM offset,
         // including addresses outside ROM0's CPU window. Preserve that API.
         byte[] source = bank == 0 && address >= 0x4000
-            ? new Rom(romData).slice(RomAddress.fromOffset(romOffset), byteCount)
-            : new Rom(romData).slice(new RomAddress(bank, address), byteCount);
+                ? new Rom(romData).slice(RomAddress.fromOffset(romOffset), byteCount)
+                : new Rom(romData).slice(new RomAddress(bank, address), byteCount);
         System.arraycopy(source, 0, vram, vramOffset, byteCount);
         for (int tile = 0; tile < tileCount; tile++) {
             updateTile(vramTileIndex + tile);
         }
     }
-
 }

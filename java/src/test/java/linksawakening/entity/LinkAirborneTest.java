@@ -1,10 +1,12 @@
 package linksawakening.entity;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 final class LinkAirborneTest {
-    @Test void pitFallRecoversRoomEntryPositionOnFrameNinetySix() {
+    @Test
+    void pitFallRecoversRoomEntryPositionOnFrameNinetySix() {
         Link link = new Link(null, null, null, null, null, null, null);
         link.setRoomEntryPixelPosition(32, 48);
         link.setPixelPosition(64, 64);
@@ -18,7 +20,8 @@ final class LinkAirborneTest {
         assertEquals(48, link.pixelY());
     }
 
-    @Test void missingPitTargetReturnsToNormalGroundWithoutMoving() {
+    @Test
+    void missingPitTargetReturnsToNormalGroundWithoutMoving() {
         Link link = new Link(null, null, null, null, null, null, null);
         link.setPixelPosition(64, 64);
         link.linkAirborne.groundStatus = Link.GROUND_STATUS_PIT;

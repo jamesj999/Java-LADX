@@ -5,8 +5,7 @@ public final class RomBank {
     public static final int BANK_SIZE = 0x4000;
     private static final int BG_MAP_ROW_WIDTH = 0x20;
 
-    private RomBank() {
-    }
+    private RomBank() {}
 
     public static int romOffset(int bank, int address) {
         if (bank < 0) {
@@ -40,14 +39,17 @@ public final class RomBank {
         return palettes;
     }
 
-    public static int[] decodeBackground(byte[] romData, int bank, int address,
-                                         int tilemapWidth, int filler) {
+    public static int[] decodeBackground(byte[] romData, int bank, int address, int tilemapWidth, int filler) {
         int[] bgMap = decodeBackgroundMap(romData, bank, address, filler);
         int rowCount = bgMap.length / BG_MAP_ROW_WIDTH;
         int[] clamped = new int[rowCount * tilemapWidth];
         for (int row = 0; row < rowCount; row++) {
-            System.arraycopy(bgMap, row * BG_MAP_ROW_WIDTH, clamped, row * tilemapWidth,
-                Math.min(tilemapWidth, BG_MAP_ROW_WIDTH));
+            System.arraycopy(
+                    bgMap,
+                    row * BG_MAP_ROW_WIDTH,
+                    clamped,
+                    row * tilemapWidth,
+                    Math.min(tilemapWidth, BG_MAP_ROW_WIDTH));
         }
         return clamped;
     }

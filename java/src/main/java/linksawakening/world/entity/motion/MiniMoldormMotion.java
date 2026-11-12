@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Arrays;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.Arrays;
-import java.util.function.IntSupplier;
 
 /**
  * Bank-$04 movement and position history for Mini Moldorm ($29).
@@ -48,10 +47,15 @@ public final class MiniMoldormMotion {
     private final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int transitionCountdown, int headSpriteVariant,
-                  int collisionFlags, int segment1X, int segment1Y,
-                  int segment2X, int segment2Y) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            int headSpriteVariant,
+            int collisionFlags,
+            int segment1X,
+            int segment1Y,
+            int segment2X,
+            int segment2Y) {}
 
     public void initialize(RoomEntity entity) {
         int slot = entity.slot();
@@ -67,8 +71,8 @@ public final class MiniMoldormMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        headSpriteVariant[slot] = entity.spriteVariant() >= 0
-            && entity.spriteVariant() < 8 ? entity.spriteVariant() : 0;
+        headSpriteVariant[slot] =
+                entity.spriteVariant() >= 0 && entity.spriteVariant() < 8 ? entity.spriteVariant() : 0;
         initialized[slot] = true;
     }
 
@@ -109,10 +113,14 @@ public final class MiniMoldormMotion {
         historyY[key][index] = (entity.y() - entity.z()) & 0xFF;
     }
 
-    public Update advanceAfterHistory(RoomEntity entity, int transitionCountdown,
-                               int ignoreHitsCountdown, int flashCountdown,
-                               RoomEntityBackgroundInteraction backgroundInteraction,
-                               IntSupplier randomByteSupplier, int frameCounter) {
+    public Update advanceAfterHistory(
+            RoomEntity entity,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            int flashCountdown,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            IntSupplier randomByteSupplier,
+            int frameCounter) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(entity);
@@ -135,10 +143,10 @@ public final class MiniMoldormMotion {
             int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
             if (nextX != x && backgroundInteraction != null) {
                 int direction = signedByte(speedX[slot]) < 0
-                    ? EntityBackgroundCollisionResult.LEFT
-                    : EntityBackgroundCollisionResult.RIGHT;
+                        ? EntityBackgroundCollisionResult.LEFT
+                        : EntityBackgroundCollisionResult.RIGHT;
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, direction, nextX, y, ignoreHitsCountdown & 0xFF, frameCounter);
+                        entity, direction, nextX, y, ignoreHitsCountdown & 0xFF, frameCounter);
                 if (result.blocked()) {
                     collisionFlags |= result.collisionFlag();
                 } else {
@@ -151,10 +159,10 @@ public final class MiniMoldormMotion {
             int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
             if (nextY != y && backgroundInteraction != null) {
                 int direction = signedByte(speedY[slot]) < 0
-                    ? EntityBackgroundCollisionResult.UP
-                    : EntityBackgroundCollisionResult.DOWN;
+                        ? EntityBackgroundCollisionResult.UP
+                        : EntityBackgroundCollisionResult.DOWN;
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, direction, x, nextY, ignoreHitsCountdown & 0xFF, frameCounter);
+                        entity, direction, x, nextY, ignoreHitsCountdown & 0xFF, frameCounter);
                 if (result.blocked()) {
                     collisionFlags |= result.collisionFlag();
                 } else {
@@ -166,9 +174,9 @@ public final class MiniMoldormMotion {
         }
 
         if (collisionFlags != 0) {
-            privateState1[slot] = (collisionFlags & 0x01) != 0 ? 0x08
-                : (collisionFlags & 0x02) != 0 ? 0x00
-                : (collisionFlags & 0x04) != 0 ? 0x04 : 0x0C;
+            privateState1[slot] = (collisionFlags & 0x01) != 0
+                    ? 0x08
+                    : (collisionFlags & 0x02) != 0 ? 0x00 : (collisionFlags & 0x04) != 0 ? 0x04 : 0x0C;
             if ((randomByteSupplier.getAsInt() & 0x01) == 0) {
                 privateState2[slot] = -privateState2[slot];
             }
@@ -184,8 +192,7 @@ public final class MiniMoldormMotion {
         }
 
         if (nextTransitionCountdown == 0) {
-            nextTransitionCountdown = 0x10
-                + (randomByteSupplier.getAsInt() & 0x1F);
+            nextTransitionCountdown = 0x10 + (randomByteSupplier.getAsInt() & 0x1F);
             privateState2[slot] = (randomByteSupplier.getAsInt() & 0x02) - 1;
         }
 
@@ -193,9 +200,15 @@ public final class MiniMoldormMotion {
         int segment1Index = (inertia[slot] - 0x09) & HISTORY_MASK;
         int segment2Index = (inertia[slot] - 0x10) & HISTORY_MASK;
         RoomEntity moved = withPosition(entity, x, y);
-        return new Update(moved, nextTransitionCountdown, headSpriteVariant[slot],
-            collisionFlags, historyX[key][segment1Index], historyY[key][segment1Index],
-            historyX[key][segment2Index], historyY[key][segment2Index]);
+        return new Update(
+                moved,
+                nextTransitionCountdown,
+                headSpriteVariant[slot],
+                collisionFlags,
+                historyX[key][segment1Index],
+                historyY[key][segment1Index],
+                historyX[key][segment2Index],
+                historyY[key][segment2Index]);
     }
 
     int inertia(int slot) {
@@ -227,27 +240,34 @@ public final class MiniMoldormMotion {
     }
 
     private static int historyKeyFor(RoomEntity entity) {
-        return historyKeyFor(entity.sourceLoadOrder() < 0
-            ? entity.slot() : entity.sourceLoadOrder());
+        return historyKeyFor(entity.sourceLoadOrder() < 0 ? entity.slot() : entity.sourceLoadOrder());
     }
 
     private static int historyKeyFor(int sourceLoadOrder) {
         if (sourceLoadOrder < 0 || sourceLoadOrder >= EntityRoomLoader.MAX_ENTITIES) {
-            throw new IllegalArgumentException("Mini Moldorm history key out of range: "
-                + sourceLoadOrder);
+            throw new IllegalArgumentException("Mini Moldorm history key out of range: " + sourceLoadOrder);
         }
         return sourceLoadOrder;
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;

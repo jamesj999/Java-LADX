@@ -8,7 +8,10 @@ import static linksawakening.world.entity.RoomEntityRuntime.*;
 /** Read-only inspection for Pickup. */
 final class EntityPickupInspection {
     private final RoomEntityRuntime runtime;
-    EntityPickupInspection(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityPickupInspection(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     int keyDropTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);

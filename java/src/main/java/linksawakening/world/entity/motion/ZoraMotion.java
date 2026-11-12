@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectQuery;
 import linksawakening.world.entity.RoomEntityObjectSample;
-
-import java.util.Objects;
-import java.util.function.IntSupplier;
 
 /** Bank-$18 ZoraEntityHandler state machine and projectile launch. */
 public final class ZoraMotion {
@@ -15,12 +14,8 @@ public final class ZoraMotion {
     public static final int OPTIONS1 = 0x02;
     static final int PROJECTILE_NOCLIP_FLAG = 0x40;
 
-    private static final int[] WATER_X = {
-        0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88
-    };
-    private static final int[] WATER_Y = {
-        0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80
-    };
+    private static final int[] WATER_X = {0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88};
+    private static final int[] WATER_Y = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80};
     private static final int[] Z_OFFSETS = {0, 0, 1, 2, 2, 2, 1, 0};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -28,12 +23,15 @@ public final class ZoraMotion {
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** The request made by Zora's type-$7D SpawnNewEntity path. */
-    public record ProjectileSpawn(int x, int y, int speedX, int speedY) {
-    }
+    public record ProjectileSpawn(int x, int y, int speedX, int speedY) {}
 
-    public record Update(RoomEntity entity, int state, int transitionCountdown, int physicsFlags,
-                  ProjectileSpawn projectileSpawn, boolean splash) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int transitionCountdown,
+            int physicsFlags,
+            ProjectileSpawn projectileSpawn,
+            boolean splash) {}
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -41,9 +39,14 @@ public final class ZoraMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int transitionCountdown, int physicsFlags,
-                   int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier,
-                   RoomEntityObjectQuery objectQuery) {
+    public Update advance(
+            RoomEntity entity,
+            int transitionCountdown,
+            int physicsFlags,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityObjectQuery objectQuery) {
         checkType(entity);
         Objects.requireNonNull(randomByteSupplier, "Zora random-byte supplier");
         int slot = entity.slot();
@@ -62,8 +65,7 @@ public final class ZoraMotion {
                 nextPhysicsFlags |= PROJECTILE_NOCLIP_FLAG;
                 int randomIndex = randomByteSupplier.getAsInt() & 0x07;
                 updated = withPosition(entity, WATER_X[randomIndex], WATER_Y[randomIndex]);
-                RoomEntityObjectSample object = objectQuery == null
-                    ? null : objectQuery.sample(updated);
+                RoomEntityObjectSample object = objectQuery == null ? null : objectQuery.sample(updated);
                 if (object != null && object.physicsFlag() == 0x07) {
                     countdown = (randomByteSupplier.getAsInt() & 0x7F) | 0x40;
                     state[slot] = 1;
@@ -101,10 +103,8 @@ public final class ZoraMotion {
                 } else {
                     if (countdown == 0x30) {
                         int visualY = (updated.y() - updated.z()) & 0xFF;
-                        Vector vector = vectorTowardsLink(updated.x(), visualY,
-                            linkEntityX, linkEntityY, 0x18);
-                        projectileSpawn = new ProjectileSpawn(updated.x(), visualY,
-                            vector.x(), vector.y());
+                        Vector vector = vectorTowardsLink(updated.x(), visualY, linkEntityX, linkEntityY, 0x18);
+                        projectileSpawn = new ProjectileSpawn(updated.x(), visualY, vector.x(), vector.y());
                     }
                     int variant = (countdown >= 0x50 || countdown < 0x20) ? 3 : 4;
                     updated = withVariant(updated, variant);
@@ -113,8 +113,7 @@ public final class ZoraMotion {
             default -> throw new IllegalStateException("Invalid Zora state: " + state[slot]);
         }
 
-        return new Update(updated, state[slot], countdown, nextPhysicsFlags,
-            projectileSpawn, splash);
+        return new Update(updated, state[slot], countdown, nextPhysicsFlags, projectileSpawn, splash);
     }
 
     public void clear(int slot) {
@@ -132,27 +131,57 @@ public final class ZoraMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withZ(RoomEntity entity, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            z & 0xFF, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                -1,
+                false);
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                             int linkEntityX, int linkEntityY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkEntityX, int linkEntityY, int length) {
         int distanceX = signedByte(linkEntityX - entityX);
         int distanceY = signedByte(linkEntityY - entityY);
         int absoluteX = Math.abs(distanceX);
@@ -192,6 +221,5 @@ public final class ZoraMotion {
         }
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

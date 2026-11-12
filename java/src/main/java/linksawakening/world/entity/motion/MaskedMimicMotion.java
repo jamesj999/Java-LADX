@@ -24,8 +24,7 @@ public final class MaskedMimicMotion {
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int options1, int directionToLink, boolean blocked) {
-    }
+    public record Update(RoomEntity entity, int options1, int directionToLink, boolean blocked) {}
 
     public void initialize(int slot) {
         validateSlot(slot);
@@ -42,15 +41,20 @@ public final class MaskedMimicMotion {
      * Cave-Water dispatch to GoriyaEntityHandler is selected by the caller;
      * this helper intentionally contains only the input-driven path.
      */
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   int romLinkDirection, int pressedButtonsMask, int collisionType,
-                   RoomEntityBackgroundInteraction backgroundInteraction,
-                   int ignoreHitsCountdown, int currentFrame) {
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            int romLinkDirection,
+            int pressedButtonsMask,
+            int collisionType,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int currentFrame) {
         validateRomDirection(romLinkDirection);
         int slot = entity.slot();
         int directionToLink = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
-        int options = ((direction[slot] ^ 0x01) & 0x03) == directionToLink
-            ? SPLASH_ONLY_OPTIONS1 : NORMAL_OPTIONS1;
+        int options = ((direction[slot] ^ 0x01) & 0x03) == directionToLink ? SPLASH_ONLY_OPTIONS1 : NORMAL_OPTIONS1;
 
         // DefaultEnemyDamageCollisionHandler runs before the joypad path.
         // A nonzero collision byte returns without selecting new movement.
@@ -74,8 +78,9 @@ public final class MaskedMimicMotion {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         if (nextX != x) {
             EntityBackgroundCollisionResult result = backgroundInteraction == null
-                ? null : backgroundInteraction.probe(entity, horizontalDirection(speedX[slot]),
-                    nextX, y, ignoreHitsCountdown, currentFrame);
+                    ? null
+                    : backgroundInteraction.probe(
+                            entity, horizontalDirection(speedX[slot]), nextX, y, ignoreHitsCountdown, currentFrame);
             if (result != null && result.blocked()) {
                 blocked = true;
             } else {
@@ -86,8 +91,9 @@ public final class MaskedMimicMotion {
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         if (nextY != y) {
             EntityBackgroundCollisionResult result = backgroundInteraction == null
-                ? null : backgroundInteraction.probe(entity, verticalDirection(speedY[slot]),
-                    x, nextY, ignoreHitsCountdown, currentFrame);
+                    ? null
+                    : backgroundInteraction.probe(
+                            entity, verticalDirection(speedY[slot]), x, nextY, ignoreHitsCountdown, currentFrame);
             if (result != null && result.blocked()) {
                 blocked = true;
             } else {
@@ -130,8 +136,7 @@ public final class MaskedMimicMotion {
         initialize(slot);
     }
 
-    private static int directionToLink(int entityX, int entityY,
-                                       int linkEntityX, int linkEntityY) {
+    private static int directionToLink(int entityX, int entityY, int linkEntityX, int linkEntityY) {
         int distanceX = signedByte((linkEntityX - entityX) & 0xFF);
         int distanceY = signedByte((linkEntityY - entityY) & 0xFF);
         if (Math.abs(distanceY) >= Math.abs(distanceX)) {
@@ -141,8 +146,7 @@ public final class MaskedMimicMotion {
     }
 
     /** Port of AddEntitySpeedToPos_19 for one Java pixel axis. */
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -157,21 +161,28 @@ public final class MaskedMimicMotion {
     }
 
     private static int horizontalDirection(int speed) {
-        return (speed & 0x80) != 0
-            ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
+        return (speed & 0x80) != 0 ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
     }
 
     private static int verticalDirection(int speed) {
-        return (speed & 0x80) != 0
-            ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
+        return (speed & 0x80) != 0 ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                      int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static int signedByte(int value) {

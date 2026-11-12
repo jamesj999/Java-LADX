@@ -1,15 +1,22 @@
 package linksawakening.audio.openal;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import static org.junit.jupiter.api.Assertions.*;
 
 class OpenAlPcmSoundOutputTest {
-    private static void frame(OpenAlPcmSoundOutput output) { output.playFrame(new short[1600], 48000); }
-    private static void prefill(OpenAlPcmSoundOutput output) { for (int i = 0; i < 3; i++) frame(output); }
+    private static void frame(OpenAlPcmSoundOutput output) {
+        output.playFrame(new short[1600], 48000);
+    }
 
-    @Test void underrunRewindsBeforePrefillSoNewBuffersAreNotDiscardedAsProcessed() {
+    private static void prefill(OpenAlPcmSoundOutput output) {
+        for (int i = 0; i < 3; i++) frame(output);
+    }
+
+    @Test
+    void underrunRewindsBeforePrefillSoNewBuffersAreNotDiscardedAsProcessed() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             prefill(output);
@@ -29,7 +36,8 @@ class OpenAlPcmSoundOutputTest {
         }
     }
 
-    @Test void sourceDrainingDuringQueueSubmissionAlsoRecovers() {
+    @Test
+    void sourceDrainingDuringQueueSubmissionAlsoRecovers() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             prefill(output);
@@ -44,11 +52,15 @@ class OpenAlPcmSoundOutputTest {
         }
     }
 
-    @Test void steadyStateDoesNotClearRewindOrRestartPlayingSource() {
+    @Test
+    void steadyStateDoesNotClearRewindOrRestartPlayingSource() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             prefill(output);
-            for (int i = 0; i < 120; i++) { device.consume(1); frame(output); }
+            for (int i = 0; i < 120; i++) {
+                device.consume(1);
+                frame(output);
+            }
             assertEquals(0, output.underrunCount());
             assertEquals(0, device.rewinds);
             assertEquals(0, device.stops);
@@ -59,7 +71,8 @@ class OpenAlPcmSoundOutputTest {
         assertTrue(device.deletes.values().stream().allMatch(count -> count == 1));
     }
 
-    @Test void pausedSourceResumesWhenItsQueueIsReady() {
+    @Test
+    void pausedSourceResumesWhenItsQueueIsReady() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             prefill(output);
@@ -69,7 +82,9 @@ class OpenAlPcmSoundOutputTest {
             assertEquals(0, device.stops);
         }
     }
-    @Test void fullQueueRebuffersWithoutWaitingOrLosingTheInterruptFlag() {
+
+    @Test
+    void fullQueueRebuffersWithoutWaitingOrLosingTheInterruptFlag() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             for (int i = 0; i < 8; i++) frame(output);
@@ -78,14 +93,17 @@ class OpenAlPcmSoundOutputTest {
             try {
                 assertDoesNotThrow(() -> frame(output));
                 assertTrue(Thread.currentThread().isInterrupted());
-            } finally { Thread.interrupted(); }
+            } finally {
+                Thread.interrupted();
+            }
             assertTrue(output.isAvailable());
             assertNull(output.lastFailure(), "queue pressure is not an AL exception");
             assertEquals(1, output.backpressureCount());
             assertTrue(device.processedQueries - queries < 10, "no polling/spin wait on the render thread");
             assertEquals(PcmAlDevice.INITIAL, device.state);
             assertEquals(1, device.queued());
-            frame(output); frame(output);
+            frame(output);
+            frame(output);
             assertEquals(PcmAlDevice.PLAYING, device.state);
         }
         assertTrue(device.allocated.isEmpty());
@@ -96,7 +114,10 @@ class OpenAlPcmSoundOutputTest {
     void transientAlFailureRecreatesSourceAndResumesAfterPrefill(String operation) {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
-            if (operation.equals("play")) { frame(output); frame(output); }
+            if (operation.equals("play")) {
+                frame(output);
+                frame(output);
+            }
             device.failOnce = operation;
             assertDoesNotThrow(() -> frame(output));
             assertTrue(output.isAvailable());
@@ -110,7 +131,8 @@ class OpenAlPcmSoundOutputTest {
         assertTrue(device.deletes.values().stream().allMatch(count -> count == 1));
     }
 
-    @Test void failedRecoveryRetriesOnLaterFramesWithoutDisablingTheOutput() {
+    @Test
+    void failedRecoveryRetriesOnLaterFramesWithoutDisablingTheOutput() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             device.failOnce = "queueAfter";
@@ -127,7 +149,8 @@ class OpenAlPcmSoundOutputTest {
         }
     }
 
-    @Test void deleteAndUnqueueFailuresRecoverWithoutLeakingBuffers() {
+    @Test
+    void deleteAndUnqueueFailuresRecoverWithoutLeakingBuffers() {
         for (String operation : new String[] {"delete", "unqueue"}) {
             var device = new FakePcmAlDevice();
             try (var output = new OpenAlPcmSoundOutput(device)) {
@@ -144,7 +167,8 @@ class OpenAlPcmSoundOutputTest {
         }
     }
 
-    @Test void initialPrefillCanBeReplacedOrClosedWithoutUnqueueingPendingBuffers() {
+    @Test
+    void initialPrefillCanBeReplacedOrClosedWithoutUnqueueingPendingBuffers() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             frame(output);
@@ -161,7 +185,8 @@ class OpenAlPcmSoundOutputTest {
         assertTrue(initial.allocated.isEmpty());
     }
 
-    @Test void confirmedDeviceDisconnectionIsUnavailableButOrdinaryAlErrorsAreNot() {
+    @Test
+    void confirmedDeviceDisconnectionIsUnavailableButOrdinaryAlErrorsAreNot() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             prefill(output);
@@ -172,7 +197,8 @@ class OpenAlPcmSoundOutputTest {
         }
     }
 
-    @Test void diagnosticQueryFailureCannotMaskPlaybackErrorOrEscape() {
+    @Test
+    void diagnosticQueryFailureCannotMaskPlaybackErrorOrEscape() {
         var device = new FakePcmAlDevice();
         try (var output = new OpenAlPcmSoundOutput(device)) {
             device.failAlways = "state";
@@ -184,5 +210,4 @@ class OpenAlPcmSoundOutputTest {
             assertEquals(PcmAlDevice.PLAYING, device.state);
         }
     }
-
 }

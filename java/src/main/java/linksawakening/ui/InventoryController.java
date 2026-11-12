@@ -31,9 +31,9 @@ public final class InventoryController {
             return;
         }
         int dx = (inputState.wasPressed(inputConfig.rightKey()) ? 1 : 0)
-            - (inputState.wasPressed(inputConfig.leftKey()) ? 1 : 0);
+                - (inputState.wasPressed(inputConfig.leftKey()) ? 1 : 0);
         int dy = (inputState.wasPressed(inputConfig.downKey()) ? 1 : 0)
-            - (inputState.wasPressed(inputConfig.upKey()) ? 1 : 0);
+                - (inputState.wasPressed(inputConfig.upKey()) ? 1 : 0);
         if (dx != 0 || dy != 0) menu.moveCursor(dx, dy);
         if (inputState.wasPressed(inputConfig.aKey())) {
             menu.pressA();
@@ -53,15 +53,32 @@ public final class InventoryController {
     public void render(byte[] displayBuffer, GPU gpu) {
         menu.render(displayBuffer, gpu);
     }
-    public boolean canSubmitClosedWindow() { return menu.canSubmitClosedWindow(); }
+
+    public boolean canSubmitClosedWindow() {
+        return menu.canSubmitClosedWindow();
+    }
+
     public InventoryMenu.ClosedWindow closedWindow(int[][] roomPalettes) {
         return menu.closedWindow(roomPalettes);
     }
+
     public void submit(linksawakening.render.HardwareFrame frame, GPU gpu, int[][] palettes) {
         menu.submit(frame, gpu, palettes);
     }
-    public boolean canSubmitFullyOpenWindow() { return menu.isFullyOpen(); }
-    public boolean inventoryAppearing() { return menu.inventoryAppearing(); }
-    public linksawakening.ui.InventoryTransition transition() { return menu.transition(); }
-    public int windowY() { return menu.windowY(); }
+
+    public boolean canSubmitFullyOpenWindow() {
+        return menu.isFullyOpen();
+    }
+
+    public boolean inventoryAppearing() {
+        return menu.inventoryAppearing();
+    }
+
+    public linksawakening.ui.InventoryTransition transition() {
+        return menu.transition();
+    }
+
+    public int windowY() {
+        return menu.windowY();
+    }
 }

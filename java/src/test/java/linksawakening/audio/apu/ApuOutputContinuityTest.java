@@ -1,9 +1,10 @@
 package linksawakening.audio.apu;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ApuOutputContinuityTest {
     @ParameterizedTest
@@ -28,7 +29,8 @@ class ApuOutputContinuityTest {
         assertTrue(peak < 32767, "all four full-volume channels mix without clipping: " + peak);
     }
 
-    @Test void constantDacBiasDecaysUsingTheCgbCapacitorChargeFactor() {
+    @Test
+    void constantDacBiasDecaysUsingTheCgbCapacitorChargeFactor() {
         GameBoyApu apu = new GameBoyApu(48000);
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
@@ -45,7 +47,8 @@ class ApuOutputContinuityTest {
         assertArrayEquals(new short[1600], apu.render(800), "all DACs off disconnects output");
     }
 
-    @Test void pulseAboveNyquistAveragesDutyEdgesInsteadOfAliasingToAConstantExtreme() {
+    @Test
+    void pulseAboveNyquistAveragesDutyEdgesInsteadOfAliasingToAConstantExtreme() {
         SquareChannel square = new SquareChannel(65536);
         square.writeDuty(0x80);
         square.writeEnvelope(0xF0);

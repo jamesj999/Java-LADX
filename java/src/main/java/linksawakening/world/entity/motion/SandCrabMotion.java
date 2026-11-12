@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.Objects;
-import java.util.function.IntSupplier;
 
 /** Bank-$15 SandCrabEntityHandler movement and direction selection. */
 public final class SandCrabMotion {
@@ -24,18 +23,25 @@ public final class SandCrabMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int transitionCountdown, int speedX, int speedY,
-                  int collisionFlags, boolean appliesBackgroundInteraction) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            int speedX,
+            int speedY,
+            int collisionFlags,
+            boolean appliesBackgroundInteraction) {}
 
     public void initialize(int slot) {
         reset(slot);
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         checkType(entity);
         validateByte(transitionCountdown, "Sand Crab transition countdown");
         Objects.requireNonNull(randomByteSupplier, "Sand Crab random-byte supplier");
@@ -47,8 +53,7 @@ public final class SandCrabMotion {
 
         int countdown = transitionCountdown & 0xFF;
         PositionAndCollision moved = moveWithBackground(entity, backgroundInteraction, slot);
-        RoomEntity updated = withPositionAndVariant(entity, moved.x(), moved.y(),
-            (frameCounter >>> 3) & 0x01);
+        RoomEntity updated = withPositionAndVariant(entity, moved.x(), moved.y(), (frameCounter >>> 3) & 0x01);
 
         if ((moved.collisionFlags() & 0x0F) != 0 || countdown == 0) {
             countdown = (randomByteSupplier.getAsInt() & 0x7F) + 0x30;
@@ -57,8 +62,8 @@ public final class SandCrabMotion {
             speedY[slot] = SPEED_Y[direction];
         }
 
-        return new Update(updated, countdown, speedX[slot] & 0xFF,
-            speedY[slot] & 0xFF, moved.collisionFlags() & 0x0F, true);
+        return new Update(
+                updated, countdown, speedX[slot] & 0xFF, speedY[slot] & 0xFF, moved.collisionFlags() & 0x0F, true);
     }
 
     int speedX(int slot) {
@@ -74,18 +79,17 @@ public final class SandCrabMotion {
         initialized[slot] = false;
     }
 
-    private PositionAndCollision moveWithBackground(RoomEntity entity,
-                                                     RoomEntityBackgroundInteraction interaction,
-                                                     int slot) {
+    private PositionAndCollision moveWithBackground(
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
 
         if (interaction != null && x != entity.x()) {
             int direction = signedByte(speedX[slot]) < 0
-                ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result = interaction.probe(
-                entity, direction, x, entity.y());
+                    ? EntityBackgroundCollisionResult.LEFT
+                    : EntityBackgroundCollisionResult.RIGHT;
+            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, entity.y());
             if (result.blocked()) {
                 collisionFlags |= result.collisionFlag();
                 x = entity.x() & 0xFF;
@@ -93,7 +97,8 @@ public final class SandCrabMotion {
         }
         if (interaction != null && y != entity.y()) {
             int direction = signedByte(speedY[slot]) < 0
-                ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
+                    ? EntityBackgroundCollisionResult.UP
+                    : EntityBackgroundCollisionResult.DOWN;
             EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, y);
             if (result.blocked()) {
                 collisionFlags |= result.collisionFlag();
@@ -103,8 +108,7 @@ public final class SandCrabMotion {
         return new PositionAndCollision(x, y, collisionFlags);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -119,11 +123,21 @@ public final class SandCrabMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private void reset(int slot) {
@@ -150,6 +164,5 @@ public final class SandCrabMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record PositionAndCollision(int x, int y, int collisionFlags) {
-    }
+    private record PositionAndCollision(int x, int y, int collisionFlags) {}
 }

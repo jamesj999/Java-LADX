@@ -8,7 +8,9 @@ final class LinkSwimming {
     int swimmingFastCountdown;
     int divingCountdown;
 
-    LinkSwimming(Link link) { this.link = link; }
+    LinkSwimming(Link link) {
+        this.link = link;
+    }
 
     boolean enterSwimmingIfNeeded() {
         if (link.romTables == null || link.collision == null) return false;
@@ -20,7 +22,7 @@ final class LinkSwimming {
         }
         if (link.linkStateMachine.itemUsageContext == 0x80) return false;
         if (link.linkStateMachine.motionState == Link.LINK_MOTION_RECOVER
-            || link.linkStateMachine.motionState == Link.LINK_MOTION_SWIMMING) return true;
+                || link.linkStateMachine.motionState == Link.LINK_MOTION_SWIMMING) return true;
         int object = link.collision.objectIdAtPoint(link.pixelX() + 8, link.pixelY() + 12);
         link.pendingWaterSplash = new Link.WaterSplash(link.romEntityX(), (link.romEntityY() - 2) & 0xFF);
         link.soundSink.play(linksawakening.gameplay.GameplaySoundEvent.WATER_SPLASH);
@@ -69,8 +71,9 @@ final class LinkSwimming {
     }
 
     void updateRecover() {
-        if (link.itemRegistry != null && link.itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
-            instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+        if (link.itemRegistry != null
+                && link.itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
+                        instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         link.linkMotion.lastRomSpeedX = link.linkMotion.lastRomSpeedY = 0;
         link.movingThisFrame = false;
         if (link.linkStateMachine.recoverCountdown > 0) link.linkStateMachine.recoverCountdown--;
@@ -100,7 +103,8 @@ final class LinkSwimming {
     }
 
     void updateSwimming() {
-        if (link.collision == null || !link.collision.linkOnDeepWater(link.linkMotion.pixelX(), link.linkMotion.pixelY())) {
+        if (link.collision == null
+                || !link.collision.linkOnDeepWater(link.linkMotion.pixelX(), link.linkMotion.pixelY())) {
             leaveSwimming();
             return;
         }

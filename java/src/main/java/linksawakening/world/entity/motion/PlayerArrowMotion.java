@@ -35,8 +35,8 @@ public final class PlayerArrowMotion {
 
     static SpawnData spawnData(int projectileDirection) {
         int direction = checkedDirection(projectileDirection);
-        return new SpawnData(OFFSET_X[direction], OFFSET_Y[direction],
-            SPEED_X[direction], SPEED_Y[direction], direction);
+        return new SpawnData(
+                OFFSET_X[direction], OFFSET_Y[direction], SPEED_X[direction], SPEED_Y[direction], direction);
     }
 
     public void initializeSpawn(int slot, int projectileDirection) {
@@ -63,15 +63,23 @@ public final class PlayerArrowMotion {
         return advance(entity, backgroundCollision, 0, 0, false);
     }
 
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
-                   int frameCounter, int groundStatus, boolean sideScrolling) {
-        return advance(entity, backgroundCollision, frameCounter, groundStatus,
-            sideScrolling, true, true);
+    public Update advance(
+            RoomEntity entity,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int frameCounter,
+            int groundStatus,
+            boolean sideScrolling) {
+        return advance(entity, backgroundCollision, frameCounter, groundStatus, sideScrolling, true, true);
     }
 
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
-                   int frameCounter, int groundStatus, boolean sideScrolling,
-                   boolean handlerInteractive, boolean timersInteractive) {
+    public Update advance(
+            RoomEntity entity,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int frameCounter,
+            int groundStatus,
+            boolean sideScrolling,
+            boolean handlerInteractive,
+            boolean timersInteractive) {
         validateSlot(entity.slot());
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -92,8 +100,10 @@ public final class PlayerArrowMotion {
         // $6AD7 renders before ReturnIfNonInteractive_03. A paused handler
         // must not move, choose another spin frame, or unload at countdown 1.
         if (!handlerInteractive) {
-            return new Update(withPositionAndVariant(entity, entity.x(), entity.y(),
-                entity.z(), selectedVariant[slot]), false, false);
+            return new Update(
+                    withPositionAndVariant(entity, entity.x(), entity.y(), entity.z(), selectedVariant[slot]),
+                    false,
+                    false);
         }
         if (transitionCountdown[slot] == 1) {
             return new Update(entity, false, true);
@@ -104,16 +114,17 @@ public final class PlayerArrowMotion {
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         boolean collidedWithWall = collision[slot];
-        if (backgroundCollision != null && x != entity.x()
-            && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]),
-                x, entity.y())) {
+        if (backgroundCollision != null
+                && x != entity.x()
+                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
             x = entity.x();
             collidedWithWall = true;
         }
 
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null && y != entity.y()
-            && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
+        if (backgroundCollision != null
+                && y != entity.y()
+                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
             y = entity.y();
             collidedWithWall = true;
         }
@@ -126,8 +137,8 @@ public final class PlayerArrowMotion {
             speedX[slot] = bounceSpeed(speedX[slot]);
         }
 
-        return new Update(withPositionAndVariant(entity, x, y, entity.z(),
-            entity.spriteVariant()), collidedWithWall, false);
+        return new Update(
+                withPositionAndVariant(entity, x, y, entity.z(), entity.spriteVariant()), collidedWithWall, false);
     }
 
     public void markCollision(int slot) {
@@ -201,15 +212,14 @@ public final class PlayerArrowMotion {
         initialized[slot] = true;
     }
 
-    private Update advanceWallTransition(RoomEntity entity, int frameCounter,
-                                         int groundStatus, boolean sideScrolling) {
+    private Update advanceWallTransition(RoomEntity entity, int frameCounter, int groundStatus, boolean sideScrolling) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int z = zPosition[slot];
         if (sideScrolling) {
-            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
-                speedX[slot], speedY[slot], frameCounter, groundStatus);
+            EntitySideViewGravity.Speeds speeds =
+                    EntitySideViewGravity.advance(speedX[slot], speedY[slot], frameCounter, groundStatus);
             speedX[slot] = speeds.x();
             speedY[slot] = speeds.y();
         } else {
@@ -224,8 +234,7 @@ public final class PlayerArrowMotion {
         return new Update(withPositionAndVariant(entity, x, y, z, variant), false, false);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -269,16 +278,24 @@ public final class PlayerArrowMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int z, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
-    record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {
-    }
+    record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {}
 
-    public record Update(RoomEntity entity, boolean collidedWithWall, boolean unloaded) {
-    }
+    public record Update(RoomEntity entity, boolean collidedWithWall, boolean unloaded) {}
 }

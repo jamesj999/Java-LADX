@@ -1,15 +1,14 @@
 package linksawakening.save;
 
-import linksawakening.state.PlayerState;
-
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.Path;
 import java.util.Objects;
+import linksawakening.state.PlayerState;
 
 /** Host persistence adapter for the source-shaped SRAM image. */
 public final class SaveRamStore {
@@ -29,9 +28,7 @@ public final class SaveRamStore {
             image = SaveRamImage.empty();
         } else {
             byte[] bytes = Files.readAllBytes(path);
-            image = bytes.length == SaveRamLayout.IMAGE_SIZE
-                ? SaveRamImage.fromBytes(bytes)
-                : SaveRamImage.empty();
+            image = bytes.length == SaveRamLayout.IMAGE_SIZE ? SaveRamImage.fromBytes(bytes) : SaveRamImage.empty();
             image.initializeInvalidSlots();
         }
         return new SaveRamStore(path, image);
@@ -81,15 +78,17 @@ public final class SaveRamStore {
         image.writeOcarinaState(slot, songFlags, selectedSongIndex);
     }
 
-    public void writeRoomStatuses(int slot, byte[] overworldRoomStatus,
-                                  byte[] indoorARoomStatus, byte[] indoorBRoomStatus,
-                                  byte[] colorDungeonRoomStatus) {
-        image.writeRoomStatuses(slot, overworldRoomStatus, indoorARoomStatus,
-            indoorBRoomStatus, colorDungeonRoomStatus);
+    public void writeRoomStatuses(
+            int slot,
+            byte[] overworldRoomStatus,
+            byte[] indoorARoomStatus,
+            byte[] indoorBRoomStatus,
+            byte[] colorDungeonRoomStatus) {
+        image.writeRoomStatuses(
+                slot, overworldRoomStatus, indoorARoomStatus, indoorBRoomStatus, colorDungeonRoomStatus);
     }
 
-    public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags,
-                                      byte[] colorDungeonItemFlags) {
+    public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags, byte[] colorDungeonItemFlags) {
         image.writeDungeonItemFlags(slot, dungeonItemFlags, colorDungeonItemFlags);
     }
 
@@ -109,10 +108,9 @@ public final class SaveRamStore {
         image.writeRichardSpokenFlag(slot, flag);
     }
 
-    public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
-                                   int positionX, int positionY, int indoorRoom) {
-        image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom,
-            positionX, positionY, indoorRoom);
+    public void writeSpawnLocation(
+            int slot, int isIndoor, int mapId, int mapRoom, int positionX, int positionY, int indoorRoom) {
+        image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom, positionX, positionY, indoorRoom);
     }
 
     public void writePlayerState(int slot, PlayerState playerState) {
@@ -143,8 +141,7 @@ public final class SaveRamStore {
                 }
                 channel.force(true);
             }
-            Files.move(temporary, absolutePath, StandardCopyOption.ATOMIC_MOVE,
-                StandardCopyOption.REPLACE_EXISTING);
+            Files.move(temporary, absolutePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } finally {
             Files.deleteIfExists(temporary);
         }

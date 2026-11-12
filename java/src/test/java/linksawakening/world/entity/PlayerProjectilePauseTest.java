@@ -1,35 +1,40 @@
 package linksawakening.world.entity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.RoomEntityObjectSample;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.entity.EntitySpriteHandlerCatalog;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @linksawakening.testing.RequiresRom
 final class PlayerProjectilePauseTest {
     @ParameterizedTest
-    @CsvSource({"1, dialog", "4, dialog", "0xDF, dialog",
-        "1, inventory", "4, inventory", "0xDF, inventory",
-        "1, transition", "4, transition", "0xDF, transition",
-        "1, gameplay", "4, gameplay", "0xDF, gameplay",
-        "1, sequence", "4, sequence", "0xDF, sequence",
-        "1, got_item", "4, got_item", "0xDF, got_item"})
+    @CsvSource({
+        "1, dialog",
+        "4, dialog",
+        "0xDF, dialog",
+        "1, inventory",
+        "4, inventory",
+        "0xDF, inventory",
+        "1, transition",
+        "4, transition",
+        "0xDF, transition",
+        "1, gameplay",
+        "4, gameplay",
+        "0xDF, gameplay",
+        "1, sequence",
+        "4, sequence",
+        "0xDF, sequence",
+        "1, got_item",
+        "4, got_item",
+        "0xDF, got_item"
+    })
     void gameplayGatesStopMovementAndObjectLookup(int type, String gate) {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, type);
@@ -46,14 +51,16 @@ final class PlayerProjectilePauseTest {
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         if (type == 1) {
             // wC1A8 gates the handler, but UpdateEntityTimers does not read it.
-            assertEquals(gate.equals("got_item") ? 0x27 : 0x28,
-                runtime.inspection().boomerangTransitionCountdown(slot));
+            assertEquals(
+                    gate.equals("got_item") ? 0x27 : 0x28, runtime.inspection().boomerangTransitionCountdown(slot));
         }
 
         setGate(runtime, gate, false);
         runtime.configuration().setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());
         tick(runtime, 9, 0);
-        assertEquals(before.x() + speed(type), runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                before.x() + speed(type),
+                runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     @ParameterizedTest
@@ -63,7 +70,9 @@ final class PlayerProjectilePauseTest {
         int slot = spawn(runtime, type);
         int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
         tick(runtime, 8, motionState);
-        assertEquals(beforeX + speed(type), runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                beforeX + speed(type),
+                runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     @ParameterizedTest
@@ -77,8 +86,8 @@ final class PlayerProjectilePauseTest {
         setGate(runtime, gate, true);
         tick(runtime, 8, 0);
         tick(runtime, 9, 0);
-        assertEquals(gate.equals("got_item") ? 0x2E : 0x30,
-            runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                gate.equals("got_item") ? 0x2E : 0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
         // The fireball writes its next frame before ReturnIfNonInteractive.
         assertEquals(1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
     }
@@ -91,7 +100,8 @@ final class PlayerProjectilePauseTest {
         runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 8, 0);
         assertEquals(0x28, runtime.inspection().boomerangTransitionCountdown(slot));
-        assertEquals(beforeX + 2, runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                beforeX + 2, runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     @ParameterizedTest
@@ -103,7 +113,9 @@ final class PlayerProjectilePauseTest {
         runtime.debug().setGameplayWorldForTest(false);
         runtime.debug().setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 8, 0, 0, () -> 0, true));
-        assertEquals(beforeX + speed(type), runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                beforeX + speed(type),
+                runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     private static RoomEntityRuntime runtime() {
@@ -115,8 +127,11 @@ final class PlayerProjectilePauseTest {
             if (stream == null) {
                 throw new IOException("Missing shipped ROM");
             }
-            return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, () -> 0,
-                new EntitySpriteHandlerCatalog(stream.readAllBytes()));
+            return RoomEntityRuntime.from(
+                    new RoomEntitySnapshot(slots),
+                    false,
+                    () -> 0,
+                    new EntitySpriteHandlerCatalog(stream.readAllBytes()));
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }
@@ -141,8 +156,14 @@ final class PlayerProjectilePauseTest {
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int motionState) {
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, motionState, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                frame,
+                0,
+                0,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0, 0, 0, motionState, 0, false)));
     }
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {

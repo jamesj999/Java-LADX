@@ -8,7 +8,10 @@ import static linksawakening.world.entity.RoomEntityRuntime.*;
 /** Read-only inspection for FlyingEnemy. */
 final class EntityFlyingEnemyInspection {
     private final RoomEntityRuntime runtime;
-    EntityFlyingEnemyInspection(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityFlyingEnemyInspection(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     int keeseState(int slot) {
         return runtime.keeseMotion.state(slot);

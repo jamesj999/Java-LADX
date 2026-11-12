@@ -1,12 +1,11 @@
 package linksawakening.dialog;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 final class DialogControllerTest {
 
@@ -371,8 +370,7 @@ final class DialogControllerTest {
         dialog.consumeSoundEvents();
         dialog.moveChoiceSelection(1);
         assertEquals(1, dialog.choiceSelectionIndex());
-        assertEquals(List.of(DialogController.SoundEvent.MOVE_SELECTION),
-            dialog.consumeSoundEvents());
+        assertEquals(List.of(DialogController.SoundEvent.MOVE_SELECTION), dialog.consumeSoundEvents());
         dialog.moveChoiceSelection(-1);
         assertEquals(0, dialog.choiceSelectionIndex());
 

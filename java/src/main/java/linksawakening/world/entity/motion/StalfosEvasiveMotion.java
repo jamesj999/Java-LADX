@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$15 StalfosEvasiveEntityHandler's normal and airborne states. */
 public final class StalfosEvasiveMotion {
@@ -22,13 +21,14 @@ public final class StalfosEvasiveMotion {
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int transitionCountdown,
-                  boolean unloadRequested, boolean swordPokeRequested,
-                  CloneRequest cloneRequest) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            boolean unloadRequested,
+            boolean swordPokeRequested,
+            CloneRequest cloneRequest) {}
 
-    public record CloneRequest(int sourceSlot, int x, int y, int z, int speedX, int speedY) {
-    }
+    public record CloneRequest(int sourceSlot, int x, int y, int z, int speedX, int speedY) {}
 
     public void initialize(int slot) {
         reset(slot);
@@ -55,10 +55,17 @@ public final class StalfosEvasiveMotion {
         speedZAccumulator[slot] = 0;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   boolean actionButtonsHeld, int transitionCountdown,
-                   int ignoreHitsCountdown, IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision, int mapId) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean actionButtonsHeld,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int mapId) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             // A Gibdo burn conversion calls ConfigureNewEntity.attributes and
@@ -73,8 +80,7 @@ public final class StalfosEvasiveMotion {
 
         int frame = frameCounter & 0xFF;
         if (privateState1[slot] != 0) {
-            return advanceFleeing(entity, frame, transitionCountdown, ignoreHitsCountdown,
-                backgroundCollision);
+            return advanceFleeing(entity, frame, transitionCountdown, ignoreHitsCountdown, backgroundCollision);
         }
 
         CloneRequest cloneRequest = null;
@@ -83,14 +89,15 @@ public final class StalfosEvasiveMotion {
             // MAP_ANGLERS_TUNNEL, before its inertia dispatch or movement.
             if (mapId < 0x03) {
                 int variant = (frame >>> 3) & 0x01;
-                return new Update(withPositionAndVariant(
-                    entity, entity.x(), entity.y(), entity.z(), variant),
-                    transitionCountdown, false, false, null);
+                return new Update(
+                        withPositionAndVariant(entity, entity.x(), entity.y(), entity.z(), variant),
+                        transitionCountdown,
+                        false,
+                        false,
+                        null);
             }
-            Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(),
-                linkEntityX, linkEntityY, 0x18);
-            cloneRequest = new CloneRequest(slot, entity.x(), entity.y(), entity.z(),
-                vector.x(), vector.y());
+            Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x18);
+            cloneRequest = new CloneRequest(slot, entity.x(), entity.y(), entity.z(), vector.x(), vector.y());
         }
         if (inertia[slot] != 0) {
             return advanceAirborne(entity, transitionCountdown, backgroundCollision, cloneRequest);
@@ -110,18 +117,20 @@ public final class StalfosEvasiveMotion {
 
         int distanceX = signedByte(linkEntityX - entity.x());
         int distanceY = signedByte(linkEntityY - entity.y());
-        if (actionButtonsHeld && distanceInJumpWindow(distanceX)
-            && distanceInJumpWindow(distanceY)) {
+        if (actionButtonsHeld && distanceInJumpWindow(distanceX) && distanceInJumpWindow(distanceY)) {
             transitionCountdown = 0x08;
             privateCountdown1[slot] = 0;
             inertia[slot] = 1;
             speedZ[slot] = 0x15;
-            Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(),
-                linkEntityX, linkEntityY, 0x12);
+            Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x12);
             speedX[slot] = (-vector.x()) & 0xFF;
             speedY[slot] = (-vector.y()) & 0xFF;
-            return new Update(withPositionAndVariant(entity, x, y, entity.z(), 0x02),
-                transitionCountdown, false, false, cloneRequest);
+            return new Update(
+                    withPositionAndVariant(entity, x, y, entity.z(), 0x02),
+                    transitionCountdown,
+                    false,
+                    false,
+                    cloneRequest);
         }
 
         // jr_015_4FCE: the initialization state or random low six bits forces
@@ -130,13 +139,19 @@ public final class StalfosEvasiveMotion {
             chooseRandomDirection(slot, randomByteSupplier);
         }
         int variant = (frame >>> 3) & 0x01;
-        return new Update(withPositionAndVariant(entity, x, y, entity.z(), variant),
-            transitionCountdown, false, false, cloneRequest);
+        return new Update(
+                withPositionAndVariant(entity, x, y, entity.z(), variant),
+                transitionCountdown,
+                false,
+                false,
+                cloneRequest);
     }
 
-    private Update advanceAirborne(RoomEntity entity, int transitionCountdown,
-                                    RoomEntityBackgroundCollision backgroundCollision,
-                                    CloneRequest cloneRequest) {
+    private Update advanceAirborne(
+            RoomEntity entity,
+            int transitionCountdown,
+            RoomEntityBackgroundCollision backgroundCollision,
+            CloneRequest cloneRequest) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -154,19 +169,22 @@ public final class StalfosEvasiveMotion {
             inertia[slot] = 0;
             privateCountdown1[slot] = 0x10;
         }
-        return new Update(withPositionAndVariant(entity, x, y, z, 0x02),
-            transitionCountdown, false, false, cloneRequest);
+        return new Update(
+                withPositionAndVariant(entity, x, y, z, 0x02), transitionCountdown, false, false, cloneRequest);
     }
 
-    private Update advanceFleeing(RoomEntity entity, int frame, int transitionCountdown,
-                                   int ignoreHitsCountdown,
-                                   RoomEntityBackgroundCollision backgroundCollision) {
+    private Update advanceFleeing(
+            RoomEntity entity,
+            int frame,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         MoveResult movement = applyBackground(entity, x, y, backgroundCollision);
-        RoomEntity updated = withPositionAndVariant(entity, movement.x(), movement.y(),
-            entity.z(), (frame >>> 3) & 0x01);
+        RoomEntity updated =
+                withPositionAndVariant(entity, movement.x(), movement.y(), entity.z(), (frame >>> 3) & 0x01);
         if (movement.blocked() || ignoreHitsCountdown != 0) {
             return new Update(updated, transitionCountdown, true, true, null);
         }
@@ -249,18 +267,16 @@ public final class StalfosEvasiveMotion {
         state[slot] = 0;
     }
 
-    private static MoveResult applyBackground(RoomEntity entity, int x, int y,
-                                               RoomEntityBackgroundCollision backgroundCollision) {
+    private static MoveResult applyBackground(
+            RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         boolean xBlocked = false;
         boolean yBlocked = false;
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
-                directionForX(x - entity.x()), x, entity.y())) {
+            if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(x - entity.x()), x, entity.y())) {
                 x = entity.x();
                 xBlocked = true;
             }
-            if (y != entity.y() && backgroundCollision.blocks(entity,
-                directionForY(y - entity.y()), x, y)) {
+            if (y != entity.y() && backgroundCollision.blocks(entity, directionForY(y - entity.y()), x, y)) {
                 y = entity.y();
                 yBlocked = true;
             }
@@ -268,8 +284,7 @@ public final class StalfosEvasiveMotion {
         return new MoveResult(x, y, xBlocked, yBlocked);
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceY = signedByte(linkY - entityY + entityZ);
         int distanceX = signedByte(linkX - entityX);
         int absoluteY = Math.abs(distanceY);
@@ -302,8 +317,7 @@ public final class StalfosEvasiveMotion {
         return distance >= -0x24 && distance < 0x24;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -318,11 +332,21 @@ public final class StalfosEvasiveMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     private static int directionForX(int delta) {
@@ -344,6 +368,5 @@ public final class StalfosEvasiveMotion {
         }
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

@@ -1,16 +1,14 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
 
 final class SideViewPlatformMotionTest {
 
@@ -77,8 +75,7 @@ final class SideViewPlatformMotionTest {
         assertEquals(0, inactive.privateState2());
         assertThrows(IllegalArgumentException.class, () -> motion.clear(-1));
         assertThrows(IllegalArgumentException.class, () -> motion.clear(16));
-        assertThrows(IllegalArgumentException.class,
-            () -> motion.advance(entity(0x40, 0x50, 0xA4), 0, false, false));
+        assertThrows(IllegalArgumentException.class, () -> motion.advance(entity(0x40, 0x50, 0xA4), 0, false, false));
     }
 
     @Test
@@ -141,7 +138,19 @@ final class SideViewPlatformMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int type) {
-        return new RoomEntity(0, 0, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0,
+                0,
+                type,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(type),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

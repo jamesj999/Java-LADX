@@ -22,8 +22,7 @@ public final class LinkPositionHistory {
         Arrays.fill(direction, byteValue(linkDirection));
     }
 
-    public void write(int index, int positionX, int positionY, int positionZ,
-                      int linkDirection) {
+    public void write(int index, int positionX, int positionY, int positionZ, int linkDirection) {
         checkIndex(index);
         x[index] = byteValue(positionX);
         y[index] = byteValue(positionY);
@@ -31,8 +30,7 @@ public final class LinkPositionHistory {
         direction[index] = byteValue(linkDirection);
     }
 
-    public void writePositionAndDirection(int index, int positionX, int positionY,
-                                   int linkDirection) {
+    public void writePositionAndDirection(int index, int positionX, int positionY, int linkDirection) {
         checkIndex(index);
         x[index] = byteValue(positionX);
         y[index] = byteValue(positionY);

@@ -16,19 +16,15 @@ public final class SwitchBlockAnimation {
     static final int SWITCH_BLOCK_A_TILE = 0x104;
     static final int SWITCH_BLOCK_B_TILE = 0x108;
 
-    private SwitchBlockAnimation() {
-    }
+    private SwitchBlockAnimation() {}
 
     public record TileCopy(int sourceOffset, int destinationTile) {
         public TileCopy {
             if (sourceOffset != 0x00 && sourceOffset != 0x40 && sourceOffset != 0x80) {
-                throw new IllegalArgumentException("Unknown switch-block source offset: "
-                    + sourceOffset);
+                throw new IllegalArgumentException("Unknown switch-block source offset: " + sourceOffset);
             }
-            if (destinationTile != SWITCH_BLOCK_A_TILE
-                && destinationTile != SWITCH_BLOCK_B_TILE) {
-                throw new IllegalArgumentException("Unknown switch-block destination tile: "
-                    + destinationTile);
+            if (destinationTile != SWITCH_BLOCK_A_TILE && destinationTile != SWITCH_BLOCK_B_TILE) {
+                throw new IllegalArgumentException("Unknown switch-block destination tile: " + destinationTile);
             }
         }
     }
@@ -48,35 +44,32 @@ public final class SwitchBlockAnimation {
 
     public static Step advance(int stage, int switchBlocksState) {
         if (!isAnimating(stage)) {
-            throw new IllegalArgumentException("Cannot advance idle/invalid switch-block stage: "
-                + stage);
+            throw new IllegalArgumentException("Cannot advance idle/invalid switch-block stage: " + stage);
         }
         validateState(switchBlocksState);
 
         int nextStage = stage + 1;
-        int nextState = stage == 0x02
-            ? switchBlocksState ^ 0x02 : switchBlocksState;
+        int nextState = stage == 0x02 ? switchBlocksState ^ 0x02 : switchBlocksState;
         if (nextStage == 0x0A) {
             nextStage = 0;
         }
 
-        TileCopy tileCopy = switch (stage) {
-            case 0x03 -> new TileCopy(0x40, SWITCH_BLOCK_A_TILE);
-            case 0x05 -> new TileCopy(0x40, SWITCH_BLOCK_B_TILE);
-            case 0x07 -> new TileCopy(finalSourceOffset(nextState, true),
-                SWITCH_BLOCK_A_TILE);
-            case 0x09 -> new TileCopy(finalSourceOffset(nextState, false),
-                SWITCH_BLOCK_B_TILE);
-            default -> null;
-        };
+        TileCopy tileCopy =
+                switch (stage) {
+                    case 0x03 -> new TileCopy(0x40, SWITCH_BLOCK_A_TILE);
+                    case 0x05 -> new TileCopy(0x40, SWITCH_BLOCK_B_TILE);
+                    case 0x07 -> new TileCopy(finalSourceOffset(nextState, true), SWITCH_BLOCK_A_TILE);
+                    case 0x09 -> new TileCopy(finalSourceOffset(nextState, false), SWITCH_BLOCK_B_TILE);
+                    default -> null;
+                };
         return new Step(nextStage, nextState, tileCopy);
     }
 
     public static List<TileCopy> initialCopies(int switchBlocksState) {
         validateState(switchBlocksState);
         return List.of(
-            new TileCopy(finalSourceOffset(switchBlocksState, true), SWITCH_BLOCK_A_TILE),
-            new TileCopy(finalSourceOffset(switchBlocksState, false), SWITCH_BLOCK_B_TILE));
+                new TileCopy(finalSourceOffset(switchBlocksState, true), SWITCH_BLOCK_A_TILE),
+                new TileCopy(finalSourceOffset(switchBlocksState, false), SWITCH_BLOCK_B_TILE));
     }
 
     private static int finalSourceOffset(int switchBlocksState, boolean blockA) {
@@ -88,8 +81,7 @@ public final class SwitchBlockAnimation {
 
     private static void validateState(int switchBlocksState) {
         if (switchBlocksState != LOWERED_STATE && switchBlocksState != RAISED_STATE) {
-            throw new IllegalArgumentException("Switch-block state must be $00 or $02: "
-                + switchBlocksState);
+            throw new IllegalArgumentException("Switch-block state must be $00 or $02: " + switchBlocksState);
         }
     }
 }

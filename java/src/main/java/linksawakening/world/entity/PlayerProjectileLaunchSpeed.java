@@ -6,8 +6,7 @@ public final class PlayerProjectileLaunchSpeed {
     private static final int[] SPEED_X = {0x30, 0xD0, 0, 0, 0x40, 0xC0, 0, 0};
     private static final int[] SPEED_Y = {0, 0, 0xD0, 0x30, 0, 0, 0xC0, 0x40};
 
-    private PlayerProjectileLaunchSpeed() {
-    }
+    private PlayerProjectileLaunchSpeed() {}
 
     public static int x(int direction, boolean pieceOfPower) {
         return SPEED_X[direction + (pieceOfPower ? 4 : 0)];

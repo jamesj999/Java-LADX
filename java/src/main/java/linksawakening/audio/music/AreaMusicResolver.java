@@ -1,14 +1,10 @@
 package linksawakening.audio.music;
 
-import linksawakening.rom.RomSymbols;
-
-import linksawakening.rom.RomAddress;
-
-import linksawakening.rom.Rom;
-
-import linksawakening.rom.RomBank;
-
 import java.util.Objects;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
 public final class AreaMusicResolver {
     private static final int SELECT_MUSIC_BANK = RomSymbols.OverworldMusicTracks.bank();
@@ -27,9 +23,7 @@ public final class AreaMusicResolver {
     private final int[] houseMusicTracks;
     private final int[] musicOverridesPowerUpTrack;
 
-    private AreaMusicResolver(int[] overworldMusicTracks,
-                              int[] houseMusicTracks,
-                              int[] musicOverridesPowerUpTrack) {
+    private AreaMusicResolver(int[] overworldMusicTracks, int[] houseMusicTracks, int[] musicOverridesPowerUpTrack) {
         this.overworldMusicTracks = overworldMusicTracks;
         this.houseMusicTracks = houseMusicTracks;
         this.musicOverridesPowerUpTrack = musicOverridesPowerUpTrack;
@@ -38,10 +32,9 @@ public final class AreaMusicResolver {
     public static AreaMusicResolver fromRom(byte[] romData) {
         Objects.requireNonNull(romData, "romData");
         return new AreaMusicResolver(
-            readTable(romData, OVERWORLD_MUSIC_TRACKS_ADDR, OVERWORLD_MUSIC_TRACKS_LENGTH),
-            readTable(romData, HOUSE_MUSIC_TRACKS_ADDR, HOUSE_MUSIC_TRACKS_LENGTH),
-            readTable(romData, MUSIC_OVERRIDES_POWER_UP_ADDR, MUSIC_OVERRIDES_POWER_UP_LENGTH)
-        );
+                readTable(romData, OVERWORLD_MUSIC_TRACKS_ADDR, OVERWORLD_MUSIC_TRACKS_LENGTH),
+                readTable(romData, HOUSE_MUSIC_TRACKS_ADDR, HOUSE_MUSIC_TRACKS_LENGTH),
+                readTable(romData, MUSIC_OVERRIDES_POWER_UP_ADDR, MUSIC_OVERRIDES_POWER_UP_LENGTH));
     }
 
     public int resolve(RoomMusicContext context) {
@@ -90,7 +83,7 @@ public final class AreaMusicResolver {
         }
         if (map >= HOUSE_MUSIC_TRACKS_LENGTH) {
             throw new IllegalArgumentException("Indoor map id out of music table range: 0x"
-                + Integer.toHexString(map).toUpperCase());
+                    + Integer.toHexString(map).toUpperCase());
         }
         return map;
     }
@@ -99,8 +92,8 @@ public final class AreaMusicResolver {
         int offset = RomBank.romOffset(SELECT_MUSIC_BANK, address);
         if (offset < 0 || offset + length > romData.length) {
             throw new IllegalArgumentException("Music selection table out of ROM range: bank 0x"
-                + Integer.toHexString(SELECT_MUSIC_BANK).toUpperCase()
-                + " address 0x" + Integer.toHexString(address).toUpperCase());
+                    + Integer.toHexString(SELECT_MUSIC_BANK).toUpperCase()
+                    + " address 0x" + Integer.toHexString(address).toUpperCase());
         }
         int[] table = new int[length];
         for (int i = 0; i < length; i++) {

@@ -1,16 +1,13 @@
 package linksawakening.world.object;
 
-import linksawakening.world.room.*;
-import linksawakening.world.entity.*;
-
-import linksawakening.world.object.SwitchBlockLinkInteraction;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.world.entity.*;
+import linksawakening.world.room.*;
+import org.junit.jupiter.api.Test;
 
 final class SwitchBlockLinkInteractionTest {
 
@@ -45,17 +42,13 @@ final class SwitchBlockLinkInteractionTest {
 
     @Test
     void rejectsInvalidSwitchState() {
-        assertThrows(IllegalArgumentException.class,
-            () -> SwitchBlockLinkInteraction.blocks(0xDB, 0x04, 0x01, false));
-        assertThrows(IllegalArgumentException.class,
-            () -> SwitchBlockLinkInteraction.marksStanding(0xDB, 0x04, 0xFF));
+        assertThrows(IllegalArgumentException.class, () -> SwitchBlockLinkInteraction.blocks(0xDB, 0x04, 0x01, false));
+        assertThrows(IllegalArgumentException.class, () -> SwitchBlockLinkInteraction.marksStanding(0xDB, 0x04, 0xFF));
     }
 
     @Test
     void rejectsUnknownObjectWhenExpectedStateIsRequested() {
-        assertThrows(IllegalArgumentException.class,
-            () -> SwitchBlockLinkInteraction.expectedState(0xDA));
-        assertThrows(IllegalArgumentException.class,
-            () -> SwitchBlockLinkInteraction.expectedState(0xDD));
+        assertThrows(IllegalArgumentException.class, () -> SwitchBlockLinkInteraction.expectedState(0xDA));
+        assertThrows(IllegalArgumentException.class, () -> SwitchBlockLinkInteraction.expectedState(0xDD));
     }
 }

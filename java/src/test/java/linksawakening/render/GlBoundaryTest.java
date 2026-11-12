@@ -1,18 +1,25 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import java.io.DataInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class GlBoundaryTest {
-    @Test void onlyPresenterClassesReferenceLwjgl() throws Exception {
-        Path root = Path.of(RenderLayer.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        for (String pkg : new String[]{"gpu", "render"}) {
+    @Test
+    void onlyPresenterClassesReferenceLwjgl() throws Exception {
+        Path root = Path.of(RenderLayer.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .toURI());
+        for (String pkg : new String[] {"gpu", "render"}) {
             try (var paths = Files.walk(root.resolve("linksawakening/" + pkg))) {
-                for (Path file : paths.filter(p -> p.toString().endsWith(".class")).toList()) {
+                for (Path file :
+                        paths.filter(p -> p.toString().endsWith(".class")).toList()) {
                     if (file.getFileName().toString().startsWith("OpenGlFramePresenter")) continue;
                     try (var input = new DataInputStream(Files.newInputStream(file))) {
                         assertEquals(0xCAFEBABE, input.readInt());
@@ -23,7 +30,10 @@ final class GlBoundaryTest {
                             switch (tag) {
                                 case 1 -> assertFalse(input.readUTF().contains("org/lwjgl/"), file.toString());
                                 case 3, 4, 9, 10, 11, 12, 17, 18 -> input.skipNBytes(4);
-                                case 5, 6 -> { input.skipNBytes(8); i++; }
+                                case 5, 6 -> {
+                                    input.skipNBytes(8);
+                                    i++;
+                                }
                                 case 7, 8, 16, 19, 20 -> input.skipNBytes(2);
                                 case 15 -> input.skipNBytes(3);
                                 default -> throw new AssertionError("Unknown constant pool tag " + tag);

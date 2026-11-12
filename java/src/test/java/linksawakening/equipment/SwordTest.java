@@ -1,5 +1,10 @@
 package linksawakening.equipment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -14,11 +19,6 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.rom.RomTables;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @linksawakening.testing.RequiresRom
 final class SwordTest {
 
@@ -30,10 +30,8 @@ final class SwordTest {
         sword.onPress();
         for (int frame = 1; frame <= 20; frame++) {
             sword.tick(false);
-            assertEquals(frame >= 2 && frame <= 16, sword.blocksTopDownMotion(),
-                "movement frame " + frame);
-            assertEquals(frame >= 2 && frame <= 19, sword.locksTopDownFacing(),
-                "facing frame " + frame);
+            assertEquals(frame >= 2 && frame <= 16, sword.blocksTopDownMotion(), "movement frame " + frame);
+            assertEquals(frame >= 2 && frame <= 19, sword.locksTopDownFacing(), "facing frame " + frame);
             if (frame >= 15) assertEquals(Sword.STATE_NONE, sword.state());
         }
     }
@@ -61,11 +59,13 @@ final class SwordTest {
         }
         sword.onPress();
 
-        assertEquals(List.of(
-                GameplaySoundEvent.SWORD_SWING_A,
-                GameplaySoundEvent.SWORD_SWING_B,
-                GameplaySoundEvent.SWORD_SWING_C,
-                GameplaySoundEvent.SWORD_SWING_D), soundSink.events);
+        assertEquals(
+                List.of(
+                        GameplaySoundEvent.SWORD_SWING_A,
+                        GameplaySoundEvent.SWORD_SWING_B,
+                        GameplaySoundEvent.SWORD_SWING_C,
+                        GameplaySoundEvent.SWORD_SWING_D),
+                soundSink.events);
     }
 
     @Test
@@ -83,8 +83,8 @@ final class SwordTest {
     void acceptedSwordPressOffersTheOptionalLevelTwoBeamSpawn() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         RecordingBeamTarget beamTarget = new RecordingBeamTarget();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0),
-            SwordPalette.compatibility(), beamTarget);
+        Sword sword =
+                new Sword(null, null, soundSink, new SequenceIntSupplier(0), SwordPalette.compatibility(), beamTarget);
 
         sword.onPress();
 
@@ -106,9 +106,8 @@ final class SwordTest {
         }
         sword.tick(true);
 
-        assertEquals(List.of(
-                GameplaySoundEvent.SWORD_SWING_A,
-                GameplaySoundEvent.SWORD_FULLY_CHARGED), soundSink.events);
+        assertEquals(
+                List.of(GameplaySoundEvent.SWORD_SWING_A, GameplaySoundEvent.SWORD_FULLY_CHARGED), soundSink.events);
     }
 
     @Test
@@ -126,10 +125,12 @@ final class SwordTest {
 
         sword.onRelease();
 
-        assertEquals(List.of(
-                GameplaySoundEvent.SWORD_SWING_A,
-                GameplaySoundEvent.SWORD_FULLY_CHARGED,
-                GameplaySoundEvent.SPIN_ATTACK), soundSink.events);
+        assertEquals(
+                List.of(
+                        GameplaySoundEvent.SWORD_SWING_A,
+                        GameplaySoundEvent.SWORD_FULLY_CHARGED,
+                        GameplaySoundEvent.SPIN_ATTACK),
+                soundSink.events);
     }
 
     @Test
@@ -145,15 +146,23 @@ final class SwordTest {
         } while (sword.state() != Sword.STATE_NONE);
 
         assertEquals(
-            List.of(
-                STATE_DRAW, STATE_DRAW, STATE_DRAW,
-                Sword.STATE_SWING_START, Sword.STATE_SWING_START, Sword.STATE_SWING_START,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_NONE
-            ),
-            observed
-        );
+                List.of(
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_NONE),
+                observed);
     }
 
     @Test
@@ -169,15 +178,23 @@ final class SwordTest {
         }
 
         assertEquals(
-            List.of(
-                STATE_DRAW, STATE_DRAW, STATE_DRAW,
-                Sword.STATE_SWING_START, Sword.STATE_SWING_START, Sword.STATE_SWING_START,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_HOLDING
-            ),
-            observed
-        );
+                List.of(
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_HOLDING),
+                observed);
     }
 
     @Test
@@ -307,8 +324,12 @@ final class SwordTest {
     void romSwordPalettesChangeColorsWithoutChangingBladeGeometry() throws Exception {
         byte[] romData = loadRom();
         SwordPalette palette = SwordPalette.loadFromRom(romData);
-        Sword sword = new Sword(RomTables.loadFromRom(romData), SwordSpriteSheet.loadFromRom(romData),
-            GameplaySoundSink.none(), () -> 0, palette);
+        Sword sword = new Sword(
+                RomTables.loadFromRom(romData),
+                SwordSpriteSheet.loadFromRom(romData),
+                GameplaySoundSink.none(),
+                () -> 0,
+                palette);
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -328,8 +349,7 @@ final class SwordTest {
 
         assertTrue(containsOpaqueColor(normalBuffer, palette.normal()[2]));
         assertTrue(containsOpaqueColor(chargedBuffer, palette.charged()[2]));
-        assertEquals(Arrays.toString(alphaMask(normalBuffer)),
-            Arrays.toString(alphaMask(chargedBuffer)));
+        assertEquals(Arrays.toString(alphaMask(normalBuffer)), Arrays.toString(alphaMask(chargedBuffer)));
     }
 
     @Test
@@ -459,31 +479,27 @@ final class SwordTest {
         }
 
         assertEquals(
-            List.of(
-                Sword.STATE_SWING_END,
-                Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_START,
-                Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_END,
-                Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_END,
-                Sword.STATE_SWING_MIDDLE
-            ),
-            states
-        );
+                List.of(
+                        Sword.STATE_SWING_END,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_END,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_END,
+                        Sword.STATE_SWING_MIDDLE),
+                states);
         assertEquals(
-            List.of(
-                Link.DIRECTION_DOWN,
-                Link.DIRECTION_RIGHT,
-                Link.DIRECTION_RIGHT,
-                Link.DIRECTION_UP,
-                Link.DIRECTION_UP,
-                Link.DIRECTION_LEFT,
-                Link.DIRECTION_LEFT,
-                Link.DIRECTION_DOWN
-            ),
-            directions
-        );
+                List.of(
+                        Link.DIRECTION_DOWN,
+                        Link.DIRECTION_RIGHT,
+                        Link.DIRECTION_RIGHT,
+                        Link.DIRECTION_UP,
+                        Link.DIRECTION_UP,
+                        Link.DIRECTION_LEFT,
+                        Link.DIRECTION_LEFT,
+                        Link.DIRECTION_DOWN),
+                directions);
     }
 
     @Test
@@ -519,9 +535,9 @@ final class SwordTest {
         int blue = color & 0xFF;
         for (int offset = 0; offset < rgbaBuffer.length; offset += 4) {
             if (Byte.toUnsignedInt(rgbaBuffer[offset + 3]) == 0xFF
-                && Byte.toUnsignedInt(rgbaBuffer[offset]) == red
-                && Byte.toUnsignedInt(rgbaBuffer[offset + 1]) == green
-                && Byte.toUnsignedInt(rgbaBuffer[offset + 2]) == blue) {
+                    && Byte.toUnsignedInt(rgbaBuffer[offset]) == red
+                    && Byte.toUnsignedInt(rgbaBuffer[offset + 1]) == green
+                    && Byte.toUnsignedInt(rgbaBuffer[offset + 2]) == blue) {
                 return true;
             }
         }
@@ -536,8 +552,14 @@ final class SwordTest {
         return out;
     }
 
-    private static void drawExpectedSwordPose(byte[] buffer, RomTables romTables, SwordSpriteSheet spriteSheet,
-                                              int linkPixelX, int linkPixelY, int javaDirection, int swordState) {
+    private static void drawExpectedSwordPose(
+            byte[] buffer,
+            RomTables romTables,
+            SwordSpriteSheet spriteSheet,
+            int linkPixelX,
+            int linkPixelY,
+            int javaDirection,
+            int swordState) {
         int romDirection = toRomDirection(javaDirection);
         int swordDir = romTables.swordDirectionFor(romDirection, swordState);
         int bladeX = linkPixelX + romTables.swordBladeXOffset(romDirection, swordState);
@@ -554,16 +576,16 @@ final class SwordTest {
         }
     }
 
-    private static void draw8x16Alpha(byte[] buffer, SwordSpriteSheet spriteSheet,
-                                      int tileIndex, int screenX, int screenY, int attrs) {
+    private static void draw8x16Alpha(
+            byte[] buffer, SwordSpriteSheet spriteSheet, int tileIndex, int screenX, int screenY, int attrs) {
         boolean flipX = (attrs & 0x20) != 0;
         boolean flipY = (attrs & 0x40) != 0;
         drawTileAlpha(buffer, spriteSheet.tile(flipY ? tileIndex + 1 : tileIndex), screenX, screenY, flipX, flipY);
         drawTileAlpha(buffer, spriteSheet.tile(flipY ? tileIndex : tileIndex + 1), screenX, screenY + 8, flipX, flipY);
     }
 
-    private static void drawTileAlpha(byte[] buffer, linksawakening.gpu.Tile tile,
-                                      int screenX, int screenY, boolean flipX, boolean flipY) {
+    private static void drawTileAlpha(
+            byte[] buffer, linksawakening.gpu.Tile tile, int screenX, int screenY, boolean flipX, boolean flipY) {
         for (int ty = 0; ty < 8; ty++) {
             for (int tx = 0; tx < 8; tx++) {
                 int px = screenX + tx;
@@ -583,11 +605,16 @@ final class SwordTest {
 
     private static int toRomDirection(int javaDirection) {
         switch (javaDirection) {
-            case Link.DIRECTION_RIGHT: return 0;
-            case Link.DIRECTION_LEFT:  return 1;
-            case Link.DIRECTION_UP:    return 2;
-            case Link.DIRECTION_DOWN:  return 3;
-            default: return 3;
+            case Link.DIRECTION_RIGHT:
+                return 0;
+            case Link.DIRECTION_LEFT:
+                return 1;
+            case Link.DIRECTION_UP:
+                return 2;
+            case Link.DIRECTION_DOWN:
+                return 3;
+            default:
+                return 3;
         }
     }
 

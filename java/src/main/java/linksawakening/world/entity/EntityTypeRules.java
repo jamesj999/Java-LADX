@@ -1,28 +1,6 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.motion.BooBuddyMotion;
-import linksawakening.world.entity.motion.BuzzBlobMotion;
-import linksawakening.world.entity.motion.CrowMotion;
-import linksawakening.world.entity.motion.CuccoMotion;
-import linksawakening.world.entity.motion.DogMotion;
-import linksawakening.world.entity.motion.FishMotion;
-import linksawakening.world.entity.motion.FloatingItemMotion;
-import linksawakening.world.entity.motion.GenieMotion;
-import linksawakening.world.entity.motion.GiantGopongaMotion;
-import linksawakening.world.entity.motion.GopongaFlowerMotion;
-import linksawakening.world.entity.motion.GopongaProjectileMotion;
-import linksawakening.world.entity.motion.MoldormMotion;
-import linksawakening.world.entity.motion.PiranhaMotion;
-import linksawakening.world.entity.motion.PokeyMotion;
-import linksawakening.world.entity.motion.RoosterMotion;
-import linksawakening.world.entity.motion.SandCrabMotion;
-import linksawakening.world.entity.motion.UrchinMotion;
-import linksawakening.world.entity.motion.WitchRatMotion;
-import linksawakening.world.entity.motion.ZombieMotion;
-import linksawakening.world.entity.motion.ZoraMotion;
-
 import static linksawakening.world.entity.RoomEntityRuntime.*;
-
 import static linksawakening.world.entity.RoomEntityRuntime.ARMOS_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.entity.RoomEntityRuntime.ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS;
 import static linksawakening.world.entity.RoomEntityRuntime.ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
@@ -128,7 +106,6 @@ import static linksawakening.world.entity.RoomEntityRuntime.ENTITY_ZORA;
 import static linksawakening.world.entity.RoomEntityRuntime.EVASIVE_PHYSICS_FLAGS;
 import static linksawakening.world.entity.RoomEntityRuntime.FAIRY_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.entity.RoomEntityRuntime.GOOMBA_INITIAL_PHYSICS_FLAGS;
-import static linksawakening.world.entity.RoomEntityRuntime.HITFLAGS_IGNORE_HITS;
 import static linksawakening.world.entity.RoomEntityRuntime.IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.entity.RoomEntityRuntime.IRON_MASK_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.entity.RoomEntityRuntime.KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS;
@@ -136,15 +113,41 @@ import static linksawakening.world.entity.RoomEntityRuntime.LIKE_LIKE_INITIAL_PH
 import static linksawakening.world.entity.RoomEntityRuntime.MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.entity.RoomEntityRuntime.SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
 
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.BuzzBlobMotion;
+import linksawakening.world.entity.motion.CrowMotion;
+import linksawakening.world.entity.motion.CuccoMotion;
+import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.FloatingItemMotion;
+import linksawakening.world.entity.motion.GenieMotion;
+import linksawakening.world.entity.motion.GiantGopongaMotion;
+import linksawakening.world.entity.motion.GopongaFlowerMotion;
+import linksawakening.world.entity.motion.GopongaProjectileMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+import linksawakening.world.entity.motion.PiranhaMotion;
+import linksawakening.world.entity.motion.PokeyMotion;
+import linksawakening.world.entity.motion.RoosterMotion;
+import linksawakening.world.entity.motion.SandCrabMotion;
+import linksawakening.world.entity.motion.UrchinMotion;
+import linksawakening.world.entity.motion.WitchRatMotion;
+import linksawakening.world.entity.motion.ZombieMotion;
+import linksawakening.world.entity.motion.ZoraMotion;
+
 /** ROM entity-type policies shared by initialization, collision and persistence. */
 public final class EntityTypeRules {
     private EntityTypeRules() {}
 
     static boolean isLiftableEntity(RoomEntity entity) {
         return switch (entity.type()) {
-            case ENTITY_BOMB, ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
-                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
-                ENTITY_CUCCO, ENTITY_HORSE_PIECE -> true;
+            case ENTITY_BOMB,
+                    ENTITY_LIFTABLE_ROCK,
+                    ENTITY_LIFTABLE_STATUE,
+                    ENTITY_WRECKING_BALL,
+                    ENTITY_SIDE_VIEW_POT,
+                    ENTITY_ROOSTER,
+                    ENTITY_CUCCO,
+                    ENTITY_HORSE_PIECE -> true;
             default -> false;
         };
     }
@@ -154,13 +157,14 @@ public final class EntityTypeRules {
     }
 
     public static boolean isFollowingNpcType(int type) {
-        return type == ENTITY_GHOST || type == ENTITY_ROOSTER
-            || type == ENTITY_MARIN_AT_THE_SHORE || type == ENTITY_BOW_WOW;
+        return type == ENTITY_GHOST
+                || type == ENTITY_ROOSTER
+                || type == ENTITY_MARIN_AT_THE_SHORE
+                || type == ENTITY_BOW_WOW;
     }
 
     public static boolean isGhiniType(int type) {
-        return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI
-            || type == ENTITY_GHINI;
+        return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI || type == ENTITY_GHINI;
     }
 
     public static boolean isHidingGhiniType(int type) {
@@ -180,47 +184,55 @@ public final class EntityTypeRules {
     }
 
     static boolean usesBank6Recoil(int type) {
-        return type == ENTITY_KEESE || type == ENTITY_TEKTITE
-            || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
-            || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE
-            || type == ENTITY_WIZROBE
-            || type == ENTITY_CROW
-            || type == ENTITY_BOO_BUDDY
-            || type == ENTITY_SPARK_COUNTER_CLOCKWISE
-            || type == ENTITY_SPARK_CLOCKWISE
-            || type == ENTITY_POLS_VOICE
-            || type == ENTITY_ZOL || type == ENTITY_GEL
-            || type == ENTITY_ROLLING_BONES
-            || type == ENTITY_LIKE_LIKE || type == ENTITY_ARMOS_KNIGHT
-            || type == ENTITY_HINOX;
+        return type == ENTITY_KEESE
+                || type == ENTITY_TEKTITE
+                || type == ENTITY_ANTI_FAIRY
+                || type == ENTITY_STALFOS_AGGRESSIVE
+                || type == ENTITY_HARDHAT_BEETLE
+                || type == ENTITY_ARMOS_STATUE
+                || type == ENTITY_WIZROBE
+                || type == ENTITY_CROW
+                || type == ENTITY_BOO_BUDDY
+                || type == ENTITY_SPARK_COUNTER_CLOCKWISE
+                || type == ENTITY_SPARK_CLOCKWISE
+                || type == ENTITY_POLS_VOICE
+                || type == ENTITY_ZOL
+                || type == ENTITY_GEL
+                || type == ENTITY_ROLLING_BONES
+                || type == ENTITY_LIKE_LIKE
+                || type == ENTITY_ARMOS_KNIGHT
+                || type == ENTITY_HINOX;
     }
 
     static boolean usesSharedRecoil(int type) {
         return type == ENTITY_HARDHAT_BEETLE
-            || type == ENTITY_LEEVER || type == ENTITY_PEAHAT
-            || type == ENTITY_WATER_TEKTITE
-            || type == ENTITY_STALFOS_EVASIVE
-            || type == ENTITY_MOBLIN_SWORD
-            || type == ENTITY_BOUNCING_BOMBITE || type == ENTITY_TIMER_BOMBITE
-            || type == ENTITY_MAD_BOMBER
-            || type == ENTITY_BOMBER
-            || type == ENTITY_GOOMBA
-            || type == ENTITY_SNAKE
-            || type == ENTITY_HIDING_ZOL
-            || type == ENTITY_STAR
-            || type == ENTITY_BLOOPER
-            || type == ENTITY_WINGED_OCTOROK
-            || type == ENTITY_BUSH_CRAWLER
-            || type == ENTITY_PAIRODD
-            || type == ENTITY_MIMIC
-            || type == ENTITY_MASKED_MIMIC_GORIYA
-            || type == ENTITY_MINI_MOLDORM
-            || type == ENTITY_ZOMBIE
-            || type == ENTITY_BUZZ_BLOB
-            || type == ENTITY_SAND_CRAB
-            || type == ENTITY_URCHIN
-            || isRoamingEnemyType(type) || usesBank6Recoil(type)
-            || isGhiniType(type);
+                || type == ENTITY_LEEVER
+                || type == ENTITY_PEAHAT
+                || type == ENTITY_WATER_TEKTITE
+                || type == ENTITY_STALFOS_EVASIVE
+                || type == ENTITY_MOBLIN_SWORD
+                || type == ENTITY_BOUNCING_BOMBITE
+                || type == ENTITY_TIMER_BOMBITE
+                || type == ENTITY_MAD_BOMBER
+                || type == ENTITY_BOMBER
+                || type == ENTITY_GOOMBA
+                || type == ENTITY_SNAKE
+                || type == ENTITY_HIDING_ZOL
+                || type == ENTITY_STAR
+                || type == ENTITY_BLOOPER
+                || type == ENTITY_WINGED_OCTOROK
+                || type == ENTITY_BUSH_CRAWLER
+                || type == ENTITY_PAIRODD
+                || type == ENTITY_MIMIC
+                || type == ENTITY_MASKED_MIMIC_GORIYA
+                || type == ENTITY_MINI_MOLDORM
+                || type == ENTITY_ZOMBIE
+                || type == ENTITY_BUZZ_BLOB
+                || type == ENTITY_SAND_CRAB
+                || type == ENTITY_URCHIN
+                || isRoamingEnemyType(type)
+                || usesBank6Recoil(type)
+                || isGhiniType(type);
     }
 
     public static boolean isBombiteType(int type) {
@@ -240,13 +252,15 @@ public final class EntityTypeRules {
     }
 
     static boolean isBossKeyDropProducer(int entityType) {
-        return entityType == ENTITY_MASTER_STALFOS || entityType == ENTITY_DESERT_LANMOLA
-            || entityType == ENTITY_ARMOS_KNIGHT || entityType == ENTITY_HINOX;
+        return entityType == ENTITY_MASTER_STALFOS
+                || entityType == ENTITY_DESERT_LANMOLA
+                || entityType == ENTITY_ARMOS_KNIGHT
+                || entityType == ENTITY_HINOX;
     }
 
     static int initialPhysicsFlags(int type) {
         return switch (type) {
-            // PhysicsFlagsForEntity ($03:4000), Zol/Gel entries $1B/$1C.
+                // PhysicsFlagsForEntity ($03:4000), Zol/Gel entries $1B/$1C.
             case ENTITY_ZOL -> 0x12;
             case ENTITY_GEL -> 0x11;
             case ENTITY_GENIE -> GenieMotion.INITIAL_PHYSICS_FLAGS;
@@ -277,15 +291,13 @@ public final class EntityTypeRules {
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
             case ENTITY_CHEST_WITH_ITEM -> CHEST_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
-                BOMBITE_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CUCCO -> CuccoMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOPONGA_FLOWER -> GopongaFlowerMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_GIANT_GOPONGA_FLOWER -> GiantGopongaMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_GOPONGA_FLOWER_PROJECTILE ->
-                GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_GOPONGA_FLOWER_PROJECTILE -> GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_POKEY -> PokeyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_PIRANHA_PLANT -> PiranhaMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ZORA -> ZoraMotion.INITIAL_PHYSICS_FLAGS;
@@ -298,14 +310,17 @@ public final class EntityTypeRules {
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_HIDING_SLIME_KEY ->
-                0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW
+            case ENTITY_HIDING_SLIME_KEY -> 0x02
+                    | ENTITY_PHYSICS_HARMLESS
+                    | ENTITY_PHYSICS_SHADOW
                     | ENTITY_PHYSICS_GRABBABLE;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
-                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT,
-                ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
+            case ENTITY_LIFTABLE_ROCK,
+                    ENTITY_LIFTABLE_STATUE,
+                    ENTITY_WRECKING_BALL,
+                    ENTITY_SIDE_VIEW_POT,
+                    ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
             default -> 0;
         };
     }
@@ -336,8 +351,7 @@ public final class EntityTypeRules {
     }
 
     public static int persistentClearMask(RoomEntity entity) {
-        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
-            ? 1 << entity.sourceLoadOrder() : 0;
+        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8 ? 1 << entity.sourceLoadOrder() : 0;
     }
 
     static boolean requiresHeldPickupTransition(int type) {
@@ -349,17 +363,17 @@ public final class EntityTypeRules {
 
     static boolean isRuntimeFloatingItem(RoomEntity entity) {
         return FloatingItemMotion.isFloatingItem(entity.type())
-            && entity.spriteDefinition().supported();
+                && entity.spriteDefinition().supported();
     }
 
     public static boolean isCommonDroppableType(int type) {
         return type == ENTITY_DROPPABLE_HEART
-            || type == ENTITY_DROPPABLE_RUPEE
-            || type == ENTITY_DROPPABLE_FAIRY
-            || type == ENTITY_DROPPABLE_ARROWS
-            || type == ENTITY_DROPPABLE_BOMBS
-            || type == ENTITY_DROPPABLE_MAGIC_POWDER
-            || type == ENTITY_HIDING_SLIME_KEY;
+                || type == ENTITY_DROPPABLE_RUPEE
+                || type == ENTITY_DROPPABLE_FAIRY
+                || type == ENTITY_DROPPABLE_ARROWS
+                || type == ENTITY_DROPPABLE_BOMBS
+                || type == ENTITY_DROPPABLE_MAGIC_POWDER
+                || type == ENTITY_HIDING_SLIME_KEY;
     }
 
     static int variantFor(RoomEntity entity, int frameCounter) {
@@ -373,12 +387,12 @@ public final class EntityTypeRules {
             case ENTITY_ARMOS_STATUE -> (frameCounter >>> 4) & 0x01;
             case ENTITY_GHINI -> ((frameCounter >>> 4) ^ entity.slot()) & 0x01;
             case ENTITY_HARDHAT_BEETLE -> (frameCounter >>> 3) & 0x01;
-            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
-                (frameCounter >>> 1) & 0x01;
+            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE -> (frameCounter >>> 1) & 0x01;
             case 0x70, 0x73, 0x75 -> (frameCounter >>> 4) & 0x01;
             default -> entity.spriteVariant();
         };
     }
+
     public static boolean isDungeonWarpType(int type) {
         return type == linksawakening.world.entity.motion.WarpMotion.ENTITY_TYPE;
     }

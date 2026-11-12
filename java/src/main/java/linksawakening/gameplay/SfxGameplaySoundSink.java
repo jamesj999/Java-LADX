@@ -1,11 +1,10 @@
 package linksawakening.gameplay;
 
+import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
-
-import java.util.Objects;
 
 public final class SfxGameplaySoundSink implements GameplaySoundSink {
     private static final int SAMPLE_RATE = 44_100;
@@ -36,10 +35,7 @@ public final class SfxGameplaySoundSink implements GameplaySoundSink {
     }
 
     public SfxGameplaySoundSink(
-            GameBoyApu apu,
-            SoundEffectPlayer player,
-            GameplaySoundEffectMap soundEffects,
-            PcmSoundOutput output) {
+            GameBoyApu apu, SoundEffectPlayer player, GameplaySoundEffectMap soundEffects, PcmSoundOutput output) {
         this.apu = Objects.requireNonNull(apu, "apu");
         this.player = Objects.requireNonNull(player, "player");
         this.soundEffects = Objects.requireNonNull(soundEffects, "soundEffects");

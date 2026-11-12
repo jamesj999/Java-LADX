@@ -1,17 +1,19 @@
 package linksawakening.app.gameplay;
 
+import static linksawakening.world.room.RoomConstants.*;
 
-
+import java.util.function.BooleanSupplier;
+import java.util.function.IntUnaryOperator;
+import java.util.function.Supplier;
 import linksawakening.app.MusicDirector;
 import linksawakening.app.story.OpeningStory;
-
+import linksawakening.audio.music.FrameMusicPlayer;
+import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
-import linksawakening.audio.music.GameplayMusicController;
-import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.OverworldDialogBlockers;
@@ -19,20 +21,14 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
-import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
+import linksawakening.ui.InventoryMenu;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.RoomTransitionCoordinator;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
-
-import static linksawakening.world.room.RoomConstants.*;
-
-import java.util.function.Supplier;
-import java.util.function.IntUnaryOperator;
-import java.util.function.BooleanSupplier;
 
 /** ROM-ordered simulation between transition advancement and input completion. */
 public record GameplaySimulation(
@@ -75,8 +71,8 @@ public record GameplaySimulation(
     public void tick() {
         // GAMEPLAY_INVENTORY has its own handler ($00:0EA1/$20:5904):
         // world resources, effects, Link and entities do not advance behind it.
-        boolean inventoryBlockedAtStart = inventoryController != null
-            && inventoryController.shouldBlockOverworldInput();
+        boolean inventoryBlockedAtStart =
+                inventoryController != null && inventoryController.shouldBlockOverworldInput();
         if (inventoryBlockedAtStart) {
             boolean worldHandler = inventoryMenu.transition().worldHandlerActive();
             boolean interactive = inventoryMenu.isFullyOpen();
@@ -94,13 +90,12 @@ public record GameplaySimulation(
         new AnimatedTilesPhase().tick(this, dialogBlocksGameplay);
     }
 
-    public static boolean shouldTickRoomEntities(boolean scrollActive,
-                                          boolean transitionInputBlocked,
-                                          boolean inventoryBlocksInput,
-                                          boolean inventoryTransitioning) {
-        return !scrollActive
-            && !transitionInputBlocked
-            && !inventoryBlocksInput;
+    public static boolean shouldTickRoomEntities(
+            boolean scrollActive,
+            boolean transitionInputBlocked,
+            boolean inventoryBlocksInput,
+            boolean inventoryTransitioning) {
+        return !scrollActive && !transitionInputBlocked && !inventoryBlocksInput;
     }
 
     public static void completeGameplayFrame(DialogController dialog) {
@@ -108,5 +103,4 @@ public record GameplaySimulation(
             dialog.tickGameplayFrameCooldown();
         }
     }
-
 }

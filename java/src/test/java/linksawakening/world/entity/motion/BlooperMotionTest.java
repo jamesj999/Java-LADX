@@ -1,14 +1,11 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityGroundInteraction;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class BlooperMotionTest {
 
@@ -20,8 +17,11 @@ final class BlooperMotionTest {
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
         BlooperMotion.Update update = motion.finish(
-            movement, linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0x01),
-            0, 0x80, 0x80);
+                movement,
+                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0x01),
+                0,
+                0x80,
+                0x80);
 
         assertEquals(0xF1, motion.speedX(0));
         assertEquals(0x03, motion.speedY(0));
@@ -38,8 +38,11 @@ final class BlooperMotionTest {
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
         BlooperMotion.Update update = motion.finish(
-            movement, linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0x01),
-            0, 48, 40);
+                movement,
+                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0x01),
+                0,
+                48,
+                40);
 
         assertEquals(1, motion.state(0));
         assertEquals(0x25, motion.transitionCountdown(0));
@@ -57,16 +60,22 @@ final class BlooperMotionTest {
 
         BlooperMotion.Movement evenMovement = motion.move(entity(64, 64), 2, null, 0);
         BlooperMotion.Update even = motion.finish(
-            evenMovement, linksawakening.world.entity.EntityGroundTestAccess.unchanged(evenMovement.entity(), 1),
-            2, 80, 80);
+                evenMovement,
+                linksawakening.world.entity.EntityGroundTestAccess.unchanged(evenMovement.entity(), 1),
+                2,
+                80,
+                80);
         assertEquals(1, motion.speedX(0));
         assertEquals(0x03, motion.speedY(0));
         assertEquals(1, even.entity().spriteVariant());
 
         BlooperMotion.Movement oddMovement = motion.move(even.entity(), 3, null, 0);
         BlooperMotion.Update odd = motion.finish(
-            oddMovement, linksawakening.world.entity.EntityGroundTestAccess.unchanged(oddMovement.entity(), 1),
-            3, 80, 80);
+                oddMovement,
+                linksawakening.world.entity.EntityGroundTestAccess.unchanged(oddMovement.entity(), 1),
+                3,
+                80,
+                80);
         assertEquals(1, motion.speedX(0));
         assertEquals(0x03, motion.speedY(0));
         assertEquals(1, odd.entity().spriteVariant());
@@ -80,8 +89,11 @@ final class BlooperMotionTest {
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
         BlooperMotion.Update update = motion.finish(
-            movement, linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 1),
-            0, 64, 64);
+                movement,
+                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 1),
+                0,
+                64,
+                64);
 
         assertEquals(0, motion.state(0));
         assertEquals(0x40, motion.transitionCountdown(0));
@@ -99,8 +111,11 @@ final class BlooperMotionTest {
         assertEquals(65, movement.entity().x());
 
         BlooperMotion.Update update = motion.finish(
-            movement, linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0),
-            0, 64, 64);
+                movement,
+                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0),
+                0,
+                64,
+                64);
 
         assertEquals(64, update.entity().x());
         assertEquals(64, update.entity().y());
@@ -108,7 +123,19 @@ final class BlooperMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, 0, 0xA9, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xA9), -1, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0,
+                0,
+                0xA9,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xA9),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

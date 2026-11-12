@@ -1,12 +1,10 @@
 package linksawakening.world.room;
 
+import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
-import linksawakening.rom.RomSymbols;
-
 import linksawakening.rom.RomBank;
-
-import java.util.Arrays;
+import linksawakening.rom.RomSymbols;
 
 public final class RoomTilemapBuilder {
     private int readRomByte(int offset) {
@@ -64,8 +62,8 @@ public final class RoomTilemapBuilder {
         return build(roomId, mapId, true, roomObjectsArea, null, null);
     }
 
-    private RoomTilemap build(int roomId, int mapId, boolean indoor, int[] roomObjectsArea,
-                              int[] gbcOverlay, int[] renderValues) {
+    private RoomTilemap build(
+            int roomId, int mapId, boolean indoor, int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues) {
         int[] tileIds = new int[RoomConstants.ROOM_TILE_WIDTH * RoomConstants.ROOM_TILE_HEIGHT];
         int[] tileAttrs = new int[RoomConstants.ROOM_TILE_WIDTH * RoomConstants.ROOM_TILE_HEIGHT];
 
@@ -73,18 +71,16 @@ public final class RoomTilemapBuilder {
         int objectAttrOffset;
         boolean cameraShop = indoor && mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP;
         if (indoor && (mapId == MAP_COLOR_DUNGEON || cameraShop)) {
-            objectTilemapOffset = RomBank.romOffset(
-                COLOR_DUNGEON_OBJECT_TILEMAP_BANK, COLOR_DUNGEON_OBJECT_TILEMAP_ADDR);
+            objectTilemapOffset =
+                    RomBank.romOffset(COLOR_DUNGEON_OBJECT_TILEMAP_BANK, COLOR_DUNGEON_OBJECT_TILEMAP_ADDR);
             objectAttrOffset = mapId == MAP_COLOR_DUNGEON
-                ? RomBank.romOffset(COLOR_DUNGEON_OBJECT_ATTR_BANK, COLOR_DUNGEON_OBJECT_ATTR_ADDR)
-                : indoorObjectAttrOffset(mapId, roomId);
+                    ? RomBank.romOffset(COLOR_DUNGEON_OBJECT_ATTR_BANK, COLOR_DUNGEON_OBJECT_ATTR_ADDR)
+                    : indoorObjectAttrOffset(mapId, roomId);
         } else {
             objectTilemapOffset = indoor
-                ? RomBank.romOffset(INDOOR_OBJECT_TILEMAP_BANK, INDOOR_OBJECT_TILEMAP_ADDR)
-                : RomBank.romOffset(OVERWORLD_TILEMAP_BANK, OVERWORLD_TILEMAP_ADDR);
-            objectAttrOffset = indoor
-                ? indoorObjectAttrOffset(mapId, roomId)
-                : overworldObjectAttrOffset(roomId);
+                    ? RomBank.romOffset(INDOOR_OBJECT_TILEMAP_BANK, INDOOR_OBJECT_TILEMAP_ADDR)
+                    : RomBank.romOffset(OVERWORLD_TILEMAP_BANK, OVERWORLD_TILEMAP_ADDR);
+            objectAttrOffset = indoor ? indoorObjectAttrOffset(mapId, roomId) : overworldObjectAttrOffset(roomId);
         }
 
         for (int oy = 0; oy < RoomConstants.OBJECTS_PER_COLUMN; oy++) {
@@ -96,7 +92,8 @@ public final class RoomTilemapBuilder {
                 }
 
                 int overlayIndex = oy * RoomConstants.OBJECTS_PER_ROW + ox;
-                int lookupValue = resolveRenderedObjectValue(areaIndex, overlayIndex, objectId, gbcOverlay, renderValues);
+                int lookupValue =
+                        resolveRenderedObjectValue(areaIndex, overlayIndex, objectId, gbcOverlay, renderValues);
                 int tileTableOffset = objectTilemapOffset + lookupValue * 4;
                 int attrTableOffset = objectAttrOffset < 0 ? -1 : objectAttrOffset + lookupValue * 4;
 
@@ -139,8 +136,7 @@ public final class RoomTilemapBuilder {
         int groupOffset = mapId * 2;
         boolean useB = mapId > 0x08;
         int attrmapsBank = useB ? INDOORS_B_ATTRMAPS_BANK : INDOORS_A_ATTRMAPS_BANK;
-        if ((mapId == 0x0A && roomId == 0xFD)
-            || (mapId == 0x11 && (roomId == 0xC0 || roomId == 0xC1))) {
+        if ((mapId == 0x0A && roomId == 0xFD) || (mapId == 0x11 && (roomId == 0xC0 || roomId == 0xC1))) {
             groupOffset = 0x1E;
         } else if (mapId == 0x0F && roomId == 0xA0) {
             groupOffset = 0;
@@ -164,8 +160,7 @@ public final class RoomTilemapBuilder {
     }
 
     private int readPointer(int offset) {
-        return readRomByte(offset)
-            | (readRomByte(offset + 1) << 8);
+        return readRomByte(offset) | (readRomByte(offset + 1) << 8);
     }
 
     private int[] loadGbcOverlay(int roomId) {
@@ -204,15 +199,12 @@ public final class RoomTilemapBuilder {
                 // ConfigureRoomObjects performs persistent door replacements
                 // before LoadRoomTilemap. SetupDestroyableObjectIfNeeded writes
                 // the replacement into the mutable GBC object buffer too.
-                if (roomObjectsArea != null
-                    && areaIndex < roomObjectsArea.length) {
+                if (roomObjectsArea != null && areaIndex < roomObjectsArea.length) {
                     int objectId = roomObjectsArea[areaIndex];
                     boolean persistentReplacement =
-                        objectId == OBJECT_ROCKY_CAVE_DOOR
-                            && renderValue == OBJECT_BOMBABLE_CAVE_DOOR
-                        || objectId == OBJECT_CAVE_DOOR
-                            && renderValue == OBJECT_CLOSED_GATE
-                        || objectId == 0xA1 && renderValue == 0xA0;
+                            objectId == OBJECT_ROCKY_CAVE_DOOR && renderValue == OBJECT_BOMBABLE_CAVE_DOOR
+                                    || objectId == OBJECT_CAVE_DOOR && renderValue == OBJECT_CLOSED_GATE
+                                    || objectId == 0xA1 && renderValue == 0xA0;
                     if (persistentReplacement) {
                         renderValue = objectId;
                         gbcOverlay[overlayIndex] = renderValue;
@@ -224,8 +216,8 @@ public final class RoomTilemapBuilder {
         return renderValues;
     }
 
-    private int resolveRenderedObjectValue(int areaIndex, int overlayIndex, int objectId,
-                                           int[] gbcOverlay, int[] renderValues) {
+    private int resolveRenderedObjectValue(
+            int areaIndex, int overlayIndex, int objectId, int[] gbcOverlay, int[] renderValues) {
         if (renderValues != null && areaIndex >= 0 && areaIndex < renderValues.length) {
             int value = renderValues[areaIndex];
             if (value >= 0 && value <= 0xFF) {

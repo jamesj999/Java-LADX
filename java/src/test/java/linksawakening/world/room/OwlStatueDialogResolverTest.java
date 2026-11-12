@@ -1,14 +1,10 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.OwlStatueDialogResolver;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @linksawakening.testing.RequiresRom
 final class OwlStatueDialogResolverTest {
@@ -35,12 +31,9 @@ final class OwlStatueDialogResolverTest {
         assertEquals(0x2A2, resolver.globalDialogId(2, 0x61, true));
         assertEquals(0x2A3, resolver.globalDialogId(2, 0x62, true));
         assertEquals(0x2A4, resolver.globalDialogId(2, 0x54, true));
-        assertThrows(IllegalArgumentException.class,
-            () -> resolver.globalDialogId(0x16, 0, true));
-        assertThrows(IllegalArgumentException.class,
-            () -> resolver.globalDialogId(2, 256, true));
-        assertThrows(IllegalArgumentException.class,
-            () -> new OwlStatueDialogResolver(new byte[0x8000]));
+        assertThrows(IllegalArgumentException.class, () -> resolver.globalDialogId(0x16, 0, true));
+        assertThrows(IllegalArgumentException.class, () -> resolver.globalDialogId(2, 256, true));
+        assertThrows(IllegalArgumentException.class, () -> new OwlStatueDialogResolver(new byte[0x8000]));
     }
 
     private static void write(byte[] rom, int address, int... values) {

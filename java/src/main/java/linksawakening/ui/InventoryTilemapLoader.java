@@ -1,11 +1,8 @@
 package linksawakening.ui;
 
-import linksawakening.rom.RomSymbols;
-
-import linksawakening.rom.RomAddress;
-
 import linksawakening.rom.Rom;
-
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomUtil;
 
 public final class InventoryTilemapLoader {
@@ -32,8 +29,8 @@ public final class InventoryTilemapLoader {
     private final int[][] objectPalettes;
     private final int[] ocarinaPopupOam;
 
-    private InventoryTilemapLoader(int[] tilemap, int[] attrmap, int[][] palettes,
-                                   int[][] objectPalettes, int[] ocarinaPopupOam) {
+    private InventoryTilemapLoader(
+            int[] tilemap, int[] attrmap, int[][] palettes, int[][] objectPalettes, int[] ocarinaPopupOam) {
         this.baseTilemap = tilemap;
         this.attrmap = attrmap;
         this.palettes = palettes;
@@ -42,16 +39,17 @@ public final class InventoryTilemapLoader {
     }
 
     public static InventoryTilemapLoader loadFromRom(byte[] romData) {
-        int[] tilemap = RomUtil.decodeBackgroundFromRom(
-            romData, INVENTORY_TILEMAP_BANK, INVENTORY_TILEMAP_ADDR, WIDTH, 0x7F);
-        int[] attrmap = RomUtil.decodeBackgroundFromRom(
-            romData, INVENTORY_ATTRMAP_BANK, INVENTORY_ATTRMAP_ADDR, WIDTH, 0x00);
+        int[] tilemap =
+                RomUtil.decodeBackgroundFromRom(romData, INVENTORY_TILEMAP_BANK, INVENTORY_TILEMAP_ADDR, WIDTH, 0x7F);
+        int[] attrmap =
+                RomUtil.decodeBackgroundFromRom(romData, INVENTORY_ATTRMAP_BANK, INVENTORY_ATTRMAP_ADDR, WIDTH, 0x00);
         int[][] palettes = RomUtil.loadPalettesFromRom(
-            romData, INVENTORY_PALETTES_BANK, INVENTORY_PALETTES_ADDR, INVENTORY_BG_PALETTE_COUNT);
+                romData, INVENTORY_PALETTES_BANK, INVENTORY_PALETTES_ADDR, INVENTORY_BG_PALETTE_COUNT);
         int[][] objectPalettes = RomUtil.loadPalettesFromRom(
-            romData, INVENTORY_PALETTES_BANK,
-            INVENTORY_PALETTES_ADDR + INVENTORY_OBJECT_PALETTE_OFFSET,
-            INVENTORY_OBJECT_PALETTE_COUNT);
+                romData,
+                INVENTORY_PALETTES_BANK,
+                INVENTORY_PALETTES_ADDR + INVENTORY_OBJECT_PALETTE_OFFSET,
+                INVENTORY_OBJECT_PALETTE_COUNT);
         int[] ocarinaPopupOam = new int[OCARINA_POPUP_BYTE_COUNT];
         int popupOffset = RomUtil.romOffset(OCARINA_POPUP_BANK, OCARINA_POPUP_ADDR);
         if (popupOffset < 0 || popupOffset > romData.length - ocarinaPopupOam.length) {

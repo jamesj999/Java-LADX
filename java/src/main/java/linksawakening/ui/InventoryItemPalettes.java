@@ -24,16 +24,15 @@ final class InventoryItemPalettes {
 
     static int[] forItem(int itemId, PlayerState player) {
         if (itemId == PlayerState.INVENTORY_MAGIC_POWDER && player.hasToadstool()) {
-            return new int[]{2, 3}; // $20:5BFD: red cap, brown stem.
+            return new int[] {2, 3}; // $20:5BFD: red cap, brown stem.
         }
         if (itemId == PlayerState.INVENTORY_POWER_BRACELET && player.powerBraceletLevel() == 2) {
-            return new int[]{2, 2};
+            return new int[] {2, 2};
         }
         return forItem(itemId);
     }
 
-    private InventoryItemPalettes() {
-    }
+    private InventoryItemPalettes() {}
 
     static int[] forItem(int itemId) {
         return itemId >= 0 && itemId < INDEXES.length ? INDEXES[itemId] : INDEXES[0];

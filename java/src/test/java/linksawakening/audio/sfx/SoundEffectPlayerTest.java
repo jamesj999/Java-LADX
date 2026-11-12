@@ -1,16 +1,15 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.audio.apu.GameBoyApu;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import linksawakening.audio.apu.GameBoyApu;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class SoundEffectPlayerTest {
@@ -35,13 +34,15 @@ final class SoundEffectPlayerTest {
             GameBoyApu apu = new GameBoyApu(48_000);
             SoundEffectPlayer player = new SoundEffectPlayer(apu, romData, catalog);
             assertTrue(player.supports(effect), effect.name());
-            assertDoesNotThrow(() -> {
-                player.play(effect);
-                for (int i = 0; i < 600 && player.isPlaying(); i++) {
-                    player.tick60Hz();
-                }
-                player.stop();
-            }, effect.name());
+            assertDoesNotThrow(
+                    () -> {
+                        player.play(effect);
+                        for (int i = 0; i < 600 && player.isPlaying(); i++) {
+                            player.tick60Hz();
+                        }
+                        player.stop();
+                    },
+                    effect.name());
         }
     }
 
@@ -49,9 +50,8 @@ final class SoundEffectPlayerTest {
     void formerlyUnimplementedMappedSfxNowStartsFromRom() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect treasure = player.catalog()
-                .find(SoundEffectNamespace.JINGLE, 0x01)
-                .orElseThrow();
+        SoundEffect treasure =
+                player.catalog().find(SoundEffectNamespace.JINGLE, 0x01).orElseThrow();
 
         assertTrue(player.supports(treasure));
         player.play(treasure);
@@ -67,9 +67,8 @@ final class SoundEffectPlayerTest {
     void triggeringNoiseEffectEnablesApuAndWritesInitialNoiseRegisters() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect swordSwing = player.catalog()
-                .find(SoundEffectNamespace.NOISE, 0x02)
-                .orElseThrow();
+        SoundEffect swordSwing =
+                player.catalog().find(SoundEffectNamespace.NOISE, 0x02).orElseThrow();
 
         player.play(swordSwing);
 
@@ -87,9 +86,8 @@ final class SoundEffectPlayerTest {
     void noiseSequenceAdvancesOnFrameTicksAndStopsAfterFinalStep() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect swordSwing = player.catalog()
-                .find(SoundEffectNamespace.NOISE, 0x02)
-                .orElseThrow();
+        SoundEffect swordSwing =
+                player.catalog().find(SoundEffectNamespace.NOISE, 0x02).orElseThrow();
 
         player.play(swordSwing);
         player.tick60Hz();
@@ -109,9 +107,8 @@ final class SoundEffectPlayerTest {
     void triggeringWaveEffectWritesWaveChannelRegisters() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect textPrint = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x0F)
-                .orElseThrow();
+        SoundEffect textPrint =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow();
 
         player.play(textPrint);
 
@@ -130,9 +127,8 @@ final class SoundEffectPlayerTest {
     void rupeeStartsWithInitialFullWriteThenAlternatesContinuationFrequencies() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect rupee = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x05)
-                .orElseThrow();
+        SoundEffect rupee =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x05).orElseThrow();
 
         player.play(rupee);
 
@@ -158,15 +154,14 @@ final class SoundEffectPlayerTest {
     void rupeeLoadsItsWavePatternFromRomBeforeTriggeringChannel3() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect rupee = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x05)
-                .orElseThrow();
+        SoundEffect rupee =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x05).orElseThrow();
 
         player.play(rupee);
 
         int[] expectedData01F639C = {
-                0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC,
-                0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC
+            0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC,
+            0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC
         };
         for (int i = 0; i < expectedData01F639C.length; i++) {
             assertEquals(expectedData01F639C[i], apu.readWaveRam(i), "wave RAM byte " + i);
@@ -177,12 +172,10 @@ final class SoundEffectPlayerTest {
     void lowHeartsAndTextPrintLoadTheirWavePatternFromRomBeforeTriggeringChannel3() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect lowHearts = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x04)
-                .orElseThrow();
-        SoundEffect textPrint = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x0F)
-                .orElseThrow();
+        SoundEffect lowHearts =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x04).orElseThrow();
+        SoundEffect textPrint =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow();
 
         player.play(lowHearts);
         assertWavePattern63Cc(apu);
@@ -196,9 +189,8 @@ final class SoundEffectPlayerTest {
     void explosionContinuationUpdatesNoiseFrequencyWithoutRetriggering() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect explosion = player.catalog()
-                .find(SoundEffectNamespace.NOISE, 0x0C)
-                .orElseThrow();
+        SoundEffect explosion =
+                player.catalog().find(SoundEffectNamespace.NOISE, 0x0C).orElseThrow();
 
         player.play(explosion);
 
@@ -281,8 +273,8 @@ final class SoundEffectPlayerTest {
 
     private static void assertWavePattern63Cc(GameBoyApu apu) {
         int[] expectedData01F63Cc = {
-                0xFF, 0xFF, 0xEE, 0xDD, 0xEE, 0xDD, 0xEE, 0xFF,
-                0xFF, 0xC9, 0x63, 0x21, 0x00, 0x00, 0x04, 0x8C
+            0xFF, 0xFF, 0xEE, 0xDD, 0xEE, 0xDD, 0xEE, 0xFF,
+            0xFF, 0xC9, 0x63, 0x21, 0x00, 0x00, 0x04, 0x8C
         };
         for (int i = 0; i < expectedData01F63Cc.length; i++) {
             assertEquals(expectedData01F63Cc[i], apu.readWaveRam(i), "wave RAM byte " + i);

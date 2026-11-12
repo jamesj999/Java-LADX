@@ -12,10 +12,17 @@ public final class BackgroundRenderLayer implements HardwareRenderLayer {
     private final int scrollY;
     private final int[] lineScrollX;
 
-    private BackgroundRenderLayer(int[] tilemap, int[] attrmap, int[][] palettes,
-                                  int mapWidth, int mapHeight,
-                                  int viewportWidth, int viewportHeight,
-                                  int scrollX, int scrollY, int[] lineScrollX) {
+    private BackgroundRenderLayer(
+            int[] tilemap,
+            int[] attrmap,
+            int[][] palettes,
+            int mapWidth,
+            int mapHeight,
+            int viewportWidth,
+            int viewportHeight,
+            int scrollX,
+            int scrollY,
+            int[] lineScrollX) {
         this.tilemap = tilemap;
         this.attrmap = attrmap;
         this.palettes = palettes;
@@ -28,32 +35,72 @@ public final class BackgroundRenderLayer implements HardwareRenderLayer {
         this.lineScrollX = lineScrollX;
     }
 
-    public static BackgroundRenderLayer scrolling(int[] tilemap, int[] attrmap, int[][] palettes,
-                                                  int mapWidth, int mapHeight,
-                                                  int viewportWidth, int viewportHeight,
-                                                  int scrollX, int scrollY) {
-        return new BackgroundRenderLayer(tilemap, attrmap, palettes, mapWidth, mapHeight,
-            viewportWidth, viewportHeight, scrollX, scrollY, null);
+    public static BackgroundRenderLayer scrolling(
+            int[] tilemap,
+            int[] attrmap,
+            int[][] palettes,
+            int mapWidth,
+            int mapHeight,
+            int viewportWidth,
+            int viewportHeight,
+            int scrollX,
+            int scrollY) {
+        return new BackgroundRenderLayer(
+                tilemap, attrmap, palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, scrollX, scrollY, null);
     }
 
-    public static BackgroundRenderLayer lineScrolled(int[] tilemap, int[] attrmap, int[][] palettes,
-                                                    int mapWidth, int mapHeight,
-                                                    int viewportWidth, int viewportHeight,
-                                                    int[] lineScrollX, int scrollY) {
-        return new BackgroundRenderLayer(tilemap, attrmap, palettes, mapWidth, mapHeight,
-            viewportWidth, viewportHeight, 0, scrollY, lineScrollX);
+    public static BackgroundRenderLayer lineScrolled(
+            int[] tilemap,
+            int[] attrmap,
+            int[][] palettes,
+            int mapWidth,
+            int mapHeight,
+            int viewportWidth,
+            int viewportHeight,
+            int[] lineScrollX,
+            int scrollY) {
+        return new BackgroundRenderLayer(
+                tilemap,
+                attrmap,
+                palettes,
+                mapWidth,
+                mapHeight,
+                viewportWidth,
+                viewportHeight,
+                0,
+                scrollY,
+                lineScrollX);
     }
 
-
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
 
         if (lineScrollX != null) {
-            HardwareBackgroundRenderer.renderBackgroundLineScroll(frame, gpu, tilemap, attrmap,
-                palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, lineScrollX, scrollY);
+            HardwareBackgroundRenderer.renderBackgroundLineScroll(
+                    frame,
+                    gpu,
+                    tilemap,
+                    attrmap,
+                    palettes,
+                    mapWidth,
+                    mapHeight,
+                    viewportWidth,
+                    viewportHeight,
+                    lineScrollX,
+                    scrollY);
             return;
         }
-        HardwareBackgroundRenderer.renderBackground(frame, gpu, tilemap, attrmap,
-            palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, scrollX, scrollY);
-        }
-
+        HardwareBackgroundRenderer.renderBackground(
+                frame,
+                gpu,
+                tilemap,
+                attrmap,
+                palettes,
+                mapWidth,
+                mapHeight,
+                viewportWidth,
+                viewportHeight,
+                scrollX,
+                scrollY);
+    }
 }

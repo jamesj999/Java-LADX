@@ -1,11 +1,12 @@
 package linksawakening.app.gameplay;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.*;
+
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 final class LiftInteractionTest {
     @Test

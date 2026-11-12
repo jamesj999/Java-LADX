@@ -65,11 +65,12 @@ final class IndoorTorchPaletteEffect {
         tick(dialogActive, transitionGraphicsActive, 0, 0);
     }
 
-    void tick(boolean dialogActive, boolean transitionGraphicsActive,
-              int linkMotionState, int mapId) {
+    void tick(boolean dialogActive, boolean transitionGraphicsActive, int linkMotionState, int mapId) {
         paletteDataFlags = 0;
         if ((effectAddress == targetAddress && transitionEffect == 0)
-            || dialogActive || transitionGraphicsActive || linkMotionState != 0) {
+                || dialogActive
+                || transitionGraphicsActive
+                || linkMotionState != 0) {
             return;
         }
 
@@ -130,11 +131,9 @@ final class IndoorTorchPaletteEffect {
 
     private void stepEffect() {
         if ((transitionEffect & 0x80) == 0) {
-            effectAddress = (effectAddress & 0x06) != 0
-                ? effectAddress - 2 : effectAddress - 4;
+            effectAddress = (effectAddress & 0x06) != 0 ? effectAddress - 2 : effectAddress - 4;
         } else {
-            effectAddress = (effectAddress & 0x04) == 0
-                ? effectAddress + 2 : effectAddress + 4;
+            effectAddress = (effectAddress & 0x04) == 0 ? effectAddress + 2 : effectAddress + 4;
         }
         effectAddress &= 0xFF;
     }
@@ -145,8 +144,7 @@ final class IndoorTorchPaletteEffect {
             return;
         }
         // func_021_5432 selects one of the three eight-byte ROM tables.
-        int factorsAddress = effectAddress == 0x02 ? 0x53DB
-            : effectAddress == 0x08 ? 0x53EB : 0x53E3;
+        int factorsAddress = effectAddress == 0x02 ? 0x53DB : effectAddress == 0x08 ? 0x53EB : 0x53E3;
         int factorsOffset = RomBank.romOffset(0x21, factorsAddress);
         for (int palette = 0; palette < pendingPalettes.length; palette++) {
             int factor = Byte.toUnsignedInt(romData[factorsOffset + palette]);

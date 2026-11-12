@@ -1,8 +1,7 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import static linksawakening.app.gameplay.GameplaySimulation.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 final class AnimatedTilesPhase {
     void tick(GameplaySimulation context, boolean dialogBlocksGameplay) {
@@ -12,18 +11,18 @@ final class AnimatedTilesPhase {
         var transitionController = context.transitionController();
         var scrollController = context.scrollController();
         var inventoryController = context.inventoryController();
-            // Advance the animated BG tiles (waterfalls, weather vanes, etc.).
-            // Original gates this behind wRoomTransitionState == 0 and the
-            // inventory window not overlapping; mirror both here.
-            if (!scrollController.isActive()
+        // Advance the animated BG tiles (waterfalls, weather vanes, etc.).
+        // Original gates this behind wRoomTransitionState == 0 and the
+        // inventory window not overlapping; mirror both here.
+        if (!scrollController.isActive()
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
-                if (roomSession == null) {
-                    gpu.tickAnimatedTiles(romData);
-                } else {
-                    roomSession.tickGameplayVBlank();
-                }
+            if (roomSession == null) {
+                gpu.tickAnimatedTiles(romData);
+            } else {
+                roomSession.tickGameplayVBlank();
             }
+        }
     }
 }

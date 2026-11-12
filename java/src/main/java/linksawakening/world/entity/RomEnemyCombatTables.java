@@ -1,10 +1,9 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-
-import java.util.Objects;
 
 /** Immutable decoder for the ROM's shared entity combat and Bow-Wow tables. */
 public final class RomEnemyCombatTables {
@@ -23,20 +22,13 @@ public final class RomEnemyCombatTables {
 
     public RomEnemyCombatTables(byte[] romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
-        healthGroupByEntity = loadUnsigned(
-            romData, RomSymbols.HealthGroupForEntity, HEALTH_GROUP_COUNT);
-        damageTypeMatrix = loadUnsigned(
-            romData, RomSymbols.Data_003_43EC,
-            HEALTH_GROUP_COUNT_FOR_DAMAGE * ATTACK_TYPE_COUNT);
-        damageValues = loadUnsigned(
-            romData, RomSymbols.Data_003_473C,
-            ATTACK_TYPE_COUNT * DAMAGE_VALUES_PER_TYPE);
-        initialHealthByGroup = loadUnsigned(
-            romData, RomSymbols.InitialHealthForGroup, HEALTH_GROUP_COUNT_FOR_DAMAGE);
-        contactDamageByGroup = loadUnsigned(
-            romData, RomSymbols.EntityDamagesForGroup, HEALTH_GROUP_COUNT_FOR_DAMAGE);
-        bowWowEatableByEntity = loadUnsigned(romData,
-            RomSymbols.BowWowEatableEntitiesTable, BOW_WOW_EATABLE_COUNT);
+        healthGroupByEntity = loadUnsigned(romData, RomSymbols.HealthGroupForEntity, HEALTH_GROUP_COUNT);
+        damageTypeMatrix =
+                loadUnsigned(romData, RomSymbols.Data_003_43EC, HEALTH_GROUP_COUNT_FOR_DAMAGE * ATTACK_TYPE_COUNT);
+        damageValues = loadUnsigned(romData, RomSymbols.Data_003_473C, ATTACK_TYPE_COUNT * DAMAGE_VALUES_PER_TYPE);
+        initialHealthByGroup = loadUnsigned(romData, RomSymbols.InitialHealthForGroup, HEALTH_GROUP_COUNT_FOR_DAMAGE);
+        contactDamageByGroup = loadUnsigned(romData, RomSymbols.EntityDamagesForGroup, HEALTH_GROUP_COUNT_FOR_DAMAGE);
+        bowWowEatableByEntity = loadUnsigned(romData, RomSymbols.BowWowEatableEntitiesTable, BOW_WOW_EATABLE_COUNT);
     }
 
     public int healthGroup(int entityType) {
@@ -79,13 +71,11 @@ public final class RomEnemyCombatTables {
     }
 
     /** Mirrors the two table lookups in ApplySwordDamagesToEnemy. */
-    public SwordDamageResult resolveSwordDamage(int entityType,
-                                                EnemyAttackContext attackContext) {
+    public SwordDamageResult resolveSwordDamage(int entityType, EnemyAttackContext attackContext) {
         return resolveSwordDamage(entityType, healthGroup(entityType), attackContext);
     }
 
-    public SwordDamageResult resolveSwordDamage(int entityType, int healthGroup,
-                                                EnemyAttackContext attackContext) {
+    public SwordDamageResult resolveSwordDamage(int entityType, int healthGroup, EnemyAttackContext attackContext) {
         Objects.requireNonNull(attackContext, "Attack context cannot be null");
         int attackType = attackContext.effectiveDamageType();
         if (attackType < 0) {
@@ -102,13 +92,11 @@ public final class RomEnemyCombatTables {
     public SwordDamageResult resolveAttackDamage(int entityType, int healthGroup, int attackType) {
         int entry = damageTypeEntry(healthGroup, attackType);
         int rawValue = damageValue(attackType, entry);
-        return new SwordDamageResult(entityType & 0xFF, healthGroup, attackType,
-            entry, rawValue);
+        return new SwordDamageResult(entityType & 0xFF, healthGroup, attackType, entry, rawValue);
     }
 
-    public record SwordDamageResult(int entityType, int healthGroup,
-                                    int effectiveDamageType, int damageTableEntry,
-                                    int rawValue) {
+    public record SwordDamageResult(
+            int entityType, int healthGroup, int effectiveDamageType, int damageTableEntry, int rawValue) {
         public SwordDamageResult {
             if (entityType < 0 || entityType > 0xFF) {
                 throw new IllegalArgumentException("Entity type must be an unsigned byte");
@@ -117,12 +105,10 @@ public final class RomEnemyCombatTables {
                 throw new IllegalArgumentException("Health group out of range: " + healthGroup);
             }
             if (effectiveDamageType < -1 || effectiveDamageType >= ATTACK_TYPE_COUNT) {
-                throw new IllegalArgumentException("Attack type out of range: "
-                    + effectiveDamageType);
+                throw new IllegalArgumentException("Attack type out of range: " + effectiveDamageType);
             }
             if (damageTableEntry < 0 || damageTableEntry >= DAMAGE_VALUES_PER_TYPE) {
-                throw new IllegalArgumentException("Damage table entry out of range: "
-                    + damageTableEntry);
+                throw new IllegalArgumentException("Damage table entry out of range: " + damageTableEntry);
             }
             if (rawValue < 0 || rawValue > 0xFF) {
                 throw new IllegalArgumentException("Raw damage must be an unsigned byte");
@@ -149,8 +135,8 @@ public final class RomEnemyCombatTables {
     private static int[] loadUnsigned(byte[] romData, RomAddress address, int length) {
         int offset = address.offset();
         if (offset < 0 || length < 0 || offset > romData.length - length) {
-            throw new IllegalArgumentException("ROM table is truncated at bank $"
-                + Integer.toHexString(address.bank()) + ":$" + Integer.toHexString(address.address()));
+            throw new IllegalArgumentException("ROM table is truncated at bank $" + Integer.toHexString(address.bank())
+                    + ":$" + Integer.toHexString(address.address()));
         }
         Rom rom = new Rom(romData);
         int[] values = new int[length];

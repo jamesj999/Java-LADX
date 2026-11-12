@@ -1,9 +1,9 @@
 package linksawakening.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class InventorySubscreenOverlayTest {
 

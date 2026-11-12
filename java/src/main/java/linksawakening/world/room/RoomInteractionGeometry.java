@@ -1,14 +1,12 @@
 package linksawakening.world.room;
 
-import linksawakening.world.entity.RoomEntityGroundInteraction;
-import linksawakening.world.entity.RoomEntity;
+import static linksawakening.world.room.RoomSession.*;
 
 import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomSession.*;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityGroundInteraction;
 
 /** Pure coordinate, direction, and collision conversions. */
 final class RoomInteractionGeometry {
@@ -25,11 +23,10 @@ final class RoomInteractionGeometry {
         };
     }
 
-    static boolean alignedWithIndoorKeyDoor(int location, int direction,
-                                                    int linkPixelX, int linkPixelY) {
+    static boolean alignedWithIndoorKeyDoor(int location, int direction, int linkPixelX, int linkPixelY) {
         int offset = direction < 2
-            ? linkPixelX + 8 - ((location & 15) << 4) - 0x0C
-            : linkPixelY + 16 - (location & 0xF0) - 0x14;
+                ? linkPixelX + 8 - ((location & 15) << 4) - 0x0C
+                : linkPixelY + 16 - (location & 0xF0) - 0x14;
         return (offset & 0xFF) < 8;
     }
 
@@ -63,14 +60,13 @@ final class RoomInteractionGeometry {
         };
     }
 
-    static boolean withinUnsignedByteRange(int value, int center,
-                                                   int bias, int size) {
+    static boolean withinUnsignedByteRange(int value, int center, int bias, int size) {
         return ((value - center + bias) & 0xFF) < size;
     }
 
     static int roomEventChestTop(int linkEntityX, int linkEntityY) {
-        boolean linkNearUpperChest = ((linkEntityY - 0x30 + 0x08) & 0xFF) < 0x10
-            && ((linkEntityX - 0x88 + 0x10) & 0xFF) < 0x20;
+        boolean linkNearUpperChest =
+                ((linkEntityY - 0x30 + 0x08) & 0xFF) < 0x10 && ((linkEntityX - 0x88 + 0x10) & 0xFF) < 0x20;
         return linkNearUpperChest ? 0x30 : 0x20;
     }
 
@@ -79,14 +75,13 @@ final class RoomInteractionGeometry {
             throw new NullPointerException(label);
         }
         if (values.length != expectedLength) {
-            throw new IllegalArgumentException(label + " must contain " + expectedLength
-                + " bytes, got " + values.length);
+            throw new IllegalArgumentException(
+                    label + " must contain " + expectedLength + " bytes, got " + values.length);
         }
     }
 
     static int hookshotObjectAreaIndex(int objectLeft, int objectTop) {
-        return RoomConstants.ROOM_OBJECTS_BASE + (objectTop & 0xF0)
-            + ((objectLeft & 0xF0) >>> 4);
+        return RoomConstants.ROOM_OBJECTS_BASE + (objectTop & 0xF0) + ((objectLeft & 0xF0) >>> 4);
     }
 
     static int colorShellObjectIndex(RoomEntity entity) {
@@ -96,22 +91,21 @@ final class RoomInteractionGeometry {
     }
 
     static RoomEntityGroundInteraction.PitTransition pitTransitionFor(
-            RoomEntity entity, OverworldCollision.GroundInteractionSample sample,
-            int linkMotionState) {
+            RoomEntity entity, OverworldCollision.GroundInteractionSample sample, int linkMotionState) {
         boolean pit = sample.objectId() == OBJECT_WELL
-            || sample.physicsFlag() == PhysicsFlags.NORMAL_PIT
-            || sample.physicsFlag() == PhysicsFlags.PIT_WARP;
-        if (!pit || entity.type() == ENTITY_BOW_WOW || entity.type() == ENTITY_ROOSTER
-            || entity.type() == ENTITY_HEART_CONTAINER) {
+                || sample.physicsFlag() == PhysicsFlags.NORMAL_PIT
+                || sample.physicsFlag() == PhysicsFlags.PIT_WARP;
+        if (!pit
+                || entity.type() == ENTITY_BOW_WOW
+                || entity.type() == ENTITY_ROOSTER
+                || entity.type() == ENTITY_HEART_CONTAINER) {
             return null;
         }
         if (entity.type() == ENTITY_MARIN_AT_THE_SHORE
-            && (linkMotionState != LINK_MOTION_FALLING_DOWN
-                || sample.objectId() != OBJECT_WELL)) {
+                && (linkMotionState != LINK_MOTION_FALLING_DOWN || sample.objectId() != OBJECT_WELL)) {
             return null;
         }
-        return new RoomEntityGroundInteraction.PitTransition(
-            sample.objectLeft() + 0x08, sample.objectTop() + 0x10);
+        return new RoomEntityGroundInteraction.PitTransition(sample.objectLeft() + 0x08, sample.objectTop() + 0x10);
     }
 
     static int groundStatusFor(OverworldCollision.GroundInteractionSample sample) {
@@ -119,8 +113,7 @@ final class RoomInteractionGeometry {
         if (physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA) {
             return 0x02;
         }
-        if (sample.objectId() == OBJECT_WATER_LADDER_SIDESCROLL
-            || physicsFlag == PhysicsFlags.WATER_SIDESCROLL) {
+        if (sample.objectId() == OBJECT_WATER_LADDER_SIDESCROLL || physicsFlag == PhysicsFlags.WATER_SIDESCROLL) {
             return 0x01;
         }
         if (physicsFlag == PhysicsFlags.NONE) {
@@ -135,13 +128,12 @@ final class RoomInteractionGeometry {
         return 0x01;
     }
 
-    static boolean splashAllowed(int options, int previousGroundStatus,
-                                         int currentGroundStatus, int speedZ,
-                                         boolean sideScrolling) {
+    static boolean splashAllowed(
+            int options, int previousGroundStatus, int currentGroundStatus, int speedZ, boolean sideScrolling) {
         if ((options & ENTITY_OPT1_SPLASH_IN_WATER) == 0
-            || previousGroundStatus == currentGroundStatus
-            || previousGroundStatus == 0x03
-            || currentGroundStatus == 0x03) {
+                || previousGroundStatus == currentGroundStatus
+                || previousGroundStatus == 0x03
+                || currentGroundStatus == 0x03) {
             return false;
         }
         if (sideScrolling) {
@@ -155,11 +147,23 @@ final class RoomInteractionGeometry {
     }
 
     static RoomEntity withEntityPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    static int scrollTarget(int direction) { return RoomScrollNavigation.scrollTarget(direction); }
+    static int scrollTarget(int direction) {
+        return RoomScrollNavigation.scrollTarget(direction);
+    }
 }

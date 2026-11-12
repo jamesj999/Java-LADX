@@ -1,38 +1,34 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-import java.util.function.IntSupplier;
-
 /** Bank-$06 MadBomberEntityHandler state machine and bomb producer. */
 public final class MadBomberMotion {
-    private static final int[] POSITION_X = {
-        0x28, 0x38, 0x58, 0x58, 0x78, 0x88, 0x28, 0x88
-    };
-    private static final int[] POSITION_Y = {
-        0x40, 0x70, 0x20, 0x50, 0x70, 0x40, 0x40, 0x40
-    };
+    private static final int[] POSITION_X = {0x28, 0x38, 0x58, 0x58, 0x78, 0x88, 0x28, 0x88};
+    private static final int[] POSITION_Y = {0x40, 0x70, 0x20, 0x50, 0x70, 0x40, 0x40, 0x40};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record BombSpawn(int x, int y, int z, int speedX, int speedY, int speedZ,
-                     int transitionCountdown) {
-    }
+    public record BombSpawn(int x, int y, int z, int speedX, int speedY, int speedZ, int transitionCountdown) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, int spriteVariant,
-                  BombSpawn bombSpawn, boolean playJingle) {
-    }
+    public record Update(
+            RoomEntity entity, int transitionCountdown, int spriteVariant, BombSpawn bombSpawn, boolean playJingle) {}
 
     public void initialize(int slot) {
         state[slot] = 0;
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int transitionCountdown,
-                   int linkEntityX, int linkEntityY, int flashCountdown,
-                   IntSupplier randomByteSupplier) {
+    public Update advance(
+            RoomEntity entity,
+            int transitionCountdown,
+            int linkEntityX,
+            int linkEntityY,
+            int flashCountdown,
+            IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -75,12 +71,10 @@ public final class MadBomberMotion {
                     countdown = 0x10;
                     state[slot] = 4;
                     if (flashCountdown == 0) {
-                        Vector vector = vectorTowardsLink(
-                            positioned.x(), positioned.y(), 0x04,
-                            linkEntityX, linkEntityY, 0x10);
-                        bombSpawn = new BombSpawn(
-                            positioned.x(), positioned.y(), 0x04,
-                            vector.x(), vector.y(), 0x18, 0x40);
+                        Vector vector =
+                                vectorTowardsLink(positioned.x(), positioned.y(), 0x04, linkEntityX, linkEntityY, 0x10);
+                        bombSpawn =
+                                new BombSpawn(positioned.x(), positioned.y(), 0x04, vector.x(), vector.y(), 0x18, 0x40);
                     }
                 } else {
                     spriteVariant = (countdown & 0x20) != 0 ? 3 : 4;
@@ -97,8 +91,7 @@ public final class MadBomberMotion {
             default -> state[slot] = 0;
         }
 
-        return new Update(positioned, countdown, spriteVariant, bombSpawn,
-            bombSpawn != null);
+        return new Update(positioned, countdown, spriteVariant, bombSpawn, bombSpawn != null);
     }
 
     public void clear(int slot) {
@@ -110,14 +103,11 @@ public final class MadBomberMotion {
         return state[slot] & 0xFF;
     }
 
-    private static boolean isFarEnoughFromLink(int entityX, int entityY,
-                                                int linkEntityX, int linkEntityY) {
-        return unsignedByteAbs(entityX - linkEntityX) >= 0x20
-            || unsignedByteAbs(entityY - linkEntityY) >= 0x20;
+    private static boolean isFarEnoughFromLink(int entityX, int entityY, int linkEntityX, int linkEntityY) {
+        return unsignedByteAbs(entityX - linkEntityX) >= 0x20 || unsignedByteAbs(entityY - linkEntityY) >= 0x20;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                             int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
@@ -155,9 +145,20 @@ public final class MadBomberMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {
@@ -170,6 +171,5 @@ public final class MadBomberMotion {
         return difference < 0x80 ? difference : 0x100 - difference;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

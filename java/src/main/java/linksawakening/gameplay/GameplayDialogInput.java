@@ -1,25 +1,23 @@
 package linksawakening.gameplay;
 
-import linksawakening.dialog.DialogController;
-import linksawakening.input.InputConfig;
-
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+import linksawakening.dialog.DialogController;
+import linksawakening.input.InputConfig;
+
 public final class GameplayDialogInput {
 
-    private GameplayDialogInput() {
-    }
+    private GameplayDialogInput() {}
 
-    public static boolean handleOverworldKeyPress(int key,
-                                                  int action,
-                                                  InputConfig inputConfig,
-                                                  DialogController dialogController) {
+    public static boolean handleOverworldKeyPress(
+            int key, int action, InputConfig inputConfig, DialogController dialogController) {
         if (action != GLFW_PRESS || !blocksGameplay(dialogController)) {
             return false;
         }
-        if (dialogController.isChoicePrompt() && inputConfig != null
-            && (key == inputConfig.upKey() || key == inputConfig.downKey())) {
+        if (dialogController.isChoicePrompt()
+                && inputConfig != null
+                && (key == inputConfig.upKey() || key == inputConfig.downKey())) {
             dialogController.moveChoiceSelection(key == inputConfig.upKey() ? -1 : 1);
             return true;
         }

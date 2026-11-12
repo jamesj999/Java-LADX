@@ -1,19 +1,16 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.transition.ScrollController;
-import linksawakening.world.transition.RoomBoundaryController;
-import linksawakening.world.transition.RoomBoundaryDecision;
-import linksawakening.world.transition.RoomBoundaryState;
-import linksawakening.world.transition.Warp;
-
-import linksawakening.entity.Link;
-import org.junit.jupiter.api.Test;
-
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import linksawakening.entity.Link;
+import linksawakening.world.transition.RoomBoundaryController;
+import linksawakening.world.transition.RoomBoundaryDecision;
+import linksawakening.world.transition.RoomBoundaryState;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.Warp;
+import org.junit.jupiter.api.Test;
 
 final class RoomBoundaryControllerTest {
 
@@ -21,8 +18,8 @@ final class RoomBoundaryControllerTest {
 
     @Test
     void overworldLeftEdgeScrollsToPreviousRoomWhenRoomExists() {
-        RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -5, 40));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -5, 40));
 
         assertEquals(RoomBoundaryDecision.Type.OVERWORLD_SCROLL, decision.type());
         assertEquals(ScrollController.LEFT, decision.direction());
@@ -34,30 +31,35 @@ final class RoomBoundaryControllerTest {
     void overworldEdgesUseSourceEntityCoordinateThresholdsAndVerticalPriority() {
         int[][] inside = {{-4, 40}, {147, 40}, {40, -4}, {40, 115}};
         int[][] outside = {{-5, 40}, {148, 40}, {40, -5}, {40, 116}};
-        int[] directions = {ScrollController.LEFT, ScrollController.RIGHT,
-            ScrollController.UP, ScrollController.DOWN};
+        int[] directions = {ScrollController.LEFT, ScrollController.RIGHT, ScrollController.UP, ScrollController.DOWN};
         for (int i = 0; i < inside.length; i++) {
-            assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false,
-                    inside[i][0], inside[i][1])).type());
-            assertEquals(directions[i], controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false,
-                    outside[i][0], outside[i][1])).direction());
+            assertEquals(
+                    RoomBoundaryDecision.Type.NONE,
+                    controller
+                            .decide(new RoomBoundaryState(
+                                    Warp.CATEGORY_OVERWORLD, 0x92, false, false, inside[i][0], inside[i][1]))
+                            .type());
+            assertEquals(
+                    directions[i],
+                    controller
+                            .decide(new RoomBoundaryState(
+                                    Warp.CATEGORY_OVERWORLD, 0x92, false, false, outside[i][0], outside[i][1]))
+                            .direction());
         }
-        assertEquals(ScrollController.UP, controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -5, -5)).direction());
+        assertEquals(
+                ScrollController.UP,
+                controller
+                        .decide(new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -5, -5))
+                        .direction());
     }
 
     @Test
     void overworldScrollLandingRetainsBoundaryOvershoot() {
-        int[][] positions = {{148, 80}, {150, 80}, {-5, 80}, {-7, 80},
-            {40, -5}, {40, -7}, {40, 116}, {40, 118}};
-        int[][] expected = {{3, 80}, {5, 80}, {140, 80}, {138, 80},
-            {40, 111}, {40, 109}, {40, 0}, {40, 2}};
+        int[][] positions = {{148, 80}, {150, 80}, {-5, 80}, {-7, 80}, {40, -5}, {40, -7}, {40, 116}, {40, 118}};
+        int[][] expected = {{3, 80}, {5, 80}, {140, 80}, {138, 80}, {40, 111}, {40, 109}, {40, 0}, {40, 2}};
         for (int i = 0; i < positions.length; i++) {
             var decision = controller.decide(new RoomBoundaryState(
-                Warp.CATEGORY_OVERWORLD, 0x92, false, false,
-                positions[i][0], positions[i][1]));
+                    Warp.CATEGORY_OVERWORLD, 0x92, false, false, positions[i][0], positions[i][1]));
             assertEquals(expected[i][0], decision.linkTargetX());
             assertEquals(expected[i][1], decision.linkTargetY());
         }
@@ -65,8 +67,8 @@ final class RoomBoundaryControllerTest {
 
     @Test
     void overworldBoundaryClampsWhenNoAdjacentRoomExists() {
-        RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x90, false, false, -1, 40));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x90, false, false, -1, 40));
 
         assertEquals(RoomBoundaryDecision.Type.CLAMP_LINK, decision.type());
         assertEquals(0, decision.linkTargetX());
@@ -75,17 +77,16 @@ final class RoomBoundaryControllerTest {
 
     @Test
     void indoorSouthEntranceRequestsFrontDoorWarp() {
-        RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, true, true,
-                40, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE + 1));
+        RoomBoundaryDecision decision = controller.decide(new RoomBoundaryState(
+                Warp.CATEGORY_INDOOR, 0xA0, true, true, 40, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE + 1));
 
         assertEquals(RoomBoundaryDecision.Type.INDOOR_FRONT_DOOR_WARP, decision.type());
     }
 
     @Test
     void indoorSideEdgeRequestsScrollWithinIndoorMap() {
-        RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, -1, 40));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, -1, 40));
 
         assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, decision.type());
         assertEquals(ScrollController.LEFT, decision.direction());
@@ -95,9 +96,8 @@ final class RoomBoundaryControllerTest {
 
     @Test
     void indoorShutterClampsTheMatchingRoomEdgeUntilItOpens() {
-        RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0x11, false, false,
-                0x04, -1, 40));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0x11, false, false, 0x04, -1, 40));
 
         assertEquals(RoomBoundaryDecision.Type.CLAMP_LINK, decision.type());
         assertEquals(0, decision.linkTargetX());
@@ -107,8 +107,7 @@ final class RoomBoundaryControllerTest {
     @Test
     void airborneLinkDoesNotScrollBackUpAfterEnteringRoomDuringWallFlip() {
         RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true,
-                0, 40, -1, 0x00, true));
+                new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, 0, 40, -1, 0x00, true));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
@@ -116,8 +115,7 @@ final class RoomBoundaryControllerTest {
     @Test
     void airborneLinkDoesNotStartTheDownwardTransitionDuringTheFlip() {
         RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true,
-                0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
+                new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, 0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
@@ -125,17 +123,15 @@ final class RoomBoundaryControllerTest {
     @Test
     void airborneOverworldLinkDoesNotScrollBackUpAfterWallFlipEntry() {
         RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false,
-                0, 40, -1, 0x00, true));
+                new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, 0, 40, -1, 0x00, true));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
 
     @Test
     void airborneOverworldLinkDoesNotStartDownwardBoundaryScrollDuringTheFlip() {
-        RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x82, false, false,
-                0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
+        RoomBoundaryDecision decision = controller.decide(new RoomBoundaryState(
+                Warp.CATEGORY_OVERWORLD, 0x82, false, false, 0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
@@ -143,17 +139,13 @@ final class RoomBoundaryControllerTest {
     @Test
     void sideScrollingVerticalEdgesRequestWarpZeroInsteadOfIndoorScroll() {
         RoomBoundaryDecision top = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0, 0x70, -5, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, 0x70, -5, 0x00));
         RoomBoundaryDecision bottom = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0, 0x70, 0x74, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, 0x70, 0x74, 0x00));
         RoomBoundaryDecision topInside = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0, 0x70, -4, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, 0x70, -4, 0x00));
         RoomBoundaryDecision bottomInside = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0, 0x70, 0x73, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, 0x70, 0x73, 0x00));
 
         assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, top.type());
         assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, bottom.type());
@@ -164,17 +156,13 @@ final class RoomBoundaryControllerTest {
     @Test
     void sideScrollingWarpRoomsUseGenericVerticalWarpEdges() {
         RoomBoundaryDecision otherRoom = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x1A, false, true,
-                0, 0x70, -5, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x1A, false, true, 0, 0x70, -5, 0x00));
         RoomBoundaryDecision otherMap = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0, 0x70, -5, 0x01));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, 0x70, -5, 0x01));
         RoomBoundaryDecision noWarp = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, false,
-                0, 0x70, -5, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, false, 0, 0x70, -5, 0x00));
         RoomBoundaryDecision shuttered = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0x02, 0x70, 0x74, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0x02, 0x70, 0x74, 0x00));
 
         assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, otherRoom.type());
         assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, otherMap.type());
@@ -185,17 +173,13 @@ final class RoomBoundaryControllerTest {
     @Test
     void tailCaveSideScrollingHorizontalEdgesUseRomEntityThresholds() {
         RoomBoundaryDecision left = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0, -5, 0x30, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, -5, 0x30, 0x00));
         RoomBoundaryDecision leftMargin = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0, -4, 0x30, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, -4, 0x30, 0x00));
         RoomBoundaryDecision rightMargin = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true,
-                0, 0x93, 0x30, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true, 0, 0x93, 0x30, 0x00));
         RoomBoundaryDecision right = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true,
-                0, 0x94, 0x30, 0x00));
+                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true, 0, 0x94, 0x30, 0x00));
 
         assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, left.type());
         assertEquals(ScrollController.LEFT, left.direction());
@@ -208,19 +192,22 @@ final class RoomBoundaryControllerTest {
     @Test
     void sideScrollingVerticalMarginsDoNotFallThroughToIndoorScroll() {
         for (int y = -1; y >= -4; y--) {
-            assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
-                sideViewState(0x3E, 0x01, y, 0, false)).type(), "top y=" + y);
+            assertEquals(
+                    RoomBoundaryDecision.Type.NONE,
+                    controller.decide(sideViewState(0x3E, 0x01, y, 0, false)).type(),
+                    "top y=" + y);
         }
         for (int y = 0x71; y <= 0x73; y++) {
-            assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
-                sideViewState(0x3E, 0x01, y, 0, false)).type(), "bottom y=" + y);
+            assertEquals(
+                    RoomBoundaryDecision.Type.NONE,
+                    controller.decide(sideViewState(0x3E, 0x01, y, 0, false)).type(),
+                    "bottom y=" + y);
         }
     }
 
     @Test
     void sideScrollingModifierTwoSuppressesFadeButUsesAdjacentRoomBoundary() {
-        RoomBoundaryDecision decision = controller.decide(
-            sideViewState(0x3E, 0x01, -5, 0x02, false));
+        RoomBoundaryDecision decision = controller.decide(sideViewState(0x3E, 0x01, -5, 0x02, false));
 
         assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, decision.type());
         assertEquals(ScrollController.UP, decision.direction());
@@ -228,48 +215,56 @@ final class RoomBoundaryControllerTest {
 
     @Test
     void bottleGrottoSideViewUsesGenericVerticalFadeWhenModifierAllows() {
-        assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, controller.decide(
-            sideViewState(0x3E, 0x01, -5, 0, false)).type());
+        assertEquals(
+                RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP,
+                controller.decide(sideViewState(0x3E, 0x01, -5, 0, false)).type());
     }
 
     @Test
     void sourceSideViewExceptionsSuppressRoomScrollOrWarpFallback() {
         for (int roomId : new int[] {0xE8, 0xF8, 0xFD}) {
-            assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
-                sideViewState(roomId, 0x00, -5, 0, false)).type(),
-                "room=" + Integer.toHexString(roomId));
+            assertEquals(
+                    RoomBoundaryDecision.Type.NONE,
+                    controller.decide(sideViewState(roomId, 0x00, -5, 0, false)).type(),
+                    "room=" + Integer.toHexString(roomId));
         }
         for (int roomId : new int[] {0xA3, 0xC0, 0xC1}) {
-            assertEquals(RoomBoundaryDecision.Type.NONE,
-                controller.decide(sideViewState(roomId, 0x00, -5, 0x02, false)).type(),
-                "direct map fade room must not fall through=" + Integer.toHexString(roomId));
+            assertEquals(
+                    RoomBoundaryDecision.Type.NONE,
+                    controller
+                            .decide(sideViewState(roomId, 0x00, -5, 0x02, false))
+                            .type(),
+                    "direct map fade room must not fall through=" + Integer.toHexString(roomId));
         }
-        assertEquals(RoomBoundaryDecision.Type.NONE,
-            controller.decide(sideViewStateWithoutWarps(0xA3, -5, 0x02)).type());
+        assertEquals(
+                RoomBoundaryDecision.Type.NONE,
+                controller.decide(sideViewStateWithoutWarps(0xA3, -5, 0x02)).type());
     }
 
     @Test
     void finalSideViewExceptionDependsOnEntityActivityAndRomY() {
-        assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
-            sideViewState(0xFF, 0x00, -5, 0, true)).type());
-        assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, controller.decide(
-            sideViewState(0xFF, 0x00, -5, 0, false)).type());
-        assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
-            sideViewState(0xFF, 0x00, 0x74, 0, true)).type());
-        assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
-            sideViewState(0xFF, 0x00, 0x74, 0, false)).type());
+        assertEquals(
+                RoomBoundaryDecision.Type.NONE,
+                controller.decide(sideViewState(0xFF, 0x00, -5, 0, true)).type());
+        assertEquals(
+                RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP,
+                controller.decide(sideViewState(0xFF, 0x00, -5, 0, false)).type());
+        assertEquals(
+                RoomBoundaryDecision.Type.NONE,
+                controller.decide(sideViewState(0xFF, 0x00, 0x74, 0, true)).type());
+        assertEquals(
+                RoomBoundaryDecision.Type.NONE,
+                controller.decide(sideViewState(0xFF, 0x00, 0x74, 0, false)).type());
     }
 
-    private static RoomBoundaryState sideViewState(int roomId, int mapId, int y,
-                                                    int physicsModifier,
-                                                    boolean entityActive) {
-        return new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, roomId, false, true,
-            0, 0x70, y, mapId, false, physicsModifier, entityActive);
+    private static RoomBoundaryState sideViewState(
+            int roomId, int mapId, int y, int physicsModifier, boolean entityActive) {
+        return new RoomBoundaryState(
+                Warp.CATEGORY_SIDESCROLL, roomId, false, true, 0, 0x70, y, mapId, false, physicsModifier, entityActive);
     }
 
-    private static RoomBoundaryState sideViewStateWithoutWarps(int roomId, int y,
-                                                                 int physicsModifier) {
-        return new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, roomId, false, false,
-            0, 0x70, y, 0x00, false, physicsModifier, false);
+    private static RoomBoundaryState sideViewStateWithoutWarps(int roomId, int y, int physicsModifier) {
+        return new RoomBoundaryState(
+                Warp.CATEGORY_SIDESCROLL, roomId, false, false, 0, 0x70, y, 0x00, false, physicsModifier, false);
     }
 }

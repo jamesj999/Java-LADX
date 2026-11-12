@@ -1,17 +1,11 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityCollisionPointProbe;
-import linksawakening.world.entity.EntityStatus;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class EntityCollisionPointProbeTest {
 
@@ -42,21 +36,31 @@ final class EntityCollisionPointProbeTest {
             rom[pointsYOffset + index] = (byte) POINTS_Y[index];
         }
 
-        EntityCollisionPointProbe probe = new EntityCollisionPointProbe(
-            RomTables.loadFromRom(rom));
+        EntityCollisionPointProbe probe = new EntityCollisionPointProbe(RomTables.loadFromRom(rom));
         int nextX = 0x80;
         int nextY = 0x90;
         for (int boxType = 0; boxType < 4; boxType++) {
-            RoomEntity entity = new RoomEntity(0, 0, 0x20 + boxType, nextX, nextY,
-                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x20 + boxType), -1, 0, 0, 0, -1, false);
+            RoomEntity entity = new RoomEntity(
+                    0,
+                    0,
+                    0x20 + boxType,
+                    nextX,
+                    nextY,
+                    EntityStatus.ACTIVE,
+                    EntitySpriteDefinition.unsupported(0x20 + boxType),
+                    -1,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    false);
             for (int direction = 0; direction < 4; direction++) {
-                EntityCollisionPointProbe.Sample sample = probe.sample(
-                    entity, direction, nextX, nextY);
+                EntityCollisionPointProbe.Sample sample = probe.sample(entity, direction, nextX, nextY);
                 int tableIndex = boxType * 4 + direction;
-                assertEquals(nextX - 8 + POINTS_X[tableIndex], sample.x(),
-                    "x box=" + boxType + " direction=" + direction);
-                assertEquals(nextY - 16 + POINTS_Y[tableIndex], sample.y(),
-                    "y box=" + boxType + " direction=" + direction);
+                assertEquals(
+                        nextX - 8 + POINTS_X[tableIndex], sample.x(), "x box=" + boxType + " direction=" + direction);
+                assertEquals(
+                        nextY - 16 + POINTS_Y[tableIndex], sample.y(), "y box=" + boxType + " direction=" + direction);
             }
         }
     }

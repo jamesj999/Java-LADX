@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 HardHatBeetleEntityHandler's ordinary target-seeking movement. */
 public final class HardHatMotion {
@@ -22,9 +21,13 @@ public final class HardHatMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -37,13 +40,11 @@ public final class HardHatMotion {
         if (backgroundCollision != null) {
             // The background helper tests every nonzero speed, even when the
             // fractional accumulator has not moved a whole pixel yet.
-            if (speedX[slot] != 0 && backgroundCollision.blocks(entity,
-                horizontalDirection(speedX[slot]), x, y)) {
+            if (speedX[slot] != 0 && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, y)) {
                 x = entity.x();
                 collidedX = true;
             }
-            if (speedY[slot] != 0 && backgroundCollision.blocks(entity,
-                verticalDirection(speedY[slot]), x, y)) {
+            if (speedY[slot] != 0 && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
                 y = entity.y();
                 collidedY = true;
             }
@@ -64,9 +65,20 @@ public final class HardHatMotion {
             }
         }
 
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -98,8 +110,7 @@ public final class HardHatMotion {
         return (speed & 0x80) != 0 ? 2 : 3;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         int absoluteX = Math.abs(distanceX);
@@ -129,8 +140,7 @@ public final class HardHatMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -151,6 +161,5 @@ public final class HardHatMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

@@ -1,13 +1,12 @@
 package linksawakening.ui;
 
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
-import java.io.InputStream;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.InputStream;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class InventoryOcarinaIntegrationTest {
@@ -27,9 +26,7 @@ final class InventoryOcarinaIntegrationTest {
             PlayerState.INVENTORY_EMPTY,
             PlayerState.INVENTORY_EMPTY
         });
-        player.setOcarinaSongFlags(
-            PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG
-                | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
+        player.setOcarinaSongFlags(PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
         player.setSelectedSongIndex(0);
         InventoryMenu menu = new InventoryMenu(loadTilemap(), player);
         openInventory(menu);

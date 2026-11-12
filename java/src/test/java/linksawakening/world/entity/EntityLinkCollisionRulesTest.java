@@ -1,29 +1,24 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.EntityLinkCollisionRules;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class EntityLinkCollisionRulesTest {
 
     @Test
     void mapsRomPushHelpersToTheirSharedLinkSideEffects() {
         EntityLinkCollisionRules.LinkPushPolicy standard =
-            new EntityLinkCollisionRules.LinkPushPolicy(true, true, true, false);
+                new EntityLinkCollisionRules.LinkPushPolicy(true, true, true, false);
 
         assertEquals(standard, EntityLinkCollisionRules.policyFor(0x3F));
         assertEquals(standard, EntityLinkCollisionRules.policyFor(0x54));
         assertEquals(standard, EntityLinkCollisionRules.policyFor(0xD3));
         EntityLinkCollisionRules.LinkPushPolicy speedCleared =
-            new EntityLinkCollisionRules.LinkPushPolicy(true, true, true, false, true);
+                new EntityLinkCollisionRules.LinkPushPolicy(true, true, true, false, true);
         assertEquals(speedCleared, EntityLinkCollisionRules.policyFor(0xCD));
         assertEquals(speedCleared, EntityLinkCollisionRules.policyFor(0xEF));
-        assertEquals(speedCleared,
-            EntityLinkCollisionRules.policyFor(0x66));
+        assertEquals(speedCleared, EntityLinkCollisionRules.policyFor(0x66));
     }
 
     @Test
@@ -36,29 +31,33 @@ final class EntityLinkCollisionRulesTest {
             0xD2, 0xD3
         };
         for (int type : standardTypes) {
-            assertEquals(EntityLinkCollisionRules.STANDARD_PUSH,
-                EntityLinkCollisionRules.policyFor(type),
-                () -> "type 0x" + Integer.toHexString(type));
+            assertEquals(
+                    EntityLinkCollisionRules.STANDARD_PUSH,
+                    EntityLinkCollisionRules.policyFor(type),
+                    () -> "type 0x" + Integer.toHexString(type));
         }
 
         int[] speedClearedTypes = {
-            0x66, 0x8F, 0x9D, 0xCD, 0xD1, 0xD7, 0xD8, 0xD9, 0xDC,
-            0xEF, 0xF0, 0xF1, 0xF6, 0xF7, 0xFA
+            0x66, 0x8F, 0x9D, 0xCD, 0xD1, 0xD7, 0xD8, 0xD9, 0xDC, 0xEF, 0xF0, 0xF1, 0xF6, 0xF7, 0xFA
         };
         for (int type : speedClearedTypes) {
-            assertEquals(EntityLinkCollisionRules.STANDARD_PUSH_WITH_SPEED_CLEAR,
-                EntityLinkCollisionRules.policyFor(type),
-                () -> "type 0x" + Integer.toHexString(type));
+            assertEquals(
+                    EntityLinkCollisionRules.STANDARD_PUSH_WITH_SPEED_CLEAR,
+                    EntityLinkCollisionRules.policyFor(type),
+                    () -> "type 0x" + Integer.toHexString(type));
         }
     }
 
     @Test
     void keepsSpecialHandlersOnTheirOwnRomSideEffectPaths() {
-        assertEquals(new EntityLinkCollisionRules.LinkPushPolicy(true, false, false, false),
-            EntityLinkCollisionRules.policyFor(0xC5));
-        assertEquals(new EntityLinkCollisionRules.LinkPushPolicy(true, true, false, false),
-            EntityLinkCollisionRules.policyFor(0xCB));
-        assertEquals(new EntityLinkCollisionRules.LinkPushPolicy(true, false, false, true),
-            EntityLinkCollisionRules.policyFor(0x06));
+        assertEquals(
+                new EntityLinkCollisionRules.LinkPushPolicy(true, false, false, false),
+                EntityLinkCollisionRules.policyFor(0xC5));
+        assertEquals(
+                new EntityLinkCollisionRules.LinkPushPolicy(true, true, false, false),
+                EntityLinkCollisionRules.policyFor(0xCB));
+        assertEquals(
+                new EntityLinkCollisionRules.LinkPushPolicy(true, false, false, true),
+                EntityLinkCollisionRules.policyFor(0x06));
     }
 }

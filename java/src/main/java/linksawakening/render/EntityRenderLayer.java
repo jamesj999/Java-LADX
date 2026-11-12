@@ -1,20 +1,17 @@
 package linksawakening.render;
 
-import linksawakening.rom.RomSymbols;
-import linksawakening.render.EntityRenderInputs.Offset;
-
-import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.dialog.DialogController;
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
+import linksawakening.render.EntityRenderInputs.Offset;
+import linksawakening.rom.RomSymbols;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.HookshotChainOam;
 import linksawakening.world.entity.PincerBodyOam;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntitySnapshot;
-import linksawakening.world.transition.ScrollController;
 import linksawakening.world.entity.WingedOctorokOam;
-import linksawakening.world.entity.EntityStatus;
-
-
+import linksawakening.world.transition.ScrollController;
 
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements HardwareRenderLayer {
@@ -39,19 +36,21 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
     private final int frameCounter;
     private final DialogController.BoxPosition dialogPosition;
 
-    public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
-                             ScrollController scrollController) {
+    public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes, ScrollController scrollController) {
         this(snapshot, objectPalettes, scrollController, 0);
     }
 
-    public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
-                             ScrollController scrollController, int frameCounter) {
+    public EntityRenderLayer(
+            RoomEntitySnapshot snapshot, int[][] objectPalettes, ScrollController scrollController, int frameCounter) {
         this(snapshot, objectPalettes, scrollController, frameCounter, null);
     }
 
-    public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
-                             ScrollController scrollController, int frameCounter,
-                             DialogController.BoxPosition dialogPosition) {
+    public EntityRenderLayer(
+            RoomEntitySnapshot snapshot,
+            int[][] objectPalettes,
+            ScrollController scrollController,
+            int frameCounter,
+            DialogController.BoxPosition dialogPosition) {
         if (snapshot == null || objectPalettes == null || scrollController == null) {
             throw new IllegalArgumentException("Entity render inputs cannot be null");
         }
@@ -76,47 +75,50 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
         }
         if (scrollController.isActive()) {
             var previousRoom = scrollController.previousRoom();
-            if (previousRoom != null && previousRoom.entities() != null
-                && previousRoom.entities().spriteSelection() != null) {
-                renderSnapshot(context, previousRoom.entities(),
-                    previousRoom.entities().spriteSelection().objectPalettes(),
-                    EntityRenderInputs.previousRoomOffset(scrollController));
+            if (previousRoom != null
+                    && previousRoom.entities() != null
+                    && previousRoom.entities().spriteSelection() != null) {
+                renderSnapshot(
+                        context,
+                        previousRoom.entities(),
+                        previousRoom.entities().spriteSelection().objectPalettes(),
+                        EntityRenderInputs.previousRoomOffset(scrollController));
             }
         }
         renderSnapshot(context, snapshot, objectPalettes, EntityRenderInputs.currentRoomOffset(scrollController));
     }
 
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         submitEntities(new RenderContext(new byte[0], gpu, frame));
     }
 
-    private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities,
-                                int[][] palettes, Offset offset) {
+    private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities, int[][] palettes, Offset offset) {
         EntitySpriteTileSnapshot tiles = entities.spriteTiles();
         for (RoomEntity entity : entities.loadedEntities()) {
             EntitySpriteDefinition definition = entity.spriteDefinition();
             boolean renderingDeath = false;
             if (entity.status() == EntityStatus.DYING && entities.spriteSelection() != null) {
                 EntitySpriteDefinition death = entity.powerRecoilDeath()
-                    ? entities.spriteSelection().powerRecoilDeathSpriteDefinition()
-                    : entities.spriteSelection().deathSpriteDefinition();
-                if (death != null && entity.deathSpriteVariant() >= 0
-                    && entity.deathSpriteVariant() < death.variantCount()) {
+                        ? entities.spriteSelection().powerRecoilDeathSpriteDefinition()
+                        : entities.spriteSelection().deathSpriteDefinition();
+                if (death != null
+                        && entity.deathSpriteVariant() >= 0
+                        && entity.deathSpriteVariant() < death.variantCount()) {
                     definition = death;
                     renderingDeath = true;
                 }
             }
             if (!renderingDeath && entities.spriteSelection() != null) {
-                EntitySpriteDefinition override = entities.spriteSelection()
-                    .spriteOverrideFor(entity.type());
+                EntitySpriteDefinition override = entities.spriteSelection().spriteOverrideFor(entity.type());
                 if (override != null) {
                     definition = override;
                 }
             }
             int transitionVisualYOffset = entities.visualYOffset(entity.slot());
             if (entity.type() == ENTITY_BOMB
-                && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
-                && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
+                    && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
+                    && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
                 // RenderBomb adds two before entering the single-sprite helper.
                 transitionVisualYOffset += 2;
             }
@@ -128,8 +130,8 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                 // The pair is allocated before func_007_5805's rectangle in
                 // OAM. Draw the later rectangle first so the earlier pair
                 // keeps Game Boy OAM priority when the two overlap.
-                renderWingedOctorokOam(context, entities.wingedOctorokOam(), entity.slot(),
-                    palettes, offset.x(), offset.y(), entity);
+                renderWingedOctorokOam(
+                        context, entities.wingedOctorokOam(), entity.slot(), palettes, offset.x(), offset.y(), entity);
             }
             if (!renderingDeath && entity.type() == 0x6D) {
                 // Chain OAM is allocated after the head; draw it first so
@@ -138,39 +140,65 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                 for (int i = chain.size() - 1; i >= 0; i--) {
                     var entry = chain.get(i);
                     if (entry.sourceSlot() != entity.slot()) continue;
-                    renderOamSprite(context, palettes, tiles,
-                        new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), 0), 0,
-                        entry.rawX() + offset.x() - OAM_X_SCREEN_ORIGIN,
-                        entry.rawY() + offset.y() - OAM_Y_SCREEN_ORIGIN, false);
+                    renderOamSprite(
+                            context,
+                            palettes,
+                            tiles,
+                            new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), 0),
+                            0,
+                            entry.rawX() + offset.x() - OAM_X_SCREEN_ORIGIN,
+                            entry.rawY() + offset.y() - OAM_Y_SCREEN_ORIGIN,
+                            false);
                 }
             }
-            renderEntity(context, renderingDeath ? deathRenderInputs(entity) : entity,
-                definition, variant, palettes, tiles,
-                offset.x(), offset.y(), entities.sideScrolling(),
-                entities.visualYOffset(entity.slot()));
+            renderEntity(
+                    context,
+                    renderingDeath ? deathRenderInputs(entity) : entity,
+                    definition,
+                    variant,
+                    palettes,
+                    tiles,
+                    offset.x(),
+                    offset.y(),
+                    entities.sideScrolling(),
+                    entities.visualYOffset(entity.slot()));
             if (entity.type() == ENTITY_PINCER) {
-                renderPincerBodyOam(context, entities.pincerBodyOam(), entity.slot(), palettes,
-                    tiles, offset.x(), offset.y());
+                renderPincerBodyOam(
+                        context, entities.pincerBodyOam(), entity.slot(), palettes, tiles, offset.x(), offset.y());
             }
             if (!renderingDeath && definition.supported() && entities.spriteSelection() != null) {
-                EntitySpriteDefinition overlay = entities.spriteSelection()
-                    .spriteOverlayFor(entity.type());
+                EntitySpriteDefinition overlay = entities.spriteSelection().spriteOverlayFor(entity.type());
                 if (overlay != null) {
                     // FloatingItemEntityHandler renders the two-entry
                     // rectangle after its main display list. Its tile and
                     // attribute bytes remain in the ROM-backed definition.
-                    renderEntity(context, entity, overlay, (frameCounter & 0x08) != 0 ? 1 : 0,
-                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling(),
-                        entities.visualYOffset(entity.slot()));
+                    renderEntity(
+                            context,
+                            entity,
+                            overlay,
+                            (frameCounter & 0x08) != 0 ? 1 : 0,
+                            palettes,
+                            tiles,
+                            offset.x(),
+                            offset.y(),
+                            entities.sideScrolling(),
+                            entities.visualYOffset(entity.slot()));
                 }
             }
             if (entity.status() == EntityStatus.BURNING && entities.spriteSelection() != null) {
-                EntitySpriteDefinition burning = entities.spriteSelection()
-                    .burningSpriteDefinition();
+                EntitySpriteDefinition burning = entities.spriteSelection().burningSpriteDefinition();
                 if (burning != null) {
-                    renderEntity(context, entity, burning, (frameCounter >>> 3) & 0x01,
-                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling(),
-                        entities.visualYOffset(entity.slot()));
+                    renderEntity(
+                            context,
+                            entity,
+                            burning,
+                            (frameCounter >>> 3) & 0x01,
+                            palettes,
+                            tiles,
+                            offset.x(),
+                            offset.y(),
+                            entities.sideScrolling(),
+                            entities.visualYOffset(entity.slot()));
                 }
             }
         }
@@ -188,8 +216,9 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
         int rawY = entity.y() + offset.y();
         int visualY = rawY - entity.z() + visualYOffset;
         return ((rawX - 1) & 0xFF) >= 0xC0
-            || ((visualY - 1) & 0xFF) >= 0x88
-            || (rawX & ~0xFF) != 0 || (rawY & ~0xFF) != 0;
+                || ((visualY - 1) & 0xFF) >= 0x88
+                || (rawX & ~0xFF) != 0
+                || (rawY & ~0xFF) != 0;
     }
 
     private static RoomEntity deathRenderInputs(RoomEntity entity) {
@@ -197,47 +226,72 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
         // $14:4D73-$4D76 clears the handler tile offset, and $4DE4-$4DF0
         // supplies only OAMF_PAL1. The body handler (e.g. Octorok's +$30
         // at $03:57F3) is not called for the shared destruction rectangle.
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute() & OAM_PALETTE_FLIP,
-            0, entity.z(), entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute() & OAM_PALETTE_FLIP,
+                0,
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
-    private void renderPincerBodyOam(RenderContext context,
-                                     java.util.List<PincerBodyOam.Entry> bodyOam,
-                                     int sourceSlot, int[][] palettes,
-                                     EntitySpriteTileSnapshot tiles,
-                                     int offsetX, int offsetY) {
+    private void renderPincerBodyOam(
+            RenderContext context,
+            java.util.List<PincerBodyOam.Entry> bodyOam,
+            int sourceSlot,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles,
+            int offsetX,
+            int offsetY) {
         for (PincerBodyOam.Entry entry : bodyOam) {
             if (entry.sourceSlot() != sourceSlot) {
                 continue;
             }
-            renderOamSprite(context, palettes, tiles,
-                new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), entry.attributes()), 0,
-                entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
-                entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN, false);
+            renderOamSprite(
+                    context,
+                    palettes,
+                    tiles,
+                    new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), entry.attributes()),
+                    0,
+                    entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
+                    entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN,
+                    false);
         }
     }
 
-    private void renderWingedOctorokOam(RenderContext context,
-                                        java.util.List<WingedOctorokOam.Entry> oam,
-                                        int sourceSlot, int[][] palettes,
-                                        int offsetX, int offsetY, RoomEntity entity) {
+    private void renderWingedOctorokOam(
+            RenderContext context,
+            java.util.List<WingedOctorokOam.Entry> oam,
+            int sourceSlot,
+            int[][] palettes,
+            int offsetX,
+            int offsetY,
+            RoomEntity entity) {
         for (int index = oam.size() - 1; index >= 0; index--) {
             WingedOctorokOam.Entry entry = oam.get(index);
             if (entry.sourceSlot() != sourceSlot) {
                 continue;
             }
-            renderOamSprite(context, palettes, null,
-                new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), entry.attributes()),
-                entity.entityFlipAttribute(),
-                entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
-                entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN);
+            renderOamSprite(
+                    context,
+                    palettes,
+                    null,
+                    new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), entry.attributes()),
+                    entity.entityFlipAttribute(),
+                    entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
+                    entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN);
         }
     }
 
-    private void renderHookshotChainOam(RenderContext context, RoomEntitySnapshot entities,
-                                        int[][] palettes, int offsetX, int offsetY) {
+    private void renderHookshotChainOam(
+            RenderContext context, RoomEntitySnapshot entities, int[][] palettes, int offsetX, int offsetY) {
         for (HookshotChainOam.Entry entry : entities.hookshotChainOam()) {
             if (!entry.visible() || hiddenUnderDialog(entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN)) {
                 continue;
@@ -248,29 +302,38 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                 paletteIndex = 4;
             }
             int[] palette = EntityRenderInputs.resolvePalette(palettes, paletteIndex);
-            OamDrawing.draw8x16(context, context.gpu(),
-                entry.tileIndex(), entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
-                entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN,
-                (attributes & OAM_XFLIP) != 0, (attributes & OAM_YFLIP) != 0, palette);
+            OamDrawing.draw8x16(
+                    context,
+                    context.gpu(),
+                    entry.tileIndex(),
+                    entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
+                    entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN,
+                    (attributes & OAM_XFLIP) != 0,
+                    (attributes & OAM_YFLIP) != 0,
+                    palette);
         }
     }
 
-    private void renderEntity(RenderContext context, RoomEntity entity,
-                              EntitySpriteDefinition definition, int spriteVariant,
-                              int[][] palettes,
-                              EntitySpriteTileSnapshot tiles, int offsetX, int offsetY,
-                              boolean sideScrolling, int visualYOffset) {
-        if (!definition.supported() || spriteVariant < 0
-            || spriteVariant >= definition.variantCount()) {
+    private void renderEntity(
+            RenderContext context,
+            RoomEntity entity,
+            EntitySpriteDefinition definition,
+            int spriteVariant,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles,
+            int offsetX,
+            int offsetY,
+            boolean sideScrolling,
+            int visualYOffset) {
+        if (!definition.supported() || spriteVariant < 0 || spriteVariant >= definition.variantCount()) {
             return;
         }
 
         int entityX = entity.x() + offsetX - OAM_X_SCREEN_ORIGIN;
-        int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN - entity.z()
-            + visualYOffset;
+        int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN - entity.z() + visualYOffset;
         if (entity.type() == ENTITY_BOMB
-            && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
-            && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
+                && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
+                && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
             // RenderBomb increments hActiveEntityVisualPosY twice before the
             // normal single BombSprite is sent to OAM. The warning pair and
             // explosion rectangle use the unshifted active position.
@@ -278,50 +341,74 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
         }
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
-            EntitySpriteTileSnapshot pairTiles = definition.pairTileSource()
-                == EntitySpriteDefinition.DynamicSprite.TileSource.GPU ? null : tiles;
+            EntitySpriteTileSnapshot pairTiles =
+                    definition.pairTileSource() == EntitySpriteDefinition.DynamicSprite.TileSource.GPU ? null : tiles;
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
-            if (entity.type() == ENTITY_PAIRODD && spriteVariant == 3
-                && definition.variantCount() > 7) {
+            if (entity.type() == ENTITY_PAIRODD && spriteVariant == 3 && definition.variantCount() > 7) {
                 // Bank $04 temporarily moves hActiveEntityPosX by -$08,
                 // renders variant $06, moves it by +$10, renders variant
                 // $07, and finally restores the source position.
-                renderPair(context, palettes, pairTiles, definition.variant(6), entity,
-                    entityX - 8, entityY, sideScrolling);
-                renderPair(context, palettes, pairTiles, definition.variant(7), entity,
-                    entityX + 8, entityY, sideScrolling);
+                renderPair(
+                        context,
+                        palettes,
+                        pairTiles,
+                        definition.variant(6),
+                        entity,
+                        entityX - 8,
+                        entityY,
+                        sideScrolling);
+                renderPair(
+                        context,
+                        palettes,
+                        pairTiles,
+                        definition.variant(7),
+                        entity,
+                        entityX + 8,
+                        entityY,
+                        sideScrolling);
                 return;
             }
-            renderPair(context, palettes, pairTiles, variant, entity, entityX, entityY,
-                sideScrolling);
+            renderPair(context, palettes, pairTiles, variant, entity, entityX, entityY, sideScrolling);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
-            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
-                flipAttribute,
-                entityX + 4, entityY - (sideScrolling ? 4 : 0));
+            renderOamSprite(
+                    context,
+                    palettes,
+                    tiles,
+                    withTileOffset(variant.first(), entity),
+                    flipAttribute,
+                    entityX + 4,
+                    entityY - (sideScrolling ? 4 : 0));
         } else if (definition.shape() == EntitySpriteDefinition.Shape.RECTANGLE) {
-            for (EntitySpriteDefinition.RectangleSprite sprite
-                : definition.rectangleVariant(spriteVariant)) {
+            for (EntitySpriteDefinition.RectangleSprite sprite : definition.rectangleVariant(spriteVariant)) {
                 // RenderActiveEntitySpritesRect turns a raw $FF tile into a
                 // hidden OAM entry. Keep that sentinel out of the host draw
                 // path instead of accidentally drawing entity-sheet tile 0.
                 if (sprite.oam().tile() == 0xFF) {
                     continue;
                 }
-                renderOamSprite(context, palettes, tiles,
-                    withTileOffset(sprite.oam(), entity), flipAttribute,
-                    entityX + sprite.xOffset(), entityY + sprite.yOffset());
+                renderOamSprite(
+                        context,
+                        palettes,
+                        tiles,
+                        withTileOffset(sprite.oam(), entity),
+                        flipAttribute,
+                        entityX + sprite.xOffset(),
+                        entityY + sprite.yOffset());
             }
         } else if (definition.shape() == EntitySpriteDefinition.Shape.DYNAMIC) {
-            renderDynamic(context, definition.dynamicVariant(spriteVariant), entity,
-                entityX, entityY, palettes, tiles);
+            renderDynamic(context, definition.dynamicVariant(spriteVariant), entity, entityX, entityY, palettes, tiles);
         }
     }
 
-    private void renderDynamic(RenderContext context,
-                               java.util.List<EntitySpriteDefinition.DynamicSprite> sprites,
-                               RoomEntity entity, int entityX, int entityY, int[][] palettes,
-                               EntitySpriteTileSnapshot tiles) {
+    private void renderDynamic(
+            RenderContext context,
+            java.util.List<EntitySpriteDefinition.DynamicSprite> sprites,
+            RoomEntity entity,
+            int entityX,
+            int entityY,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles) {
         // OAM entries allocated earlier have priority over later entries on
         // the Game Boy. Draw the generated list backwards so the first ROM
         // entry remains visible when the sword overlaps the body pair.
@@ -332,65 +419,87 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             // inherit the hit/death palette flash without swapping pair origins.
             boolean rectangleFlash = entity.type() == 0xE4;
             int entityFlipAttribute = sprite.appliesEntityFlipAttribute()
-                ? entity.entityFlipAttribute() : rectangleFlash ? entity.entityFlipAttribute() & 0x10 : 0;
-            if (sprite.appliesEntityFlipAttribute()
-                && (entityFlipAttribute & OAM_XFLIP) != 0) {
+                    ? entity.entityFlipAttribute()
+                    : rectangleFlash ? entity.entityFlipAttribute() & 0x10 : 0;
+            if (sprite.appliesEntityFlipAttribute() && (entityFlipAttribute & OAM_XFLIP) != 0) {
                 // RenderActiveEntitySpritesPair swaps the two eight-pixel
                 // OAM origins when the active entity carries XFLIP.
                 xOffset = 8 - xOffset;
             }
-            EntitySpriteTileSnapshot source = sprite.tileSource()
-                == EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS
-                ? tiles : null;
-            renderOamSprite(context, palettes, source, sprite.oam(), entityFlipAttribute,
-                entityX + xOffset, entityY + sprite.yOffset(),
-                sprite.appliesEntityFlipAttribute() || rectangleFlash);
+            EntitySpriteTileSnapshot source =
+                    sprite.tileSource() == EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS ? tiles : null;
+            renderOamSprite(
+                    context,
+                    palettes,
+                    source,
+                    sprite.oam(),
+                    entityFlipAttribute,
+                    entityX + xOffset,
+                    entityY + sprite.yOffset(),
+                    sprite.appliesEntityFlipAttribute() || rectangleFlash);
         }
     }
 
-    private void renderPair(RenderContext context, int[][] palettes,
-                            EntitySpriteTileSnapshot tiles,
-                            EntitySpriteDefinition.Variant variant, RoomEntity entity,
-                            int pairOriginX, int entityY, boolean sideScrolling) {
+    private void renderPair(
+            RenderContext context,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles,
+            EntitySpriteDefinition.Variant variant,
+            RoomEntity entity,
+            int pairOriginX,
+            int entityY,
+            boolean sideScrolling) {
         int flipAttribute = entity.entityFlipAttribute();
         if (variant.second() == null) {
             // Hiding Zol's bank-$07 handler selects a single-sprite list
             // for variant $01 while using the pair list for the other
             // variants. The catalog represents that mixed path with a
             // null second OAM entry.
-            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
-                flipAttribute, pairOriginX + 4,
-                entityY - (sideScrolling ? 4 : 0));
+            renderOamSprite(
+                    context,
+                    palettes,
+                    tiles,
+                    withTileOffset(variant.first(), entity),
+                    flipAttribute,
+                    pairOriginX + 4,
+                    entityY - (sideScrolling ? 4 : 0));
             return;
         }
         boolean flipX = (flipAttribute & OAM_XFLIP) != 0;
         int firstX = pairOriginX + (flipX ? 8 : 0);
         int secondX = pairOriginX + (flipX ? 0 : 8);
-        renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
-            flipAttribute, firstX, entityY);
-        renderOamSprite(context, palettes, tiles, withTileOffset(variant.second(), entity),
-            flipAttribute, secondX, entityY);
+        renderOamSprite(
+                context, palettes, tiles, withTileOffset(variant.first(), entity), flipAttribute, firstX, entityY);
+        renderOamSprite(
+                context, palettes, tiles, withTileOffset(variant.second(), entity), flipAttribute, secondX, entityY);
     }
 
     private static EntitySpriteDefinition.OamAttribute withTileOffset(
-        EntitySpriteDefinition.OamAttribute oam, RoomEntity entity) {
+            EntitySpriteDefinition.OamAttribute oam, RoomEntity entity) {
         return new EntitySpriteDefinition.OamAttribute(
-            (oam.tile() + entity.spriteTileOffset()) & 0xFF, oam.attributes());
+                (oam.tile() + entity.spriteTileOffset()) & 0xFF, oam.attributes());
     }
 
-    private void renderOamSprite(RenderContext context, int[][] palettes,
-                                 EntitySpriteTileSnapshot tiles,
-                                 EntitySpriteDefinition.OamAttribute oam,
-                                 int entityFlipAttribute, int screenX, int screenY) {
-        renderOamSprite(context, palettes, tiles, oam, entityFlipAttribute, screenX, screenY,
-            true);
+    private void renderOamSprite(
+            RenderContext context,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles,
+            EntitySpriteDefinition.OamAttribute oam,
+            int entityFlipAttribute,
+            int screenX,
+            int screenY) {
+        renderOamSprite(context, palettes, tiles, oam, entityFlipAttribute, screenX, screenY, true);
     }
 
-    private void renderOamSprite(RenderContext context, int[][] palettes,
-                                 EntitySpriteTileSnapshot tiles,
-                                 EntitySpriteDefinition.OamAttribute oam,
-                                 int entityFlipAttribute, int screenX, int screenY,
-                                 boolean interpretPaletteFlip) {
+    private void renderOamSprite(
+            RenderContext context,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles,
+            EntitySpriteDefinition.OamAttribute oam,
+            int entityFlipAttribute,
+            int screenX,
+            int screenY,
+            boolean interpretPaletteFlip) {
         // Pair rendering treats any tile whose low nibble is $F as the ROM's
         // hidden-sprite sentinel after applying hActiveEntityTilesOffset.
         if ((oam.tile() & 0x0F) == 0x0F || hiddenUnderDialog(screenY)) {
@@ -411,15 +520,26 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
         // $40-$7F. Common item graphics (heart pieces, rupees, etc.) and
         // Link's shared tiles remain in gameplay VRAM outside that range.
         int base = EntitySpriteTileSnapshot.BASE_TILE_INDEX;
-        if (tiles == null || oam.tile() < base
-            || oam.tile() >= base + EntitySpriteTileSnapshot.TILE_COUNT) {
-            OamDrawing.draw8x16(context, context.gpu(), oam.tile(),
-                screenX, screenY, (attributes & OAM_XFLIP) != 0,
-                (attributes & OAM_YFLIP) != 0, palette);
+        if (tiles == null || oam.tile() < base || oam.tile() >= base + EntitySpriteTileSnapshot.TILE_COUNT) {
+            OamDrawing.draw8x16(
+                    context,
+                    context.gpu(),
+                    oam.tile(),
+                    screenX,
+                    screenY,
+                    (attributes & OAM_XFLIP) != 0,
+                    (attributes & OAM_YFLIP) != 0,
+                    palette);
         } else {
-            OamDrawing.draw8x16(context, tiles, oam.tile(),
-                screenX, screenY, (attributes & OAM_XFLIP) != 0,
-                (attributes & OAM_YFLIP) != 0, palette);
+            OamDrawing.draw8x16(
+                    context,
+                    tiles,
+                    oam.tile(),
+                    screenX,
+                    screenY,
+                    (attributes & OAM_XFLIP) != 0,
+                    (attributes & OAM_YFLIP) != 0,
+                    palette);
         }
     }
 
@@ -427,10 +547,6 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
     private boolean hiddenUnderDialog(int screenY) {
         int rawY = (screenY + OAM_Y_SCREEN_ORIGIN) & 0xFF;
         return dialogPosition == DialogController.BoxPosition.TOP && rawY < 0x3E
-            || dialogPosition == DialogController.BoxPosition.BOTTOM && rawY >= 0x58;
+                || dialogPosition == DialogController.BoxPosition.BOTTOM && rawY >= 0x58;
     }
-
-
-
-
 }

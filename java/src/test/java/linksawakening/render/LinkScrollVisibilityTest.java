@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.gpu.GPU;
@@ -11,16 +13,24 @@ import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 final class LinkScrollVisibilityTest {
-    @Test void scrollInterpolatedLinkBodyUsesDrawLinkSpriteYGuard() throws Exception {
+    @Test
+    void scrollInterpolatedLinkBodyUsesDrawLinkSpriteYGuard() throws Exception {
         byte[] rom;
-        try (var input = TestRom.open()) { rom = input.readAllBytes(); }
+        try (var input = TestRom.open()) {
+            rom = input.readAllBytes();
+        }
         var sheet = LinkSpriteSheet.loadFromRom(rom);
-        var link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
-            RomTables.loadFromRom(rom), null, sheet, new PlayerState(), null);
+        var link = new Link(
+                new InputState(),
+                new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                RomTables.loadFromRom(rom),
+                null,
+                sheet,
+                new PlayerState(),
+                null);
         link.setPixelPosition(40, 112);
         var scroll = new ScrollController();
         scroll.start(ScrollController.UP, 40, 128, null, 128);

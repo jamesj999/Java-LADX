@@ -1,12 +1,8 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.RecentRoomEntityClears;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class RecentRoomEntityClearsTest {
 

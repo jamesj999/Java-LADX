@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.motion.LiftedEntityMotion;
+import static linksawakening.world.entity.RoomEntityRuntime.LIFTABLE_ROCK_SMASH_MODE_ROCK;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
-import static linksawakening.world.entity.RoomEntityRuntime.LIFTABLE_ROCK_SMASH_MODE_ROCK;
+import linksawakening.world.entity.motion.LiftedEntityMotion;
 
 /** Shared ROM byte arithmetic and collision geometry. */
 public final class EntityMotionMath {
@@ -33,8 +33,7 @@ public final class EntityMotionMath {
     }
 
     static int directionToLink(int xDistance, int yDistance) {
-        return Math.abs(xDistance) >= Math.abs(yDistance)
-            ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
+        return Math.abs(xDistance) >= Math.abs(yDistance) ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
     }
 
     static int directionFromLinkToEntity(RoomEntity entity, int linkX, int linkY) {
@@ -60,17 +59,14 @@ public final class EntityMotionMath {
         return (((((source - target) & 0xFF) + 0x18) & 0xFF) < 0x30);
     }
 
-    static Vector vectorAwayFromLink(int entityX, int entityY,
-                                             int linkEntityX, int linkEntityY,
-                                             int vectorLength) {
+    static Vector vectorAwayFromLink(int entityX, int entityY, int linkEntityX, int linkEntityY, int vectorLength) {
         int distanceX = signedByte((linkEntityX - entityX) & 0xFF);
         int distanceY = signedByte((linkEntityY - entityY) & 0xFF);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
         int smaller = Math.min(absoluteX, absoluteY);
         int larger = Math.max(absoluteX, absoluteY);
-        int minor = larger == 0 ? vectorLength : divideVectorComponent(
-            smaller, larger, vectorLength);
+        int minor = larger == 0 ? vectorLength : divideVectorComponent(smaller, larger, vectorLength);
         int towardX = absoluteX >= absoluteY ? vectorLength : minor;
         int towardY = absoluteY > absoluteX ? vectorLength : minor;
         if (distanceX < 0) {
@@ -100,8 +96,8 @@ public final class EntityMotionMath {
         return (((value - center + radius) & 0xFF) < radius * 2);
     }
 
-    static FallingVector vectorTowardsTarget(int entityX, int entityY, int entityZ,
-                                                      int targetX, int targetY, int length) {
+    static FallingVector vectorTowardsTarget(
+            int entityX, int entityY, int entityZ, int targetX, int targetY, int length) {
         int distanceX = signedByte(targetX - entityX);
         int distanceY = signedByte(targetY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
@@ -141,8 +137,7 @@ public final class EntityMotionMath {
         return result;
     }
 
-    static int addFallingSpeedToPosition(int position, int speed, int[] accumulator,
-                                                  int slot) {
+    static int addFallingSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -165,14 +160,12 @@ public final class EntityMotionMath {
         return difference < 0x80 ? difference : 0x100 - difference;
     }
 
-    public static boolean sideViewPlatformOverlapsLink(RoomEntity entity,
-                                                         int linkEntityX, int linkEntityY) {
+    public static boolean sideViewPlatformOverlapsLink(RoomEntity entity, int linkEntityX, int linkEntityY) {
         int xDistance = unsignedByteAbs(entity.x() + 0x10 - linkEntityX - 0x08);
         if (xDistance >= 0x10 + 0x04) {
             return false;
         }
-        int yDistance = unsignedByteAbs(entity.y() - entity.z() + 0x0C
-            - linkEntityY - 0x08);
+        int yDistance = unsignedByteAbs(entity.y() - entity.z() + 0x0C - linkEntityY - 0x08);
         return yDistance < 0x12 + 0x04;
     }
 
@@ -194,11 +187,9 @@ public final class EntityMotionMath {
         };
     }
 
-    record Vector(int x, int y) {
-    }
+    record Vector(int x, int y) {}
 
-    record FallingVector(int x, int y) {
-    }
+    record FallingVector(int x, int y) {}
 
     static int magicPowderObjectLeft(RoomEntity entity) {
         return (((entity.x() + 0x07 - 0x08) & 0xFF) & 0xF0);
@@ -208,16 +199,15 @@ public final class EntityMotionMath {
         return (((entity.y() + 0x07 - 0x10) & 0xFF) & 0xF0);
     }
 
-    static int liftableRockSmashVariant(int sourceVariant, boolean swampLeaves,
-                                                int countdown) {
+    static int liftableRockSmashVariant(int sourceVariant, boolean swampLeaves, int countdown) {
         if (sourceVariant == LIFTABLE_ROCK_SMASH_MODE_ROCK) {
             int frame = (countdown & 0x0C) >>> 2;
             return EntitySpriteHandlerCatalog.LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE + frame;
         }
         int frame = (((countdown & 0x1C) ^ 0x1C) >>> 2);
         int base = swampLeaves
-            ? EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE
-            : EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_VARIANT_BASE;
+                ? EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE
+                : EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_VARIANT_BASE;
         return base + frame;
     }
 

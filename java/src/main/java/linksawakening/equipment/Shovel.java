@@ -1,10 +1,9 @@
 package linksawakening.equipment;
 
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 
 /** Port of {@code UseShovel} and the Link-side shovel timer in bank $02. */
 public final class Shovel implements EquipmentItem {
@@ -12,8 +11,7 @@ public final class Shovel implements EquipmentItem {
     public static final int ACTIVE_TIMER_END = 0x18;
 
     /** The result of the ROM's adjacent-object probe at the moment of use. */
-    public record StartResult(boolean started, boolean poking) {
-    }
+    public record StartResult(boolean started, boolean poking) {}
 
     public interface DigTarget {
         /** Starts the source shovel state and returns whether the probe was a poke. */
@@ -36,8 +34,7 @@ public final class Shovel implements EquipmentItem {
         this(soundSink, target, () -> true);
     }
 
-    public Shovel(GameplaySoundSink soundSink, DigTarget target,
-                  BooleanSupplier itemUseAllowed) {
+    public Shovel(GameplaySoundSink soundSink, DigTarget target, BooleanSupplier itemUseAllowed) {
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");
         this.itemUseAllowed = Objects.requireNonNull(itemUseAllowed, "itemUseAllowed");
@@ -54,8 +51,7 @@ public final class Shovel implements EquipmentItem {
         }
         active = true;
         timer = 0;
-        soundSink.play(result.poking()
-            ? GameplaySoundEvent.SWORD_POKE : GameplaySoundEvent.SHOVEL_DIG);
+        soundSink.play(result.poking() ? GameplaySoundEvent.SWORD_POKE : GameplaySoundEvent.SHOVEL_DIG);
     }
 
     @Override

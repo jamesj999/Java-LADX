@@ -1,33 +1,22 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class WingedOctorokRuntimeTest {
 
     @Test
     void catalogReadsTheBankSevenPairListAndTheHandlerCombatGroup() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition definition =
+                new EntitySpriteHandlerCatalog(loadRom()).forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertEquals(0x07, definition.bank());
         assertEquals(0x562D, definition.address());
@@ -50,11 +39,14 @@ final class WingedOctorokRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(0xAE,
-            EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0x02));
 
@@ -71,20 +63,23 @@ final class WingedOctorokRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(0xAE,
-            EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
 
         for (int frame = 0; frame <= 6; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x60, 0x40, () -> 0));
         }
 
         RoomEntity rock = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.type() == 0x0A)
-            .findFirst()
-            .orElseThrow();
+                .filter(entity -> entity.type() == 0x0A)
+                .findFirst()
+                .orElseThrow();
         assertEquals(1, rock.spriteVariant());
         assertEquals(0x48, rock.x());
         assertEquals(0x40, rock.y());

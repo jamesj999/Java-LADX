@@ -1,25 +1,14 @@
 package linksawakening.world.entity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntitySnapshot;
-import linksawakening.world.entity.FollowingNpcState;
-
+import java.io.IOException;
+import java.util.ArrayList;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @linksawakening.testing.RequiresRom
 final class BowWowPauseTest {
@@ -31,8 +20,9 @@ final class BowWowPauseTest {
         runtime.debug().setBowWowTransitionCountdownForTest(0, 8);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 3);
         setGate(runtime, gate, true);
-        runtime.tick(EntityTestFrames.frame(runtime, 16, 0x44, 0x58,
-            () -> { throw new AssertionError("Paused BowWow must not select targets"); }));
+        runtime.tick(EntityTestFrames.frame(runtime, 16, 0x44, 0x58, () -> {
+            throw new AssertionError("Paused BowWow must not select targets");
+        }));
         assertEquals(before, runtime.inspection().snapshot().slots().getFirst());
         assertEquals(gate.equals("got_item") ? 7 : 8, runtime.inspection().bowWowTransitionCountdown(0));
         assertEquals(3, runtime.enemies().enemyIgnoreHitsCountdown(0));
@@ -43,7 +33,8 @@ final class BowWowPauseTest {
         for (int frame = 18; frame < 22; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x44, 0x58, () -> 0));
         }
-        assertNotEquals(before.y(), runtime.inspection().snapshot().slots().getFirst().y());
+        assertNotEquals(
+                before.y(), runtime.inspection().snapshot().slots().getFirst().y());
     }
 
     @Test
@@ -60,7 +51,8 @@ final class BowWowPauseTest {
         for (int frame = 17; frame < 21; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x44, 0x58, () -> 0));
         }
-        assertNotEquals(before.y(), runtime.inspection().snapshot().slots().getFirst().y());
+        assertNotEquals(
+                before.y(), runtime.inspection().snapshot().slots().getFirst().y());
     }
 
     @Test
@@ -99,10 +91,24 @@ final class BowWowPauseTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        slots.set(0, new RoomEntity(0, -1, 0x6D, 0x40, 0x50, EntityStatus.ACTIVE,
-            catalog.forFollowerEntityType(0x6D), 0, 0, 0, 0, -1, false));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        slots.set(
+                0,
+                new RoomEntity(
+                        0,
+                        -1,
+                        0x6D,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        catalog.forFollowerEntityType(0x6D),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                new RoomEntitySnapshot(slots), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
         for (int frame = 0; frame < 6; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x44, 0x58, () -> 0));

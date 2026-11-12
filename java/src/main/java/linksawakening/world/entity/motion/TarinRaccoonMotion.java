@@ -11,30 +11,78 @@ public final class TarinRaccoonMotion {
     private static final int NO_EVENT = -1;
     private static final int[] TRANSFORMATION_VARIANTS = {0, 4, 5, 6, 7, 1};
 
-    public record Input(int frameCounter, int linkX, int linkY, int linkDirection,
-                 boolean actionHeld, boolean dialogActive, boolean powderHit,
-                 int linkAttackStepAnimationCountdown, boolean linkAirborne,
-                 boolean inventoryAppearing, int dialogCooldown, int windowY,
-                 int slowTransitionCountdown, int transitionCountdown) {
-        Input(int frameCounter, int linkX, int linkY, int linkDirection,
-              boolean actionHeld, boolean dialogActive, boolean powderHit) {
-            this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
-                powderHit, 0, false);
+    public record Input(
+            int frameCounter,
+            int linkX,
+            int linkY,
+            int linkDirection,
+            boolean actionHeld,
+            boolean dialogActive,
+            boolean powderHit,
+            int linkAttackStepAnimationCountdown,
+            boolean linkAirborne,
+            boolean inventoryAppearing,
+            int dialogCooldown,
+            int windowY,
+            int slowTransitionCountdown,
+            int transitionCountdown) {
+        Input(
+                int frameCounter,
+                int linkX,
+                int linkY,
+                int linkDirection,
+                boolean actionHeld,
+                boolean dialogActive,
+                boolean powderHit) {
+            this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive, powderHit, 0, false);
         }
 
-        Input(int frameCounter, int linkX, int linkY, int linkDirection,
-              boolean actionHeld, boolean dialogActive, boolean powderHit,
-              int linkAttackStepAnimationCountdown) {
-            this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
-                powderHit, linkAttackStepAnimationCountdown, false);
+        Input(
+                int frameCounter,
+                int linkX,
+                int linkY,
+                int linkDirection,
+                boolean actionHeld,
+                boolean dialogActive,
+                boolean powderHit,
+                int linkAttackStepAnimationCountdown) {
+            this(
+                    frameCounter,
+                    linkX,
+                    linkY,
+                    linkDirection,
+                    actionHeld,
+                    dialogActive,
+                    powderHit,
+                    linkAttackStepAnimationCountdown,
+                    false);
         }
 
-        Input(int frameCounter, int linkX, int linkY, int linkDirection,
-              boolean actionHeld, boolean dialogActive, boolean powderHit,
-              int linkAttackStepAnimationCountdown, boolean linkAirborne) {
-            this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
-                powderHit, linkAttackStepAnimationCountdown, linkAirborne,
-                false, 0, 0x80, 0, 0);
+        Input(
+                int frameCounter,
+                int linkX,
+                int linkY,
+                int linkDirection,
+                boolean actionHeld,
+                boolean dialogActive,
+                boolean powderHit,
+                int linkAttackStepAnimationCountdown,
+                boolean linkAirborne) {
+            this(
+                    frameCounter,
+                    linkX,
+                    linkY,
+                    linkDirection,
+                    actionHeld,
+                    dialogActive,
+                    powderHit,
+                    linkAttackStepAnimationCountdown,
+                    linkAirborne,
+                    false,
+                    0,
+                    0x80,
+                    0,
+                    0);
         }
 
         public Input {
@@ -51,15 +99,28 @@ public final class TarinRaccoonMotion {
         }
     }
 
-    public record Update(RoomEntity entity, int state, int spriteVariant,
-                  boolean shouldGetLost, int dialogGlobalId,
-                  boolean linkMotionBlocked, boolean clearLinkAttack,
-                  int linkFacingDirection, boolean pushLink,
-                  boolean roomChanged, boolean tarinFlag, int soundChannel, int soundId,
-                  boolean spawnBomb, int slowTransitionCountdown,
-                  int transitionCountdown, int speedX, int speedY, int speedZ,
-                  int collisionFlags, boolean nearLinkLatch) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int spriteVariant,
+            boolean shouldGetLost,
+            int dialogGlobalId,
+            boolean linkMotionBlocked,
+            boolean clearLinkAttack,
+            int linkFacingDirection,
+            boolean pushLink,
+            boolean roomChanged,
+            boolean tarinFlag,
+            int soundChannel,
+            int soundId,
+            boolean spawnBomb,
+            int slowTransitionCountdown,
+            int transitionCountdown,
+            int speedX,
+            int speedY,
+            int speedZ,
+            int collisionFlags,
+            boolean nearLinkLatch) {}
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] warningShown = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -78,8 +139,7 @@ public final class TarinRaccoonMotion {
         return advance(source, input, null);
     }
 
-    public Update advance(RoomEntity source, Input input,
-                   RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(RoomEntity source, Input input, RoomEntityBackgroundInteraction backgroundInteraction) {
         checkType(source);
         int slot = source.slot();
         int slowCountdown = input.slowTransitionCountdown();
@@ -112,10 +172,12 @@ public final class TarinRaccoonMotion {
                     if ((input.linkY() & 0xFF) < 0x20 && !warningShown[slot]) {
                         warningShown[slot] = true;
                         dialog = 0x021;
-                    } else if (input.actionHeld() && nearbyAndFacing(entity, input)
-                        && input.linkAttackStepAnimationCountdown() == 0
-                        && !input.linkAirborne() && input.dialogCooldown() == 0
-                        && input.windowY() == 0x80) {
+                    } else if (input.actionHeld()
+                            && nearbyAndFacing(entity, input)
+                            && input.linkAttackStepAnimationCountdown() == 0
+                            && !input.linkAirborne()
+                            && input.dialogCooldown() == 0
+                            && input.windowY() == 0x80) {
                         dialog = 0x00D;
                     }
                 }
@@ -158,8 +220,7 @@ public final class TarinRaccoonMotion {
                         speedZ[slot] = (speedZ[slot] + 1) & 0xFF;
                         speedX[slot] = dampTowardsZero(speedX[slot]);
                         speedY[slot] = dampTowardsZero(speedY[slot]);
-                        entity = withZ(entity, addSpeedToPosition(entity.z(), speedZ[slot],
-                            accumulatorZ, slot));
+                        entity = withZ(entity, addSpeedToPosition(entity.z(), speedZ[slot], accumulatorZ, slot));
                         break;
                     }
                 }
@@ -189,7 +250,7 @@ public final class TarinRaccoonMotion {
                     variant = 8 + directionToLink(entity, input.linkX(), input.linkY());
                     entity = withVariant(entity, variant);
                     nearLinkLatch[slot] = withinSignedWindow(input.linkX() - entity.x(), 0x12)
-                        && withinSignedWindow(input.linkY() - entity.y(), 0x12);
+                            && withinSignedWindow(input.linkY() - entity.y(), 0x12);
                     state[slot] = 3;
                 }
             }
@@ -207,21 +268,41 @@ public final class TarinRaccoonMotion {
                     entity = withVariant(entity, variant);
                 }
                 pushLink = !nearLinkLatch[slot];
-                if (!input.dialogActive() && !input.inventoryAppearing()
-                    && input.actionHeld() && nearbyAndFacing(entity, input)
-                    && !input.linkAirborne() && input.dialogCooldown() == 0
-                    && input.windowY() == 0x80) {
+                if (!input.dialogActive()
+                        && !input.inventoryAppearing()
+                        && input.actionHeld()
+                        && nearbyAndFacing(entity, input)
+                        && !input.linkAirborne()
+                        && input.dialogCooldown() == 0
+                        && input.windowY() == 0x80) {
                     dialog = 0x00B;
                 }
             }
             default -> throw new IllegalStateException("Invalid Tarin state: " + state[slot]);
         }
 
-        return new Update(entity, state[slot], entity.spriteVariant(), shouldGetLost, dialog,
-            blockLink, clearAttack, linkFacing, pushLink, roomChanged, tarinFlag,
-            soundId < 0 ? NO_EVENT : 0, soundId, spawnBomb, slowCountdown,
-            transitionCountdown, speedX[slot] & 0xFF, speedY[slot] & 0xFF,
-            speedZ[slot] & 0xFF, collisionFlags, nearLinkLatch[slot]);
+        return new Update(
+                entity,
+                state[slot],
+                entity.spriteVariant(),
+                shouldGetLost,
+                dialog,
+                blockLink,
+                clearAttack,
+                linkFacing,
+                pushLink,
+                roomChanged,
+                tarinFlag,
+                soundId < 0 ? NO_EVENT : 0,
+                soundId,
+                spawnBomb,
+                slowCountdown,
+                transitionCountdown,
+                speedX[slot] & 0xFF,
+                speedY[slot] & 0xFF,
+                speedZ[slot] & 0xFF,
+                collisionFlags,
+                nearLinkLatch[slot]);
     }
 
     public int state(int slot) {
@@ -234,9 +315,15 @@ public final class TarinRaccoonMotion {
         }
     }
 
-    public void setStateForTest(int slot, int newState, int newSpeedX, int newSpeedY,
-                         int newSpeedZ, int privateState2, int privateState3,
-                         boolean nearLatch) {
+    public void setStateForTest(
+            int slot,
+            int newState,
+            int newSpeedX,
+            int newSpeedY,
+            int newSpeedZ,
+            int privateState2,
+            int privateState3,
+            boolean nearLatch) {
         if (newState < 0 || newState > 3) {
             throw new IllegalArgumentException("Tarin state must be 0..3");
         }
@@ -253,17 +340,15 @@ public final class TarinRaccoonMotion {
         accumulatorZ[slot] = 0;
     }
 
-    private Movement moveWithBackground(RoomEntity entity,
-                                        RoomEntityBackgroundInteraction interaction,
-                                        int slot) {
+    private Movement moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], accumulatorX, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], accumulatorY, slot);
         int flags = 0;
         if (interaction != null && x != entity.x()) {
             int direction = signedByte(speedX[slot]) < 0
-                ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result = interaction.probe(entity, direction,
-                x, entity.y());
+                    ? EntityBackgroundCollisionResult.LEFT
+                    : EntityBackgroundCollisionResult.RIGHT;
+            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, entity.y());
             if (result.blocked()) {
                 flags |= result.collisionFlag();
                 x = entity.x();
@@ -271,7 +356,8 @@ public final class TarinRaccoonMotion {
         }
         if (interaction != null && y != entity.y()) {
             int direction = signedByte(speedY[slot]) < 0
-                ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
+                    ? EntityBackgroundCollisionResult.UP
+                    : EntityBackgroundCollisionResult.DOWN;
             EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, y);
             if (result.blocked()) {
                 flags |= result.collisionFlag();
@@ -294,8 +380,7 @@ public final class TarinRaccoonMotion {
         return signed == 0 ? 0 : (signed + (signed < 0 ? 1 : -1)) & 0xFF;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         int fractionalSum = accumulator[slot] + ((speed & 0x0F) << 4);
         accumulator[slot] = fractionalSum & 0xFF;
         int delta = signedByte(speed) >> 4;
@@ -311,8 +396,8 @@ public final class TarinRaccoonMotion {
             return false;
         }
         int xWindow = (input.linkX() - entity.x() + 0x10) & 0xFF;
-        return xWindow < 0x20 && directionToLink(entity, input.linkX(), input.linkY())
-            == (input.linkDirection() ^ 0x01);
+        return xWindow < 0x20
+                && directionToLink(entity, input.linkX(), input.linkY()) == (input.linkDirection() ^ 0x01);
     }
 
     private static int directionToLink(RoomEntity entity, int linkX, int linkY) {
@@ -328,12 +413,21 @@ public final class TarinRaccoonMotion {
         return ((value + radius) & 0xFF) < radius * 2;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity source, int x, int y,
-                                                      int variant) {
-        return new RoomEntity(source.slot(), source.sourceLoadOrder(), source.type(), x, y,
-            source.status(), source.spriteDefinition(), variant,
-            source.entityFlipAttribute(), source.spriteTileOffset(), source.z(),
-            source.deathSpriteVariant(), source.powerRecoilDeath());
+    private static RoomEntity withPositionAndVariant(RoomEntity source, int x, int y, int variant) {
+        return new RoomEntity(
+                source.slot(),
+                source.sourceLoadOrder(),
+                source.type(),
+                x,
+                y,
+                source.status(),
+                source.spriteDefinition(),
+                variant,
+                source.entityFlipAttribute(),
+                source.spriteTileOffset(),
+                source.z(),
+                source.deathSpriteVariant(),
+                source.powerRecoilDeath());
     }
 
     private static RoomEntity withVariant(RoomEntity source, int variant) {
@@ -341,10 +435,20 @@ public final class TarinRaccoonMotion {
     }
 
     private static RoomEntity withZ(RoomEntity source, int z) {
-        return new RoomEntity(source.slot(), source.sourceLoadOrder(), source.type(),
-            source.x(), source.y(), source.status(), source.spriteDefinition(),
-            source.spriteVariant(), source.entityFlipAttribute(), source.spriteTileOffset(), z,
-            source.deathSpriteVariant(), source.powerRecoilDeath());
+        return new RoomEntity(
+                source.slot(),
+                source.sourceLoadOrder(),
+                source.type(),
+                source.x(),
+                source.y(),
+                source.status(),
+                source.spriteDefinition(),
+                source.spriteVariant(),
+                source.entityFlipAttribute(),
+                source.spriteTileOffset(),
+                z,
+                source.deathSpriteVariant(),
+                source.powerRecoilDeath());
     }
 
     private static void checkType(RoomEntity source) {
@@ -364,6 +468,5 @@ public final class TarinRaccoonMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Movement(int x, int y, int collisionFlags) {
-    }
+    private record Movement(int x, int y, int collisionFlags) {}
 }

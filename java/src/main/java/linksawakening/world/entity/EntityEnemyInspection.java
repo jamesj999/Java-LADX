@@ -1,20 +1,23 @@
 package linksawakening.world.entity;
 
+import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntitySnapshots.*;
+import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.RoomEntityRuntime.*;
+
+import java.util.List;
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-import java.util.List;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
-
 /** Read-only views over ROM slot state for gameplay and diagnostics. */
 public final class EntityEnemyInspection {
     private final RoomEntityRuntime runtime;
-    EntityEnemyInspection(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityEnemyInspection(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     int octorokState(int slot) {
         return runtime.roamingEnemyMotion.state(slot);
@@ -753,46 +756,44 @@ public final class EntityEnemyInspection {
 
     public boolean polsVoiceBalladOcarinaTrigger() {
         return runtime.linkState.linkPlayingOcarinaCountdown == 0x01
-            && (runtime.linkState.ocarinaSongFlags & 0x04) != 0
-            && runtime.linkState.selectedSongIndex == 0;
+                && (runtime.linkState.ocarinaSongFlags & 0x04) != 0
+                && runtime.linkState.selectedSongIndex == 0;
     }
 
     boolean shouldDisappear(RoomEntity entity) {
         return runtime.slowTimerInitialized[entity.slot()]
-            && isCommonDroppableType(entity.type())
-            && entity.type() != runtime.ENTITY_HIDING_SLIME_KEY
-            // DroppableDisappearIfNeeded is after the hidden-state helper in
-            // every shared drop handler. A hidden item therefore must not be
-            // unloaded merely because its global fade timer reached zero.
-            && runtime.droppablePrivateState3[entity.slot()] == 0
-            && runtime.slowTransitionCountdown[entity.slot()] < 0x1C;
+                && isCommonDroppableType(entity.type())
+                && entity.type() != runtime.ENTITY_HIDING_SLIME_KEY
+                // DroppableDisappearIfNeeded is after the hidden-state helper in
+                // every shared drop handler. A hidden item therefore must not be
+                // unloaded merely because its global fade timer reached zero.
+                && runtime.droppablePrivateState3[entity.slot()] == 0
+                && runtime.slowTransitionCountdown[entity.slot()] < 0x1C;
     }
 
     boolean isDisabledFollower(int type) {
         return switch (type) {
             case FollowingNpcEntitySpawner.ENTITY_ROOSTER -> !runtime.followingNpcState.roosterFollowing();
-            case FollowingNpcEntitySpawner.ENTITY_GHOST ->
-                runtime.followingNpcState.ghostFollowingState() != 1;
-            case FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE ->
-                !runtime.followingNpcState.marinFollowing();
-            case FollowingNpcEntitySpawner.ENTITY_BOW_WOW ->
-                !runtime.followingNpcState.bowWowFollowing();
+            case FollowingNpcEntitySpawner.ENTITY_GHOST -> runtime.followingNpcState.ghostFollowingState() != 1;
+            case FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE -> !runtime.followingNpcState.marinFollowing();
+            case FollowingNpcEntitySpawner.ENTITY_BOW_WOW -> !runtime.followingNpcState.bowWowFollowing();
             default -> false;
         };
     }
 
     boolean entityHandlerInteractive(boolean creditsGameplay) {
-        if (!creditsGameplay
-            && (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04)) {
+        if (!creditsGameplay && (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04)) {
             return false;
         }
         return !runtime.linkState.dialogActive
-            && !runtime.linkState.inventoryAppearing
-            && !runtime.inspection().witchGotItemPresentationActive()
-            && !runtime.roomTransitionActive;
+                && !runtime.linkState.inventoryAppearing
+                && !runtime.inspection().witchGotItemPresentationActive()
+                && !runtime.roomTransitionActive;
     }
 
     boolean entityTimersInteractive() {
-        return !runtime.linkState.dialogActive && !runtime.linkState.inventoryAppearing && runtime.linkState.linkPlayingOcarinaCountdown == 0;
+        return !runtime.linkState.dialogActive
+                && !runtime.linkState.inventoryAppearing
+                && runtime.linkState.linkPlayingOcarinaCountdown == 0;
     }
 }

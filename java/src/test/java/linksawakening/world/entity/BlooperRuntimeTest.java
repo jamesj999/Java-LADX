@@ -1,28 +1,15 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntityGroundInteraction;
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class BlooperRuntimeTest {
@@ -30,8 +17,7 @@ final class BlooperRuntimeTest {
     @Test
     void catalogReadsBlooperPairFromItsBankSevenDisplayList() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(EntitySpriteHandlerCatalog.ENTITY_BLOOPER,
-                EntityRoomLoader.RoomTable.INDOORS_A);
+                .forEntityType(EntitySpriteHandlerCatalog.ENTITY_BLOOPER, EntityRoomLoader.RoomTable.INDOORS_A);
 
         assertEquals(0x07, definition.bank());
         assertEquals(0x5BF1, definition.address());
@@ -58,14 +44,15 @@ final class BlooperRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(0xA9,
-            EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xA9, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
         AtomicInteger groundCalls = new AtomicInteger();
-        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
-                                       sideScrolling) -> {
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.incrementAndGet();
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0x01);
         });
@@ -89,26 +76,32 @@ final class BlooperRuntimeTest {
     }
 
     @Test
-    void nonInteractiveLinkMotionStopsBlooperBeforeRecoilMovementAndGroundInteraction()
-            throws IOException {
+    void nonInteractiveLinkMotionStopsBlooperBeforeRecoilMovementAndGroundInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(0xA9,
-            EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xA9, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
         AtomicInteger groundCalls = new AtomicInteger();
-        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
-                                       sideScrolling) -> {
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.incrementAndGet();
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0x01);
         });
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 48, 40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(48, 40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                48,
+                40,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(
+                        48, 40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, runtime.enemies().blooperState(0));
         assertEquals(0, runtime.enemies().blooperTransitionCountdown(0));

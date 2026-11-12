@@ -12,11 +12,17 @@ final class InventoryFadeRenderLayer implements HardwareRenderLayer {
         this.layer = (HardwareRenderLayer) layer;
         this.transition = transition;
     }
-    @Override public void submit(HardwareFrame frame, GPU gpu) {
-        frame.withPaletteTransforms(rgb -> transition.color(rgb, false), rgb -> transition.color(rgb, true),
-            () -> frame.withLayerSource(layer.getClass().getSimpleName(), () -> layer.submit(frame, gpu)));
+
+    @Override
+    public void submit(HardwareFrame frame, GPU gpu) {
+        frame.withPaletteTransforms(
+                rgb -> transition.color(rgb, false),
+                rgb -> transition.color(rgb, true),
+                () -> frame.withLayerSource(layer.getClass().getSimpleName(), () -> layer.submit(frame, gpu)));
     }
-    @Override public void render(RenderContext context) {
+
+    @Override
+    public void render(RenderContext context) {
         // Keep the legacy layer boundary: dialog/inventory filters may only see
         // their own OAM here, whereas production sees the complete frame's OAM.
         HardwareFrame isolated = new HardwareFrame(true);

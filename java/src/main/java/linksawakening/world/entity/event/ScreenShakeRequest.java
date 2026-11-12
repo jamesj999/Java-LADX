@@ -6,8 +6,7 @@ import linksawakening.world.entity.RoomEntity;
 public record ScreenShakeRequest(int sourceSlot, int countdown, int phase) implements EntityRequest {
     public ScreenShakeRequest {
         if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
-            throw new IllegalArgumentException("Screen-shake source slot out of range: "
-                + sourceSlot);
+            throw new IllegalArgumentException("Screen-shake source slot out of range: " + sourceSlot);
         }
         if (countdown < 0 || countdown > 0xFF) {
             throw new IllegalArgumentException("Screen-shake countdown must be an unsigned byte");

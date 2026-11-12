@@ -1,11 +1,10 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 Zol/Gel inching, leaping, and split state machine. */
 public final class ZolGelMotion {
@@ -35,8 +34,7 @@ public final class ZolGelMotion {
         privateCountdown1[slot] = 0;
         privateCountdown2[slot] = 0;
         privateCountdown3[slot] = 0;
-        direction[slot] = entityType == ENTITY_GEL
-            ? randomByteSupplier.getAsInt() & 0x03 : 0;
+        direction[slot] = entityType == ENTITY_GEL ? randomByteSupplier.getAsInt() & 0x03 : 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
@@ -63,22 +61,35 @@ public final class ZolGelMotion {
         return state[slot] == 4 || privateCountdown3[slot] != 0;
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY, int linkEntityZ,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(entity, linkEntityX, linkEntityY, linkEntityZ,
-            randomByteSupplier,
-            backgroundCollision == null
-                ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision),
-            0, 0, false);
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(
+                entity,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                randomByteSupplier,
+                backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision),
+                0,
+                0,
+                false);
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY, int linkEntityZ,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundInteraction backgroundInteraction,
-                   int frameCounter,
-                   int ignoreHitsCountdown,
-                   boolean joypadHeld) {
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int frameCounter,
+            int ignoreHitsCountdown,
+            boolean joypadHeld) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.type(), randomByteSupplier);
@@ -122,8 +133,7 @@ public final class ZolGelMotion {
             x = (linkEntityX - xOffset) & 0xFF;
             y = (linkEntityY - yOffset) & 0xFF;
             z = linkEntityZ & 0xFF;
-            applyClingingBackgroundProbe(entity, x, y, backgroundInteraction,
-                ignoreHitsCountdown, frameCounter);
+            applyClingingBackgroundProbe(entity, x, y, backgroundInteraction, ignoreHitsCountdown, frameCounter);
             if (joypadHeld) {
                 decreaseTransitionCountdown(slot);
                 decreaseTransitionCountdown(slot);
@@ -152,8 +162,7 @@ public final class ZolGelMotion {
                         // LD [HL],B ($7D0E) cancels the leap: inch again in
                         // state zero after the retained $10-frame pause.
                         state[slot] = 0;
-                        int[] moved = physics(entity, x, y,
-                            backgroundInteraction, frameCounter);
+                        int[] moved = physics(entity, x, y, backgroundInteraction, frameCounter);
                         x = moved[0];
                         y = moved[1];
                     } else {
@@ -161,8 +170,7 @@ public final class ZolGelMotion {
                         state[slot] = 2;
                     }
                 } else {
-                    int[] moved = physics(entity, x, y,
-                        backgroundInteraction, frameCounter);
+                    int[] moved = physics(entity, x, y, backgroundInteraction, frameCounter);
                     x = moved[0];
                     y = moved[1];
                 }
@@ -174,11 +182,9 @@ public final class ZolGelMotion {
                     speedY[slot] = vector.y();
                     speedZ[slot] = 0x20;
                 } else {
-                    speedX[slot] = (transitionCountdown[slot] & 0x04) == 0
-                        ? 0x08 : 0xF8;
+                    speedX[slot] = (transitionCountdown[slot] & 0x04) == 0 ? 0x08 : 0xF8;
                     speedY[slot] = 0;
-                    int[] moved = physics(entity, x, y,
-                        backgroundInteraction, frameCounter);
+                    int[] moved = physics(entity, x, y, backgroundInteraction, frameCounter);
                     x = moved[0];
                     y = moved[1];
                 }
@@ -202,9 +208,20 @@ public final class ZolGelMotion {
             }
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), type, x, y,
-            entity.status(), entity.spriteDefinition(), spriteVariant[slot], entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                type,
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                spriteVariant[slot],
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
         return new Update(updated, split, clinging);
     }
 
@@ -298,33 +315,34 @@ public final class ZolGelMotion {
         }
     }
 
-    private int[] physics(RoomEntity entity, int x, int y,
-                          RoomEntityBackgroundInteraction backgroundInteraction,
-                          int frameCounter) {
+    private int[] physics(
+            RoomEntity entity, int x, int y, RoomEntityBackgroundInteraction backgroundInteraction, int frameCounter) {
         // ZolGelPhysics still updates position while private countdown 1 is
         // active, but the ROM skips its background helper for that frame. When
         // it does call the helper, it temporarily exposes ignore-hits value
         // $02 to the rich room probe.
         RoomEntityBackgroundInteraction physicsInteraction =
-            privateCountdown1[entity.slot()] == 0 ? backgroundInteraction : null;
+                privateCountdown1[entity.slot()] == 0 ? backgroundInteraction : null;
         return move(entity, x, y, physicsInteraction, 0x02, frameCounter);
     }
 
-    private void applyClingingBackgroundProbe(RoomEntity entity, int x, int y,
-                                               RoomEntityBackgroundInteraction backgroundInteraction,
-                                               int ignoreHitsCountdown, int frameCounter) {
+    private void applyClingingBackgroundProbe(
+            RoomEntity entity,
+            int x,
+            int y,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int frameCounter) {
         if (backgroundInteraction == null) {
             return;
         }
         if (speedX[entity.slot()] != 0) {
-            backgroundInteraction.probe(entity,
-                signedByte(speedX[entity.slot()]) < 0 ? 1 : 0,
-                x, y, ignoreHitsCountdown, frameCounter);
+            backgroundInteraction.probe(
+                    entity, signedByte(speedX[entity.slot()]) < 0 ? 1 : 0, x, y, ignoreHitsCountdown, frameCounter);
         }
         if (speedY[entity.slot()] != 0) {
-            backgroundInteraction.probe(entity,
-                signedByte(speedY[entity.slot()]) < 0 ? 2 : 3,
-                x, y, ignoreHitsCountdown, frameCounter);
+            backgroundInteraction.probe(
+                    entity, signedByte(speedY[entity.slot()]) < 0 ? 2 : 3, x, y, ignoreHitsCountdown, frameCounter);
         }
     }
 
@@ -345,29 +363,46 @@ public final class ZolGelMotion {
         flashCountdown[slot] = 0;
     }
 
-    private int[] move(RoomEntity entity, int x, int y,
-                       RoomEntityBackgroundInteraction backgroundInteraction,
-                       int ignoreHitsCountdown, int frameCounter) {
+    private int[] move(
+            RoomEntity entity,
+            int x,
+            int y,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int frameCounter) {
         int slot = entity.slot();
         int movedX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int movedY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         if (backgroundInteraction != null) {
-            if (movedX != x && backgroundInteraction.probe(entity,
-                signedByte(speedX[slot]) < 0 ? 1 : 0, movedX, y,
-                ignoreHitsCountdown, frameCounter).blocked()) {
+            if (movedX != x
+                    && backgroundInteraction
+                            .probe(
+                                    entity,
+                                    signedByte(speedX[slot]) < 0 ? 1 : 0,
+                                    movedX,
+                                    y,
+                                    ignoreHitsCountdown,
+                                    frameCounter)
+                            .blocked()) {
                 movedX = x;
             }
-            if (movedY != y && backgroundInteraction.probe(entity,
-                signedByte(speedY[slot]) < 0 ? 2 : 3, movedX, movedY,
-                ignoreHitsCountdown, frameCounter).blocked()) {
+            if (movedY != y
+                    && backgroundInteraction
+                            .probe(
+                                    entity,
+                                    signedByte(speedY[slot]) < 0 ? 2 : 3,
+                                    movedX,
+                                    movedY,
+                                    ignoreHitsCountdown,
+                                    frameCounter)
+                            .blocked()) {
                 movedY = y;
             }
         }
         return new int[] {movedX, movedY};
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -382,8 +417,7 @@ public final class ZolGelMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         int absoluteX = Math.abs(distanceX);
@@ -417,12 +451,9 @@ public final class ZolGelMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    public record Update(RoomEntity entity, Split split, boolean clinging) {
-    }
+    public record Update(RoomEntity entity, Split split, boolean clinging) {}
 
-    public record Split(int originalX, int originalY, int originalZ) {
-    }
+    public record Split(int originalX, int originalY, int originalZ) {}
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

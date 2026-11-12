@@ -11,20 +11,15 @@ public final class PiranhaMotion {
 
     // Data_036_6F2E and Data_036_6F36 at bank $36:$6F2E/$6F36.
     private static final int[] RISING_VARIANTS = {4, 4, 3, 2, 1, 0, 0, 0};
-    private static final int[] RISING_Y_OFFSETS = {
-        0xE0, 0xE0, 0xE8, 0xF0, 0x00, 0x00, 0x00, 0x00
-    };
+    private static final int[] RISING_Y_OFFSETS = {0xE0, 0xE0, 0xE8, 0xF0, 0x00, 0x00, 0x00, 0x00};
 
     // Data_036_6F84 and Data_036_6F8C at bank $36:$6F84/$6F8C.
     private static final int[] LOWERING_VARIANTS = {0, 0, 0, 0, 1, 2, 3, 5};
-    private static final int[] LOWERING_Y_OFFSETS = {
-        0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xE8, 0xE0
-    };
+    private static final int[] LOWERING_Y_OFFSETS = {0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xE8, 0xE0};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] privateState2Initialized =
-        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] privateState2Initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
@@ -34,8 +29,7 @@ public final class PiranhaMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int transitionCountdown,
-                   int linkEntityX, int linkEntityY) {
+    public Update advance(RoomEntity entity, int transitionCountdown, int linkEntityX, int linkEntityY) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Piranha Plant entity");
         }
@@ -94,13 +88,23 @@ public final class PiranhaMotion {
                     y = (privateState1[slot] + LOWERING_Y_OFFSETS[index]) & 0xFF;
                 }
             }
-            default -> throw new IllegalStateException("Invalid Piranha Plant state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Piranha Plant state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(),
-            entity.type(), x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
         return new Update(updated, countdown, state[slot]);
     }
 
@@ -122,6 +126,5 @@ public final class PiranhaMotion {
         return difference >= 0xF0 || difference < 0x10;
     }
 
-    public record Update(RoomEntity entity, int transitionCountdown, int state) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown, int state) {}
 }

@@ -1,20 +1,36 @@
 package linksawakening.world.entity;
 
-import org.junit.jupiter.api.Test;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
 
 class GhiniDeathCascadeTest {
     private static RoomEntity entity(int slot, int type, EntityStatus status) {
-        return new RoomEntity(slot, slot, type, 64, 64, status,
-            linksawakening.entity.EntitySpriteDefinition.unsupported(type), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                slot,
+                slot,
+                type,
+                64,
+                64,
+                status,
+                linksawakening.entity.EntitySpriteDefinition.unsupported(type),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 
     @Test
     void cascadeDrawsOnlyForVisibleNonzeroSlotsInDescendingOrder() {
-        var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(java.util.stream.IntStream.range(0, 16)
-            .mapToObj(slot -> entity(slot, 0, EntityStatus.DISABLED)).toList()), false, () -> 0);
+        var runtime = RoomEntityRuntime.from(
+                new RoomEntitySnapshot(java.util.stream.IntStream.range(0, 16)
+                        .mapToObj(slot -> entity(slot, 0, EntityStatus.DISABLED))
+                        .toList()),
+                false,
+                () -> 0);
         var killed = entity(8, 0x12, EntityStatus.DYING);
         runtime.slots[8] = killed;
         runtime.slots[15] = entity(15, 0x10, EntityStatus.ACTIVE);
@@ -29,7 +45,7 @@ class GhiniDeathCascadeTest {
         assertEquals(0x2D, runtime.droppedItemBySlot[15]);
         assertEquals(0x2E, runtime.droppedItemBySlot[12]);
         assertEquals(0x2E, runtime.droppedItemBySlot[8]);
-        for (int slot : new int[]{15, 12}) {
+        for (int slot : new int[] {15, 12}) {
             assertEquals(EntityStatus.DYING, runtime.slots[slot].status());
             assertEquals(0x1F, runtime.dyingCountdown[slot]);
         }

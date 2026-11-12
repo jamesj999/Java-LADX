@@ -6,14 +6,17 @@ package linksawakening.render;
 final class PassOutPaletteRenderLayer implements HardwareRenderLayer {
     private final RenderLayer layer;
     private final int frames;
+
     PassOutPaletteRenderLayer(RenderLayer layer, int frames) {
         this.layer = layer;
         this.frames = frames;
     }
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        frame.withPaletteTransform(this::transform,
-            () -> ((HardwareRenderLayer) layer).submit(frame, gpu));
+
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        frame.withPaletteTransform(this::transform, () -> ((HardwareRenderLayer) layer).submit(frame, gpu));
     }
+
     private int transform(int rgb) {
         int result = 0;
         for (int shift = 0; shift <= 16; shift += 8) {

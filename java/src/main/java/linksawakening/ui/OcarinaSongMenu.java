@@ -1,10 +1,9 @@
 package linksawakening.ui;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
-
-import java.util.Objects;
 
 /**
  * State machine for the Ocarina song popup in {@code func_020_6111}.
@@ -20,9 +19,7 @@ public final class OcarinaSongMenu {
     public static final int OPEN_CLOSE_FRAMES = 0x10;
 
     private static final int[] SONG_FLAGS = {
-        PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG,
-        PlayerState.MANBO_MAMBO_FLAG,
-        PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG
+        PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG, PlayerState.MANBO_MAMBO_FLAG, PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG
     };
 
     private final PlayerState playerState;
@@ -71,8 +68,7 @@ public final class OcarinaSongMenu {
     public boolean tick() {
         if (closingFrames != 0) {
             closingFrames--;
-            animationFrame = Math.min(3,
-                (OPEN_CLOSE_FRAMES - closingFrames) * 4 / OPEN_CLOSE_FRAMES);
+            animationFrame = Math.min(3, (OPEN_CLOSE_FRAMES - closingFrames) * 4 / OPEN_CLOSE_FRAMES);
             if (closingFrames == 0) {
                 closeInventoryRequestReady = closeInventoryAfterClosed;
                 closeInventoryAfterClosed = false;
@@ -84,8 +80,7 @@ public final class OcarinaSongMenu {
 
         if (openingFrames != 0) {
             openingFrames--;
-            animationFrame = Math.min(3,
-                openingFrames * 4 / OPEN_CLOSE_FRAMES);
+            animationFrame = Math.min(3, openingFrames * 4 / OPEN_CLOSE_FRAMES);
         }
         return false;
     }

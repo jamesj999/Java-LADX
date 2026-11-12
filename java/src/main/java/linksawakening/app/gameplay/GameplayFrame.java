@@ -7,7 +7,11 @@ import java.util.List;
  * still runs when a gate ends simulation early. Exceptions do not advance input.
  */
 public final class GameplayFrame {
-    public enum Phase { TRANSITIONS, SIMULATION, INPUT_COMPLETION }
+    public enum Phase {
+        TRANSITIONS,
+        SIMULATION,
+        INPUT_COMPLETION
+    }
 
     public static List<Phase> phaseOrder() {
         return List.of(Phase.TRANSITIONS, Phase.SIMULATION, Phase.INPUT_COMPLETION);

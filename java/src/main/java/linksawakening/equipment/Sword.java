@@ -1,13 +1,12 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.rom.RomTables;
-
-import java.util.Objects;
 import linksawakening.world.entity.RomRandomByteSource;
-import java.util.function.IntSupplier;
 
 /**
  * Port of the sword swing + charge logic from the LADX disassembly (see
@@ -57,25 +56,41 @@ public final class Sword implements EquipmentItem {
     public static final int MAX_CHARGE = 40; // MAX_SWORD_CHARGE ($28) in the ROM
     // bank2.asm:46C9-46E8. Indexed as (base hLinkDirection << 3) + spin sector.
     private static final int[][] SPIN_ANIMATION_STATE_BY_BASE_DIRECTION = {
-        { STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_START,
-          STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END },
-        { STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_START,
-          STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END },
-        { STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END,
-          STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END },
-        { STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END,
-          STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END },
+        {
+            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_START,
+            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END
+        },
+        {
+            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_START,
+            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END
+        },
+        {
+            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END,
+            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END
+        },
+        {
+            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END,
+            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END
+        },
     };
     // bank2.asm:46E9-4708. Indexed as (base hLinkDirection << 3) + spin sector.
     private static final int[][] SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION = {
-        { Link.DIRECTION_RIGHT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_LEFT,
-          Link.DIRECTION_LEFT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_RIGHT },
-        { Link.DIRECTION_LEFT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_RIGHT,
-          Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_LEFT },
-        { Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN,
-          Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP },
-        { Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP,
-          Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN },
+        {
+            Link.DIRECTION_RIGHT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_LEFT,
+            Link.DIRECTION_LEFT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_RIGHT
+        },
+        {
+            Link.DIRECTION_LEFT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_RIGHT,
+            Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_LEFT
+        },
+        {
+            Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN,
+            Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP
+        },
+        {
+            Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP,
+            Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN
+        },
     };
 
     private final RomTables romTables;
@@ -103,8 +118,12 @@ public final class Sword implements EquipmentItem {
     private int queuedSpinDelayFrames;
 
     public Sword(RomTables romTables, SwordSpriteSheet spriteSheet) {
-        this(romTables, spriteSheet, GameplaySoundSink.none(),
-                new RomRandomByteSource(), SwordPalette.compatibility(),
+        this(
+                romTables,
+                spriteSheet,
+                GameplaySoundSink.none(),
+                new RomRandomByteSource(),
+                SwordPalette.compatibility(),
                 () -> false);
     }
 
@@ -312,15 +331,28 @@ public final class Sword implements EquipmentItem {
     public void render(byte[] buffer, int x, int y, int direction, int offsetX, int offsetY) {
         lastKnownDirection = direction;
         if (state == STATE_NONE && !spinAttackActive()) return;
-        renderer.render(buffer, x, y, effectiveDirection(direction), effectiveBladeRenderState(),
-            chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(), offsetX, offsetY);
+        renderer.render(
+                buffer,
+                x,
+                y,
+                effectiveDirection(direction),
+                effectiveBladeRenderState(),
+                chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(),
+                offsetX,
+                offsetY);
     }
 
-    public void submitOam(linksawakening.render.OamSink sink, int x, int y,
-                          int direction, int offsetX, int offsetY) {
+    public void submitOam(linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY) {
         if (state == STATE_NONE && !spinAttackActive()) return;
-        renderer.submitOam(sink, x, y, effectiveDirection(direction), effectiveBladeRenderState(),
-            chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(), offsetX, offsetY);
+        renderer.submitOam(
+                sink,
+                x,
+                y,
+                effectiveDirection(direction),
+                effectiveBladeRenderState(),
+                chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(),
+                offsetX,
+                offsetY);
     }
 
     public int attackDirection(int linkDirection) {
@@ -398,16 +430,14 @@ public final class Sword implements EquipmentItem {
     }
 
     /** Bank 02:42F4 keeps the held blade collision active while running with Pegasus Boots. */
-    public CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection,
-                                          boolean runningWithPegasusBoots) {
+    public CollisionBox enemyCollisionBox(
+            int linkEntityX, int linkEntityY, int linkDirection, boolean runningWithPegasusBoots) {
         lastKnownDirection = linkDirection;
-        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING))
-            || romTables == null) {
+        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING)) || romTables == null) {
             return CollisionBox.inactive();
         }
         if (spinAttackActive()) {
-            return new CollisionBox(true, linkEntityX + 0x08, 0x18,
-                linkEntityY + 0x08, 0x18);
+            return new CollisionBox(true, linkEntityX + 0x08, 0x18, linkEntityY + 0x08, 0x18);
         }
 
         int romDirection = toRomDirection(linkDirection);
@@ -415,11 +445,11 @@ public final class Sword implements EquipmentItem {
             return CollisionBox.inactive();
         }
         return new CollisionBox(
-            true,
-            linkEntityX + romTables.swordCollisionXOriginOffset(romDirection, state),
-            romTables.swordCollisionWidth(romDirection, state),
-            linkEntityY + romTables.swordCollisionYOriginOffset(romDirection, state),
-            romTables.swordCollisionHeight(romDirection, state));
+                true,
+                linkEntityX + romTables.swordCollisionXOriginOffset(romDirection, state),
+                romTables.swordCollisionWidth(romDirection, state),
+                linkEntityY + romTables.swordCollisionYOriginOffset(romDirection, state),
+                romTables.swordCollisionHeight(romDirection, state));
     }
 
     // Flash is driven by bit 2 of the global frame counter during HOLDING at
@@ -451,17 +481,16 @@ public final class Sword implements EquipmentItem {
         }
         int baseDirection = toSpinDirectionIndex(spinBaseDirection);
         return romTables == null
-            ? SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[baseDirection][spinSector()]
-            : fromRomDirection(romTables.swordSpinAbsoluteDirection(
-                toRomDirection(spinBaseDirection), spinSector()));
+                ? SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[baseDirection][spinSector()]
+                : fromRomDirection(
+                        romTables.swordSpinAbsoluteDirection(toRomDirection(spinBaseDirection), spinSector()));
     }
 
     private int spinAnimationState() {
         int baseDirection = toSpinDirectionIndex(spinBaseDirection);
         return romTables == null
-            ? SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[baseDirection][spinSector()]
-            : romTables.swordSpinAnimationState(
-                toRomDirection(spinBaseDirection), spinSector());
+                ? SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[baseDirection][spinSector()]
+                : romTables.swordSpinAnimationState(toRomDirection(spinBaseDirection), spinSector());
     }
 
     private int spinSector() {
@@ -497,31 +526,46 @@ public final class Sword implements EquipmentItem {
 
     private static int toSpinDirectionIndex(int javaDirection) {
         switch (javaDirection) {
-            case Link.DIRECTION_RIGHT: return 0;
-            case Link.DIRECTION_LEFT:  return 1;
-            case Link.DIRECTION_UP:    return 2;
-            case Link.DIRECTION_DOWN:  return 3;
-            default: return 3;
+            case Link.DIRECTION_RIGHT:
+                return 0;
+            case Link.DIRECTION_LEFT:
+                return 1;
+            case Link.DIRECTION_UP:
+                return 2;
+            case Link.DIRECTION_DOWN:
+                return 3;
+            default:
+                return 3;
         }
     }
 
     private static int toRomDirection(int javaDirection) {
         switch (javaDirection) {
-            case Link.DIRECTION_RIGHT: return 0;
-            case Link.DIRECTION_LEFT:  return 1;
-            case Link.DIRECTION_UP:    return 2;
-            case Link.DIRECTION_DOWN:  return 3;
-            default: return 3;
+            case Link.DIRECTION_RIGHT:
+                return 0;
+            case Link.DIRECTION_LEFT:
+                return 1;
+            case Link.DIRECTION_UP:
+                return 2;
+            case Link.DIRECTION_DOWN:
+                return 3;
+            default:
+                return 3;
         }
     }
 
     private static int fromRomDirection(int romDirection) {
         switch (romDirection & 0x03) {
-            case 0: return Link.DIRECTION_RIGHT;
-            case 1: return Link.DIRECTION_LEFT;
-            case 2: return Link.DIRECTION_UP;
-            case 3: return Link.DIRECTION_DOWN;
-            default: throw new AssertionError(romDirection);
+            case 0:
+                return Link.DIRECTION_RIGHT;
+            case 1:
+                return Link.DIRECTION_LEFT;
+            case 2:
+                return Link.DIRECTION_UP;
+            case 3:
+                return Link.DIRECTION_DOWN;
+            default:
+                throw new AssertionError(romDirection);
         }
     }
 

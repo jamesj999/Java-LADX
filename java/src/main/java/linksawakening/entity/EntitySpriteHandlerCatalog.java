@@ -1,13 +1,11 @@
 package linksawakening.entity;
 
-import linksawakening.world.entity.event.MoldormSegmentPosition;
-
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.rom.RomBank;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
-
-import java.util.ArrayList;
-import java.util.List;
+import linksawakening.world.entity.event.MoldormSegmentPosition;
 
 /**
  * ROM-backed display-list decoder plus the small handler-to-list mapping
@@ -138,12 +136,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
     private static final int ENTITY_COLOR_SHELL_BLUE = 0xEB;
 
-    private static final int[] COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES = {
-        0x6688, 0x66E8, 0x6748
-    };
-    private static final int[] COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES = {
-        0x67A8, 0x67D8, 0x6808
-    };
+    private static final int[] COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES = {0x6688, 0x66E8, 0x6748};
+    private static final int[] COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES = {0x67A8, 0x67D8, 0x6808};
 
     private final byte[] romData;
 
@@ -154,15 +148,13 @@ public final class EntitySpriteHandlerCatalog {
         this.romData = romData;
     }
 
-    public EntitySpriteDefinition forEntityType(int entityType,
-                                                 EntityRoomLoader.RoomTable roomTable) {
+    public EntitySpriteDefinition forEntityType(int entityType, EntityRoomLoader.RoomTable roomTable) {
         return forEntityType(entityType, roomTable, -1);
     }
 
     /** Selects the runtime-dependent display list used by entity $31. */
     public EntitySpriteDefinition forSwordShieldPickup(boolean beachSword) {
-        return decodeSingle(ENTITY_SWORD_SHIELD_PICKUP, 0x03,
-            beachSword ? 0x5B97 : 0x5B95, 1, 0);
+        return decodeSingle(ENTITY_SWORD_SHIELD_PICKUP, 0x03, beachSword ? 0x5B97 : 0x5B95, 1, 0);
     }
 
     /** Selects SirensInstrumentState1Handler's two projectile variants. */
@@ -180,14 +172,10 @@ public final class EntitySpriteHandlerCatalog {
 
     /** Selects the perched pair or four-sprite flying layout used by the owl event. */
     public EntitySpriteDefinition forOwlEvent(boolean flying) {
-        return flying
-            ? decodeRectangle(0x41, 0x06, 0x6A3F, 1, 4, 0)
-            : decodePair(0x41, 0x06, 0x6A37, 2, 0);
+        return flying ? decodeRectangle(0x41, 0x06, 0x6A3F, 1, 4, 0) : decodePair(0x41, 0x06, 0x6A37, 2, 0);
     }
 
-    public EntitySpriteDefinition forEntityType(int entityType,
-                                                 EntityRoomLoader.RoomTable roomTable,
-                                                 int mapId) {
+    public EntitySpriteDefinition forEntityType(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
         }
@@ -199,8 +187,7 @@ public final class EntitySpriteHandlerCatalog {
         // ordinary bank-$06 floating-item display path. That branch remains
         // intentionally deferred until its dedicated renderer is modeled.
         if ((entityType == ENTITY_FLOATING_ITEM || entityType == ENTITY_FLOATING_ITEM_2)
-            && !(roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON
-                && entityType == ENTITY_FLOATING_ITEM)) {
+                && !(roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON && entityType == ENTITY_FLOATING_ITEM)) {
             return decodeFloatingItemMain(entityType);
         }
 
@@ -223,13 +210,25 @@ public final class EntitySpriteHandlerCatalog {
             // Ordinary owl: hActiveEntityVisualPosY + 1, not a world-position change.
             // South Face Shrine instead uses the separate four-sprite mural handler.
             EntitySpriteDefinition.Variant pair =
-                decodePair(entityType, 0x18, 0x5DF7, 1, 0).variant(0);
-            return EntitySpriteDefinition.dynamic(entityType, 0x18, 0x5DF7, 0,
-                List.of(List.of(
-                    new EntitySpriteDefinition.DynamicSprite(1, 0, pair.first(),
-                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true),
-                    new EntitySpriteDefinition.DynamicSprite(1, 8, pair.second(),
-                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true))));
+                    decodePair(entityType, 0x18, 0x5DF7, 1, 0).variant(0);
+            return EntitySpriteDefinition.dynamic(
+                    entityType,
+                    0x18,
+                    0x5DF7,
+                    0,
+                    List.of(List.of(
+                            new EntitySpriteDefinition.DynamicSprite(
+                                    1,
+                                    0,
+                                    pair.first(),
+                                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                                    true),
+                            new EntitySpriteDefinition.DynamicSprite(
+                                    1,
+                                    8,
+                                    pair.second(),
+                                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                                    true))));
         }
         if (entityType == ENTITY_CHEST_WITH_ITEM) {
             return decodeSingle(entityType, 0x07, 0x7B57, 0x21, 0);
@@ -242,8 +241,7 @@ public final class EntitySpriteHandlerCatalog {
             return decodeDungeonWarp();
         }
         if (entityType == ENTITY_INSTRUMENT_OF_THE_SIRENS) {
-            return decodePair(entityType, 0x03, 0x5D83, 4,
-                mapId < 0 ? 0 : mapId & 0x03);
+            return decodePair(entityType, 0x03, 0x5D83, 4, mapId < 0 ? 0 : mapId & 0x03);
         }
         if (entityType == 0x5B) return forSlimeEyeState(false, 0, 0);
         if (entityType == ENTITY_ARROW) {
@@ -318,11 +316,15 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_HOOKSHOT_CHAIN) {
             // HookshotChainSpriteVariants is an inline handler list in
             // entities/18_hookshot_chain.asm, not a bank display-list label.
-            return new EntitySpriteDefinition(entityType, -1, -1,
-                EntitySpriteDefinition.Shape.PAIR, 0, List.of(
-                    new EntitySpriteDefinition.Variant(
-                        new EntitySpriteDefinition.OamAttribute(0x36, 0x00),
-                        new EntitySpriteDefinition.OamAttribute(0x36, 0x20))));
+            return new EntitySpriteDefinition(
+                    entityType,
+                    -1,
+                    -1,
+                    EntitySpriteDefinition.Shape.PAIR,
+                    0,
+                    List.of(new EntitySpriteDefinition.Variant(
+                            new EntitySpriteDefinition.OamAttribute(0x36, 0x00),
+                            new EntitySpriteDefinition.OamAttribute(0x36, 0x20))));
         }
         if (entityType == ENTITY_BOW_WOW) {
             return decodePair(entityType, 0x05, 0x4000, 7, 0);
@@ -332,15 +334,15 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MARIN) {
             return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
-                || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
-                ? decodePair(entityType, 0x05, 0x4E0A, 8, 6)
-                : decodePair(entityType, 0x05, 0x4E2A, 11, 6);
+                            || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
+                    ? decodePair(entityType, 0x05, 0x4E0A, 8, 6)
+                    : decodePair(entityType, 0x05, 0x4E2A, 11, 6);
         }
         if (entityType == ENTITY_TARIN) {
             return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
-                || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
-                ? decodePair(entityType, 0x05, 0x4932, 4, 0)
-                : decodePair(entityType, 0x05, 0x4912, 12, 0);
+                            || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
+                    ? decodePair(entityType, 0x05, 0x4932, 4, 0)
+                    : decodePair(entityType, 0x05, 0x4912, 12, 0);
         }
         if (entityType == ENTITY_MARIN_AT_TAL_TAL_HEIGHTS) {
             return decodePair(entityType, 0x18, 0x5EB7, 8, 0);
@@ -349,8 +351,7 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(entityType, 0x06, 0x604D, 4, 0);
         }
         if (entityType == ENTITY_KID_71 || entityType == ENTITY_KID_72) {
-            return decodePair(entityType, 0x06,
-                entityType == ENTITY_KID_71 ? 0x604D : 0x605D, 4, 0);
+            return decodePair(entityType, 0x06, entityType == ENTITY_KID_71 ? 0x604D : 0x605D, 4, 0);
         }
         if (entityType == ENTITY_MADAM_MEOWMEOW) {
             return decodePair(entityType, 0x06, 0x5B56, 8, 0);
@@ -374,9 +375,13 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(entityType, 0x07, 0x683E, 4, 0);
         }
         if (entityType == ENTITY_BUSH_CRAWLER) {
-            return decodePair(entityType, 0x07,
-                isIndoorRoomTable(roomTable) ? 0x401A : 0x4012, 2, 0,
-                EntitySpriteDefinition.DynamicSprite.TileSource.GPU);
+            return decodePair(
+                    entityType,
+                    0x07,
+                    isIndoorRoomTable(roomTable) ? 0x401A : 0x4012,
+                    2,
+                    0,
+                    EntitySpriteDefinition.DynamicSprite.TileSource.GPU);
         }
         if (entityType == ENTITY_WIZROBE) {
             return decodePair(entityType, 0x06, 0x7604, 5, 0);
@@ -429,11 +434,17 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(entityType, 0x04, 0x5A49, 10, 0);
         }
         if (entityType == ENTITY_MOLDORM) {
-            return forMoldormState(0, 0, 0, List.of(
-                new MoldormSegmentPosition(0, 0),
-                new MoldormSegmentPosition(0, 0),
-                new MoldormSegmentPosition(0, 0),
-                new MoldormSegmentPosition(0, 0)), 0, 0);
+            return forMoldormState(
+                    0,
+                    0,
+                    0,
+                    List.of(
+                            new MoldormSegmentPosition(0, 0),
+                            new MoldormSegmentPosition(0, 0),
+                            new MoldormSegmentPosition(0, 0),
+                            new MoldormSegmentPosition(0, 0)),
+                    0,
+                    0);
         }
         if (entityType == ENTITY_ROLLING_BONES) {
             return decodeRectangle(entityType, 0x06, 0x6E1E, 6, 4, 0);
@@ -455,8 +466,7 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_ANTI_FAIRY) {
             return decodePair(entityType, 0x06, 0x786E, 2, 0);
         }
-        if (entityType == ENTITY_SPARK_COUNTER_CLOCKWISE
-            || entityType == ENTITY_SPARK_CLOCKWISE) {
+        if (entityType == ENTITY_SPARK_COUNTER_CLOCKWISE || entityType == ENTITY_SPARK_CLOCKWISE) {
             return decodePair(entityType, 0x06, 0x6615, 2, 0);
         }
         if (entityType == ENTITY_ZOL) {
@@ -610,11 +620,10 @@ public final class EntitySpriteHandlerCatalog {
             throw new IllegalArgumentException("Chest map and room ids must be unsigned bytes");
         }
         if (itemVariant < 0 || itemVariant > 0x20) {
-            throw new IllegalArgumentException("Chest item variant must be in range 0..0x20: "
-                + itemVariant);
+            throw new IllegalArgumentException("Chest item variant must be in range 0..0x20: " + itemVariant);
         }
         if ((mapId == 0x05 && roomId == 0xCE && itemVariant == 0x00)
-            || (mapId == 0x06 && roomId == 0x1A && itemVariant == 0x01)) {
+                || (mapId == 0x06 && roomId == 0x1A && itemVariant == 0x01)) {
             return decodeSingle(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B53, 2, 0);
         }
         return decodeSingle(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B57, 0x21, 0);
@@ -636,8 +645,7 @@ public final class EntitySpriteHandlerCatalog {
 
     /** Selects Urchin's normal or credits bank-$15 display-list pair. */
     public EntitySpriteDefinition forUrchinState(boolean creditsGameplay) {
-        return decodePair(ENTITY_URCHIN, 0x15,
-            creditsGameplay ? 0x7393 : 0x7383, 4, 0);
+        return decodePair(ENTITY_URCHIN, 0x15, creditsGameplay ? 0x7393 : 0x7383, 4, 0);
     }
 
     /** Decodes Unknown044SpriteVariants at bank-$15:$4CD5 for detached segments. */
@@ -651,8 +659,8 @@ public final class EntitySpriteHandlerCatalog {
             throw new IllegalArgumentException("Stalfos Evasive private state cannot be negative");
         }
         return privateState1 == 0
-            ? decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E7D, 3, 0)
-            : decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E8E, 2, 0);
+                ? decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E7D, 3, 0)
+                : decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E8E, 2, 0);
     }
 
     /**
@@ -660,11 +668,9 @@ public final class EntitySpriteHandlerCatalog {
      * state. State $02 is the adjacent Bushcrawler2 list; state $01 is the
      * ordinary outdoor/indoor pair selected by the room table.
      */
-    public EntitySpriteDefinition forBushCrawlerState(int privateState1,
-                                                       EntityRoomLoader.RoomTable roomTable) {
+    public EntitySpriteDefinition forBushCrawlerState(int privateState1, EntityRoomLoader.RoomTable roomTable) {
         if (privateState1 < 0 || privateState1 > 0x02) {
-            throw new IllegalArgumentException("Bush Crawler private state out of range: "
-                + privateState1);
+            throw new IllegalArgumentException("Bush Crawler private state out of range: " + privateState1);
         }
         if (privateState1 == 0x02) {
             return decodePair(ENTITY_BUSH_CRAWLER, 0x07, 0x400A, 2, 0);
@@ -677,26 +683,24 @@ public final class EntitySpriteHandlerCatalog {
      * crawling. The handler first renders its room-specific pair, then the
      * four-tile Bushcrawler2 pair at the same active position.
      */
-    public EntitySpriteDefinition forBushCrawlerCrawlState(
-            EntityRoomLoader.RoomTable roomTable, int privateState4) {
+    public EntitySpriteDefinition forBushCrawlerCrawlState(EntityRoomLoader.RoomTable roomTable, int privateState4) {
         if (privateState4 < 0 || privateState4 > 1) {
-            throw new IllegalArgumentException("Bush Crawler private state 4 must be 0 or 1: "
-                + privateState4);
+            throw new IllegalArgumentException("Bush Crawler private state 4 must be 0 or 1: " + privateState4);
         }
         EntitySpriteDefinition normal = forEntityType(ENTITY_BUSH_CRAWLER, roomTable);
-        EntitySpriteDefinition crawling = decodePair(ENTITY_BUSH_CRAWLER, 0x07,
-            0x400A, 2, 0);
+        EntitySpriteDefinition crawling = decodePair(ENTITY_BUSH_CRAWLER, 0x07, 0x400A, 2, 0);
         List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(2);
         for (int animation = 0; animation < 2; animation++) {
             List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(4);
-            appendDynamicPair(sprites, normal.variant(privateState4),
-                EntitySpriteDefinition.DynamicSprite.TileSource.GPU);
-            appendDynamicPair(sprites, crawling.variant(animation),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+            appendDynamicPair(
+                    sprites, normal.variant(privateState4), EntitySpriteDefinition.DynamicSprite.TileSource.GPU);
+            appendDynamicPair(
+                    sprites,
+                    crawling.variant(animation),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
             variants.add(List.copyOf(sprites));
         }
-        return EntitySpriteDefinition.dynamic(ENTITY_BUSH_CRAWLER, 0x07,
-            normal.address(), 0, variants);
+        return EntitySpriteDefinition.dynamic(ENTITY_BUSH_CRAWLER, 0x07, normal.address(), 0, variants);
     }
 
     /**
@@ -705,12 +709,11 @@ public final class EntitySpriteHandlerCatalog {
      */
     public EntitySpriteDefinition forIronMaskState(int privateState2) {
         if ((privateState2 & ~0xFF) != 0) {
-            throw new IllegalArgumentException(
-                "Iron Mask private state must be an unsigned byte: " + privateState2);
+            throw new IllegalArgumentException("Iron Mask private state must be an unsigned byte: " + privateState2);
         }
         return privateState2 == 0
-            ? decodePair(ENTITY_IRON_MASK, 0x03, 0x4FCB, 8, 0)
-            : decodePair(ENTITY_IRON_MASK, 0x03, 0x4FEB, 2, 0);
+                ? decodePair(ENTITY_IRON_MASK, 0x03, 0x4FCB, 8, 0)
+                : decodePair(ENTITY_IRON_MASK, 0x03, 0x4FEB, 2, 0);
     }
 
     /**
@@ -720,67 +723,68 @@ public final class EntitySpriteHandlerCatalog {
      * position.
      */
     public EntitySpriteDefinition forMiniMoldormState(
-            int headVariant, int entityX, int entityY,
-            int segment1X, int segment1Y, int segment2X, int segment2Y) {
+            int headVariant, int entityX, int entityY, int segment1X, int segment1Y, int segment2X, int segment2Y) {
         if (headVariant < 0 || headVariant > 7) {
-            throw new IllegalArgumentException("Mini Moldorm head variant must be 0..7: "
-                + headVariant);
+            throw new IllegalArgumentException("Mini Moldorm head variant must be 0..7: " + headVariant);
         }
-        EntitySpriteDefinition pairs = decodePair(ENTITY_MINI_MOLDORM, 0x04,
-            0x5A49, 10, 0);
+        EntitySpriteDefinition pairs = decodePair(ENTITY_MINI_MOLDORM, 0x04, 0x5A49, 10, 0);
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(6);
         appendDynamicPairAtOffset(sprites, pairs.variant(headVariant), 0, 0);
-        appendDynamicPairAtOffset(sprites, pairs.variant(8),
-            signedByte(segment1Y - entityY), signedByte(segment1X - entityX));
-        appendDynamicPairAtOffset(sprites, pairs.variant(9),
-            signedByte(segment2Y - entityY), signedByte(segment2X - entityX));
-        return EntitySpriteDefinition.dynamic(ENTITY_MINI_MOLDORM, 0x04,
-            0x5A49, 0, List.of(List.copyOf(sprites)));
+        appendDynamicPairAtOffset(
+                sprites, pairs.variant(8), signedByte(segment1Y - entityY), signedByte(segment1X - entityX));
+        appendDynamicPairAtOffset(
+                sprites, pairs.variant(9), signedByte(segment2Y - entityY), signedByte(segment2X - entityX));
+        return EntitySpriteDefinition.dynamic(ENTITY_MINI_MOLDORM, 0x04, 0x5A49, 0, List.of(List.copyOf(sprites)));
     }
 
     /** Builds Moldorm's eight-sprite head and delayed four-pair tail. */
     public EntitySpriteDefinition forMoldormState(
-            int headVariant, int entityX, int entityY,
+            int headVariant,
+            int entityX,
+            int entityY,
             List<MoldormSegmentPosition> segments,
-            int privateState3, int frameCounter) {
-        return forMoldormPresentation(headVariant, entityX, entityY,
-            entityX, entityY, segments, privateState3, frameCounter);
+            int privateState3,
+            int frameCounter) {
+        return forMoldormPresentation(
+                headVariant, entityX, entityY, entityX, entityY, segments, privateState3, frameCounter);
     }
 
     /** Builds pre-update Moldorm OAM relative to the post-update entity position. */
     public EntitySpriteDefinition forMoldormPresentation(
-            int headVariant, int headX, int headY, int renderBaseX, int renderBaseY,
+            int headVariant,
+            int headX,
+            int headY,
+            int renderBaseX,
+            int renderBaseY,
             List<MoldormSegmentPosition> segments,
-            int privateState3, int frameCounter) {
+            int privateState3,
+            int frameCounter) {
         if (headVariant < 0 || headVariant > 7) {
-            throw new IllegalArgumentException("Moldorm head variant must be 0..7: "
-                + headVariant);
+            throw new IllegalArgumentException("Moldorm head variant must be 0..7: " + headVariant);
         }
         if (segments == null || segments.size() != 4) {
             throw new IllegalArgumentException("Moldorm requires four tail history positions");
         }
         if (privateState3 < 0 || privateState3 > 5) {
-            throw new IllegalArgumentException("Moldorm private state 3 must be 0..5: "
-                + privateState3);
+            throw new IllegalArgumentException("Moldorm private state 3 must be 0..5: " + privateState3);
         }
 
         if (privateState3 == 5) {
             return EntitySpriteDefinition.unsupported(ENTITY_MOLDORM);
         }
 
-        EntitySpriteDefinition head = decodeRectangle(ENTITY_MOLDORM, 0x04,
-            0x57F2, 8, 8, headVariant);
-        EntitySpriteDefinition tail = decodePair(ENTITY_MOLDORM, 0x04,
-            0x58F2, 4, 0);
+        EntitySpriteDefinition head = decodeRectangle(ENTITY_MOLDORM, 0x04, 0x57F2, 8, 8, headVariant);
+        EntitySpriteDefinition tail = decodePair(ENTITY_MOLDORM, 0x04, 0x58F2, 4, 0);
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(16);
         int headYOffset = signedByte(headY - renderBaseY);
         int headXOffset = signedByte(headX - renderBaseX);
-        for (EntitySpriteDefinition.RectangleSprite sprite :
-                head.rectangleVariant(headVariant)) {
+        for (EntitySpriteDefinition.RectangleSprite sprite : head.rectangleVariant(headVariant)) {
             sprites.add(new EntitySpriteDefinition.DynamicSprite(
-                signedByte(sprite.yOffset() + headYOffset),
-                signedByte(sprite.xOffset() + headXOffset), sprite.oam(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+                    signedByte(sprite.yOffset() + headYOffset),
+                    signedByte(sprite.xOffset() + headXOffset),
+                    sprite.oam(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                    true));
         }
 
         int visibleTailPairs = 4 - privateState3;
@@ -789,39 +793,47 @@ public final class EntitySpriteHandlerCatalog {
             MoldormSegmentPosition position = segments.get(index);
             EntitySpriteDefinition.Variant pair = tail.variant(tailVariants[index]);
             int paletteXor = index == 3 && (frameCounter & 0x04) != 0 ? 0x10 : 0;
-            appendMoldormTailPair(sprites, pair,
-                signedByte(position.y() - renderBaseY),
-                signedByte(position.x() - renderBaseX), paletteXor);
+            appendMoldormTailPair(
+                    sprites,
+                    pair,
+                    signedByte(position.y() - renderBaseY),
+                    signedByte(position.x() - renderBaseX),
+                    paletteXor);
         }
-        return EntitySpriteDefinition.dynamic(ENTITY_MOLDORM, 0x04,
-            0x57F2, 0, List.of(List.copyOf(sprites)));
+        return EntitySpriteDefinition.dynamic(ENTITY_MOLDORM, 0x04, 0x57F2, 0, List.of(List.copyOf(sprites)));
     }
 
     /** Slime Eye bank-04 display lists followed by the ground shadow. */
     public EntitySpriteDefinition forSlimeEyeState(boolean half, int variant, int z) {
-        var bodyAddress = half ? linksawakening.rom.RomSymbols.Data_004_4FAE
-            : linksawakening.rom.RomSymbols.Data_004_4BDD;
-        var shadowAddress = half ? linksawakening.rom.RomSymbols.Data_004_4FEE
-            : linksawakening.rom.RomSymbols.Data_004_4D9D;
+        var bodyAddress =
+                half ? linksawakening.rom.RomSymbols.Data_004_4FAE : linksawakening.rom.RomSymbols.Data_004_4BDD;
+        var shadowAddress =
+                half ? linksawakening.rom.RomSymbols.Data_004_4FEE : linksawakening.rom.RomSymbols.Data_004_4D9D;
         int variants = half ? 2 : 7;
         if (variant < 0 || variant >= variants) return EntitySpriteDefinition.unsupported(0x5B);
-        var body = decodeRectangle(0x5B, bodyAddress.bank(), bodyAddress.address(),
-            variants, half ? 8 : 16, variant);
+        var body = decodeRectangle(0x5B, bodyAddress.bank(), bodyAddress.address(), variants, half ? 8 : 16, variant);
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>();
         for (var sprite : body.rectangleVariant(variant)) {
             if (sprite.oam().tile() == 0xFF) continue;
-            sprites.add(new EntitySpriteDefinition.DynamicSprite(sprite.yOffset(), sprite.xOffset(),
-                sprite.oam(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                    sprite.yOffset(),
+                    sprite.xOffset(),
+                    sprite.oam(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                    true));
         }
         if (z != 0) {
-            var shadow = decodeRectangle(0x5B, shadowAddress.bank(), shadowAddress.address(), 1,
-                half ? 4 : 6, 0);
-            for (var sprite : shadow.rectangleVariant(0)) sprites.add(
-                new EntitySpriteDefinition.DynamicSprite(signedByte(sprite.yOffset() + z - (half ? 2 : 8)),
-                    sprite.xOffset(), sprite.oam(), EntitySpriteDefinition.DynamicSprite.TileSource.GPU, true));
+            var shadow = decodeRectangle(0x5B, shadowAddress.bank(), shadowAddress.address(), 1, half ? 4 : 6, 0);
+            for (var sprite : shadow.rectangleVariant(0))
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                        signedByte(sprite.yOffset() + z - (half ? 2 : 8)),
+                        sprite.xOffset(),
+                        sprite.oam(),
+                        EntitySpriteDefinition.DynamicSprite.TileSource.GPU,
+                        true));
         }
-        return EntitySpriteDefinition.dynamic(0x5B, bodyAddress.bank(), bodyAddress.address(), 0,
-            List.of(List.copyOf(sprites)));
+        return EntitySpriteDefinition.dynamic(
+                0x5B, bodyAddress.bank(), bodyAddress.address(), 0, List.of(List.copyOf(sprites)));
     }
 
     /** Builds the repeated vertical bar pairs emitted by {@code func_006_6FEA}. */
@@ -830,24 +842,19 @@ public final class EntitySpriteHandlerCatalog {
     }
 
     /** Builds the bar using the current animated pair selected by the handler. */
-    public EntitySpriteDefinition forRollingBonesBar(int privateState1, int entityY,
-                                                      int spriteVariant) {
+    public EntitySpriteDefinition forRollingBonesBar(int privateState1, int entityY, int spriteVariant) {
         if (privateState1 < 0 || privateState1 > 5) {
-            throw new IllegalArgumentException(
-                "Rolling Bones bar private state must be 0..5: " + privateState1);
+            throw new IllegalArgumentException("Rolling Bones bar private state must be 0..5: " + privateState1);
         }
-        EntitySpriteDefinition pair = decodePair(ENTITY_ROLLING_BONES_BAR,
-            0x06, 0x6ED5, 2, 0);
+        EntitySpriteDefinition pair = decodePair(ENTITY_ROLLING_BONES_BAR, 0x06, 0x6ED5, 2, 0);
         int selectedVariant = spriteVariant & 0x01;
         int pairCount = 6 - privateState1;
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(pairCount * 2);
         for (int index = 0; index < pairCount; index++) {
             int visualY = 0x20 + index * 0x10;
-            appendDynamicPairAtOffset(sprites, pair.variant(selectedVariant),
-                signedByte(visualY - entityY), 0);
+            appendDynamicPairAtOffset(sprites, pair.variant(selectedVariant), signedByte(visualY - entityY), 0);
         }
-        return EntitySpriteDefinition.dynamic(ENTITY_ROLLING_BONES_BAR, 0x06,
-            0x6ED5, 0, List.of(List.copyOf(sprites)));
+        return EntitySpriteDefinition.dynamic(ENTITY_ROLLING_BONES_BAR, 0x06, 0x6ED5, 0, List.of(List.copyOf(sprites)));
     }
 
     /**
@@ -856,11 +863,9 @@ public final class EntitySpriteHandlerCatalog {
      * eight-variant list; all other status/state combinations use the
      * four-variant inactive list.
      */
-    public EntitySpriteDefinition forColorShellState(int entityType, int state,
-                                                      EntityStatus status) {
+    public EntitySpriteDefinition forColorShellState(int entityType, int state, EntityStatus status) {
         if (!isColorShellType(entityType)) {
-            throw new IllegalArgumentException("Not a Color Shell entity type: 0x"
-                + Integer.toHexString(entityType));
+            throw new IllegalArgumentException("Not a Color Shell entity type: 0x" + Integer.toHexString(entityType));
         }
         if (state < 0 || state > 0x0D) {
             throw new IllegalArgumentException("Color Shell state out of range: " + state);
@@ -870,8 +875,8 @@ public final class EntitySpriteHandlerCatalog {
         }
         int color = entityType - ENTITY_COLOR_SHELL_RED;
         boolean activeList = status == EntityStatus.ACTIVE && state < 0x06;
-        int address = (activeList ? COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES
-                                  : COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES)[color];
+        int address =
+                (activeList ? COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES : COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES)[color];
         return decodeRectangle(entityType, 0x20, address, activeList ? 8 : 4, 3, 0);
     }
 
@@ -887,12 +892,10 @@ public final class EntitySpriteHandlerCatalog {
         List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(4);
         for (EntitySpriteDefinition.Variant variant : singles.variants()) {
             variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(
-                0, 0, variant.first(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true)));
+                    0, 0, variant.first(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true)));
         }
         List<EntitySpriteDefinition.DynamicSprite> finalPair = new ArrayList<>(2);
-        appendDynamicPair(finalPair, pair.variant(0),
-            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+        appendDynamicPair(finalPair, pair.variant(0), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
         variants.add(List.copyOf(finalPair));
         return EntitySpriteDefinition.dynamic(0x00, 0x03, 0x4CAC, 0, variants);
     }
@@ -942,8 +945,7 @@ public final class EntitySpriteHandlerCatalog {
         EntitySpriteDefinition single = decodeSingle(entityType, 0x07, 0x72AB, 1, 0);
         List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(pair.variants());
         variants.set(1, new EntitySpriteDefinition.Variant(single.variant(0).first(), null));
-        return new EntitySpriteDefinition(entityType, 0x07, 0x729B,
-            EntitySpriteDefinition.Shape.PAIR, 0, variants);
+        return new EntitySpriteDefinition(entityType, 0x07, 0x729B, EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 
     /**
@@ -958,8 +960,7 @@ public final class EntitySpriteHandlerCatalog {
         for (int variant = 0; variant < 4; variant++) {
             variants.add(single.variant(variant));
         }
-        return new EntitySpriteDefinition(entityType, 0x15, 0x449F,
-            EntitySpriteDefinition.Shape.PAIR, 0, variants);
+        return new EntitySpriteDefinition(entityType, 0x15, 0x449F, EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 
     /**
@@ -979,16 +980,17 @@ public final class EntitySpriteHandlerCatalog {
             List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(5);
             if (variant < 2) {
                 sprites.add(new EntitySpriteDefinition.DynamicSprite(
-                    (variant ^ 0x01) + 0x04, -0x02,
-                    new EntitySpriteDefinition.OamAttribute(0x86, 0x16),
-                    EntitySpriteDefinition.DynamicSprite.TileSource.GPU, false));
+                        (variant ^ 0x01) + 0x04,
+                        -0x02,
+                        new EntitySpriteDefinition.OamAttribute(0x86, 0x16),
+                        EntitySpriteDefinition.DynamicSprite.TileSource.GPU,
+                        false));
             }
             if (variant == 2 || variant == 3) {
                 appendMoblinSwordBody(sprites, body.variant(variant));
             }
 
-            appendMoblinSwordGeneratedPair(sprites, dynamicY[variant], dynamicX[variant],
-                tileSelector[variant]);
+            appendMoblinSwordGeneratedPair(sprites, dynamicY[variant], dynamicX[variant], tileSelector[variant]);
 
             if (variant != 2 && variant != 3) {
                 appendMoblinSwordBody(sprites, body.variant(variant));
@@ -1000,34 +1002,38 @@ public final class EntitySpriteHandlerCatalog {
     }
 
     private void appendMoblinSwordGeneratedPair(
-        List<EntitySpriteDefinition.DynamicSprite> sprites, int yOffset, int xOffset,
-        int tileSelector) {
+            List<EntitySpriteDefinition.DynamicSprite> sprites, int yOffset, int xOffset, int tileSelector) {
         int tileAddress = 0x4A93 + tileSelector * 2;
         int attributeAddress = 0x4AA3 + tileSelector * 2;
         int firstTile = readByte(0x20, tileAddress);
         int secondTile = readByte(0x20, tileAddress + 1);
         int firstAttributes = readByte(0x20, attributeAddress);
         int secondAttributes = readByte(0x20, attributeAddress + 1);
-        EntitySpriteDefinition.DynamicSprite.TileSource source =
-            EntitySpriteDefinition.DynamicSprite.TileSource.GPU;
+        EntitySpriteDefinition.DynamicSprite.TileSource source = EntitySpriteDefinition.DynamicSprite.TileSource.GPU;
         // $20:4ACF rewinds BC to the OAM X byte and writes $F0 there,
         // hiding this sprite offscreen. It does not replace its tile number.
-        if (firstTile != 0xFF) sprites.add(new EntitySpriteDefinition.DynamicSprite(signedByte(yOffset),
-            signedByte(xOffset), new EntitySpriteDefinition.OamAttribute(
-                firstTile, firstAttributes), source, false));
-        sprites.add(new EntitySpriteDefinition.DynamicSprite(signedByte(yOffset),
-            signedByte(xOffset + 0x08), new EntitySpriteDefinition.OamAttribute(
-                secondTile, secondAttributes), source, false));
+        if (firstTile != 0xFF)
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                    signedByte(yOffset),
+                    signedByte(xOffset),
+                    new EntitySpriteDefinition.OamAttribute(firstTile, firstAttributes),
+                    source,
+                    false));
+        sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                signedByte(yOffset),
+                signedByte(xOffset + 0x08),
+                new EntitySpriteDefinition.OamAttribute(secondTile, secondAttributes),
+                source,
+                false));
     }
 
     private static void appendMoblinSwordBody(
-        List<EntitySpriteDefinition.DynamicSprite> sprites,
-        EntitySpriteDefinition.Variant body) {
-        sprites.add(new EntitySpriteDefinition.DynamicSprite(0, 0, body.first(),
-            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+            List<EntitySpriteDefinition.DynamicSprite> sprites, EntitySpriteDefinition.Variant body) {
+        sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                0, 0, body.first(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
         if (body.second() != null) {
-            sprites.add(new EntitySpriteDefinition.DynamicSprite(0, 0x08, body.second(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                    0, 0x08, body.second(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
         }
     }
 
@@ -1048,8 +1054,7 @@ public final class EntitySpriteHandlerCatalog {
             EntitySpriteDefinition quirk = decodePair(entityType, 0x06, 0x7AD3, 1, 0);
             variants.set(5, quirk.variant(0));
         }
-        return new EntitySpriteDefinition(entityType, 0x06, 0x7ADD,
-            EntitySpriteDefinition.Shape.PAIR, 0, variants);
+        return new EntitySpriteDefinition(entityType, 0x06, 0x7ADD, EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 
     /**
@@ -1071,8 +1076,7 @@ public final class EntitySpriteHandlerCatalog {
     }
 
     /** Builds func_015_4AC9's body, optional weapon, and airborne shadow layers. */
-    public EntitySpriteDefinition forMoblinKingState(int bodyVariant, int weaponVariant,
-                                                     boolean airborne) {
+    public EntitySpriteDefinition forMoblinKingState(int bodyVariant, int weaponVariant, boolean airborne) {
         if (bodyVariant < 0 || bodyVariant >= 14) {
             throw new IllegalArgumentException("Moblin King body variant must be 0..13");
         }
@@ -1091,8 +1095,7 @@ public final class EntitySpriteHandlerCatalog {
         if (airborne) {
             appendRectangleSprites(sprites, shadow.rectangleVariant(0));
         }
-        return EntitySpriteDefinition.dynamic(0xE4, 0x15, 0x4A15, 0,
-            List.of(List.copyOf(sprites)));
+        return EntitySpriteDefinition.dynamic(0xE4, 0x15, 0x4A15, 0, List.of(List.copyOf(sprites)));
     }
 
     private static void appendRectangleSprites(
@@ -1100,8 +1103,11 @@ public final class EntitySpriteHandlerCatalog {
             List<EntitySpriteDefinition.RectangleSprite> source) {
         for (EntitySpriteDefinition.RectangleSprite sprite : source) {
             destination.add(new EntitySpriteDefinition.DynamicSprite(
-                sprite.yOffset(), sprite.xOffset(), sprite.oam(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+                    sprite.yOffset(),
+                    sprite.xOffset(),
+                    sprite.oam(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                    false));
         }
     }
 
@@ -1120,16 +1126,20 @@ public final class EntitySpriteHandlerCatalog {
             EntitySpriteDefinition.Variant arrowVariant = arrow.variant(direction);
             List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(3);
             sprites.add(new EntitySpriteDefinition.DynamicSprite(
-                bombYOffsets[direction], bombXOffsets[direction] + 0x04,
-                bomb.variant(0).first(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+                    bombYOffsets[direction],
+                    bombXOffsets[direction] + 0x04,
+                    bomb.variant(0).first(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                    false));
             sprites.add(new EntitySpriteDefinition.DynamicSprite(
-                0, 0, arrowVariant.first(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+                    0, 0, arrowVariant.first(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
             if (arrowVariant.second() != null) {
                 sprites.add(new EntitySpriteDefinition.DynamicSprite(
-                    0, 0x08, arrowVariant.second(),
-                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+                        0,
+                        0x08,
+                        arrowVariant.second(),
+                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                        false));
             }
             variants.add(List.copyOf(sprites));
         }
@@ -1147,16 +1157,13 @@ public final class EntitySpriteHandlerCatalog {
      * Data_018_7962 while restoring the unlit torch.
      */
     public EntitySpriteDefinition forMagicPowderTorchState(boolean lighting) {
-        return decodePair(ENTITY_MAGIC_POWDER_SPRINKLE, 0x18,
-            lighting ? 0x795E : 0x7962, 1, 0);
+        return decodePair(ENTITY_MAGIC_POWDER_SPRINKLE, 0x18, lighting ? 0x795E : 0x7962, 1, 0);
     }
 
     private EntitySpriteDefinition decodeLiftableRock(EntityRoomLoader.RoomTable roomTable) {
-        int intactAddress = roomTable == EntityRoomLoader.RoomTable.OVERWORLD
-            ? 0x5398 : 0x53A0;
-        EntitySpriteDefinition intact = decodePair(
-            ENTITY_LIFTABLE_ROCK, 0x03, intactAddress, 2,
-            LIFTABLE_ROCK_INTACT_ROCK_VARIANT);
+        int intactAddress = roomTable == EntityRoomLoader.RoomTable.OVERWORLD ? 0x5398 : 0x53A0;
+        EntitySpriteDefinition intact =
+                decodePair(ENTITY_LIFTABLE_ROCK, 0x03, intactAddress, 2, LIFTABLE_ROCK_INTACT_ROCK_VARIANT);
 
         List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(22);
         variants.add(dynamicPair(intact.variant(LIFTABLE_ROCK_INTACT_ROCK_VARIANT)));
@@ -1164,88 +1171,102 @@ public final class EntitySpriteHandlerCatalog {
         appendDynamicRectangleVariants(variants, 0x19, 0x7B10, 4, 4);
         appendDynamicRectangleVariants(variants, 0x19, 0x7B50, 8, 4);
         appendDynamicRectangleVariants(variants, 0x19, 0x7BD0, 8, 4);
-        return EntitySpriteDefinition.dynamic(ENTITY_LIFTABLE_ROCK, 0x19, 0x7B50,
-            LIFTABLE_ROCK_INTACT_ROCK_VARIANT, variants);
+        return EntitySpriteDefinition.dynamic(
+                ENTITY_LIFTABLE_ROCK, 0x19, 0x7B50, LIFTABLE_ROCK_INTACT_ROCK_VARIANT, variants);
     }
 
-    private List<EntitySpriteDefinition.DynamicSprite> dynamicPair(
-            EntitySpriteDefinition.Variant pair) {
+    private List<EntitySpriteDefinition.DynamicSprite> dynamicPair(EntitySpriteDefinition.Variant pair) {
         if (pair.second() == null) {
             throw new IllegalArgumentException("Liftable-rock pair must contain two OAM entries");
         }
         return List.of(
-            new EntitySpriteDefinition.DynamicSprite(0, 0, pair.first(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true),
-            new EntitySpriteDefinition.DynamicSprite(0, 0x08, pair.second(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+                new EntitySpriteDefinition.DynamicSprite(
+                        0, 0, pair.first(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true),
+                new EntitySpriteDefinition.DynamicSprite(
+                        0, 0x08, pair.second(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
     }
 
     private void appendDynamicRectangleVariants(
             List<List<EntitySpriteDefinition.DynamicSprite>> destination,
-            int bank, int address, int variantCount, int spriteCount) {
+            int bank,
+            int address,
+            int variantCount,
+            int spriteCount) {
         List<List<EntitySpriteDefinition.RectangleSprite>> rectangles =
-            decodeRectangleVariants(ENTITY_LIFTABLE_ROCK, bank, address, variantCount,
-                spriteCount, 0);
+                decodeRectangleVariants(ENTITY_LIFTABLE_ROCK, bank, address, variantCount, spriteCount, 0);
         for (List<EntitySpriteDefinition.RectangleSprite> rectangle : rectangles) {
             List<EntitySpriteDefinition.DynamicSprite> dynamic = new ArrayList<>(rectangle.size());
             for (EntitySpriteDefinition.RectangleSprite sprite : rectangle) {
                 dynamic.add(new EntitySpriteDefinition.DynamicSprite(
-                    sprite.yOffset(), sprite.xOffset(), sprite.oam(),
-                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+                        sprite.yOffset(),
+                        sprite.xOffset(),
+                        sprite.oam(),
+                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                        false));
             }
             destination.add(List.copyOf(dynamic));
         }
     }
 
-    public EntitySpriteDefinition decodePair(int entityType, int bank, int address,
-                                              int variantCount, int initialVariant) {
-        return decodePair(entityType, bank, address, variantCount, initialVariant,
-            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+    public EntitySpriteDefinition decodePair(
+            int entityType, int bank, int address, int variantCount, int initialVariant) {
+        return decodePair(
+                entityType,
+                bank,
+                address,
+                variantCount,
+                initialVariant,
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
     }
 
-    private EntitySpriteDefinition decodePair(int entityType, int bank, int address,
-                                              int variantCount, int initialVariant,
-                                              EntitySpriteDefinition.DynamicSprite.TileSource
-                                                  tileSource) {
-        int offset = validateDisplayList(entityType, bank, address, variantCount, 4,
-            initialVariant);
+    private EntitySpriteDefinition decodePair(
+            int entityType,
+            int bank,
+            int address,
+            int variantCount,
+            int initialVariant,
+            EntitySpriteDefinition.DynamicSprite.TileSource tileSource) {
+        int offset = validateDisplayList(entityType, bank, address, variantCount, 4, initialVariant);
         List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(variantCount);
         for (int variant = 0; variant < variantCount; variant++) {
             int index = offset + variant * 4;
             variants.add(new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(
-                    Byte.toUnsignedInt(romData[index]), Byte.toUnsignedInt(romData[index + 1])),
-                new EntitySpriteDefinition.OamAttribute(
-                    Byte.toUnsignedInt(romData[index + 2]), Byte.toUnsignedInt(romData[index + 3]))));
+                    new EntitySpriteDefinition.OamAttribute(
+                            Byte.toUnsignedInt(romData[index]), Byte.toUnsignedInt(romData[index + 1])),
+                    new EntitySpriteDefinition.OamAttribute(
+                            Byte.toUnsignedInt(romData[index + 2]), Byte.toUnsignedInt(romData[index + 3]))));
         }
-        return new EntitySpriteDefinition(entityType, bank, address,
-            EntitySpriteDefinition.Shape.PAIR, initialVariant, variants, tileSource);
+        return new EntitySpriteDefinition(
+                entityType, bank, address, EntitySpriteDefinition.Shape.PAIR, initialVariant, variants, tileSource);
     }
 
-    public EntitySpriteDefinition decodeSingle(int entityType, int bank, int address,
-                                                int variantCount, int initialVariant) {
-        int offset = validateDisplayList(entityType, bank, address, variantCount, 2,
-            initialVariant);
+    public EntitySpriteDefinition decodeSingle(
+            int entityType, int bank, int address, int variantCount, int initialVariant) {
+        int offset = validateDisplayList(entityType, bank, address, variantCount, 2, initialVariant);
         List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(variantCount);
         for (int variant = 0; variant < variantCount; variant++) {
             int index = offset + variant * 2;
             variants.add(new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(
-                    Byte.toUnsignedInt(romData[index]), Byte.toUnsignedInt(romData[index + 1])),
-                null));
+                    new EntitySpriteDefinition.OamAttribute(
+                            Byte.toUnsignedInt(romData[index]), Byte.toUnsignedInt(romData[index + 1])),
+                    null));
         }
-        return new EntitySpriteDefinition(entityType, bank, address,
-            EntitySpriteDefinition.Shape.SINGLE, initialVariant, variants);
+        return new EntitySpriteDefinition(
+                entityType, bank, address, EntitySpriteDefinition.Shape.SINGLE, initialVariant, variants);
     }
 
-    public EntitySpriteDefinition decodeRectangle(int entityType, int bank, int address,
-                                                   int variantCount, int spriteCount,
-                                                   int initialVariant) {
+    public EntitySpriteDefinition decodeRectangle(
+            int entityType, int bank, int address, int variantCount, int spriteCount, int initialVariant) {
         List<List<EntitySpriteDefinition.RectangleSprite>> rectangleVariants =
-            decodeRectangleVariants(entityType, bank, address, variantCount, spriteCount,
-                initialVariant);
-        return new EntitySpriteDefinition(entityType, bank, address,
-            EntitySpriteDefinition.Shape.RECTANGLE, initialVariant, List.of(), rectangleVariants);
+                decodeRectangleVariants(entityType, bank, address, variantCount, spriteCount, initialVariant);
+        return new EntitySpriteDefinition(
+                entityType,
+                bank,
+                address,
+                EntitySpriteDefinition.Shape.RECTANGLE,
+                initialVariant,
+                List.of(),
+                rectangleVariants);
     }
 
     private EntitySpriteDefinition decodePowerRecoilDeathRectangle() {
@@ -1253,20 +1274,17 @@ public final class EntitySpriteHandlerCatalog {
         int bank = 0x03;
         int address = 0x54C8;
         List<List<EntitySpriteDefinition.RectangleSprite>> sourceVariants =
-            decodeRectangleVariants(entityType, bank, address, 5, 4, 0);
-        List<List<EntitySpriteDefinition.RectangleSprite>> variants =
-            new ArrayList<>(sourceVariants.subList(0, 3));
-        List<EntitySpriteDefinition.RectangleSprite> finalFrame =
-            new ArrayList<>(sourceVariants.get(3));
+                decodeRectangleVariants(entityType, bank, address, 5, 4, 0);
+        List<List<EntitySpriteDefinition.RectangleSprite>> variants = new ArrayList<>(sourceVariants.subList(0, 3));
+        List<EntitySpriteDefinition.RectangleSprite> finalFrame = new ArrayList<>(sourceVariants.get(3));
         finalFrame.addAll(sourceVariants.get(4));
         variants.add(List.copyOf(finalFrame));
-        return new EntitySpriteDefinition(entityType, bank, address,
-            EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(), variants);
+        return new EntitySpriteDefinition(
+                entityType, bank, address, EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(), variants);
     }
 
     private List<List<EntitySpriteDefinition.RectangleSprite>> decodeRectangleVariants(
-            int entityType, int bank, int address, int variantCount, int spriteCount,
-            int initialVariant) {
+            int entityType, int bank, int address, int variantCount, int spriteCount, int initialVariant) {
         if (spriteCount <= 0) {
             throw new IllegalArgumentException("Rectangle display lists need sprites");
         }
@@ -1275,10 +1293,8 @@ public final class EntitySpriteHandlerCatalog {
             throw new IllegalArgumentException("Rectangle display list is too large");
         }
         int stride = (int) strideLong;
-        int offset = validateDisplayList(entityType, bank, address, variantCount, stride,
-            initialVariant);
-        List<List<EntitySpriteDefinition.RectangleSprite>> rectangleVariants =
-            new ArrayList<>(variantCount);
+        int offset = validateDisplayList(entityType, bank, address, variantCount, stride, initialVariant);
+        List<List<EntitySpriteDefinition.RectangleSprite>> rectangleVariants = new ArrayList<>(variantCount);
         for (int variant = 0; variant < variantCount; variant++) {
             List<EntitySpriteDefinition.RectangleSprite> sprites = new ArrayList<>(spriteCount);
             int variantOffset = offset + variant * stride;
@@ -1287,18 +1303,18 @@ public final class EntitySpriteHandlerCatalog {
                 int yOffset = signedByte(romData[index]);
                 int xOffset = signedByte(romData[index + 1]);
                 sprites.add(new EntitySpriteDefinition.RectangleSprite(
-                    yOffset, xOffset,
-                    new EntitySpriteDefinition.OamAttribute(
-                        Byte.toUnsignedInt(romData[index + 2]),
-                        Byte.toUnsignedInt(romData[index + 3]))));
+                        yOffset,
+                        xOffset,
+                        new EntitySpriteDefinition.OamAttribute(
+                                Byte.toUnsignedInt(romData[index + 2]), Byte.toUnsignedInt(romData[index + 3]))));
             }
             rectangleVariants.add(List.copyOf(sprites));
         }
         return List.copyOf(rectangleVariants);
     }
 
-    private int validateDisplayList(int entityType, int bank, int address,
-                                    int variantCount, int stride, int initialVariant) {
+    private int validateDisplayList(
+            int entityType, int bank, int address, int variantCount, int stride, int initialVariant) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
         }
@@ -1314,8 +1330,8 @@ public final class EntitySpriteHandlerCatalog {
         }
         int offset = RomBank.romOffset(bank, address);
         if (offset < 0 || byteCount > romData.length - offset) {
-            throw new IllegalArgumentException("Display list exceeds ROM bounds at 0x"
-                + Integer.toHexString(Math.max(offset, 0)));
+            throw new IllegalArgumentException(
+                    "Display list exceeds ROM bounds at 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
         return offset;
     }
@@ -1323,8 +1339,7 @@ public final class EntitySpriteHandlerCatalog {
     private int readByte(int bank, int address) {
         int offset = RomBank.romOffset(bank, address);
         if (offset < 0 || offset >= romData.length) {
-            throw new IllegalArgumentException("ROM byte is outside the ROM at 0x"
-                + Integer.toHexString(offset));
+            throw new IllegalArgumentException("ROM byte is outside the ROM at 0x" + Integer.toHexString(offset));
         }
         return Byte.toUnsignedInt(romData[offset]);
     }
@@ -1339,8 +1354,7 @@ public final class EntitySpriteHandlerCatalog {
     }
 
     private static boolean isIndoorRoomTable(EntityRoomLoader.RoomTable roomTable) {
-        return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
-            || roomTable == EntityRoomLoader.RoomTable.INDOORS_B;
+        return roomTable == EntityRoomLoader.RoomTable.INDOORS_A || roomTable == EntityRoomLoader.RoomTable.INDOORS_B;
     }
 
     /** Bank $19:43A9: center pair followed by four orbiting single sprites. */
@@ -1350,15 +1364,16 @@ public final class EntitySpriteHandlerCatalog {
         List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(8);
         for (int phase = 0; phase < 8; phase++) {
             List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(6);
-            appendDynamicPair(sprites, center.variant(phase & 1),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+            appendDynamicPair(
+                    sprites, center.variant(phase & 1), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
             for (int orbit = 0; orbit < 8; orbit += 2) {
                 int index = (phase + orbit) & 7;
                 sprites.add(new EntitySpriteDefinition.DynamicSprite(
-                    signedByte(readByte(0x19, 0x439B + index)),
-                    signedByte(readByte(0x19, 0x439D + index)) + 4,
-                    dots.variant(phase & 1).first(),
-                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+                        signedByte(readByte(0x19, 0x439B + index)),
+                        signedByte(readByte(0x19, 0x439D + index)) + 4,
+                        dots.variant(phase & 1).first(),
+                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                        false));
             }
             variants.add(List.copyOf(sprites));
         }
@@ -1369,48 +1384,58 @@ public final class EntitySpriteHandlerCatalog {
             List<EntitySpriteDefinition.DynamicSprite> destination,
             EntitySpriteDefinition.Variant pair,
             EntitySpriteDefinition.DynamicSprite.TileSource tileSource) {
-        destination.add(new EntitySpriteDefinition.DynamicSprite(
-            0, 0, pair.first(),
-            tileSource, true));
+        destination.add(new EntitySpriteDefinition.DynamicSprite(0, 0, pair.first(), tileSource, true));
         if (pair.second() != null) {
-            destination.add(new EntitySpriteDefinition.DynamicSprite(
-                0, 0x08, pair.second(),
-                tileSource, true));
+            destination.add(new EntitySpriteDefinition.DynamicSprite(0, 0x08, pair.second(), tileSource, true));
         }
     }
 
     private static void appendDynamicPairAtOffset(
             List<EntitySpriteDefinition.DynamicSprite> destination,
-            EntitySpriteDefinition.Variant pair, int yOffset, int xOffset) {
+            EntitySpriteDefinition.Variant pair,
+            int yOffset,
+            int xOffset) {
         destination.add(new EntitySpriteDefinition.DynamicSprite(
-            signedByte(yOffset), signedByte(xOffset), pair.first(),
-            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+                signedByte(yOffset),
+                signedByte(xOffset),
+                pair.first(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                true));
         if (pair.second() != null) {
             destination.add(new EntitySpriteDefinition.DynamicSprite(
-                signedByte(yOffset), signedByte(xOffset + 0x08), pair.second(),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+                    signedByte(yOffset),
+                    signedByte(xOffset + 0x08),
+                    pair.second(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                    true));
         }
     }
 
     private static void appendMoldormTailPair(
             List<EntitySpriteDefinition.DynamicSprite> destination,
-            EntitySpriteDefinition.Variant pair, int yOffset, int xOffset,
+            EntitySpriteDefinition.Variant pair,
+            int yOffset,
+            int xOffset,
             int paletteXor) {
         destination.add(new EntitySpriteDefinition.DynamicSprite(
-            signedByte(yOffset), signedByte(xOffset), xorAttributes(pair.first(), paletteXor),
-            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+                signedByte(yOffset),
+                signedByte(xOffset),
+                xorAttributes(pair.first(), paletteXor),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                true));
         if (pair.second() != null) {
             destination.add(new EntitySpriteDefinition.DynamicSprite(
-                signedByte(yOffset), signedByte(xOffset + 0x08),
-                xorAttributes(pair.second(), paletteXor),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+                    signedByte(yOffset),
+                    signedByte(xOffset + 0x08),
+                    xorAttributes(pair.second(), paletteXor),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                    true));
         }
     }
 
     private static EntitySpriteDefinition.OamAttribute xorAttributes(
             EntitySpriteDefinition.OamAttribute oam, int attributes) {
-        return new EntitySpriteDefinition.OamAttribute(
-            oam.tile(), oam.attributes() ^ attributes);
+        return new EntitySpriteDefinition.OamAttribute(oam.tile(), oam.attributes() ^ attributes);
     }
 
     private static boolean isColorShellType(int entityType) {

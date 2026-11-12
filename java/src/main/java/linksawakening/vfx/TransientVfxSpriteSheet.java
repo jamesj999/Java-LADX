@@ -1,7 +1,7 @@
 package linksawakening.vfx;
 
-import linksawakening.rom.*;
 import linksawakening.gpu.Tile;
+import linksawakening.rom.*;
 
 /**
  * ROM-backed OAM graphics used by transient effects.

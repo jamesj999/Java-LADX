@@ -1,22 +1,25 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-import java.util.function.IntSupplier;
-
 /** Bank-$15 {@code MoblinKingEntityHandler}'s ten-state fight sequence. */
 public final class MoblinKingMotion {
-    public record ArrowRequest(int x, int y, int speedX, int speedY, int direction) {
-    }
+    public record ArrowRequest(int x, int y, int speedX, int speedY, int direction) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown,
-                  int slowTransitionCountdown, ArrowRequest arrowRequest,
-                  boolean openIntroDialog, int jingleId, boolean strongBump,
-                  int screenShakeCountdown, int linkDamage,
-                  int ignoreLinkCollisionsCountdown) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown,
+            int slowTransitionCountdown,
+            ArrowRequest arrowRequest,
+            boolean openIntroDialog,
+            int jingleId,
+            boolean strongBump,
+            int screenShakeCountdown,
+            int linkDamage,
+            int ignoreLinkCollisionsCountdown) {}
 
     private static final int[] ARROW_X_OFFSETS = {0x08, -0x08};
     private static final int[] ARROW_Y_OFFSETS = {-0x04, -0x04};
@@ -37,11 +40,16 @@ public final class MoblinKingMotion {
     private final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public Update advance(RoomEntity entity, int linkX, int linkY,
-                   int transitionCountdown, int slowTransitionCountdown,
-                   int frameCounter, IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   boolean touchingLink) {
+    public Update advance(
+            RoomEntity entity,
+            int linkX,
+            int linkY,
+            int transitionCountdown,
+            int slowTransitionCountdown,
+            int frameCounter,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean touchingLink) {
         int slot = entity.slot();
         if (privateCountdown1[slot] > 0) {
             privateCountdown1[slot]--;
@@ -57,8 +65,7 @@ public final class MoblinKingMotion {
         if (speedX[slot] != 0) {
             int nextX = addSpeed(x, speedX[slot], xAccumulator, slot);
             int collisionDirection = signedByte(speedX[slot]) < 0 ? 1 : 0;
-            blocked = backgroundCollision != null
-                && backgroundCollision.blocks(entity, collisionDirection, nextX, y);
+            blocked = backgroundCollision != null && backgroundCollision.blocks(entity, collisionDirection, nextX, y);
             if (!blocked) {
                 x = nextX;
             }
@@ -66,8 +73,8 @@ public final class MoblinKingMotion {
         if (speedY[slot] != 0) {
             int nextY = addSpeed(y, speedY[slot], yAccumulator, slot);
             int collisionDirection = signedByte(speedY[slot]) < 0 ? 2 : 3;
-            boolean yBlocked = backgroundCollision != null
-                && backgroundCollision.blocks(entity, collisionDirection, x, nextY);
+            boolean yBlocked =
+                    backgroundCollision != null && backgroundCollision.blocks(entity, collisionDirection, x, nextY);
             blocked |= yBlocked;
             if (!yBlocked) {
                 y = nextY;
@@ -115,9 +122,12 @@ public final class MoblinKingMotion {
                 if (privateCountdown1[slot] != 0) {
                     if (privateCountdown1[slot] == 0x0C) {
                         int facing = direction[slot] & 1;
-                        arrow = new ArrowRequest((x + ARROW_X_OFFSETS[facing]) & 0xFF,
-                            (y + ARROW_Y_OFFSETS[facing]) & 0xFF,
-                            ARROW_SPEED_X[facing] & 0xFF, 0, facing);
+                        arrow = new ArrowRequest(
+                                (x + ARROW_X_OFFSETS[facing]) & 0xFF,
+                                (y + ARROW_Y_OFFSETS[facing]) & 0xFF,
+                                ARROW_SPEED_X[facing] & 0xFF,
+                                0,
+                                facing);
                     }
                     variant = privateCountdown1[slot] < 0x0C ? 0 : 2;
                     speedX[slot] = 0;
@@ -129,8 +139,7 @@ public final class MoblinKingMotion {
                     state[slot] = 3;
                 } else {
                     if (landed) {
-                        Vector vector = vectorTowardsOffsetLink(x, y, linkX, linkY,
-                            directionToLink(x, linkX), 0x0C);
+                        Vector vector = vectorTowardsOffsetLink(x, y, linkX, linkY, directionToLink(x, linkX), 0x0C);
                         speedX[slot] = vector.x();
                         speedY[slot] = vector.y();
                         speedZ[slot] = 0x10;
@@ -164,8 +173,8 @@ public final class MoblinKingMotion {
                 weaponVisible[slot] = false;
                 if (touchingLink) {
                     state[slot] = 8;
-                    Update hit = applyLinkImpact(entity, x, y, z, variant,
-                        transitionCountdown, slowTransitionCountdown);
+                    Update hit =
+                            applyLinkImpact(entity, x, y, z, variant, transitionCountdown, slowTransitionCountdown);
                     return hit;
                 }
                 if (transitionCountdown == 0 && !blocked) {
@@ -221,8 +230,7 @@ public final class MoblinKingMotion {
             }
             case 8 -> {
                 weaponVisible[slot] = false;
-                return applyLinkImpact(entity, x, y, z, variant,
-                    transitionCountdown, slowTransitionCountdown);
+                return applyLinkImpact(entity, x, y, z, variant, transitionCountdown, slowTransitionCountdown);
             }
             case 9 -> {
                 speedX[slot] = 0;
@@ -231,8 +239,7 @@ public final class MoblinKingMotion {
                     slowTransitionCountdown = (randomByteSupplier.getAsInt() & 0x1F) + 0x20;
                     state[slot] = 2;
                 } else {
-                    variant = transitionCountdown >= 0x40
-                        ? 0 : ((frameCounter >>> 5) & 1);
+                    variant = transitionCountdown >= 0x40 ? 0 : ((frameCounter >>> 5) & 1);
                     weaponFrame[slot] = variant;
                     direction[slot] = directionToLink(x, linkX);
                 }
@@ -241,21 +248,36 @@ public final class MoblinKingMotion {
         }
 
         bodyVariant[slot] = variant;
-        return new Update(withPosition(entity, x, y, z),
-            transitionCountdown & 0xFF, slowTransitionCountdown & 0xFF, arrow,
-            openDialog, jingle, strongBump, screenShake, linkDamage,
-            ignoreLinkCollisions);
+        return new Update(
+                withPosition(entity, x, y, z),
+                transitionCountdown & 0xFF,
+                slowTransitionCountdown & 0xFF,
+                arrow,
+                openDialog,
+                jingle,
+                strongBump,
+                screenShake,
+                linkDamage,
+                ignoreLinkCollisions);
     }
 
-    private Update applyLinkImpact(RoomEntity entity, int x, int y, int z, int variant,
-                                   int transitionCountdown, int slowTransitionCountdown) {
+    private Update applyLinkImpact(
+            RoomEntity entity, int x, int y, int z, int variant, int transitionCountdown, int slowTransitionCountdown) {
         int slot = entity.slot();
         state[slot] = 9;
         bodyVariant[slot] = variant;
         transitionCountdown = 0x60;
-        return new Update(withPosition(entity, x, y, z),
-            transitionCountdown, slowTransitionCountdown, null, false, 0x0B,
-            false, 0, 0x08, 0x28);
+        return new Update(
+                withPosition(entity, x, y, z),
+                transitionCountdown,
+                slowTransitionCountdown,
+                null,
+                false,
+                0x0B,
+                false,
+                0,
+                0x08,
+                0x28);
     }
 
     public void clear(int slot) {
@@ -306,8 +328,8 @@ public final class MoblinKingMotion {
         privateCountdown2[slot] = countdown2 & 0xFF;
     }
 
-    public void setStateForTest(int slot, int nextState, int nextDirection,
-                         int nextSpeedX, int nextSpeedY, int nextSpeedZ) {
+    public void setStateForTest(
+            int slot, int nextState, int nextDirection, int nextSpeedX, int nextSpeedY, int nextSpeedZ) {
         state[slot] = nextState;
         direction[slot] = nextDirection & 1;
         speedX[slot] = signedByte(nextSpeedX);
@@ -323,8 +345,7 @@ public final class MoblinKingMotion {
         return direction[slot] == 0 && variant < 0x0C ? variant + 0x06 : variant;
     }
 
-    private static Vector vectorTowardsOffsetLink(int x, int y, int linkX, int linkY,
-                                                  int direction, int length) {
+    private static Vector vectorTowardsOffsetLink(int x, int y, int linkX, int linkY, int direction, int length) {
         int targetX = (linkX + (direction == 0 ? -0x30 : 0x30)) & 0xFF;
         int dx = signedByte((targetX - x) & 0xFF);
         int dy = signedByte((linkY - y) & 0xFF);
@@ -343,10 +364,20 @@ public final class MoblinKingMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z & 0xFF, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                -1,
+                false);
     }
 
     private static int signedByte(int value) {
@@ -354,6 +385,5 @@ public final class MoblinKingMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

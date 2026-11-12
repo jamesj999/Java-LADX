@@ -1,11 +1,13 @@
 package linksawakening.app.gameplay;
 
-import linksawakening.rom.Rom;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import linksawakening.rom.Rom;
+import org.junit.jupiter.api.Test;
+
 class LinkPassOutAnimationTest {
-    @Test void triggerHonorsEveryGate() {
+    @Test
+    void triggerHonorsEveryGate() {
         assertTrue(LinkPassOutAnimation.shouldStart(0, 0, 0, false, false, false));
         assertFalse(LinkPassOutAnimation.shouldStart(1, 0, 0, false, false, false));
         assertFalse(LinkPassOutAnimation.shouldStart(0, 1, 0, false, false, false));
@@ -14,7 +16,9 @@ class LinkPassOutAnimationTest {
         assertFalse(LinkPassOutAnimation.shouldStart(0, 0, 0, false, true, false));
         assertFalse(LinkPassOutAnimation.shouldStart(0, 0, 0, false, false, true));
     }
-    @Test void countdownDoesNotWrapAndHidesAtCompletion() {
+
+    @Test
+    void countdownDoesNotWrapAndHidesAtCompletion() {
         var animation = new LinkPassOutAnimation(new Rom(new byte[0x8000]));
         assertEquals(191, animation.countdown());
         for (int i = 0; i < 190; i++) animation.advanceFrame();

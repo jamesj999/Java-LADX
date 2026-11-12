@@ -1,10 +1,10 @@
 package linksawakening.audio.music;
 
+import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 import linksawakening.gameplay.PcmSoundOutput;
-import java.util.Objects;
 
 /**
  * Device-independent audio transport. Each update is exactly one gameplay frame.
@@ -29,16 +29,20 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         music.setSoundEffectState(effects::ownsChannel, effects::takeWaveRestoreRequest);
     }
 
-    @Override public void play(MusicTrack track) {
+    @Override
+    public void play(MusicTrack track) {
         apu.reset();
         effects.stop();
         music.start(track);
         music.tick60Hz();
     }
 
-    public void playSoundEffect(SoundEffect effect) { effects.play(effect); }
+    public void playSoundEffect(SoundEffect effect) {
+        effects.play(effect);
+    }
 
-    @Override public void update() {
+    @Override
+    public void update() {
         music.tick60Hz();
         effects.tick60Hz();
         remainder += sampleRate;
@@ -47,7 +51,19 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         output.playFrame(apu.render(frames), sampleRate);
     }
 
-    @Override public boolean isMusicPlaying() { return music.isPlaying(); }
-    @Override public void stop() { music.stop(); effects.stop(); }
-    @Override public void close() { stop(); }
+    @Override
+    public boolean isMusicPlaying() {
+        return music.isPlaying();
+    }
+
+    @Override
+    public void stop() {
+        music.stop();
+        effects.stop();
+    }
+
+    @Override
+    public void close() {
+        stop();
+    }
 }

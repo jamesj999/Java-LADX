@@ -1,8 +1,5 @@
 package linksawakening.config;
 
-import linksawakening.input.InputConfig;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +18,9 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_X;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
+
+import linksawakening.input.InputConfig;
+import org.junit.jupiter.api.Test;
 
 final class AppConfigTest {
 
@@ -52,14 +52,16 @@ final class AppConfigTest {
         assertFalse(config.playIntroStory());
         assertTrue(config.debugEnabled());
         assertEquals(AppConfig.StartMode.CONFIGURED_LOCATION, config.startMode());
-        assertEquals(AppConfig.StartLocationType.OVERWORLD, config.startLocation().type());
+        assertEquals(
+                AppConfig.StartLocationType.OVERWORLD, config.startLocation().type());
         assertEquals(0x92, config.startLocation().roomId());
         assertEquals(AppConfig.ItemProfile.DEBUG_ALL_ITEMS, config.itemProfile());
     }
 
     @Test
     void parsesBooleansStartLocationItemProfileAndControls() {
-        AppConfig config = AppConfig.parse("""
+        AppConfig config = AppConfig.parse(
+                """
             {
               "showTitleScreen": false,
               "playIntroStory": true,
@@ -100,7 +102,8 @@ final class AppConfigTest {
 
     @Test
     void decimalRoomIdsAreAccepted() {
-        AppConfig config = AppConfig.parse("""
+        AppConfig config = AppConfig.parse(
+                """
             { "startLocation": { "type": "OVERWORLD", "roomId": "146" } }
             """);
 

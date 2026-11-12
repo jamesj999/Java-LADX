@@ -1,15 +1,13 @@
 package linksawakening.world.room;
 
-import linksawakening.world.transition.Warp;
-
-import linksawakening.rom.RomBank;
-import linksawakening.rom.Rom;
-import linksawakening.rom.RomAddress;
-import linksawakening.rom.RomSymbols;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
+import linksawakening.world.transition.Warp;
 
 public final class RoomObjectParser {
     private int readRomByte(int offset) {
@@ -18,7 +16,10 @@ public final class RoomObjectParser {
 
     private static final int ROOM_TEMPLATE_BANK = RomSymbols.RoomTemplateTopRightBottomLeftOffsets.bank();
     private static final int[][] ROOM_TEMPLATE_TABLES = {
-        {RomSymbols.RoomTemplateTopRightBottomLeftOffsets.address(), RomSymbols.RoomTemplateTopRightBottomLeftIds.address()},
+        {
+            RomSymbols.RoomTemplateTopRightBottomLeftOffsets.address(),
+            RomSymbols.RoomTemplateTopRightBottomLeftIds.address()
+        },
         {RomSymbols.RoomTemplateRightBottomLeftOffsets.address(), RomSymbols.RoomTemplateRightBottomLeftIds.address()},
         {RomSymbols.RoomTemplateTopLeftBottomOffsets.address(), RomSymbols.RoomTemplateTopLeftBottomIds.address()},
         {RomSymbols.RoomTemplateLeftTopRightOffsets.address(), RomSymbols.RoomTemplateLeftTopRightIds.address()},
@@ -36,18 +37,18 @@ public final class RoomObjectParser {
     private static final int[][] INDOOR_DOOR_MACRO_TABLES = {
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.KeyDoorTopObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.KeyDoorBottomObjectIds.address()},
-        {VERTICAL_OFFSETS_ADDR,   RomSymbols.KeyDoorLeftObjectIds.address()},
-        {VERTICAL_OFFSETS_ADDR,   RomSymbols.KeyDoorRightObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR, RomSymbols.KeyDoorLeftObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR, RomSymbols.KeyDoorRightObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorTopObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorBottomObjectIds.address()},
-        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorLeftObjectIds.address()},
-        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorRightObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR, RomSymbols.OpenDoorLeftObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR, RomSymbols.OpenDoorRightObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorTopObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorBottomObjectIds.address()},
-        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorLeftObjectIds.address()},
-        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorRightObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR, RomSymbols.OpenDoorLeftObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR, RomSymbols.OpenDoorRightObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.BossDoorObjectIds.address()},
-        {VERTICAL_OFFSETS_ADDR,   RomSymbols.StairsDoorObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR, RomSymbols.StairsDoorObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.RevolvingDoorObjectIds.address()},
         {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OneWayArrowObjectIds.address()},
         {DUNGEON_ENTRANCE_OFFSETS_ADDR, RomSymbols.DungeonEntranceObjectIds.address()},
@@ -83,7 +84,8 @@ public final class RoomObjectParser {
     private static final int PALACE_DOOR_OBJECT_IDS_ADDR = RomSymbols.PalaceDoorObjectIds.address();
     private static final int STONE_PIG_HEAD_OBJECT_OFFSETS_ADDR = RomSymbols.StonePigHeadObjectOffsets.address();
     private static final int STONE_PIG_HEAD_OBJECT_IDS_INTACT_ADDR = RomSymbols.StonePigHeadObjectIds_Intact.address();
-    private static final int STONE_PIG_HEAD_OBJECT_IDS_BLASTED_ADDR = RomSymbols.StonePigHeadObjectIds_Blasted.address();
+    private static final int STONE_PIG_HEAD_OBJECT_IDS_BLASTED_ADDR =
+            RomSymbols.StonePigHeadObjectIds_Blasted.address();
     private static final int PALM_TREE_OBJECT_OFFSETS_ADDR = RomSymbols.PalmTreeObjectOffsets.address();
     private static final int PALM_TREE_OBJECT_IDS_ADDR = RomSymbols.PalmTreeObjectIds.address();
     private static final int WALLED_PIT_OBJECT_OFFSETS_ADDR = RomSymbols.WalledPitObjectOffsets.address();
@@ -139,8 +141,7 @@ public final class RoomObjectParser {
         }
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 if (roomObjectsArea[areaIndex] == OBJECT_CLOSED_GATE) {
                     roomObjectsArea[areaIndex] = OBJECT_CAVE_DOOR;
                 }
@@ -154,8 +155,7 @@ public final class RoomObjectParser {
         }
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 if (roomObjectsArea[areaIndex] == OBJECT_BOMBABLE_CAVE_DOOR) {
                     roomObjectsArea[areaIndex] = OBJECT_ROCKY_CAVE_DOOR;
                 }
@@ -167,13 +167,11 @@ public final class RoomObjectParser {
         return parseIndoor(streamOffset, floorAndTemplate, 0);
     }
 
-    public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate,
-                                             int roomStatusFlags) {
+    public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate, int roomStatusFlags) {
         return parseIndoor(streamOffset, floorAndTemplate, roomStatusFlags, -1);
     }
 
-    public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate,
-                                             int roomStatusFlags, int mapId) {
+    public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate, int roomStatusFlags, int mapId) {
         reset(floorAndTemplate & 0x0F);
         this.roomStatusFlags = roomStatusFlags;
         int templateIdx = (floorAndTemplate >> 4) & 0x0F;
@@ -187,8 +185,7 @@ public final class RoomObjectParser {
         applyIndoorKeyholeBlockStatus();
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
-        return new RoomObjectParseResult(
-            roomObjectsArea, warps, shutterDoorMask, staircaseLocation);
+        return new RoomObjectParseResult(roomObjectsArea, warps, shutterDoorMask, staircaseLocation);
     }
 
     int updatedRoomStatus() {
@@ -197,15 +194,19 @@ public final class RoomObjectParser {
 
     /** Applies one source indoor-door macro to an already decoded room buffer. */
     void applyIndoorDoorMacro(int[] targetRoomObjectsArea, int type, int location) {
-        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100
-            || type < INDOOR_DOOR_MACRO_BASE || type > INDOOR_DOOR_MACRO_LAST) {
+        if (targetRoomObjectsArea == null
+                || targetRoomObjectsArea.length < 0x100
+                || type < INDOOR_DOOR_MACRO_BASE
+                || type > INDOOR_DOOR_MACRO_LAST) {
             throw new IllegalArgumentException("Invalid indoor door macro target");
         }
         roomObjectsArea = targetRoomObjectsArea;
-        applyMacroTable(location, INDOOR_DOOR_MACRO_BANK,
-            INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][0],
-            INDOOR_DOOR_MACRO_BANK,
-            INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][1]);
+        applyMacroTable(
+                location,
+                INDOOR_DOOR_MACRO_BANK,
+                INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][0],
+                INDOOR_DOOR_MACRO_BANK,
+                INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][1]);
     }
 
     /** Applies the final closed-shutter object pair written by {@code func_002_5C04}. */
@@ -223,8 +224,7 @@ public final class RoomObjectParser {
             if (location < 0) {
                 continue;
             }
-            int baseIndex = RoomConstants.ROOM_OBJECTS_BASE
-                + (location & 0xF0) + (location & 0x0F);
+            int baseIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
             for (int half = 0; half < 2; half++) {
                 int tableIndex = direction + half * 4;
                 int targetIndex = baseIndex + (readRomByte(offsetsOffset + tableIndex));
@@ -235,11 +235,15 @@ public final class RoomObjectParser {
 
     /** Finds a shutter's source macro location from either its open or closed object pair. */
     int indoorShutterLocation(int[] targetRoomObjectsArea, int direction) {
-        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100
-            || direction < 0 || direction >= 4) {
+        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100 || direction < 0 || direction >= 4) {
             throw new IllegalArgumentException("Invalid indoor shutter lookup");
         }
-        int[] openIdsAddresses = {RomSymbols.OpenDoorTopObjectIds.address(), RomSymbols.OpenDoorBottomObjectIds.address(), RomSymbols.OpenDoorLeftObjectIds.address(), RomSymbols.OpenDoorRightObjectIds.address()};
+        int[] openIdsAddresses = {
+            RomSymbols.OpenDoorTopObjectIds.address(),
+            RomSymbols.OpenDoorBottomObjectIds.address(),
+            RomSymbols.OpenDoorLeftObjectIds.address(),
+            RomSymbols.OpenDoorRightObjectIds.address()
+        };
         int openIdsOffset = RomBank.romOffset(INDOOR_DOOR_MACRO_BANK, openIdsAddresses[direction]);
         int closedIdsOffset = RomSymbols.Data_002_5BFC.offset();
         int openFirst = readRomByte(openIdsOffset);
@@ -249,16 +253,14 @@ public final class RoomObjectParser {
         int pairOffset = direction < 2 ? 1 : RoomConstants.ROOM_OBJECT_ROW_STRIDE;
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int index = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int index = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 int secondIndex = index + pairOffset;
                 if (secondIndex >= targetRoomObjectsArea.length) {
                     continue;
                 }
                 int first = targetRoomObjectsArea[index] & 0xFF;
                 int second = targetRoomObjectsArea[secondIndex] & 0xFF;
-                if ((first == openFirst && second == openSecond)
-                    || (first == closedFirst && second == closedSecond)) {
+                if ((first == openFirst && second == openSecond) || (first == closedFirst && second == closedSecond)) {
                     return (row << 4) | column;
                 }
             }
@@ -274,8 +276,7 @@ public final class RoomObjectParser {
         }
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 if (roomObjectsArea[areaIndex] == OBJECT_BOMBABLE_BLOCK) {
                     roomObjectsArea[areaIndex] = OBJECT_FLOOR_OD;
                 }
@@ -289,8 +290,7 @@ public final class RoomObjectParser {
         }
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 if (roomObjectsArea[areaIndex] == OBJECT_KEYHOLE_BLOCK) {
                     roomObjectsArea[areaIndex] = OBJECT_FLOOR_OD;
                 }
@@ -301,20 +301,15 @@ public final class RoomObjectParser {
     private void applyIndoorBombableWallStatus() {
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 int objectId = roomObjectsArea[areaIndex];
-                if ((objectId == 0x3F || objectId == 0x47)
-                    && (roomStatusFlags & 0x04) != 0) {
+                if ((objectId == 0x3F || objectId == 0x47) && (roomStatusFlags & 0x04) != 0) {
                     roomObjectsArea[areaIndex] = 0x3D;
-                } else if ((objectId == 0x40 || objectId == 0x48)
-                    && (roomStatusFlags & 0x08) != 0) {
+                } else if ((objectId == 0x40 || objectId == 0x48) && (roomStatusFlags & 0x08) != 0) {
                     roomObjectsArea[areaIndex] = 0x3D;
-                } else if ((objectId == 0x41 || objectId == 0x49)
-                    && (roomStatusFlags & 0x02) != 0) {
+                } else if ((objectId == 0x41 || objectId == 0x49) && (roomStatusFlags & 0x02) != 0) {
                     roomObjectsArea[areaIndex] = 0x3E;
-                } else if ((objectId == 0x42 || objectId == 0x4A)
-                    && (roomStatusFlags & 0x01) != 0) {
+                } else if ((objectId == 0x42 || objectId == 0x4A) && (roomStatusFlags & 0x01) != 0) {
                     roomObjectsArea[areaIndex] = 0x3E;
                 }
             }
@@ -326,8 +321,7 @@ public final class RoomObjectParser {
         boolean chestOpened = (roomStatusFlags & ROOM_STATUS_CHEST_OPEN) != 0;
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 if (!chestOpened && roomObjectsArea[areaIndex] == OBJECT_CHEST_OPEN) {
                     roomObjectsArea[areaIndex] = floorObject;
                 } else if (chestOpened && roomObjectsArea[areaIndex] == OBJECT_CHEST_CLOSED) {
@@ -372,8 +366,9 @@ public final class RoomObjectParser {
                 pos += 3;
                 if (!isIndoor && type >= OBJECT_MACRO_BASE) {
                     expandMacro(type, location, firstByte);
-                } else if (isIndoor && type == OBJECT_HIDDEN_STAIRS_DOWN
-                    && (roomStatusFlags & ROOM_STATUS_EVENT_1) == 0) {
+                } else if (isIndoor
+                        && type == OBJECT_HIDDEN_STAIRS_DOWN
+                        && (roomStatusFlags & ROOM_STATUS_EVENT_1) == 0) {
                     // ConfigureRoomObjects returns before copying concealed stairs.
                 } else {
                     fillRoomWithConsecutiveObjects(type, location, firstByte);
@@ -393,8 +388,9 @@ public final class RoomObjectParser {
                     expandIndoorDoorMacro(type, location);
                 } else if (!isIndoor && type >= OBJECT_MACRO_BASE) {
                     expandMacro(type, location, 0);
-                } else if (isIndoor && type == OBJECT_HIDDEN_STAIRS_DOWN
-                    && (roomStatusFlags & ROOM_STATUS_EVENT_1) == 0) {
+                } else if (isIndoor
+                        && type == OBJECT_HIDDEN_STAIRS_DOWN
+                        && (roomStatusFlags & ROOM_STATUS_EVENT_1) == 0) {
                     // ConfigureRoomObjects leaves the room-template floor in place.
                 } else {
                     copyObjectToActiveRoomMap(type, location);
@@ -415,13 +411,14 @@ public final class RoomObjectParser {
         // ConfigureRoomObjects selects the matching open-door macro when the
         // directional status bit was synchronized by the adjacent room.
         if (idx < 4) {
-            int statusBit = switch (idx) {
-                case 0 -> 0x04;
-                case 1 -> 0x08;
-                case 2 -> 0x02;
-                case 3 -> 0x01;
-                default -> 0;
-            };
+            int statusBit =
+                    switch (idx) {
+                        case 0 -> 0x04;
+                        case 1 -> 0x08;
+                        case 2 -> 0x02;
+                        case 3 -> 0x01;
+                        default -> 0;
+                    };
             if ((roomStatusFlags & statusBit) != 0) {
                 idx += 8;
             }
@@ -447,13 +444,10 @@ public final class RoomObjectParser {
         if (idx == 16) roomStatusFlags |= 8; // Dungeon entrance, $00:37A2.
         if (idx == 17) roomStatusFlags |= 1; // Indoor entrance, $00:37CF.
         int[] table = INDOOR_DOOR_MACRO_TABLES[idx];
-        applyMacroTable(location, INDOOR_DOOR_MACRO_BANK, table[0],
-            INDOOR_DOOR_MACRO_BANK, table[1]);
+        applyMacroTable(location, INDOOR_DOOR_MACRO_BANK, table[0], INDOOR_DOOR_MACRO_BANK, table[1]);
     }
 
-    private void applyMacroTable(int baseLocation,
-                                 int offsetsBank, int offsetsAddr,
-                                 int idsBank, int idsAddr) {
+    private void applyMacroTable(int baseLocation, int offsetsBank, int offsetsAddr, int idsBank, int idsAddr) {
         int baseAreaIndex = RoomConstants.ROOM_OBJECTS_BASE + baseLocation;
         int offsetsOffset = RomBank.romOffset(offsetsBank, offsetsAddr);
         int idsOffset = RomBank.romOffset(idsBank, idsAddr);
@@ -497,20 +491,20 @@ public final class RoomObjectParser {
 
     private boolean isDoorObjectId(int objectId) {
         return objectId == OBJECT_CLOSED_GATE
-            || objectId == OBJECT_ROCKY_CAVE_DOOR
-            || objectId == OBJECT_HOUSE_DOOR_VARIANT
-            || objectId == OBJECT_CAVE_DOOR
-            || objectId == OBJECT_BOMBABLE_CAVE_DOOR
-            || objectId == OBJECT_GROUND_STAIRS
-            || objectId == OBJECT_DOOR_CB
-            || objectId == OBJECT_DOOR_61
-            || objectId == OBJECT_DOOR_C5;
+                || objectId == OBJECT_ROCKY_CAVE_DOOR
+                || objectId == OBJECT_HOUSE_DOOR_VARIANT
+                || objectId == OBJECT_CAVE_DOOR
+                || objectId == OBJECT_BOMBABLE_CAVE_DOOR
+                || objectId == OBJECT_GROUND_STAIRS
+                || objectId == OBJECT_DOOR_CB
+                || objectId == OBJECT_DOOR_61
+                || objectId == OBJECT_DOOR_C5;
     }
 
     private boolean isMacroExpansionDoorId(int objectId) {
         return objectId == OBJECT_ROCKY_CAVE_DOOR
-            || objectId == OBJECT_HOUSE_DOOR_VARIANT
-            || objectId == OBJECT_CAVE_DOOR;
+                || objectId == OBJECT_HOUSE_DOOR_VARIANT
+                || objectId == OBJECT_CAVE_DOOR;
     }
 
     private void recordStripDoorPositions(int location, int objectData) {
@@ -532,21 +526,21 @@ public final class RoomObjectParser {
         int macroIndex = macroType - OBJECT_MACRO_BASE;
         switch (macroIndex) {
             case 0 -> handleTreeMacro(location, objectData);
-            case 1 -> copyOutdoorsMacroObjects(location, TWO_DOORS_HOUSE_OBJECT_OFFSETS_ADDR, TWO_DOORS_HOUSE_OBJECT_IDS_ADDR);
+            case 1 -> copyOutdoorsMacroObjects(
+                    location, TWO_DOORS_HOUSE_OBJECT_OFFSETS_ADDR, TWO_DOORS_HOUSE_OBJECT_IDS_ADDR);
             case 2 -> copyOutdoorsMacroObjects(location, LARGE_HOUSE_OBJECT_OFFSETS_ADDR, LARGE_HOUSE_OBJECT_IDS_ADDR);
             case 3 -> copyOutdoorsMacroObjects(location, CATFISH_MAW_OBJECT_OFFSETS_ADDR, CATFISH_MAW_OBJECT_IDS_ADDR);
             case 4 -> copyOutdoorsMacroObjects(location, PALACE_DOOR_OBJECT_OFFSETS_ADDR, PALACE_DOOR_OBJECT_IDS_ADDR);
             case 5 -> {
                 int pigIdsAddr = (roomStatusFlags & ROOM_STATUS_DOOR_OPEN_UP) == 0
-                    ? STONE_PIG_HEAD_OBJECT_IDS_INTACT_ADDR
-                    : STONE_PIG_HEAD_OBJECT_IDS_BLASTED_ADDR;
+                        ? STONE_PIG_HEAD_OBJECT_IDS_INTACT_ADDR
+                        : STONE_PIG_HEAD_OBJECT_IDS_BLASTED_ADDR;
                 copyOutdoorsMacroObjects(location, STONE_PIG_HEAD_OBJECT_OFFSETS_ADDR, pigIdsAddr);
             }
             case 6 -> copyOutdoorsMacroObjects(location, PALM_TREE_OBJECT_OFFSETS_ADDR, PALM_TREE_OBJECT_IDS_ADDR);
             case 7 -> copyOutdoorsMacroObjects(location, WALLED_PIT_OBJECT_OFFSETS_ADDR, WALLED_PIT_OBJECT_IDS_ADDR);
             case 8 -> copyOutdoorsMacroObjects(location, SMALL_HOUSE_OBJECT_OFFSETS_ADDR, SMALL_HOUSE_OBJECT_IDS_ADDR);
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -572,8 +566,7 @@ public final class RoomObjectParser {
     }
 
     private void copyTreeObjectsToRoom(int areaIndex) {
-        if (!isAreaIndexValid(areaIndex)
-            || !isAreaIndexValid(areaIndex + RoomConstants.ROOM_OBJECT_ROW_STRIDE + 1)) {
+        if (!isAreaIndexValid(areaIndex) || !isAreaIndexValid(areaIndex + RoomConstants.ROOM_OBJECT_ROW_STRIDE + 1)) {
             return;
         }
         int topLeftOffset = areaIndex;
@@ -671,9 +664,9 @@ public final class RoomObjectParser {
 
     private static boolean isStaircaseObject(int objectId, boolean isIndoor) {
         return isIndoor
-            ? objectId == OBJECT_STAIRS_DOWN
-                || objectId == OBJECT_HIDDEN_STAIRS_DOWN
-                || objectId == OBJECT_STAIRS_UP
-            : objectId == OBJECT_DOOR_C5 || objectId == OBJECT_GROUND_STAIRS;
+                ? objectId == OBJECT_STAIRS_DOWN
+                        || objectId == OBJECT_HIDDEN_STAIRS_DOWN
+                        || objectId == OBJECT_STAIRS_UP
+                : objectId == OBJECT_DOOR_C5 || objectId == OBJECT_GROUND_STAIRS;
     }
 }

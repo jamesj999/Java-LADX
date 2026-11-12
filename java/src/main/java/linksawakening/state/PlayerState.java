@@ -1,12 +1,10 @@
 package linksawakening.state;
 
-import linksawakening.world.entity.event.FloatingItemPickupEffect;
-
-import linksawakening.save.SaveSlotState;
-import linksawakening.world.room.ChestContentsTable;
-
 import java.util.Arrays;
 import java.util.Objects;
+import linksawakening.save.SaveSlotState;
+import linksawakening.world.entity.event.FloatingItemPickupEffect;
+import linksawakening.world.room.ChestContentsTable;
 
 public final class PlayerState implements LinkPlayerState {
 
@@ -86,11 +84,10 @@ public final class PlayerState implements LinkPlayerState {
     private int subtractHealthBuffer;
     private int addRupeeBuffer;
     private int rupeeUpdateDelay;
-    private final java.util.List<linksawakening.gameplay.GameplaySoundEvent> resourceSounds = new java.util.ArrayList<>();
+    private final java.util.List<linksawakening.gameplay.GameplaySoundEvent> resourceSounds =
+            new java.util.ArrayList<>();
     // ThresholdLowHealthTable ($02:6308), including the overlapping code bytes at 0–2.
-    private static final int[] LOW_HEALTH_THRESHOLDS = {
-        0x00, 0x22, 0xC9, 5, 5, 5, 9, 9, 9, 17, 17, 17, 25, 25, 25
-    };
+    private static final int[] LOW_HEALTH_THRESHOLDS = {0x00, 0x22, 0xC9, 5, 5, 5, 9, 9, 9, 17, 17, 17, 25, 25, 25};
     private boolean onLowHealth;
     private boolean fullHearts;
 
@@ -99,10 +96,15 @@ public final class PlayerState implements LinkPlayerState {
         fullHearts = health == maxHearts * HP_PER_HEART;
     }
 
-    public boolean fullHearts() { return fullHearts; }
+    public boolean fullHearts() {
+        return fullHearts;
+    }
+
     private int timeToNextLowHealthSound;
 
-    public boolean isOnLowHealth() { return onLowHealth; }
+    public boolean isOnLowHealth() {
+        return onLowHealth;
+    }
 
     /** Resolves queued writes to hWaveSfx: the last ROM write wins. */
     public linksawakening.gameplay.GameplaySoundEvent takeResourceSound() {
@@ -110,6 +112,7 @@ public final class PlayerState implements LinkPlayerState {
         resourceSounds.clear();
         return sound;
     }
+
     private int powerUpHits;
     private final int[] chestItemCounts = new int[0x22];
 
@@ -199,8 +202,7 @@ public final class PlayerState implements LinkPlayerState {
         });
         setItemA(INVENTORY_SWORD);
         setItemB(INVENTORY_BOOMERANG);
-        setOcarinaSongFlags(FROGS_SONG_OF_THE_SOUL_FLAG | MANBO_MAMBO_FLAG
-            | BALLAD_OF_THE_WIND_FISH_FLAG);
+        setOcarinaSongFlags(FROGS_SONG_OF_THE_SOUL_FLAG | MANBO_MAMBO_FLAG | BALLAD_OF_THE_WIND_FISH_FLAG);
         setHasFlippers(true);
         setHasMedicine(true);
         setMedicineCount(1);
@@ -242,9 +244,19 @@ public final class PlayerState implements LinkPlayerState {
     }
 
     private int deathCount;
-    public int deathCount() { return deathCount; }
-    public void setDeathCount(int value) { deathCount = clamp(value, 0, 999); }
-    public void incrementDeathCount() { setDeathCount(deathCount + 1); }
+
+    public int deathCount() {
+        return deathCount;
+    }
+
+    public void setDeathCount(int value) {
+        deathCount = clamp(value, 0, 999);
+    }
+
+    public void incrementDeathCount() {
+        setDeathCount(deathCount + 1);
+    }
+
     public int deathCountBcd() {
         return (deathCount / 100 << 8) | (deathCount / 10 % 10 << 4) | deathCount % 10;
     }
@@ -271,9 +283,7 @@ public final class PlayerState implements LinkPlayerState {
         if (tunicType == TUNIC_BLUE) {
             effectiveDamage >>= 1;
         } else if (activePowerUp == ACTIVE_POWER_UP_GUARDIAN_ACORN) {
-            effectiveDamage = effectiveDamage == 0x04
-                ? 0
-                : effectiveDamage >> 1;
+            effectiveDamage = effectiveDamage == 0x04 ? 0 : effectiveDamage >> 1;
         }
 
         subtractHealthBuffer = (subtractHealthBuffer + effectiveDamage) & 0xFF;
@@ -348,7 +358,7 @@ public final class PlayerState implements LinkPlayerState {
     public void applyEntityPickup(int entityType) {
         switch (entityType & 0xFF) {
             case 0x2D -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + HP_PER_HEART);
-            // PickDroppableFairy ($03:64C6) adds six hearts to the byte buffer.
+                // PickDroppableFairy ($03:64C6) adds six hearts to the byte buffer.
             case 0x2F -> addHealthBuffer = (addHealthBuffer + 0x30) & 0xFF;
             case 0x2E -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 1);
             case 0x33 -> setActivePowerUp(ACTIVE_POWER_UP_PIECE_OF_POWER);
@@ -415,8 +425,7 @@ public final class PlayerState implements LinkPlayerState {
         } else if (inventorySlot == 1) {
             itemA = INVENTORY_EMPTY;
         } else {
-            throw new IllegalArgumentException("Inventory slot must be B (0) or A (1): "
-                + inventorySlot);
+            throw new IllegalArgumentException("Inventory slot must be B (0) or A (1): " + inventorySlot);
         }
         hasToadstool = false;
     }
@@ -439,20 +448,19 @@ public final class PlayerState implements LinkPlayerState {
             }
             case TEN_BOMBS -> bombCount = incrementByTenUpTo(bombCount, maxBombs);
             case HEALTH_18 -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + 0x18);
-            // FloatingArrowsHandler adds BCD $10 and performs no capacity
-            // check. PlayerState stores semantic decimal counts, so the
-            // equivalent is decimal modulo-100 addition.
+                // FloatingArrowsHandler adds BCD $10 and performs no capacity
+                // check. PlayerState stores semantic decimal counts, so the
+                // equivalent is decimal modulo-100 addition.
             case TEN_ARROWS -> arrowCount = (arrowCount + 10) % 100;
         }
     }
 
     /** Applies the immediate reward writes performed by EntityInitChestWithItem. */
     public void applyChestReward(int chestItem) {
-        if (chestItem >= ChestContentsTable.CHEST_RUPEES_50
-                && chestItem <= ChestContentsTable.CHEST_RUPEES_500) rupeeUpdateDelay = 0x18;
+        if (chestItem >= ChestContentsTable.CHEST_RUPEES_50 && chestItem <= ChestContentsTable.CHEST_RUPEES_500)
+            rupeeUpdateDelay = 0x18;
         if (chestItem < 0 || chestItem > ChestContentsTable.CHEST_ZOL) {
-            throw new IllegalArgumentException("Chest item must be an unsigned chest variant: "
-                + chestItem);
+            throw new IllegalArgumentException("Chest item must be an unsigned chest variant: " + chestItem);
         }
         if (chestItem < chestItemCounts.length) {
             chestItemCounts[chestItem] = Math.min(0xFF, chestItemCounts[chestItem] + 1);
@@ -469,8 +477,7 @@ public final class PlayerState implements LinkPlayerState {
             case ChestContentsTable.CHEST_BOW -> giveInventoryItem(INVENTORY_BOW);
             case ChestContentsTable.CHEST_HOOKSHOT -> giveInventoryItem(INVENTORY_HOOKSHOT);
             case ChestContentsTable.CHEST_MAGIC_ROD -> giveInventoryItem(INVENTORY_MAGIC_ROD);
-            case ChestContentsTable.CHEST_PEGASUS_BOOTS ->
-                giveInventoryItem(INVENTORY_PEGASUS_BOOTS);
+            case ChestContentsTable.CHEST_PEGASUS_BOOTS -> giveInventoryItem(INVENTORY_PEGASUS_BOOTS);
             case ChestContentsTable.CHEST_OCARINA -> giveInventoryItem(INVENTORY_OCARINA);
             case ChestContentsTable.CHEST_FEATHER -> giveInventoryItem(INVENTORY_ROCS_FEATHER);
             case ChestContentsTable.CHEST_SHOVEL -> giveInventoryItem(INVENTORY_SHOVEL);
@@ -489,22 +496,15 @@ public final class PlayerState implements LinkPlayerState {
                 medicineCount = incrementByte(medicineCount);
             }
             case ChestContentsTable.CHEST_TAIL_KEY -> tailKeyCount = incrementByte(tailKeyCount);
-            case ChestContentsTable.CHEST_ANGLER_KEY ->
-                anglerKeyCount = incrementByte(anglerKeyCount);
+            case ChestContentsTable.CHEST_ANGLER_KEY -> anglerKeyCount = incrementByte(anglerKeyCount);
             case ChestContentsTable.CHEST_FACE_KEY -> faceKeyCount = incrementByte(faceKeyCount);
             case ChestContentsTable.CHEST_BIRD_KEY -> birdKeyCount = incrementByte(birdKeyCount);
-            case ChestContentsTable.CHEST_GOLD_LEAF ->
-                goldenLeavesCount = incrementByte(goldenLeavesCount);
-            case ChestContentsTable.CHEST_RUPEES_50 -> addRupeeBuffer =
-                Math.min(0xFFFF, addRupeeBuffer + 50);
-            case ChestContentsTable.CHEST_RUPEES_20 -> addRupeeBuffer =
-                Math.min(0xFFFF, addRupeeBuffer + 20);
-            case ChestContentsTable.CHEST_RUPEES_100 -> addRupeeBuffer =
-                Math.min(0xFFFF, addRupeeBuffer + 100);
-            case ChestContentsTable.CHEST_RUPEES_200 -> addRupeeBuffer =
-                Math.min(0xFFFF, addRupeeBuffer + 200);
-            case ChestContentsTable.CHEST_RUPEES_500 -> addRupeeBuffer =
-                Math.min(0xFFFF, addRupeeBuffer + 500);
+            case ChestContentsTable.CHEST_GOLD_LEAF -> goldenLeavesCount = incrementByte(goldenLeavesCount);
+            case ChestContentsTable.CHEST_RUPEES_50 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 50);
+            case ChestContentsTable.CHEST_RUPEES_20 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 20);
+            case ChestContentsTable.CHEST_RUPEES_100 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 100);
+            case ChestContentsTable.CHEST_RUPEES_200 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 200);
+            case ChestContentsTable.CHEST_RUPEES_500 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 500);
             case ChestContentsTable.CHEST_SEASHELL -> setSeashells(seashells + 1);
             case ChestContentsTable.CHEST_MESSAGE, ChestContentsTable.CHEST_ZOL -> {
                 // The source marks these rooms complete without applying a
@@ -784,8 +784,8 @@ public final class PlayerState implements LinkPlayerState {
     public void setSubscreenItems(int[] items) {
         Objects.requireNonNull(items, "items");
         if (items.length != SUBSCREEN_SLOT_COUNT) {
-            throw new IllegalArgumentException("Expected " + SUBSCREEN_SLOT_COUNT
-                + " subscreen items, got " + items.length);
+            throw new IllegalArgumentException(
+                    "Expected " + SUBSCREEN_SLOT_COUNT + " subscreen items, got " + items.length);
         }
         for (int index = 0; index < items.length; index++) {
             subscreen[index] = items[index] & 0xFF;

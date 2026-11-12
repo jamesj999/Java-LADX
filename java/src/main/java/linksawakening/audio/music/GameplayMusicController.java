@@ -80,9 +80,13 @@ public final class GameplayMusicController {
         nextDefaultMusicTrack = track;
     }
 
-    public int nextDefaultMusicTrack() { return nextDefaultMusicTrack; }
+    public int nextDefaultMusicTrack() {
+        return nextDefaultMusicTrack;
+    }
 
-    public int defaultTrackId() { return defaultTrackId; }
+    public int defaultTrackId() {
+        return defaultTrackId;
+    }
 
     public void continueMusicAfterNextWarp() {
         continueMusicAfterWarp = true;

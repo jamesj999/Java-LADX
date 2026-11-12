@@ -1,15 +1,17 @@
 package linksawakening.app;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.*;
+
 import linksawakening.app.debug.DebugMenu;
 import linksawakening.config.AppConfig;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 @RequiresRom
 class DebugMenuIntegrationTest {
-    @Test void menuPausesEditsTeleportsAndConsumesEscape() throws Exception {
+    @Test
+    void menuPausesEditsTeleportsAndConsumesEscape() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
         var config = GameSession.class.getDeclaredField("appConfig");
@@ -44,7 +46,10 @@ class DebugMenuIntegrationTest {
         assertEquals(0, game.diagnostics().roomSession().mapCategory());
         assertEquals(0x92, game.diagnostics().roomSession().currentRoomId());
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
-        var sword = menu.entries().stream().filter(e -> e.label().equals("A")).findFirst().orElseThrow();
+        var sword = menu.entries().stream()
+                .filter(e -> e.label().equals("A"))
+                .findFirst()
+                .orElseThrow();
         sword.write().accept(0);
         assertEquals(0, game.diagnostics().playerState().itemA());
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
@@ -60,7 +65,9 @@ class DebugMenuIntegrationTest {
         game.headlessFrame();
         assertEquals((frame + 1) & 255, game.diagnostics().frameCounter());
     }
-    @Test void openingHouseMenuRemainsInteractiveAndEscapeDoesNotQuitGameplay() throws Exception {
+
+    @Test
+    void openingHouseMenuRemainsInteractiveAndEscapeDoesNotQuitGameplay() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
         var config = GameSession.class.getDeclaredField("appConfig");
@@ -97,7 +104,8 @@ class DebugMenuIntegrationTest {
         assertTrue(running.getBoolean(game));
     }
 
-    @Test void configDisablesMenu() throws Exception {
+    @Test
+    void configDisablesMenu() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
         var config = GameSession.class.getDeclaredField("appConfig");
@@ -106,7 +114,9 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
         assertNull(menu(game));
     }
-    @Test void menuWaitsForRoomTransitionsAndDialogs() throws Exception {
+
+    @Test
+    void menuWaitsForRoomTransitionsAndDialogs() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
         var config = GameSession.class.getDeclaredField("appConfig");
@@ -121,6 +131,7 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
         assertNull(menu(game));
     }
+
     private void teleport(GameSession game, DebugMenu menu, int category, int map, int room) {
         menu.entries().get(0).write().accept(category);
         menu.entries().get(1).write().accept(map);
@@ -129,6 +140,7 @@ class DebugMenuIntegrationTest {
         game.headlessFrame();
         assertEquals("Teleported. F4 resumes.", menu.message());
     }
+
     private DebugMenu menu(GameSession game) throws Exception {
         var field = GameSession.class.getDeclaredField("debugMenu");
         field.setAccessible(true);

@@ -1,15 +1,17 @@
 package linksawakening.app.gameplay;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.app.GameSession;
+import linksawakening.rom.Rom;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
-import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 class PassOutSessionTest {
-    @Test void zeroHealthLocksInputAndRunsRomAnimationUntilScreenLoad() throws Exception {
+    @Test
+    void zeroHealthLocksInputAndRunsRomAnimationUntilScreenLoad() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
         var link = game.diagnostics().link();
@@ -50,7 +52,10 @@ class PassOutSessionTest {
             assertEquals(x, link.pixelX());
             assertEquals(y, link.pixelY());
             assertEquals(i == 191, link.gameOverScreenPending());
-            if (i < 191) { expected.advanceFrame(); game.headlessFrame(); }
+            if (i < 191) {
+                expected.advanceFrame();
+                game.headlessFrame();
+            }
         }
         assertEquals(0, player.activePowerUp());
         assertEquals(0, player.powerUpHits());
@@ -80,30 +85,43 @@ class PassOutSessionTest {
         assertEquals(4, link.gameOverStage());
         byte[] actual = game.headlessFrame();
         byte[] romBytes;
-        try (var input = TestRom.open()) { romBytes = input.readAllBytes(); }
+        try (var input = TestRom.open()) {
+            romBytes = input.readAllBytes();
+        }
         var rom = new Rom(romBytes);
         var gpu = game.diagnostics().gpu();
         for (int i = 0; i < 0x500; i++) {
-            assertEquals((byte) rom.u8(linksawakening.rom.RomSymbols.SaveMenuTiles.plus(i)),
-                gpu.readVRAM(0x800 + i), "Save-menu VRAM byte " + i);
+            assertEquals(
+                    (byte) rom.u8(linksawakening.rom.RomSymbols.SaveMenuTiles.plus(i)),
+                    gpu.readVRAM(0x800 + i),
+                    "Save-menu VRAM byte " + i);
         }
         int[] initialTiles = new int[1024], initialAttrs = new int[1024];
         java.util.Arrays.fill(initialAttrs, 5);
-        for (int yTile = 0; yTile < 32; yTile++) for (int xTile = 0; xTile < 20; xTile++) {
-            initialTiles[yTile * 32 + xTile] = 0xAE + ((xTile ^ yTile) & 1);
-        }
+        for (int yTile = 0; yTile < 32; yTile++)
+            for (int xTile = 0; xTile < 20; xTile++) {
+                initialTiles[yTile * 32 + xTile] = 0xAE + ((xTile ^ yTile) & 1);
+            }
         var room = game.diagnostics().roomSession().renderSnapshot();
-        var frame = new linksawakening.ui.FileMenuFrameSnapshot("game_over", 0, false, false, 0, 0,
-            new int[5],
-            linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 8, 0x698F, initialTiles),
-            linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 0x24, 0x61E5, initialAttrs),
-            room.palettes(), room.entities().spriteSelection().objectPalettes(), java.util.List.of(
-                new linksawakening.ui.GameOverMenu(rom).cursor()));
+        var frame = new linksawakening.ui.FileMenuFrameSnapshot(
+                "game_over",
+                0,
+                false,
+                false,
+                0,
+                0,
+                new int[5],
+                linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 8, 0x698F, initialTiles),
+                linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 0x24, 0x61E5, initialAttrs),
+                room.palettes(),
+                room.entities().spriteSelection().objectPalettes(),
+                java.util.List.of(new linksawakening.ui.GameOverMenu(rom).cursor()));
         byte[] expectedFrame = new byte[actual.length];
-        new linksawakening.render.GameFrameSceneBuilder().build(
-            linksawakening.render.GameFrameState.empty()
-                .withScreen(linksawakening.render.RenderScreen.FILE_SAVE).withFileMenuFrame(frame))
-            .drawTo(expectedFrame, gpu);
+        new linksawakening.render.GameFrameSceneBuilder()
+                .build(linksawakening.render.GameFrameState.empty()
+                        .withScreen(linksawakening.render.RenderScreen.FILE_SAVE)
+                        .withFileMenuFrame(frame))
+                .drawTo(expectedFrame, gpu);
         assertArrayEquals(expectedFrame, actual, "ROM game-over background fills the session frame");
     }
 }

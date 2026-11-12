@@ -1,16 +1,12 @@
 package linksawakening.dialog;
 
-import linksawakening.rom.RomSymbols;
-
-import linksawakening.rom.RomAddress;
-
-import linksawakening.rom.Rom;
-
-import linksawakening.rom.RomBank;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
 final class DialogFont {
 
@@ -69,8 +65,7 @@ final class DialogFont {
         int tileIndex = codepointToTile[tableIndex];
         int offset = tileIndex * TILE_SIZE_BYTES;
         if (offset < 0 || offset + TILE_SIZE_BYTES > fontTiles.length) {
-            throw new IllegalArgumentException(
-                "CodepointToTileMap entry 0x" + Integer.toHexString(tableIndex)
+            throw new IllegalArgumentException("CodepointToTileMap entry 0x" + Integer.toHexString(tableIndex)
                     + " points outside FontTiles: tile 0x" + Integer.toHexString(tileIndex));
         }
         byte[] tile = new byte[TILE_SIZE_BYTES];
@@ -80,8 +75,7 @@ final class DialogFont {
 
     private static void requireRange(byte[] romData, int offset, int length, String label) {
         if (offset < 0 || length < 0 || offset > romData.length || romData.length - offset < length) {
-            throw new IllegalArgumentException(
-                label + " requires ROM range 0x" + Integer.toHexString(offset)
+            throw new IllegalArgumentException(label + " requires ROM range 0x" + Integer.toHexString(offset)
                     + "..0x" + Integer.toHexString(offset + length)
                     + " but ROM length is 0x" + Integer.toHexString(romData.length));
         }

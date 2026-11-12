@@ -1,16 +1,14 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.motion.FloatingItemMotion;
-import linksawakening.world.entity.motion.WarpMotion;
-
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-
-import java.util.ArrayList;
-import java.util.List;
+import linksawakening.world.entity.motion.FloatingItemMotion;
+import linksawakening.world.entity.motion.WarpMotion;
 
 /** ROM-backed decoder for the four room entity pointer tables in bank $16. */
 public final class EntityRoomLoader {
@@ -73,14 +71,13 @@ public final class EntityRoomLoader {
     }
 
     /** Loads a room while applying the source EntityInit room-status gates. */
-    public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId,
-                                   byte[] roomStatusTable) {
+    public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId, byte[] roomStatusTable) {
         return load(table, roomId, clearedMask, mapId, roomStatusTable, false);
     }
 
     /** Loads a room with the patched inventory-state init gates enabled. */
-    public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId,
-                                   byte[] roomStatusTable, boolean hasBirdKey) {
+    public RoomEntitySnapshot load(
+            RoomTable table, int roomId, int clearedMask, int mapId, byte[] roomStatusTable, boolean hasBirdKey) {
         if (table == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -88,21 +85,19 @@ public final class EntityRoomLoader {
             throw new IllegalArgumentException("Room id out of range: " + roomId);
         }
         if ((clearedMask & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Cleared entity mask must be an unsigned byte: "
-                + clearedMask);
+            throw new IllegalArgumentException("Cleared entity mask must be an unsigned byte: " + clearedMask);
         }
 
         RomAddress pointerAddress = table.pointerTable.plus(roomId * 2);
-        int pointerOffset = checkedRomOffset(pointerAddress, 2,
-            "entity pointer");
+        int pointerOffset = checkedRomOffset(pointerAddress, 2, "entity pointer");
         int streamAddress = new Rom(romData).u16le(pointerAddress);
         if (streamAddress < 0x4000 || streamAddress > 0x7FFF) {
-            throw new IllegalArgumentException("Invalid entity stream address: 0x"
-                + Integer.toHexString(streamAddress));
+            throw new IllegalArgumentException(
+                    "Invalid entity stream address: 0x" + Integer.toHexString(streamAddress));
         }
 
-        int streamOffset = checkedRomOffset(new RomAddress(table.pointerTable.bank(), streamAddress), 1,
-            "entity stream");
+        int streamOffset =
+                checkedRomOffset(new RomAddress(table.pointerTable.bank(), streamAddress), 1, "entity stream");
         List<RoomEntity> slots = new ArrayList<>(MAX_ENTITIES);
         for (int slot = 0; slot < MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
@@ -119,27 +114,36 @@ public final class EntityRoomLoader {
 
             requireRange(streamOffset, 1, "entity stream type");
             int type = new Rom(romData).u8(RomAddress.fromOffset(streamOffset++));
-            boolean cleared = sourceLoadOrder < 8
-                && (clearedMask & (1 << sourceLoadOrder)) != 0;
-            boolean unloadedByInitialization = shouldUnloadAtInit(
-                table, roomId, type, roomStatusTable, hasBirdKey);
+            boolean cleared = sourceLoadOrder < 8 && (clearedMask & (1 << sourceLoadOrder)) != 0;
+            boolean unloadedByInitialization = shouldUnloadAtInit(table, roomId, type, roomStatusTable, hasBirdKey);
             if (!cleared && !unloadedByInitialization && loadedSlot < MAX_ENTITIES) {
                 int x = (location & 0x0F) * 0x10 + 0x08;
                 int y = (location & 0xF0) + 0x10;
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
-                EntitySpriteDefinition spriteDefinition = spriteHandlers
-                    .forEntityType(type, table, mapId);
-                int spriteVariant = initialSpriteVariant(table, roomId, type, spriteDefinition,
-                    initializedPosition[0], initializedPosition[1]);
+                EntitySpriteDefinition spriteDefinition = spriteHandlers.forEntityType(type, table, mapId);
+                int spriteVariant = initialSpriteVariant(
+                        table, roomId, type, spriteDefinition, initializedPosition[0], initializedPosition[1]);
                 int initialZ = type == ENTITY_GHINI
-                    ? GHINI_INITIAL_Z
-                    : spriteDefinition.supported() && FloatingItemMotion.isFloatingItem(type)
-                        ? FloatingItemMotion.initialZ(type) : 0;
-                slots.set(loadedSlot, new RoomEntity(
-                    loadedSlot, sourceLoadOrder, type, initializedPosition[0], initializedPosition[1],
-                    EntityStatus.INIT,
-                    spriteDefinition,
-                    spriteVariant, 0, initialSpriteTileOffset(type), initialZ, -1, false));
+                        ? GHINI_INITIAL_Z
+                        : spriteDefinition.supported() && FloatingItemMotion.isFloatingItem(type)
+                                ? FloatingItemMotion.initialZ(type)
+                                : 0;
+                slots.set(
+                        loadedSlot,
+                        new RoomEntity(
+                                loadedSlot,
+                                sourceLoadOrder,
+                                type,
+                                initializedPosition[0],
+                                initializedPosition[1],
+                                EntityStatus.INIT,
+                                spriteDefinition,
+                                spriteVariant,
+                                0,
+                                initialSpriteTileOffset(type),
+                                initialZ,
+                                -1,
+                                false));
                 loadedSlot++;
             }
             sourceLoadOrder++;
@@ -148,8 +152,8 @@ public final class EntityRoomLoader {
         return new RoomEntitySnapshot(slots);
     }
 
-    private static boolean shouldUnloadAtInit(RoomTable table, int roomId, int type,
-                                               byte[] roomStatusTable, boolean hasBirdKey) {
+    private static boolean shouldUnloadAtInit(
+            RoomTable table, int roomId, int type, byte[] roomStatusTable, boolean hasBirdKey) {
         if (type == ENTITY_KEY_DROP_POINT) {
             return shouldUnloadKeyAtInit(table, roomId, roomStatusTable, hasBirdKey);
         }
@@ -166,8 +170,8 @@ public final class EntityRoomLoader {
         return false;
     }
 
-    private static boolean shouldUnloadKeyAtInit(RoomTable table, int roomId,
-                                                  byte[] roomStatusTable, boolean hasBirdKey) {
+    private static boolean shouldUnloadKeyAtInit(
+            RoomTable table, int roomId, byte[] roomStatusTable, boolean hasBirdKey) {
         if (roomStatusTable == null) {
             return false;
         }
@@ -175,21 +179,18 @@ public final class EntityRoomLoader {
         if (table == RoomTable.INDOORS_A && roomId == ROOM_INDOOR_A_QUICKSAND_CAVE) {
             return (currentStatus & 0x10) != 0 || (currentStatus & 0x20) == 0;
         }
-        if (table == RoomTable.INDOORS_B
-            && roomId == ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1) {
+        if (table == RoomTable.INDOORS_B && roomId == ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1) {
             return hasBirdKey || (currentStatus & 0x10) != 0;
         }
-        if (table == RoomTable.INDOORS_A
-            && roomId == ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_FALL) {
+        if (table == RoomTable.INDOORS_A && roomId == ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_FALL) {
             return (roomStatusAt(roomStatusTable, ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_DROP) & 0x10) == 0
-                || (currentStatus & 0x10) != 0;
+                    || (currentStatus & 0x10) != 0;
         }
         return false;
     }
 
     private static int roomStatusAt(byte[] roomStatusTable, int roomId) {
-        return roomId >= 0 && roomId < roomStatusTable.length
-            ? Byte.toUnsignedInt(roomStatusTable[roomId]) : 0;
+        return roomId >= 0 && roomId < roomStatusTable.length ? Byte.toUnsignedInt(roomStatusTable[roomId]) : 0;
     }
 
     /**
@@ -198,8 +199,7 @@ public final class EntityRoomLoader {
      * active handler runs, so keeping them in the loader preserves both room
      * rendering and subsequent collision coordinates.
      */
-    private static int[] applyInitialPositionTransform(RoomTable table, int roomId, int type,
-                                                        int x, int y) {
+    private static int[] applyInitialPositionTransform(RoomTable table, int roomId, int type, int x, int y) {
         if (table == RoomTable.OVERWORLD && isOverworldTreeOrPotDrop(type)) {
             x += 8;
             y += 8;
@@ -219,8 +219,7 @@ public final class EntityRoomLoader {
         if (type == 0xC2) {
             y -= 3;
         }
-        if (table == RoomTable.OVERWORLD && type == 0x3D
-            && (roomId == 0xA4 || roomId == 0xD2)) {
+        if (table == RoomTable.OVERWORLD && type == 0x3D && (roomId == 0xA4 || roomId == 0xD2)) {
             x += 8;
             y += 8;
         }
@@ -228,12 +227,18 @@ public final class EntityRoomLoader {
     }
 
     private static boolean isOverworldTreeOrPotDrop(int type) {
-        return type == 0x2E || type == 0x2F || type == 0x32 || type == 0x33
-            || type == 0x34 || type == 0x36 || type == 0x37 || type == 0x38;
+        return type == 0x2E
+                || type == 0x2F
+                || type == 0x32
+                || type == 0x33
+                || type == 0x34
+                || type == 0x36
+                || type == 0x37
+                || type == 0x38;
     }
 
-    private static int initialSpriteVariant(RoomTable table, int roomId, int type,
-                                            EntitySpriteDefinition definition, int x, int y) {
+    private static int initialSpriteVariant(
+            RoomTable table, int roomId, int type, EntitySpriteDefinition definition, int x, int y) {
         // OwlEventEntityHandler ($06:68A0–68B4) skips rendering in state zero,
         // except for the three encounters that begin with the owl already perched.
         // EntityInitSecretSeashell immediately suppresses the display-list
@@ -245,8 +250,7 @@ public final class EntityRoomLoader {
         // EntityInitDiggableBushOrPotDroppable ($03:4F1E) and the tree/pot
         // initializer set privateState3. DroppableRevealOrReturnIfNeeded
         // ($03:61DE) returns before drawing, including during room scrolling.
-        if (type == ENTITY_DROPPABLE_SECRET_SEASHELL
-            || EntityTypeRules.isCommonDroppableType(type)) {
+        if (type == ENTITY_DROPPABLE_SECRET_SEASHELL || EntityTypeRules.isCommonDroppableType(type)) {
             return -1;
         }
         if (!definition.supported()) {
@@ -266,8 +270,7 @@ public final class EntityRoomLoader {
             if (table == RoomTable.INDOORS_A && roomId == ROOM_INDOOR_A_QUICKSAND_CAVE) {
                 return 2;
             }
-            if (table == RoomTable.INDOORS_B
-                && roomId == ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1) {
+            if (table == RoomTable.INDOORS_B && roomId == ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1) {
                 return 4;
             }
         }
@@ -292,8 +295,8 @@ public final class EntityRoomLoader {
 
     private void requireRange(int offset, int length, String description) {
         if (offset < 0 || length < 0 || offset > romData.length - length) {
-            throw new IllegalArgumentException("Truncated " + description + " at ROM offset 0x"
-                + Integer.toHexString(Math.max(offset, 0)));
+            throw new IllegalArgumentException(
+                    "Truncated " + description + " at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
     }
 }

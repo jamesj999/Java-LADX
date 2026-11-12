@@ -1,6 +1,6 @@
 package linksawakening.render;
 
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
@@ -13,8 +13,6 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 final class TarinShieldRenderLayerTest {
     @Test
     void centersEightPixelShieldAboveLinksSixteenPixelPose() {
@@ -23,15 +21,20 @@ final class TarinShieldRenderLayerTest {
         fill(gpu.getTile(0x87), 2);
         int[][] palettes = new int[8][4];
         palettes[7][2] = 0x00CC7722;
-        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
-            null, null, null, new PlayerState(), new ItemRegistry());
+        Link link = new Link(
+                new InputState(),
+                new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                null,
+                null,
+                null,
+                new PlayerState(),
+                new ItemRegistry());
         link.setPixelPosition(0x30, 0x50);
         link.showTarinShieldPresentation(palettes[7]);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         IndexedRenderer.clear(buffer);
 
-        StorySprites.tarinShield(link, new ScrollController())
-            .render(new RenderContext(buffer, gpu));
+        StorySprites.tarinShield(link, new ScrollController()).render(new RenderContext(buffer, gpu));
 
         // Four clear pixels on either side centre the shield between Link's hands.
         for (int x = 0x30; x < 0x40; x++) {
@@ -48,7 +51,6 @@ final class TarinShieldRenderLayerTest {
 
     private static int pixel(byte[] buffer, int x, int y) {
         int offset = (y * Framebuffer.WIDTH + x) * 4;
-        return (buffer[offset] & 0xFF) << 16 | (buffer[offset + 1] & 0xFF) << 8
-            | buffer[offset + 2] & 0xFF;
+        return (buffer[offset] & 0xFF) << 16 | (buffer[offset + 1] & 0xFF) << 8 | buffer[offset + 2] & 0xFF;
     }
 }

@@ -34,8 +34,7 @@ public final class Warp {
     private final int destY;
     private final int tileLocation;
 
-    public Warp(int category, int destMap, int destRoom, int destX, int destY,
-                int tileLocation) {
+    public Warp(int category, int destMap, int destRoom, int destX, int destY, int tileLocation) {
         this.category = category;
         this.destMap = destMap;
         this.destRoom = destRoom;
@@ -48,12 +47,29 @@ public final class Warp {
         return new Warp(category, destMap, destRoom, destX, destY, newTileLocation);
     }
 
-    public int category() { return category; }
-    public int destMap() { return destMap; }
-    public int destRoom() { return destRoom; }
-    public int destX() { return destX; }
-    public int destY() { return destY; }
-    public int tileLocation() { return tileLocation; }
+    public int category() {
+        return category;
+    }
+
+    public int destMap() {
+        return destMap;
+    }
+
+    public int destRoom() {
+        return destRoom;
+    }
+
+    public int destX() {
+        return destX;
+    }
+
+    public int destY() {
+        return destY;
+    }
+
+    public int tileLocation() {
+        return tileLocation;
+    }
 
     /**
      * Pack Link's pixel position into the room-object grid location byte used
@@ -82,8 +98,13 @@ public final class Warp {
      * {@code GameplayWorldLoadRoomHandler} (world_handler.asm:180-185), so
      * the conversion offset is the same as {@link #packTileLocation}.
      */
-    public int javaPixelX() { return destX - 8; }
-    public int javaPixelY() { return destY - 16; }
+    public int javaPixelX() {
+        return destX - 8;
+    }
+
+    public int javaPixelY() {
+        return destY - 16;
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -94,11 +115,11 @@ public final class Warp {
             return false;
         }
         return category == warp.category
-            && destMap == warp.destMap
-            && destRoom == warp.destRoom
-            && destX == warp.destX
-            && destY == warp.destY
-            && tileLocation == warp.tileLocation;
+                && destMap == warp.destMap
+                && destRoom == warp.destRoom
+                && destX == warp.destX
+                && destY == warp.destY
+                && tileLocation == warp.tileLocation;
     }
 
     @Override

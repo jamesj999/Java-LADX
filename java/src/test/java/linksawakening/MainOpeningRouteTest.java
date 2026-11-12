@@ -1,23 +1,21 @@
 package linksawakening;
 
-import linksawakening.world.transition.Warp;
-
-import linksawakening.app.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-
-import linksawakening.app.screen.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import linksawakening.app.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 @linksawakening.testing.RequiresRom
 final class MainOpeningRouteTest {
     private static final HeadlessGameDriver game = new HeadlessGameDriver();
+
     @Test
     void newGameCanDefeatRollingBonesAndWarpBackToTheEntrance() throws Exception {
         game.initializeHeadlessNewGame();
@@ -59,7 +57,7 @@ final class MainOpeningRouteTest {
         assertEquals(105, checkpoints.get(9).x());
         assertEquals(72, checkpoints.get(9).y());
         assertTrue(checkpoints.get(10).text().contains("Tarin")
-            || checkpoints.get(10).text().contains("finally snapped"));
+                || checkpoints.get(10).text().contains("finally snapped"));
         assertEquals(0, checkpoints.get(15).shield());
         assertEquals(1, checkpoints.get(16).shield());
         assertFalse(checkpoints.get(19).dialog());
@@ -82,8 +80,9 @@ final class MainOpeningRouteTest {
         var pickup = checkpoints.get(65);
         assertTrue(pickup.dialog());
         assertTrue(pickup.text().contains("Sword!"));
-        assertTrue(pickup.y() >= 80 && pickup.y() <= 82,
-            "Source pickup hitbox/cadence; sprite-top-left coordinates collect a full tile too low");
+        assertTrue(
+                pickup.y() >= 80 && pickup.y() <= 82,
+                "Source pickup hitbox/cadence; sprite-top-left coordinates collect a full tile too low");
         var sword = checkpoints.get(68);
         assertEquals(0xF2, sword.room());
         assertEquals(1, sword.sword());
@@ -92,8 +91,7 @@ final class MainOpeningRouteTest {
         assertFalse(sword.dialog());
         assertFalse(sword.loading());
         assertTrue(sword.health() > 0);
-        assertEquals(24, checkpoints.get(99).health(),
-            "The fixed well hearts refill health before the forest");
+        assertEquals(24, checkpoints.get(99).health(), "The fixed well hearts refill health before the forest");
         var forest = checkpoints.get(102);
         assertEquals(0, forest.map());
         assertEquals(0x80, forest.room());
@@ -129,7 +127,7 @@ final class MainOpeningRouteTest {
         assertEquals(0xA2, witch.room());
         assertTrue(witch.toadstool());
         assertEquals(0, witch.powder());
-        for (int index : new int[]{186, 187}) {
+        for (int index : new int[] {186, 187}) {
             assertTrue(checkpoints.get(index).dialog());
             assertFalse(checkpoints.get(index).toadstool());
             assertEquals(0, checkpoints.get(index).powder(), "Reward must follow the ready dialogue");
@@ -167,8 +165,7 @@ final class MainOpeningRouteTest {
         assertEquals(0x41, end.room());
         assertEquals(1, end.tailKey());
         assertFalse(end.dialog());
-        assertEquals(24, checkpoints.get(271).health(),
-            "Refill from fixed well hearts before entering Tail Cave");
+        assertEquals(24, checkpoints.get(271).health(), "Refill from fixed well hearts before entering Tail Cave");
         var entrance = checkpoints.get(300);
         assertEquals(0, entrance.map());
         assertEquals(0x17, entrance.room());
@@ -240,8 +237,9 @@ final class MainOpeningRouteTest {
         var clearedBeetles = checkpoints.get(485);
         assertEquals(0x03, clearedBeetles.room());
         assertTrue(clearedBeetles.health() > 0);
-        assertFalse(entityCheckpoints.get(485).contains("2C:"),
-            "Both Spiked Beetles must be defeated before entering the passage");
+        assertFalse(
+                entityCheckpoints.get(485).contains("2C:"),
+                "Both Spiked Beetles must be defeated before entering the passage");
         var passage = checkpoints.get(487);
         assertEquals(0x19, passage.room());
         assertEquals(0, passage.map());
@@ -250,23 +248,25 @@ final class MainOpeningRouteTest {
         assertFalse(passage.loading());
 
         assertEquals(0x18, checkpoints.get(491).room());
-        assertEquals(112, checkpoints.get(492).y(),
-            "Crossing the side-view platform gap must fall to the lower floor");
+        assertEquals(112, checkpoints.get(492).y(), "Crossing the side-view platform gap must fall to the lower floor");
         assertEquals(0x01, checkpoints.get(494).room());
         var feather = checkpoints.get(502);
         assertEquals(0x1D, feather.room());
         assertTrue(feather.dialog());
         assertTrue(feather.text().contains("Roc's Feather"));
-        assertTrue(game.headlessHasInventoryItem(
-            linksawakening.state.PlayerState.INVENTORY_ROCS_FEATHER));
+        assertTrue(game.headlessHasInventoryItem(linksawakening.state.PlayerState.INVENTORY_ROCS_FEATHER));
         assertEquals(0x18, checkpoints.get(520).room());
         assertEquals(47, checkpoints.get(520).y());
         assertEquals(110, checkpoints.get(521).x());
         assertEquals(64, checkpoints.get(521).y());
-        assertEquals(2, entityCheckpoints.get(522).split("9F:", -1).length - 1,
-            "Goombas respawn after the Feather staircase trip");
-        assertEquals(2, entityCheckpoints.get(527).split("2C:", -1).length - 1,
-            "Spiked Beetles respawn after returning upstairs");
+        assertEquals(
+                2,
+                entityCheckpoints.get(522).split("9F:", -1).length - 1,
+                "Goombas respawn after the Feather staircase trip");
+        assertEquals(
+                2,
+                entityCheckpoints.get(527).split("2C:", -1).length - 1,
+                "Spiked Beetles respawn after returning upstairs");
         assertEquals(0x03, checkpoints.get(527).room());
         assertEquals(136, checkpoints.get(527).x());
         assertEquals(32, checkpoints.get(527).y());
@@ -310,12 +310,11 @@ final class MainOpeningRouteTest {
         assertFalse(entityCheckpoints.getLast().contains("81:"), "Rolling Bones must finish dying");
         assertFalse(entityCheckpoints.getLast().contains("82:"), "The defeated boss removes its bar");
         assertTrue(entityCheckpoints.getLast().contains("61:ACTIVE"), "The miniboss warp remains");
-
     }
 
     private static void advanceAlive() {
         game.headlessFrame();
-        assertTrue(game.headlessState().health() > 0,
-            () -> "Route must remain alive throughout: " + game.headlessState());
+        assertTrue(
+                game.headlessState().health() > 0, () -> "Route must remain alive throughout: " + game.headlessState());
     }
 }

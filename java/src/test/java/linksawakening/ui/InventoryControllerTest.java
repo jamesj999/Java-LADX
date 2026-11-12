@@ -1,12 +1,5 @@
 package linksawakening.ui;
 
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
-import java.io.InputStream;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
@@ -18,14 +11,20 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+import java.io.InputStream;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
+
 @linksawakening.testing.RequiresRom
 final class InventoryControllerTest {
 
     @Test
     void ownsMenuToggleTickAndCursorInput() throws Exception {
         InputState input = new InputState();
-        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN,
-            GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
+        InputConfig inputConfig = new InputConfig(
+                GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState playerState = new PlayerState();
         InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(loadRom()), playerState);
         InventoryController controller = new InventoryController(input, inputConfig, menu);

@@ -1,9 +1,9 @@
 package linksawakening.world.transition;
 
-import linksawakening.entity.Link;
-
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
+
+import linksawakening.entity.Link;
 
 public final class RoomBoundaryController {
     private static final int OVERWORLD_COLUMNS = 16;
@@ -40,15 +40,13 @@ public final class RoomBoundaryController {
         // steps move 145 pixels; 32 vertical steps move 116. Preserve the
         // boundary overshoot instead of snapping to a fixed destination edge.
         if (romY < 0x0C && roomRow > 0) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.UP, x,
-                y + 116);
+            return RoomBoundaryDecision.overworldScroll(ScrollController.UP, x, y + 116);
         }
         if (romY >= 0x84 && roomRow < OVERWORLD_ROWS - 1) {
             return RoomBoundaryDecision.overworldScroll(ScrollController.DOWN, x, y - 116);
         }
         if (romX < 0x04 && roomCol > 0) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.LEFT,
-                x + 145, y);
+            return RoomBoundaryDecision.overworldScroll(ScrollController.LEFT, x + 145, y);
         }
         if (romX >= 0x9C && roomCol < OVERWORLD_COLUMNS - 1) {
             return RoomBoundaryDecision.overworldScroll(ScrollController.RIGHT, x - 145, y);
@@ -76,9 +74,9 @@ public final class RoomBoundaryController {
         boolean sideScrolling = state.mapCategory() == Warp.CATEGORY_SIDESCROLL;
         boolean sideScrollingWithWarp = sideScrolling && state.hasWarps();
         boolean supportedTailCaveSideView = state.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            && state.mapId() == 0x00
-            && (state.roomId() == 0x18 || state.roomId() == 0x19)
-            && state.hasWarps();
+                && state.mapId() == 0x00
+                && (state.roomId() == 0x18 || state.roomId() == 0x19)
+                && state.hasWarps();
 
         if (offBottom && (state.shutterDoorMask() & 0x02) != 0) {
             return RoomBoundaryDecision.clamp(x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
@@ -97,14 +95,13 @@ public final class RoomBoundaryController {
         // ordinary indoor scroll. The source's vertical path then applies
         // room exceptions and hLinkPhysicsModifier before its generic fade.
         if (sideScrolling) {
-            boolean inVerticalMargin = (offTop && y >= SIDE_VIEW_VERTICAL_TOP)
-                || (offBottom && y < SIDE_VIEW_VERTICAL_BOTTOM);
+            boolean inVerticalMargin =
+                    (offTop && y >= SIDE_VIEW_VERTICAL_TOP) || (offBottom && y < SIDE_VIEW_VERTICAL_BOTTOM);
             if (inVerticalMargin) {
                 return RoomBoundaryDecision.none();
             }
             if (y < SIDE_VIEW_VERTICAL_TOP || y >= SIDE_VIEW_VERTICAL_BOTTOM) {
-                RoomBoundaryDecision sideViewDecision = sideViewVerticalDecision(state,
-                    sideScrollingWithWarp);
+                RoomBoundaryDecision sideViewDecision = sideViewVerticalDecision(state, sideScrollingWithWarp);
                 if (sideViewDecision != null) {
                     return sideViewDecision;
                 }
@@ -125,8 +122,7 @@ public final class RoomBoundaryController {
             if ((state.shutterDoorMask() & 0x04) != 0) {
                 return RoomBoundaryDecision.clamp(0, y);
             }
-            return RoomBoundaryDecision.indoorScroll(ScrollController.LEFT,
-                ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
+            return RoomBoundaryDecision.indoorScroll(ScrollController.LEFT, ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
         }
         if (offRight) {
             if ((state.shutterDoorMask() & 0x08) != 0) {
@@ -135,8 +131,7 @@ public final class RoomBoundaryController {
             return RoomBoundaryDecision.indoorScroll(ScrollController.RIGHT, 0, y);
         }
         if (offTop) {
-            return RoomBoundaryDecision.indoorScroll(ScrollController.UP, x,
-                ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
+            return RoomBoundaryDecision.indoorScroll(ScrollController.UP, x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
         }
         if (offBottom) {
             return RoomBoundaryDecision.indoorScroll(ScrollController.DOWN, x, 0);
@@ -144,8 +139,7 @@ public final class RoomBoundaryController {
         return RoomBoundaryDecision.none();
     }
 
-    private static RoomBoundaryDecision sideViewVerticalDecision(RoomBoundaryState state,
-                                                                  boolean hasWarps) {
+    private static RoomBoundaryDecision sideViewVerticalDecision(RoomBoundaryState state, boolean hasWarps) {
         int roomId = state.roomId() & 0xFF;
         if (roomId == 0xA3 || roomId == 0xC0 || roomId == 0xC1) {
             // The source starts ApplyMapFadeOutTransitionWithNoise here.
@@ -160,8 +154,7 @@ public final class RoomBoundaryController {
         // past $50, or when its first entity slot is active. Only an inactive
         // upper-room $FF position continues to the generic physics path.
         int romY = (state.linkY() + 0x10) & 0xFF;
-        if (roomId == 0xFF
-            && (romY >= 0x50 || state.sideViewEntityActive())) {
+        if (roomId == 0xFF && (romY >= 0x50 || state.sideViewEntityActive())) {
             return RoomBoundaryDecision.none();
         }
         if (!hasWarps) {

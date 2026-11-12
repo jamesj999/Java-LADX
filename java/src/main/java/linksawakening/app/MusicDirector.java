@@ -1,7 +1,7 @@
 package linksawakening.app;
 
-import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.FrameMusicPlayer;
+import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.audio.music.RoomMusicContext;
 import linksawakening.state.PlayerState;
@@ -33,7 +33,7 @@ public final class MusicDirector {
     public void restoreMusicAfterPowerUpEnds(RoomSession roomSession) {
         if (gameplayMusicController != null && roomSession != null) {
             gameplayMusicController.restoreAfterPowerUpEnds(
-                roomSession.inBossBattle(), roomSession.entityDefaultMusicTrack());
+                    roomSession.inBossBattle(), roomSession.entityDefaultMusicTrack());
         }
     }
 
@@ -62,6 +62,7 @@ public final class MusicDirector {
     public static int fileSelectionMusicTrack() {
         return MusicTrackIds.MUSIC_FILE_SELECT;
     }
+
     public void tick() {
         if (musicPlayer != null) {
             musicPlayer.update();

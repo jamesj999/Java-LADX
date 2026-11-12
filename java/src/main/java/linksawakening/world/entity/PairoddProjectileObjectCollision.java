@@ -2,8 +2,7 @@ package linksawakening.world.entity;
 
 /** Bank-$03 ApplySwordIntersectionWithObjects predicate for Pairodd's $58 path. */
 public final class PairoddProjectileObjectCollision {
-    private PairoddProjectileObjectCollision() {
-    }
+    private PairoddProjectileObjectCollision() {}
 
     /**
      * Returns whether the source routine terminates a Pairodd projectile for

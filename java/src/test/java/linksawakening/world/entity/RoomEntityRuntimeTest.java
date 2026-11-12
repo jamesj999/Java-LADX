@@ -1,42 +1,28 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.room.ChestContentsTable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntSupplier;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.RomBank;
+import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.event.BombExplosionEvent;
+import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.event.BombExplosionEvent;
-
-import linksawakening.world.entity.RoomEntityGroundInteraction;
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityBackgroundCollision;
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EnemyDropResolver;
-import linksawakening.world.entity.ColorShellWorld;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.EnemyAttackContext;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntityObjectSample;
-import linksawakening.world.entity.EntityPickupEvent;
-import linksawakening.world.entity.RoomEntitySnapshot;
-import linksawakening.world.entity.FollowingNpcEntitySpawner;
-import linksawakening.world.entity.RoomEntityPickupRules;
-import linksawakening.world.entity.FollowingNpcState;
-
-import linksawakening.world.entity.motion.MotionTestAccess;
-
-import linksawakening.world.entity.motion.HinoxMotion;
-import linksawakening.world.entity.motion.RoamingEnemyMotion;
-import linksawakening.world.entity.motion.ThreeOfAKindMotion;
-import linksawakening.world.entity.motion.ZolGelMotion;
-
-import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.KeyQuicksandEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;
 import linksawakening.world.entity.event.LikeLikeEvent;
@@ -47,28 +33,12 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.rom.RomBank;
-import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.MotionTestAccess;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
+import linksawakening.world.room.ChestContentsTable;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntSupplier;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @linksawakening.testing.RequiresRom
 final class RoomEntityRuntimeTest {
@@ -77,11 +47,29 @@ final class RoomEntityRuntimeTest {
     void dungeonWarpStaysHiddenUntilMinibossDefeatThenCyclesAllEightPhases() throws IOException {
         byte[] rom = loadRom();
         var catalog = new EntitySpriteHandlerCatalog(rom);
-        var warp = new RoomEntity(0, 0, 0x61, 80, 72, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.INDOORS_A, 0), 0, 0, 0, 0, -1, false);
-        var runtime = RoomEntityRuntime.from(snapshot(warp), true, () -> 0,
-            catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom),
-            linksawakening.rom.RomTables.loadFromRom(rom), rom);
+        var warp = new RoomEntity(
+                0,
+                0,
+                0x61,
+                80,
+                72,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.INDOORS_A, 0),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        var runtime = RoomEntityRuntime.from(
+                snapshot(warp),
+                true,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom),
+                new ChestContentsTable(rom),
+                linksawakening.rom.RomTables.loadFromRom(rom),
+                rom);
         runtime.debug().setEntityMapIdForTest(0);
         runtime.configuration().setEntityRoomId(0x11);
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -96,14 +84,36 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void tailCaveBossesPushLinkInsideTheArenaBeforeBlockingInput() {
-        int[][] cases = {{8,72,1,0}, {16,72,1,0}, {17,72,0,0},
-            {142,72,0,0}, {143,72,-1,0}, {80,116,0,-1},
-            {80,115,0,0}, {80,21,0,-1}, {80,22,0,0}, {8,116,1,0}};
-        for (int type : new int[]{0x81, EntitySpriteHandlerCatalog.ENTITY_MOLDORM}) {
+        int[][] cases = {
+            {8, 72, 1, 0},
+            {16, 72, 1, 0},
+            {17, 72, 0, 0},
+            {142, 72, 0, 0},
+            {143, 72, -1, 0},
+            {80, 116, 0, -1},
+            {80, 115, 0, 0},
+            {80, 21, 0, -1},
+            {80, 22, 0, 0},
+            {8, 116, 1, 0}
+        };
+        for (int type : new int[] {0x81, EntitySpriteHandlerCatalog.ENTITY_MOLDORM}) {
             for (int[] point : cases) {
-                RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-                    new RoomEntity(0, 0, type, 0x70, 0x40, EntityStatus.ACTIVE,
-                        EntitySpriteDefinition.unsupported(type), 0, 0, 0, 0, -1, false)), true);
+                RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                        snapshot(new RoomEntity(
+                                0,
+                                0,
+                                type,
+                                0x70,
+                                0x40,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(type),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                        true);
                 runtime.tick(EntityTestFrames.frame(runtime, 0, point[0], point[1], () -> 0));
                 var requests = runtime.consumePendingLinkMotionBlockRequests();
                 if (point[2] == 0 && point[3] == 0) {
@@ -126,17 +136,43 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void kanaletKnightAndMadBomberUseNonPersistentGoldenLeafDrops() {
-        RoomEntityRuntime knightRuntime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 3, 0x51, 0x40, 0x50, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x51), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime knightRuntime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        3,
+                        0x51,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x51),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         knightRuntime.debug().setEntityMapIdForTest(0x14);
         knightRuntime.tick(EntityTestFrames.frame(knightRuntime, 0, 0, 0, () -> 0));
         assertEquals(0xFF, knightRuntime.inspection().snapshot().slots().get(0).sourceLoadOrder());
         assertEquals(0x3C, knightRuntime.inspection().droppedItemForTest(0));
 
-        RoomEntityRuntime bomberRuntime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 2, 0x93, 0x40, 0x50, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x93), 0, 0, 0, 0, -1, false)), false);
+        RoomEntityRuntime bomberRuntime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        2,
+                        0x93,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x93),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false);
         bomberRuntime.tick(EntityTestFrames.frame(bomberRuntime, 0, 0, 0, () -> 0));
         assertEquals(0xFF, bomberRuntime.inspection().snapshot().slots().get(0).sourceLoadOrder());
         assertEquals(0x3C, bomberRuntime.inspection().droppedItemForTest(0));
@@ -172,19 +208,30 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity knight = new RoomEntity(15, 3, 0x51, 0x44, 0x58,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x51, EntityRoomLoader.RoomTable.INDOORS_B, -1), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(knight),
-            true, () -> 0, catalog, tables);
+        RoomEntity knight = new RoomEntity(
+                15,
+                3,
+                0x51,
+                0x44,
+                0x58,
+                EntityStatus.DYING,
+                catalog.forEntityType(0x51, EntityRoomLoader.RoomTable.INDOORS_B, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(knight), true, () -> 0, catalog, tables);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setEntityMapIdForTest(0x14);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity leaf = runtime.inspection().snapshot().slots().stream()
-            .filter(entity -> entity.loaded() && entity.type() == 0x3C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.loaded() && entity.type() == 0x3C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x44, leaf.x());
         assertEquals(0x58, leaf.y());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
@@ -192,11 +239,37 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void bothKanaletBombableWallsSpawnSwordMoblinsCarryingGoldenLeaves() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x94, 0x28, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x94), -1, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x94, 0x78, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x94), -1, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0x94,
+                                0x28,
+                                0x40,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x94),
+                                -1,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                1,
+                                1,
+                                0x94,
+                                0x78,
+                                0x40,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x94),
+                                -1,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                true);
         runtime.debug().setEntityMapIdForTest(0x14);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(1, 0x0A);
@@ -204,8 +277,8 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         List<RoomEntity> moblins = runtime.inspection().snapshot().slots().stream()
-            .filter(entity -> entity.loaded() && entity.type() == 0x14)
-            .toList();
+                .filter(entity -> entity.loaded() && entity.type() == 0x14)
+                .toList();
         assertEquals(2, moblins.size());
         assertTrue(moblins.stream().anyMatch(entity -> entity.x() == 0x28 && entity.y() == 0x48));
         assertTrue(moblins.stream().anyMatch(entity -> entity.x() == 0x78 && entity.y() == 0x48));
@@ -213,15 +286,32 @@ final class RoomEntityRuntimeTest {
             assertEquals(0xFF, moblin.sourceLoadOrder());
             assertEquals(0x3C, runtime.inspection().droppedItemForTest(moblin.slot()));
         }
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(1).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(1).status());
     }
 
     @Test
     void completedKanaletWallRoomUnloadsWallsWithoutSpawningMoblins() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x94, 0x28, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x94), -1, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x94,
+                        0x28,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x94),
+                        -1,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setEntityMapIdForTest(0x14);
         runtime.debug().setEntityRoomStatusForTest(0x10);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
@@ -229,29 +319,56 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertFalse(runtime.inspection().snapshot().slots().stream()
-            .anyMatch(entity -> entity.loaded() && entity.type() == 0x14));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+                .anyMatch(entity -> entity.loaded() && entity.type() == 0x14));
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void kanaletWallWaitsForAFreeSlotBeforeBreaking() {
         List<RoomEntity> entities = new ArrayList<>();
-        entities.add(new RoomEntity(0, 0, 0x94, 0x28, 0x40, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x94), -1, 0, 0, 0, -1, false));
+        entities.add(new RoomEntity(
+                0,
+                0,
+                0x94,
+                0x28,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x94),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            entities.add(new RoomEntity(slot, slot, 0xFF, 0x20, 0x20,
-                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xFF), -1, 0, 0, 0, -1, false));
+            entities.add(new RoomEntity(
+                    slot,
+                    slot,
+                    0xFF,
+                    0x20,
+                    0x20,
+                    EntityStatus.ACTIVE,
+                    EntitySpriteDefinition.unsupported(0xFF),
+                    -1,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    false));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(entities), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(entities), true);
         runtime.debug().setEntityMapIdForTest(0x14);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertFalse(runtime.inspection().snapshot().slots().stream()
-            .anyMatch(entity -> entity.loaded() && entity.type() == 0x14));
+                .anyMatch(entity -> entity.loaded() && entity.type() == 0x14));
     }
 
     @Test
@@ -259,11 +376,21 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity wall = new RoomEntity(0, 0, 0x94, 0x48, 0x4F,
-            EntityStatus.ACTIVE, catalog.forEntityType(
-                0x94, EntityRoomLoader.RoomTable.INDOORS_B, 0x14), -1, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(wall),
-            true, () -> 0, catalog, tables);
+        RoomEntity wall = new RoomEntity(
+                0,
+                0,
+                0x94,
+                0x48,
+                0x4F,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x94, EntityRoomLoader.RoomTable.INDOORS_B, 0x14),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(wall), true, () -> 0, catalog, tables);
         runtime.debug().setEntityMapIdForTest(0x14);
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x13);
@@ -271,8 +398,9 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity moblin = runtime.inspection().snapshot().slots().stream()
-            .filter(entity -> entity.loaded() && entity.type() == 0x14)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.loaded() && entity.type() == 0x14)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x48, moblin.x());
         assertEquals(0x57, moblin.y());
         assertEquals(0x3C, runtime.inspection().droppedItemForTest(moblin.slot()));
@@ -280,37 +408,95 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void hinoxSkipsItsInteractiveHandlerAndTimersDuringNonInteractiveFrames() {
-        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        RoomEntity hinox = new RoomEntity(
+                0,
+                0,
+                HinoxMotion.ENTITY_TYPE,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
         runtime.debug().setTransitionCountdownForTest(0, 0x12);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
-            EnemyProjectileCollision.LinkState.nonInteractive()));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x40,
+                () -> 0,
+                null,
+                null,
+                0,
+                0,
+                0,
+                EnemyProjectileCollision.LinkState.nonInteractive()));
 
         assertEquals(0x12, runtime.enemies().transitionCountdown(0));
-        assertEquals(MotionTestAccess.HinoxMotion_STATE_INITIAL, runtime.inspection().hinoxStateForTest(0));
+        assertEquals(
+                MotionTestAccess.HinoxMotion_STATE_INITIAL, runtime.inspection().hinoxStateForTest(0));
     }
 
     @Test
     void hinoxSkipsItsHandlerAndTimersOutsideTheRomTransitionSequence() {
-        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        RoomEntity hinox = new RoomEntity(
+                0,
+                0,
+                HinoxMotion.ENTITY_TYPE,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
         runtime.debug().setTransitionSequenceCounterForTest(0x03);
         runtime.debug().setTransitionCountdownForTest(0, 0x12);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x40,
+                () -> 0,
+                null,
+                null,
+                0,
+                0,
+                0,
+                new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false)));
 
         assertEquals(0x12, runtime.enemies().transitionCountdown(0));
-        assertEquals(MotionTestAccess.HinoxMotion_STATE_INITIAL, runtime.inspection().hinoxStateForTest(0));
+        assertEquals(
+                MotionTestAccess.HinoxMotion_STATE_INITIAL, runtime.inspection().hinoxStateForTest(0));
     }
 
     @Test
     void hinoxInactiveDeathUsesSharedArmosCountdownsAndRoomStatus() {
-        RoomEntity hinox = new RoomEntity(15, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
-            EntityStatus.DYING, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), -1, 0, 0, 0, -1, false);
+        RoomEntity hinox = new RoomEntity(
+                15,
+                0,
+                HinoxMotion.ENTITY_TYPE,
+                0x40,
+                0x40,
+                EntityStatus.DYING,
+                EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(hinox), false, () -> 0);
         runtime.debug().setEntityMapIdForTest(0x05);
 
@@ -328,188 +514,302 @@ final class RoomEntityRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x40, () -> 0));
         }
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0x20, runtime.consumePendingRoomStatusMask());
-        assertEquals(List.of(new EntityCombatEvent(15, HinoxMotion.ENTITY_TYPE, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(
+                        15, HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void hinoxRunsBossIntroWhenInteractive() {
-        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        RoomEntity hinox = new RoomEntity(
+                0,
+                0,
+                HinoxMotion.ENTITY_TYPE,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
         EnemyProjectileCollision.LinkState interactive =
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false);
+                new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false);
 
         for (int frame = 0; frame <= 0x20; frame++) {
-            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
-                interactive));
+            runtime.tick(EntityTestFrames.projectileFrame(
+                    runtime, frame, 0x40, 0x40, () -> 0, null, null, 0, 0, 0, interactive));
         }
         assertEquals(0x50, runtime.consumePendingMusicTrack());
     }
 
     @Test
     void hinoxStateFourSkipsGenericSwordAndContactCombat() {
-        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        RoomEntity hinox = new RoomEntity(
+                0,
+                0,
+                HinoxMotion.ENTITY_TYPE,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
         runtime.debug().setHinoxStateForTest(0, HinoxMotion.STATE_GRAB);
         runtime.debug().setEnemyHealthForTest(0, 1);
 
-        assertTrue(runtime.resolveCombat(0, 0x40, 0x40, false, true,
-            false, 0, 0, 0, 0).isEmpty());
-        assertTrue(runtime.resolveCombat(1, 0x40, 0x40, false, true,
-            true, 0x40, 0x10, 0x40, 0x10).isEmpty());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertTrue(runtime.resolveCombat(0, 0x40, 0x40, false, true, false, 0, 0, 0, 0)
+                .isEmpty());
+        assertTrue(runtime.resolveCombat(1, 0x40, 0x40, false, true, true, 0x40, 0x10, 0x40, 0x10)
+                .isEmpty());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.inspection().enemyHealthForTest(0));
     }
 
     @Test
     void hinoxUsesBooleanBackgroundCollisionWhenRichProbeIsAbsent() {
-        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        RoomEntity hinox = new RoomEntity(
+                0,
+                0,
+                HinoxMotion.ENTITY_TYPE,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
         runtime.debug().setHinoxStateForTest(0, MotionTestAccess.HinoxMotion_STATE_WANDER);
         runtime.debug().setHinoxSpeedForTest(0, 0x08, 0);
         runtime.debug().setTransitionCountdownForTest(0, 0x20);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0,
-            (entity, direction, nextX, nextY) -> true,
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x40,
+                () -> 0,
+                (entity, direction, nextX, nextY) -> true,
+                new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false)));
 
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).x());
     }
 
     @Test
     void hinoxGrowlAndBounceUseTheirRomAudioChannels() {
-        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x50, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        RoomEntity hinox = new RoomEntity(
+                0,
+                0,
+                HinoxMotion.ENTITY_TYPE,
+                0x50,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
         runtime.debug().setHinoxStateForTest(0, MotionTestAccess.HinoxMotion_STATE_CHARGE);
         runtime.debug().setTransitionCountdownForTest(0, 0);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x30, 0x30, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x30,
+                0x30,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false)));
 
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
-        assertTrue(events.contains(new EntityCombatEvent(0,
-            HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20)));
-        assertTrue(events.contains(new EntityCombatEvent(0,
-            HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x16)));
+        assertTrue(events.contains(new EntityCombatEvent(
+                0, HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20)));
+        assertTrue(events.contains(new EntityCombatEvent(
+                0, HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x16)));
     }
 
     @Test
     void matchingThreeOfAKindCardsEnterTheSourceDeathSequenceTogether() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            threeOfAKind(0, 0x28, 0x28),
-            threeOfAKind(1, 0x78, 0x28),
-            threeOfAKind(2, 0x48, 0x38)), true, () -> 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(threeOfAKind(0, 0x28, 0x28), threeOfAKind(1, 0x78, 0x28), threeOfAKind(2, 0x48, 0x38)),
+                true,
+                () -> 0);
         for (int slot = 0; slot < 3; slot++) {
             runtime.debug().setThreeOfAKindSettledForTest(slot, 0);
         }
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 1, 0, 0, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
 
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream()
-            .allMatch(card -> card.status() == EntityStatus.DYING));
+                .allMatch(card -> card.status() == EntityStatus.DYING));
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
-        assertTrue(events.stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
-                && event.soundId() == 0x02));
-        assertEquals(1, events.stream().filter(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
-                && event.soundId() == 0x13).count());
+        assertTrue(events.stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
+        assertEquals(
+                1,
+                events.stream()
+                        .filter(event ->
+                                event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x13)
+                        .count());
     }
 
     @Test
     void swordHitFeedsThreeOfAKindsGenericIgnoreHitLatch() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(threeOfAKind(0, 0x40, 0x50)), true, () -> 0);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(threeOfAKind(0, 0x40, 0x50)), true, () -> 0);
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 1, 0, 0, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
 
-        List<EntityCombatEvent> hit = runtime.resolveCombat(
-            1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10);
+        List<EntityCombatEvent> hit = runtime.resolveCombat(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10);
         assertTrue(hit.getFirst().swordHit());
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 2, 0, 0, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
         assertEquals(2, runtime.inspection().threeOfAKindStateForTest(0));
     }
 
     @Test
     void settledThreeOfAKindDoesNotRunTheGenericCombatHandler() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(threeOfAKind(0, 0x40, 0x50)), true, () -> 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(threeOfAKind(0, 0x40, 0x50)), true, () -> 0);
         runtime.debug().setThreeOfAKindSettledForTest(0, 0);
 
-        assertTrue(runtime.resolveCombat(
-            1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10)
+                .isEmpty());
     }
 
     @Test
     void noninteractiveFramesFreezeThreeOfAKindCountdownAndPuzzleCheck() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            threeOfAKind(0, 0x28, 0x28),
-            threeOfAKind(1, 0x78, 0x28),
-            threeOfAKind(2, 0x48, 0x38)), true, () -> 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(threeOfAKind(0, 0x28, 0x28), threeOfAKind(1, 0x78, 0x28), threeOfAKind(2, 0x48, 0x38)),
+                true,
+                () -> 0);
         for (int slot = 0; slot < 3; slot++) {
             runtime.debug().setThreeOfAKindSettledForTest(slot, 0);
             runtime.debug().setTransitionCountdownForTest(slot, 1);
         }
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 7, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 1, 0, 0, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 7, 3, false)));
 
         assertEquals(1, runtime.inspection().transitionCountdownForTest(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream()
-            .allMatch(card -> card.status() == EntityStatus.ACTIVE));
+                .allMatch(card -> card.status() == EntityStatus.ACTIVE));
 
         runtime.configuration().setDialogActive(true);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 2, 0, 0, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
         assertEquals(1, runtime.inspection().transitionCountdownForTest(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
     @Test
     void friendlyNpcHandlersRestoreLinksPreEntityPositionOnContact() {
-        RoomEntity tarin = new RoomEntity(0, 0, 0x3F, 0x50, 0x60,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3F), 0, 0, 0, 0, -1, false);
+        RoomEntity tarin = new RoomEntity(
+                0,
+                0,
+                0x3F,
+                0x50,
+                0x60,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x3F),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(tarin), true, () -> 0);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x00, 0x00, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 0, 0x00, 0x00, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                0x50,
+                0x60,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
 
-        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
-            runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(
+                List.of(new LinkFinalPositionRequest(0, true, true, false)),
+                runtime.consumePendingLinkFinalPositionRequests());
     }
 
     @Test
     void friendlyNpcPushUsesTheRomAirPermittedCollisionEntry() {
-        RoomEntity tarin = new RoomEntity(0, 0, 0x3F, 0x50, 0x60,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3F), 0, 0, 0, 0, -1, false);
+        RoomEntity tarin = new RoomEntity(
+                0,
+                0,
+                0x3F,
+                0x50,
+                0x60,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x3F),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(tarin), true, () -> 0);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x00, 0x00, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 0, 0x00, 0x00, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                0x50,
+                0x60,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false)));
 
-        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
-            runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(
+                List.of(new LinkFinalPositionRequest(0, true, true, false)),
+                runtime.consumePendingLinkFinalPositionRequests());
     }
 
     @Test
     void friendlyNpcContactUsesTheRomNpcHitbox() {
-        RoomEntity marin = new RoomEntity(0, 0, 0x3E, 0x50, 0x60,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3E), 0, 0, 0, 0, -1, false);
+        RoomEntity marin = new RoomEntity(
+                0,
+                0,
+                0x3E,
+                0x50,
+                0x60,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x3E),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
 
         // HITBOX_NPC is ($08,$06,$06,$08), so this edge contact still
         // collides; the ordinary enemy box ($08,$05,$08,$05) would miss it.
@@ -518,26 +818,74 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void witchOverridesTheNpcHitboxWithHerSourceCauldronFootprint() {
-        RoomEntity witch = new RoomEntity(0, 0, 0x40, 0x40, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x40), 0, 0, 0, 0, -1, false);
+        RoomEntity witch = new RoomEntity(
+                0,
+                0,
+                0x40,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x40),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
 
         assertTrue(RoomEntityCombatRules.overlapsLink(witch, 0x40, 0x55));
     }
 
     @Test
     void largeFriendlyNpcsUseTheRomBigNpcHitbox() {
-        RoomEntity bear = new RoomEntity(0, 0, 0xB5, 0x40, 0x50,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xB5), 0, 0, 0, 0, -1, false);
+        RoomEntity bear = new RoomEntity(
+                0,
+                0,
+                0xB5,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xB5),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
 
         assertTrue(RoomEntityCombatRules.overlapsLink(bear, 0x4D, 0x50));
     }
 
     @Test
     void helperEntitiesUseTheirRomPillarAndSideViewHitboxes() {
-        RoomEntity pillar = new RoomEntity(0, 0, 0x9D, 0x50, 0x60,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x9D), 0, 0, 0, 0, -1, false);
-        RoomEntity thwomp = new RoomEntity(1, 0, 0xD8, 0x50, 0x60,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xD8), 0, 0, 0, 0, -1, false);
+        RoomEntity pillar = new RoomEntity(
+                0,
+                0,
+                0x9D,
+                0x50,
+                0x60,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x9D),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntity thwomp = new RoomEntity(
+                1,
+                0,
+                0xD8,
+                0x50,
+                0x60,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xD8),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
 
         assertTrue(RoomEntityCombatRules.overlapsLink(pillar, 0x5A, 0x60));
         assertTrue(RoomEntityCombatRules.overlapsLink(thwomp, 0x68, 0x60));
@@ -545,40 +893,42 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void ordinaryEnemyContactCarriesTheRomLinkRecoilResponse() {
-        RoomEntity octorok = new RoomEntity(0, 0, 0x09, 0x40, 0x50,
-            EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false);
+        RoomEntity octorok = new RoomEntity(
+                0, 0, 0x09, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(octorok));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 0x40, 0x58, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0);
 
         assertEquals(1, events.size());
         assertEquals(0x04, events.get(0).linkDamage());
-        assertEquals(new EntityCombatEvent.LinkCollisionResponse(0, 0x14, 0x10),
-            events.get(0).linkCollisionResponse());
+        assertEquals(
+                new EntityCombatEvent.LinkCollisionResponse(0, 0x14, 0x10),
+                events.get(0).linkCollisionResponse());
     }
 
     @Test
     void moldormContactUsesTheLargerLinkRecoilMagnitude() {
-        var enemy = new RoomEntity(0, 0, 0x59, 0x40, 0x50,
-            EntityStatus.ACTIVE, pairDefinition(0x59, 2), 0, 0, 0, 0, -1, false);
+        var enemy = new RoomEntity(
+                0, 0, 0x59, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(0x59, 2), 0, 0, 0, 0, -1, false);
         var runtime = RoomEntityRuntime.from(snapshot(enemy));
         var events = runtime.resolveCombat(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0);
         assertEquals(1, events.size());
-        assertEquals(new EntityCombatEvent.LinkCollisionResponse(0, 0x18, 0x10),
-            events.get(0).linkCollisionResponse());
+        assertEquals(
+                new EntityCombatEvent.LinkCollisionResponse(0, 0x18, 0x10),
+                events.get(0).linkCollisionResponse());
     }
 
     @Test
     void rollingBonesBarContactUsesHorizontalRecoilOnBothSides() {
-        for (int linkX : new int[]{0x3C, 0x44}) {
-            var enemy = new RoomEntity(0, 0, 0x82, 0x40, 0x50,
-                EntityStatus.ACTIVE, pairDefinition(0x82, 2), 0, 0, 0, 0, -1, false);
+        for (int linkX : new int[] {0x3C, 0x44}) {
+            var enemy = new RoomEntity(
+                    0, 0, 0x82, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(0x82, 2), 0, 0, 0, 0, -1, false);
             var runtime = RoomEntityRuntime.from(snapshot(enemy));
             var events = runtime.resolveCombat(1, linkX, 0x58, false, true, false, 0, 0, 0, 0);
             assertEquals(1, events.size());
-            assertEquals(new EntityCombatEvent.LinkCollisionResponse(
-                linkX < 0x40 ? 0xE8 : 0x18, 0, 0x10), events.get(0).linkCollisionResponse());
+            assertEquals(
+                    new EntityCombatEvent.LinkCollisionResponse(linkX < 0x40 ? 0xE8 : 0x18, 0, 0x10),
+                    events.get(0).linkCollisionResponse());
         }
     }
 
@@ -594,8 +944,7 @@ final class RoomEntityRuntimeTest {
     @Test
     void deathPresentationFieldsAreIndependentFromNormalSpriteVariant() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        RoomEntity entity = new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.DYING,
-            body, 1, 0, 0, 0, 3, true);
+        RoomEntity entity = new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, 3, true);
         assertEquals(1, entity.spriteVariant());
         assertEquals(3, entity.deathSpriteVariant());
         assertTrue(entity.powerRecoilDeath());
@@ -606,14 +955,15 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x66, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x66, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x66, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> hit = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> hit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, hit.size());
         assertTrue(hit.get(0).swordHit());
@@ -621,16 +971,18 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x03, hit.get(0).soundId());
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
 
         assertEquals(0, runtime.enemies().enemyFlashCountdown(0));
         assertEquals(0x18, runtime.enemies().transitionCountdown(0));
         assertTrue(runtime.consumePendingSwitchBlockAnimationRequest());
-        assertEquals(List.of(new EntityCombatEvent(0, 0x66, 0, false,
-            EntityCombatEvent.SoundChannel.WAVE, 0x0E)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x66, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x0E)),
+                runtime.consumePendingEntityEvents());
         assertFalse(runtime.consumePendingSwitchBlockAnimationRequest());
     }
 
@@ -639,13 +991,27 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            EntitySpriteHandlerCatalog.ENTITY_MIMIC,
-            EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MIMIC,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition =
+                catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_MIMIC, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        EntitySpriteHandlerCatalog.ENTITY_MIMIC,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.configuration().setPressedButtonsMask(0x01);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -659,8 +1025,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x08, runtime.options1(0));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 0x40, 0x50, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x18, contact.get(0).linkDamage());
     }
@@ -671,29 +1036,40 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
-            EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
-            EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+                EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.configuration().setPressedButtonsMask(0x01);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0,
-            null, null, 0, 3, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0, null, null, 0, 3, 0));
         assertEquals(0x3F, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x02, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x48, runtime.options1(0));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0,
-            null, null, 0, 3, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0, null, null, 0, 3, 0));
         assertEquals(0x3E, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x08, runtime.options1(0));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 0x3E, 0x50, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x3E, 0x50, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
     }
@@ -704,28 +1080,39 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
-            EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
-            EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+                EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.configuration().setPressedButtonsMask(0x01);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0,
-            null, null, 0, 3, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0, null, null, 0, 3, 0));
         assertEquals(0x48, runtime.options1(0));
 
-        List<EntityCombatEvent> swordHit = runtime.resolveCombat(
-            1, 0x50, 0x50, false, true, true,
-            0x40, 0x10, 0x50, 0x10);
+        List<EntityCombatEvent> swordHit =
+                runtime.resolveCombat(1, 0x50, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10);
 
         assertEquals(1, swordHit.size());
         assertEquals(0, swordHit.get(0).enemyDamage());
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
         assertNotNull(swordHit.get(0).swordPokeVfx());
-        assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
-            swordHit.get(0).soundChannel());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, swordHit.get(0).soundChannel());
         assertEquals(0x07, swordHit.get(0).soundId());
     }
 
@@ -735,24 +1122,35 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
-            EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
-            EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+                EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+                        0x40,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.configuration().setPressedButtonsMask(0x08);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x70, () -> 0,
-            null, null, 0, 0, 0));
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x70, () -> 0,
-            null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x70, () -> 0, null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x70, () -> 0, null, null, 0, 0, 0));
         assertEquals(0x08, runtime.options1(0));
 
         RoomEntity maskedMimic = runtime.inspection().snapshot().slots().get(0);
         List<EntityCombatEvent> swordHit = runtime.resolveCombat(
-            2, 0x40, 0x70, false, true, true,
-            maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08);
+                2, 0x40, 0x70, false, true, true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08);
 
         assertEquals(1, swordHit.size());
         assertEquals(1, swordHit.get(0).enemyDamage());
@@ -761,15 +1159,29 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void crystalSwitchDoesNotRequestAnotherAnimationWhileSwitchBlocksAreActive()
-        throws Exception {
+    void crystalSwitchDoesNotRequestAnotherAnimationWhileSwitchBlocksAreActive() throws Exception {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x66, 64, 64, EntityStatus.ACTIVE,
-                catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x66,
+                        64,
+                        64,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.debug().setSwitchBlockAnimationActiveForTest(true);
         runtime.debug().setEnemyFlashCountdownForTest(0, 0x02);
@@ -783,31 +1195,34 @@ final class RoomEntityRuntimeTest {
     @Test
     void rejectsDeathSpriteVariantsOutsideTheFourFrameRange() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
-            64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, -2, false));
-        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
-            64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, 4, false));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, -2, false));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, 4, false));
     }
 
     @Test
     void rejectsDeathSpriteVariantsForNonDyingEntities() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
-            64, 64, EntityStatus.ACTIVE, body, 1, 0, 0, 0, 0, false));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, body, 1, 0, 0, 0, 0, false));
     }
 
     @Test
     void rejectsPowerRecoilDeathForNonDyingEntities() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
-            64, 64, EntityStatus.ACTIVE, body, 1, 0, 0, 0, -1, true));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, body, 1, 0, 0, 0, -1, true));
     }
 
     @Test
     void hydratesPowerRecoilDeathStateFromAnInitialDyingEntity() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        RoomEntity initialEntity = new RoomEntity(0, 0, 0x09, 64, 64,
-            EntityStatus.DYING, body, 1, 0, 0, 0, 2, true);
+        RoomEntity initialEntity = new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, 2, true);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initialEntity));
 
         assertTrue(runtime.enemies().powerRecoilDeath(0));
@@ -818,14 +1233,14 @@ final class RoomEntityRuntimeTest {
     void colorShellDyingRefreshPreservesDeathPresentationMetadata() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition body = pairDefinition(0xE9, 2);
-        RoomEntity initialEntity = new RoomEntity(0, 0, 0xE9, 64, 64,
-            EntityStatus.ACTIVE, body, 1, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(initialEntity), false, null, catalog);
+        RoomEntity initialEntity = new RoomEntity(0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE, body, 1, 0, 0, 0, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initialEntity), false, null, catalog);
 
-        runtime.resolveCombat(0, 120, 120, false, true, true,
-            72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        runtime.resolveCombat(
+                0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertTrue(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
 
@@ -838,18 +1253,18 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0F, runtime.enemies().dyingCountdown(0));
         assertEquals(1, rebuilt.deathSpriteVariant());
         assertTrue(rebuilt.powerRecoilDeath());
-        assertEquals(EntitySpriteDefinition.Shape.RECTANGLE,
-            rebuilt.spriteDefinition().shape());
+        assertEquals(
+                EntitySpriteDefinition.Shape.RECTANGLE,
+                rebuilt.spriteDefinition().shape());
     }
 
     @Test
     void disablingARecoilDeathClearsItsInternalPowerState() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE,
-                keeseDefinition(), 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, keeseDefinition(), 0, 0, 0, 0, -1, false)));
 
-        runtime.resolveCombat(0, 120, 120, false, true, true,
-            72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
+        runtime.resolveCombat(
+                0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
         assertTrue(runtime.enemies().powerRecoilDeath(0));
 
         for (int frame = 0; frame < 0x40; frame++) {
@@ -863,21 +1278,18 @@ final class RoomEntityRuntimeTest {
     @Test
     void clearingThenReusingAProjectileSlotDoesNotRetainPowerDeathState() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        EntitySpriteDefinition octorok = catalog.forEntityType(
-            0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        EntitySpriteDefinition keese = catalog.forEntityType(
-            0x19, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        EntitySpriteDefinition octorok = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        EntitySpriteDefinition keese = catalog.forEntityType(0x19, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> slots = new ArrayList<>();
         slots.add(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, octorok, 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < 15; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
         slots.add(new RoomEntity(15, 1, 0x19, 120, 120, EntityStatus.ACTIVE, keese, 0, 0, 0, 0, -1, false));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(slots), false, null, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, null, catalog);
 
-        runtime.resolveCombat(0, 80, 64, false, true, true,
-            112, 16, 112, 16, new EnemyAttackContext(1, false, true, false, false));
+        runtime.resolveCombat(
+                0, 80, 64, false, true, true, 112, 16, 112, 16, new EnemyAttackContext(1, false, true, false, false));
         assertTrue(runtime.enemies().powerRecoilDeath(15));
         runtime.clearEntity(15);
         assertFalse(runtime.enemies().powerRecoilDeath(15));
@@ -898,8 +1310,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void followsPieceOfPowerFrameDrivenPaletteVariant() {
         EntitySpriteDefinition definition = pairDefinition(0x33, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x33, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x33, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x00));
@@ -913,17 +1325,26 @@ final class RoomEntityRuntimeTest {
     @Test
     void activeEntitiesPassThroughTheGroundInteractionBoundaryAfterMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x4D, 32, 48, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x4D, 32, 48, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         AtomicInteger calls = new AtomicInteger();
-        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
-                                      sideScrolling) -> {
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             calls.incrementAndGet();
-            RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-                entity.x() + 1, entity.y(), entity.status(), entity.spriteDefinition(),
-                entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-                entity.z(), -1, false);
+            RoomEntity updated = new RoomEntity(
+                    entity.slot(),
+                    entity.sourceLoadOrder(),
+                    entity.type(),
+                    entity.x() + 1,
+                    entity.y(),
+                    entity.status(),
+                    entity.spriteDefinition(),
+                    entity.spriteVariant(),
+                    entity.entityFlipAttribute(),
+                    entity.spriteTileOffset(),
+                    entity.z(),
+                    -1,
+                    false);
             return RoomEntityGroundInteraction.Result.unchanged(updated, 0x02);
         });
 
@@ -940,81 +1361,83 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
-            EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM,
-            EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntity initialEntity = new RoomEntity(0, 0,
-            EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM, 0x50, 0x60,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(initialEntity), false, () -> 0, catalog);
+                EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntity initialEntity = new RoomEntity(
+                0,
+                0,
+                EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM,
+                0x50,
+                0x60,
+                EntityStatus.ACTIVE,
+                definition,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initialEntity), false, () -> 0, catalog);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> false));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> false));
 
         RoomEntity updated = runtime.inspection().snapshot().slots().get(0);
-        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
-            updated.spriteDefinition().shape());
+        assertEquals(
+                EntitySpriteDefinition.Shape.DYNAMIC, updated.spriteDefinition().shape());
         assertEquals(0, updated.spriteVariant());
         assertEquals(6, updated.spriteDefinition().dynamicVariant(0).size());
-        assertEquals(0x74, updated.spriteDefinition().dynamicVariant(0).get(0).oam().tile());
-        assertEquals(-0x50,
-            updated.spriteDefinition().dynamicVariant(0).get(2).xOffset());
-        assertEquals(-0x60,
-            updated.spriteDefinition().dynamicVariant(0).get(2).yOffset());
-        assertEquals(-0x50,
-            updated.spriteDefinition().dynamicVariant(0).get(4).xOffset());
-        assertEquals(-0x60,
-            updated.spriteDefinition().dynamicVariant(0).get(4).yOffset());
+        assertEquals(
+                0x74, updated.spriteDefinition().dynamicVariant(0).get(0).oam().tile());
+        assertEquals(-0x50, updated.spriteDefinition().dynamicVariant(0).get(2).xOffset());
+        assertEquals(-0x60, updated.spriteDefinition().dynamicVariant(0).get(2).yOffset());
+        assertEquals(-0x50, updated.spriteDefinition().dynamicVariant(0).get(4).xOffset());
+        assertEquals(-0x60, updated.spriteDefinition().dynamicVariant(0).get(4).yOffset());
 
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> false));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> false));
         assertEquals(0x51, runtime.inspection().snapshot().slots().get(0).x());
     }
 
     @Test
     void richBackgroundProbeSuppliesIgnoreHitsToLegacyRecoilMovement() {
-        RoomEntity initial = new RoomEntity(0, 0, 0x0B, 0x40, 0x40,
-            EntityStatus.ACTIVE, pairDefinition(0x0B, 2), 0, 0, 0, 0, -1, false);
+        RoomEntity initial = new RoomEntity(
+                0, 0, 0x0B, 0x40, 0x40, EntityStatus.ACTIVE, pairDefinition(0x0B, 2), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initial));
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                           int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                       int nextX, int nextY,
-                                                       int ignoreHitsCountdown) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
                 observedIgnoreHits.add(ignoreHitsCountdown);
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
         });
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 0x40, 0x40, false, false, true,
-            0x30, 0x30, 0x30, 0x30);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(0, 0x40, 0x40, false, false, true, 0x30, 0x30, 0x30, 0x30);
         assertEquals(1, events.size());
         assertTrue(runtime.enemies().enemyRecoilActive(0));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> true));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true));
 
-        assertTrue(observedIgnoreHits.contains(0x09),
-            () -> "observed=" + observedIgnoreHits
-                + " x=" + runtime.inspection().snapshot().slots().get(0).x()
-                + " status=" + runtime.inspection().snapshot().slots().get(0).status()
-                + " recoil=" + runtime.enemies().enemyRecoilActive(0)
-                + " countdown=" + runtime.enemies().enemyIgnoreHitsCountdown(0));
+        assertTrue(
+                observedIgnoreHits.contains(0x09),
+                () -> "observed=" + observedIgnoreHits
+                        + " x=" + runtime.inspection().snapshot().slots().get(0).x()
+                        + " status="
+                        + runtime.inspection().snapshot().slots().get(0).status()
+                        + " recoil=" + runtime.enemies().enemyRecoilActive(0)
+                        + " countdown=" + runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x3D, runtime.inspection().snapshot().slots().get(0).x());
     }
 
     @Test
     void ledgeCollisionStateUsesRomResetBytesAndClearsWithTheEntity() {
-        RoomEntity initial = new RoomEntity(0, 0, 0x09, 0x40, 0x40,
-            EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false);
+        RoomEntity initial = new RoomEntity(
+                0, 0, 0x09, 0x40, 0x40, EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initial));
 
         assertEquals(0xFF, runtime.thrownDirection(0));
@@ -1034,33 +1457,37 @@ final class RoomEntityRuntimeTest {
     void groundResultQueuesSplashAndUnloadsTheSlotInSourceOrder() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
-        runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
-            RoomEntityGroundInteraction.Result.unloaded(entity, 0x02, true));
+        runtime.configuration()
+                .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.unloaded(entity, 0x02, true));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.inspection().groundStatus(0));
-        assertEquals(List.of(new TransientVfxRequest(
-            TransientVfxType.WATER_SPLASH, 0x40, 0x50)),
-            runtime.enemies().transientVfxRequests());
-        assertEquals(List.of(new EntityCombatEvent(0, 0x4D, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x0E)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new TransientVfxRequest(TransientVfxType.WATER_SPLASH, 0x40, 0x50)),
+                runtime.enemies().transientVfxRequests());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x4D, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0E)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void pitResultStartsRomFallingStateWithAlignedTargetAndCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 4);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x02);
         runtime.debug().setEnemyFlashCountdownForTest(0, 0x08);
-        runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
-            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        runtime.configuration()
+                .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
@@ -1078,15 +1505,18 @@ final class RoomEntityRuntimeTest {
     void octorokUsesTheRomLongFallingCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0x09, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x02);
-        runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
-            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        runtime.configuration()
+                .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        assertEquals(EntityStatus.FALLING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.FALLING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x6F, runtime.enemies().transitionCountdown(0));
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -1096,19 +1526,24 @@ final class RoomEntityRuntimeTest {
     void colorDungeonShellFallingDispatchReturnsToItsRomStateSix() {
         EntitySpriteDefinition definition = EntitySpriteDefinition.unsupported(0xE9);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0xE9, 0x40, 0x50, EntityStatus.ACTIVE, definition, -1, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0xE9, 0x40, 0x50, EntityStatus.ACTIVE, definition, -1, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, true, () -> 0, null);
         runtime.debug().setEntityMapIdForTest(0xFF);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x02);
-        runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
-            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        runtime.configuration()
+                .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        assertEquals(EntityStatus.FALLING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.FALLING,
+                runtime.inspection().snapshot().slots().get(0).status());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x06, runtime.pickupState().colorShellState(0));
     }
 
@@ -1116,11 +1551,12 @@ final class RoomEntityRuntimeTest {
     void fallingHandlerUsesRomVectorPhaseJingleAndUnloadBoundary() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 4);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x02);
-        runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
-            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        runtime.configuration()
+                .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         List<EntityCombatEvent> fallingEvents = new ArrayList<>();
@@ -1135,9 +1571,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x52, moving.y());
         assertEquals(0x03, moving.spriteVariant());
         assertEquals(0, runtime.enemies().fallingVisualYOffset(0));
-        assertEquals(List.of(new EntityCombatEvent(0, 0x4D, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
-            fallingEvents);
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x4D, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
+                fallingEvents);
 
         for (int frame = 17; frame <= 25; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
@@ -1147,17 +1583,17 @@ final class RoomEntityRuntimeTest {
         for (int frame = 26; frame <= 72; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
-    void fallingHandlerUsesItsDedicatedRomDisplayListForTwoVariantEnemies()
-        throws Exception {
+    void fallingHandlerUsesItsDedicatedRomDisplayListForTwoVariantEnemies() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        EntitySpriteDefinition hardhat = catalog.forEntityType(
-            0x20, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x20, 0x40, 0x50, EntityStatus.FALLING, hardhat, 0, 0, 0, 0, -1, false));
+        EntitySpriteDefinition hardhat = catalog.forEntityType(0x20, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x20, 0x40, 0x50, EntityStatus.FALLING, hardhat, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, null, catalog);
         runtime.debug().setTransitionCountdownForTest(0, 0x31);
 
@@ -1168,19 +1604,20 @@ final class RoomEntityRuntimeTest {
         assertEquals(3, falling.spriteVariant());
         assertEquals(4, falling.spriteDefinition().variantCount());
         assertEquals(2, falling.spriteDefinition().dynamicVariant(3).size());
-        assertEquals(0x1E,
-            falling.spriteDefinition().dynamicVariant(3).get(0).oam().tile());
+        assertEquals(
+                0x1E, falling.spriteDefinition().dynamicVariant(3).get(0).oam().tile());
     }
 
     @Test
     void longFallingHandlerRunsOnlyItsRomPresentationHandoff() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x09, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x04);
-        runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
-            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        runtime.configuration()
+                .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
         AtomicInteger backgroundProbes = new AtomicInteger();
         runtime.configuration().setBackgroundInteraction((entity, direction, nextX, nextY) -> {
             backgroundProbes.incrementAndGet();
@@ -1206,18 +1643,21 @@ final class RoomEntityRuntimeTest {
     void longFallingMoblinSwordAppliesAlertFacingBeforePresentationHandoff() {
         List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>();
         for (int variant = 0; variant < 8; variant++) {
-            variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(0, 0,
-                new EntitySpriteDefinition.OamAttribute(0x60, 0x03),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true)));
+            variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(
+                    0,
+                    0,
+                    new EntitySpriteDefinition.OamAttribute(0x60, 0x03),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+                    true)));
         }
-        EntitySpriteDefinition definition = EntitySpriteDefinition.dynamic(
-            0x14, 0x07, 0x7A95, 0, variants);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x14, 0x50, 0x50, EntityStatus.INIT, definition, 6, 0, 0, 0, -1, false));
+        EntitySpriteDefinition definition = EntitySpriteDefinition.dynamic(0x14, 0x07, 0x7A95, 0, variants);
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x14, 0x50, 0x50, EntityStatus.INIT, definition, 6, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x04);
-        runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
-            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        runtime.configuration()
+                .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+                        RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
         AtomicInteger backgroundProbes = new AtomicInteger();
         runtime.configuration().setBackgroundInteraction((entity, direction, nextX, nextY) -> {
             backgroundProbes.incrementAndGet();
@@ -1243,15 +1683,18 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void staggersButterflyWingVariantsByEntitySlot() {
-        EntitySpriteDefinition definition = new EntitySpriteDefinition(0x6E, 0x06, 0x6BBD,
-            EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
-                new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x5E, 0x01), null),
-                new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x5E, 0x41), null)));
+        EntitySpriteDefinition definition = new EntitySpriteDefinition(
+                0x6E,
+                0x06,
+                0x6BBD,
+                EntitySpriteDefinition.Shape.SINGLE,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x5E, 0x01), null),
+                        new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x5E, 0x41), null)));
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x6E, 40, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false),
+                new RoomEntity(1, 1, 0x6E, 40, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
@@ -1263,8 +1706,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void butterflyUsesBankSixSignedFixedPointPositionUpdates() {
         EntitySpriteDefinition definition = butterflyDefinition();
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // State 0 selects +4 X speed; state 16 selects -4 Y speed.
@@ -1281,8 +1724,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void butterflyAppliesTheTwoPixelVectorTowardLinkOnItsSixtyFourFramePhase() {
         EntitySpriteDefinition definition = butterflyDefinition();
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // The initial speed is zero. At state 0 the handler chooses a speed,
@@ -1305,8 +1748,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void butterflyUsesTheRomRatioForDiagonalAttractionVectors() {
         EntitySpriteDefinition definition = butterflyDefinition();
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x6E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x6E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // GetVectorTowardsLink(2) turns dx=16, dy=8 into (2,1), not (2,2).
@@ -1319,8 +1762,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void keeseSleepsOutsideTheRomWakeWindowAndWakesInsideIt() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 64, sequence(0x00)));
@@ -1339,8 +1782,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void keeseRetunesItsAngleAndLoadsTheRomSpeedTablesEveryTenFlightFrames() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00, 0x01, 0x01);
 
@@ -1360,8 +1803,8 @@ final class RoomEntityRuntimeTest {
     void entityHandlersConsumeSharedRandomBytesInRomReverseSlotOrder() {
         EntitySpriteDefinition definition = keeseDefinition();
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x19, 64, 80, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false),
+                new RoomEntity(1, 1, 0x19, 64, 80, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // AnimateEntities starts at MAX_ENTITIES - 1 and decrements. Slot 1
@@ -1375,44 +1818,43 @@ final class RoomEntityRuntimeTest {
     @Test
     void keeseUsesTheRomEnemyHitboxCadenceAndContactDamage() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> skipped = runtime.resolveCombat(
-            0, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> skipped = runtime.resolveCombat(0, 64, 64, false, true, false, 0, 0, 0, 0);
         assertTrue(skipped.isEmpty());
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0, contact.get(0).slot());
         assertEquals(0x19, contact.get(0).type());
         assertEquals(4, contact.get(0).linkDamage());
         assertFalse(contact.get(0).swordHit());
 
-        assertTrue(runtime.resolveCombat(1, 73, 64, false, true,
-            false, 0, 0, 0, 0).isEmpty());
-        assertTrue(runtime.resolveCombat(1, 64, 64, true, true,
-            false, 0, 0, 0, 0).isEmpty());
-        assertTrue(runtime.resolveCombat(1, 64, 64, false, false,
-            false, 0, 0, 0, 0).isEmpty());
+        assertTrue(
+                runtime.resolveCombat(1, 73, 64, false, true, false, 0, 0, 0, 0).isEmpty());
+        assertTrue(
+                runtime.resolveCombat(1, 64, 64, true, true, false, 0, 0, 0, 0).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 64, 64, false, false, false, 0, 0, 0, 0)
+                .isEmpty());
     }
 
     @Test
     void aBasicSwordHitPutsKeeseIntoTheRomDyingState() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertTrue(events.get(0).swordHit());
         assertEquals(0, events.get(0).linkDamage());
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x2F, runtime.enemies().dyingCountdown(0));
@@ -1439,15 +1881,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void aPowerRecoilSwordHitMarksTheRomPowerDeathPresentation() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1,
-            new EnemyAttackContext(1, false, true, false, false));
+                0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
 
         assertEquals(1, events.size());
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
         assertEquals(0x20, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x40, runtime.enemies().dyingCountdown(0));
@@ -1464,8 +1907,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void octorokUsesTheSharedRoamingEnemyTimersAndDirectionSpeeds() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x02, 0x03);
 
@@ -1479,9 +1922,11 @@ final class RoomEntityRuntimeTest {
         for (int frame = 1; frame <= 0x12; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 200, 32, randomBytes));
         }
-        assertEquals(0, runtime.enemies().octorokState(0),
-            () -> "state=" + runtime.enemies().octorokState(0)
-                + " timer=" + runtime.enemies().octorokTransitionCountdown(0));
+        assertEquals(
+                0,
+                runtime.enemies().octorokState(0),
+                () -> "state=" + runtime.enemies().octorokState(0) + " timer="
+                        + runtime.enemies().octorokTransitionCountdown(0));
         assertEquals(0x23, runtime.enemies().octorokTransitionCountdown(0));
         assertEquals(3, runtime.enemies().octorokDirection(0));
         assertEquals(8, runtime.enemies().octorokSpeedY(0));
@@ -1498,17 +1943,20 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
 
         assertTrue(definition.supported());
         assertEquals(0x03, definition.bank());
         assertEquals(0x4FCB, definition.address());
         assertEquals(8, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x24, 0x50, 0x50, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0, -1, false)), true, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0x24, 0x50, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x03);
 
         assertEquals(2, runtime.enemies().enemyHealth(0));
@@ -1517,7 +1965,14 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.enemies().ironMaskState(0));
         assertEquals(0x10, runtime.enemies().ironMaskTransitionCountdown(0));
         assertEquals(0, runtime.enemies().ironMaskSpeedY(0));
-        assertEquals(0x4FCB, runtime.inspection().snapshot().slots().get(0).spriteDefinition().address());
+        assertEquals(
+                0x4FCB,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(0)
+                        .spriteDefinition()
+                        .address());
 
         for (int frame = 1; frame <= 0x10; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, randomBytes));
@@ -1527,7 +1982,14 @@ final class RoomEntityRuntimeTest {
         assertEquals(3, runtime.enemies().ironMaskDirection(0));
         assertEquals(0x0C, runtime.enemies().ironMaskSpeedY(0));
         assertEquals(0x20, runtime.enemies().ironMaskTransitionCountdown(0));
-        assertEquals(0x4FCB, runtime.inspection().snapshot().slots().get(0).spriteDefinition().address());
+        assertEquals(
+                0x4FCB,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(0)
+                        .spriteDefinition()
+                        .address());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x11, 0xC0, 0xC0, randomBytes));
         runtime.tick(EntityTestFrames.frame(runtime, 0x12, 0xC0, 0xC0, randomBytes));
@@ -1539,17 +2001,19 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x24, 0x50, 0x50, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0, -1, false)), true, () -> 0, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0x24, 0x50, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
 
         // Java direction 1 is ROM UP, while the freshly initialized Iron Mask
         // is facing ROM RIGHT (direction 0).
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0, null, null, 0, 1, 0));
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1);
 
         assertEquals(1, events.size());
         EntityCombatEvent event = events.get(0);
@@ -1569,11 +2033,15 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition ironMaskDefinition = catalog.forEntityType(
-            0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x24, 0x4D, 0x50, EntityStatus.ACTIVE,
-                ironMaskDefinition, 0, 0, 0, 0, -1, false)), true, () -> 0, catalog, tables);
+        EntitySpriteDefinition ironMaskDefinition =
+                catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x24, 0x4D, 0x50, EntityStatus.ACTIVE, ironMaskDefinition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
 
         int hookshotSlot = runtime.spawnHookshotChain(0x50, 0x50, 0, 1);
         assertEquals(15, hookshotSlot);
@@ -1582,9 +2050,9 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, runtime.enemies().ironMaskPrivateState2(0));
         RoomEntity mask = runtime.inspection().snapshot().slots().stream()
-            .filter(entity -> entity.loaded() && entity.type() == 0x32)
-            .findFirst()
-            .orElseThrow();
+                .filter(entity -> entity.loaded() && entity.type() == 0x32)
+                .findFirst()
+                .orElseThrow();
         RoomEntity chain = runtime.inspection().snapshot().slots().get(hookshotSlot);
         assertEquals(chain.x(), mask.x());
         assertEquals(chain.y(), mask.y());
@@ -1606,10 +2074,9 @@ final class RoomEntityRuntimeTest {
     @Test
     void runtimeExposesTheRoamingEnemyLaunchRequestAndSpawnsTheProjectile() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, null, catalog);
         AtomicInteger randomCalls = new AtomicInteger();
         IntSupplier randomBytes = () -> {
@@ -1624,7 +2091,8 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, randomCalls.get());
         assertEquals(1, runtime.inspection().projectileLaunchRequests().size());
-        RoamingEnemyMotion.LaunchRequest request = runtime.inspection().projectileLaunchRequests().get(0);
+        RoamingEnemyMotion.LaunchRequest request =
+                runtime.inspection().projectileLaunchRequests().get(0);
         assertEquals(0, request.sourceSlot());
         assertEquals(0x09, request.sourceType());
         assertEquals(0x0A, request.projectileType());
@@ -1640,8 +2108,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void runtimePassesCreditsContextToSuppressOnlyOctorokLaunches() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, () -> 0, true));
@@ -1656,8 +2124,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void moblinUsesTheSameRomRoamingStateMachineAndDirectionalDisplayPairs() {
         EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x02, 0x03);
 
@@ -1678,8 +2146,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void moblinSwordUsesTheBankSevenIdleAlertAndSlowWalkingStates() {
         EntitySpriteDefinition definition = pairDefinition(0x14, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, definition, 6, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, definition, 6, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 64, () -> 0));
@@ -1702,34 +2170,36 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void swordMoblinPausesMotionAndTimersDuringDialogue() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, pairDefinition(0x14, 8), 6, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, pairDefinition(0x14, 8), 6, 0, 0, 0, -1, false)));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 64, () -> 0));
         runtime.configuration().setDialogActive(true);
-        for (int frame = 1; frame <= 180; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 64, () -> 0));
+        for (int frame = 1; frame <= 180; frame++)
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 64, () -> 0));
         assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x80, runtime.enemies().moblinSwordTransitionCountdown(0));
         runtime.configuration().setDialogActive(false);
-        for (int frame = 181; frame <= 184; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 64, () -> 0));
+        for (int frame = 181; frame <= 184; frame++)
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 64, () -> 0));
         assertTrue(runtime.inspection().snapshot().slots().get(0).x() > 0x50);
     }
 
     @Test
     void moblinSwordUsesTheRomHealthContactAndSwordDamageFamily() {
         EntitySpriteDefinition definition = pairDefinition(0x14, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x14, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x14, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, firstHit.size());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
         assertTrue(runtime.enemies().enemyRecoilActive(0));
@@ -1738,34 +2208,36 @@ final class RoomEntityRuntimeTest {
     @Test
     void projectileWallImpactAlertsMoblinSwordSlotsProcessedLaterInTheFrame() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x14, 8), 6, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x0C, 0x20, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x0C, 4), 0, 0, 0, 0, -1, false)));
+                new RoomEntity(
+                        0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, pairDefinition(0x14, 8), 6, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        1, 1, 0x0C, 0x20, 64, EntityStatus.ACTIVE, pairDefinition(0x0C, 4), 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 64, () -> 0,
-            (entity, direction, nextX, nextY) -> entity.type() == 0x0C && direction == 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0xC0,
+                64,
+                () -> 0,
+                (entity, direction, nextX, nextY) -> entity.type() == 0x0C && direction == 0));
 
         assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
         assertEquals(2, runtime.enemies().moblinSwordState(0));
         assertEquals(0x10, runtime.enemies().moblinSwordPrivateCountdown1(0));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 64, () -> 0,
-            (entity, direction, nextX, nextY) -> false));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 64, () -> 0, (entity, direction, nextX, nextY) -> false));
         assertEquals(0x03, runtime.enemies().swordMoblinAlertingSoundCounter());
     }
 
     @Test
     void hideoutMoblinSwordPublishesDialog190OnlyOnce() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x14, 0x50, 0x40, EntityStatus.ACTIVE,
-                pairDefinition(0x14, 8), 6, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0, 0, 0x14, 0x50, 0x40, EntityStatus.ACTIVE, pairDefinition(0x14, 8), 6, 0, 0, 0, -1, false)));
         runtime.debug().setEntityMapIdForTest(0x15);
         runtime.debug().setTransitionSequenceCounterForTest(0x04);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0x40, () -> 0));
-        assertEquals(List.of(new DialogRequest(1, 0x90)),
-            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(1, 0x90)), runtime.consumePendingDialogRequests());
         assertEquals(1, runtime.enemies().moblinSwordPrivateState3(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x70, 0x40, () -> 0));
@@ -1776,8 +2248,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void octorokStopsAtTheRoamingEnemyBackgroundCollisionPoint() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00, 0x03, 0x01);
 
@@ -1798,45 +2270,45 @@ final class RoomEntityRuntimeTest {
     @Test
     void octorokUsesTheNormalEnemyHitboxAndOneBasicSwordDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
         RoomEntityRuntime swordRuntime = RoomEntityRuntime.from(initial);
-        List<EntityCombatEvent> events = swordRuntime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = swordRuntime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertTrue(events.get(0).swordHit());
-        assertEquals(EntityStatus.DYING, swordRuntime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                swordRuntime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void moblinUsesTwoHealthPointsAndTheRomDamageCooldown() {
         EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, firstHit.size());
         assertTrue(firstHit.get(0).swordHit());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
-        assertTrue(runtime.resolveCombat(
-            1, 120, 120, false, true, true, 72, 1, 72, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1)
+                .isEmpty());
 
         for (int frame = 1; frame <= 0x18; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
@@ -1845,22 +2317,22 @@ final class RoomEntityRuntimeTest {
 
         RoomEntity movedMoblin = runtime.inspection().snapshot().slots().get(0);
         List<EntityCombatEvent> secondHit = runtime.resolveCombat(
-            0x19, 120, 120, false, true, true,
-            movedMoblin.x() + 8, 1, movedMoblin.y() + 8, 1);
+                0x19, 120, 120, false, true, true, movedMoblin.x() + 8, 1, movedMoblin.y() + 8, 1);
         assertEquals(1, secondHit.size());
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.enemies().enemyHealth(0));
     }
 
     @Test
     void moblinSwordHitConfiguresRomRecoilAndEnemyHitJingle() {
         EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         EntityCombatEvent event = events.get(0);
@@ -1883,15 +2355,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void lethalOctorokSwordHitStillPublishesFinalEnemyHitJingle() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x03, events.get(0).soundId());
@@ -1900,15 +2373,17 @@ final class RoomEntityRuntimeTest {
     @Test
     void clearingARecoilingEnemyClearsAllRecoilStateBeforeSlotReuse() {
         EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertTrue(runtime.enemies().enemyRecoilActive(0));
 
         assertEquals(1, runtime.clearEntity(0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertFalse(runtime.enemies().enemyRecoilActive(0));
         assertEquals(0, runtime.enemies().enemyRecoilSpeedX(0));
         assertEquals(0, runtime.enemies().enemyRecoilSpeedY(0));
@@ -1918,8 +2393,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void dyingCleanupClearsRecoilStateWhenTheRomDeathCountdownExpires() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertTrue(runtime.enemies().enemyRecoilActive(0));
@@ -1928,7 +2403,9 @@ final class RoomEntityRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertFalse(runtime.enemies().enemyRecoilActive(0));
         assertEquals(0, runtime.enemies().enemyRecoilSpeedX(0));
         assertEquals(0, runtime.enemies().enemyRecoilSpeedY(0));
@@ -1937,23 +2414,23 @@ final class RoomEntityRuntimeTest {
     @Test
     void pairoddUsesItsRomNormalEnemyHealthAndContactDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x57, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x57, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x57, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x57));
         assertEquals(2, runtime.enemies().enemyHealth(0));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, firstHit.size());
         assertTrue(firstHit.get(0).swordHit());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
 
         for (int frame = 1; frame <= 0x18; frame++) {
@@ -1961,10 +2438,11 @@ final class RoomEntityRuntimeTest {
         }
         RoomEntity afterFirstHit = runtime.inspection().snapshot().slots().get(0);
         List<EntityCombatEvent> secondHit = runtime.resolveCombat(
-            0x19, 120, 120, false, true, true,
-            afterFirstHit.x() + 8, 1, afterFirstHit.y() + 8, 1);
+                0x19, 120, 120, false, true, true, afterFirstHit.x() + 8, 1, afterFirstHit.y() + 8, 1);
         assertEquals(1, secondHit.size());
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(0x58));
         assertEquals(0, RoomEntityCombatRules.basicSwordDamage(0x58));
@@ -1973,14 +2451,54 @@ final class RoomEntityRuntimeTest {
     @Test
     void colorShellsAreAdmittedAsRomCombatTargets() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0xE9, 2), 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0xEA, 96, 64, EntityStatus.ACTIVE,
-                pairDefinition(0xEA, 2), 0, 0, 0, 0, -1, false),
-            new RoomEntity(2, 2, 0xEB, 128, 64, EntityStatus.ACTIVE,
-                pairDefinition(0xEB, 2), 0, 0, 0, 0, -1, false)),
-            false, null, null, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0xE9,
+                                64,
+                                64,
+                                EntityStatus.ACTIVE,
+                                pairDefinition(0xE9, 2),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                1,
+                                1,
+                                0xEA,
+                                96,
+                                64,
+                                EntityStatus.ACTIVE,
+                                pairDefinition(0xEA, 2),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                2,
+                                2,
+                                0xEB,
+                                128,
+                                64,
+                                EntityStatus.ACTIVE,
+                                pairDefinition(0xEB, 2),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                false,
+                null,
+                null,
+                tables);
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0xE9));
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0xEA));
@@ -1995,10 +2513,24 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RuntimeColorShellWorld world = new RuntimeColorShellWorld();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xE9, 0x40, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xE9), -1, 0, 0, 0, -1, false)),
-            false, () -> 0x00, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0xE9,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0xE9),
+                        -1,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0x00,
+                catalog);
         runtime.configuration().setColorShellWorld(world);
         runtime.debug().setColorShellStateForTest(0, 0x08, 1, 0, 0, 0);
         world.objectValue = 0x5E;
@@ -2016,29 +2548,53 @@ final class RoomEntityRuntimeTest {
     @Test
     void colorShellCompletionUnloadsAndPublishesItsRoomPersistenceMask() {
         RuntimeColorShellWorld world = new RuntimeColorShellWorld();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xE9, 0x40, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xE9), -1, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0,
+                0,
+                0xE9,
+                0x40,
+                0x40,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xE9),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false)));
         runtime.configuration().setColorShellWorld(world);
         runtime.debug().setColorShellStateForTest(0, 0x0D, 1, 0, 0, 0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0x00, null));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
         assertEquals(List.of(0x5F), world.objectWrites);
         assertEquals(List.of(List.of(0x40, 0x40)), world.poofs);
     }
 
     @Test
-    void secretSeashellRemainsHiddenUntilItsRomObjectRevealConditionIsMet()
-        throws IOException {
+    void secretSeashellRemainsHiddenUntilItsRomObjectRevealConditionIsMet() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity shell = new RoomEntity(
+                0,
+                0,
+                0x3D,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(shell), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.debug().setEntityRoomIdForTest(0x10);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
 
@@ -2063,14 +2619,25 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void secretSeashellExceptionsExposePrivateStateFourWithoutRevealing()
-        throws IOException {
+    void secretSeashellExceptionsExposePrivateStateFourWithoutRevealing() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity shell = new RoomEntity(
+                0,
+                0,
+                0x3D,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(shell), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.debug().setEntityRoomIdForTest(0xDA);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
 
@@ -2082,14 +2649,25 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void secretSeashellTreeRoomsUsePegasusCollisionInsteadOfGrassReveal()
-        throws IOException {
+    void secretSeashellTreeRoomsUsePegasusCollisionInsteadOfGrassReveal() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity shell = new RoomEntity(
+                0,
+                0,
+                0x3D,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(shell), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.debug().setEntityRoomIdForTest(0xA4);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
@@ -2111,107 +2689,144 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void secretSeashellHandlerUnloadsForSwordUpgradeOrCompletedRoomWithoutPersistence()
-        throws IOException {
+    void secretSeashellHandlerUnloadsForSwordUpgradeOrCompletedRoomWithoutPersistence() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity shell = new RoomEntity(
+                0,
+                0,
+                0x3D,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(shell), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.debug().setEntityRoomIdForTest(0x10);
         runtime.configuration().setChestPlayerLevels(1, 2, 1);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
 
-        shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
-        runtime = RoomEntityRuntime.from(snapshot(shell), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        shell = new RoomEntity(
+                0,
+                0,
+                0x3D,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        runtime = RoomEntityRuntime.from(snapshot(shell), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.debug().setEntityRoomIdForTest(0x10);
         runtime.debug().setEntityRoomStatusForTest(0x10);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
     }
 
     @Test
-    void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath()
-        throws IOException {
+    void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath() throws IOException {
         byte[] rom = romWithSwordResult(0x09, 0xFE);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false)), false, null, null, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                null,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertEquals(0xFE, events.get(0).enemySpecialAction());
         assertEquals(0, events.get(0).enemyDamage());
-        assertEquals(EntityStatus.BURNING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.BURNING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(0x60, runtime.enemies().transitionCountdown(0));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x03, events.get(0).soundId());
-        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
-            events.get(0).secondarySoundChannel());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE, events.get(0).secondarySoundChannel());
         assertEquals(0x12, events.get(0).secondarySoundId());
-        assertTrue(runtime.resolveCombat(1, 120, 120, false, true,
-            true, 72, 1, 72, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1)
+                .isEmpty());
 
         for (int frame = 0; frame < 0x60; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x1F, runtime.enemies().dyingCountdown(0));
         assertEquals(3, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertFalse(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
         assertEquals(0x04, runtime.enemies().physicsFlags(0));
         List<EntityCombatEvent> expiryEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, expiryEvents.size());
-        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
-            expiryEvents.getFirst().soundChannel());
+        assertEquals(
+                EntityCombatEvent.SoundChannel.NOISE, expiryEvents.getFirst().soundChannel());
         assertEquals(0x13, expiryEvents.getFirst().soundId());
     }
 
     @Test
     void romStunStatusUsesColorShellsRawSpecialDamageValueAndRecovers() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0xE9, 2), 0, 0, 0, 0, -1, false)), false, null, null, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE, pairDefinition(0xE9, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                null,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertEquals(0xFF, events.get(0).enemySpecialAction());
         assertEquals(0, events.get(0).enemyDamage());
-        assertEquals(EntityStatus.STUNNED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.STUNNED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(tables.initialHealth(0xE9), runtime.enemies().enemyHealth(0));
         assertEquals(0xFF, runtime.enemies().stunnedCountdown(0));
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x03, events.get(0).soundId());
-        assertEquals(EntityCombatEvent.SoundChannel.NONE,
-            events.get(0).secondarySoundChannel());
+        assertEquals(EntityCombatEvent.SoundChannel.NONE, events.get(0).secondarySoundChannel());
         assertEquals(-1, events.get(0).secondarySoundId());
-        assertTrue(runtime.resolveCombat(1, 120, 120, false, true,
-            true, 72, 1, 72, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1)
+                .isEmpty());
 
         for (int frame = 0; frame < 0xFF; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.enemies().stunnedCountdown(0));
     }
 
@@ -2220,68 +2835,89 @@ final class RoomEntityRuntimeTest {
         byte[] rom = romWithSwordResult(0x1F, 0xFE);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x1F, 2), 0, 0, 0, 0, -1, false)), false, null, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x1F, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x1F, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(0xFE, events.get(0).enemySpecialAction());
 
         for (int frame = 0; frame < 0x60; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(0x1E, runtime.inspection().snapshot().slots().get(0).type());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.enemies().transitionCountdown(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(0x4E7D,
-            runtime.inspection().snapshot().slots().get(0).spriteDefinition().address());
+        assertEquals(
+                0x4E7D,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(0)
+                        .spriteDefinition()
+                        .address());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
     @Test
-    void unknownRomSpecialDamageRemainsEventDataWithoutChangingHealthOrStatus()
-        throws IOException {
+    void unknownRomSpecialDamageRemainsEventDataWithoutChangingHealthOrStatus() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(romWithSwordResult(0x09, 0xFD));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false)), false, null, null, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                null,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertEquals(0xFD, events.get(0).enemySpecialAction());
         assertEquals(0, events.get(0).enemyDamage());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityCombatEvent.SoundChannel.NONE,
-            events.get(0).secondarySoundChannel());
+        assertEquals(EntityCombatEvent.SoundChannel.NONE, events.get(0).secondarySoundChannel());
         assertEquals(-1, events.get(0).secondarySoundId());
     }
 
     @Test
     void clearingBurningOrStunnedEntitiesResetsTheirStatusCountdowns() throws IOException {
-        RomEnemyCombatTables burningTables =
-            new RomEnemyCombatTables(romWithSwordResult(0x09, 0xFE));
-        RoomEntityRuntime burningRuntime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false)), false, null, null, burningTables);
-        burningRuntime.resolveCombat(0, 120, 120, false, true,
-            true, 72, 1, 72, 1);
+        RomEnemyCombatTables burningTables = new RomEnemyCombatTables(romWithSwordResult(0x09, 0xFE));
+        RoomEntityRuntime burningRuntime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                null,
+                burningTables);
+        burningRuntime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         burningRuntime.clearEntity(0);
 
-        assertEquals(EntityStatus.DISABLED, burningRuntime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                burningRuntime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, burningRuntime.enemies().transitionCountdown(0));
         assertEquals(0, burningRuntime.enemies().stunnedCountdown(0));
 
         RomEnemyCombatTables stunnedTables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime stunnedRuntime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0xE9, 2), 0, 0, 0, 0, -1, false)), false, null, null, stunnedTables);
-        stunnedRuntime.resolveCombat(0, 120, 120, false, true,
-            true, 72, 1, 72, 1);
+        RoomEntityRuntime stunnedRuntime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE, pairDefinition(0xE9, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                null,
+                stunnedTables);
+        stunnedRuntime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         stunnedRuntime.clearEntity(0);
 
         assertEquals(0, stunnedRuntime.enemies().transitionCountdown(0));
@@ -2291,18 +2927,45 @@ final class RoomEntityRuntimeTest {
     @Test
     void romCombatTablesDriveInitialHealthAndContactDamage() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x09, 2), 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x0B, 96, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x0B, 2), 0, 0, 0, 0, -1, false)),
-            false, null, null, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0x09,
+                                64,
+                                64,
+                                EntityStatus.ACTIVE,
+                                pairDefinition(0x09, 2),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                1,
+                                1,
+                                0x0B,
+                                96,
+                                64,
+                                EntityStatus.ACTIVE,
+                                pairDefinition(0x0B, 2),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                false,
+                null,
+                null,
+                tables);
 
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(2, runtime.enemies().enemyHealth(1));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
     }
@@ -2310,18 +2973,22 @@ final class RoomEntityRuntimeTest {
     @Test
     void attackContextUsesRomSwordUpgradeDamageInTheRuntime() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x0B, 2), 0, 0, 0, 0, -1, false)),
-            false, null, null, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x0B, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                null,
+                tables);
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1,
-            new EnemyAttackContext(2, false, false, false, false));
+                0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(2, false, false, false, false));
 
         assertEquals(1, events.size());
         assertEquals(0, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(2, events.get(0).enemyDamage());
         assertEquals(-1, events.get(0).enemySpecialAction());
     }
@@ -2329,13 +2996,15 @@ final class RoomEntityRuntimeTest {
     @Test
     void zeroRomSwordResultKeepsHealthAndReportsOnlyTheBump() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x15, 2), 0, 0, 0, 0, -1, false)),
-            false, null, null, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x15, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x15, 2), 0, 0, 0, 0, -1, false)),
+                false,
+                null,
+                null,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertEquals(4, runtime.enemies().enemyHealth(0));
@@ -2348,9 +3017,10 @@ final class RoomEntityRuntimeTest {
     @Test
     void simplePairEnemiesUseTheirRomAnimationCadences() {
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0F, 24, 32, EntityStatus.ACTIVE, pairDefinition(0x0F, 2), 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x12, 40, 32, EntityStatus.ACTIVE, pairDefinition(0x12, 2), 0, 0, 0, 0, -1, false),
-            new RoomEntity(2, 2, 0x20, 56, 32, EntityStatus.ACTIVE, pairDefinition(0x20, 2), 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 0, 0x0F, 24, 32, EntityStatus.ACTIVE, pairDefinition(0x0F, 2), 0, 0, 0, 0, -1, false),
+                new RoomEntity(1, 1, 0x12, 40, 32, EntityStatus.ACTIVE, pairDefinition(0x12, 2), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        2, 2, 0x20, 56, 32, EntityStatus.ACTIVE, pairDefinition(0x20, 2), 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
@@ -2372,8 +3042,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void ghiniUsesItsRomTargetTimersAccelerationAndZCorrection() {
         EntitySpriteDefinition definition = pairDefinition(0x12, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x00, 0x00)));
@@ -2394,27 +3064,27 @@ final class RoomEntityRuntimeTest {
     @Test
     void ghiniUsesTheRomNormalEnemyContactAndHealthValues() {
         EntitySpriteDefinition definition = pairDefinition(0x12, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, firstHit.size());
         assertEquals(0x07, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void ghiniTakesEachTargetDirectionFromTheSameRandomByteAsItsTimer() {
         EntitySpriteDefinition definition = pairDefinition(0x12, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x1F, 0x0F)));
@@ -2457,8 +3127,7 @@ final class RoomEntityRuntimeTest {
 
         for (int type : new int[] {0x10, 0x11}) {
             RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(ghiniEntity(catalog, 0, type, EntityStatus.INIT)), false,
-                sequence(0x00), catalog, tables);
+                    snapshot(ghiniEntity(catalog, 0, type, EntityStatus.INIT)), false, sequence(0x00), catalog, tables);
             List<Integer> groundCalls = new ArrayList<>();
             runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) -> {
                 groundCalls.add(entity.slot());
@@ -2469,30 +3138,27 @@ final class RoomEntityRuntimeTest {
 
             RoomEntity afterInit = runtime.inspection().snapshot().slots().get(0);
             assertEquals(EntityStatus.ACTIVE, afterInit.status());
-            assertEquals(-1, afterInit.spriteVariant(), "type=0x"
-                + Integer.toHexString(type));
+            assertEquals(-1, afterInit.spriteVariant(), "type=0x" + Integer.toHexString(type));
             assertTrue(groundCalls.isEmpty());
-            assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true,
-                true, 0x58, 1, 0x58, 1).isEmpty());
+            assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true, true, 0x58, 1, 0x58, 1)
+                    .isEmpty());
         }
     }
 
     @Test
-    void collisionTypeIsExplicitPerTickAndRevealKeepsHiddenPresentationForThatTick()
-        throws IOException {
+    void collisionTypeIsExplicitPerTickAndRevealKeepsHiddenPresentationForThatTick() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
 
         RoomEntityRuntime compatibilityRuntime = RoomEntityRuntime.from(
-            snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false,
-            sequence(0x00), catalog, tables);
+                snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false, sequence(0x00), catalog, tables);
         compatibilityRuntime.tick(EntityTestFrames.frame(compatibilityRuntime, 0, 0x50, 0x50, sequence(0x00)));
-        assertEquals(-1, compatibilityRuntime.inspection().snapshot().slots().get(0).spriteVariant());
+        assertEquals(
+                -1, compatibilityRuntime.inspection().snapshot().slots().get(0).spriteVariant());
 
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false,
-            sequence(0x00), catalog, tables);
+                snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false, sequence(0x00), catalog, tables);
         RoomEntity before = runtime.inspection().snapshot().slots().get(0);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, 0x08, sequence(0x00)));
 
@@ -2500,14 +3166,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(-1, revealTick.spriteVariant());
         assertEquals(before.x(), revealTick.x());
         assertEquals(before.y(), revealTick.y());
-        assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true,
-            true, 0x58, 1, 0x58, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true, true, 0x58, 1, 0x58, 1)
+                .isEmpty());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, 0, sequence(0x00)));
         RoomEntity visible = runtime.inspection().snapshot().slots().get(0);
         assertTrue(visible.spriteVariant() >= 0);
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 0x50, 0x50, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x50, 0x50, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
     }
@@ -2519,20 +3184,17 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
 
         RoomEntityRuntime normalRuntime = RoomEntityRuntime.from(
-            snapshot(ghiniEntity(catalog, 0, 0x12, EntityStatus.ACTIVE)), false,
-            sequence(0x00), catalog, tables);
+                snapshot(ghiniEntity(catalog, 0, 0x12, EntityStatus.ACTIVE)), false, sequence(0x00), catalog, tables);
         normalRuntime.tick(EntityTestFrames.frame(normalRuntime, 0, 0x90, 0x90, 0, sequence(0x00)));
         assertNotEquals(0, normalRuntime.inspection().snapshot().slots().get(0).entityFlipAttribute() & 0x20);
 
         RoomEntityRuntime giantRuntime = RoomEntityRuntime.from(
-            snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false,
-            sequence(0x00), catalog, tables);
+                snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false, sequence(0x00), catalog, tables);
         giantRuntime.tick(EntityTestFrames.frame(giantRuntime, 0, 0x50, 0x50, 0x01, sequence(0x00)));
         giantRuntime.tick(EntityTestFrames.frame(giantRuntime, 1, 0x90, 0x90, 0, sequence(0x00)));
         RoomEntity giant = giantRuntime.inspection().snapshot().slots().get(0);
         assertEquals(2, giant.spriteVariant());
         assertEquals(0, giant.entityFlipAttribute() & 0x20);
-
     }
 
     @Test
@@ -2544,8 +3206,11 @@ final class RoomEntityRuntimeTest {
 
         for (int type : new int[] {0x10, 0x11, 0x12}) {
             RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(ghiniEntity(catalog, 0, type, EntityStatus.ACTIVE)), false,
-                sequence(0x00), catalog, tables);
+                    snapshot(ghiniEntity(catalog, 0, type, EntityStatus.ACTIVE)),
+                    false,
+                    sequence(0x00),
+                    catalog,
+                    tables);
             if (type != 0x12) {
                 runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, 0x01, sequence(0x00)));
             }
@@ -2554,16 +3219,12 @@ final class RoomEntityRuntimeTest {
             RoomEntity current = runtime.inspection().snapshot().slots().get(0);
             int linkX = (current.x() + 0x08) & 0xFF;
             int linkY = (current.y() - current.z() + 0x08) & 0xFF;
-            List<EntityCombatEvent> events = runtime.resolveCombat(
-                0, linkX, linkY, false, false, true, linkX, 1, linkY, 1,
-                nonDamaging);
+            List<EntityCombatEvent> events =
+                    runtime.resolveCombat(0, linkX, linkY, false, false, true, linkX, 1, linkY, 1, nonDamaging);
             assertEquals(1, events.size(), "type=0x" + Integer.toHexString(type));
-            assertTrue(runtime.enemies().enemyRecoilActive(0), "type=0x"
-                + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0), "type=0x"
-                + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0), "type=0x"
-                + Integer.toHexString(type));
+            assertTrue(runtime.enemies().enemyRecoilActive(0), "type=0x" + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0), "type=0x" + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0), "type=0x" + Integer.toHexString(type));
         }
     }
 
@@ -2573,32 +3234,35 @@ final class RoomEntityRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false,
-            sequence(0x00), catalog, tables);
+                snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false, sequence(0x00), catalog, tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, 0x01, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x90, 0x90, 0, sequence(0x00)));
         List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 0x90, 0x90, false, false, true, 0x58, 1, 0x58, 1,
-            EnemyAttackContext.standard());
+                0, 0x90, 0x90, false, false, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard());
 
         assertEquals(1, events.size());
         assertTrue(events.get(0).swordHit());
         assertEquals(0, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
-    void GhiniOptionsDisableGroundInteractionAndWallCollisionForEveryVariant()
-        throws IOException {
+    void GhiniOptionsDisableGroundInteractionAndWallCollisionForEveryVariant() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE),
-            ghiniEntity(catalog, 1, 0x11, EntityStatus.ACTIVE),
-            ghiniEntity(catalog, 2, 0x12, EntityStatus.ACTIVE)), false,
-            sequence(0x00), catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE),
+                        ghiniEntity(catalog, 1, 0x11, EntityStatus.ACTIVE),
+                        ghiniEntity(catalog, 2, 0x12, EntityStatus.ACTIVE)),
+                false,
+                sequence(0x00),
+                catalog,
+                tables);
         List<Integer> groundCalls = new ArrayList<>();
         runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.add(entity.slot());
@@ -2616,8 +3280,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void hardHatUsesTheRomTargetVectorAndFourFrameSpeedRefresh() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, sequence(0x00)));
@@ -2636,29 +3300,27 @@ final class RoomEntityRuntimeTest {
     @Test
     void hardHatUsesItsRomNormalEnemyHealthAndContactValues() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, firstHit.size());
         assertEquals(0x03, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void swordHitAtLinksExactPositionRecoilsUpAndLeftThroughTheLiveRuntime() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x20, 2), 0, 0, 0, 0, -1, false)));
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 64, 64, false, false, true, 72, 1, 72, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x20, 2), 0, 0, 0, 0, -1, false)));
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 64, 64, false, false, true, 72, 1, 72, 1);
         assertEquals(1, events.size());
         assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0));
         assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0));
@@ -2670,11 +3332,10 @@ final class RoomEntityRuntimeTest {
     @Test
     void hardHatSwordHitConfiguresAndAppliesTheRomSharedRecoil() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 72, 72, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertEquals(0x03, runtime.enemies().enemyHealth(0));
@@ -2695,12 +3356,11 @@ final class RoomEntityRuntimeTest {
     @Test
     void hardHatSharedRecoilKeepsStateWhenTheRomBackgroundPathBlocksIt() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
-        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
-            direction == 1 || direction == 2;
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x00), wall));
 
@@ -2716,20 +3376,15 @@ final class RoomEntityRuntimeTest {
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 3);
             RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-                new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                    new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-            List<EntityCombatEvent> events = runtime.resolveCombat(
-                0, 72, 72, false, true, true, 72, 1, 72, 1);
+            List<EntityCombatEvent> events = runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
 
             assertEquals(1, events.size(), "type=" + Integer.toHexString(type));
-            assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0),
-                "type=" + Integer.toHexString(type));
-            assertTrue(runtime.enemies().enemyRecoilActive(0),
-                "type=" + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0),
-                "type=" + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0),
-                "type=" + Integer.toHexString(type));
+            assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0), "type=" + Integer.toHexString(type));
+            assertTrue(runtime.enemies().enemyRecoilActive(0), "type=" + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0), "type=" + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0), "type=" + Integer.toHexString(type));
         }
     }
 
@@ -2742,22 +3397,21 @@ final class RoomEntityRuntimeTest {
             // ConfigureEntityRecoil runs before the ROM damage lookup. A
             // level-zero context keeps the one-health entity active so the
             // following handler tick can observe that recoil step.
-            EnemyAttackContext nonDamaging =
-                new EnemyAttackContext(0, false, false, false, false);
-            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-                new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                false, sequence(0x01), null, tables);
+            EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                    snapshot(
+                            new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                    false,
+                    sequence(0x01),
+                    null,
+                    tables);
 
-            runtime.resolveCombat(0, 120, 120, false, false,
-                true, 72, 1, 72, 1, nonDamaging);
+            runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
             runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01)));
 
-            assertEquals(61, runtime.inspection().snapshot().slots().get(0).x(),
-                "type=" + Integer.toHexString(type));
-            assertEquals(61, runtime.inspection().snapshot().slots().get(0).y(),
-                "type=" + Integer.toHexString(type));
-            assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0),
-                "type=" + Integer.toHexString(type));
+            assertEquals(61, runtime.inspection().snapshot().slots().get(0).x(), "type=" + Integer.toHexString(type));
+            assertEquals(61, runtime.inspection().snapshot().slots().get(0).y(), "type=" + Integer.toHexString(type));
+            assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0), "type=" + Integer.toHexString(type));
         }
     }
 
@@ -2767,51 +3421,44 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 2);
-            EnemyAttackContext nonDamaging =
-                new EnemyAttackContext(0, false, false, false, false);
-            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-                new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                false, sequence(0x01), null, tables);
+            EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                    snapshot(
+                            new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                    false,
+                    sequence(0x01),
+                    null,
+                    tables);
 
-            runtime.resolveCombat(0, 120, 120, false, false,
-                true, 72, 1, 72, 1, nonDamaging);
-            RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
-                direction == 1 || direction == 2;
+            runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+            RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
             runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
 
-            assertEquals(64, runtime.inspection().snapshot().slots().get(0).x(),
-                "type=" + Integer.toHexString(type));
-            assertEquals(64, runtime.inspection().snapshot().slots().get(0).y(),
-                "type=" + Integer.toHexString(type));
-            assertTrue(runtime.enemies().enemyRecoilActive(0),
-                "type=" + Integer.toHexString(type));
-            assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0),
-                "type=" + Integer.toHexString(type));
+            assertEquals(64, runtime.inspection().snapshot().slots().get(0).x(), "type=" + Integer.toHexString(type));
+            assertEquals(64, runtime.inspection().snapshot().slots().get(0).y(), "type=" + Integer.toHexString(type));
+            assertTrue(runtime.enemies().enemyRecoilActive(0), "type=" + Integer.toHexString(type));
+            assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0), "type=" + Integer.toHexString(type));
         }
     }
 
     @Test
     void zolGelPhysicsUsesRomTemporaryIgnoreHitsForRichBackgroundProbes() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                          int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                          int nextX, int nextY,
-                                                          int ignoreHitsCountdown,
-                                                          int frameCounter) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
                 observedIgnoreHits.add(ignoreHitsCountdown);
-                return EntityBackgroundCollisionResult.passable(
-                    direction, 0, nextX, nextY);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
         });
 
@@ -2821,43 +3468,38 @@ final class RoomEntityRuntimeTest {
         }
 
         assertFalse(observedIgnoreHits.isEmpty());
-        assertTrue(observedIgnoreHits.stream().allMatch(value -> value == 0x02),
-            "observed ignore-hit values=" + observedIgnoreHits);
+        assertTrue(
+                observedIgnoreHits.stream().allMatch(value -> value == 0x02),
+                "observed ignore-hit values=" + observedIgnoreHits);
     }
 
     @Test
     void zolGelPhysicsSkipsRichBackgroundProbeWhilePrivateCountdownOneIsActive() {
         ZolGelMotion motion = new ZolGelMotion();
-        RoomEntity entity = new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE,
-            pairDefinition(0x1B, 2), 0, 0, 0, 0, -1, false);
+        RoomEntity entity =
+                new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x1B, 2), 0, 0, 0, 0, -1, false);
         motion.prepareChestSpawn(entity.slot());
         motion.setPrivateCountdown1ForTest(entity.slot(), 2);
         List<Integer> observedIgnoreHits = new ArrayList<>();
         RoomEntityBackgroundInteraction background = new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
-                                                          int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction, int nextX, int nextY) {
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
-                                                          int nextX, int nextY,
-                                                          int ignoreHitsCountdown,
-                                                          int frameCounter) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity probed, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
                 observedIgnoreHits.add(ignoreHitsCountdown);
-                return EntityBackgroundCollisionResult.passable(
-                    direction, 0, nextX, nextY);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
         };
 
-        ZolGelMotion.Update first = motion.advance(entity, 80, 64, 0,
-            () -> 0, background, 0, 0, false);
+        ZolGelMotion.Update first = motion.advance(entity, 80, 64, 0, () -> 0, background, 0, 0, false);
         assertTrue(observedIgnoreHits.isEmpty());
         assertEquals(1, motion.privateCountdown1(entity.slot()));
 
-        motion.advance(first.entity(), 80, 64, 0,
-            () -> 0, background, 1, 0, false);
+        motion.advance(first.entity(), 80, 64, 0, () -> 0, background, 1, 0, false);
         assertEquals(List.of(0x02), observedIgnoreHits);
         assertEquals(0, motion.privateCountdown1(entity.slot()));
     }
@@ -2865,8 +3507,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void gelClingingStateRunsTheRomBackgroundProbeAfterLinkRelativePlacement() {
         ZolGelMotion motion = new ZolGelMotion();
-        RoomEntity entity = new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE,
-            pairDefinition(0x1C, 2), 0, 0, 0, 0, -1, false);
+        RoomEntity entity =
+                new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x1C, 2), 0, 0, 0, 0, -1, false);
         motion.prepareChestSpawn(entity.slot());
         motion.onLinkCollision(entity.slot());
         List<Integer> observedDirections = new ArrayList<>();
@@ -2874,25 +3516,21 @@ final class RoomEntityRuntimeTest {
 
         RoomEntityBackgroundInteraction background = new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
-                                                          int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction, int nextX, int nextY) {
                 observedDirections.add(direction);
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
-                                                          int nextX, int nextY,
-                                                          int ignoreHitsCountdown,
-                                                          int frameCounter) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity probed, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
                 observedDirections.add(direction);
                 observedIgnoreHits.add(ignoreHitsCountdown);
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
         };
 
-        motion.advance(entity, 80, 64, 0, () -> 0,
-            background, 0, 0x09, false);
+        motion.advance(entity, 80, 64, 0, () -> 0, background, 0, 0x09, false);
 
         assertEquals(List.of(0), observedDirections);
         assertEquals(List.of(0x09), observedIgnoreHits);
@@ -2901,8 +3539,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void tektiteAppliesBankSixRecoilBeforeItsOrdinaryMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x00)));
@@ -2915,8 +3553,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void armosWakesOnLinkCollisionThenChargesForTheRomCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
@@ -2943,33 +3581,37 @@ final class RoomEntityRuntimeTest {
     @Test
     void armosStatueRequestsLinkFinalPositionWithoutTeleportingTheStatue() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0F, 56, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0F, 56, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 64, 64, sequence(0x00), null,
-            // The statue uses CheckLinkCollisionWithEnemy.collisionEvenInTheAir;
-            // Link's Z must not suppress this collision.
-            new EnemyProjectileCollision.LinkState(64, 64, 0x10, 0, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                // The statue uses CheckLinkCollisionWithEnemy.collisionEvenInTheAir;
+                // Link's Z must not suppress this collision.
+                new EnemyProjectileCollision.LinkState(64, 64, 0x10, 0, 0, false)));
 
         RoomEntity statue = runtime.inspection().snapshot().slots().get(0);
         assertEquals(56, statue.x());
         assertEquals(64, statue.y());
-        assertEquals(List.of(new LinkFinalPositionRequest(0)),
-            runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(List.of(new LinkFinalPositionRequest(0)), runtime.consumePendingLinkFinalPositionRequests());
     }
 
     @Test
     void armosStatueRunsItsPostMovementRomBackgroundCollisionPass() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         List<Integer> directions = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction((entity, direction, nextX, nextY) -> {
             directions.add(direction);
-            return EntityBackgroundCollisionResult.blocked(
-                direction, 0x01, 0x00, nextX, nextY);
+            return EntityBackgroundCollisionResult.blocked(direction, 0x01, 0x00, nextX, nextY);
         });
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
@@ -2977,17 +3619,25 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
 
         assertEquals(List.of(EntityBackgroundCollisionResult.LEFT), directions);
-        assertEquals(beforeBlockedStep, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(
+                beforeBlockedStep,
+                runtime.inspection().snapshot().slots().get(0).x());
     }
 
     @Test
     void armosStatueDoesNotWakeForNonInteractiveLiveLinkMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0x02, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0x02, 0, false)));
 
         assertEquals(0, runtime.enemies().armosState(0));
         assertTrue(runtime.consumePendingLinkFinalPositionRequests().isEmpty());
@@ -2996,19 +3646,19 @@ final class RoomEntityRuntimeTest {
     @Test
     void armosUsesRomActivationFlagsAndOnlyTheActiveStateJoinsCombat() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
-        assertTrue(runtime.resolveCombat(1, 64, 64, false, true,
-            true, 72, 1, 72, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 64, 64, false, true, true, 72, 1, 72, 1)
+                .isEmpty());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         assertEquals(1, runtime.enemies().armosState(0));
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
-        assertTrue(runtime.resolveCombat(1, 64, 64, false, true,
-            true, 72, 1, 72, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 64, 64, false, true, true, 72, 1, 72, 1)
+                .isEmpty());
 
         for (int frame = 1; frame <= 0x30; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
@@ -3018,15 +3668,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
 
         RoomEntity active = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, active.x(), active.y(), false, true,
-            false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(1, active.x(), active.y(), false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x10, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            0, 0, 0, true, true,
-            true, active.x() + 8, 1, active.y() + 8, 1);
+        List<EntityCombatEvent> sword =
+                runtime.resolveCombat(0, 0, 0, true, true, true, active.x() + 8, 1, active.y() + 8, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(1, sword.get(0).enemyDamage());
@@ -3042,8 +3690,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void armosStateTwoLoadsItsContiguousRomSpeedTables() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
@@ -3062,11 +3710,14 @@ final class RoomEntityRuntimeTest {
     void armosKnightWakesChargesAndEnablesItsRomHitbox() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         assertEquals(0x84, runtime.enemies().physicsFlags(0));
         assertEquals(0xC4, runtime.options1(0));
@@ -3099,9 +3750,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void armosKnightStartsTheRomMinibossMusicAfterTheBossIntroDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x88), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x88,
+                        0x50,
+                        0x60,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x88),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
 
         for (int frame = 0; frame < 0x20; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
@@ -3117,9 +3781,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieInitializesTheSourceJarCombatFields() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
 
         assertEquals(0x06, runtime.enemies().enemyHealth(0));
         assertEquals(0x91, runtime.enemies().physicsFlags(0));
@@ -3135,9 +3812,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieInitAppliesTheSourceEightPixelXShift() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x48, 0x30, EntityStatus.INIT,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x48,
+                        0x30,
+                        EntityStatus.INIT,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
 
         assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x8C, runtime.enemies().hitboxFlagsForTest(0));
@@ -3145,9 +3835,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieJarActivatesWhenLinkCrossesTheArenaThreshold() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
         assertEquals(0, runtime.bosses().genieActiveStateForTest(0));
@@ -3161,9 +3864,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void activeGenieJarReachesTheCenterAndSpawnsItsAppearanceController() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x48,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGenieActiveStateForTest(0, 1);
         runtime.debug().setTransitionCountdownForTest(0, 2);
 
@@ -3172,30 +3888,44 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.bosses().geniePrivateState3ForTest(0));
         RoomEntity jar = runtime.inspection().snapshot().slots().get(0);
         RoomEntity appearance = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(jar.x(), appearance.x());
         assertEquals((jar.y() - 0x26) & 0xFF, appearance.y());
         assertEquals(2, runtime.bosses().geniePrivateState1ForTest(appearance.slot()));
         assertEquals(0x47, runtime.enemies().transitionCountdown(appearance.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
-                && event.soundId() == 0x06));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x06));
     }
 
     @Test
     void activeGenieJarFallsAndBouncesWhileMovingTowardTheCenter() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x30, 0x48, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x30,
+                        0x48,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGenieActiveStateForTest(0, 1);
         runtime.debug().setTransitionCountdownForTest(0, 0x20);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x6F, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x6F, () -> 0));
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
-                && event.soundId() == 0x20));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x20));
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x6F, () -> 0));
         assertEquals(1, runtime.inspection().snapshot().slots().get(0).z());
@@ -3203,17 +3933,31 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieAppearanceCountdownSixSpawnsTheFirstCycleBody() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x0A, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x0A,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 2);
         runtime.debug().setTransitionCountdownForTest(0, 7);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x6F, () -> 0));
 
         RoomEntity body = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x50, body.x());
         assertEquals(0x14, body.y());
         assertEquals(1, runtime.bosses().geniePrivateState1ForTest(body.slot()));
@@ -3225,11 +3969,37 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void firstGenieBodyOpensJarCycleDialogWhenTheOriginalJarStillExists() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x5C, 0x50, 0x22, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0x5C,
+                                0x50,
+                                0x48,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x5C),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                1,
+                                1,
+                                0x5C,
+                                0x50,
+                                0x22,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x5C),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(1, 1);
         runtime.debug().setTransitionCountdownForTest(1, 2);
 
@@ -3238,15 +4008,27 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, runtime.bosses().genieActiveStateForTest(1));
         assertEquals(0xFF, runtime.bosses().geniePrivateCountdown1ForTest(1));
-        assertEquals(List.of(new DialogRequest(0, 0x52)),
-            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x52)), runtime.consumePendingDialogRequests());
     }
 
     @Test
     void firstGenieBodyEntersFinalFightWhenTheJarNoLongerExists() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x22, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x22,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setTransitionCountdownForTest(0, 1);
 
@@ -3255,15 +4037,27 @@ final class RoomEntityRuntimeTest {
         assertEquals(4, runtime.bosses().genieActiveStateForTest(0));
         assertEquals(0x08, runtime.enemies().enemyHealth(0));
         assertEquals(0xFF, runtime.bosses().geniePrivateCountdown1ForTest(0));
-        assertEquals(List.of(new DialogRequest(0, 0x53)),
-            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x53)), runtime.consumePendingDialogRequests());
     }
 
     @Test
     void genieBodyStateOneSpawnsTheSourceSideProjectileAtItsNextDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setGenieActiveStateForTest(0, 1);
         runtime.debug().setTransitionCountdownForTest(0, 1);
@@ -3273,8 +4067,9 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x10, runtime.enemies().transitionCountdown(0));
         RoomEntity projectile = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(3, runtime.bosses().geniePrivateState1ForTest(projectile.slot()));
         assertEquals(0x44, projectile.x());
         assertEquals(0x2C, projectile.y());
@@ -3286,15 +4081,29 @@ final class RoomEntityRuntimeTest {
         for (int frame = 1; frame <= 80; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x70, () -> 0));
         }
-        assertEquals(EntityStatus.DISABLED,
-            runtime.inspection().snapshot().slots().get(projectile.slot()).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(projectile.slot()).status());
     }
 
     @Test
     void genieBodyPrivateCountdownSpawnsAimedFireballAndAdvancesInertia() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setGenieActiveStateForTest(0, 1);
         runtime.debug().setTransitionCountdownForTest(0, 0x20);
@@ -3306,30 +4115,45 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x30, runtime.bosses().geniePrivateCountdown1ForTest(0));
         assertEquals(0x10, runtime.bosses().geniePrivateCountdown2ForTest(0));
         RoomEntity fireball = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(4, runtime.bosses().geniePrivateState1ForTest(fireball.slot()));
         assertEquals(0x44, fireball.x());
         assertEquals(0x40, fireball.y());
         assertEquals(0x24, runtime.bosses().genieSpeedZForTest(fireball.slot()));
         assertEquals(0x12, runtime.enemies().physicsFlags(fireball.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
-                && event.soundId() == 0x28));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x28));
 
         runtime.clearEntity(0);
         for (int frame = 1; frame <= 80; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x70, () -> 0));
         }
-        assertEquals(EntityStatus.DISABLED,
-            runtime.inspection().snapshot().slots().get(fireball.slot()).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(fireball.slot()).status());
     }
 
     @Test
     void genieFireballRunsItsSourceLinkCollisionBeforeMovement() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x50, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 4);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
@@ -3339,9 +4163,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieBodyFinishesEightAttackCyclesAndStartsReturningToTheJar() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setGenieActiveStateForTest(0, 1);
         runtime.debug().setTransitionCountdownForTest(0, 1);
@@ -3357,11 +4194,37 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void returningGenieBodyHomesToTheJarAndStartsItsDisappearDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x5C, 0x50, 0x28, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0x5C,
+                                0x50,
+                                0x48,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x5C),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                1,
+                                1,
+                                0x5C,
+                                0x50,
+                                0x28,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x5C),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(1, 1);
         runtime.debug().setTransitionCountdownForTest(1, 0x20);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
@@ -3375,9 +4238,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void disappearingGenieBodySpawnsTheHighBitJarControllerAtCountdownFour() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x28, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x28,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setGenieActiveStateForTest(0, 3);
         runtime.debug().setTransitionCountdownForTest(0, 5);
@@ -3385,22 +4261,36 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
 
         RoomEntity controller = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(2, runtime.bosses().geniePrivateState1ForTest(controller.slot()));
         assertEquals(0xC7, runtime.enemies().transitionCountdown(controller.slot()));
         assertEquals(0x50, controller.x());
         assertEquals(0x28, controller.y());
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
-                && event.soundId() == 0x1F));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x1F));
     }
 
     @Test
     void vulnerableGenieBodyHitFlashStartsTheMirroredDashPhase() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x40, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setGenieActiveStateForTest(0, 4);
         runtime.debug().setEnemyFlashCountdownForTest(0, 3);
@@ -3415,9 +4305,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieDashStoresThePositionMirroredAcrossTheArenaCenter() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x40, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setGenieActiveStateForTest(0, 5);
         runtime.debug().setTransitionCountdownForTest(0, 0x20);
@@ -3425,18 +4328,29 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x70, () -> 0));
 
         RoomEntity moved = runtime.inspection().snapshot().slots().get(0);
-        assertEquals((0x90 - moved.y()) & 0xFF,
-            runtime.bosses().geniePrivateState3ForTest(0));
-        assertEquals((0xA0 - moved.x()) & 0xFF,
-            runtime.bosses().geniePrivateState4ForTest(0));
+        assertEquals((0x90 - moved.y()) & 0xFF, runtime.bosses().geniePrivateState3ForTest(0));
+        assertEquals((0xA0 - moved.x()) & 0xFF, runtime.bosses().geniePrivateState4ForTest(0));
         assertEquals(0x41, runtime.enemies().physicsFlags(0));
     }
 
     @Test
     void genieDashCountdownZeroTeleportsToMirrorAndLaunchesAnotherFireball() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x40, 0x40, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.debug().setGenieActiveStateForTest(0, 5);
         runtime.debug().setTransitionCountdownForTest(0, 1);
@@ -3452,19 +4366,33 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x01, runtime.enemies().physicsFlags(0));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
         RoomEntity fireball = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(4, runtime.bosses().geniePrivateState1ForTest(fireball.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
-                && event.soundId() == 0x28));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x28));
     }
 
     @Test
     void defeatedGenieRunsBossExplosionTimersAndDropsTheHeartContainer() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x90, 0x10, EntityStatus.DYING,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x90,
+                        0x10,
+                        EntityStatus.DYING,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
@@ -3479,22 +4407,38 @@ final class RoomEntityRuntimeTest {
         runtime.debug().setTransitionCountdownForTest(0, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x50, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         RoomEntity heart = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.type() == 0x36)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.type() == 0x36)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x88, heart.x());
         assertEquals(0x20, heart.y());
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
-                && event.soundId() == 0x1A));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x1A));
     }
 
     @Test
     void defeatedGenieExplosionTickCreatesAPoofAndDestroyedNoise() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.DYING,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x40,
+                        EntityStatus.DYING,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
         runtime.debug().setGenieActiveStateForTest(0, 2);
@@ -3503,16 +4447,29 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
 
         assertFalse(runtime.enemies().transientVfxRequests().isEmpty());
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
-                && event.soundId() == 0x13));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x13));
     }
 
     @Test
     void defeatedGeniePlaysTheGlobalBossDeathCryAfterThreeMoreTicks() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.DYING,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x40,
+                        EntityStatus.DYING,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(0, 1);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
@@ -3523,18 +4480,44 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x50, 0x50, () -> 0));
 
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
-                && event.soundId() == 0x10));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE && event.soundId() == 0x10));
     }
 
     @Test
     void genieDisappearanceControllerReactivatesTheOriginalJarAtCountdownEightZero() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x5C, 0x50, 0x22, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0x5C,
+                                0x50,
+                                0x48,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x5C),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                1,
+                                1,
+                                0x5C,
+                                0x50,
+                                0x22,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x5C),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                true);
         runtime.debug().setGeniePrivateState1ForTest(1, 2);
         runtime.debug().setTransitionCountdownForTest(1, 0x82);
 
@@ -3544,15 +4527,30 @@ final class RoomEntityRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x70, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(1).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(1).status());
         assertEquals(3, runtime.bosses().genieActiveStateForTest(0));
     }
 
     @Test
     void genieStateZeroHonorsTheSourceInteractiveGateAndSkipsGenericFallthrough() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         AtomicInteger groundCalls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.incrementAndGet();
@@ -3564,7 +4562,9 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x06, runtime.enemies().enemyHealth(0));
         assertEquals(0, groundCalls.get());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(List.of(), runtime.consumePendingLinkFinalPositionRequests());
 
         runtime.configuration().setDialogActive(false);
@@ -3580,9 +4580,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieStartsBossMusicAndMapOneDialogAfterTheIntroDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setEntityMapIdForTest(0x01);
         runtime.debug().setTransitionSequenceCounterForTest(0x04);
 
@@ -3594,8 +4607,7 @@ final class RoomEntityRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x20, 0x50, 0x70, () -> 0));
         assertEquals(0x19, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new DialogRequest(0, 0xB4)),
-            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0xB4)), runtime.consumePendingDialogRequests());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x21, 0x50, 0x70, () -> 0));
         assertEquals(-1, runtime.consumePendingMusicTrack());
@@ -3604,9 +4616,22 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieBossIntroDelayPausesForInventoryAndRoomTransitions() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setEntityMapIdForTest(0x01);
         runtime.debug().setTransitionSequenceCounterForTest(0x04);
         runtime.configuration().setTalkState(true, 0, 0);
@@ -3632,17 +4657,33 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void genieJarThresholdSpawnsBodyAndRockThenUnloadsTheJar() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState4ForTest(0, 0x03);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         RoomEntity body = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.type() == 0x5C)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.type() == 0x5C)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x50, body.x());
         assertEquals(0x50, body.y());
         assertEquals(0x02, runtime.bosses().geniePrivateState1ForTest(body.slot()));
@@ -3650,37 +4691,66 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x08, runtime.enemies().enemyHealth(body.slot()));
 
         RoomEntity rock = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.type() == 0x05)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.type() == 0x05)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x50, rock.x());
         assertEquals(0x68, rock.y());
         assertEquals(0xC4, runtime.enemies().physicsFlags(rock.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
-                && event.soundId() == 0x29));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x29));
     }
 
     @Test
     void thrownGenieJarCollisionCountsAnImpactAndEmitsBossHurtWave() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.THROWN,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.THROWN,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true));
 
         assertEquals(1, runtime.bosses().geniePrivateState4ForTest(0));
         assertEquals(0x20, runtime.enemies().enemyFlashCountdown(0));
-        assertEquals(EntityStatus.THROWN, runtime.inspection().snapshot().slots().get(0).status());
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
-            event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
-                && event.soundId() == 0x07));
+        assertEquals(
+                EntityStatus.THROWN,
+                runtime.inspection().snapshot().slots().get(0).status());
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event ->
+                        event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE && event.soundId() == 0x07));
     }
 
     @Test
     void thirdThrownGenieJarCollisionRestoresActiveThresholdState() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.THROWN,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        0x5C,
+                        0x50,
+                        0x68,
+                        EntityStatus.THROWN,
+                        EntitySpriteDefinition.unsupported(0x5C),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                true);
         runtime.debug().setGeniePrivateState4ForTest(0, 2);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true));
@@ -3689,42 +4759,75 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.bosses().genieActiveStateForTest(0));
         assertEquals(0, runtime.bosses().geniePrivateState3ForTest(0));
         assertEquals(0x80, runtime.enemies().transitionCountdown(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
 
         runtime.configuration().setDialogActive(true);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
-        assertTrue(runtime.inspection().snapshot().loadedEntities().stream()
-            .anyMatch(entity -> entity.type() == 0x5C));
-        assertTrue(runtime.inspection().snapshot().loadedEntities().stream()
-            .anyMatch(entity -> entity.type() == 0x05));
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
+        assertTrue(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(entity -> entity.type() == 0x5C));
+        assertTrue(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(entity -> entity.type() == 0x05));
     }
 
     @Test
     void thrownGenieJarTargetOverlapDoesNotCountBeforeTheBackgroundCollisionCheck() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.THROWN,
-                EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 1, 0x88, 0x50, 0x68, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x88), 0, 0, 0, 0, -1, false)), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0x5C,
+                                0x50,
+                                0x68,
+                                EntityStatus.THROWN,
+                                EntitySpriteDefinition.unsupported(0x5C),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                1,
+                                1,
+                                0x88,
+                                0x50,
+                                0x68,
+                                EntityStatus.ACTIVE,
+                                EntitySpriteDefinition.unsupported(0x88),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                true);
         runtime.debug().setGeniePrivateState4ForTest(0, 2);
         runtime.debug().setHitboxFlagsForTest(1, 0x80);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> false));
 
         assertEquals(2, runtime.bosses().geniePrivateState4ForTest(0));
-        assertEquals(EntityStatus.THROWN, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.THROWN,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void armosKnightRequestsCopyingLinksFinalPositionOnActiveCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x60, () -> 0));
@@ -3736,22 +4839,32 @@ final class RoomEntityRuntimeTest {
         }
         assertEquals(3, runtime.bosses().armosKnightState(0));
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0xB2, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0xB2,
+                0x50,
+                0x60,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false)));
 
-        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
-            runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(
+                List.of(new LinkFinalPositionRequest(0, true, true, false)),
+                runtime.consumePendingLinkFinalPositionRequests());
     }
 
     @Test
     void armosKnightDamageThresholdSpawnsRomRubbleWithPoofAndNoise() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x60, () -> 0));
@@ -3770,8 +4883,8 @@ final class RoomEntityRuntimeTest {
             runtime.debug().setEnemyFlashCountdownForTest(0, 0);
             RoomEntity armos = runtime.inspection().snapshot().slots().get(0);
             int frame = 0xB2 + hit;
-            List<EntityCombatEvent> hitEvents = runtime.resolveCombat(frame, 0, 0, true, true,
-                true, armos.x() + 8, 1, armos.y() + 8, 1, levelTwoSword);
+            List<EntityCombatEvent> hitEvents = runtime.resolveCombat(
+                    frame, 0, 0, true, true, true, armos.x() + 8, 1, armos.y() + 8, 1, levelTwoSword);
             assertEquals(1, hitEvents.size());
             assertEquals(2, hitEvents.get(0).enemyDamage());
             assertEquals(0x0A - (hit * 2), runtime.enemies().enemyHealth(0));
@@ -3784,30 +4897,35 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x06, runtime.enemies().enemyHealth(0));
         assertEquals(1, runtime.bosses().armosKnightInertia(0));
         RoomEntity rubble = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.type() == 0x05 && entity.sourceLoadOrder() == -1)
-            .findFirst()
-            .orElseThrow();
+                .filter(entity -> entity.type() == 0x05 && entity.sourceLoadOrder() == -1)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x57, rubble.x());
         assertEquals(0x50, rubble.y());
         assertEquals(0x05, rubble.spriteVariant());
         assertEquals(0xC4, runtime.enemies().physicsFlags(rubble.slot()));
         assertEquals(0x0A, runtime.options1(rubble.slot()));
-        assertEquals(List.of(new TransientVfxRequest(
-            TransientVfxType.POOF, 0x57, 0x50)), runtime.enemies().transientVfxRequests());
-        assertEquals(List.of(new EntityCombatEvent(rubble.slot(), 0x05, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x29)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new TransientVfxRequest(TransientVfxType.POOF, 0x57, 0x50)),
+                runtime.enemies().transientVfxRequests());
+        assertEquals(
+                List.of(new EntityCombatEvent(
+                        rubble.slot(), 0x05, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x29)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void armosKnightRunsTheRomJumpAndBounceStates() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x60, () -> 0));
@@ -3825,9 +4943,9 @@ final class RoomEntityRuntimeTest {
         }
         assertEquals(4, runtime.bosses().armosKnightState(0));
         assertEquals(0x30, runtime.bosses().armosKnightSpeedZ(0));
-        assertEquals(List.of(new EntityCombatEvent(0, 0x88, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x88, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
+                runtime.consumePendingEntityEvents());
 
         for (int frame = 0x102; frame <= 0x119; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
@@ -3841,28 +4959,25 @@ final class RoomEntityRuntimeTest {
         assertEquals(7, runtime.bosses().armosKnightState(0));
         assertEquals(0x30, runtime.bosses().armosKnightTransitionCountdown(0));
         assertEquals(0x40, runtime.bosses().armosKnightPrivateCountdown1(0));
-        assertEquals(List.of(new EntityCombatEvent(0, 0x88, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x0B)),
-            runtime.consumePendingEntityEvents());
-        assertEquals(List.of(new ScreenShakeRequest(0, 0x30, 0x04)),
-            runtime.consumePendingScreenShakeRequests());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x88, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0B)),
+                runtime.consumePendingEntityEvents());
+        assertEquals(List.of(new ScreenShakeRequest(0, 0x30, 0x04)), runtime.consumePendingScreenShakeRequests());
 
         for (int frame = 0x131; frame <= 0x160; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(2, runtime.bosses().armosKnightState(0));
         assertEquals(0, runtime.bosses().armosKnightTransitionCountdown(0));
-        assertEquals(List.of(new LinkMotionBlockRequest(0)),
-            runtime.consumePendingLinkMotionBlockRequests());
-        assertEquals(List.of(new LinkFallenPoseRequest(0)),
-            runtime.consumePendingLinkFallenPoseRequests());
+        assertEquals(List.of(new LinkMotionBlockRequest(0)), runtime.consumePendingLinkMotionBlockRequests());
+        assertEquals(List.of(new LinkFallenPoseRequest(0)), runtime.consumePendingLinkFallenPoseRequests());
     }
 
     @Test
     void tektiteLandsWithTheRomCountdownThenStartsItsNextJump() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
@@ -3894,8 +5009,7 @@ final class RoomEntityRuntimeTest {
     void tektiteReversesAndHalvesSpeedXAfterHorizontalWallCollision() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x80, -1, false)));
+                new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false)));
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
         for (int frame = 0; frame <= 32; frame++) {
@@ -3905,8 +5019,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x10, runtime.enemies().tektiteSpeedX(0));
         assertEquals(0x10, runtime.enemies().tektiteSpeedY(0));
 
-        RoomEntityBackgroundCollision rightWall =
-            (entity, direction, nextX, nextY) -> direction == 0;
+        RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
         runtime.tick(EntityTestFrames.frame(runtime, 33, 120, 120, randomBytes, rightWall));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
@@ -3919,15 +5032,13 @@ final class RoomEntityRuntimeTest {
     void tektiteVerticalWallCollisionUsesTheRomXSpeedHelper() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x80, -1, false)));
+                new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false)));
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
         for (int frame = 0; frame <= 32; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
-        RoomEntityBackgroundCollision downWall =
-            (entity, direction, nextX, nextY) -> direction == 3;
+        RoomEntityBackgroundCollision downWall = (entity, direction, nextX, nextY) -> direction == 3;
         runtime.tick(EntityTestFrames.frame(runtime, 33, 120, 120, randomBytes, downWall));
 
         assertEquals(65, runtime.inspection().snapshot().slots().get(0).x());
@@ -3939,8 +5050,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void tektiteAddsTheRomLandingTimerBaseAfterMaskingRandomness() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x1F)));
@@ -3951,8 +5062,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void tektiteCanReplaceItsRandomJumpDirectionWithTheRomLinkVector() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x01);
@@ -3970,27 +5081,27 @@ final class RoomEntityRuntimeTest {
     @Test
     void tektiteUsesTheHealthGroupOneContactAndSwordValues() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, firstHit.size());
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void leeverUsesTheRomHideEmergeAndChaseStateBoundaries() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00);
 
@@ -4019,13 +5130,15 @@ final class RoomEntityRuntimeTest {
     @Test
     void leeverInitializationAppliesTheRomHiddenSpriteVariantBeforeItsFirstHandlerPass() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0, runtime.enemies().leeverState(0));
         assertEquals(0, runtime.enemies().leeverTransitionCountdown(0));
@@ -4034,8 +5147,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void leeverBurrowsAfterItsChaseTimerAndStartsTheRomHidingWindow() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00);
 
@@ -4063,25 +5176,22 @@ final class RoomEntityRuntimeTest {
     @Test
     void leeverOnlyUsesItsHealthGroupOneCombatValuesWhileChasing() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00);
 
-        List<EntityCombatEvent> hiddenContact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> hiddenContact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertTrue(hiddenContact.isEmpty());
 
         for (int frame = 0; frame <= 31; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertEquals(1, runtime.enemies().enemyHealth(0));
     }
@@ -4089,21 +5199,22 @@ final class RoomEntityRuntimeTest {
     @Test
     void leeverSwordHitConfiguresBankFourRecoilBeforeItsStateMovement() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(2, runtime.enemies().leeverState(0));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x03, events.get(0).soundId());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertTrue(runtime.enemies().enemyRecoilActive(0));
@@ -4121,8 +5232,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void leeverKeepsBankFourRecoilWhenBackgroundBlocksTheStep() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
@@ -4130,8 +5241,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(2, runtime.enemies().leeverState(0));
 
         runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
-        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
-            direction == 1 || direction == 2;
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00), wall));
 
@@ -4144,8 +5254,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void leeverRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
@@ -4154,8 +5264,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(2, runtime.enemies().leeverState(0));
         assertEquals(0x08, runtime.enemies().leeverSpeedX(0));
 
-        RoomEntityBackgroundCollision rightWall =
-            (entity, direction, nextX, nextY) -> direction == 0;
+        RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
         runtime.tick(EntityTestFrames.frame(runtime, 33, 80, 64, sequence(0x00), rightWall));
         runtime.tick(EntityTestFrames.frame(runtime, 34, 80, 64, sequence(0x00), rightWall));
 
@@ -4167,8 +5276,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void leeverAdvancesItsPositionWhenTheBackgroundDoesNotBlock() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
@@ -4184,8 +5293,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void peaHatRunsTheRomRestTakeoffAndHeightAnimationStates() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00);
 
@@ -4214,8 +5323,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void peaHatUsesTheRomPhaseTablesAfterReachingItsMaximumHeight() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00);
 
@@ -4241,35 +5350,37 @@ final class RoomEntityRuntimeTest {
     @Test
     void peaHatIsCombatVulnerableOnlyWhileGrounded() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> grounded = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> grounded = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, grounded.size());
         assertEquals(0x04, grounded.get(0).linkDamage());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
-        List<EntityCombatEvent> airborne = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> airborne = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertTrue(airborne.isEmpty());
     }
 
     @Test
     void peaHatSwordHitConfiguresBankSevenRecoilBeforeItsStateMovement() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        EnemyAttackContext nonDamaging =
-            new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01), null, new RomEnemyCombatTables(loadRom()));
+        EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x01),
+                null,
+                new RomEnemyCombatTables(loadRom()));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
 
         assertEquals(1, events.size());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertTrue(runtime.enemies().enemyRecoilActive(0));
         assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0));
@@ -4286,16 +5397,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void peaHatKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        EnemyAttackContext nonDamaging =
-            new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01), null, new RomEnemyCombatTables(loadRom()));
+        EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x01),
+                null,
+                new RomEnemyCombatTables(loadRom()));
 
-        runtime.resolveCombat(0, 120, 120, false, false,
-            true, 72, 1, 72, 1, nonDamaging);
-        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
-            direction == 1 || direction == 2;
+        runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
 
@@ -4308,8 +5419,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void peaHatRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime blocked = RoomEntityRuntime.from(initial);
         RoomEntityRuntime unblocked = RoomEntityRuntime.from(initial);
         IntSupplier blockedRandom = sequence(0x00);
@@ -4323,8 +5434,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(2, blocked.enemies().peaHatState(0));
         assertEquals(0x07, blocked.enemies().peaHatSpeedX(0));
 
-        RoomEntityBackgroundCollision rightWall =
-            (entity, direction, nextX, nextY) -> direction == 0;
+        RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
         for (int frame = 281; frame <= 304; frame++) {
             blocked.tick(EntityTestFrames.frame(blocked, frame, 120, 120, blockedRandom, rightWall));
             unblocked.tick(EntityTestFrames.frame(unblocked, frame, 120, 120, unblockedRandom));
@@ -4343,14 +5453,13 @@ final class RoomEntityRuntimeTest {
     @Test
     void peaHatUsesTheRomSwordClinkPathWhileAirborne() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(1, runtime.enemies().peaHatState(0));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 120, 120, false, false, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 120, 120, false, false, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         EntityCombatEvent event = events.get(0);
@@ -4360,10 +5469,11 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, event.enemyDamage());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
         assertEquals(0x07, event.soundId());
-        assertEquals(new EntityCombatEvent.SwordPokeVfx(0x40, 0x40),
-            event.swordPokeVfx());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(0x40, 0x40), event.swordPokeVfx());
         assertEquals(1, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x10, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertFalse(runtime.enemies().enemyRecoilActive(0));
     }
@@ -4371,8 +5481,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void stalfosAggressiveUsesTheRomPursuitAndJumpArc() {
         EntitySpriteDefinition definition = pairDefinition(0x1A, 3);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x1A, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x1A, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
@@ -4412,17 +5522,15 @@ final class RoomEntityRuntimeTest {
     @Test
     void stalfosAggressiveUsesHealthGroupTwoACombatValues() {
         EntitySpriteDefinition definition = pairDefinition(0x1A, 3);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x1A, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x1A, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 72, 72, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertEquals(1, runtime.enemies().enemyHealth(0));
     }
@@ -4430,14 +5538,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void gibdoRunsTheRomInitDirectionChoiceAndFixedPointWalk() {
         EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // EntityInitHandlersTable._1F only increments the state. The first
         // handler pass therefore takes the forced-direction path.
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0xFF)));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().gibdoState(0));
         assertEquals(0, runtime.enemies().gibdoSpeedX(0));
         assertEquals(0, runtime.enemies().gibdoSpeedY(0));
@@ -4459,11 +5569,13 @@ final class RoomEntityRuntimeTest {
     @Test
     void likeLikeRunsTheRomInitDirectionChoiceAndFixedPointWalk() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0xFF)));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.inspection().likeLikeWalkState(0));
 
         // LikeLikeGibdoSpeeds[1] is $08 (+8 pixels per 16 frames).
@@ -4480,59 +5592,92 @@ final class RoomEntityRuntimeTest {
     @Test
     void likeLikeCapturesLinkOnTheRomCollisionCadenceWithoutContactDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00, 0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 64, 64, sequence(0x00, 0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                64,
+                64,
+                sequence(0x00, 0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                2,
+                64,
+                64,
+                sequence(0x00, 0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
 
-        List<LikeLikeEvent> events =
-            runtime.consumePendingLikeLikeEvents();
+        List<LikeLikeEvent> events = runtime.consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
         assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertEquals(-1, events.getFirst().stolenInventorySlot());
         assertEquals(1, runtime.inspection().likeLikeState(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
 
-        assertTrue(runtime.resolveCombat(3, 64, 64, false, true,
-            true, 72, 1, 72, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(3, 64, 64, false, true, true, 72, 1, 72, 1)
+                .isEmpty());
         assertEquals(2, runtime.enemies().enemyHealth(0));
     }
 
     @Test
     void likeLikeStealsTheBShieldFirstAndRefusesToStealTheLevelTwoShield() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setLikeLikeLinkInventoryForTest(0x04, 0x04);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        LikeLikeEvent stolen =
-            runtime.consumePendingLikeLikeEvents().getFirst();
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                2,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        LikeLikeEvent stolen = runtime.consumePendingLikeLikeEvents().getFirst();
         assertEquals(LikeLikeEvent.Kind.CAPTURE, stolen.kind());
         assertEquals(0, stolen.stolenInventorySlot());
         assertEquals(1, stolen.stolenShieldLevel());
         assertEquals(1, runtime.inspection().likeLikePrivateState1(0));
 
-        RoomEntityRuntime levelTwo = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime levelTwo = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         levelTwo.debug().setLikeLikeLinkInventoryForTest(0x00, 0x04);
         levelTwo.tick(EntityTestFrames.frame(levelTwo, 0, 64, 64, sequence(0xFF)));
-        levelTwo.tick(EntityTestFrames.projectileFrame(levelTwo, 1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
+        levelTwo.tick(EntityTestFrames.projectileFrame(
+                levelTwo,
+                1,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
         levelTwo.consumePendingLikeLikeEvents();
-        levelTwo.tick(EntityTestFrames.projectileFrame(levelTwo, 2, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
-        LikeLikeEvent protectedShield =
-            levelTwo.consumePendingLikeLikeEvents().getFirst();
+        levelTwo.tick(EntityTestFrames.projectileFrame(
+                levelTwo,
+                2,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
+        LikeLikeEvent protectedShield = levelTwo.consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
         assertEquals(0, levelTwo.inspection().likeLikePrivateState1(0));
     }
@@ -4540,16 +5685,27 @@ final class RoomEntityRuntimeTest {
     @Test
     void likeLikeDeliversShieldTheftWhileLinksMotionStatePreventsPositionWrites() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT,
-                pairDefinition(0x23, 2), 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, pairDefinition(0x23, 2), 0, 0, 0, 0, -1, false)));
         runtime.debug().setLikeLikeLinkInventoryForTest(0x00, 0x04);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 80, 80, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                2,
+                80,
+                80,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0)));
         var events = runtime.consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
         assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
@@ -4561,26 +5717,43 @@ final class RoomEntityRuntimeTest {
     @Test
     void likeLikeReleasesLinkAfterEightHeldActionFramesAndStartsTheRomSlowTimer() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
         runtime.configuration().setActionButtonsHeld(true);
         for (int frame = 2; frame <= 8; frame++) {
-            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 64, 64, sequence(0x00), null,
-                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+            runtime.tick(EntityTestFrames.projectileFrame(
+                    runtime,
+                    frame,
+                    64,
+                    64,
+                    sequence(0x00),
+                    null,
+                    new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
             runtime.consumePendingLikeLikeEvents();
         }
         assertEquals(1, runtime.inspection().likeLikeState(0));
         assertEquals(7, runtime.inspection().likeLikeInertia(0));
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 9, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        LikeLikeEvent release =
-            runtime.consumePendingLikeLikeEvents().getFirst();
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                9,
+                64,
+                64,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        LikeLikeEvent release = runtime.consumePendingLikeLikeEvents().getFirst();
         assertEquals(LikeLikeEvent.Kind.RELEASE, release.kind());
         assertEquals(0, runtime.inspection().likeLikeState(0));
         assertEquals(0x15, runtime.inspection().slowTransitionCountdown(0));
@@ -4591,11 +5764,13 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         // The room init is a noop for Goomba; its first active handler pass
         // chooses the random-walk interval and direction.
@@ -4622,52 +5797,59 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 72, 72, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 72, 72, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            2, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(2, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(0, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
-    void goombaStompUsesTheRomDescendingVelocityBranchAndSharedDeathHandler()
-            throws IOException {
+    void goombaStompUsesTheRomDescendingVelocityBranchAndSharedDeathHandler() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 72, 72, true, 0xF0, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 72, 72, true, 0xF0, true, false, 0, 0, 0, 0);
         assertEquals(1, events.size());
-        assertEquals(EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN,
-            events.get(0).linkAction());
+        assertEquals(
+                EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN,
+                events.get(0).linkAction());
         assertEquals(EntityCombatEvent.SoundChannel.WAVE, events.get(0).soundChannel());
         assertEquals(0x0E, events.get(0).soundId());
         assertEquals(2, runtime.enemies().goombaState(0));
         assertEquals(0x30, runtime.enemies().goombaTransitionCountdown(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
 
         for (int frame = 0; frame < 0x30; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x2D, runtime.inspection().droppedItemForTest(0));
         assertEquals(0x0C, runtime.enemies().dyingCountdown(0));
         assertEquals(0x04, runtime.enemies().physicsFlags(0));
@@ -4679,14 +5861,15 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0);
         assertTrue(events.isEmpty());
         assertEquals(0, runtime.enemies().goombaState(0));
     }
@@ -4696,25 +5879,25 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false))
-            .withSideScrolling(true);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            initial, true, null, catalog, tables);
+                        new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false))
+                .withSideScrolling(true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, true, null, catalog, tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0);
         assertEquals(1, events.size());
-        assertEquals(EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING,
-            events.get(0).linkAction());
+        assertEquals(
+                EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING,
+                events.get(0).linkAction());
         assertEquals(2, runtime.enemies().goombaState(0));
 
         for (int frame = 0; frame < 0x30; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
@@ -4722,11 +5905,13 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
@@ -4752,11 +5937,13 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         for (int frame = 1; frame <= 48; frame++) {
@@ -4771,21 +5958,23 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void snakeBackgroundCollisionResetsTheRomStateAndPrivateRecoveryWindow()
-            throws IOException {
+    void snakeBackgroundCollisionResetsTheRomStateAndPrivateRecoveryWindow() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
-        runtime.tick(EntityTestFrames.frame(runtime, 3, 120, 120, sequence(0x00), (entity, direction, nextX, nextY) -> true));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 3, 120, 120, sequence(0x00), (entity, direction, nextX, nextY) -> true));
 
         assertEquals(0, runtime.enemies().snakeState(0));
         assertEquals(0x08, runtime.enemies().snakeTransitionCountdown(0));
@@ -4800,23 +5989,25 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 72, 72, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 72, 72, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            2, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(2, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(0, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
@@ -4824,11 +6015,13 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 80, sequence(0x00, 0x00)));
@@ -4864,11 +6057,13 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 0xE1, 120, 80, sequence(0x00, 0x00)));
@@ -4885,23 +6080,34 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void spikedBeetleFlipsOnShieldContactAndDoesNotTakeDamage()
-            throws IOException {
+    void spikedBeetleFlipsOnShieldContactAndDoesNotTakeDamage() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(0x48, runtime.options1(0));
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 56, 64, false, 0, true, false, 0, 0, 0, 0,
-            new EnemyAttackContext(1, false, false, false, false, true, 0, 0));
+                0,
+                56,
+                64,
+                false,
+                0,
+                true,
+                false,
+                0,
+                0,
+                0,
+                0,
+                new EnemyAttackContext(1, false, false, false, false, true, 0, 0));
 
         assertEquals(1, events.size());
         assertFalse(events.get(0).swordHit());
@@ -4931,21 +6137,34 @@ final class RoomEntityRuntimeTest {
         int[] flipX = {0x10, 0xF0, 0, 0};
         int[] flipY = {0, 0, 0xF0, 0x10};
         for (int direction = 0; direction < 4; direction++) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-                new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE,
-                    catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0), 0, 0, 0, 0, -1, false)),
-                true, null, catalog, tables);
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                    snapshot(new RoomEntity(
+                            0,
+                            0,
+                            0x2C,
+                            64,
+                            64,
+                            EntityStatus.ACTIVE,
+                            catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0),
+                            0,
+                            0,
+                            0,
+                            0,
+                            -1,
+                            false)),
+                    true,
+                    null,
+                    catalog,
+                    tables);
             runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0)));
-            var away = new EnemyAttackContext(1, false, false, false, false,
-                true, direction ^ 1, 0);
-            var misses = runtime.resolveCombat(1, linkX[direction], linkY[direction],
-                false, 0, true, false, 0, 0, 0, 0, away);
+            var away = new EnemyAttackContext(1, false, false, false, false, true, direction ^ 1, 0);
+            var misses = runtime.resolveCombat(
+                    1, linkX[direction], linkY[direction], false, 0, true, false, 0, 0, 0, 0, away);
             assertFalse(misses.stream().anyMatch(e -> e.soundId() == 0x09));
             assertNotEquals(3, runtime.enemies().spikedBeetleState(0));
-            var shield = new EnemyAttackContext(1, false, false, false, false,
-                true, direction, 0);
-            var hits = runtime.resolveCombat(1, linkX[direction], linkY[direction],
-                false, 0, true, false, 0, 0, 0, 0, shield);
+            var shield = new EnemyAttackContext(1, false, false, false, false, true, direction, 0);
+            var hits = runtime.resolveCombat(
+                    1, linkX[direction], linkY[direction], false, 0, true, false, 0, 0, 0, 0, shield);
             assertTrue(hits.stream().anyMatch(e -> e.soundId() == 0x09));
             assertEquals(3, runtime.enemies().spikedBeetleState(0));
             assertEquals(flipX[direction], runtime.enemies().spikedBeetleSpeedX(0));
@@ -4958,22 +6177,22 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 80, sequence(0x00, 0x00)));
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            2, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events = runtime.resolveCombat(2, 120, 120, false, true, true, 72, 1, 72, 1);
 
         assertEquals(1, events.size());
         assertTrue(events.get(0).swordHit());
         assertEquals(0, events.get(0).enemyDamage());
-        assertEquals(new EntityCombatEvent.SwordPokeVfx(64, 64),
-            events.get(0).swordPokeVfx());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(64, 64), events.get(0).swordPokeVfx());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x07, events.get(0).soundId());
         assertEquals(1, runtime.enemies().spikedBeetleState(0));
@@ -4989,14 +6208,15 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 72, 72, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 72, 72, false, true, false, 0, 0, 0, 0);
 
         assertEquals(1, events.size());
         assertEquals(0x04, events.get(0).linkDamage());
@@ -5007,11 +6227,13 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 80, sequence(0x00, 0x00)));
@@ -5050,11 +6272,13 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, sequence(0x00, 0x06)));
@@ -5066,28 +6290,27 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void polsVoiceForcesTheRomIgnoreHitsByteOnlyAroundBackgroundInteraction()
-            throws IOException {
+    void polsVoiceForcesTheRomIgnoreHitsByteOnlyAroundBackgroundInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                           int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                       int nextX, int nextY,
-                                                       int ignoreHitsCountdown) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
                 observedIgnoreHits.add(ignoreHitsCountdown);
                 return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
@@ -5106,21 +6329,25 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
         runtime.debug().setOcarinaPlaybackForTest(0x01, 0x04, 0x00);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
 
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x1F, runtime.enemies().dyingCountdown(0));
         assertEquals(0x04, runtime.enemies().physicsFlags(0));
-        assertEquals(List.of(new EntityCombatEvent(0, 0x18, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x13)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x18, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
@@ -5128,16 +6355,16 @@ final class RoomEntityRuntimeTest {
         byte[] rom = syntheticRom();
         write(rom, 0x05, 0x7EF8, 0x0E, 0x13);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(), true, null, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(), true, null, catalog);
         runtime.debug().setOcarinaPlaybackForTest(0x20, 0x01, 0x00);
         runtime.debug().setOcarinaAnimationForTest(0x14, 0x00);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, sequence(0x00)));
 
         RoomEntity note = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(entity -> entity.type() == 0xC9)
-            .findFirst().orElseThrow();
+                .filter(entity -> entity.type() == 0xC9)
+                .findFirst()
+                .orElseThrow();
         assertEquals(0x48, note.x());
         assertEquals(0x48, note.y());
         assertEquals(0x05, note.spriteDefinition().bank());
@@ -5157,14 +6384,15 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 72, 72, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 72, 72, false, true, false, 0, 0, 0, 0);
 
         assertEquals(1, events.size());
         assertEquals(0x08, events.get(0).linkDamage());
@@ -5176,14 +6404,18 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x21, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x21, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x21, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x21, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x80, 0x50, sequence(0x00)));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x80, runtime.enemies().transitionCountdown(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.enemies().physicsFlags(0));
@@ -5228,22 +6460,32 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x22, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x22, 0x3F, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x22, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, -1, 0x22, 0x3F, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
         runtime.debug().setWizrobeProjectileForTest(0, 0x20, 0x00, 0);
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            4, 0x40, 0x50, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00, 0, false)));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                4,
+                0x40,
+                0x50,
+                sequence(0x00),
+                null,
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00, 0, false)));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.getFirst().kind());
         assertEquals(0x08, events.getFirst().linkDamage());
         assertTrue(events.getFirst().remove());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
@@ -5251,20 +6493,21 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x21, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x21, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, null, catalog, tables);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x21, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(
+                        new RoomEntity(0, 0, 0x21, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                null,
+                catalog,
+                tables);
         runtime.debug().setWizrobeStateForTest(0, 3, 0, 0xFF, 0x28, 0);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 0x48, 0x58, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x48, 0x58, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            2, 0x80, 0x80, false, true, true, 0x48, 1, 0x58, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(2, 0x80, 0x80, false, true, true, 0x48, 1, 0x58, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         // Health group $0C's sword rows are zero in Data_003_43EC; Wizrobe
@@ -5277,8 +6520,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void evasiveStalfosUsesTheRomRandomWalkAndNormalAnimation() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x01)));
@@ -5296,8 +6539,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void evasiveStalfosJumpsAwayFromHeldActionButtonsAndLandsWithRomState() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.configuration().setActionButtonsHeld(true);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
@@ -5331,25 +6574,25 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void evasiveStalfosCanBeHitInMidairAfterItsEightFrameJumpGracePeriod() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x1E, 3), 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x1E, 3), 0, 0, 0, 0, -1, false)));
         runtime.configuration().setActionButtonsHeld(true);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0)));
         runtime.configuration().setActionButtonsHeld(false);
         for (int frame = 0; frame < 8; frame++) {
             if (frame != 0) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0)));
             RoomEntity entity = runtime.inspection().snapshot().slots().get(0);
-            assertTrue(runtime.resolveCombat(frame, 0, 0, false, 0, true,
-                true, entity.x() - 8, 16, entity.y() - entity.z() - 8, 16).isEmpty());
+            assertTrue(runtime.resolveCombat(
+                            frame, 0, 0, false, 0, true, true, entity.x() - 8, 16, entity.y() - entity.z() - 8, 16)
+                    .isEmpty());
         }
         runtime.tick(EntityTestFrames.frame(runtime, 8, 80, 64, sequence(0)));
         RoomEntity airborne = runtime.inspection().snapshot().slots().get(0);
         assertTrue(airborne.z() > 0);
         assertEquals(1, runtime.enemies().evasiveInertia(0));
         assertEquals(0, runtime.enemies().transitionCountdown(0));
-        var hits = runtime.resolveCombat(8, 0, 0, false, 0, true,
-            true, airborne.x() - 8, 16, airborne.y() - airborne.z() - 8, 16);
+        var hits = runtime.resolveCombat(
+                8, 0, 0, false, 0, true, true, airborne.x() - 8, 16, airborne.y() - airborne.z() - 8, 16);
         assertTrue(hits.stream().anyMatch(hit -> hit.swordHit() && hit.enemyDamage() > 0));
     }
 
@@ -5357,8 +6600,7 @@ final class RoomEntityRuntimeTest {
     void evasiveStalfosClonesInAnglersTunnelWithRomAttributesAndVector() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0,
-                0, 0, 0x03, -1, false)));
+                new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x03, -1, false)));
         runtime.debug().setEntityMapIdForTest(0x03);
         // AnimateEntities decrements private countdowns before dispatching the
         // handler; raw value two therefore enters the source's ==1 branch.
@@ -5391,7 +6633,7 @@ final class RoomEntityRuntimeTest {
     void evasiveStalfosCloneSkipsGenericGroundInteractionButKeepsFleeingMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setEntityMapIdForTest(0x03);
         runtime.debug().setEvasivePrivateCountdown1ForTest(0, 0x02);
         List<Integer> groundInteractionSlots = new ArrayList<>();
@@ -5411,13 +6653,15 @@ final class RoomEntityRuntimeTest {
     void evasiveStalfosCloneIsGatedBelowAnglersTunnelAndDoesNotWhoosh() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setEntityMapIdForTest(0x02);
         runtime.debug().setEvasivePrivateCountdown1ForTest(0, 0x02);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x01)));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0x01, runtime.enemies().evasivePrivateCountdown1(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -5426,11 +6670,22 @@ final class RoomEntityRuntimeTest {
     void evasiveStalfosCloneDoesNotEmitWhooshWhenAllSlotsAreOccupied() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         List<RoomEntity> entities = new ArrayList<>();
-        entities.add(new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE,
-            definition, 0, 0, 0, 0, -1, false));
+        entities.add(new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            entities.add(new RoomEntity(slot, -1, 0xFF, 0, 0, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xFF), -1, 0, 0, 0, -1, false));
+            entities.add(new RoomEntity(
+                    slot,
+                    -1,
+                    0xFF,
+                    0,
+                    0,
+                    EntityStatus.ACTIVE,
+                    EntitySpriteDefinition.unsupported(0xFF),
+                    -1,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    false));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(entities));
         runtime.debug().setEntityMapIdForTest(0x03);
@@ -5446,32 +6701,36 @@ final class RoomEntityRuntimeTest {
     void fleeingEvasiveStalfosPokesAndClearsOnBackgroundCollision() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0,
-                0, 0, 0x02, -1, false)));
+                new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x02, -1, false)));
         runtime.debug().setEvasiveFleeingForTest(0, 0x10, 0);
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x00), wall));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x07, events.getFirst().soundId());
-        assertEquals(List.of(new TransientVfxRequest(
-            TransientVfxType.SWORD_POKE, 0x40, 0x4E)), runtime.enemies().transientVfxRequests());
+        assertEquals(
+                List.of(new TransientVfxRequest(TransientVfxType.SWORD_POKE, 0x40, 0x4E)),
+                runtime.enemies().transientVfxRequests());
     }
 
     @Test
     void fleeingEvasiveStalfosClearsAtTheRomScreenEdgeWithoutSwordPoke() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1E, 0xA7, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x1E, 0xA7, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setEvasiveFleeingForTest(0, 0x10, 0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x00)));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         assertTrue(runtime.enemies().transientVfxRequests().isEmpty());
     }
@@ -5479,8 +6738,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void gibdoFallsBackToTheRomVerticalSpeedTableWhenHorizontalSpeedIsZero() {
         EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
@@ -5495,8 +6754,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void gibdoReversesTheMovingAxisWhenTheBackgroundQueryBlocksIt() {
         EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0xFF)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x02)));
@@ -5511,18 +6770,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void gibdoUsesHealthGroupTwoFCombatValues() {
         EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
         assertEquals(0x06, runtime.enemies().enemyHealth(0));
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 72, 72, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(0x05, runtime.enemies().enemyHealth(0));
@@ -5531,8 +6788,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void antiFairyUsesTheRomRandomSpeedVectorAndFrameAnimation() {
         EntitySpriteDefinition definition = pairDefinition(0x15, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // EntityRandomSpeedX/Y[1] = (+12, -12). The init handler runs before
@@ -5557,8 +6814,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void antiFairyReversesTheMovingAxisAtARomBackgroundCollisionPoint() {
         EntitySpriteDefinition definition = pairDefinition(0x15, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
 
@@ -5573,18 +6830,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void antiFairyUsesHealthGroupSixCombatValues() {
         EntitySpriteDefinition definition = pairDefinition(0x15, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 72, 72, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(0x03, runtime.enemies().enemyHealth(0));
@@ -5593,8 +6848,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void starUsesTheRomRandomSpeedVectorAndFourFrameAnimation() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // EntityInitWithRandomSpeed[1] = (+12, -12). The Star handler keeps
@@ -5620,13 +6875,12 @@ final class RoomEntityRuntimeTest {
     @Test
     void starGivesHorizontalBackgroundCollisionPriorityWhenBouncing() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
-        RoomEntityBackgroundCollision corner = (entity, direction, nextX, nextY) ->
-            direction == 0 || direction == 3;
+        RoomEntityBackgroundCollision corner = (entity, direction, nextX, nextY) -> direction == 0 || direction == 3;
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00), corner));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
@@ -5638,16 +6892,14 @@ final class RoomEntityRuntimeTest {
     @Test
     void starLeavesItsRecoilAndMovementUntouchedDuringNonInteractiveLinkMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         EnemyProjectileCollision.LinkState nonInteractive =
-            new EnemyProjectileCollision.LinkState(120, 120, 0, 0x02, 0, false);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null,
-            nonInteractive));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null,
-            nonInteractive));
+                new EnemyProjectileCollision.LinkState(120, 120, 0, 0x02, 0, false);
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null, nonInteractive));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null, nonInteractive));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
@@ -5658,17 +6910,15 @@ final class RoomEntityRuntimeTest {
     @Test
     void inventoryTransitionMakesEntityHandlersNonInteractiveWithoutSkippingThePass() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.configuration().setTalkState(true, 0, 0x78);
         EnemyProjectileCollision.LinkState interactive =
-            new EnemyProjectileCollision.LinkState(120, 120, 0, 0, 0, false);
+                new EnemyProjectileCollision.LinkState(120, 120, 0, 0, 0, false);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null,
-            interactive));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null,
-            interactive));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null, interactive));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null, interactive));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
@@ -5679,15 +6929,14 @@ final class RoomEntityRuntimeTest {
     @Test
     void starUsesTheNormalEnemyCombatValuesAndShadowPhysics() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x9C));
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
     }
@@ -5696,7 +6945,7 @@ final class RoomEntityRuntimeTest {
     void sparkInitializersSelectTheRomDirectionAndOffset() {
         EntitySpriteDefinition counterDefinition = pairDefinition(0x16, 2);
         RoomEntityRuntime counterClockwise = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, counterDefinition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, counterDefinition, 0, 0, 0, 0, -1, false)));
         counterClockwise.tick(EntityTestFrames.frame(counterClockwise, 0));
 
         assertEquals(61, counterClockwise.inspection().snapshot().slots().get(0).y());
@@ -5706,7 +6955,7 @@ final class RoomEntityRuntimeTest {
 
         EntitySpriteDefinition clockwiseDefinition = pairDefinition(0x17, 2);
         RoomEntityRuntime clockwise = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x17, 64, 64, EntityStatus.INIT, clockwiseDefinition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x17, 64, 64, EntityStatus.INIT, clockwiseDefinition, 0, 0, 0, 0, -1, false)));
         clockwise.tick(EntityTestFrames.frame(clockwise, 0));
 
         assertEquals(67, clockwise.inspection().snapshot().slots().get(0).y());
@@ -5716,8 +6965,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void sparkFollowsTheRomEightDirectionTableAndFrameCadence() {
         EntitySpriteDefinition definition = pairDefinition(0x16, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, () -> 0));
@@ -5735,8 +6984,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void sparkUsesCollisionMaskToAdvanceItsRomDirectionIndex() {
         EntitySpriteDefinition definition = pairDefinition(0x16, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.tick(EntityTestFrames.frame(runtime, 0));
 
         RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
@@ -5751,28 +7000,29 @@ final class RoomEntityRuntimeTest {
     @Test
     void sparkUsesHealthGroupTwoCCombatValues() {
         EntitySpriteDefinition definition = pairDefinition(0x16, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 72, 72, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void zolUsesTheRomInchingAndLeapStateLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x01));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         assertEquals(2, runtime.enemies().enemyHealth(0));
@@ -5796,17 +7046,26 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables combatTables = new RomEnemyCombatTables(rom);
         assertEquals(1, combatTables.initialHealth(0x1B));
         EntitySpriteDefinition definition = catalog.forEntityType(0x1B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01), catalog, combatTables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x01),
+                catalog,
+                combatTables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         assertEquals(2, runtime.enemies().enemyHealth(0));
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertEquals(1, runtime.enemies().enemyHealth(0));
-        assertEquals(0x7C11, runtime.inspection().snapshot().slots().get(0).spriteDefinition().address());
+        assertEquals(
+                0x7C11,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(0)
+                        .spriteDefinition()
+                        .address());
 
         for (int frame = 1; frame <= 16; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x01)));
@@ -5838,9 +7097,10 @@ final class RoomEntityRuntimeTest {
     @Test
     void zolStateOneNonLeapBranchClearsStateRatherThanCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x01));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         for (int frame = 1; frame <= 7; frame++) {
@@ -5867,9 +7127,10 @@ final class RoomEntityRuntimeTest {
     @Test
     void zolStateTwoSetsItsSpeedBeforeTheRomPhysicsStep() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x00));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x00));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
         for (int frame = 1; frame <= 7; frame++) {
@@ -5888,26 +7149,25 @@ final class RoomEntityRuntimeTest {
     @Test
     void gelUsesTheRomSmallEnemyHitboxAndClingingCollisionState() {
         EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        assertTrue(runtime.resolveCombat(1, 72, 64, false, true,
-            false, 0, 0, 0, 0).isEmpty());
+        assertTrue(
+                runtime.resolveCombat(1, 72, 64, false, true, false, 0, 0, 0, 0).isEmpty());
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 68, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0, contact.get(0).linkDamage());
         assertFalse(contact.get(0).linkCollisionResponse().active());
         assertEquals(4, runtime.enemies().zolState(0));
-        assertTrue(runtime.resolveCombat(1, 68, 64, false, true,
-            false, 0, 0, 0, 0).isEmpty());
+        assertTrue(
+                runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0).isEmpty());
     }
 
     @Test
     void gelExportsClingFlagOnlyWhileItsInteractiveHandlerIsAttached() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x1C, 2), 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x1C, 2), 0, 0, 0, 0, -1, false)));
         runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0);
         assertFalse(runtime.gelClingingToLink());
         runtime.configuration().setJoypadHeld(true);
@@ -5926,11 +7186,12 @@ final class RoomEntityRuntimeTest {
     @Test
     void gelReleasesClingingStateAfterRomJoypadCountdownDecrementsThreeTimesPerFrame() {
         EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        assertEquals(1, runtime.resolveCombat(
-            1, 68, 64, false, true, false, 0, 0, 0, 0).size());
+        assertEquals(
+                1,
+                runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0).size());
         assertEquals(4, runtime.enemies().zolState(0));
         assertEquals(0x80, runtime.enemies().zolTransitionCountdown(0));
 
@@ -5954,11 +7215,11 @@ final class RoomEntityRuntimeTest {
     @Test
     void hidingZolUsesTheRomProximityRevealAndRisePhases() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x02));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x02));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
         assertEquals(0, runtime.enemies().hidingZolState(0));
@@ -5992,14 +7253,15 @@ final class RoomEntityRuntimeTest {
     @Test
     void hidingZolUsesTheRomSwordAndLinkCollisionPhases() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x00));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x00));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
-        assertTrue(runtime.resolveCombat(1, 72, 72, false, true,
-            true, 72, 1, 72, 1).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 72, 72, false, true, true, 72, 1, 72, 1)
+                .isEmpty());
 
         int frame = 1;
         while (runtime.enemies().hidingZolState(0) != 3 && frame < 200) {
@@ -6012,25 +7274,25 @@ final class RoomEntityRuntimeTest {
         // frame before checking state-3 collision behavior.
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         RoomEntity hidingZol = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, hidingZol.x() + 4, hidingZol.y() + 4, false, true,
-            false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(1, hidingZol.x() + 4, hidingZol.y() + 4, false, true, false, 0, 0, 0, 0);
         assertTrue(contact.isEmpty());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 120, 120, false, true, true,
-            hidingZol.x() + 8, 1, hidingZol.y() + 8, 1);
+        List<EntityCombatEvent> sword =
+                runtime.resolveCombat(1, 120, 120, false, true, true, hidingZol.x() + 8, 1, hidingZol.y() + 8, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void hidingZolUsesTheBankSevenRecoilStepBeforeItsHandler() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.debug().configureEnemyRecoilForTest(0, 80, 80, 0x30);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
@@ -6047,12 +7309,12 @@ final class RoomEntityRuntimeTest {
     @Test
     void hidingZolPreservesBankSevenRecoilWhenTheBackgroundBlocksIt() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
-        runtime.configuration().setBackgroundInteraction((entity, direction, nextX, nextY) ->
-            EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0,
-                nextX, nextY));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        runtime.configuration()
+                .setBackgroundInteraction((entity, direction, nextX, nextY) ->
+                        EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0, nextX, nextY));
         runtime.debug().configureEnemyRecoilForTest(0, 80, 80, 0x30);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
@@ -6068,28 +7330,24 @@ final class RoomEntityRuntimeTest {
     @Test
     void hidingZolStateThreeMovesWithoutTheLaterBackgroundHelper() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x00));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x00));
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                           int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
                 observedIgnoreHits.add(-1);
-                return EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0,
-                    nextX, nextY);
+                return EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                       int nextX, int nextY,
-                                                       int ignoreHitsCountdown,
-                                                       int frameCounter) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
                 observedIgnoreHits.add(ignoreHitsCountdown);
-                return EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0,
-                    nextX, nextY);
+                return EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0, nextX, nextY);
             }
         });
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
@@ -6104,17 +7362,17 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
 
-        assertTrue(observedIgnoreHits.isEmpty(),
-            () -> "state-3 background probes=" + observedIgnoreHits);
+        assertTrue(observedIgnoreHits.isEmpty(), () -> "state-3 background probes=" + observedIgnoreHits);
     }
 
     @Test
     void hidingZolFlyingBackgroundHelperForcesTheRomIgnoreHitsValue() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x00));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x00));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
 
         int frame = 1;
@@ -6126,21 +7384,16 @@ final class RoomEntityRuntimeTest {
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                           int nextX, int nextY) {
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
                 observedIgnoreHits.add(-1);
-                return EntityBackgroundCollisionResult.passable(direction, 0,
-                    nextX, nextY);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
 
             @Override
-            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
-                                                       int nextX, int nextY,
-                                                       int ignoreHitsCountdown,
-                                                       int frameCounter) {
+            public EntityBackgroundCollisionResult probe(
+                    RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
                 observedIgnoreHits.add(ignoreHitsCountdown);
-                return EntityBackgroundCollisionResult.passable(direction, 0,
-                    nextX, nextY);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
             }
         });
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x09);
@@ -6148,18 +7401,18 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
 
-        assertTrue(observedIgnoreHits.contains(0x03),
-            () -> "flying background probes=" + observedIgnoreHits);
+        assertTrue(observedIgnoreHits.contains(0x03), () -> "flying background probes=" + observedIgnoreHits);
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
     }
 
     @Test
     void hidingZolRequestsTheRomJumpJingleWhenItLeavesTheGround() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x00));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x00));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6168,18 +7421,19 @@ final class RoomEntityRuntimeTest {
         }
 
         assertEquals(2, runtime.enemies().hidingZolState(0));
-        assertEquals(List.of(new EntityCombatEvent(0, 0x9B, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x9B, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void hidingZolRequestsTheRomJumpJingleForEachLaunchedLeap() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x00));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x00));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6201,8 +7455,8 @@ final class RoomEntityRuntimeTest {
             List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
             if (!events.isEmpty()) {
                 assertEquals(1, events.size());
-                assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
-                    events.getFirst().soundChannel());
+                assertEquals(
+                        EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
                 assertEquals(0x24, events.getFirst().soundId());
                 foundSecondJumpJingle = true;
                 break;
@@ -6215,10 +7469,11 @@ final class RoomEntityRuntimeTest {
     @Test
     void hidingZolRestoresHarmlessPhysicsWhenItsFinalLeapHides() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x00));
+                .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x00));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6235,11 +7490,13 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapUsesTheRomRandomDirectionAndFourStateLaunchLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.enemies().spikeTrapState(0));
         assertEquals(0, runtime.enemies().spikeTrapDirection(0));
 
@@ -6280,8 +7537,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapLaunchPublishesOneRomWhooshNoise() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6291,8 +7548,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, launchEvents.size());
         assertEquals(0, launchEvents.get(0).slot());
         assertEquals(0x27, launchEvents.get(0).type());
-        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
-            launchEvents.get(0).soundChannel());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE, launchEvents.get(0).soundChannel());
         assertEquals(0x0A, launchEvents.get(0).soundId());
 
         runtime.tick(EntityTestFrames.frame(runtime, 3, 80, 64, sequence(0x00)));
@@ -6302,8 +7558,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapBlockedLaunchDoesNotPublishTheWhooshNoise() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6316,8 +7572,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapForwardEndpointPublishesOneRomSwordPokeJingle() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6332,8 +7588,8 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 26, 80, 64, sequence(0x00)));
         List<EntityCombatEvent> endpointEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, endpointEvents.size());
-        assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
-            endpointEvents.get(0).soundChannel());
+        assertEquals(
+                EntityCombatEvent.SoundChannel.JINGLE, endpointEvents.get(0).soundChannel());
         assertEquals(0x07, endpointEvents.get(0).soundId());
         assertEquals(3, runtime.enemies().spikeTrapState(0));
 
@@ -6344,8 +7600,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapForwardBackgroundCollisionPublishesTheSameRomJingle() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6357,8 +7613,8 @@ final class RoomEntityRuntimeTest {
 
         List<EntityCombatEvent> collisionEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, collisionEvents.size());
-        assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
-            collisionEvents.get(0).soundChannel());
+        assertEquals(
+                EntityCombatEvent.SoundChannel.JINGLE, collisionEvents.get(0).soundChannel());
         assertEquals(0x07, collisionEvents.get(0).soundId());
         assertEquals(3, runtime.enemies().spikeTrapState(0));
     }
@@ -6366,8 +7622,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapFallsBackToTheRomVerticalLaunchTable() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 100, sequence(0x02)));
@@ -6383,8 +7639,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapBackgroundCollisionKeepsItInItsLaunchState() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
@@ -6399,17 +7655,15 @@ final class RoomEntityRuntimeTest {
     @Test
     void spikeTrapSwordCollisionPublishesTheRomSwordPokeWithoutDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         assertEquals(4, runtime.enemies().enemyHealth(0));
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(8, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         EntityCombatEvent event = sword.get(0);
         assertTrue(event.swordHit());
@@ -6417,10 +7671,11 @@ final class RoomEntityRuntimeTest {
         assertEquals(-1, event.enemySpecialAction());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
         assertEquals(0x07, event.soundId());
-        assertEquals(new EntityCombatEvent.SwordPokeVfx(0x40, 0x40),
-            event.swordPokeVfx());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(0x40, 0x40), event.swordPokeVfx());
         assertEquals(4, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x10, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertFalse(runtime.enemies().enemyRecoilActive(0));
     }
@@ -6428,8 +7683,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void waterTektiteUsesNoopInitializationAndTheRomFrameVariant() {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         AtomicInteger randomCalls = new AtomicInteger();
         IntSupplier randomBytes = () -> {
             randomCalls.incrementAndGet();
@@ -6438,7 +7693,9 @@ final class RoomEntityRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         assertEquals(0, randomCalls.get());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x00, 120, 120, randomBytes));
         assertEquals(2, randomCalls.get());
@@ -6450,8 +7707,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void waterTektiteUsesTheRomThreeStateAccelerationAndSignedDecelerationLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         IntSupplier randomBytes = sequence(0x00, 0x02);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
@@ -6491,8 +7748,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void waterTektiteResetsToStateZeroWhenTheMovedPositionHitsBackground() {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         IntSupplier randomBytes = sequence(0x02);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
@@ -6519,17 +7776,21 @@ final class RoomEntityRuntimeTest {
     void waterTektiteAppliesBankSevenRecoilBeforeItsStateMovement() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        EnemyAttackContext nonDamaging =
-            new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01), null, tables);
+        EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x01),
+                null,
+                tables);
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
 
         assertEquals(1, events.size());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertTrue(runtime.enemies().enemyRecoilActive(0));
         assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0));
@@ -6547,16 +7808,16 @@ final class RoomEntityRuntimeTest {
     void waterTektiteKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        EnemyAttackContext nonDamaging =
-            new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01), null, tables);
+        EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                false,
+                sequence(0x01),
+                null,
+                tables);
 
-        runtime.resolveCombat(0, 120, 120, false, false,
-            true, 72, 1, 72, 1, nonDamaging);
-        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
-            direction == 1 || direction == 2;
+        runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
 
@@ -6570,35 +7831,35 @@ final class RoomEntityRuntimeTest {
     @Test
     void waterTektiteUsesHealthGroupZeroAndTheNormalEnemyHitbox() {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertTrue(RoomEntityCombatRules.overlapsLink(
-            runtime.inspection().snapshot().slots().get(0), 64, 64));
+                runtime.inspection().snapshot().slots().get(0), 64, 64));
         assertFalse(RoomEntityCombatRules.overlapsLink(
-            runtime.inspection().snapshot().slots().get(0), 73, 64));
+                runtime.inspection().snapshot().slots().get(0), 73, 64));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
-        List<EntityCombatEvent> sword = runtime.resolveCombat(
-            1, 120, 120, false, true, true, 72, 1, 72, 1);
+        runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(0, runtime.enemies().enemyHealth(0));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void pairoddRuntimeConsumesItsRandomDirectionInitializerAndStartsTeleportState() {
         EntitySpriteDefinition definition = pairDefinition(0x57, 8);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x57, 64, 80, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x57, 64, 80, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         AtomicInteger randomCalls = new AtomicInteger();
         IntSupplier randomBytes = () -> {
             randomCalls.incrementAndGet();
@@ -6608,7 +7869,9 @@ final class RoomEntityRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x00, randomBytes));
         assertEquals(1, randomCalls.get());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.flyingEnemies().pairoddState(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 80, randomBytes));
@@ -6616,16 +7879,16 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.flyingEnemies().pairoddState(0));
         assertEquals(0x20, runtime.flyingEnemies().pairoddTransitionCountdown(0));
         assertEquals(3, runtime.flyingEnemies().pairoddDirection(0));
-        assertEquals(List.of(new EntityCombatEvent(0, 0x57, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x3C)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x57, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x3C)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void pairoddUsesTheBankFourRecoilStepBeforeItsHandler() {
         EntitySpriteDefinition definition = pairDefinition(0x57, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x57, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x57, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.debug().configureEnemyRecoilForTest(0, 80, 80, 0x30);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
@@ -6642,10 +7905,9 @@ final class RoomEntityRuntimeTest {
     @Test
     void pairoddSpawnsAReverseSlotProjectileWithRomDefinitionPositionAndVector() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x57, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x57, 64, 80, EntityStatus.ACTIVE, definition, 0, 0, 0, 3, -1, false));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x57, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x57, 64, 80, EntityStatus.ACTIVE, definition, 0, 0, 0, 3, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0, catalog);
 
         // Initialize the active snapshot, enter the teleport, and let the
@@ -6687,19 +7949,31 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0, runtime.clearEntity(15));
         assertEquals(0, runtime.flyingEnemies().pairoddProjectileSpeedX(15));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
     }
 
     @Test
     void pairoddProjectileIsRemovedAfterRoomObjectIntersectionAndQueuesRomVfx() {
         EntitySpriteDefinition definition = pairDefinition(0x58, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            0, 0, 0, () -> 0, null, entity -> true,
-            EnemyProjectileCollision.LinkState.nonInteractive(),
-            false, 0, 0, 0, 0));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0,
+                0,
+                () -> 0,
+                null,
+                entity -> true,
+                EnemyProjectileCollision.LinkState.nonInteractive(),
+                false,
+                0,
+                0,
+                0,
+                0));
 
         assertTrue(events.isEmpty());
         assertFalse(runtime.inspection().snapshot().slots().get(0).loaded());
@@ -6714,13 +7988,22 @@ final class RoomEntityRuntimeTest {
     void pairoddProjectileKeepsItsLinkCollisionPathWhenTheRoomObjectPasses() {
         EntitySpriteDefinition definition = pairDefinition(0x58, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            0, 0x40, 0x40, () -> 0, null, entity -> false,
-            new EnemyProjectileCollision.LinkState(
-                0x40, 0x40, 0, 0, 0, false, 1, 0),
-            false, 0, 0, 0, 0));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x40,
+                () -> 0,
+                null,
+                entity -> false,
+                new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 0, false, 1, 0),
+                false,
+                0,
+                0,
+                0,
+                0));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
@@ -6731,14 +8014,12 @@ final class RoomEntityRuntimeTest {
     @Test
     void moblinLaunchUsesTheHighestDisabledSlotAndDoesNotTickItTwice() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> slots = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        slots.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE,
-            definition, 0, 0, 0, 0x03, -1, false));
+        slots.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x03, -1, false));
         RoomEntitySnapshot initial = new RoomEntitySnapshot(slots);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0, catalog);
 
@@ -6759,10 +8040,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x20, runtime.enemies().enemyProjectileSpeedX(14));
         assertEquals(1, runtime.inspection().projectileLaunchRequests().size());
         assertEquals(15, runtime.inspection().projectileLaunchRequests().get(0).sourceSlot());
-        assertEquals(0x0C, runtime.inspection().projectileLaunchRequests().get(0).projectileType());
+        assertEquals(
+                0x0C, runtime.inspection().projectileLaunchRequests().get(0).projectileType());
 
         assertEquals(0, runtime.clearEntity(14));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(14).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(14).status());
         assertEquals(0, runtime.enemies().enemyProjectileSpeedX(14));
         assertEquals(0, runtime.enemies().enemyProjectileTransitionCountdown(14));
     }
@@ -6770,15 +8054,13 @@ final class RoomEntityRuntimeTest {
     @Test
     void enemyArrowAndRockPlayThePokeJingleOnceWhenHittingAWall() {
         for (int type : new int[] {0x0A, 0x0C}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-                new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
-                    pairDefinition(type, 4), 0, 0, 0, 0, -1, false)));
-            RoomEntityBackgroundCollision wall =
-                (entity, direction, nextX, nextY) -> direction == 0;
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                    0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(type, 4), 0, 0, 0, 0, -1, false)));
+            RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
             runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, wall));
-            assertEquals(List.of(new EntityCombatEvent(0, type, 0, false,
-                EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
-                runtime.consumePendingEntityEvents());
+            assertEquals(
+                    List.of(new EntityCombatEvent(0, type, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
+                    runtime.consumePendingEntityEvents());
 
             runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0, wall));
             assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -6788,12 +8070,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void shieldBlockedEnemyArrowAndRockKeepTheTingWithoutAddingAPokeJingle() {
         for (int type : new int[] {0x0A, 0x0C}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-                new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
-                    pairDefinition(type, 4), 0, 0, 0, 0, -1, false)));
-            List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-                0, 0x40, 0x50, () -> 0, null,
-                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                    0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(type, 4), 0, 0, 0, 0, -1, false)));
+            List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                    runtime,
+                    0,
+                    0x40,
+                    0x50,
+                    () -> 0,
+                    null,
+                    new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
 
             assertEquals(1, events.size());
             assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());
@@ -6806,12 +8092,16 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void rockHittingLinkAlsoSuppressesTheWallPokeJingle() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x0A, 0x40, 0x50, EntityStatus.ACTIVE,
-                pairDefinition(0x0A, 1), 0, 0, 0, 0, -1, false)));
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            0, 0x40, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0, -1, 0x0A, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(0x0A, 1), 0, 0, 0, 0, -1, false)));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x50,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, false)));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
@@ -6822,11 +8112,13 @@ final class RoomEntityRuntimeTest {
     @Test
     void runtimePublishesArrowTransitionVariantsButLeavesRockVariantUnspun() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition arrowDefinition = catalog.forEntityType(
-            0x0C, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x0C, 0x20, 0x20, EntityStatus.ACTIVE,
-                arrowDefinition, 0, 0, 0, 0, -1, false)), false, () -> 0, catalog);
+        EntitySpriteDefinition arrowDefinition = catalog.forEntityType(0x0C, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, -1, 0x0C, 0x20, 0x20, EntityStatus.ACTIVE, arrowDefinition, 0, 0, 0, 0, -1, false)),
+                false,
+                () -> 0,
+                catalog);
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
 
         arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 0, 0, 0, () -> 0, wall));
@@ -6842,11 +8134,13 @@ final class RoomEntityRuntimeTest {
         arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 10, 0, 0, () -> 0, wall));
         assertEquals(3, arrowRuntime.inspection().snapshot().slots().get(0).spriteVariant());
 
-        EntitySpriteDefinition rockDefinition = catalog.forEntityType(
-            0x0A, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime rockRuntime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x0A, 0x20, 0x20, EntityStatus.ACTIVE,
-                rockDefinition, 0, 0, 0, 0, -1, false)), false, () -> 0, catalog);
+        EntitySpriteDefinition rockDefinition = catalog.forEntityType(0x0A, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntityRuntime rockRuntime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, -1, 0x0A, 0x20, 0x20, EntityStatus.ACTIVE, rockDefinition, 0, 0, 0, 0, -1, false)),
+                false,
+                () -> 0,
+                catalog);
         rockRuntime.tick(EntityTestFrames.frame(rockRuntime, 0, 0, 0, () -> 0, wall));
         rockRuntime.tick(EntityTestFrames.frame(rockRuntime, 1, 0, 0, () -> 0, wall));
         assertEquals(0, rockRuntime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -6856,7 +8150,7 @@ final class RoomEntityRuntimeTest {
     void laserParentRotatesEveryEightFramesAndSpawnsAnInvisibleRomSensor() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame < 8; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x10, 0x10, () -> 0));
@@ -6878,7 +8172,7 @@ final class RoomEntityRuntimeTest {
     void laserParentSpawnsBeamAtRomCountdownTenWithCopiedSpeed() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setLaserParentForTest(0, 0x10, 0x20, 0xF0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x10, 0x10, () -> 0));
@@ -6895,27 +8189,39 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xF0, runtime.enemies().laserSpeedY(15));
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());
-        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
-            events.getFirst().soundChannel());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE, events.getFirst().soundChannel());
         assertEquals(0x08, events.getFirst().soundId());
     }
 
     @Test
     void laserParentDoesNotEmitFiringNoiseWhenTheBeamSlotIsUnavailable() {
         List<RoomEntity> entities = new ArrayList<>();
-        entities.add(new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE,
-            pairDefinition(0x2A, 8), 0, 0, 0, 0, -1, false));
+        entities.add(new RoomEntity(
+                0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(0x2A, 8), 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            entities.add(new RoomEntity(slot, slot, 0xFF, 0, 0, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xFF), -1, 0, 0, 0, -1, false));
+            entities.add(new RoomEntity(
+                    slot,
+                    slot,
+                    0xFF,
+                    0,
+                    0,
+                    EntityStatus.ACTIVE,
+                    EntitySpriteDefinition.unsupported(0xFF),
+                    -1,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    false));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(entities));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(entities));
         runtime.debug().setLaserParentForTest(0, 0x10, 0x20, 0xF0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x10, 0x10, () -> 0));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0xFF, runtime.inspection().snapshot().slots().get(15).type());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -6924,17 +8230,19 @@ final class RoomEntityRuntimeTest {
     void laserSensorClearsAndArmsItsParentWhenLinkEntersTheRomWindow() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame < 8; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x10, 0x10, () -> 0));
         }
 
-        EnemyProjectileCollision.LinkState link = new EnemyProjectileCollision.LinkState(
-            0x40, 0x50, 0, 0, 0, false, 0, 0);
+        EnemyProjectileCollision.LinkState link =
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, false, 0, 0);
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 8, 0x40, 0x50, () -> 0, null, link));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0x1F, runtime.enemies().laserParentTransitionCountdown(0));
         assertEquals(0x40, runtime.enemies().laserSpeedX(0));
         assertEquals(0x40, runtime.enemies().laserSpeedY(0));
@@ -6944,20 +8252,30 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void laserBeamUsesRomFixedPointMovementAndEmitsTheTransientBeamVfx() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x2B, 0x20, 0x30, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x2B), -1, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0,
+                -1,
+                0x2B,
+                0x20,
+                0x30,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x2B),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false)));
         runtime.debug().setLaserBeamForTest(0, 0x10, 0, 0);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0, 0, () -> 0, null,
-            EnemyProjectileCollision.LinkState.nonInteractive()));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 0, 0, 0, () -> 0, null, EnemyProjectileCollision.LinkState.nonInteractive()));
 
         RoomEntity beam = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x21, beam.x());
         assertEquals(0x30, beam.y());
         assertEquals(1, runtime.enemies().transientVfxRequests().size());
-        TransientVfxRequest request =
-            runtime.enemies().transientVfxRequests().get(0);
+        TransientVfxRequest request = runtime.enemies().transientVfxRequests().get(0);
         assertEquals(TransientVfxType.LASER_BEAM, request.type());
         assertEquals(0x25, request.worldX());
         assertEquals(0x30, request.worldY());
@@ -6965,15 +8283,26 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void laserBeamMirrorShieldReflectionReversesTheRomAxisBeforeMovement() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x2B, 0x40, 0x50, EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x2B), -1, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0,
+                -1,
+                0x2B,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x2B),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false)));
         runtime.debug().setLaserBeamForTest(0, 0x10, 0, 2);
-        EnemyProjectileCollision.LinkState link = new EnemyProjectileCollision.LinkState(
-            0x40, 0x50, 0, 0, 0, true, 2, 0);
+        EnemyProjectileCollision.LinkState link =
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, true, 2, 0);
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            0, 0x40, 0x50, () -> 0, null, link));
+        List<EntityProjectileEvent> events =
+                runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x50, () -> 0, null, link));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());
@@ -6983,8 +8312,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
         assertEquals(0xF0, runtime.enemies().laserSpeedX(0));
         assertEquals(1, runtime.enemies().transientVfxRequests().size());
-        assertEquals(TransientVfxType.SWORD_POKE,
-            runtime.enemies().transientVfxRequests().get(0).type());
+        assertEquals(
+                TransientVfxType.SWORD_POKE,
+                runtime.enemies().transientVfxRequests().get(0).type());
         assertEquals(0x41, runtime.enemies().transientVfxRequests().get(0).worldX());
         assertEquals(0x50, runtime.enemies().transientVfxRequests().get(0).worldY());
     }
@@ -6992,16 +8322,13 @@ final class RoomEntityRuntimeTest {
     @Test
     void enemyProjectileWallTransitionUnloadsAndClearsTheReverseSlot() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> slots = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        slots.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE,
-            definition, 0, 0, 0, 0, -1, false));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(slots), false, () -> 0, catalog);
+        slots.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, () -> 0, catalog);
         RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
 
         for (int frame = 0; frame <= 6; frame++) {
@@ -7014,7 +8341,9 @@ final class RoomEntityRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0, rightWall));
         }
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(14).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(14).status());
         assertEquals(0, runtime.enemies().enemyProjectileSpeedX(14));
         assertEquals(0, runtime.enemies().enemyProjectileTransitionCountdown(14));
     }
@@ -7022,17 +8351,27 @@ final class RoomEntityRuntimeTest {
     @Test
     void fullEntityTableLeavesTheLaunchSourceAndProjectileStateUnchanged() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition moblinDefinition = catalog.forEntityType(
-            0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        EntitySpriteDefinition moblinDefinition = catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> entities = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
-            entities.add(new RoomEntity(slot, -1, 0x01, 0x20, 0x20,
-                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x01), -1, 0, 0, 0, -1, false));
+            entities.add(new RoomEntity(
+                    slot,
+                    -1,
+                    0x01,
+                    0x20,
+                    0x20,
+                    EntityStatus.ACTIVE,
+                    EntitySpriteDefinition.unsupported(0x01),
+                    -1,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    false));
         }
-        entities.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE,
-            moblinDefinition, 0, 0, 0, 0, -1, false));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(entities), false, () -> 0, catalog);
+        entities.add(
+                new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE, moblinDefinition, 0, 0, 0, 0, -1, false));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(entities), false, () -> 0, catalog);
 
         for (int frame = 0; frame <= 6; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
@@ -7041,15 +8380,16 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0B, runtime.inspection().snapshot().slots().get(15).type());
         assertEquals(0x0A, runtime.enemies().octorokTransitionCountdown(15));
         for (int slot = 0; slot < 15; slot++) {
-            assertNotEquals(0x0C, runtime.inspection().snapshot().slots().get(slot).type());
+            assertNotEquals(
+                    0x0C, runtime.inspection().snapshot().slots().get(slot).type());
         }
     }
 
     @Test
     void combatUsesTheEntityVisualYWhenHidingZolIsAirborne() {
         EntitySpriteDefinition definition = pairDefinition(0x9B, 4);
-        RoomEntity airborne = new RoomEntity(0, 0, 0x9B, 64, 64,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0x10, -1, false);
+        RoomEntity airborne =
+                new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x10, -1, false);
 
         assertTrue(RoomEntityCombatRules.overlapsLink(airborne, 64, 48));
         assertFalse(RoomEntityCombatRules.overlapsLink(airborne, 64, 64));
@@ -7059,13 +8399,11 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forFollowerEntityType(0xD4);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xD4);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, -1, 0xD4, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, -1, 0xD4, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0);
-        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 1, false, false,
-            0, 0, false));
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 1, false, false, 0, 0, false));
 
         for (int frame = 0; frame <= 8; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x30, () -> 0));
@@ -7078,13 +8416,11 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void dynamicMarinRuntimeConsumesTheSharedLinkHistory() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forFollowerEntityType(0xC1);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, -1, 0xC1, 0x10, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, -1, 0xC1, 0x10, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0);
-        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, true, false,
-            0, 0, false));
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, true, false, 0, 0, false));
         LinkPositionHistory history = new LinkPositionHistory();
         history.fill(0x10, 0x20, 0x01, 0x02);
         history.write(1, 0x30, 0x40, 0x03, 0x01);
@@ -7100,13 +8436,23 @@ final class RoomEntityRuntimeTest {
     @Test
     void dynamicBowWowRunsItsRomSetupThenFollowerSpeedPhase() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                .forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
+        RoomEntitySnapshot initial = snapshot(new RoomEntity(
+                0,
+                -1,
+                FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                definition,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0);
-        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
-            0, 0, false));
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x60, 0x70, () -> 0));
         assertEquals(0x44, runtime.inspection().snapshot().slots().get(0).x());
@@ -7123,34 +8469,36 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void kidnappedBowWowEnablesTheMoblinKingSourceIntro() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.INIT, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.INIT, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
 
         boolean openedIntro = false;
         for (int frame = 0; frame < 36; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
-            openedIntro |= runtime.consumePendingDialogRequests().equals(
-                List.of(new DialogRequest(1, 0x91, true)));
+            openedIntro |= runtime.consumePendingDialogRequests().equals(List.of(new DialogRequest(1, 0x91, true)));
         }
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(2, runtime.inspection().moblinKingState(0));
         assertTrue(openedIntro);
     }
 
     @Test
     void moblinKingStateMachineFreezesWhileDialogIsActive() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
         runtime.debug().setMoblinKingStateForTest(0, 3, 0, 0, 0, 0, 0x20);
         runtime.debug().setSlowTransitionCountdownForTest(0, 0x30);
         runtime.configuration().setDialogActive(true);
 
-        for (int frame = 0; frame < 300; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
+        for (int frame = 0; frame < 300; frame++)
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
 
         assertEquals(3, runtime.inspection().moblinKingState(0));
         assertEquals(0x20, runtime.inspection().transitionCountdownForTest(0));
@@ -7159,13 +8507,14 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void moblinKingWaitsForRoomTransitionBeforeStartingCharge() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
         runtime.debug().setMoblinKingStateForTest(0, 3, 0, 0, 0, 0, 0);
         runtime.debug().setRoomTransitionStateForTest(true);
-        for (int frame = 0; frame < 60; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
+        for (int frame = 0; frame < 60; frame++)
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
         assertEquals(3, runtime.inspection().moblinKingState(0));
         assertEquals(0x58, runtime.inspection().snapshot().slots().get(0).x());
         runtime.debug().setRoomTransitionStateForTest(false);
@@ -7175,8 +8524,8 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void moblinKingUnloadsUnlessBowWowIsKidnapped() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
@@ -7186,22 +8535,20 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void moblinKingOnlyTakesSwordDamageDuringTheWallStunState() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
         runtime.debug().setMoblinKingStateForTest(0, 2, 0, 0, 0, 0, 0x30);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
-        runtime.resolveCombat(1, 0x30, 0x58, false, true,
-            true, 0x58, 8, 0x58, 8);
+        runtime.resolveCombat(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8);
         assertEquals(0x08, runtime.enemies().enemyHealth(0));
 
         runtime.debug().setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
-        runtime.resolveCombat(3, 0x30, 0x58, false, true,
-            true, 0x58, 8, 0x58, 8);
+        runtime.resolveCombat(3, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8);
 
         assertEquals(0x07, runtime.enemies().enemyHealth(0));
         int beforeX = runtime.inspection().snapshot().slots().get(0).x();
@@ -7214,8 +8561,8 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void moblinKingChargeImpactUsesItsDedicatedLinkDamageAndImmunityWrites() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
         runtime.debug().setMoblinKingStateForTest(0, 4, 0, 0x28, 0, 0, 0x22);
@@ -7223,8 +8570,7 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0, true));
         assertEquals(4, runtime.inspection().moblinKingState(0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x58, 0x58, () -> 0, true));
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            3, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(3, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
 
         EntityCombatEvent impact = events.getFirst();
         assertEquals(0x08, impact.linkDamage());
@@ -7236,34 +8582,33 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void stunnedMoblinKingIsHarmlessToLinkWhileVulnerable() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
         runtime.debug().setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0));
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
 
         assertEquals(0, events.getFirst().linkDamage());
     }
 
     @Test
     void defeatingMoblinKingPersistsTheMinibossRoomEventThatOpensTheRescuePath() {
-        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
+        RoomEntity king = new RoomEntity(
+                0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
         runtime.debug().setEnemyHealthForTest(0, 1);
         runtime.debug().setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
-        runtime.resolveCombat(1, 0x30, 0x58, false, true,
-            true, 0x58, 8, 0x58, 8);
+        runtime.resolveCombat(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
         assertEquals(0xA0, runtime.inspection().transitionCountdownForTest(0));
-        for (int frame = 3; frame <= 162; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
+        for (int frame = 3; frame <= 162; frame++)
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
         assertEquals(0xC0, runtime.inspection().transitionCountdownForTest(0));
         assertTrue(runtime.inspection().snapshot().slots().get(0).loaded());
         assertEquals(0, runtime.consumePendingRoomStatusMask());
@@ -7278,33 +8623,41 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void touchingKidnappedBowWowInTheHideoutStartsFollowingAndItemMusic() {
-        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
-            EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new RoomEntity(
+                0, 0, 0x6D, 0x88, 0x40, EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0,
-            null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0, null, null, 0, 0, 0));
 
         assertEquals(1, runtime.inspection().bowWowState());
         assertEquals(0x10, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new DialogRequest(1, 0x6C)),
-            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(1, 0x6C)), runtime.consumePendingDialogRequests());
     }
 
     @Test
     void rescuedSourceBowWowImmediatelyUsesTheFollowingSpriteTable() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
-            EntityStatus.ACTIVE,
-            catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity bowWow = new RoomEntity(
+                0,
+                0,
+                0x6D,
+                0x88,
+                0x40,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.configuration().setBowWowState(0x80);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0,
-            null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0, null, null, 0, 0, 0));
 
         RoomEntity rescued = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x05, rescued.spriteDefinition().bank());
@@ -7315,27 +8668,52 @@ final class RoomEntityRuntimeTest {
     void kidnappedBowWowUsesFollowingTilesBeforeRescueEvenDuringDialog() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
-            EntityStatus.ACTIVE,
-            catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity bowWow = new RoomEntity(
+                0,
+                0,
+                0x6D,
+                0x88,
+                0x40,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.configuration().setBowWowState(0x80);
         runtime.configuration().setDialogActive(true);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0));
         assertEquals(0x80, runtime.inspection().bowWowState());
-        assertEquals(0x401C, runtime.inspection().snapshot().slots().get(0).spriteDefinition().address());
+        assertEquals(
+                0x401C,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(0)
+                        .spriteDefinition()
+                        .address());
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
 
         runtime.configuration().setBowWowState(0);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x40, () -> 0));
-        assertEquals(0x4000, runtime.inspection().snapshot().slots().get(0).spriteDefinition().address());
+        assertEquals(
+                0x4000,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(0)
+                        .spriteDefinition()
+                        .address());
     }
 
     @Test
     void kidnappedBowWowWarningStartsAutomaticallyAndDoesNotRepeatWhileIdle() {
-        RoomEntity kid = new RoomEntity(0, 0, 0x71, 0x40, 0x40,
-            EntityStatus.ACTIVE, pairDefinition(0x71, 4), 0, 0, 0, 0, -1, false);
+        RoomEntity kid = new RoomEntity(
+                0, 0, 0x71, 0x40, 0x40, EntityStatus.ACTIVE, pairDefinition(0x71, 4), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(kid), false, () -> 0);
         runtime.configuration().setBowWowState(0x80);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
@@ -7349,12 +8727,13 @@ final class RoomEntityRuntimeTest {
     @Test
     void ballPlayingChildrenPushLinkAtGroundPositionEvenWhileHopping() {
         for (int type : new int[] {0x71, 0x72}) {
-            RoomEntity kid = new RoomEntity(0, 0, type, 0x50, 0x60,
-                EntityStatus.ACTIVE, pairDefinition(type, 4), 0, 0, 0, 8, -1, false);
+            RoomEntity kid = new RoomEntity(
+                    0, 0, type, 0x50, 0x60, EntityStatus.ACTIVE, pairDefinition(type, 4), 0, 0, 0, 8, -1, false);
             RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(kid), false, () -> 0);
             runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x60, () -> 0));
-            assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
-                runtime.consumePendingLinkFinalPositionRequests());
+            assertEquals(
+                    List.of(new LinkFinalPositionRequest(0, true, true, false)),
+                    runtime.consumePendingLinkFinalPositionRequests());
         }
     }
 
@@ -7362,24 +8741,39 @@ final class RoomEntityRuntimeTest {
     void villageChildrenThrowABallAndRetireItsSlot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity kid = new RoomEntity(0, 0, 0x72, 0x70, 0x40,
-            EntityStatus.ACTIVE, catalog.forEntityType(0x72,
-                EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(kid), false, () -> 0,
-            catalog, new RomEnemyCombatTables(rom));
+        RoomEntity kid = new RoomEntity(
+                0,
+                0,
+                0x72,
+                0x70,
+                0x40,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x72, EntityRoomLoader.RoomTable.OVERWORLD),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshot(kid), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x70, () -> 0));
-        assertTrue(runtime.inspection().snapshot().slots().stream().anyMatch(e ->
-            e.loaded() && e.sourceLoadOrder() == -1 && e.spriteDefinition().address() == 0x607D));
+        assertTrue(runtime.inspection().snapshot().slots().stream()
+                .anyMatch(e -> e.loaded()
+                        && e.sourceLoadOrder() == -1
+                        && e.spriteDefinition().address() == 0x607D));
         for (int frame = 1; frame <= 40; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x20, 0x70, () -> 0));
-        assertFalse(runtime.inspection().snapshot().slots().stream().anyMatch(e ->
-            e.loaded() && e.sourceLoadOrder() == -1 && e.spriteDefinition().address() == 0x607D));
+        assertFalse(runtime.inspection().snapshot().slots().stream()
+                .anyMatch(e -> e.loaded()
+                        && e.sourceLoadOrder() == -1
+                        && e.spriteDefinition().address() == 0x607D));
     }
 
     @Test
     void kidnappedBowWowDoesNotReleaseFromAnUnrelatedRoomCollision() {
-        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
-            EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new RoomEntity(
+                0, 0, 0x6D, 0x88, 0x40, EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
 
@@ -7392,13 +8786,12 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void kidnappedBowWowDoesNotReleaseWithoutTheSourceCollisionByte() {
-        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
-            EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new RoomEntity(
+                0, 0, 0x6D, 0x88, 0x40, EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
         runtime.configuration().setBowWowState(0x80);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 0, () -> 0,
-            null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 0, () -> 0, null, null, 0, 0, 0));
 
         assertEquals(0x80, runtime.inspection().bowWowState());
         assertEquals(-1, runtime.consumePendingMusicTrack());
@@ -7409,18 +8802,32 @@ final class RoomEntityRuntimeTest {
     void dynamicBowWowUsesTheRomEatableTableDuringTheLiveEntityTick() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        EntitySpriteDefinition bowWowDefinition = catalog.forFollowerEntityType(
-            FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
-        EntitySpriteDefinition targetDefinition = catalog.forEntityType(
-            0x09, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
-                0x20, 0x20, EntityStatus.ACTIVE, bowWowDefinition, 0, 0, 0, 0, -1, false),
-            new RoomEntity(10, 0, 0x09, 0x54, 0x68,
-                EntityStatus.ACTIVE, targetDefinition, 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
-            0, 0, false));
+        EntitySpriteDefinition bowWowDefinition =
+                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
+        EntitySpriteDefinition targetDefinition = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(
+                        new RoomEntity(
+                                5,
+                                -1,
+                                FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                                0x20,
+                                0x20,
+                                EntityStatus.ACTIVE,
+                                bowWowDefinition,
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                10, 0, 0x09, 0x54, 0x68, EntityStatus.ACTIVE, targetDefinition, 0, 0, 0, 0, -1, false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x60, 0x70, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x60, 0x70, () -> 0));
@@ -7433,15 +8840,41 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
-                0x40, 0x50, EntityStatus.ACTIVE,
-                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW), 0, 0, 0, 0, -1, false),
-            new RoomEntity(6, 0, 0x09, 0x44, 0x58, EntityStatus.ACTIVE,
-                catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, tables);
-        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
-            0, 0, false));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(
+                        new RoomEntity(
+                                5,
+                                -1,
+                                FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                                0x40,
+                                0x50,
+                                EntityStatus.ACTIVE,
+                                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                6,
+                                0,
+                                0x09,
+                                0x44,
+                                0x58,
+                                EntityStatus.ACTIVE,
+                                catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setDroppedItemForTest(6, EnemyDropResolver.ENTITY_NONE);
 
@@ -7453,10 +8886,15 @@ final class RoomEntityRuntimeTest {
         assertFalse(runtime.inspection().snapshot().slots().get(6).loaded());
         assertEquals(1, runtime.inspection().killCount());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
-        assertEquals(List.of(new EntityCombatEvent(5,
-            FollowingNpcEntitySpawner.ENTITY_BOW_WOW, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x03)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(
+                        5,
+                        FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        0x03)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
@@ -7464,28 +8902,61 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
-                0x40, 0x50, EntityStatus.ACTIVE,
-                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW), 0, 0, 0, 0, -1, false),
-            new RoomEntity(6, 0, 0xAD, 0x44, 0x58, EntityStatus.ACTIVE,
-                catalog.forEntityType(0xAD, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, tables);
-        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
-            0, 0, false));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(
+                        new RoomEntity(
+                                5,
+                                -1,
+                                FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                                0x40,
+                                0x50,
+                                EntityStatus.ACTIVE,
+                                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                6,
+                                0,
+                                0xAD,
+                                0x44,
+                                0x58,
+                                EntityStatus.ACTIVE,
+                                catalog.forEntityType(0xAD, EntityRoomLoader.RoomTable.OVERWORLD),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x58, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x44, 0x58, () -> 0));
         runtime.debug().setBowWowTransitionCountdownForTest(5, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x58, () -> 0));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(6).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(6).status());
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(6));
         assertEquals(1, runtime.inspection().entityInertia(6));
-        assertEquals(List.of(new EntityCombatEvent(5,
-            FollowingNpcEntitySpawner.ENTITY_BOW_WOW, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x03)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(
+                        5,
+                        FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        0x03)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
@@ -7493,15 +8964,41 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
-                0x40, 0x50, EntityStatus.ACTIVE,
-                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW), 0, 0, 0, 0, -1, false),
-            new RoomEntity(6, 0, 0x3D, 0x44, 0x58, EntityStatus.ACTIVE,
-                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, tables);
-        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
-            0, 0, false));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(
+                        new RoomEntity(
+                                5,
+                                -1,
+                                FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                                0x40,
+                                0x50,
+                                EntityStatus.ACTIVE,
+                                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        new RoomEntity(
+                                6,
+                                0,
+                                0x3D,
+                                0x44,
+                                0x58,
+                                EntityStatus.ACTIVE,
+                                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
+                                0,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
         runtime.debug().setEntityPrivateState4ForTest(6, 1);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x58, () -> 0));
@@ -7509,19 +9006,20 @@ final class RoomEntityRuntimeTest {
         runtime.debug().setBowWowTransitionCountdownForTest(5, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x58, () -> 0));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(6).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(6).status());
         assertEquals(0, runtime.inspection().bowWowTransitionCountdown(5));
         assertEquals(0x80, runtime.inspection().bowWowPrivateCountdown2(5));
-        assertEquals(List.of(new DialogRequest(1, 0x15)),
-            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(1, 0x15)), runtime.consumePendingDialogRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
     @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x70, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x70, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
@@ -7538,21 +9036,25 @@ final class RoomEntityRuntimeTest {
     void onlyTheFirstEightLoadOrdersContributeToThePersistentClearMask() {
         EntitySpriteDefinition definition = pairDefinition(0x33, 2);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 3, 0x33, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false),
-            new RoomEntity(1, 8, 0x33, 40, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                new RoomEntity(0, 3, 0x33, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false),
+                new RoomEntity(1, 8, 0x33, 40, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         assertEquals(1 << 3, runtime.clearEntity(0));
         assertEquals(0, runtime.clearEntity(1));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(1).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(1).status());
     }
 
     @Test
     void collectionUsesTheRomPickableTableAndFrameSlotCadence() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
@@ -7563,14 +9065,16 @@ final class RoomEntityRuntimeTest {
         assertNotNull(pickup);
         assertEquals(0, pickup.slot());
         assertEquals(0x2D, pickup.type());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void floatingItemsAnimateRomZOnTheFirstAndSubsequentActiveFramesWithoutMovingXY() {
         EntitySpriteDefinition definition = pairDefinition(0x86, 7);
-        RoomEntity initialEntity = new RoomEntity(0, 0, 0x86, 24, 64,
-            EntityStatus.INIT, definition, 0, 0, 0, 0x13, -1, false);
+        RoomEntity initialEntity =
+                new RoomEntity(0, 0, 0x86, 24, 64, EntityStatus.INIT, definition, 0, 0, 0, 0x13, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initialEntity));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
@@ -7586,31 +9090,31 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void floatingCollectionUsesVisualYPersistenceAndSourceVariantData() {
-        RoomEntity entity = new RoomEntity(0, 0, 0x86, 24, 64,
-            EntityStatus.ACTIVE, pairDefinition(0x86, 7), 0, 0, 0, 0x13, -1, false);
+        RoomEntity entity = new RoomEntity(
+                0, 0, 0x86, 24, 64, EntityStatus.ACTIVE, pairDefinition(0x86, 7), 0, 0, 0, 0x13, -1, false);
         RoomEntityRuntime belowLinkZ = RoomEntityRuntime.from(snapshot(entity));
         assertNull(belowLinkZ.collectIfNeeded(1, 24, 47, true, true, 0, 0x0B));
 
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(entity));
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 47,
-            true, true, 0, 0x0C);
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 47, true, true, 0, 0x0C);
 
         assertNotNull(pickup);
         assertEquals(0x86, pickup.type());
         assertEquals(0, pickup.sourceVariant());
         assertEquals(1, pickup.persistentClearMask());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
     void floatingCollectionAllowsAirborneLinkInSideScrollingRoomsWithoutZGate() {
-        RoomEntity entity = new RoomEntity(0, 0, 0xE5, 24, 64,
-            EntityStatus.ACTIVE, pairDefinition(0xE5, 7), 5, 0, 0, 0x13, -1, false);
+        RoomEntity entity = new RoomEntity(
+                0, 0, 0xE5, 24, 64, EntityStatus.ACTIVE, pairDefinition(0xE5, 7), 5, 0, 0, 0x13, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(entity));
         runtime.configuration().setGroundInteractionSideScrolling(true);
 
-        EntityPickupEvent pickup = runtime.collectIfNeeded(0, 24, 47,
-            true, true, 0, 0x00);
+        EntityPickupEvent pickup = runtime.collectIfNeeded(0, 24, 47, true, true, 0, 0x00);
 
         assertNotNull(pickup);
         assertEquals(0xE5, pickup.type());
@@ -7620,8 +9124,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void collectionUsesThePickupHitboxEdgesFromHitboxPositions() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
 
         RoomEntityRuntime xInside = RoomEntityRuntime.from(initial);
         assertNotNull(xInside.collectIfNeeded(1, 34, 34, false, true));
@@ -7639,8 +9143,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void collectionSkipsAirborneAndNonInteractiveLinkStates() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
 
         assertNull(RoomEntityRuntime.from(initial).collectIfNeeded(1, 24, 34, true, true));
         assertNull(RoomEntityRuntime.from(initial).collectIfNeeded(1, 24, 34, false, false));
@@ -7651,37 +9155,41 @@ final class RoomEntityRuntimeTest {
         for (int type : new int[] {0x33, 0x34}) {
             EntitySpriteDefinition definition = pairDefinition(type, 2);
             RoomEntitySnapshot initial = snapshot(
-                new RoomEntity(0, 0, type, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+                    new RoomEntity(0, 0, type, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
             RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
             EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
 
             assertNotNull(pickup);
             assertEquals(1, pickup.persistentClearMask());
-            assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+            assertEquals(
+                    EntityStatus.ACTIVE,
+                    runtime.inspection().snapshot().slots().get(0).status());
             assertFalse(runtime.inspection().liftedEntityState().active());
             assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
             for (int frame = 0; frame < 46; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame));
-            assertEquals(List.of(new DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)),
-                runtime.consumePendingDialogRequests());
+            assertEquals(
+                    List.of(new DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)), runtime.consumePendingDialogRequests());
             runtime.configuration().setDialogActive(true);
             for (int frame = 46; frame < 246; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame));
             assertTrue(runtime.inspection().powerUpPickupSequenceActive());
             assertFalse(runtime.inspection().liftedEntityState().active());
-            assertEquals(List.of(new LinkHeldItemPoseRequest(0, true)),
-                runtime.consumePendingLinkHeldItemPoseRequests());
+            assertEquals(
+                    List.of(new LinkHeldItemPoseRequest(0, true)), runtime.consumePendingLinkHeldItemPoseRequests());
             runtime.configuration().setDialogActive(false);
             runtime.tick(EntityTestFrames.frame(runtime, 246));
             assertFalse(runtime.inspection().powerUpPickupSequenceActive());
-            assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+            assertEquals(
+                    EntityStatus.DISABLED,
+                    runtime.inspection().snapshot().slots().get(0).status());
         }
     }
 
     @Test
     void keyDropPointNormalVariantImmediatelyAwardsASmallKeyAndClears() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         assertEquals(0xB1, runtime.enemies().physicsFlags(0));
         assertEquals(0x0A, runtime.options1(0));
@@ -7691,21 +9199,25 @@ final class RoomEntityRuntimeTest {
         assertNotNull(pickup);
         assertEquals(0x30, pickup.type());
         assertEquals(1, pickup.persistentClearMask());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(List.of(new KeyRewardEvent(
-            0, ChestContentsTable.CHEST_SMALL_KEY)),
-            runtime.consumePendingKeyRewardEvents());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                List.of(new KeyRewardEvent(0, ChestContentsTable.CHEST_SMALL_KEY)),
+                runtime.consumePendingKeyRewardEvents());
     }
 
     @Test
     void keyDropPointDungeonVariantStartsTheHeldRewardTransitionAndUsesRomDialog() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 2, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 2, 0, 0, 0, -1, false)));
 
         EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
         assertNotNull(pickup);
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x68, runtime.pickupState().keyDropTransitionCountdown(0));
 
         runtime.debug().setKeyDropTransitionCountdownForTest(0, 0x11);
@@ -7716,20 +9228,21 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x40, held.x());
         assertEquals(0x44, held.y());
         assertEquals(0x0F, runtime.pickupState().keyDropTransitionCountdown(0));
-        assertEquals(List.of(new DialogRequest(0, 0xA3)),
-            runtime.consumePendingDialogRequests());
-        assertEquals(List.of(new KeyRewardEvent(
-            0, ChestContentsTable.CHEST_ANGLER_KEY)),
-            runtime.consumePendingKeyRewardEvents());
+        assertEquals(List.of(new DialogRequest(0, 0xA3)), runtime.consumePendingDialogRequests());
+        assertEquals(
+                List.of(new KeyRewardEvent(0, ChestContentsTable.CHEST_ANGLER_KEY)),
+                runtime.consumePendingKeyRewardEvents());
     }
 
     @Test
     void keyDropPointMasterStalfosRoomUsesHookshotPresentationAndReward() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-            true, () -> 0, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, -1, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
+                true,
+                () -> 0,
+                catalog);
         runtime.debug().setEntityRoomIdForTest(0x80);
         runtime.debug().setKeyDropTransitionCountdownForTest(0, 0x11);
 
@@ -7740,18 +9253,17 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntitySpriteDefinition.Shape.PAIR, held.spriteDefinition().shape());
         assertEquals(0x36, held.spriteDefinition().variant(0).first().tile());
         assertEquals(0x0F, runtime.pickupState().keyDropTransitionCountdown(0));
-        assertEquals(List.of(new DialogRequest(0, 0x93)),
-            runtime.consumePendingDialogRequests());
-        assertEquals(List.of(new KeyRewardEvent(
-            0, ChestContentsTable.CHEST_HOOKSHOT)),
-            runtime.consumePendingKeyRewardEvents());
+        assertEquals(List.of(new DialogRequest(0, 0x93)), runtime.consumePendingDialogRequests());
+        assertEquals(
+                List.of(new KeyRewardEvent(0, ChestContentsTable.CHEST_HOOKSHOT)),
+                runtime.consumePendingKeyRewardEvents());
     }
 
     @Test
     void keyDropPointAtYarnaQuicksandCenterStartsTheRomFallingHandoff() {
         EntitySpriteDefinition definition = keyDropDefinition();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, 0x30, 0x50, 0x48, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, -1, 0x30, 0x50, 0x48, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setEntityRoomIdForTest(0xCE);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -7761,26 +9273,37 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x2F, runtime.enemies().transitionCountdown(0));
         assertEquals(0x50, runtime.enemies().fallingTargetX(0));
         assertEquals(0x48, runtime.enemies().fallingTargetY(0));
-        assertEquals(List.of(new KeyQuicksandEvent(0)),
-            runtime.consumePendingKeyQuicksandEvents());
-        assertEquals(List.of(new EntityCombatEvent(0, 0x30, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(List.of(new KeyQuicksandEvent(0)), runtime.consumePendingKeyQuicksandEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x30, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void armosKnightDeathUsesItsRomBossCountdownsBeforeDidKillEnemy() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        RoomEntity source = new RoomEntity(15, 0, 0x88, 0x50, 0x60,
-            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x88), -1,
-            0, 0, 0x05, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
-            () -> 0, catalog);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x88,
+                0x50,
+                0x60,
+                EntityStatus.DYING,
+                EntitySpriteDefinition.unsupported(0x88),
+                -1,
+                0,
+                0,
+                0x05,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false, () -> 0, catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0xA0, runtime.enemies().transitionCountdown(15));
         assertEquals(0xFF, runtime.enemies().enemyFlashCountdown(15));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(15).status());
 
         for (int frame = 1; frame <= 0xA0; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
@@ -7793,31 +9316,54 @@ final class RoomEntityRuntimeTest {
         }
 
         RoomEntity drop = runtime.inspection().snapshot().slots().get(14);
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(EntityStatus.ACTIVE, drop.status());
         assertEquals(0x30, drop.type());
         assertEquals(0x03, drop.spriteVariant());
         assertEquals(0x50, drop.x());
         assertEquals(0x60, drop.y());
         assertEquals(0x05, drop.z());
-        assertEquals(List.of(new EntityCombatEvent(15, 0x88, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(15, 0x88, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void rollingBonesLaunchesTheBarAfterTheRomPreparationDelay() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new RoomEntity(0, 1, 0x82, 0x38, 0x38,
-            EntityStatus.ACTIVE, catalog.forEntityType(
-                0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
-        RoomEntity boss = new RoomEntity(1, 0, 0x81, 0x47, 0x38,
-            EntityStatus.ACTIVE, catalog.forEntityType(
-                0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
+        RoomEntity bar = new RoomEntity(
+                0,
+                1,
+                0x82,
+                0x38,
+                0x38,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntity boss = new RoomEntity(
+                1,
+                0,
+                0x81,
+                0x47,
+                0x38,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshotWithSlots(bar, boss), true, () -> 0, catalog,
-            new RomEnemyCombatTables(rom));
+                snapshotWithSlots(bar, boss), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x48, () -> 0));
         assertEquals(0x18, runtime.enemies().transitionCountdown(1));
@@ -7829,16 +9375,22 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.bosses().rollingBonesBarStateForTest(0));
         assertEquals(-0x10, runtime.bosses().rollingBonesBarSpeedXForTest(0));
         assertTrue(runtime.inspection().snapshot().slots().get(0).x() < 0x38);
-        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
-            runtime.inspection().snapshot().slots().get(0).spriteDefinition().shape());
+        assertEquals(
+                EntitySpriteDefinition.Shape.DYNAMIC,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(0)
+                        .spriteDefinition()
+                        .shape());
 
         for (int frame = 0x19; frame <= 0x1C; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x48, () -> 0));
         }
         RoomEntity animatedBar = runtime.inspection().snapshot().slots().get(0);
         assertEquals(
-            catalog.forRollingBonesBar(0, animatedBar.y(), 1).dynamicVariant(0),
-            animatedBar.spriteDefinition().dynamicVariant(0));
+                catalog.forRollingBonesBar(0, animatedBar.y(), 1).dynamicVariant(0),
+                animatedBar.spriteDefinition().dynamicVariant(0));
         assertEquals(0, animatedBar.spriteVariant());
     }
 
@@ -7846,18 +9398,41 @@ final class RoomEntityRuntimeTest {
     void rollingBonesRecoilSkipsItsApproachAndJumpPhysics() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new RoomEntity(0, 1, 0x82, 56, 64, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
-        RoomEntity boss = new RoomEntity(1, 0, 0x81, 71, 64, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(bar, boss),
-            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity bar = new RoomEntity(
+                0,
+                1,
+                0x82,
+                56,
+                64,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntity boss = new RoomEntity(
+                1,
+                0,
+                0x81,
+                71,
+                64,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(bar, boss), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.debug().configureEnemyRecoilForTest(1, 87, 64, 0x30);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(1, 10);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, () -> 0));
         assertEquals(68, runtime.inspection().snapshot().slots().get(1).x());
-        assertEquals(0, runtime.enemies().transitionCountdown(1),
-            "Recoil must not also enter the prepare-roll state");
+        assertEquals(0, runtime.enemies().transitionCountdown(1), "Recoil must not also enter the prepare-roll state");
         assertEquals(9, runtime.enemies().enemyIgnoreHitsCountdown(1));
     }
 
@@ -7865,45 +9440,93 @@ final class RoomEntityRuntimeTest {
     void rollingBonesNewSwordHitStartsRecoilOnTheFollowingHandlerFrame() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new RoomEntity(0, 1, 0x82, 56, 64, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
-        RoomEntity boss = new RoomEntity(1, 0, 0x81, 71, 64, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(bar, boss),
-            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity bar = new RoomEntity(
+                0,
+                1,
+                0x82,
+                56,
+                64,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntity boss = new RoomEntity(
+                1,
+                0,
+                0x81,
+                71,
+                64,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(bar, boss), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.resolveCombat(0, 87, 64, false, true, true, 71, 8, 64, 8);
         assertEquals(7, runtime.enemies().enemyHealth(1));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, () -> 0));
         assertEquals(71, runtime.inspection().snapshot().slots().get(1).x());
         assertEquals(10, runtime.enemies().enemyIgnoreHitsCountdown(1));
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(1));
-        assertEquals(0x18, runtime.enemies().transitionCountdown(1),
-            "The hit frame still executes the ordinary approach handler");
+        assertEquals(
+                0x18,
+                runtime.enemies().transitionCountdown(1),
+                "The hit frame still executes the ordinary approach handler");
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 72, () -> 0));
         assertEquals(68, runtime.inspection().snapshot().slots().get(1).x());
         assertEquals(9, runtime.enemies().enemyIgnoreHitsCountdown(1));
         for (int frame = 2; frame < 24; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 72, () -> 0));
         RoomEntity recovered = runtime.inspection().snapshot().slots().get(1);
         assertEquals(1, runtime.enemies().enemyFlashCountdown(1));
-        runtime.resolveCombat(24, 87, 64, false, true, true,
-            recovered.x(), 8, recovered.y(), 8);
-        assertEquals(6, runtime.enemies().enemyHealth(1),
-            "The collision phase sees the flash timer decremented for this frame");
+        runtime.resolveCombat(24, 87, 64, false, true, true, recovered.x(), 8, recovered.y(), 8);
+        assertEquals(
+                6,
+                runtime.enemies().enemyHealth(1),
+                "The collision phase sees the flash timer decremented for this frame");
     }
 
     @Test
     void rollingBonesDeathSetsTailCaveMinibossEventAndRemovesTheBar() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new RoomEntity(14, 1, 0x82, 0x38, 0x38,
-            EntityStatus.ACTIVE, catalog.forEntityType(
-                0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
-        RoomEntity boss = new RoomEntity(15, 0, 0x81, 0x58, 0x58,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), -1, 0, 0, 0, -1, false);
+        RoomEntity bar = new RoomEntity(
+                14,
+                1,
+                0x82,
+                0x38,
+                0x38,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntity boss = new RoomEntity(
+                15,
+                0,
+                0x81,
+                0x58,
+                0x58,
+                EntityStatus.DYING,
+                catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                -1,
+                0,
+                0,
+                0,
+                -1,
+                false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshotWithSlots(bar, boss), true, sequence(0x00, 0x1F), catalog,
-            new RomEnemyCombatTables(rom));
+                snapshotWithSlots(bar, boss), true, sequence(0x00, 0x1F), catalog, new RomEnemyCombatTables(rom));
         runtime.debug().setEntityMapIdForTest(0x00);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.configuration().setEnemyDropPlayerState(3, 4, false);
@@ -7918,36 +9541,51 @@ final class RoomEntityRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, sequence(0x00, 0x1F)));
         }
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0x20, runtime.consumePendingRoomStatusMask());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
         var fairy = runtime.inspection().snapshot().loadedEntities().stream()
-            .filter(e -> e.type() == 0x2F).findFirst().orElseThrow();
+                .filter(e -> e.type() == 0x2F)
+                .findFirst()
+                .orElseThrow();
         assertEquals(boss.x(), fairy.x());
         assertEquals(boss.y(), fairy.y());
 
         runtime.debug().setEntityRoomStatusForTest(0x20);
         runtime.tick(EntityTestFrames.frame(runtime, 0x100, 0, 0, () -> 0));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(14).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(14).status());
     }
 
     @Test
     void rollingBonesBarSkipsAirborneLinkAndClinksAGroundedSword() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new RoomEntity(0, 0, 0x82, 0x50, 0x50,
-            EntityStatus.ACTIVE, catalog.forEntityType(
-                0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(bar), true,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity bar = new RoomEntity(
+                0,
+                0,
+                0x82,
+                0x50,
+                0x50,
+                EntityStatus.ACTIVE,
+                catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshotWithSlots(bar), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        assertTrue(runtime.resolveCombat(
-            1, 0x50, 0x50, true, true, true,
-            0x50, 0x10, 0x50, 0x10).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 0x50, 0x50, true, true, true, 0x50, 0x10, 0x50, 0x10)
+                .isEmpty());
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-            1, 0xC0, 0xC0, false, true, true,
-            0x50, 0x10, 0x50, 0x10);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(1, 0xC0, 0xC0, false, true, true, 0x50, 0x10, 0x50, 0x10);
 
         assertEquals(1, events.size());
         assertEquals(0, events.get(0).enemyDamage());
@@ -7958,15 +9596,27 @@ final class RoomEntityRuntimeTest {
     @Test
     void desertLanmolaDeathUsesTheRomKeyProducerCountdownAndSpawnFields() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        RoomEntity source = new RoomEntity(15, 0, 0x87, 0x44, 0x58,
-            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x87), -1,
-            0, 0, 0x07, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
-            () -> 0, catalog);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x87,
+                0x44,
+                0x58,
+                EntityStatus.DYING,
+                EntitySpriteDefinition.unsupported(0x87),
+                -1,
+                0,
+                0,
+                0x07,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false, () -> 0, catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x60, runtime.enemies().transitionCountdown(15));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(15).status());
 
         for (int frame = 1; frame <= 0x60; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
@@ -7978,7 +9628,9 @@ final class RoomEntityRuntimeTest {
         }
 
         RoomEntity drop = runtime.inspection().snapshot().slots().get(14);
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(EntityStatus.ACTIVE, drop.status());
         assertEquals(0x30, drop.type());
         assertEquals(0x02, drop.spriteVariant());
@@ -7987,19 +9639,29 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x07, drop.z());
         assertEquals(0x10, runtime.inspection().dropPrivateCountdown1(14));
         assertEquals(0x10, runtime.inspection().dropSpeedZ(14));
-        assertEquals(List.of(new EntityCombatEvent(15, 0x87, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x13)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(15, 0x87, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void masterStalfosDeathUsesTheRomKeyProducerCountdownAndSpawnFields() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        RoomEntity source = new RoomEntity(15, 0, 0x5F, 0x4C, 0x5A,
-            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x5F), -1,
-            0, 0, 0x09, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), true,
-            () -> 0, catalog);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x5F,
+                0x4C,
+                0x5A,
+                EntityStatus.DYING,
+                EntitySpriteDefinition.unsupported(0x5F),
+                -1,
+                0,
+                0,
+                0x09,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), true, () -> 0, catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0xA0, runtime.enemies().transitionCountdown(15));
@@ -8014,7 +9676,9 @@ final class RoomEntityRuntimeTest {
         }
 
         RoomEntity drop = runtime.inspection().snapshot().slots().get(14);
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(EntityStatus.ACTIVE, drop.status());
         assertEquals(0x30, drop.type());
         assertEquals(0x00, drop.spriteVariant());
@@ -8023,21 +9687,23 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, drop.z());
         assertEquals(0x20, runtime.inspection().dropPrivateCountdown1(14));
         assertEquals(0x18, runtime.inspection().dropSpeedZ(14));
-        assertEquals(List.of(new EntityCombatEvent(15, 0x5F, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(15, 0x5F, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void indoorDroppablesRemainHiddenWhenTheirInitTimerExpires() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x37, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
+        RoomEntitySnapshot initial =
+                snapshot(new RoomEntity(0, 0, 0x37, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, true);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x80, runtime.inspection().slowTransitionCountdown(0));
         assertEquals(0x02, runtime.inspection().droppablePrivateState3(0));
         assertEquals(0x11, runtime.options1(0));
@@ -8047,15 +9713,17 @@ final class RoomEntityRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame));
         }
         assertEquals(0x00, runtime.inspection().slowTransitionCountdown(0));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
     @Test
     void outdoorDroppableStaysHiddenUntilTheRomPegasusCollisionRevealsIt() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x37, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x37, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
 
@@ -8092,8 +9760,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void outdoorHeartUsesTheRomObjectUnderEntityRevealPath() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2D, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x2D, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
@@ -8116,14 +9784,16 @@ final class RoomEntityRuntimeTest {
     @Test
     void hidingSlimeKeyUsesTheBuriedRevealPathAndCannotBeCollectedFromGrass() {
         EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setEntityRoomIdForTest(0xC6);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x02, runtime.inspection().droppablePrivateState3(0));
         assertEquals(0x1B, runtime.options1(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -8142,8 +9812,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void hidingSlimeKeyRunsItsLeafRewardAtTransitionCountdownTen() {
         EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setEntityRoomIdForTest(0xC6);
         runtime.debug().setGoldenLeavesCountForTest(5);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
@@ -8159,30 +9829,29 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0F, runtime.enemies().transitionCountdown(0));
         assertEquals(0x20, held.x());
         assertEquals(0x24, held.y());
-        assertEquals(List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)),
-            runtime.consumePendingSlimeKeyRewardEvents());
-        assertEquals(List.of(new DialogRequest(0, 0xA2)),
-            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)), runtime.consumePendingSlimeKeyRewardEvents());
+        assertEquals(List.of(new DialogRequest(0, 0xA2)), runtime.consumePendingDialogRequests());
     }
 
     @Test
     void completedRoomUnloadsAnInitializingHidingSlimeKeyWithoutPersistence() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT,
-                pairDefinition(0x3C, 1), 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+                0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT, pairDefinition(0x3C, 1), 0, 0, 0, 0, -1, false)));
         runtime.debug().setEntityRoomStatusForTest(0x10);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
     }
 
     @Test
     void outdoorFairyUsesTheSharedRevealVectorBeforeItsHoverHandler() {
         EntitySpriteDefinition definition = pairDefinition(0x2F, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2F, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(0, 0, 0x2F, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
         assertEquals(0x01, runtime.inspection().droppablePrivateState3(0));
@@ -8202,7 +9871,7 @@ final class RoomEntityRuntimeTest {
     void revealedDroppableUsesTheRomBlinkSentinelBeforeUnloading() {
         EntitySpriteDefinition definition = pairDefinition(0x2E, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
+                new RoomEntity(0, 0, 0x2E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.debug().setDroppableRevealedForTest(0, 0x1A);
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
@@ -8218,39 +9887,46 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EnemyDropResolver resolver = new EnemyDropResolver(rom);
 
-        RoomEntityRuntime staticRuntime = RoomEntityRuntime.from(snapshotAt(
-            dyingEntity(0, 0, 0x09, catalog)), false, () -> 0, catalog, tables);
+        RoomEntityRuntime staticRuntime =
+                RoomEntityRuntime.from(snapshotAt(dyingEntity(0, 0, 0x09, catalog)), false, () -> 0, catalog, tables);
         staticRuntime.configuration().setEnemyDropResolver(resolver);
         staticRuntime.debug().setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
         staticRuntime.tick(EntityTestFrames.frame(staticRuntime, 0, 0, 0, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, staticRuntime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                staticRuntime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, staticRuntime.inspection().killCount());
         assertEquals(0, staticRuntime.inspection().killOrderAt(0));
         assertEquals(1, staticRuntime.consumePendingClearedEntityMask());
 
-        RoomEntityRuntime dynamicRuntime = RoomEntityRuntime.from(snapshotAt(
-            dyingEntity(0, -1, 0x09, catalog)), false, () -> 0, catalog, tables);
+        RoomEntityRuntime dynamicRuntime =
+                RoomEntityRuntime.from(snapshotAt(dyingEntity(0, -1, 0x09, catalog)), false, () -> 0, catalog, tables);
         dynamicRuntime.configuration().setEnemyDropResolver(resolver);
         dynamicRuntime.debug().setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
         dynamicRuntime.tick(EntityTestFrames.frame(dynamicRuntime, 0, 0, 0, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, dynamicRuntime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                dynamicRuntime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, dynamicRuntime.inspection().killCount());
-        assertEquals(new EnemyDropResolver.CounterState(0, 0),
-            dynamicRuntime.inspection().enemyDropCounters());
+        assertEquals(
+                new EnemyDropResolver.CounterState(0, 0),
+                dynamicRuntime.inspection().enemyDropCounters());
         assertEquals(0, dynamicRuntime.consumePendingClearedEntityMask());
     }
 
     @Test
-    void explicitAndRandomNoDropDeathsUnloadWithExpectedCounterAndRandomBehavior()
-            throws IOException {
+    void explicitAndRandomNoDropDeathsUnloadWithExpectedCounterAndRandomBehavior() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            dyingEntity(0, 0, 0x09, catalog),
-            dyingEntity(1, 1, 0x0B, catalog)), false, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(dyingEntity(0, 0, 0x09, catalog), dyingEntity(1, 1, 0x0B, catalog)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
         runtime.debug().setDroppedItemForTest(1, 0);
@@ -8266,33 +9942,44 @@ final class RoomEntityRuntimeTest {
         assertEquals(2, runtime.inspection().killCount());
         assertEquals(1, runtime.inspection().killOrderAt(0));
         assertEquals(0, runtime.inspection().killOrderAt(1));
-        assertEquals(new EnemyDropResolver.CounterState(1, 1),
-            runtime.inspection().enemyDropCounters());
+        assertEquals(
+                new EnemyDropResolver.CounterState(1, 1), runtime.inspection().enemyDropCounters());
         assertEquals(1, randomReads.get());
         assertEquals(0b11, runtime.consumePendingClearedEntityMask());
     }
 
     @Test
-    void terminalEnemyDeathSpawnsTopDownDropInReverseFreeSlotAndPreservesItUntilNextTick()
-            throws IOException {
+    void terminalEnemyDeathSpawnsTopDownDropInReverseFreeSlotAndPreservesItUntilNextTick() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         int sourceX = 0x44;
         int sourceY = 0x58;
         int sourceZ = 0x07;
-        RoomEntity source = new RoomEntity(15, 0, 0x09, sourceX, sourceY,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, sourceZ, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
-            () -> 0, catalog, tables);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x09,
+                sourceX,
+                sourceY,
+                EntityStatus.DYING,
+                catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                0,
+                0,
+                0,
+                sourceZ,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false, () -> 0, catalog, tables);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setDroppedItemForTest(15, 0x2E);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity drop = runtime.inspection().snapshot().slots().get(14);
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(EntityStatus.ACTIVE, drop.status());
         assertEquals(-1, drop.sourceLoadOrder());
         assertEquals(0x2E, drop.type());
@@ -8312,23 +9999,25 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x17, runtime.inspection().dropPrivateCountdown1(14));
         assertEquals(0x02, runtime.inspection().dropPrivateCountdown3(14));
-        assertEquals((sourceZ + 1) & 0xFF, runtime.inspection().snapshot().slots().get(14).z());
+        assertEquals(
+                (sourceZ + 1) & 0xFF,
+                runtime.inspection().snapshot().slots().get(14).z());
         assertEquals(0x16, runtime.inspection().dropSpeedZ(14));
-        assertNull(runtime.collectIfNeeded(1, sourceX, sourceY + 2,
-            false, true));
+        assertNull(runtime.collectIfNeeded(1, sourceX, sourceY + 2, false, true));
 
         for (int frame = 2; frame <= 24; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(0, runtime.inspection().dropPrivateCountdown1(14));
         runtime.tick(EntityTestFrames.frame(runtime, 25, 0, 0, () -> 0));
-        EntityPickupEvent pickup = runtime.collectIfNeeded(25, sourceX, sourceY + 2,
-            false, true);
+        EntityPickupEvent pickup = runtime.collectIfNeeded(25, sourceX, sourceY + 2, false, true);
         assertNotNull(pickup);
         assertEquals(14, pickup.slot());
         assertEquals(0x2E, pickup.type());
         assertEquals(0, pickup.persistentClearMask());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(14).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(14).status());
         assertEquals(0, runtime.inspection().dropPrivateCountdown1(14));
         assertEquals(0, runtime.inspection().dropPrivateCountdown3(14));
         assertEquals(0, runtime.inspection().dropSpeedZ(14));
@@ -8336,16 +10025,26 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void terminalEnemyDeathSpawnsSideScrollHeartWithRomDropConfiguration()
-            throws IOException {
+    void terminalEnemyDeathSpawnsSideScrollHeartWithRomDropConfiguration() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity source = new RoomEntity(15, 0, 0x0B, 0x50, 0x60,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x09, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source).withSideScrolling(true),
-            false, () -> 0, catalog, tables);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x0B,
+                0x50,
+                0x60,
+                EntityStatus.DYING,
+                catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                0,
+                0,
+                0,
+                0x09,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshotAt(source).withSideScrolling(true), false, () -> 0, catalog, tables);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setDroppedItemForTest(15, 0x2D);
 
@@ -8368,22 +10067,32 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void sideScrollDropUsesDownCollisionToAlignAndStopWeakLanding()
-            throws IOException {
+    void sideScrollDropUsesDownCollisionToAlignAndStopWeakLanding() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity source = new RoomEntity(15, 0, 0x0B, 0x50, 0x60,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x09, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source).withSideScrolling(true),
-            false, () -> 0, catalog, tables);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x0B,
+                0x50,
+                0x60,
+                EntityStatus.DYING,
+                catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                0,
+                0,
+                0,
+                0x09,
+                -1,
+                false);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(snapshotAt(source).withSideScrolling(true), false, () -> 0, catalog, tables);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setDroppedItemForTest(15, 0x2D);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        RoomEntityBackgroundCollision collision = (entity, direction, nextX, nextY) ->
-            direction == EntityBackgroundCollisionResult.DOWN;
+        RoomEntityBackgroundCollision collision =
+                (entity, direction, nextX, nextY) -> direction == EntityBackgroundCollisionResult.DOWN;
         for (int frame = 1; frame <= 11; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0, collision));
         }
@@ -8400,23 +10109,48 @@ final class RoomEntityRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         List<RoomEntity> entities = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
-            entities.add(new RoomEntity(slot, slot + 1, 0xFF, 0x20, 0x20,
-                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xFF), -1, 0, 0, 0, -1, false));
+            entities.add(new RoomEntity(
+                    slot,
+                    slot + 1,
+                    0xFF,
+                    0x20,
+                    0x20,
+                    EntityStatus.ACTIVE,
+                    EntitySpriteDefinition.unsupported(0xFF),
+                    -1,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    false));
         }
-        RoomEntity source = new RoomEntity(15, 0, 0x09, 0x44, 0x58,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0, -1, false);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x09,
+                0x44,
+                0x58,
+                EntityStatus.DYING,
+                catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
         entities.add(source);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(entities),
-            false, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.from(new RoomEntitySnapshot(entities), false, () -> 0, catalog, tables);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setDroppedItemForTest(15, 0x2E);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(15).status());
-        assertFalse(runtime.inspection().snapshot().slots().stream().anyMatch(
-            entity -> entity.loaded() && (entity.type() == 0x2D || entity.type() == 0x2E)));
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(15).status());
+        assertFalse(runtime.inspection().snapshot().slots().stream()
+                .anyMatch(entity -> entity.loaded() && (entity.type() == 0x2D || entity.type() == 0x2E)));
         assertEquals(1, runtime.inspection().killCount());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
     }
@@ -8427,12 +10161,10 @@ final class RoomEntityRuntimeTest {
         int[] cannotBeCollected = {0x2F, 0x30, 0x32, 0x35, 0x36, 0x39, 0x3A, 0x3C, 0x3D};
 
         for (int type : canBeCollected) {
-            assertTrue(RoomEntityPickupRules.canBeCollectedBySword(type),
-                "type 0x" + Integer.toHexString(type));
+            assertTrue(RoomEntityPickupRules.canBeCollectedBySword(type), "type 0x" + Integer.toHexString(type));
         }
         for (int type : cannotBeCollected) {
-            assertFalse(RoomEntityPickupRules.canBeCollectedBySword(type),
-                "type 0x" + Integer.toHexString(type));
+            assertFalse(RoomEntityPickupRules.canBeCollectedBySword(type), "type 0x" + Integer.toHexString(type));
         }
     }
 
@@ -8441,7 +10173,7 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
 
         int slot = runtime.spawnBomb(0x40, 0x50, 0x07, 3);
 
@@ -8453,7 +10185,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x40, bomb.x());
         assertEquals(0x54, bomb.y());
         assertEquals(0x08, bomb.z());
-        assertEquals(EntitySpriteDefinition.Shape.SINGLE, bomb.spriteDefinition().shape());
+        assertEquals(
+                EntitySpriteDefinition.Shape.SINGLE, bomb.spriteDefinition().shape());
         assertEquals(0x03, bomb.spriteDefinition().bank());
         assertEquals(0x652E, bomb.spriteDefinition().address());
         assertEquals(0, bomb.spriteVariant());
@@ -8478,7 +10211,7 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
 
         int slot = runtime.spawnLiftableRockSmash(0x58, 0x60, 0x01);
 
@@ -8488,14 +10221,17 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x58, initial.x());
         assertEquals(0x60, initial.y());
         assertEquals(0x06, initial.spriteVariant());
-        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, initial.spriteDefinition().shape());
+        assertEquals(
+                EntitySpriteDefinition.Shape.DYNAMIC, initial.spriteDefinition().shape());
         assertEquals(0xD4, runtime.enemies().physicsFlags(slot));
         assertEquals(0x0A, runtime.options1(slot));
-        assertEquals(0x05, runtime.consumePendingEntityEvents().stream()
-            .filter(event -> event.type() == 0x05)
-            .findFirst()
-            .orElseThrow()
-            .soundId());
+        assertEquals(
+                0x05,
+                runtime.consumePendingEntityEvents().stream()
+                        .filter(event -> event.type() == 0x05)
+                        .findFirst()
+                        .orElseThrow()
+                        .soundId());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x06, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
@@ -8507,7 +10243,9 @@ final class RoomEntityRuntimeTest {
         for (int frame = 4; frame <= 29; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(slot).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(slot).status());
     }
 
     @Test
@@ -8515,7 +10253,7 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
 
         int slot = runtime.spawnLiftableRockRubble(0x48, 0x4F);
 
@@ -8536,8 +10274,10 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())).withSideScrolling(true),
-            false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())).withSideScrolling(true),
+                false,
+                null,
+                catalog);
 
         assertTrue(runtime.spawnBomb(0x40, 0x50, 0x07, 3) >= 0);
 
@@ -8548,14 +10288,12 @@ final class RoomEntityRuntimeTest {
     @Test
     void spawnPlayerArrowUsesLinkStateAndTheRomArrowDisplayList() {
         byte[] rom = syntheticRom();
-        write(rom, 0x03, 0x6BC6,
-            0x2E, 0x21, 0x2C, 0x21,
-            0x2C, 0x01, 0x2E, 0x01,
-            0x2A, 0x41, 0x2A, 0x61,
-            0x2A, 0x01, 0x2A, 0x21);
+        write(
+                rom, 0x03, 0x6BC6, 0x2E, 0x21, 0x2C, 0x21, 0x2C, 0x01, 0x2E, 0x01, 0x2A, 0x41, 0x2A, 0x61, 0x2A, 0x01,
+                0x2A, 0x21);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
 
         int slot = runtime.spawnArrow(0x40, 0x50, 0x07, 3);
 
@@ -8599,10 +10337,9 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition octorokDefinition = pairDefinition(0x09, 8);
-        RoomEntity octorok = new RoomEntity(15, 15, 0x09, 0x40, 0x50,
-            EntityStatus.ACTIVE, octorokDefinition, 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshotWithSlots(octorok), false, () -> 0, null, tables);
+        RoomEntity octorok =
+                new RoomEntity(15, 15, 0x09, 0x40, 0x50, EntityStatus.ACTIVE, octorokDefinition, 0, 0, 0, 0, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(octorok), false, () -> 0, null, tables);
 
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
         assertEquals(14, arrowSlot);
@@ -8613,14 +10350,28 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
 
         assertEquals(0, runtime.enemies().enemyHealth(15));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(15));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(15));
-        assertEquals(List.of(new EntityCombatEvent(15, 0x09, 0, false,
-            1, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x03,
-            EntityCombatEvent.SoundChannel.NONE, -1, null)),
-            runtime.consumePendingEntityEvents());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(arrowSlot).status());
+        assertEquals(
+                List.of(new EntityCombatEvent(
+                        15,
+                        0x09,
+                        0,
+                        false,
+                        1,
+                        -1,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        0x03,
+                        EntityCombatEvent.SoundChannel.NONE,
+                        -1,
+                        null)),
+                runtime.consumePendingEntityEvents());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(arrowSlot).status());
         // func_003_77A7 copies the active arrow's speed directly into the
         // target recoil velocity, even on a lethal hit.
         assertEquals(0x30, runtime.enemies().enemyRecoilSpeedXForTest(15));
@@ -8632,29 +10383,33 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition moblinDefinition = pairDefinition(0x0B, 8);
-        RoomEntity moblin = new RoomEntity(15, 15, 0x0B, 0x40, 0x50,
-            EntityStatus.ACTIVE, moblinDefinition, 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshotWithSlots(moblin), false, () -> 0, null, tables);
+        RoomEntity moblin =
+                new RoomEntity(15, 15, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE, moblinDefinition, 0, 0, 0, 0, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(moblin), false, () -> 0, null, tables);
 
         int candidateBomb = runtime.spawnBomb(0x40, 0x50, 0, 0);
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
         assertTrue(runtime.inspection().isBombArrowForTest(arrowSlot));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(candidateBomb).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(candidateBomb).status());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
 
         assertEquals(2, runtime.enemies().enemyHealth(15));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0x03, runtime.enemies().transitionCountdown(15));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(arrowSlot).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(arrowSlot).status());
         assertTrue(runtime.inspection().isBombArrowForTest(arrowSlot));
     }
 
     @Test
-    void shootingWithinTheBombArrowWindowRemovesTheLatestBombAndMarksTheArrow()
-        throws IOException {
+    void shootingWithinTheBombArrowWindowRemovesTheLatestBombAndMarksTheArrow() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(), false, null, catalog);
@@ -8664,12 +10419,20 @@ final class RoomEntityRuntimeTest {
 
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(bombSlot).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(bombSlot).status());
         assertTrue(runtime.inspection().isBombArrowForTest(arrowSlot));
         assertEquals(0, runtime.inspection().bombArrowCooldownForTest());
         assertFalse(runtime.inspection().lastArrowShotPlayedWhoosh());
-        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
-            runtime.inspection().snapshot().slots().get(arrowSlot).spriteDefinition().shape());
+        assertEquals(
+                EntitySpriteDefinition.Shape.DYNAMIC,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(arrowSlot)
+                        .spriteDefinition()
+                        .shape());
     }
 
     @Test
@@ -8713,10 +10476,12 @@ final class RoomEntityRuntimeTest {
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
         assertTrue(runtime.inspection().isBombArrowForTest(arrowSlot));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(bombSlot).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(bombSlot).status());
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x40, 0x50, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
         assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(arrowSlot));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
@@ -8724,31 +10489,38 @@ final class RoomEntityRuntimeTest {
         RoomEntity explosion = runtime.inspection().snapshot().loadedEntities().getFirst();
         assertEquals(0x02, explosion.type());
         assertEquals(0x17, runtime.enemies().transitionCountdown(explosion.slot()));
-        assertEquals(List.of(new EntityCombatEvent(explosion.slot(), 0x02, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
-            runtime.consumePendingEntityEvents());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(arrowSlot).status());
+        assertEquals(
+                List.of(new EntityCombatEvent(
+                        explosion.slot(), 0x02, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
+                runtime.consumePendingEntityEvents());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(arrowSlot).status());
     }
 
     @Test
     void reboundingPlayerArrowDoesNotRunTheEnemyDamagePass() throws IOException {
-        RoomEntity target = new RoomEntity(15, 15, 0x09, 0x40, 0x50,
-            EntityStatus.ACTIVE, pairDefinition(0x09, 8), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(target),
-            false, () -> 0, null, new RomEnemyCombatTables(loadRom()));
+        RoomEntity target = new RoomEntity(
+                15, 15, 0x09, 0x40, 0x50, EntityStatus.ACTIVE, pairDefinition(0x09, 8), 0, 0, 0, 0, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(target), false, () -> 0, null, new RomEnemyCombatTables(loadRom()));
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
 
         // Target slot 15 is skipped by the even-frame damage cadence. The
         // arrow hits a wall instead, then overlaps the target on frame 1.
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
-            (entity, direction, x, y) -> entity.type() == 0 && direction == 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0, 0, () -> 0, (entity, direction, x, y) -> entity.type() == 0 && direction == 0));
         assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(arrowSlot));
         runtime.consumePendingEntityEvents();
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         assertEquals(1, runtime.enemies().enemyHealth(15));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(15).status());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(arrowSlot).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(15).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(arrowSlot).status());
         assertEquals(0x17, runtime.inspection().playerArrowTransitionCountdown(arrowSlot));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -8756,38 +10528,37 @@ final class RoomEntityRuntimeTest {
     @Test
     void playerArrowWallImpactStartsTheSharedMoblinAlertTimer() {
         byte[] rom = syntheticRom();
-        write(rom, 0x03, 0x6BC6,
-            0x2E, 0x21, 0x2C, 0x21,
-            0x2C, 0x01, 0x2E, 0x01,
-            0x2A, 0x41, 0x2A, 0x61,
-            0x2A, 0x01, 0x2A, 0x21);
+        write(
+                rom, 0x03, 0x6BC6, 0x2E, 0x21, 0x2C, 0x21, 0x2C, 0x01, 0x2E, 0x01, 0x2A, 0x41, 0x2A, 0x61, 0x2A, 0x01,
+                0x2A, 0x21);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
         int slot = runtime.spawnArrow(0x40, 0x50, 0x00, 0);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0));
+        runtime.tick(
+                EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
 
         assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
         assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(slot));
         assertEquals(0xF4, runtime.inspection().playerArrowSpeedX(slot));
-        assertEquals(List.of(new EntityCombatEvent(slot, 0x00, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x07)), runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(slot, 0x00, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void playerArrowRuntimeDisplaysThePreviousReboundSpinFrame() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
         int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0));
+        runtime.tick(
+                EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
 
         for (int frame = 1; frame <= 11; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
             int expected = frame == 1 ? 0 : frame <= 9 ? 1 : 3;
-            assertEquals(expected, runtime.inspection().snapshot().slots().get(slot).spriteVariant(),
-                "frame " + frame);
+            assertEquals(
+                    expected, runtime.inspection().snapshot().slots().get(slot).spriteVariant(), "frame " + frame);
         }
     }
 
@@ -8795,8 +10566,8 @@ final class RoomEntityRuntimeTest {
     void playerArrowReboundUsesTheSideViewRoomGravity() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot().withSideScrolling(true));
         int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0));
+        runtime.tick(
+                EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
         int startingZ = runtime.inspection().snapshot().slots().get(slot).z();
         int startingY = runtime.inspection().snapshot().slots().get(slot).y();
 
@@ -8813,18 +10584,34 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void enemyProjectileReboundUsesTheSideViewRoomGravity() {
-        RoomEntity projectile = new RoomEntity(0, -1, 0x0C, 0x40, 0x50,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x0C), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(projectile).withSideScrolling(true));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0,
-            EnemyProjectileCollision.LinkState.nonInteractive()));
+        RoomEntity projectile = new RoomEntity(
+                0,
+                -1,
+                0x0C,
+                0x40,
+                0x50,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x0C),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(projectile).withSideScrolling(true));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0,
+                0,
+                () -> 0,
+                (entity, direction, nextX, nextY) -> direction == 0,
+                EnemyProjectileCollision.LinkState.nonInteractive()));
         assertEquals(0x18, runtime.enemies().enemyProjectileTransitionCountdown(0));
 
         for (int frame = 1; frame <= 9; frame++) {
-            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, null,
-                EnemyProjectileCollision.LinkState.nonInteractive()));
+            runtime.tick(EntityTestFrames.projectileFrame(
+                    runtime, frame, 0, 0, () -> 0, null, EnemyProjectileCollision.LinkState.nonInteractive()));
         }
 
         RoomEntity arrow = runtime.inspection().snapshot().slots().get(0);
@@ -8864,8 +10651,7 @@ final class RoomEntityRuntimeTest {
         runtime.clearEntity(firstSlot);
 
         assertFalse(runtime.inspection().bombActive());
-        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1,
-            runtime.spawnBomb(0x42, 0x52, 0, 1));
+        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, runtime.spawnBomb(0x42, 0x52, 0, 1));
     }
 
     @Test
@@ -8873,8 +10659,8 @@ final class RoomEntityRuntimeTest {
         List<RoomEntity> slots = new ArrayList<>();
         EntitySpriteDefinition unsupported = EntitySpriteDefinition.unsupported(0xFF);
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            slots.add(new RoomEntity(slot, slot, 0xFF, 0x20, 0x20,
-                EntityStatus.ACTIVE, unsupported, -1, 0, 0, 0, -1, false));
+            slots.add(new RoomEntity(
+                    slot, slot, 0xFF, 0x20, 0x20, EntityStatus.ACTIVE, unsupported, -1, 0, 0, 0, -1, false));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
 
@@ -8888,7 +10674,7 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
 
         runtime.debug().setBombTransitionCountdownForTest(slot, 0x22);
@@ -8908,12 +10694,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x02, warningAtSound.type());
         assertEquals(0x5484, warningAtSound.spriteDefinition().address());
         assertEquals(0x17, runtime.enemies().transitionCountdown(slot));
-        assertEquals(List.of(new EntityCombatEvent(slot, 0x02, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(slot, 0x02, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
+                runtime.consumePendingEntityEvents());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x40, 0x50, () -> 0));
-        RoomEntity explosionVariantThree = runtime.inspection().snapshot().slots().get(slot);
+        RoomEntity explosionVariantThree =
+                runtime.inspection().snapshot().slots().get(slot);
         assertEquals(slot, explosionVariantThree.slot());
         assertEquals(0x02, explosionVariantThree.type());
         assertEquals(0x6530, explosionVariantThree.spriteDefinition().address());
@@ -8923,7 +10710,14 @@ final class RoomEntityRuntimeTest {
 
         runtime.debug().setBombTransitionCountdownForTest(slot, 0x14);
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x40, 0x50, () -> 0));
-        assertEquals(0x6530, runtime.inspection().snapshot().slots().get(slot).spriteDefinition().address());
+        assertEquals(
+                0x6530,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(slot)
+                        .spriteDefinition()
+                        .address());
         assertEquals(2, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
 
         runtime.debug().setBombTransitionCountdownForTest(slot, 0x10);
@@ -8950,7 +10744,9 @@ final class RoomEntityRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 7, 0x40, 0x50, () -> 0));
 
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(slot).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(slot).status());
         assertFalse(runtime.inspection().bombActive());
         assertEquals(0, runtime.enemies().physicsFlags(slot));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -8961,7 +10757,7 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
 
         runtime.debug().setBombTransitionCountdownForTest(slot, 0x01);
@@ -8979,31 +10775,30 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void alternateBombDisableClearsPendingPresentationAndDirectionBeforeReuse()
-        throws Exception {
+    void alternateBombDisableClearsPendingPresentationAndDirectionBeforeReuse() throws Exception {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+                new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 3);
 
         runtime.debug().setBombTransitionCountdownForTest(slot, 0x01);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
-        Field pendingField = RoomEntityRuntime.class
-            .getDeclaredField("bombFinalPresentationPending");
+        Field pendingField = RoomEntityRuntime.class.getDeclaredField("bombFinalPresentationPending");
         pendingField.setAccessible(true);
         boolean[] pending = (boolean[]) pendingField.get(runtime);
         assertTrue(pending[slot]);
 
-        Method disable = RoomEntityRuntime.class
-            .getDeclaredMethod("disableEntityWithoutPersistence", int.class);
+        Method disable = RoomEntityRuntime.class.getDeclaredMethod("disableEntityWithoutPersistence", int.class);
         disable.setAccessible(true);
         disable.invoke(runtime, slot);
 
         assertFalse(pending[slot]);
         assertEquals(0xFF, runtime.inspection().bombDirection(slot));
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(slot).status());
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(slot).status());
         assertEquals(slot, runtime.spawnBomb(0x44, 0x54, 0, 1));
         assertEquals(1, runtime.inspection().bombDirection(slot));
         assertFalse(pending[slot]);
@@ -9012,24 +10807,38 @@ final class RoomEntityRuntimeTest {
     @Test
     void bombExplosionPublishesOnlyTargetsInsideTheInclusiveCountdownWindow() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(11, 11, 0x4D, 0x40, 0x67, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
-            new RoomEntity(12, 12, 0x4D, 0x58, 0x4F, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
-            new RoomEntity(13, 13, 0x4D, 0x57, 0x66, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
-            new RoomEntity(14, 14, 0x4D, 0x28, 0x4F, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false)));
+                new RoomEntity(
+                        11, 11, 0x4D, 0x40, 0x67, EntityStatus.ACTIVE, pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        12, 12, 0x4D, 0x58, 0x4F, EntityStatus.ACTIVE, pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        13, 13, 0x4D, 0x57, 0x66, EntityStatus.ACTIVE, pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        14,
+                        14,
+                        0x4D,
+                        0x28,
+                        0x4F,
+                        EntityStatus.ACTIVE,
+                        pairDefinition(0x4D, 1),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)));
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x13);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
-        assertEquals(List.of(13, 12), events.stream()
-            .filter(event -> !event.targetsRoomObjects())
-            .map(BombExplosionEvent::targetSlot)
-            .toList());
+        assertEquals(
+                List.of(13, 12),
+                events.stream()
+                        .filter(event -> !event.targetsRoomObjects())
+                        .map(BombExplosionEvent::targetSlot)
+                        .toList());
         assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
         for (BombExplosionEvent event : events) {
             assertEquals(bombSlot, event.bombSlot());
@@ -9042,23 +10851,36 @@ final class RoomEntityRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         List<BombExplosionEvent> nextFrame = runtime.consumeBombExplosionEvents();
-        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET), nextFrame.stream()
-            .map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(
+                List.of(BombExplosionEvent.OBJECT_TARGET),
+                nextFrame.stream().map(BombExplosionEvent::targetSlot).toList());
     }
 
     @Test
     void bombExplosionFiltersNonInteractiveTargetsAtTheExactInteractionTick() throws Exception {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(10, 10, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
-            new RoomEntity(11, 11, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
-            new RoomEntity(12, 12, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
-            new RoomEntity(13, 13, 0x05, 0x40, 0x4F, EntityStatus.ACTIVE,
-                pairDefinition(0x05, 1), 0, 0, 0, 0, -1, false),
-            new RoomEntity(14, 14, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
-                pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false)));
+                new RoomEntity(
+                        10, 10, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE, pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        11, 11, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE, pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        12, 12, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE, pairDefinition(0x4D, 1), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        13, 13, 0x05, 0x40, 0x4F, EntityStatus.ACTIVE, pairDefinition(0x05, 1), 0, 0, 0, 0, -1, false),
+                new RoomEntity(
+                        14,
+                        14,
+                        0x4D,
+                        0x40,
+                        0x4F,
+                        EntityStatus.ACTIVE,
+                        pairDefinition(0x4D, 1),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)));
         setPhysicsFlags(runtime, 14, 0x40);
         runtime.debug().setHitboxFlagsForTest(12, 0x80);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(11, 0x02);
@@ -9068,12 +10890,12 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
-        List<BombExplosionEvent> targetEvents = events.stream()
-            .filter(event -> !event.targetsRoomObjects())
-            .toList();
+        List<BombExplosionEvent> targetEvents =
+                events.stream().filter(event -> !event.targetsRoomObjects()).toList();
         assertEquals(2, targetEvents.size());
-        assertEquals(List.of(11, 10), targetEvents.stream()
-            .map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(
+                List.of(11, 10),
+                targetEvents.stream().map(BombExplosionEvent::targetSlot).toList());
         assertEquals(0x12, targetEvents.getFirst().countdown());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -9082,10 +10904,9 @@ final class RoomEntityRuntimeTest {
     void bombExplosionAppliesRomDamageAndFinalSourceRelativeRecoil() throws IOException {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity octorok = new RoomEntity(14, 14, 0x09, 0x40, 0x4F,
-            EntityStatus.ACTIVE, pairDefinition(0x09, 8), 0, 0, 0, 0, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshotWithSlots(octorok), false, () -> 0, null, tables);
+        RoomEntity octorok = new RoomEntity(
+                14, 14, 0x09, 0x40, 0x4F, EntityStatus.ACTIVE, pairDefinition(0x09, 8), 0, 0, 0, 0, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(octorok), false, () -> 0, null, tables);
 
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x13);
@@ -9097,7 +10918,9 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(0, runtime.enemies().enemyHealth(14));
-        assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(14).status());
+        assertEquals(
+                EntityStatus.DYING,
+                runtime.inspection().snapshot().slots().get(14).status());
         // CheckExplosionInteractionWithEntities does not pre-arm the normal
         // sword hit flash/ignore timers; a lethal ApplySwordDamagesToEnemy
         // path reaches DYING with both values still clear.
@@ -9105,17 +10928,29 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, runtime.enemies().enemyIgnoreHitsCountdown(14));
         assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedXForTest(14));
         assertEquals(0x00, runtime.enemies().enemyRecoilSpeedYForTest(14));
-        assertEquals(List.of(new EntityCombatEvent(14, 0x09, 0, false,
-            1, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x03,
-            EntityCombatEvent.SoundChannel.NONE, -1, null),
-            new EntityCombatEvent(14, 0x09, 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x13)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(
+                        new EntityCombatEvent(
+                                14,
+                                0x09,
+                                0,
+                                false,
+                                1,
+                                -1,
+                                EntityCombatEvent.SoundChannel.JINGLE,
+                                0x03,
+                                EntityCombatEvent.SoundChannel.NONE,
+                                -1,
+                                null),
+                        new EntityCombatEvent(14, 0x09, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13)),
+                runtime.consumePendingEntityEvents());
 
-        assertEquals(List.of(14), runtime.consumeBombExplosionEvents().stream()
-            .filter(event -> !event.targetsRoomObjects())
-            .map(BombExplosionEvent::targetSlot)
-            .toList());
+        assertEquals(
+                List.of(14),
+                runtime.consumeBombExplosionEvents().stream()
+                        .filter(event -> !event.targetsRoomObjects())
+                        .map(BombExplosionEvent::targetSlot)
+                        .toList());
     }
 
     @Test
@@ -9123,45 +10958,69 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(), false, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(), false, () -> 0, catalog, tables);
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            0, 0x48, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(
-                0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
-            0x10, 0xF0));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x50,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
+                0x10,
+                0xF0));
 
-        assertEquals(List.of(new EntityProjectileEvent(
-            bombSlot, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0x00, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false,
-            0x00, 0x00, 0x28, 0x28, 0x10)), events);
+        assertEquals(
+                List.of(new EntityProjectileEvent(
+                        bombSlot,
+                        0x02,
+                        EntityProjectileEvent.Kind.LINK_DAMAGE,
+                        0x00,
+                        0x08,
+                        EntityProjectileEvent.SoundChannel.WAVE,
+                        0x03,
+                        false,
+                        false,
+                        0x00,
+                        0x00,
+                        0x28,
+                        0x28,
+                        0x10)),
+                events);
         assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
-        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET),
-            runtime.consumeBombExplosionEvents().stream()
-                .map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(
+                List.of(BombExplosionEvent.OBJECT_TARGET),
+                runtime.consumeBombExplosionEvents().stream()
+                        .map(BombExplosionEvent::targetSlot)
+                        .toList());
     }
 
     @Test
     void enemyBombUsesRawEntityYInsteadOfExplosionVisualYForLinkCollision() throws IOException {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(), false, () -> 0, new EntitySpriteHandlerCatalog(rom),
-            new RomEnemyCombatTables(rom));
+                snapshot(), false, () -> 0, new EntitySpriteHandlerCatalog(rom), new RomEnemyCombatTables(rom));
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x68, 0x18, 0x13);
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            0, 0x48, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(
-                0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
-            0x10, 0xF0));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x50,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
+                0x10,
+                0xF0));
 
         assertEquals(List.of(), events);
         assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
         List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
-        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET),
-            explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(
+                List.of(BombExplosionEvent.OBJECT_TARGET),
+                explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
         assertEquals(bombSlot, explosionEvents.getFirst().bombSlot());
     }
 
@@ -9170,12 +11029,14 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition bomberDefinition = catalog.forEntityType(
-            0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(0, 0, 0xBA, 0x50, 0x50, EntityStatus.ACTIVE,
-                bomberDefinition, 0, 0, 0, 0x00, -1, false)),
-            false, () -> 0, catalog, tables);
+        EntitySpriteDefinition bomberDefinition = catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(new RoomEntity(
+                        0, 0, 0xBA, 0x50, 0x50, EntityStatus.ACTIVE, bomberDefinition, 0, 0, 0, 0x00, -1, false)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
 
@@ -9188,21 +11049,34 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x10, bomb.z());
         assertEquals(0x40, runtime.enemies().transitionCountdown(15));
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(15));
-        assertEquals(List.of(new EntityCombatEvent(15, 0x02, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(15, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
-    void bomberEnemyBombCarriesTheSourceVectorIntoTheNextBombHandlerFrame()
-        throws IOException {
+    void bomberEnemyBombCarriesTheSourceVectorIntoTheNextBombHandlerFrame() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(0, 0, 0xBA, 0x50, 0x50, EntityStatus.ACTIVE,
-                catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1),
-                0, 0, 0, 0x00, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(new RoomEntity(
+                        0,
+                        0,
+                        0xBA,
+                        0x50,
+                        0x50,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                        0,
+                        0,
+                        0,
+                        0x00,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
         runtime.consumePendingEntityEvents();
@@ -9221,17 +11095,19 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x93, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x93, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         assertTrue(definition.supported());
         assertEquals(0x06, definition.bank());
         assertEquals(0x4126, definition.address());
         assertEquals(5, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(0, 0, 0x93, 0x50, 0x50, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x00, -1, false)),
-            false, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(new RoomEntity(
+                        0, 0, 0x93, 0x50, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x00, -1, false)),
+                false,
+                () -> 0,
+                catalog,
+                tables);
 
         for (int frame = 0; frame <= 136; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, () -> 0));
@@ -9246,9 +11122,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x04, bomb.z());
         assertEquals(0x40, runtime.enemies().transitionCountdown(15));
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(15));
-        assertEquals(List.of(new EntityCombatEvent(15, 0x02, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(15, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
@@ -9256,17 +11132,19 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x56, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x56, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
         assertEquals(0x04, definition.bank());
         assertEquals(0x7CEF, definition.address());
         assertEquals(6, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(0, 0, 0x56, 0x50, 0x50, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x00, -1, false)),
-            true, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(new RoomEntity(
+                        0, 0, 0x56, 0x50, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x00, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
         runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x09);
 
         boolean explosionSound = false;
@@ -9274,8 +11152,8 @@ final class RoomEntityRuntimeTest {
         for (int frame = 0; frame < 520; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, () -> 0));
             explosionSound |= runtime.consumePendingEntityEvents().stream()
-                .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
-                    && event.soundId() == 0x0C);
+                    .anyMatch(event ->
+                            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x0C);
             sourceCleared = !runtime.inspection().snapshot().slots().get(0).loaded();
             if (sourceCleared) {
                 break;
@@ -9298,24 +11176,26 @@ final class RoomEntityRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
         assertEquals(0x04, definition.bank());
         assertEquals(0x7DF5, definition.address());
         assertEquals(2, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(0, 0, 0x55, 0x50, 0x50, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x00, -1, false)),
-            true, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(new RoomEntity(
+                        0, 0, 0x55, 0x50, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x00, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 0xC0, 0xC0, false, true, true,
-            0x58, 1, 0x58, 1, EnemyAttackContext.standard());
+                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard());
 
-        assertEquals(List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1,
-            EntityCombatEvent.SoundChannel.NONE, -1)), events);
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1, EntityCombatEvent.SoundChannel.NONE, -1)),
+                events);
         assertEquals(4, runtime.enemies().enemyHealth(0));
         assertEquals(2, runtime.pickupState().bombiteState(0));
         assertEquals(0x40, runtime.enemies().transitionCountdown(0));
@@ -9324,27 +11204,29 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void litBouncingBombiteCollidesWithAnotherBombiteUsingTheRomEntityPass()
-        throws IOException {
+    void litBouncingBombiteCollidesWithAnotherBombiteUsingTheRomEntityPass() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        EntitySpriteDefinition definition = catalog.forEntityType(0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
-            new RoomEntity(0, 0, 0x55, 0x50, 0x50, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x00, -1, false),
-            new RoomEntity(1, 1, 0x55, 0x58, 0x58, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x00, -1, false)),
-            true, () -> 0, catalog, tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshotWithSlots(
+                        new RoomEntity(
+                                0, 0, 0x55, 0x50, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x00, -1, false),
+                        new RoomEntity(
+                                1, 1, 0x55, 0x58, 0x58, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x00, -1, false)),
+                true,
+                () -> 0,
+                catalog,
+                tables);
 
         List<EntityCombatEvent> swordEvents = runtime.resolveCombat(
-            0, 0xC0, 0xC0, false, true, true,
-            0x58, 1, 0x58, 1, EnemyAttackContext.standard());
-        assertEquals(List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1,
-            EntityCombatEvent.SoundChannel.NONE, -1)), swordEvents);
+                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard());
+        assertEquals(
+                List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1, EntityCombatEvent.SoundChannel.NONE, -1)),
+                swordEvents);
         int sourceSpeedX = runtime.pickupState().bombiteSpeedX(0);
         int sourceSpeedY = runtime.pickupState().bombiteSpeedY(0);
 
@@ -9354,7 +11236,9 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 0xC0, () -> 0));
 
         assertFalse(runtime.inspection().snapshot().slots().get(0).loaded());
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(1).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(1).status());
         assertEquals(2, runtime.pickupState().bombiteState(1));
         assertEquals(0x40, runtime.enemies().transitionCountdown(1));
         assertEquals(0x08, runtime.pickupState().bombitePrivateCountdown1(1));
@@ -9368,45 +11252,61 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, bomb.z());
         assertEquals(0x17, runtime.enemies().transitionCountdown(15));
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(15));
-        assertEquals(List.of(new EntityCombatEvent(15, 0x02, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(15, 0x02, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
     void protectedEnemyBombStillDoublesLinkSpeedWithoutDamageOrHurtSound() throws IOException {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshot(), false, () -> 0, new EntitySpriteHandlerCatalog(rom),
-            new RomEnemyCombatTables(rom));
+                snapshot(), false, () -> 0, new EntitySpriteHandlerCatalog(rom), new RomEnemyCombatTables(rom));
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
-            0, 0x48, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(
-                0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x01),
-            0x10, 0xF0));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x50,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x01),
+                0x10,
+                0xF0));
 
-        assertEquals(List.of(new EntityProjectileEvent(
-            bombSlot, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0x00, 0x00,
-            EntityProjectileEvent.SoundChannel.NONE, -1, false, false,
-            0x00, 0x00, 0x20, 0xE0, 0x00)), events);
+        assertEquals(
+                List.of(new EntityProjectileEvent(
+                        bombSlot,
+                        0x02,
+                        EntityProjectileEvent.Kind.LINK_DAMAGE,
+                        0x00,
+                        0x00,
+                        EntityProjectileEvent.SoundChannel.NONE,
+                        -1,
+                        false,
+                        false,
+                        0x00,
+                        0x00,
+                        0x20,
+                        0xE0,
+                        0x00)),
+                events);
         assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
         List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
-        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET),
-            explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(
+                List.of(BombExplosionEvent.OBJECT_TARGET),
+                explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
         assertEquals(bombSlot, explosionEvents.getFirst().bombSlot());
     }
 
     @Test
-    void bombExplosionUsesNonlethalRomDamageBeforeTheTargetRecoilHandler()
-        throws IOException {
+    void bombExplosionUsesNonlethalRomDamageBeforeTheTargetRecoilHandler() throws IOException {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity ghini = new RoomEntity(14, 14, 0x12, 0x50, 0x4F,
-            EntityStatus.ACTIVE, pairDefinition(0x12, 2), 0, 0, 0, 0x10, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-            snapshotWithSlots(ghini), false, () -> 0, null, tables);
+        RoomEntity ghini = new RoomEntity(
+                14, 14, 0x12, 0x50, 0x4F, EntityStatus.ACTIVE, pairDefinition(0x12, 2), 0, 0, 0, 0x10, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(ghini), false, () -> 0, null, tables);
 
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x13);
@@ -9414,17 +11314,29 @@ final class RoomEntityRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(4, runtime.enemies().enemyHealth(14));
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(14).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(14).status());
         // The lower-slot target's handler decrements the newly written flash
         // once after the higher-slot bomb has applied it.
         assertEquals(0x17, runtime.enemies().enemyFlashCountdown(14));
         assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(14));
         assertEquals(0x30, runtime.enemies().enemyRecoilSpeedXForTest(14));
         assertEquals(0x00, runtime.enemies().enemyRecoilSpeedYForTest(14));
-        assertEquals(List.of(new EntityCombatEvent(14, 0x12, 0, false,
-            4, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x03,
-            EntityCombatEvent.SoundChannel.NONE, -1, null)),
-            runtime.consumePendingEntityEvents());
+        assertEquals(
+                List.of(new EntityCombatEvent(
+                        14,
+                        0x12,
+                        0,
+                        false,
+                        4,
+                        -1,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        0x03,
+                        EntityCombatEvent.SoundChannel.NONE,
+                        -1,
+                        null)),
+                runtime.consumePendingEntityEvents());
     }
 
     @Test
@@ -9438,13 +11350,19 @@ final class RoomEntityRuntimeTest {
 
         runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x17);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
-        assertEquals(List.of(0x16), runtime.consumeBombExplosionEvents().stream()
-            .map(BombExplosionEvent::countdown).toList());
+        assertEquals(
+                List.of(0x16),
+                runtime.consumeBombExplosionEvents().stream()
+                        .map(BombExplosionEvent::countdown)
+                        .toList());
 
         runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x0F);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
-        assertEquals(List.of(0x0E), runtime.consumeBombExplosionEvents().stream()
-            .map(BombExplosionEvent::countdown).toList());
+        assertEquals(
+                List.of(0x0E),
+                runtime.consumeBombExplosionEvents().stream()
+                        .map(BombExplosionEvent::countdown)
+                        .toList());
 
         runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x0E);
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
@@ -9465,62 +11383,88 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.enemies().hitboxFlagsForTest(0));
     }
 
-    private static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type,
-                                          EntityStatus status) {
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            type, EntityRoomLoader.RoomTable.OVERWORLD);
+    private static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type, EntityStatus status) {
+        EntitySpriteDefinition definition = catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD);
         int initialZ = type == 0x12 ? 0x10 : 0;
-        return new RoomEntity(slot, slot, type, 0x50, 0x50, status, definition,
-            definition.initialVariant(), 0, 0, initialZ, -1, false);
+        return new RoomEntity(
+                slot,
+                slot,
+                type,
+                0x50,
+                0x50,
+                status,
+                definition,
+                definition.initialVariant(),
+                0,
+                0,
+                initialZ,
+                -1,
+                false);
     }
 
     private static EntitySpriteDefinition pairDefinition(int type, int variants) {
         List<EntitySpriteDefinition.Variant> displayList = new ArrayList<>();
         for (int i = 0; i < variants; i++) {
             displayList.add(new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
-                new EntitySpriteDefinition.OamAttribute(0x14, 0x22)));
+                    new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
+                    new EntitySpriteDefinition.OamAttribute(0x14, 0x22)));
         }
-        return new EntitySpriteDefinition(type, 0x03, 0x5B65,
-            EntitySpriteDefinition.Shape.PAIR, 0, displayList);
+        return new EntitySpriteDefinition(type, 0x03, 0x5B65, EntitySpriteDefinition.Shape.PAIR, 0, displayList);
     }
 
     private static EntitySpriteDefinition keyDropDefinition() {
         List<EntitySpriteDefinition.Variant> displayList = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
-            displayList.add(new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(0xCA, 0x17), null));
+            displayList.add(
+                    new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0xCA, 0x17), null));
         }
-        return new EntitySpriteDefinition(0x30, 0x03, 0x5C78,
-            EntitySpriteDefinition.Shape.SINGLE, 0, displayList);
+        return new EntitySpriteDefinition(0x30, 0x03, 0x5C78, EntitySpriteDefinition.Shape.SINGLE, 0, displayList);
     }
 
     private static EntitySpriteDefinition butterflyDefinition() {
-        return new EntitySpriteDefinition(0x6E, 0x06, 0x6BBD,
-            EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
-                new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x5E, 0x01), null),
-            new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x5E, 0x41), null)));
+        return new EntitySpriteDefinition(
+                0x6E,
+                0x06,
+                0x6BBD,
+                EntitySpriteDefinition.Shape.SINGLE,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x5E, 0x01), null),
+                        new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x5E, 0x41), null)));
     }
 
     private static EntitySpriteDefinition keeseDefinition() {
-        return new EntitySpriteDefinition(0x19, 0x06, 0x6708,
-            EntitySpriteDefinition.Shape.PAIR, 0, List.of(
-                new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x42, 0x00),
-                    new EntitySpriteDefinition.OamAttribute(0x42, 0x20)),
-                new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x40, 0x00),
-                    new EntitySpriteDefinition.OamAttribute(0x40, 0x20))));
+        return new EntitySpriteDefinition(
+                0x19,
+                0x06,
+                0x6708,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(
+                                new EntitySpriteDefinition.OamAttribute(0x42, 0x00),
+                                new EntitySpriteDefinition.OamAttribute(0x42, 0x20)),
+                        new EntitySpriteDefinition.Variant(
+                                new EntitySpriteDefinition.OamAttribute(0x40, 0x00),
+                                new EntitySpriteDefinition.OamAttribute(0x40, 0x20))));
     }
 
-    private static RoomEntity dyingEntity(int slot, int sourceLoadOrder, int type,
-                                           EntitySpriteHandlerCatalog catalog) {
-        EntitySpriteDefinition definition = catalog.forEntityType(
-            type, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        return new RoomEntity(slot, sourceLoadOrder, type, 0x40, 0x50,
-            EntityStatus.DYING, definition, definition.initialVariant(), 0, 0, 0, -1, false);
+    private static RoomEntity dyingEntity(int slot, int sourceLoadOrder, int type, EntitySpriteHandlerCatalog catalog) {
+        EntitySpriteDefinition definition = catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        return new RoomEntity(
+                slot,
+                sourceLoadOrder,
+                type,
+                0x40,
+                0x50,
+                EntityStatus.DYING,
+                definition,
+                definition.initialVariant(),
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 
     private static RoomEntitySnapshot snapshotAt(RoomEntity entity) {
@@ -9565,8 +11509,7 @@ final class RoomEntityRuntimeTest {
         }
 
         @Override
-        public void playJingle(int id) {
-        }
+        public void playJingle(int id) {}
 
         @Override
         public void playNoise(int id) {
@@ -9621,8 +11564,19 @@ final class RoomEntityRuntimeTest {
     }
 
     private static RoomEntity threeOfAKind(int slot, int x, int y) {
-        return new RoomEntity(slot, slot, MotionTestAccess.ThreeOfAKindMotion_ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(MotionTestAccess.ThreeOfAKindMotion_ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                slot,
+                slot,
+                MotionTestAccess.ThreeOfAKindMotion_ENTITY_TYPE,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(MotionTestAccess.ThreeOfAKindMotion_ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

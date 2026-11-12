@@ -1,20 +1,13 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.OverworldTilesetTable;
-import linksawakening.world.room.RoomSession;
-import linksawakening.world.room.RoomLoader;
-
-import linksawakening.world.transition.Warp;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @linksawakening.testing.RequiresRom
 final class RoomSessionFloatingItemTest {
@@ -24,8 +17,13 @@ final class RoomSessionFloatingItemTest {
         byte[] rom = loadRom();
         RomTables tables = RomTables.loadFromRom(rom);
         RoomSession session = new RoomSession(
-            rom, new GPU(), new RoomLoader(rom), new OverworldTilesetTable(rom),
-            new OverworldCollision(tables), new TransientVfxSystem(16), null);
+                rom,
+                new GPU(),
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                new OverworldCollision(tables),
+                new TransientVfxSystem(16),
+                null);
 
         session.loadInitialOverworld(0x92);
         session.loadIndoor(0x00, 0x00, Warp.CATEGORY_SIDESCROLL);

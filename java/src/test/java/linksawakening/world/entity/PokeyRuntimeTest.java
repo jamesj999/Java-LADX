@@ -1,29 +1,16 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.PokeyMotion;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.motion.PokeyMotion;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class PokeyRuntimeTest {
@@ -33,19 +20,19 @@ final class PokeyRuntimeTest {
     void decodesPokeysThreeRomDisplayStatesAndDetachedPair() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 
-        EntitySpriteDefinition main = catalog.forEntityType(
-            ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition main = catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD);
         assertEquals(0x15, main.bank());
         assertEquals(0x4B17, main.address());
         assertEquals(EntitySpriteDefinition.Shape.RECTANGLE, main.shape());
         assertEquals(4, main.variantCount());
         assertEquals(6, main.rectangleVariant(0).size());
-        assertEquals(new EntitySpriteDefinition.RectangleSprite(-24, -2,
-            new EntitySpriteDefinition.OamAttribute(0x74, 0x00)),
-            main.rectangleVariant(0).get(0));
-        assertEquals(new EntitySpriteDefinition.RectangleSprite(0, 8,
-            new EntitySpriteDefinition.OamAttribute(0x76, 0x20)),
-            main.rectangleVariant(0).get(5));
+        assertEquals(
+                new EntitySpriteDefinition.RectangleSprite(
+                        -24, -2, new EntitySpriteDefinition.OamAttribute(0x74, 0x00)),
+                main.rectangleVariant(0).get(0));
+        assertEquals(
+                new EntitySpriteDefinition.RectangleSprite(0, 8, new EntitySpriteDefinition.OamAttribute(0x76, 0x20)),
+                main.rectangleVariant(0).get(5));
 
         EntitySpriteDefinition fourSprite = catalog.forPokeyState(1);
         assertEquals(0x4B77, fourSprite.address());
@@ -60,10 +47,11 @@ final class PokeyRuntimeTest {
         assertEquals(0x4CD5, segment.address());
         assertEquals(EntitySpriteDefinition.Shape.PAIR, segment.shape());
         assertEquals(1, segment.variantCount());
-        assertEquals(new EntitySpriteDefinition.Variant(
-            new EntitySpriteDefinition.OamAttribute(0x76, 0x00),
-            new EntitySpriteDefinition.OamAttribute(0x76, 0x20)),
-            segment.variant(0));
+        assertEquals(
+                new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x76, 0x00),
+                        new EntitySpriteDefinition.OamAttribute(0x76, 0x20)),
+                segment.variant(0));
     }
 
     @Test
@@ -76,10 +64,25 @@ final class PokeyRuntimeTest {
     @Test
     void mainPokeyAnimatesAndUsesItsRomHealthOverride() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_POKEY, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_POKEY,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(loadRom()));
 
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
@@ -98,10 +101,25 @@ final class PokeyRuntimeTest {
     void flashSeamSpawnsAHighSlotDetachedSegment() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
-            0, 0, ENTITY_POKEY, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_POKEY,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         // The runtime performs the shared pre-handler decrement first, so $15
         // reaches PokeyEntityHandler as the source's $14 spawn trigger.
@@ -109,13 +127,14 @@ final class PokeyRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
 
         RoomEntity segment = runtime.inspection().snapshot().slots().stream()
-            .filter(entity -> entity.type() == ENTITY_POKEY && entity.sourceLoadOrder() == -1)
-            .findFirst()
-            .orElseThrow();
+                .filter(entity -> entity.type() == ENTITY_POKEY && entity.sourceLoadOrder() == -1)
+                .findFirst()
+                .orElseThrow();
         assertEquals(15, segment.slot());
         assertEquals(0x40, segment.x());
         assertEquals(0x40, segment.y());
-        assertEquals(EntitySpriteDefinition.Shape.PAIR, segment.spriteDefinition().shape());
+        assertEquals(
+                EntitySpriteDefinition.Shape.PAIR, segment.spriteDefinition().shape());
         assertEquals(0x4CD5, segment.spriteDefinition().address());
         assertEquals(0x01, runtime.enemies().enemyHealth(segment.slot()));
         assertEquals(0x12, runtime.enemies().physicsFlags(segment.slot()));
@@ -134,27 +153,31 @@ final class PokeyRuntimeTest {
     @Test
     void detachedSegmentsReverseOnWallsAndPoofAfterThreeHits() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntity segment = new RoomEntity(0, -1, ENTITY_POKEY, 0x40, 0x40,
-            EntityStatus.ACTIVE, catalog.forPokeySegment(), 0, 0, 0, 0, -1, false);
+        RoomEntity segment = new RoomEntity(
+                0, -1, ENTITY_POKEY, 0x40, 0x40, EntityStatus.ACTIVE, catalog.forPokeySegment(), 0, 0, 0, 0, -1, false);
         PokeyMotion motion = new PokeyMotion();
         motion.initializeSegment(0, 0x10, 0x00);
 
-        PokeyMotion.Update first = motion.advanceSegment(segment, 0, 0,
-            (entity, direction, nextX, nextY) -> direction == EntityBackgroundCollisionResult.RIGHT);
+        PokeyMotion.Update first = motion.advanceSegment(
+                segment, 0, 0, (entity, direction, nextX, nextY) -> direction == EntityBackgroundCollisionResult.RIGHT);
         assertEquals(1, first.inertia());
         assertEquals(0xF0, motion.speedX(0));
         assertTrue(first.bumpJingle());
         assertTrue(!first.unloadRequested());
 
-        PokeyMotion.Update second = motion.advanceSegment(first.entity(), first.inertia(),
-            first.transitionCountdown(),
-            (entity, direction, nextX, nextY) -> direction == EntityBackgroundCollisionResult.RIGHT);
+        PokeyMotion.Update second = motion.advanceSegment(
+                first.entity(),
+                first.inertia(),
+                first.transitionCountdown(),
+                (entity, direction, nextX, nextY) -> direction == EntityBackgroundCollisionResult.RIGHT);
         assertEquals(2, second.inertia());
         assertTrue(!second.unloadRequested());
 
-        PokeyMotion.Update third = motion.advanceSegment(second.entity(), second.inertia(),
-            second.transitionCountdown(),
-            (entity, direction, nextX, nextY) -> direction == EntityBackgroundCollisionResult.RIGHT);
+        PokeyMotion.Update third = motion.advanceSegment(
+                second.entity(),
+                second.inertia(),
+                second.transitionCountdown(),
+                (entity, direction, nextX, nextY) -> direction == EntityBackgroundCollisionResult.RIGHT);
         assertEquals(3, third.inertia());
         assertTrue(third.unloadRequested());
     }

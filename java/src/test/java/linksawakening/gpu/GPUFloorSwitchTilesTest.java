@@ -1,11 +1,10 @@
 package linksawakening.gpu;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class GPUFloorSwitchTilesTest {
@@ -20,8 +19,8 @@ final class GPUFloorSwitchTilesTest {
         int romOffset = RomBank.romOffset(0x32, 0x7F00);
         int vramOffset = 0x114 * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x40; index++) {
-            assertEquals(Byte.toUnsignedInt(rom[romOffset + index]),
-                Byte.toUnsignedInt(gpu.readVRAM(vramOffset + index)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[romOffset + index]), Byte.toUnsignedInt(gpu.readVRAM(vramOffset + index)));
         }
     }
 

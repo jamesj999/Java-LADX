@@ -1,8 +1,7 @@
 package linksawakening.equipment;
 
-import linksawakening.entity.EntitySpriteCatalog;
-
 import java.util.Arrays;
+import linksawakening.entity.EntitySpriteCatalog;
 
 /** ROM object palettes selected by the normal and fully charged sword. */
 public final class SwordPalette {

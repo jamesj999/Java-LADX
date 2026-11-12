@@ -1,5 +1,19 @@
 plugins {
     id 'application'
+    id 'com.diffplug.spotless' version '6.25.0'
+}
+
+// One formatter for the whole tree; `./gradlew spotlessApply` fixes, `check` verifies.
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        targetExclude 'src/main/java/linksawakening/rom/RomSymbols.java'
+        palantirJavaFormat('2.50.0')
+        removeUnusedImports()
+        importOrder()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 repositories {

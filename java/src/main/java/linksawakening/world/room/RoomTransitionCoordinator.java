@@ -1,14 +1,13 @@
 package linksawakening.world.room;
 
-import linksawakening.world.transition.ScrollController;
-import linksawakening.world.transition.RoomBoundaryController;
-import linksawakening.world.transition.RoomBoundaryDecision;
-import linksawakening.world.transition.Warp;
-import linksawakening.world.transition.TransitionController;
-
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.world.transition.RoomBoundaryController;
+import linksawakening.world.transition.RoomBoundaryDecision;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+import linksawakening.world.transition.Warp;
 
 public final class RoomTransitionCoordinator {
     private final RoomSession roomSession;
@@ -17,19 +16,20 @@ public final class RoomTransitionCoordinator {
     private final ScrollController scrollController;
     private final GameplaySoundSink soundSink;
 
-
-    public RoomTransitionCoordinator(RoomSession roomSession,
-                                     RoomBoundaryController boundaryController,
-                                     TransitionController transitionController,
-                                     ScrollController scrollController) {
+    public RoomTransitionCoordinator(
+            RoomSession roomSession,
+            RoomBoundaryController boundaryController,
+            TransitionController transitionController,
+            ScrollController scrollController) {
         this(roomSession, boundaryController, transitionController, scrollController, GameplaySoundSink.none());
     }
 
-    public RoomTransitionCoordinator(RoomSession roomSession,
-                                     RoomBoundaryController boundaryController,
-                                     TransitionController transitionController,
-                                     ScrollController scrollController,
-                                     GameplaySoundSink soundSink) {
+    public RoomTransitionCoordinator(
+            RoomSession roomSession,
+            RoomBoundaryController boundaryController,
+            TransitionController transitionController,
+            ScrollController scrollController,
+            GameplaySoundSink soundSink) {
         this.soundSink = java.util.Objects.requireNonNull(soundSink);
         this.roomSession = roomSession;
         this.boundaryController = boundaryController;
@@ -43,8 +43,7 @@ public final class RoomTransitionCoordinator {
      * see Link past the bottom boundary before any fallback clamp can run.
      */
     public void handleWarpAndIndoorBoundaries(Link link) {
-        if (!roomSession.hasActiveRoom()
-            || transitionController.isActive()) {
+        if (!roomSession.hasActiveRoom() || transitionController.isActive()) {
             return;
         }
         ActiveRoom room = roomSession.activeRoom();
@@ -54,10 +53,13 @@ public final class RoomTransitionCoordinator {
             link.consumePitWarp();
             Warp source = room.firstWarp();
             boolean sideView = source.category() == Warp.CATEGORY_SIDESCROLL;
-            Warp target = new Warp(source.category(), source.destMap(), source.destRoom(),
-                sideView ? link.romEntityY() : (link.romEntityX() & 0xF0) + 8,
-                sideView ? source.destY() : link.romEntityY() & 0xF0,
-                source.tileLocation());
+            Warp target = new Warp(
+                    source.category(),
+                    source.destMap(),
+                    source.destRoom(),
+                    sideView ? link.romEntityY() : (link.romEntityX() & 0xF0) + 8,
+                    sideView ? source.destY() : link.romEntityY() & 0xF0,
+                    source.tileLocation());
             transitionController.startFadeOut(() -> {
                 applyWarp(target, link);
                 link.setPitWarpArrival(sideView ? 0 : 0x70);
@@ -67,8 +69,8 @@ public final class RoomTransitionCoordinator {
         if (link.isFallingIntoPit()) return;
 
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            link.initializeRoomPhysicsForRoom(roomSession.roomLoadToken(), room.mapId(),
-                room.roomId(), room.mapCategory());
+            link.initializeRoomPhysicsForRoom(
+                    roomSession.roomLoadToken(), room.mapId(), room.roomId(), room.mapCategory());
             Warp dungeonWarp = roomSession.consumeClearedDungeonWarp();
             if (dungeonWarp != null) {
                 transitionController.startFadeOut(() -> applyWarp(dungeonWarp, link));
@@ -80,25 +82,22 @@ public final class RoomTransitionCoordinator {
                 int previousY = link.pixelY();
                 // $02:790B: 32 scroll steps * $3A / 16 = 116 pixels.
                 link.setRoomEntryPixelPosition(previousX, previousY + 116);
-                roomSession.startAdjacentIndoorScroll(scrollController, ScrollController.UP,
-                    previousX, previousY);
+                roomSession.startAdjacentIndoorScroll(scrollController, ScrollController.UP, previousX, previousY);
                 scrollController.onCompletion(() -> link.finishRoomScroll(false));
                 return;
             }
-            RoomBoundaryDecision boundary = boundaryController.decide(
-                roomSession.boundaryState(link.pixelX(), link.pixelY(), link.isAirborne(),
-                    link.romPhysicsModifier()));
+            RoomBoundaryDecision boundary = boundaryController.decide(roomSession.boundaryState(
+                    link.pixelX(), link.pixelY(), link.isAirborne(), link.romPhysicsModifier()));
             if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_FRONT_DOOR_WARP) {
                 Warp target = room.firstWarp();
                 System.out.println("Indoor front-door exit → cat=" + target.category()
-                    + " map=" + String.format("%02X", target.destMap())
-                    + " room=" + String.format("%02X", target.destRoom())
-                    + " at (" + target.destX() + "," + target.destY() + ")");
+                        + " map=" + String.format("%02X", target.destMap())
+                        + " room=" + String.format("%02X", target.destRoom())
+                        + " at (" + target.destX() + "," + target.destY() + ")");
                 startEntranceWarp(target, link);
                 return;
             }
-            if (boundary.type() == RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP
-                && room.hasWarps()) {
+            if (boundary.type() == RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP && room.hasWarps()) {
                 Warp target = room.firstWarp();
                 transitionController.startFadeOut(() -> applyWarp(target, link));
                 return;
@@ -108,8 +107,8 @@ public final class RoomTransitionCoordinator {
                 int previousY = link.pixelY();
                 link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
                 roomSession.startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
-                scrollController.onCompletion(() -> link.finishRoomScroll(
-                    boundary.direction() == ScrollController.DOWN));
+                scrollController.onCompletion(
+                        () -> link.finishRoomScroll(boundary.direction() == ScrollController.DOWN));
                 return;
             }
         }
@@ -119,8 +118,7 @@ public final class RoomTransitionCoordinator {
         }
 
         Warp staircaseWarp = roomSession.pollStaircaseWarp(
-            link.romEntityX(), link.romEntityY(), link.romEntityZ(),
-            link.isCarryingLiftedObject());
+                link.romEntityX(), link.romEntityY(), link.romEntityZ(), link.isCarryingLiftedObject());
         if (staircaseWarp != null) {
             startEntranceWarp(staircaseWarp, link);
             return;
@@ -138,10 +136,10 @@ public final class RoomTransitionCoordinator {
             if (warp.tileLocation() == linkTile) {
                 final Warp target = warp;
                 System.out.println("Warp trigger: tile=" + String.format("%02X", linkTile)
-                    + " → cat=" + target.category()
-                    + " map=" + String.format("%02X", target.destMap())
-                    + " room=" + String.format("%02X", target.destRoom())
-                    + " at (" + target.destX() + "," + target.destY() + ")");
+                        + " → cat=" + target.category()
+                        + " map=" + String.format("%02X", target.destMap())
+                        + " room=" + String.format("%02X", target.destRoom())
+                        + " at (" + target.destX() + "," + target.destY() + ")");
                 startEntranceWarp(target, link);
                 return;
             }
@@ -155,20 +153,16 @@ public final class RoomTransitionCoordinator {
 
         int previousX = link.pixelX();
         int previousY = link.pixelY();
-        RoomBoundaryDecision boundary = boundaryController.decide(
-            roomSession.boundaryState(previousX, previousY, link.isAirborne()));
+        RoomBoundaryDecision boundary =
+                boundaryController.decide(roomSession.boundaryState(previousX, previousY, link.isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
             link.setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
-            if (boundary.direction() == ScrollController.UP
-                && roomSession.shouldGetLostInMysteriousWoods()) {
-                roomSession.startMysteriousWoodsLostScroll(
-                    scrollController, previousX, previousY);
+            if (boundary.direction() == ScrollController.UP && roomSession.shouldGetLostInMysteriousWoods()) {
+                roomSession.startMysteriousWoodsLostScroll(scrollController, previousX, previousY);
             } else {
-                roomSession.startAdjacentOverworldScroll(
-                    scrollController, boundary.direction(), previousX, previousY);
+                roomSession.startAdjacentOverworldScroll(scrollController, boundary.direction(), previousX, previousY);
             }
-            scrollController.onCompletion(() -> link.finishRoomScroll(
-                boundary.direction() == ScrollController.DOWN));
+            scrollController.onCompletion(() -> link.finishRoomScroll(boundary.direction() == ScrollController.DOWN));
         } else if (boundary.type() == RoomBoundaryDecision.Type.CLAMP_LINK) {
             link.setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
         }
@@ -210,8 +204,8 @@ public final class RoomTransitionCoordinator {
     private void applyWarp(Warp warp, Link link) {
         roomSession.loadWarpDestination(warp);
         ActiveRoom destination = roomSession.activeRoom();
-        link.setRoomPhysicsForRoom(roomSession.roomLoadToken(), destination.mapId(),
-            destination.roomId(), destination.mapCategory());
+        link.setRoomPhysicsForRoom(
+                roomSession.roomLoadToken(), destination.mapId(), destination.roomId(), destination.mapCategory());
         int landingX = warp.javaPixelX();
         int landingY = warp.javaPixelY();
         link.setRoomEntryPixelPosition(landingX, landingY);

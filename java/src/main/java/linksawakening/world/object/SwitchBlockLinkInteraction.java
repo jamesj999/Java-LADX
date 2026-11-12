@@ -14,8 +14,7 @@ public final class SwitchBlockLinkInteraction {
 
     private static final int[] EXPECTED_STATE = {0x00, 0x02};
 
-    private SwitchBlockLinkInteraction() {
-    }
+    private SwitchBlockLinkInteraction() {}
 
     public static boolean isSwitchBlock(int objectId) {
         return objectId == LOWERED_BLOCK || objectId == RAISED_BLOCK;
@@ -28,27 +27,24 @@ public final class SwitchBlockLinkInteraction {
         return EXPECTED_STATE[objectId - LOWERED_BLOCK];
     }
 
-    public static boolean blocks(int objectId, int physicsFlag, int switchBlocksState,
-                                 boolean standingOnSwitchBlock) {
+    public static boolean blocks(int objectId, int physicsFlag, int switchBlocksState, boolean standingOnSwitchBlock) {
         validateState(switchBlocksState);
         if (physicsFlag != PHYSICS_OCEAN_SWITCH_BLOCK || !isSwitchBlock(objectId)) {
             return false;
         }
-        return !standingOnSwitchBlock
-            && ((switchBlocksState ^ expectedState(objectId)) != 0);
+        return !standingOnSwitchBlock && ((switchBlocksState ^ expectedState(objectId)) != 0);
     }
 
     public static boolean marksStanding(int objectId, int physicsFlag, int switchBlocksState) {
         validateState(switchBlocksState);
         return physicsFlag == PHYSICS_OCEAN_SWITCH_BLOCK
-            && isSwitchBlock(objectId)
-            && ((switchBlocksState ^ expectedState(objectId)) != 0);
+                && isSwitchBlock(objectId)
+                && ((switchBlocksState ^ expectedState(objectId)) != 0);
     }
 
     private static void validateState(int switchBlocksState) {
         if (switchBlocksState != 0x00 && switchBlocksState != 0x02) {
-            throw new IllegalArgumentException("Switch-block state must be $00 or $02: "
-                + switchBlocksState);
+            throw new IllegalArgumentException("Switch-block state must be $00 or $02: " + switchBlocksState);
         }
     }
 }

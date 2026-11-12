@@ -1,15 +1,12 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.LinkPositionHistory;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.entity.EntitySpriteSelection;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.entity.EntitySpriteSelection;
 
 /**
  * ROM-shaped implementation of bank $01's CreateFollowingNpcEntity. The
@@ -44,15 +41,16 @@ public final class FollowingNpcEntitySpawner {
      * Applies the four source-ordered follower creation paths. Link values
      * are the ROM hLinkPositionX/Y/Z bytes; {@code entityYOffset} is wC13B.
      */
-    public Result synchronize(RoomEntitySnapshot initial,
-                              FollowingNpcRoomContext room,
-                              FollowingNpcState requestedState,
-                              int linkX,
-                              int linkY,
-                              int linkZ,
-                              int entityYOffset,
-                              int linkDirection,
-                              LinkPositionHistory history) {
+    public Result synchronize(
+            RoomEntitySnapshot initial,
+            FollowingNpcRoomContext room,
+            FollowingNpcState requestedState,
+            int linkX,
+            int linkY,
+            int linkZ,
+            int entityYOffset,
+            int linkDirection,
+            LinkPositionHistory history) {
         if (initial == null || room == null || requestedState == null || history == null) {
             throw new IllegalArgumentException("Follower synchronization inputs cannot be null");
         }
@@ -62,15 +60,18 @@ public final class FollowingNpcEntitySpawner {
 
         List<RoomEntity> slots = new ArrayList<>(initial.slots());
         Map<Integer, EntitySpriteDefinition> overrides = initial.spriteSelection() == null
-            ? new HashMap<>()
-            : new HashMap<>(initial.spriteSelection().spriteOverrides());
+                ? new HashMap<>()
+                : new HashMap<>(initial.spriteSelection().spriteOverrides());
         FollowingNpcState state = requestedState;
         boolean changed = false;
 
         if (state.roosterFollowing()) {
-            SpawnResult spawn = spawn(slots, ENTITY_ROOSTER, byteValue(linkX),
-                byteValue(linkY + entityYOffset),
-                spriteHandlers.forFollowerEntityType(ENTITY_ROOSTER));
+            SpawnResult spawn = spawn(
+                    slots,
+                    ENTITY_ROOSTER,
+                    byteValue(linkX),
+                    byteValue(linkY + entityYOffset),
+                    spriteHandlers.forFollowerEntityType(ENTITY_ROOSTER));
             changed |= spawn.changed();
             if (spawn.entity() != null) {
                 overrides.put(ENTITY_ROOSTER, spawn.entity().spriteDefinition());
@@ -78,26 +79,32 @@ public final class FollowingNpcEntitySpawner {
         }
 
         if (state.ghostFollowingState() == 1) {
-            SpawnResult spawn = spawn(slots, ENTITY_GHOST, byteValue(linkX),
-                byteValue(linkY + entityYOffset),
-                spriteHandlers.forFollowerEntityType(ENTITY_GHOST));
+            SpawnResult spawn = spawn(
+                    slots,
+                    ENTITY_GHOST,
+                    byteValue(linkX),
+                    byteValue(linkY + entityYOffset),
+                    spriteHandlers.forFollowerEntityType(ENTITY_GHOST));
             changed |= spawn.changed();
             if (spawn.entity() != null) {
                 overrides.put(ENTITY_GHOST, spawn.entity().spriteDefinition());
             }
         } else if (state.ghostFollowingState() == 2) {
             boolean shouldFollow = !room.indoor()
-                && room.roomId() >= ROOM_SECTION_OW_GHOST_TRIGGER
-                && (state.instrument4Flags() & 0x02) != 0
-                && state.powerBraceletLevel() < 0x02;
+                    && room.roomId() >= ROOM_SECTION_OW_GHOST_TRIGGER
+                    && (state.instrument4Flags() & 0x02) != 0
+                    && state.powerBraceletLevel() < 0x02;
             state = state.withGhostFollowingState(shouldFollow ? 1 : 0);
             changed |= state.ghostFollowingState() != requestedState.ghostFollowingState();
         }
 
         if (state.marinFollowing()) {
-            SpawnResult spawn = spawn(slots, ENTITY_MARIN_AT_THE_SHORE, byteValue(linkX),
-                byteValue(linkY + entityYOffset),
-                spriteHandlers.forFollowerEntityType(ENTITY_MARIN_AT_THE_SHORE));
+            SpawnResult spawn = spawn(
+                    slots,
+                    ENTITY_MARIN_AT_THE_SHORE,
+                    byteValue(linkX),
+                    byteValue(linkY + entityYOffset),
+                    spriteHandlers.forFollowerEntityType(ENTITY_MARIN_AT_THE_SHORE));
             changed |= spawn.changed();
             if (spawn.entity() != null) {
                 history.fill(linkX, linkY + entityYOffset, linkZ, linkDirection);
@@ -114,22 +121,27 @@ public final class FollowingNpcEntitySpawner {
         }
 
         if (room.roomId() != ROOM_INDOOR_B_MRS_MEOW_MEOW && state.bowWowFollowing()) {
-            SpawnResult spawn = spawn(slots, ENTITY_BOW_WOW, byteValue(linkX), byteValue(linkY),
-                spriteHandlers.forFollowerEntityType(ENTITY_BOW_WOW));
+            SpawnResult spawn = spawn(
+                    slots,
+                    ENTITY_BOW_WOW,
+                    byteValue(linkX),
+                    byteValue(linkY),
+                    spriteHandlers.forFollowerEntityType(ENTITY_BOW_WOW));
             changed |= spawn.changed();
             if (spawn.entity() != null) {
                 overrides.put(ENTITY_BOW_WOW, spawn.entity().spriteDefinition());
             }
         }
 
-        RoomEntitySnapshot snapshot = new RoomEntitySnapshot(slots,
-            withOverrides(initial.spriteSelection(), overrides), initial.spriteTiles(),
-            initial.sideScrolling());
+        RoomEntitySnapshot snapshot = new RoomEntitySnapshot(
+                slots,
+                withOverrides(initial.spriteSelection(), overrides),
+                initial.spriteTiles(),
+                initial.sideScrolling());
         return new Result(snapshot, state, changed);
     }
 
-    private SpawnResult spawn(List<RoomEntity> slots, int type, int x, int y,
-                              EntitySpriteDefinition definition) {
+    private SpawnResult spawn(List<RoomEntity> slots, int type, int x, int y, EntitySpriteDefinition definition) {
         boolean changed = false;
         // CreateFollowingNpcEntity clears every active instance before calling
         // SpawnNewEntity, and both searches enumerate slots from $0F down.
@@ -143,8 +155,20 @@ public final class FollowingNpcEntitySpawner {
 
         for (int slot = slots.size() - 1; slot >= 0; slot--) {
             if (!slots.get(slot).loaded()) {
-                RoomEntity entity = new RoomEntity(slot, -1, type, x, y, EntityStatus.ACTIVE,
-                    definition, definition.initialVariant(), 0, 0, 0, -1, false);
+                RoomEntity entity = new RoomEntity(
+                        slot,
+                        -1,
+                        type,
+                        x,
+                        y,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        definition.initialVariant(),
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false);
                 slots.set(slot, entity);
                 return new SpawnResult(entity, true);
             }
@@ -153,13 +177,24 @@ public final class FollowingNpcEntitySpawner {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    private static EntitySpriteSelection withOverrides(EntitySpriteSelection selection,
-                                                        Map<Integer, EntitySpriteDefinition> overrides) {
+    private static EntitySpriteSelection withOverrides(
+            EntitySpriteSelection selection, Map<Integer, EntitySpriteDefinition> overrides) {
         return selection == null ? null : selection.withSpriteOverrides(overrides);
     }
 
@@ -170,12 +205,13 @@ public final class FollowingNpcEntitySpawner {
         if (room.sideScrolling()) {
             return false;
         }
-        if (room.mapId() == MAP_S_FACE_SHRINE || room.mapId() == MAP_KANALET
-            || room.mapId() == MAP_DREAM_SHRINE || room.mapId() < MAP_CAVE_B) {
+        if (room.mapId() == MAP_S_FACE_SHRINE
+                || room.mapId() == MAP_KANALET
+                || room.mapId() == MAP_DREAM_SHRINE
+                || room.mapId() < MAP_CAVE_B) {
             return false;
         }
-        return room.roomId() != ROOM_INDOOR_B_MANBO
-            && room.roomId() != ROOM_INDOOR_B_FISHING_MINIGAME;
+        return room.roomId() != ROOM_INDOOR_B_MANBO && room.roomId() != ROOM_INDOOR_B_FISHING_MINIGAME;
     }
 
     private static int byteValue(int value) {
@@ -190,6 +226,5 @@ public final class FollowingNpcEntitySpawner {
         }
     }
 
-    private record SpawnResult(RoomEntity entity, boolean changed) {
-    }
+    private record SpawnResult(RoomEntity entity, boolean changed) {}
 }

@@ -13,6 +13,5 @@ public final class RoomConstants {
     public static final int ACTIVE_ROOM_OBJECT_BYTES = 0x80;
     public static final int ROOM_END = 0xFE;
 
-    private RoomConstants() {
-    }
+    private RoomConstants() {}
 }

@@ -29,8 +29,7 @@ public final class OverworldCollision {
     public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {}
 
     /** The complete padded-buffer sample used by entity ground interaction. */
-    public record GroundInteractionSample(int objectId, int physicsFlag,
-                                          int objectLeft, int objectTop) {}
+    public record GroundInteractionSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {}
 
     public OverworldCollision(RomTables romTables) {
         this.romTables = romTables;
@@ -44,8 +43,7 @@ public final class OverworldCollision {
     /** Mirrors the unsigned WRAM {@code wSwitchBlocksState} value. */
     public void setSwitchBlocksState(int value) {
         if (value != 0x00 && value != 0x02) {
-            throw new IllegalArgumentException("Switch-block state must be $00 or $02: "
-                + value);
+            throw new IllegalArgumentException("Switch-block state must be $00 or $02: " + value);
         }
         switchBlocksState = value;
     }
@@ -124,8 +122,7 @@ public final class OverworldCollision {
         }
         int cellX = cellCoordinate(pixelX);
         int cellY = cellCoordinate(pixelY);
-        if (cellX < 0 || cellX >= OBJECTS_PER_ROW
-            || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+        if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             return romTables.objectPhysicsFlag(physicsTableIndex, 0xFF);
         }
         int objectId = objectIdAtCell(cellX, cellY);
@@ -199,8 +196,7 @@ public final class OverworldCollision {
     public boolean refreshLinkGroundInteraction(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
         int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
-        linkStandingOnSwitchBlock = SwitchBlockLinkInteraction.marksStanding(
-            objectId, physicsFlag, switchBlocksState);
+        linkStandingOnSwitchBlock = SwitchBlockLinkInteraction.marksStanding(objectId, physicsFlag, switchBlocksState);
         return linkStandingOnSwitchBlock;
     }
 
@@ -230,13 +226,11 @@ public final class OverworldCollision {
         int objectTop = sampleY & 0xF0;
         int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
         if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE,
-                objectLeft, objectTop);
+            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, objectLeft, objectTop);
         }
         int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return new GroundInteractionSample(objectId,
-            romTables.objectPhysicsFlag(physicsTableIndex, objectId),
-            objectLeft, objectTop);
+        return new GroundInteractionSample(
+                objectId, romTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
     }
 
     /**
@@ -260,17 +254,14 @@ public final class OverworldCollision {
         int objectTop = y & 0xF0;
         int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
         if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE,
-                objectLeft, objectTop);
+            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, objectLeft, objectTop);
         }
         int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return new GroundInteractionSample(objectId,
-            romTables.objectPhysicsFlag(physicsTableIndex, objectId),
-            objectLeft, objectTop);
+        return new GroundInteractionSample(
+                objectId, romTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
     }
 
-    private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY,
-                                   boolean hasFlippers) {
+    private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY, boolean hasFlippers) {
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             // Off-room cells are the caller's problem - they trigger room scroll,
             // not a collision block. Treat as passable here.
@@ -293,15 +284,15 @@ public final class OverworldCollision {
             return romTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
         }
 
-        if (physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA
-            || PhysicsFlags.isPitCategory(physicsFlag)) {
+        if (physicsFlag == PhysicsFlags.DEEP_WATER
+                || physicsFlag == PhysicsFlags.LAVA
+                || PhysicsFlags.isPitCategory(physicsFlag)) {
             return false;
         }
 
         if (physicsFlag == SwitchBlockLinkInteraction.PHYSICS_OCEAN_SWITCH_BLOCK
-            && SwitchBlockLinkInteraction.isSwitchBlock(rawId)) {
-            return SwitchBlockLinkInteraction.blocks(
-                rawId, physicsFlag, switchBlocksState, linkStandingOnSwitchBlock);
+                && SwitchBlockLinkInteraction.isSwitchBlock(rawId)) {
+            return SwitchBlockLinkInteraction.blocks(rawId, physicsFlag, switchBlocksState, linkStandingOnSwitchBlock);
         }
 
         return idBlocks(rawId);
@@ -318,8 +309,10 @@ public final class OverworldCollision {
 
     private int objectIdAtCell(int cellX, int cellY) {
         if (roomObjectsArea == null
-            || cellX < 0 || cellX >= OBJECTS_PER_ROW
-            || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+                || cellX < 0
+                || cellX >= OBJECTS_PER_ROW
+                || cellY < 0
+                || cellY >= OBJECTS_PER_COLUMN) {
             return 0xFF;
         }
         int areaIndex = ROOM_OBJECTS_BASE + cellY * ROOM_OBJECT_ROW_STRIDE + cellX;
@@ -330,9 +323,7 @@ public final class OverworldCollision {
     }
 
     private static int cellCoordinate(int pixel) {
-        return pixel < 0
-            ? pixel / CELL_SIZE - (pixel % CELL_SIZE == 0 ? 0 : 1)
-            : pixel / CELL_SIZE;
+        return pixel < 0 ? pixel / CELL_SIZE - (pixel % CELL_SIZE == 0 ? 0 : 1) : pixel / CELL_SIZE;
     }
 
     /** Uses the active ROM physics table; object IDs have different meanings indoors. */

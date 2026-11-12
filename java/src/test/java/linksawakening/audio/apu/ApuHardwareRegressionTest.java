@@ -1,10 +1,10 @@
 package linksawakening.audio.apu;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Hardware sequences from:
@@ -54,18 +54,20 @@ final class ApuHardwareRegressionTest {
     @ValueSource(ints = {1, 2, 3, 4})
     void disabledLengthHoldsAndExpiredLengthRetriggersWithFullDuration(int channel) {
         GameBoyApu apu = powered();
-        int lengthRegister = switch (channel) {
-            case 1 -> GameBoyApu.NR11;
-            case 2 -> GameBoyApu.NR21;
-            case 3 -> GameBoyApu.NR31;
-            default -> GameBoyApu.NR41;
-        };
-        int control = switch (channel) {
-            case 1 -> GameBoyApu.NR14;
-            case 2 -> GameBoyApu.NR24;
-            case 3 -> GameBoyApu.NR34;
-            default -> GameBoyApu.NR44;
-        };
+        int lengthRegister =
+                switch (channel) {
+                    case 1 -> GameBoyApu.NR11;
+                    case 2 -> GameBoyApu.NR21;
+                    case 3 -> GameBoyApu.NR31;
+                    default -> GameBoyApu.NR41;
+                };
+        int control =
+                switch (channel) {
+                    case 1 -> GameBoyApu.NR14;
+                    case 2 -> GameBoyApu.NR24;
+                    case 3 -> GameBoyApu.NR34;
+                    default -> GameBoyApu.NR44;
+                };
         apu.writeRegister(GameBoyApu.NR12, 0xF0);
         apu.writeRegister(GameBoyApu.NR22, 0xF0);
         apu.writeRegister(GameBoyApu.NR30, 0x80);

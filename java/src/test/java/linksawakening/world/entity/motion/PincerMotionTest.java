@@ -1,13 +1,11 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class PincerMotionTest {
 
@@ -51,8 +49,7 @@ final class PincerMotionTest {
     void prepareStateSetsTheSourceSpeedAtCountdownTenAndEntersLungeAtZero() {
         PincerMotion motion = new PincerMotion();
         EntitySpriteDefinition definition = EntitySpriteDefinition.unsupported(0xB0);
-        RoomEntity entity = new RoomEntity(0, 0, 0xB0, 64, 80, EntityStatus.ACTIVE,
-            definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntity(0, 0, 0xB0, 64, 80, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         motion.forceStateForTest(0, 2, 0x10, 0x40);
 
         PincerMotion.Update prepared = motion.advance(entity, 0x10, 0x40, 96, 80);
@@ -88,7 +85,19 @@ final class PincerMotionTest {
     }
 
     private static RoomEntity entity(int slot, int x, int y, int variant) {
-        return new RoomEntity(slot, 0, 0xB0, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xB0), variant, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                slot,
+                0,
+                0xB0,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xB0),
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

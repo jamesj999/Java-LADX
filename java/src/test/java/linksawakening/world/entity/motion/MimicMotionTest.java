@@ -1,14 +1,12 @@
 package linksawakening.world.entity.motion;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class MimicMotionTest {
 
@@ -69,10 +67,13 @@ final class MimicMotionTest {
         motion.initialize(entity.slot());
         motion.setSpeedForTest(entity.slot(), 0x10, 0x00);
 
-        MimicMotion.Update update = motion.advance(entity, 0x00, 0x00, 0,
-            (candidate, direction, nextX, nextY) ->
-                EntityBackgroundCollisionResult.blocked(direction,
-                    EntityBackgroundCollisionResult.NO_OBJECT, 0, nextX, nextY));
+        MimicMotion.Update update = motion.advance(
+                entity,
+                0x00,
+                0x00,
+                0,
+                (candidate, direction, nextX, nextY) -> EntityBackgroundCollisionResult.blocked(
+                        direction, EntityBackgroundCollisionResult.NO_OBJECT, 0, nextX, nextY));
 
         assertEquals(0x40, update.entity().x());
         assertEquals(0x50, update.entity().y());
@@ -82,7 +83,19 @@ final class MimicMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(0, 0, 0x28, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x28), variant, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0,
+                0,
+                0x28,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x28),
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

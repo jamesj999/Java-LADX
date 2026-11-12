@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.List;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.List;
-import java.util.function.IntSupplier;
 
 /** Bank-$06 {@code ThreeOfAKindEntityHandler}. */
 public final class ThreeOfAKindMotion {
@@ -14,7 +13,11 @@ public final class ThreeOfAKindMotion {
     private static final int[] SPEED_X = {0x0C, 0xF4, 0, 0};
     private static final int[] SPEED_Y = {0, 0, 0xF4, 0x0C};
 
-    public enum PuzzleResult { NONE, MISMATCH, MATCH }
+    public enum PuzzleResult {
+        NONE,
+        MISMATCH,
+        MATCH
+    }
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -26,14 +29,32 @@ public final class ThreeOfAKindMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown) {}
 
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   int ignoreHitsCountdown, IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision collision) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision collision) {
         int slot = entity.slot();
         int x = move(entity, true, collision);
-        int y = move(new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, entity.y(), entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false), false, collision);
+        int y = move(
+                new RoomEntity(
+                        entity.slot(),
+                        entity.sourceLoadOrder(),
+                        entity.type(),
+                        x,
+                        entity.y(),
+                        entity.status(),
+                        entity.spriteDefinition(),
+                        entity.spriteVariant(),
+                        entity.entityFlipAttribute(),
+                        entity.spriteTileOffset(),
+                        entity.z(),
+                        -1,
+                        false),
+                false,
+                collision);
 
         switch (state[slot]) {
             case 0 -> {
@@ -54,9 +75,8 @@ public final class ThreeOfAKindMotion {
                     speedY[slot] = SPEED_Y[nextDirection];
                 }
             }
-            case 2 -> { }
-            default -> throw new IllegalStateException("Unknown Three-of-a-Kind state: "
-                + state[slot]);
+            case 2 -> {}
+            default -> throw new IllegalStateException("Unknown Three-of-a-Kind state: " + state[slot]);
         }
 
         if ((frameCounter & 0x0F) == 0 && state[slot] != 2) {
@@ -74,11 +94,11 @@ public final class ThreeOfAKindMotion {
 
     public PuzzleResult resolvePuzzle(List<RoomEntity> entities, int[] transitionCountdowns) {
         List<RoomEntity> cards = entities.stream()
-            .filter(entity -> entity.status() == EntityStatus.ACTIVE
-                && entity.type() == ENTITY_TYPE)
-            .toList();
-        if (cards.size() != 3 || cards.stream().anyMatch(entity ->
-            state[entity.slot()] != 2 || transitionCountdowns[entity.slot()] != 0)) {
+                .filter(entity -> entity.status() == EntityStatus.ACTIVE && entity.type() == ENTITY_TYPE)
+                .toList();
+        if (cards.size() != 3
+                || cards.stream()
+                        .anyMatch(entity -> state[entity.slot()] != 2 || transitionCountdowns[entity.slot()] != 0)) {
             return PuzzleResult.NONE;
         }
         int face = direction[cards.getFirst().slot()];
@@ -103,10 +123,21 @@ public final class ThreeOfAKindMotion {
         return direction[slot] < 2 ? 0x02 : 0x1D;
     }
 
-    public int state(int slot) { return state[slot]; }
-    int direction(int slot) { return direction[slot]; }
-    int speedX(int slot) { return speedX[slot]; }
-    int speedY(int slot) { return speedY[slot]; }
+    public int state(int slot) {
+        return state[slot];
+    }
+
+    int direction(int slot) {
+        return direction[slot];
+    }
+
+    int speedX(int slot) {
+        return speedX[slot];
+    }
+
+    int speedY(int slot) {
+        return speedY[slot];
+    }
 
     public void setSettledForTest(int slot, int face) {
         state[slot] = 2;
@@ -123,8 +154,7 @@ public final class ThreeOfAKindMotion {
         accumulatorY[slot] = 0;
     }
 
-    private int move(RoomEntity entity, boolean horizontal,
-                     RoomEntityBackgroundCollision collision) {
+    private int move(RoomEntity entity, boolean horizontal, RoomEntityBackgroundCollision collision) {
         int slot = entity.slot();
         int speed = horizontal ? speedX[slot] : speedY[slot];
         int[] accumulator = horizontal ? accumulatorX : accumulatorY;
@@ -132,9 +162,10 @@ public final class ThreeOfAKindMotion {
         int next = addSpeed(position, speed, accumulator, slot);
         int nextX = horizontal ? next : entity.x();
         int nextY = horizontal ? entity.y() : next;
-        if (next != position && collision != null && collision.blocks(entity,
-            horizontal ? (signed(speed) < 0 ? 1 : 0) : (signed(speed) < 0 ? 2 : 3),
-            nextX, nextY)) {
+        if (next != position
+                && collision != null
+                && collision.blocks(
+                        entity, horizontal ? (signed(speed) < 0 ? 1 : 0) : (signed(speed) < 0 ? 2 : 3), nextX, nextY)) {
             return position;
         }
         return next;
@@ -153,10 +184,20 @@ public final class ThreeOfAKindMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                      int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z(), -1, false);
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 }

@@ -28,23 +28,18 @@ public interface ColorShellWorld {
             }
 
             @Override
-            public void writeObject(RoomEntity entity, int objectId) {
-            }
+            public void writeObject(RoomEntity entity, int objectId) {}
 
             @Override
-            public void playJingle(int id) {
-            }
+            public void playJingle(int id) {}
 
             @Override
-            public void playNoise(int id) {
-            }
+            public void playNoise(int id) {}
 
             @Override
-            public void spawnPoof(int x, int y) {
-            }
+            public void spawnPoof(int x, int y) {}
         };
 
-        private NoneHolder() {
-        }
+        private NoneHolder() {}
     }
 }

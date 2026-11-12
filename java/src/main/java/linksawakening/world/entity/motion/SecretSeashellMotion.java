@@ -24,9 +24,7 @@ public final class SecretSeashellMotion {
     private static final int OBJECT_SHORT_GRASS = 0x04;
     private static final int OBJECT_SHOVEL_HOLE = 0xCC;
 
-    private static final int[] SPECIAL_HIDDEN_ROOMS = {
-        0xDA, 0xA5, 0x74, 0x3A, 0xA8, 0xB2
-    };
+    private static final int[] SPECIAL_HIDDEN_ROOMS = {0xDA, 0xA5, 0x74, 0x3A, 0xA8, 0xB2};
 
     private final int[] roomId = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -44,8 +42,7 @@ public final class SecretSeashellMotion {
     void initialize(int slot, int roomId) {
         validateSlot(slot);
         this.roomId[slot] = roomId & 0xFF;
-        privateState3[slot] = isTreeSeashellRoom(roomId)
-            ? TREE_HIDDEN_STATE : NORMAL_HIDDEN_STATE;
+        privateState3[slot] = isTreeSeashellRoom(roomId) ? TREE_HIDDEN_STATE : NORMAL_HIDDEN_STATE;
         privateState4[slot] = 0;
         privateCountdown1[slot] = 0;
         slowTransitionCountdown[slot] = 0;
@@ -70,14 +67,29 @@ public final class SecretSeashellMotion {
      * Advances the exact hidden/reveal branch and the common top-down
      * bouncing physics used after a shell has become visible.
      */
-    public Update advance(RoomEntity entity, int roomId, int frameCounter,
-                   boolean roomTransitionActive, boolean screenShakeActive,
-                   boolean pegasusCollisionActive, int linkEntityX, int linkEntityY,
-                   RoomEntityObjectSample objectUnderEntity) {
-        return advanceInternal(entity, roomId, frameCounter, roomTransitionActive,
-            screenShakeActive, pegasusCollisionActive, false,
-            entity.x() + 0x08,
-            entity.y() + 0x08, linkEntityX, linkEntityY, objectUnderEntity);
+    public Update advance(
+            RoomEntity entity,
+            int roomId,
+            int frameCounter,
+            boolean roomTransitionActive,
+            boolean screenShakeActive,
+            boolean pegasusCollisionActive,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityObjectSample objectUnderEntity) {
+        return advanceInternal(
+                entity,
+                roomId,
+                frameCounter,
+                roomTransitionActive,
+                screenShakeActive,
+                pegasusCollisionActive,
+                false,
+                entity.x() + 0x08,
+                entity.y() + 0x08,
+                linkEntityX,
+                linkEntityY,
+                objectUnderEntity);
     }
 
     /**
@@ -85,36 +97,74 @@ public final class SecretSeashellMotion {
      * The ROM compares the shell centre against each byte using unsigned
      * wraparound, accepting a half-open $20-byte window on both axes.
      */
-    public Update advance(RoomEntity entity, int roomId, int frameCounter,
-                   boolean roomTransitionActive, boolean screenShakeActive,
-                   boolean pegasusCollisionActive, int pegasusCollisionX,
-                   int pegasusCollisionY, int linkEntityX, int linkEntityY,
-                   RoomEntityObjectSample objectUnderEntity) {
-        return advanceInternal(entity, roomId, frameCounter, roomTransitionActive,
-            screenShakeActive, pegasusCollisionActive, true, pegasusCollisionX,
-            pegasusCollisionY, linkEntityX, linkEntityY, objectUnderEntity);
+    public Update advance(
+            RoomEntity entity,
+            int roomId,
+            int frameCounter,
+            boolean roomTransitionActive,
+            boolean screenShakeActive,
+            boolean pegasusCollisionActive,
+            int pegasusCollisionX,
+            int pegasusCollisionY,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityObjectSample objectUnderEntity) {
+        return advanceInternal(
+                entity,
+                roomId,
+                frameCounter,
+                roomTransitionActive,
+                screenShakeActive,
+                pegasusCollisionActive,
+                true,
+                pegasusCollisionX,
+                pegasusCollisionY,
+                linkEntityX,
+                linkEntityY,
+                objectUnderEntity);
     }
 
-    public Update advance(RoomEntity entity, int roomId, int frameCounter,
-                   boolean roomTransitionActive, boolean screenShakeActive,
-                   boolean pegasusCollisionActive,
-                   boolean pegasusCollisionCoordinatesKnown,
-                   int pegasusCollisionX, int pegasusCollisionY,
-                   int linkEntityX, int linkEntityY,
-                   RoomEntityObjectSample objectUnderEntity) {
-        return advanceInternal(entity, roomId, frameCounter, roomTransitionActive,
-            screenShakeActive, pegasusCollisionActive,
-            pegasusCollisionCoordinatesKnown, pegasusCollisionX,
-            pegasusCollisionY, linkEntityX, linkEntityY, objectUnderEntity);
+    public Update advance(
+            RoomEntity entity,
+            int roomId,
+            int frameCounter,
+            boolean roomTransitionActive,
+            boolean screenShakeActive,
+            boolean pegasusCollisionActive,
+            boolean pegasusCollisionCoordinatesKnown,
+            int pegasusCollisionX,
+            int pegasusCollisionY,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityObjectSample objectUnderEntity) {
+        return advanceInternal(
+                entity,
+                roomId,
+                frameCounter,
+                roomTransitionActive,
+                screenShakeActive,
+                pegasusCollisionActive,
+                pegasusCollisionCoordinatesKnown,
+                pegasusCollisionX,
+                pegasusCollisionY,
+                linkEntityX,
+                linkEntityY,
+                objectUnderEntity);
     }
 
-    private Update advanceInternal(RoomEntity entity, int roomId, int frameCounter,
-                            boolean roomTransitionActive, boolean screenShakeActive,
-                            boolean pegasusCollisionActive,
-                            boolean pegasusCollisionCoordinatesKnown,
-                            int pegasusCollisionX, int pegasusCollisionY,
-                            int linkEntityX, int linkEntityY,
-                            RoomEntityObjectSample objectUnderEntity) {
+    private Update advanceInternal(
+            RoomEntity entity,
+            int roomId,
+            int frameCounter,
+            boolean roomTransitionActive,
+            boolean screenShakeActive,
+            boolean pegasusCollisionActive,
+            boolean pegasusCollisionCoordinatesKnown,
+            int pegasusCollisionX,
+            int pegasusCollisionY,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityObjectSample objectUnderEntity) {
         if (entity == null) {
             throw new IllegalArgumentException("Secret seashell entity cannot be null");
         }
@@ -133,15 +183,15 @@ public final class SecretSeashellMotion {
             }
 
             boolean reveal = privateState3[slot] == TREE_HIDDEN_STATE
-                ? screenShakeActive && pegasusCollisionActive
-                    && (!pegasusCollisionCoordinatesKnown
-                        || withinPegasusCollisionWindow(entity.x() + 0x08,
-                            entity.y() + 0x08, pegasusCollisionX, pegasusCollisionY))
-                : shouldRevealFromObject(roomId, objectUnderEntity, slot);
+                    ? screenShakeActive
+                            && pegasusCollisionActive
+                            && (!pegasusCollisionCoordinatesKnown
+                                    || withinPegasusCollisionWindow(
+                                            entity.x() + 0x08, entity.y() + 0x08, pegasusCollisionX, pegasusCollisionY))
+                    : shouldRevealFromObject(roomId, objectUnderEntity, slot);
             if (reveal) {
                 revealAwayFromLink(slot, entity.x(), entity.y(), linkEntityX, linkEntityY);
-                return new Update(withVariant(entity,
-                    entity.spriteDefinition().supported() ? 0 : -1), false);
+                return new Update(withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
             }
             return new Update(withVariant(entity, -1), true);
         }
@@ -153,17 +203,13 @@ public final class SecretSeashellMotion {
         return new Update(withPositionAndVariant(entity, x, y, z, entity.spriteVariant()), false);
     }
 
-    private static boolean withinPegasusCollisionWindow(int entityCenterX,
-                                                         int entityCenterY,
-                                                         int collisionX,
-                                                         int collisionY) {
-        return unsignedWindowContains(entityCenterX, collisionX)
-            && unsignedWindowContains(entityCenterY, collisionY);
+    private static boolean withinPegasusCollisionWindow(
+            int entityCenterX, int entityCenterY, int collisionX, int collisionY) {
+        return unsignedWindowContains(entityCenterX, collisionX) && unsignedWindowContains(entityCenterY, collisionY);
     }
 
     private static boolean unsignedWindowContains(int entityCoordinate, int collisionCoordinate) {
-        int difference = ((entityCoordinate & 0xFF) - (collisionCoordinate & 0xFF) + 0x10)
-            & 0xFF;
+        int difference = ((entityCoordinate & 0xFF) - (collisionCoordinate & 0xFF) + 0x10) & 0xFF;
         return difference < 0x20;
     }
 
@@ -182,14 +228,12 @@ public final class SecretSeashellMotion {
         return objectId == OBJECT_SHORT_GRASS || objectId == OBJECT_SHOVEL_HOLE;
     }
 
-    private void revealAwayFromLink(int slot, int entityX, int entityY,
-                                    int linkEntityX, int linkEntityY) {
+    private void revealAwayFromLink(int slot, int entityX, int entityY, int linkEntityX, int linkEntityY) {
         privateState3[slot] = 0;
         privateState4[slot] = 0;
         privateCountdown1[slot] = REVEAL_COUNTDOWN;
         slowTransitionCountdown[slot] = REVEAL_SLOW_COUNTDOWN;
-        Vector towardLink = vectorTowardsLink(entityX, entityY,
-            linkEntityX, linkEntityY, REVEAL_VECTOR_LENGTH);
+        Vector towardLink = vectorTowardsLink(entityX, entityY, linkEntityX, linkEntityY, REVEAL_VECTOR_LENGTH);
         speedX[slot] = (-towardLink.x()) & 0xFF;
         speedY[slot] = (-towardLink.y()) & 0xFF;
         speedZ[slot] = REVEAL_SPEED_Z;
@@ -263,8 +307,7 @@ public final class SecretSeashellMotion {
         return false;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY);
         int absoluteX = Math.abs(distanceX);
@@ -301,8 +344,7 @@ public final class SecretSeashellMotion {
         return result;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -317,18 +359,37 @@ public final class SecretSeashellMotion {
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z & 0xFF,
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static int signedByte(int value) {
@@ -342,9 +403,7 @@ public final class SecretSeashellMotion {
         }
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 
-    public record Update(RoomEntity entity, boolean hidden) {
-    }
+    public record Update(RoomEntity entity, boolean hidden) {}
 }

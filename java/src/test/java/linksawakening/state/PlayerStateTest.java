@@ -1,14 +1,14 @@
 package linksawakening.state;
 
-import linksawakening.save.SaveRamLayout;
-import linksawakening.save.SaveRamImage;
-import linksawakening.save.SaveSlotState;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.save.SaveRamImage;
+import linksawakening.save.SaveRamLayout;
+import linksawakening.save.SaveSlotState;
+import org.junit.jupiter.api.Test;
 
 final class PlayerStateTest {
     @Test
@@ -394,8 +394,7 @@ final class PlayerStateTest {
         playerState.setInvincibilityCounter(0);
         playerState.applyRomEnemyDamage(8);
         assertEquals(2, playerState.powerUpHits());
-        assertEquals(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
-            playerState.activePowerUp());
+        assertEquals(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER, playerState.activePowerUp());
 
         playerState.setInvincibilityCounter(0);
         playerState.applyRomEnemyDamage(8);
@@ -514,8 +513,7 @@ final class PlayerStateTest {
         assertEquals(1, playerState.faceKeyCount());
         assertEquals(1, playerState.birdKeyCount());
         assertEquals(1, playerState.goldenLeavesCount());
-        assertEquals(1, playerState.chestItemCount(
-            linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET));
+        assertEquals(1, playerState.chestItemCount(linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET));
     }
 
     @Test
@@ -585,8 +583,7 @@ final class PlayerStateTest {
         playerState.setRunningWithPegasusBoots(true);
         playerState.applyEntityPickup(0x2D);
         playerState.applyEntityPickup(0x2E);
-        playerState.applyChestReward(
-            linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET);
 
         byte[] bytes = SaveRamImage.empty().bytes();
         int main = SaveRamLayout.slotOffset(0) + SaveRamLayout.mainOffset();
@@ -663,8 +660,7 @@ final class PlayerStateTest {
         assertEquals(0, playerState.addHealthBuffer());
         assertEquals(0, playerState.addRupeeBuffer());
         assertEquals(0, playerState.subtractHealthBuffer());
-        assertEquals(0, playerState.chestItemCount(
-            linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET));
+        assertEquals(0, playerState.chestItemCount(linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET));
         assertArrayEquals(new int[] {1, 2, 0, 0, 0}, saved.nameBytes());
     }
 }

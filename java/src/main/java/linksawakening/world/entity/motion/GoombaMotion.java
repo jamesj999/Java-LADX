@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 GoombaEntityHandler's ordinary-room random walk. */
 public final class GoombaMotion {
@@ -32,12 +31,18 @@ public final class GoombaMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
-                   int transitionCountdown, boolean sideScrolling) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown,
+            boolean sideScrolling) {
         if ((entity.type() & 0xFF) != ENTITY_GOOMBA) {
-            throw new IllegalArgumentException("Unsupported Goomba motion entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Goomba motion entity type: 0x" + Integer.toHexString(entity.type()));
         }
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -50,8 +55,7 @@ public final class GoombaMotion {
         int variant;
         boolean startDying = false;
         if (sideScrolling) {
-            SideUpdate sideUpdate = advanceSideScrolling(entity, frameCounter, linkEntityX,
-                x, y, backgroundCollision);
+            SideUpdate sideUpdate = advanceSideScrolling(entity, frameCounter, linkEntityX, x, y, backgroundCollision);
             x = sideUpdate.x();
             y = sideUpdate.y();
             variant = sideUpdate.variant();
@@ -66,8 +70,7 @@ public final class GoombaMotion {
                         inertia[slot] = (inertia[slot] + 1) & 0xFF;
                         if (inertia[slot] == 4) {
                             inertia[slot] = 0;
-                            direction[slot] = directionToLink(
-                                x, y, linkEntityX, linkEntityY);
+                            direction[slot] = directionToLink(x, y, linkEntityX, linkEntityY);
                         } else {
                             direction[slot] = randomByteSupplier.getAsInt() & 0x03;
                         }
@@ -98,14 +101,24 @@ public final class GoombaMotion {
                         startDying = true;
                     }
                 }
-                default -> throw new IllegalStateException("Invalid Goomba state: "
-                    + state[slot]);
+                default -> throw new IllegalStateException("Invalid Goomba state: " + state[slot]);
             }
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
         return new Update(updated, countdown, startDying);
     }
 
@@ -133,9 +146,13 @@ public final class GoombaMotion {
         return speedY[slot];
     }
 
-    private SideUpdate advanceSideScrolling(RoomEntity entity, int frameCounter, int linkEntityX,
-                                            int x, int y,
-                                            RoomEntityBackgroundCollision backgroundCollision) {
+    private SideUpdate advanceSideScrolling(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int x,
+            int y,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (state[slot] == 0) {
             direction[slot] = linkEntityX - x < 0 ? 1 : 0;
@@ -154,23 +171,22 @@ public final class GoombaMotion {
         return new SideUpdate(x, y, 2);
     }
 
-    private Position move(RoomEntity entity, int x, int y,
-                          RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int nextX = addSpeedToPosition(x, speedX[entity.slot()], speedXAccumulator, entity.slot());
         int nextY = addSpeedToPosition(y, speedY[entity.slot()], speedYAccumulator, entity.slot());
         // UpdateEntityPosWithSpeed_07 runs before the handler's two INC [HL]
         // gravity writes; ApplyEntityInteractionWithBackground then sees the
         // accelerated speed and can clear it on a floor collision.
         speedY[entity.slot()] = (speedY[entity.slot()] + 0x02) & 0xFF;
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, directionForX(speedX[entity.slot()]),
-                nextX, y)) {
+        if (backgroundCollision != null
+                && nextX != x
+                && backgroundCollision.blocks(entity, directionForX(speedX[entity.slot()]), nextX, y)) {
             nextX = x;
             speedX[entity.slot()] = negateByte(speedX[entity.slot()]);
         }
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, directionForY(speedY[entity.slot()]),
-                nextX, nextY)) {
+        if (backgroundCollision != null
+                && nextY != y
+                && backgroundCollision.blocks(entity, directionForY(speedY[entity.slot()]), nextX, nextY)) {
             nextY = ((nextY & 0xF0) + 0x03) & 0xFF;
             speedY[entity.slot()] = 0;
         }
@@ -190,8 +206,7 @@ public final class GoombaMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -223,12 +238,9 @@ public final class GoombaMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y) {
-    }
+    private record Position(int x, int y) {}
 
-    private record SideUpdate(int x, int y, int variant) {
-    }
+    private record SideUpdate(int x, int y, int variant) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, boolean startDying) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown, boolean startDying) {}
 }

@@ -8,8 +8,7 @@ public final class RomUtil {
     public static final int BANK_SIZE = 0x4000;
     public static final int BG_MAP_ROW_WIDTH = 0x20;
 
-    private RomUtil() {
-    }
+    private RomUtil() {}
 
     public static int romOffset(int bank, int address) {
         return RomBank.romOffset(bank, address);

@@ -1,9 +1,8 @@
 package linksawakening.ui;
 
+import java.util.Objects;
 import linksawakening.gpu.GPU;
 import linksawakening.render.IndexedRenderer;
-
-import java.util.Objects;
 
 /** Renders the ROM OAM block used by the Ocarina song-selection popup. */
 public final class OcarinaPopupRenderer {
@@ -19,7 +18,7 @@ public final class OcarinaPopupRenderer {
     private static final int OAM_X_SCREEN_OFFSET = 0x08;
 
     private static final int SELECTION_Y = 0x38;
-    private static final int[] SELECTION_X = { 0x50, 0x60, 0x70 };
+    private static final int[] SELECTION_X = {0x50, 0x60, 0x70};
     private static final int SELECTION_TILE = 0x28;
     private static final int SELECTION_PALETTE = 0x06;
     private static final int SELECTION_FLIPPED_PALETTE = 0x26;
@@ -29,14 +28,13 @@ public final class OcarinaPopupRenderer {
     public OcarinaPopupRenderer(int[] oamData) {
         Objects.requireNonNull(oamData, "oamData");
         if (oamData.length != FRAME_COUNT * FRAME_SIZE) {
-            throw new IllegalArgumentException("Expected "
-                + (FRAME_COUNT * FRAME_SIZE) + " Ocarina popup bytes, got " + oamData.length);
+            throw new IllegalArgumentException(
+                    "Expected " + (FRAME_COUNT * FRAME_SIZE) + " Ocarina popup bytes, got " + oamData.length);
         }
         this.oamData = oamData.clone();
     }
 
-    public void render(byte[] displayBuffer, GPU gpu, int[][] objectPalettes,
-                       OcarinaSongMenu menu) {
+    public void render(byte[] displayBuffer, GPU gpu, int[][] objectPalettes, OcarinaSongMenu menu) {
         Objects.requireNonNull(displayBuffer, "displayBuffer");
         Objects.requireNonNull(gpu, "gpu");
         Objects.requireNonNull(objectPalettes, "objectPalettes");
@@ -66,10 +64,15 @@ public final class OcarinaPopupRenderer {
 
         int selectedSong = Math.max(0, Math.min(2, menuPlayerSelectedSong(menu)));
         int markerX = SELECTION_X[selectedSong];
-        drawOamEntry(displayBuffer, gpu, objectPalettes, SELECTION_Y, markerX,
-            SELECTION_TILE, SELECTION_PALETTE);
-        drawOamEntry(displayBuffer, gpu, objectPalettes, SELECTION_Y, markerX + 8,
-            SELECTION_TILE, SELECTION_FLIPPED_PALETTE);
+        drawOamEntry(displayBuffer, gpu, objectPalettes, SELECTION_Y, markerX, SELECTION_TILE, SELECTION_PALETTE);
+        drawOamEntry(
+                displayBuffer,
+                gpu,
+                objectPalettes,
+                SELECTION_Y,
+                markerX + 8,
+                SELECTION_TILE,
+                SELECTION_FLIPPED_PALETTE);
     }
 
     private static int menuPlayerSelectedSong(OcarinaSongMenu menu) {
@@ -79,13 +82,18 @@ public final class OcarinaPopupRenderer {
         return menu.selectedSongIndex();
     }
 
-    private static void drawOamEntry(byte[] displayBuffer, GPU gpu, int[][] objectPalettes,
-                                     int oamY, int oamX, int tile, int attributes) {
+    private static void drawOamEntry(
+            byte[] displayBuffer, GPU gpu, int[][] objectPalettes, int oamY, int oamX, int tile, int attributes) {
         int paletteIndex = attributes & 0x07;
         int[] palette = objectPalettes[Math.min(paletteIndex, objectPalettes.length - 1)];
-        IndexedRenderer.drawSpriteTile(displayBuffer, gpu.getTile(tile),
-            oamX - OAM_X_SCREEN_OFFSET, oamY - OAM_Y_SCREEN_OFFSET,
-            (attributes & 0x20) != 0, (attributes & 0x40) != 0, palette);
+        IndexedRenderer.drawSpriteTile(
+                displayBuffer,
+                gpu.getTile(tile),
+                oamX - OAM_X_SCREEN_OFFSET,
+                oamY - OAM_Y_SCREEN_OFFSET,
+                (attributes & 0x20) != 0,
+                (attributes & 0x40) != 0,
+                palette);
     }
 
     private static int songIndexForTile(int tile) {
@@ -97,8 +105,8 @@ public final class OcarinaPopupRenderer {
         };
     }
 
-    public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] objectPalettes,
-                       OcarinaSongMenu menu) {
+    public void submit(
+            linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] objectPalettes, OcarinaSongMenu menu) {
         Objects.requireNonNull(frameModel, "displayBuffer");
         Objects.requireNonNull(gpu, "gpu");
         Objects.requireNonNull(objectPalettes, "objectPalettes");
@@ -128,18 +136,28 @@ public final class OcarinaPopupRenderer {
 
         int selectedSong = Math.max(0, Math.min(2, menuPlayerSelectedSong(menu)));
         int markerX = SELECTION_X[selectedSong];
-        drawOamEntry(frameModel, gpu, objectPalettes, SELECTION_Y, markerX,
-            SELECTION_TILE, SELECTION_PALETTE);
-        drawOamEntry(frameModel, gpu, objectPalettes, SELECTION_Y, markerX + 8,
-            SELECTION_TILE, SELECTION_FLIPPED_PALETTE);
+        drawOamEntry(frameModel, gpu, objectPalettes, SELECTION_Y, markerX, SELECTION_TILE, SELECTION_PALETTE);
+        drawOamEntry(
+                frameModel, gpu, objectPalettes, SELECTION_Y, markerX + 8, SELECTION_TILE, SELECTION_FLIPPED_PALETTE);
     }
 
-    private static void drawOamEntry(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] objectPalettes,
-                                     int oamY, int oamX, int tile, int attributes) {
+    private static void drawOamEntry(
+            linksawakening.render.HardwareFrame frameModel,
+            GPU gpu,
+            int[][] objectPalettes,
+            int oamY,
+            int oamX,
+            int tile,
+            int attributes) {
         int paletteIndex = attributes & 0x07;
         int[] palette = objectPalettes[Math.min(paletteIndex, objectPalettes.length - 1)];
-        frameModel.append( gpu.getTile(tile),
-            oamX - OAM_X_SCREEN_OFFSET, oamY - OAM_Y_SCREEN_OFFSET,
-            (attributes & 0x20) != 0, (attributes & 0x40) != 0, palette, false);
+        frameModel.append(
+                gpu.getTile(tile),
+                oamX - OAM_X_SCREEN_OFFSET,
+                oamY - OAM_Y_SCREEN_OFFSET,
+                (attributes & 0x20) != 0,
+                (attributes & 0x40) != 0,
+                palette,
+                false);
     }
 }

@@ -52,8 +52,7 @@ public final class DungeonItemState {
         requireLength(persistentFlags, DUNGEON_ITEM_FLAGS_SIZE, "persistentFlags");
         requireLength(colorFlags, COLOR_DUNGEON_ITEM_FLAGS_SIZE, "colorFlags");
         System.arraycopy(persistentFlags, 0, dungeonItemFlags, 0, DUNGEON_ITEM_FLAGS_SIZE);
-        System.arraycopy(colorFlags, 0, colorDungeonItemFlags,
-            0, COLOR_DUNGEON_ITEM_FLAGS_SIZE);
+        System.arraycopy(colorFlags, 0, colorDungeonItemFlags, 0, COLOR_DUNGEON_ITEM_FLAGS_SIZE);
     }
 
     /**
@@ -112,8 +111,7 @@ public final class DungeonItemState {
     public void incrementCurrentFlag(int chestType) {
         int index = chestType - CHEST_MAP;
         if (index < MAP_INDEX || index > SMALL_KEYS_INDEX) {
-            throw new IllegalArgumentException("Not a dungeon-item chest type: 0x"
-                + Integer.toHexString(chestType));
+            throw new IllegalArgumentException("Not a dungeon-item chest type: 0x" + Integer.toHexString(chestType));
         }
         currentFlags[index] = (byte) ((Byte.toUnsignedInt(currentFlags[index]) + 1) & 0xFF);
         synchronize();
@@ -151,8 +149,8 @@ public final class DungeonItemState {
     private static void requireLength(byte[] values, int expectedLength, String label) {
         Objects.requireNonNull(values, label);
         if (values.length != expectedLength) {
-            throw new IllegalArgumentException(label + " must contain " + expectedLength
-                + " bytes, got " + values.length);
+            throw new IllegalArgumentException(
+                    label + " must contain " + expectedLength + " bytes, got " + values.length);
         }
     }
 }

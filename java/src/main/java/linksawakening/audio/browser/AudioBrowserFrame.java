@@ -1,12 +1,16 @@
 package linksawakening.audio.browser;
 
-import linksawakening.audio.music.MusicCatalog;
-import linksawakening.audio.music.MusicDriver;
-import linksawakening.audio.music.MusicTrack;
-import linksawakening.audio.openal.OpenAlMusicPlayer;
-import linksawakening.audio.sfx.SoundEffect;
-import linksawakening.audio.sfx.SoundEffectCatalog;
-
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -28,17 +32,12 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import linksawakening.audio.music.MusicCatalog;
+import linksawakening.audio.music.MusicDriver;
+import linksawakening.audio.music.MusicTrack;
+import linksawakening.audio.openal.OpenAlMusicPlayer;
+import linksawakening.audio.sfx.SoundEffect;
+import linksawakening.audio.sfx.SoundEffectCatalog;
 
 public final class AudioBrowserFrame extends JFrame {
     private static final int TIMER_DELAY_MS = 30;
@@ -64,18 +63,12 @@ public final class AudioBrowserFrame extends JFrame {
     private final JTextArea soundEffectMetadataArea = new JTextArea(4, 32);
     private final JLabel statusLabel = new JLabel("Ready");
     private final JLabel[] channelLabels = {
-            new JLabel("Ch1 idle"),
-            new JLabel("Ch2 idle"),
-            new JLabel("Ch3 idle"),
-            new JLabel("Ch4 idle")
+        new JLabel("Ch1 idle"), new JLabel("Ch2 idle"), new JLabel("Ch3 idle"), new JLabel("Ch4 idle")
     };
     private final Timer updateTimer;
 
     public AudioBrowserFrame(
-            MusicCatalog catalog,
-            SoundEffectCatalog soundEffectCatalog,
-            OpenAlMusicPlayer player,
-            MusicDriver driver) {
+            MusicCatalog catalog, SoundEffectCatalog soundEffectCatalog, OpenAlMusicPlayer player, MusicDriver driver) {
         super("LADX Audio Browser");
         Objects.requireNonNull(catalog, "catalog");
         this.player = Objects.requireNonNull(player, "player");
@@ -429,11 +422,7 @@ public final class AudioBrowserFrame extends JFrame {
     }
 
     public record TransportControls(
-            boolean playEnabled,
-            boolean pauseResumeEnabled,
-            boolean stopEnabled,
-            String pauseResumeText) {
-    }
+            boolean playEnabled, boolean pauseResumeEnabled, boolean stopEnabled, String pauseResumeText) {}
 
     public static final class TransportState {
         private boolean playbackActive;
@@ -527,11 +516,7 @@ public final class AudioBrowserFrame extends JFrame {
     private static final class TrackCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(
-                JList<?> list,
-                Object value,
-                int index,
-                boolean isSelected,
-                boolean cellHasFocus) {
+                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof MusicTrack track) {
                 setText(BrowserModel.hexByte(track.id()) + " " + track.name());
@@ -543,11 +528,7 @@ public final class AudioBrowserFrame extends JFrame {
     private static final class SoundEffectCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(
-                JList<?> list,
-                Object value,
-                int index,
-                boolean isSelected,
-                boolean cellHasFocus) {
+                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof SoundEffect effect) {
                 setText(effect.namespace().name() + " "

@@ -1,11 +1,10 @@
 package linksawakening.input;
 
-import linksawakening.config.AppConfig;
+import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.lwjgl.glfw.GLFW.*;
+import linksawakening.config.AppConfig;
 
 public final class InputConfig {
 
@@ -20,13 +19,12 @@ public final class InputConfig {
     private final int bKey;
     private final int selectKey;
 
-    public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey,
-                       int aKey, int bKey) {
+    public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey, int aKey, int bKey) {
         this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, GLFW_KEY_TAB);
     }
 
-    public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey,
-                       int aKey, int bKey, int selectKey) {
+    public InputConfig(
+            int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey, int aKey, int bKey, int selectKey) {
         this.menuOpenKey = menuOpenKey;
         this.upKey = upKey;
         this.downKey = downKey;

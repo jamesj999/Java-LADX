@@ -2,9 +2,6 @@ package linksawakening.world.room;
 
 import linksawakening.world.entity.EntityRomConstants;
 
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-
 /** Immutable ROM-shaped room interaction constants. */
 abstract class RoomSessionRules {
     static final int ROOM_STATUS_TABLE_SIZE = 0x100;
@@ -102,12 +99,8 @@ abstract class RoomSessionRules {
     static final int ROOM_EVENT_CHEST_WRITE_COUNTDOWN = 0x04;
     static final int KEY_DOOR_PHYSICS_BASE = 0x90;
     static final int KEY_DOOR_ANIMATION_FRAMES = 0x08;
-    static final int[] KEY_DOOR_CLOSED_OBJECTS = {
-        0x2D, 0x2F, 0x31, 0x33
-    };
-    static final int[][] KEY_DOOR_OPEN_OBJECTS = {
-        {0x43, 0x44}, {0x8C, 0x08}, {0x09, 0x0A}, {0x0B, 0x0C}
-    };
+    static final int[] KEY_DOOR_CLOSED_OBJECTS = {0x2D, 0x2F, 0x31, 0x33};
+    static final int[][] KEY_DOOR_OPEN_OBJECTS = {{0x43, 0x44}, {0x8C, 0x08}, {0x09, 0x0A}, {0x0B, 0x0C}};
     static final int[] KEY_DOOR_CURRENT_STATUS = {0x04, 0x08, 0x02, 0x01};
     static final int[] KEY_DOOR_ADJACENT_STATUS = {0x08, 0x04, 0x01, 0x02};
     static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
@@ -119,5 +112,4 @@ abstract class RoomSessionRules {
     static final int OBJECT_WATER_LADDER_SIDESCROLL = 0x67;
     static final int[] ENTITY_CONVEYOR_MOVEMENT_X = {0, 0, -1, 1, 1, -1, 1, -1};
     static final int[] ENTITY_CONVEYOR_MOVEMENT_Y = {1, -1, 0, 0, 1, 1, -1, -1};
-
 }

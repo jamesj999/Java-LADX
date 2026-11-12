@@ -1,18 +1,16 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-import java.util.function.IntSupplier;
-
 /** Bank-$15 FishEntityHandler's hidden swim and jump loop. */
 public final class FishMotion {
     public static final int ENTITY_TYPE = 0xCC;
 
-    public static final int INITIAL_PHYSICS_FLAGS =
-        0x02 | 0x10 | 0x40;
+    public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10 | 0x40;
     static final int JUMP_PHYSICS_FLAGS = 0x02 | 0x10;
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -38,12 +36,14 @@ public final class FishMotion {
      * Advances the handler after the shared entity loop has decremented the
      * transition byte for this frame.
      */
-    public Update advance(RoomEntity entity, int transitionCountdown,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(
+            RoomEntity entity,
+            int transitionCountdown,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         if ((entity.type() & 0xFF) != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported Fish motion entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Fish motion entity type: 0x" + Integer.toHexString(entity.type()));
         }
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Fish random-byte supplier cannot be null");
@@ -57,9 +57,9 @@ public final class FishMotion {
         int countdown = transitionCountdown & 0xFF;
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         boolean horizontalCollision = false;
-        if (speedX[slot] != 0 && backgroundCollision != null
-            && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]),
-                x, entity.y())) {
+        if (speedX[slot] != 0
+                && backgroundCollision != null
+                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
             x = entity.x() & 0xFF;
             horizontalCollision = true;
         }
@@ -107,10 +107,20 @@ public final class FishMotion {
             default -> throw new IllegalStateException("Invalid Fish state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(),
-            entity.type(), x, entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z,
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
         return new Update(updated, countdown, physicsFlags[slot], waterSplash);
     }
 
@@ -139,8 +149,7 @@ public final class FishMotion {
         return state[slot] == 2;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -156,9 +165,7 @@ public final class FishMotion {
     }
 
     private static int horizontalDirection(int speed) {
-        return signedByte(speed) < 0
-            ? EntityBackgroundCollisionResult.LEFT
-            : EntityBackgroundCollisionResult.RIGHT;
+        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
     }
 
     private static int negate(int speed) {
@@ -174,7 +181,5 @@ public final class FishMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags,
-                  boolean waterSplash) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags, boolean waterSplash) {}
 }

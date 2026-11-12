@@ -1,8 +1,9 @@
 package linksawakening.input;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.*;
+
+import org.junit.jupiter.api.Test;
 
 final class InputStateTest {
     @Test

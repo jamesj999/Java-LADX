@@ -1,16 +1,12 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.rom.RomSymbols;
-
-import linksawakening.rom.RomAddress;
-
-import linksawakening.rom.Rom;
-
-import linksawakening.audio.apu.GameBoyApu;
-import linksawakening.rom.RomBank;
-
 import java.util.Arrays;
 import java.util.Objects;
+import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
 final class RomSoundEffectEngine {
     private static final int PLAY_ACTIVE_JINGLE = RomSymbols.PlayActiveJingle.address();
@@ -29,7 +25,6 @@ final class RomSoundEffectEngine {
     private final GameBoyApu apu;
     private final int[] memory = new int[0x10000];
     private final RomSoundEffectTables tables;
-
 
     RomSoundEffectEngine(byte[] romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
@@ -61,8 +56,11 @@ final class RomSoundEffectEngine {
     }
 
     boolean isPlaying() {
-        return read8(0xD361) != 0 || read8(0xD371) != 0 || read8(0xD379) != 0
-                || read8(W_ACTIVE_JINGLE) != 0 || read8(W_ACTIVE_WAVE) != 0
+        return read8(0xD361) != 0
+                || read8(0xD371) != 0
+                || read8(0xD379) != 0
+                || read8(W_ACTIVE_JINGLE) != 0
+                || read8(W_ACTIVE_WAVE) != 0
                 || read8(W_ACTIVE_NOISE) != 0;
     }
 
@@ -86,11 +84,12 @@ final class RomSoundEffectEngine {
             if (channel == 3) {
                 apu.writeRegister(GameBoyApu.NR30, 0);
             } else {
-                int envelope = switch (channel) {
-                    case 1 -> GameBoyApu.NR12;
-                    case 2 -> GameBoyApu.NR22;
-                    default -> GameBoyApu.NR42;
-                };
+                int envelope =
+                        switch (channel) {
+                            case 1 -> GameBoyApu.NR12;
+                            case 2 -> GameBoyApu.NR22;
+                            default -> GameBoyApu.NR42;
+                        };
                 apu.writeRegister(envelope, 0x08);
                 apu.writeRegister(envelope + 2, 0x80);
                 if (channel == 1) apu.writeRegister(GameBoyApu.NR10, 0);
@@ -134,8 +133,7 @@ final class RomSoundEffectEngine {
         if (address >= 0x4000 && address <= 0x7FFF) {
             int offset = RomBank.romOffset(RomSoundEffectTables.SFX_BANK, address);
             if (offset < 0 || offset >= romData.length) {
-                throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x"
-                        + hex16(address));
+                throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x" + hex16(address));
             }
             return romView.u8(RomAddress.fromOffset(offset));
         }
@@ -241,8 +239,7 @@ final class RomSoundEffectEngine {
             }
 
             switch (opcode) {
-                case 0x00 -> {
-                }
+                case 0x00 -> {}
                 case 0x01 -> setBC(next16());
                 case 0x02 -> write8(getBC(), a);
                 case 0x03 -> setBC(getBC() + 1);
@@ -295,8 +292,7 @@ final class RomSoundEffectEngine {
                     write8(getHL(), a);
                     setHL(getHL() - 1);
                 }
-                case 0x33 -> {
-                }
+                case 0x33 -> {}
                 case 0x34 -> write8(getHL(), inc8(read8(getHL())));
                 case 0x35 -> write8(getHL(), dec8(read8(getHL())));
                 case 0x36 -> write8(getHL(), next8());
@@ -311,8 +307,7 @@ final class RomSoundEffectEngine {
                     a = read8(getHL());
                     setHL(getHL() - 1);
                 }
-                case 0x3B -> {
-                }
+                case 0x3B -> {}
                 case 0x3C -> a = inc8(a);
                 case 0x3D -> a = dec8(a);
                 case 0x3E -> a = next8();
@@ -597,10 +592,7 @@ final class RomSoundEffectEngine {
         }
 
         private int getAF() {
-            int flags = (flagZ ? 0x80 : 0)
-                    | (flagN ? 0x40 : 0)
-                    | (flagH ? 0x20 : 0)
-                    | (flagC ? 0x10 : 0);
+            int flags = (flagZ ? 0x80 : 0) | (flagN ? 0x40 : 0) | (flagH ? 0x20 : 0) | (flagC ? 0x10 : 0);
             return (a << 8) | flags;
         }
 
@@ -645,8 +637,7 @@ final class RomSoundEffectEngine {
 
         private IllegalStateException unsupported(int opcode, int opcodeAddress) {
             String rendered = opcode > 0xFF ? "CB " + hex8(opcode) : hex8(opcode);
-            return new IllegalStateException("Unsupported SFX opcode " + rendered
-                    + " at 1F:" + hex16(opcodeAddress));
+            return new IllegalStateException("Unsupported SFX opcode " + rendered + " at 1F:" + hex16(opcodeAddress));
         }
     }
 }

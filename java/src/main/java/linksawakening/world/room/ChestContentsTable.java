@@ -1,10 +1,9 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-
-import java.util.Objects;
 
 /** ROM-backed chest contents lookup used by the source chest-spawn path. */
 public final class ChestContentsTable {
@@ -81,9 +80,11 @@ public final class ChestContentsTable {
             tableSize = ROOM_TABLE_SIZE;
         }
         int offset = tableAddress.plus(roomId).offset();
-        if (offset < 0 || offset >= romData.length || offset >= tableAddress.plus(tableSize).offset()) {
-            throw new IllegalArgumentException("Chest table is truncated at ROM offset 0x"
-                + Integer.toHexString(Math.max(offset, 0)));
+        if (offset < 0
+                || offset >= romData.length
+                || offset >= tableAddress.plus(tableSize).offset()) {
+            throw new IllegalArgumentException(
+                    "Chest table is truncated at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
         return new Rom(romData).u8(RomAddress.fromOffset(offset));
     }
@@ -105,8 +106,8 @@ public final class ChestContentsTable {
      * upgraded-item branches and the room-$96 message are explicit source
      * branches rather than entries in that table.
      */
-    public int dialogLowIdFor(int itemType, int shieldLevel, int swordLevel,
-                              int powerBraceletLevel, int mapId, int roomId) {
+    public int dialogLowIdFor(
+            int itemType, int shieldLevel, int swordLevel, int powerBraceletLevel, int mapId, int roomId) {
         validateDialogItem(itemType);
         validateByte(shieldLevel, "shieldLevel");
         validateByte(swordLevel, "swordLevel");
@@ -129,31 +130,27 @@ public final class ChestContentsTable {
         if (itemType == CHEST_POWER_BRACELET && powerBraceletLevel == 2) {
             return 0xEE;
         }
-        return readBoundedByte(RomSymbols.GotItemDialog,
-            PRESENTATION_TABLE_SIZE, itemType, "GotItemDialog");
+        return readBoundedByte(RomSymbols.GotItemDialog, PRESENTATION_TABLE_SIZE, itemType, "GotItemDialog");
     }
 
     /** Mirrors Data_007_7BBB, the sound/music value selected at inertia $08. */
     public int presentationSoundValue(int itemType) {
         validateDialogItem(itemType);
-        return readBoundedByte(RomSymbols.Data_007_7BBB,
-            PRESENTATION_TABLE_SIZE, itemType, "Data_007_7BBB");
+        return readBoundedByte(RomSymbols.Data_007_7BBB, PRESENTATION_TABLE_SIZE, itemType, "Data_007_7BBB");
     }
 
     private static void validateDialogItem(int itemType) {
         if (itemType < 0 || itemType > CHEST_MESSAGE) {
-            throw new IllegalArgumentException(
-                "Chest item has no ordinary dialog/presentation entry: " + itemType);
+            throw new IllegalArgumentException("Chest item has no ordinary dialog/presentation entry: " + itemType);
         }
     }
 
-    private int readBoundedByte(RomAddress address, int tableSize, int index,
-                                String tableName) {
+    private int readBoundedByte(RomAddress address, int tableSize, int index, String tableName) {
         int offset = address.plus(index).offset();
         int end = address.plus(tableSize).offset();
         if (offset < 0 || offset >= romData.length || offset >= end) {
-            throw new IllegalArgumentException(tableName + " is truncated at ROM offset 0x"
-                + Integer.toHexString(Math.max(offset, 0)));
+            throw new IllegalArgumentException(
+                    tableName + " is truncated at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
         return new Rom(romData).u8(RomAddress.fromOffset(offset));
     }

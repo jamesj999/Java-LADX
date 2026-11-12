@@ -1,16 +1,10 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.EnemyAttackContext;
-import linksawakening.world.entity.RomEnemyCombatTables;
-
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class RomEnemyCombatTablesTest {
@@ -49,31 +43,39 @@ final class RomEnemyCombatTablesTest {
     void resolvesSwordLevelAndEveryRomAttackModifier() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
 
-        RomEnemyCombatTables.SwordDamageResult levelOne = tables.resolveSwordDamage(
-            0x09, new EnemyAttackContext(1, false, false, false, false));
+        RomEnemyCombatTables.SwordDamageResult levelOne =
+                tables.resolveSwordDamage(0x09, new EnemyAttackContext(1, false, false, false, false));
         assertEquals(0, levelOne.effectiveDamageType());
         assertEquals(1, levelOne.damageTableEntry());
         assertEquals(1, levelOne.rawValue());
         assertEquals(1, levelOne.numericDamage());
 
-        RomEnemyCombatTables.SwordDamageResult levelTwo = tables.resolveSwordDamage(
-            0x09, new EnemyAttackContext(2, false, false, false, false));
+        RomEnemyCombatTables.SwordDamageResult levelTwo =
+                tables.resolveSwordDamage(0x09, new EnemyAttackContext(2, false, false, false, false));
         assertEquals(1, levelTwo.effectiveDamageType());
         assertEquals(2, levelTwo.rawValue());
 
-        RomEnemyCombatTables.SwordDamageResult levelThree = tables.resolveSwordDamage(
-            0x09, new EnemyAttackContext(3, false, false, false, false));
+        RomEnemyCombatTables.SwordDamageResult levelThree =
+                tables.resolveSwordDamage(0x09, new EnemyAttackContext(3, false, false, false, false));
         assertEquals(2, levelThree.effectiveDamageType());
         assertEquals(4, levelThree.rawValue());
 
-        assertEquals(1, tables.resolveSwordDamage(0x09,
-            new EnemyAttackContext(1, true, false, false, false)).effectiveDamageType());
-        assertEquals(1, tables.resolveSwordDamage(0x09,
-            new EnemyAttackContext(1, false, true, false, false)).effectiveDamageType());
-        assertEquals(1, tables.resolveSwordDamage(0x09,
-            new EnemyAttackContext(1, false, false, true, false)).effectiveDamageType());
-        assertEquals(1, tables.resolveSwordDamage(0x09,
-            new EnemyAttackContext(1, false, false, false, true)).effectiveDamageType());
+        assertEquals(
+                1,
+                tables.resolveSwordDamage(0x09, new EnemyAttackContext(1, true, false, false, false))
+                        .effectiveDamageType());
+        assertEquals(
+                1,
+                tables.resolveSwordDamage(0x09, new EnemyAttackContext(1, false, true, false, false))
+                        .effectiveDamageType());
+        assertEquals(
+                1,
+                tables.resolveSwordDamage(0x09, new EnemyAttackContext(1, false, false, true, false))
+                        .effectiveDamageType());
+        assertEquals(
+                1,
+                tables.resolveSwordDamage(0x09, new EnemyAttackContext(1, false, false, false, true))
+                        .effectiveDamageType());
     }
 
     @Test
@@ -85,18 +87,17 @@ final class RomEnemyCombatTablesTest {
         assertEquals(1, arrow.damageTableEntry());
         assertEquals(1, arrow.rawValue());
 
-        RomEnemyCombatTables.SwordDamageResult moblinArrow =
-            tables.resolveAttackDamage(0x0B, 0x05);
+        RomEnemyCombatTables.SwordDamageResult moblinArrow = tables.resolveAttackDamage(0x0B, 0x05);
         assertEquals(1, moblinArrow.healthGroup());
         assertEquals(2, moblinArrow.damageTableEntry());
         assertEquals(4, moblinArrow.rawValue());
 
-        RomEnemyCombatTables.SwordDamageResult thrownPot =
-            tables.resolveAttackDamage(0x18, 0x0B);
+        RomEnemyCombatTables.SwordDamageResult thrownPot = tables.resolveAttackDamage(0x18, 0x0B);
         assertEquals(0x0C, thrownPot.healthGroup());
         assertEquals(4, tables.initialHealth(0x18));
-        assertEquals(0, tables.resolveSwordDamage(
-            0x18, EnemyAttackContext.standard()).rawValue());
+        assertEquals(
+                0,
+                tables.resolveSwordDamage(0x18, EnemyAttackContext.standard()).rawValue());
         assertEquals(0x40, thrownPot.rawValue());
     }
 
@@ -104,14 +105,14 @@ final class RomEnemyCombatTablesTest {
     void distinguishesIgnoredAndSpecialRawSwordResults() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
 
-        RomEnemyCombatTables.SwordDamageResult ignored = tables.resolveSwordDamage(
-            0x15, new EnemyAttackContext(1, false, false, false, false));
+        RomEnemyCombatTables.SwordDamageResult ignored =
+                tables.resolveSwordDamage(0x15, new EnemyAttackContext(1, false, false, false, false));
         assertEquals(0, ignored.rawValue());
         assertTrue(ignored.ignored());
         assertEquals(0, ignored.numericDamage());
 
-        RomEnemyCombatTables.SwordDamageResult special = tables.resolveSwordDamage(
-            0xE9, new EnemyAttackContext(1, false, false, false, false));
+        RomEnemyCombatTables.SwordDamageResult special =
+                tables.resolveSwordDamage(0xE9, new EnemyAttackContext(1, false, false, false, false));
         assertEquals(0xFF, special.rawValue());
         assertTrue(special.special());
         assertEquals(0, special.numericDamage());
@@ -120,9 +121,8 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void swordlessContextProducesAnIgnoredResult() throws IOException {
-        RomEnemyCombatTables.SwordDamageResult result =
-            new RomEnemyCombatTables(loadRom()).resolveSwordDamage(
-                0x09, new EnemyAttackContext(0, false, false, false, false));
+        RomEnemyCombatTables.SwordDamageResult result = new RomEnemyCombatTables(loadRom())
+                .resolveSwordDamage(0x09, new EnemyAttackContext(0, false, false, false, false));
 
         assertEquals(-1, result.effectiveDamageType());
         assertTrue(result.ignored());
@@ -131,8 +131,7 @@ final class RomEnemyCombatTablesTest {
     @Test
     void acquisitionSpinUsesNormalSwordDamageBeforeOwnershipIsGranted() throws IOException {
         var tables = new RomEnemyCombatTables(loadRom());
-        var acquisition = tables.resolveSwordDamage(0xC5,
-            new EnemyAttackContext(0, false, false, true, false));
+        var acquisition = tables.resolveSwordDamage(0xC5, new EnemyAttackContext(0, false, false, true, false));
         var equipped = tables.resolveSwordDamage(0xC5, EnemyAttackContext.standard());
         assertEquals(0, acquisition.effectiveDamageType());
         assertEquals(equipped.rawValue(), acquisition.rawValue());

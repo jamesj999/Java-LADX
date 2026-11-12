@@ -17,14 +17,17 @@ public interface EquipmentItem {
     /** The ROM weapon rectangle; item-specific records may retain their public names. */
     interface CollisionBox {
         boolean active();
+
         int x();
+
         int width();
+
         int y();
+
         int height();
     }
 
-    record Bounds(boolean active, int x, int width, int y, int height)
-            implements CollisionBox {}
+    record Bounds(boolean active, int x, int width, int y, int height) implements CollisionBox {}
 
     CollisionBox NO_COLLISION = new Bounds(false, 0, 0, 0, 0);
 
@@ -32,7 +35,6 @@ public interface EquipmentItem {
     default CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int direction) {
         return NO_COLLISION;
     }
-
 
     /** Called once on the frame the bound button is pressed. */
     default void onPress() {}
@@ -85,10 +87,14 @@ public interface EquipmentItem {
      * top-left; {@code offsetX/Y} applies the same camera/scroll shift used
      * for Link so the item tracks with him.
      */
-    default void render(byte[] displayBuffer, int linkPixelX, int linkPixelY,
-                        int direction, int offsetX, int offsetY) {
-    }
+    default void render(
+            byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {}
     /** Additive indexed counterpart of auxiliary sprite rendering. */
-    default void submitOam(linksawakening.render.OamSink sink, int linkPixelX, int linkPixelY,
-                           int direction, int offsetX, int offsetY) {}
+    default void submitOam(
+            linksawakening.render.OamSink sink,
+            int linkPixelX,
+            int linkPixelY,
+            int direction,
+            int offsetX,
+            int offsetY) {}
 }

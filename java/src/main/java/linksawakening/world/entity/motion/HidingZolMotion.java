@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 Hiding Zol reveal, bounce, and hide state machine. */
 public final class HidingZolMotion {
@@ -40,19 +39,24 @@ public final class HidingZolMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
-        RoomEntityBackgroundInteraction backgroundInteraction = backgroundCollision == null
-            ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
-        return advance(entity, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundInteraction, 0);
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        RoomEntityBackgroundInteraction backgroundInteraction =
+                backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
+        return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, 0);
     }
 
-    public Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundInteraction backgroundInteraction,
-                   int frameCounter) {
+    public Update advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int frameCounter) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -82,7 +86,7 @@ public final class HidingZolMotion {
         switch (state[slot]) {
             case 0 -> {
                 if (transitionCountdown[slot] == 0
-                    && isWithinRevealWindow(entity.x(), entity.y(), linkEntityX, linkEntityY)) {
+                        && isWithinRevealWindow(entity.x(), entity.y(), linkEntityX, linkEntityY)) {
                     state[slot] = 1;
                     transitionCountdown[slot] = 0x20;
                     privateState1[slot] = 3 + (randomByteSupplier.getAsInt() & 0x03);
@@ -113,8 +117,7 @@ public final class HidingZolMotion {
                     speedY[slot] = 0;
                     state[slot] = 4;
                 } else {
-                    speedX[slot] = (transitionCountdown[slot] & 0x04) == 0
-                        ? 0x08 : 0xF8;
+                    speedX[slot] = (transitionCountdown[slot] & 0x04) == 0 ? 0x08 : 0xF8;
                     x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
                 }
                 variant = 3;
@@ -173,11 +176,21 @@ public final class HidingZolMotion {
             }
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(),
-            entity.type(), x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
-        return new Update(updated, hitGround, clearsIgnoreHitsCountdown, jumpJingle,
-            physicsFlags);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
+        return new Update(updated, hitGround, clearsIgnoreHitsCountdown, jumpJingle, physicsFlags);
     }
 
     public boolean allowsSwordCollision(int slot) {
@@ -233,22 +246,23 @@ public final class HidingZolMotion {
         }
     }
 
-    private static boolean isWithinRevealWindow(int entityX, int entityY,
-                                                int linkX, int linkY) {
+    private static boolean isWithinRevealWindow(int entityX, int entityY, int linkX, int linkY) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
-        return distanceX >= -0x20 && distanceX < 0x20
-            && distanceY >= -0x20 && distanceY < 0x20;
+        return distanceX >= -0x20 && distanceX < 0x20 && distanceY >= -0x20 && distanceY < 0x20;
     }
 
-    private int[] move(RoomEntity entity, int x, int y,
-                       RoomEntityBackgroundInteraction backgroundInteraction,
-                       int frameCounter, int slot) {
+    private int[] move(
+            RoomEntity entity,
+            int x,
+            int y,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int frameCounter,
+            int slot) {
         int movedX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         if (movedX != x && backgroundInteraction != null) {
             EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                entity, signedByte(speedX[slot]) < 0 ? 1 : 0, movedX, y,
-                0x03, frameCounter);
+                    entity, signedByte(speedX[slot]) < 0 ? 1 : 0, movedX, y, 0x03, frameCounter);
             if (result.blocked()) {
                 movedX = x;
             }
@@ -256,8 +270,7 @@ public final class HidingZolMotion {
         int movedY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         if (movedY != y && backgroundInteraction != null) {
             EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                entity, signedByte(speedY[slot]) < 0 ? 2 : 3, movedX, movedY,
-                0x03, frameCounter);
+                    entity, signedByte(speedY[slot]) < 0 ? 2 : 3, movedX, movedY, 0x03, frameCounter);
             if (result.blocked()) {
                 movedY = y;
             }
@@ -265,8 +278,7 @@ public final class HidingZolMotion {
         return new int[] {movedX, movedY};
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -281,8 +293,7 @@ public final class HidingZolMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int absoluteX = Math.abs(distanceX);
@@ -316,10 +327,12 @@ public final class HidingZolMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    public record Update(RoomEntity entity, boolean hitGround, boolean clearsIgnoreHitsCountdown,
-                  boolean jumpJingle, int physicsFlags) {
-    }
+    public record Update(
+            RoomEntity entity,
+            boolean hitGround,
+            boolean clearsIgnoreHitsCountdown,
+            boolean jumpJingle,
+            int physicsFlags) {}
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

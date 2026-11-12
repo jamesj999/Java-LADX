@@ -1,17 +1,15 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.audio.apu.GameBoyApu;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import linksawakening.audio.apu.GameBoyApu;
 
 public final class SoundEffectPcmRenderer {
     private static final int TICKS_PER_SECOND = 60;
     private static final int MAX_SOUND_EFFECT_TICKS = TICKS_PER_SECOND * 10;
 
-    private SoundEffectPcmRenderer() {
-    }
+    private SoundEffectPcmRenderer() {}
 
     public static short[] renderOneShot(GameBoyApu apu, SoundEffectPlayer player, SoundEffect effect) {
         Objects.requireNonNull(apu, "apu");

@@ -1,20 +1,17 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntSupplier;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntSupplier;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
 
 final class GhiniMotionTest {
     private static final int HIDING_GHINI = 0x10;
@@ -45,21 +42,18 @@ final class GhiniMotionTest {
     void hiddenGhiniStaysStationaryAndInvisibleWithoutARevealSignal() {
         GhiniMotion motion = new GhiniMotion();
         motion.initialize(0, HIDING_GHINI);
-        RoomEntity source = entity(0, HIDING_GHINI, 0x50, 0x50, 0x08,
-            pairDefinition(HIDING_GHINI), 0x02);
+        RoomEntity source = entity(0, HIDING_GHINI, 0x50, 0x50, 0x08, pairDefinition(HIDING_GHINI), 0x02);
 
-        RoomEntity far = motion.advance(source, 0, HIDING_GHINI,
-            0x80, 0x80, 0, noRandom());
+        RoomEntity far = motion.advance(source, 0, HIDING_GHINI, 0x80, 0x80, 0, noRandom());
         assertHidden(source, far);
         assertTrue(motion.hidden(0));
 
-        RoomEntity nearWithoutCollision = motion.advance(far, 1, HIDING_GHINI,
-            0x5F, 0x5F, 0, noRandom());
+        RoomEntity nearWithoutCollision = motion.advance(far, 1, HIDING_GHINI, 0x5F, 0x5F, 0, noRandom());
         assertHidden(source, nearWithoutCollision);
         assertTrue(motion.hidden(0));
 
-        RoomEntity exactlyAtWindowEdge = motion.advance(nearWithoutCollision, 2,
-            HIDING_GHINI, 0x60, 0x5F, 1, noRandom());
+        RoomEntity exactlyAtWindowEdge =
+                motion.advance(nearWithoutCollision, 2, HIDING_GHINI, 0x60, 0x5F, 1, noRandom());
         assertHidden(source, exactlyAtWindowEdge);
         assertTrue(motion.hidden(0));
     }
@@ -68,11 +62,9 @@ final class GhiniMotionTest {
     void hiddenGhiniRevealsOnWrappedNearCollisionButRevealTickRemainsHidden() {
         GhiniMotion motion = new GhiniMotion();
         motion.initialize(0, HIDING_GHINI);
-        RoomEntity source = entity(0, HIDING_GHINI, 0xFE, 0xFE, 0x08,
-            pairDefinition(HIDING_GHINI), 0x02);
+        RoomEntity source = entity(0, HIDING_GHINI, 0xFE, 0xFE, 0x08, pairDefinition(HIDING_GHINI), 0x02);
 
-        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI,
-            0x02, 0x02, 1, noRandom());
+        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x02, 0x02, 1, noRandom());
 
         assertEquals(-1, revealTick.spriteVariant());
         assertFalse(motion.hidden(0));
@@ -87,13 +79,10 @@ final class GhiniMotionTest {
     void firstVisibleTickAfterRevealMovesAndCorrectsZButSkipsTargetRefresh() {
         GhiniMotion motion = new GhiniMotion();
         motion.initialize(0, HIDING_GHINI);
-        RoomEntity source = entity(0, HIDING_GHINI, 0x50, 0x50, 0x0E,
-            pairDefinition(HIDING_GHINI), 0x02);
+        RoomEntity source = entity(0, HIDING_GHINI, 0x50, 0x50, 0x0E, pairDefinition(HIDING_GHINI), 0x02);
 
-        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI,
-            0x50, 0x50, 1, noRandom());
-        RoomEntity visibleTick = motion.advance(revealTick, 4, HIDING_GHINI,
-            0x50, 0x50, 0, noRandom());
+        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x50, 0x50, 1, noRandom());
+        RoomEntity visibleTick = motion.advance(revealTick, 4, HIDING_GHINI, 0x50, 0x50, 0, noRandom());
 
         assertEquals(0x2F, motion.privateCountdown2(0));
         assertEquals(0x0F, visibleTick.z());
@@ -110,12 +99,10 @@ final class GhiniMotionTest {
     void visibleGhiniKeepsRomTargetTimersDirectionsAndFirstSpeedIncrements() {
         GhiniMotion motion = new GhiniMotion();
         motion.initialize(0, ORDINARY_GHINI);
-        RoomEntity source = entity(0, ORDINARY_GHINI, 0x50, 0x50, 0x10,
-            pairDefinition(ORDINARY_GHINI), 0x02);
+        RoomEntity source = entity(0, ORDINARY_GHINI, 0x50, 0x50, 0x10, pairDefinition(ORDINARY_GHINI), 0x02);
         IntSupplier random = sequence(0x00, 0x00);
 
-        RoomEntity first = motion.advance(source, 0, ORDINARY_GHINI,
-            0, 0, 0, random);
+        RoomEntity first = motion.advance(source, 0, ORDINARY_GHINI, 0, 0, 0, random);
         assertEquals(0x20, motion.transitionCountdown(0));
         assertEquals(0x18, motion.privateCountdown1(0));
         assertEquals(0, motion.targetXDirection(0));
@@ -132,13 +119,11 @@ final class GhiniMotionTest {
 
     @Test
     void targetXSpeedSignSelectsXFlipAgainstTheBaseAttribute() {
-        RoomEntity source = entity(0, ORDINARY_GHINI, 0x50, 0x50, 0x10,
-            pairDefinition(ORDINARY_GHINI), 0x02);
+        RoomEntity source = entity(0, ORDINARY_GHINI, 0x50, 0x50, 0x10, pairDefinition(ORDINARY_GHINI), 0x02);
 
         GhiniMotion negativeMotion = new GhiniMotion();
         negativeMotion.initialize(0, ORDINARY_GHINI);
-        RoomEntity negative = negativeMotion.advance(source, 0, ORDINARY_GHINI,
-            0, 0, 0, sequence(0x01, 0x00));
+        RoomEntity negative = negativeMotion.advance(source, 0, ORDINARY_GHINI, 0, 0, 0, sequence(0x01, 0x00));
         assertEquals(1, negativeMotion.targetXDirection(0));
         assertTrue((negativeMotion.speedX(0) & 0x80) != 0);
         assertEquals(0x02, negative.entityFlipAttribute());
@@ -146,8 +131,7 @@ final class GhiniMotionTest {
 
         GhiniMotion positiveMotion = new GhiniMotion();
         positiveMotion.initialize(0, ORDINARY_GHINI);
-        RoomEntity positive = positiveMotion.advance(source, 0, ORDINARY_GHINI,
-            0, 0, 0, sequence(0x00, 0x00));
+        RoomEntity positive = positiveMotion.advance(source, 0, ORDINARY_GHINI, 0, 0, 0, sequence(0x00, 0x00));
         assertEquals(0, positiveMotion.targetXDirection(0));
         assertEquals(0x01, positiveMotion.speedX(0));
         assertEquals(0x22, positive.entityFlipAttribute());
@@ -158,18 +142,15 @@ final class GhiniMotionTest {
     void giantVariantAddsOrientationOffsetAndStripsGenericXFlip() {
         GhiniMotion motion = new GhiniMotion();
         motion.initialize(0, GIANT_GHINI);
-        RoomEntity current = entity(0, GIANT_GHINI, 0x50, 0x50, 0x10,
-            giantDefinition(), 0x02);
+        RoomEntity current = entity(0, GIANT_GHINI, 0x50, 0x50, 0x10, giantDefinition(), 0x02);
 
-        current = motion.advance(current, 0, GIANT_GHINI,
-            0x50, 0x50, 1, noRandom());
+        current = motion.advance(current, 0, GIANT_GHINI, 0x50, 0x50, 1, noRandom());
         assertEquals(-1, current.spriteVariant());
         assertEquals(0x30, motion.privateCountdown2(0));
 
         IntSupplier random = sequence(0x00, 0x00);
         for (int frame = 1; frame <= 0x40; frame++) {
-            current = motion.advance(current, frame, GIANT_GHINI,
-                0x50, 0x50, 1, random);
+            current = motion.advance(current, frame, GIANT_GHINI, 0x50, 0x50, 1, random);
         }
 
         assertEquals(2, motion.giantRectangleVariant(0));
@@ -177,8 +158,7 @@ final class GhiniMotionTest {
         assertEquals(0, current.entityFlipAttribute() & 0x20);
         assertEquals(0x02, current.entityFlipAttribute());
 
-        current = motion.advance(current, 0x50, GIANT_GHINI,
-            0x50, 0x50, 1, random);
+        current = motion.advance(current, 0x50, GIANT_GHINI, 0x50, 0x50, 1, random);
         assertEquals(3, motion.giantRectangleVariant(0));
         assertEquals(3, current.spriteVariant());
         assertEquals(0, current.entityFlipAttribute() & 0x20);
@@ -191,35 +171,54 @@ final class GhiniMotionTest {
         assertEquals(source.z(), result.z());
     }
 
-    private static RoomEntity entity(int slot, int type, int x, int y, int z,
-                                     EntitySpriteDefinition definition, int flipAttribute) {
-        return new RoomEntity(slot, slot, type, x, y, EntityStatus.ACTIVE,
-            definition, definition.initialVariant(), flipAttribute, 0, z, -1, false);
+    private static RoomEntity entity(
+            int slot, int type, int x, int y, int z, EntitySpriteDefinition definition, int flipAttribute) {
+        return new RoomEntity(
+                slot,
+                slot,
+                type,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                definition,
+                definition.initialVariant(),
+                flipAttribute,
+                0,
+                z,
+                -1,
+                false);
     }
 
     private static EntitySpriteDefinition pairDefinition(int type) {
-        return new EntitySpriteDefinition(type, 0x04, 0x5BFC,
-            EntitySpriteDefinition.Shape.PAIR, 0, List.of(
-                new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x58, 0x02),
-                    new EntitySpriteDefinition.OamAttribute(0x5A, 0x02)),
-                new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(0x5C, 0x02),
-                    new EntitySpriteDefinition.OamAttribute(0x5E, 0x02))));
+        return new EntitySpriteDefinition(
+                type,
+                0x04,
+                0x5BFC,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(
+                                new EntitySpriteDefinition.OamAttribute(0x58, 0x02),
+                                new EntitySpriteDefinition.OamAttribute(0x5A, 0x02)),
+                        new EntitySpriteDefinition.Variant(
+                                new EntitySpriteDefinition.OamAttribute(0x5C, 0x02),
+                                new EntitySpriteDefinition.OamAttribute(0x5E, 0x02))));
     }
 
     private static EntitySpriteDefinition giantDefinition() {
-        return new EntitySpriteDefinition(GIANT_GHINI, 0x04, 0x5D26,
-            EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(), List.of(
-                giantVariant(0x60),
-                giantVariant(0x62),
-                giantVariant(0x64),
-                giantVariant(0x66)));
+        return new EntitySpriteDefinition(
+                GIANT_GHINI,
+                0x04,
+                0x5D26,
+                EntitySpriteDefinition.Shape.RECTANGLE,
+                0,
+                List.of(),
+                List.of(giantVariant(0x60), giantVariant(0x62), giantVariant(0x64), giantVariant(0x66)));
     }
 
     private static List<EntitySpriteDefinition.RectangleSprite> giantVariant(int tile) {
-        return List.of(new EntitySpriteDefinition.RectangleSprite(-8, -8,
-            new EntitySpriteDefinition.OamAttribute(tile, 0x02)));
+        return List.of(new EntitySpriteDefinition.RectangleSprite(
+                -8, -8, new EntitySpriteDefinition.OamAttribute(tile, 0x02)));
     }
 
     private static IntSupplier noRandom() {

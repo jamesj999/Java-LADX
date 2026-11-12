@@ -1,29 +1,28 @@
 package linksawakening.world.room;
 
+import static linksawakening.world.room.RoomSession.*;
+
+import java.util.List;
+import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.EntityTypeRules;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EnemyDropResolver;
-
-import linksawakening.world.entity.event.LiftedEntityState;
-
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
-
-import linksawakening.world.entity.EntityTypeRules;
-
+import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.transition.Warp;
-
-import linksawakening.gameplay.GameplaySoundSink;
-import java.util.List;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomSession.*;
 
 /** RoomSessionViews operations for the live room session. */
 final class RoomSessionViews {
     private final RoomSession session;
-    RoomSessionViews(RoomSession session) { this.session = session; }
 
-    int entityHealth(int slot) { return session.context.entityBridge.entityRuntime.enemies().enemyHealth(slot); }
+    RoomSessionViews(RoomSession session) {
+        this.session = session;
+    }
+
+    int entityHealth(int slot) {
+        return session.context.entityBridge.entityRuntime.enemies().enemyHealth(slot);
+    }
 
     ActiveRoom activeRoom() {
         return session.context.activeRoom;
@@ -60,35 +59,60 @@ final class RoomSessionViews {
         return session.context.indoorMapPosition;
     }
 
-    byte[] dungeonMinimapRoomStatusSnapshot() { return session.context.roomState.dungeonMinimapRoomStatusSnapshot(session.context.activeRoom); }
+    byte[] dungeonMinimapRoomStatusSnapshot() {
+        return session.context.roomState.dungeonMinimapRoomStatusSnapshot(session.context.activeRoom);
+    }
 
-    byte[] overworldRoomStatusSnapshot() { return session.context.roomState.overworldRoomStatusSnapshot(); }
+    byte[] overworldRoomStatusSnapshot() {
+        return session.context.roomState.overworldRoomStatusSnapshot();
+    }
 
-    byte[] indoorARoomStatusSnapshot() { return session.context.roomState.indoorARoomStatusSnapshot(); }
+    byte[] indoorARoomStatusSnapshot() {
+        return session.context.roomState.indoorARoomStatusSnapshot();
+    }
 
-    byte[] indoorBRoomStatusSnapshot() { return session.context.roomState.indoorBRoomStatusSnapshot(); }
+    byte[] indoorBRoomStatusSnapshot() {
+        return session.context.roomState.indoorBRoomStatusSnapshot();
+    }
 
-    byte[] colorDungeonRoomStatusSnapshot() { return session.context.roomState.colorDungeonRoomStatusSnapshot(); }
+    byte[] colorDungeonRoomStatusSnapshot() {
+        return session.context.roomState.colorDungeonRoomStatusSnapshot();
+    }
 
-    byte[] dungeonItemFlagsSnapshot() { return session.context.roomState.dungeonItemFlagsSnapshot(); }
+    byte[] dungeonItemFlagsSnapshot() {
+        return session.context.roomState.dungeonItemFlagsSnapshot();
+    }
 
-    byte[] colorDungeonItemFlagsSnapshot() { return session.context.roomState.colorDungeonItemFlagsSnapshot(); }
+    byte[] colorDungeonItemFlagsSnapshot() {
+        return session.context.roomState.colorDungeonItemFlagsSnapshot();
+    }
 
-    byte[] currentDungeonItemFlagsSnapshot() { return session.context.roomState.currentDungeonItemFlagsSnapshot(); }
+    byte[] currentDungeonItemFlagsSnapshot() {
+        return session.context.roomState.currentDungeonItemFlagsSnapshot();
+    }
 
-    void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) { session.context.roomState.restoreDungeonItemFlags(dungeonFlags, colorFlags); }
+    void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
+        session.context.roomState.restoreDungeonItemFlags(dungeonFlags, colorFlags);
+    }
 
-    byte[] dungeonProgressFlagsSnapshot() { return session.context.roomState.dungeonProgressFlagsSnapshot(); }
+    byte[] dungeonProgressFlagsSnapshot() {
+        return session.context.roomState.dungeonProgressFlagsSnapshot();
+    }
 
-    void restoreDungeonProgressFlags(byte[] flags) { session.context.roomState.restoreDungeonProgressFlags(flags); }
+    void restoreDungeonProgressFlags(byte[] flags) {
+        session.context.roomState.restoreDungeonProgressFlags(flags);
+    }
 
-    int overworldRoomStatusForTest(int roomId) { return session.context.roomState.overworldRoomStatusForTest(roomId); }
+    int overworldRoomStatusForTest(int roomId) {
+        return session.context.roomState.overworldRoomStatusForTest(roomId);
+    }
 
-    int indoorRoomStatusForTest(int mapId, int roomId) { return session.context.roomState.indoorRoomStatusForTest(mapId, roomId); }
+    int indoorRoomStatusForTest(int mapId, int roomId) {
+        return session.context.roomState.indoorRoomStatusForTest(mapId, roomId);
+    }
 
     void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) {
-        session.context.enemyDropCounters = new EnemyDropResolver.CounterState(
-            droppedItemCount, droppedBombArrowCount);
+        session.context.enemyDropCounters = new EnemyDropResolver.CounterState(droppedItemCount, droppedBombArrowCount);
     }
 
     EnemyDropResolver.CounterState enemyDropCountersForTest() {
@@ -111,11 +135,13 @@ final class RoomSessionViews {
     }
 
     boolean heartPiecePickupActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().heartPiecePickupActive();
+        return session.context.entityBridge.entityRuntime != null
+                && session.context.entityBridge.entityRuntime.inspection().heartPiecePickupActive();
     }
 
     void setHeartPiecesCount(int count) {
-        if (session.context.entityBridge.entityRuntime != null) session.context.entityBridge.entityRuntime.setHeartPiecesCount(count);
+        if (session.context.entityBridge.entityRuntime != null)
+            session.context.entityBridge.entityRuntime.setHeartPiecesCount(count);
     }
 
     List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
@@ -125,36 +151,67 @@ final class RoomSessionViews {
         return updates;
     }
 
-    String instrumentTrace() { return session.context.entityBridge.entityRuntime == null ? "" : session.context.entityBridge.entityRuntime.inspection().instrumentTrace(); }
+    String instrumentTrace() {
+        return session.context.entityBridge.entityRuntime == null
+                ? ""
+                : session.context.entityBridge.entityRuntime.inspection().instrumentTrace();
+    }
 
-    String moblinKingTrace() { return session.context.entityBridge.entityRuntime == null ? "-1" : session.context.entityBridge.entityRuntime.inspection().moblinKingTrace(); }
+    String moblinKingTrace() {
+        return session.context.entityBridge.entityRuntime == null
+                ? "-1"
+                : session.context.entityBridge.entityRuntime.inspection().moblinKingTrace();
+    }
 
     RoomRenderSnapshot renderSnapshot() {
         if (session.context.activeRoom == null) return null;
         RoomRenderSnapshot snapshot = session.context.activeRoom.renderSnapshot();
-        return new RoomRenderSnapshot(snapshot.tileIds(), snapshot.tileAttrs(), snapshot.palettes(),
-            snapshot.entities(), session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.inspection().instrumentWarpVisual(),
-            session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.inspection().heartPieceVisual(), snapshot.linkGrassPalette());
+        return new RoomRenderSnapshot(
+                snapshot.tileIds(),
+                snapshot.tileAttrs(),
+                snapshot.palettes(),
+                snapshot.entities(),
+                session.context.entityBridge.entityRuntime == null
+                        ? null
+                        : session.context
+                                .entityBridge
+                                .entityRuntime
+                                .inspection()
+                                .instrumentWarpVisual(),
+                session.context.entityBridge.entityRuntime == null
+                        ? null
+                        : session.context
+                                .entityBridge
+                                .entityRuntime
+                                .inspection()
+                                .heartPieceVisual(),
+                snapshot.linkGrassPalette());
     }
 
     LiftedEntityState liftedEntityState() {
         return session.context.entityBridge.entityRuntime == null
-            ? LiftedEntityState.none()
-            : session.context.entityBridge.entityRuntime.inspection().liftedEntityState();
+                ? LiftedEntityState.none()
+                : session.context.entityBridge.entityRuntime.inspection().liftedEntityState();
     }
 
     int bombDirectionForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0xFF : session.context.entityBridge.entityRuntime.inspection().bombDirection(slot);
+        return session.context.entityBridge.entityRuntime == null
+                ? 0xFF
+                : session.context.entityBridge.entityRuntime.inspection().bombDirection(slot);
     }
 
     void setColorShellSoundSink(GameplaySoundSink soundSink) {
         session.context.colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
     }
 
-    void setColorShellStateForTest(int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
+    void setColorShellStateForTest(
+            int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.debug().setColorShellStateForTest(slot, state, transitionCountdown,
-                direction, speedX, speedY);
+            session.context
+                    .entityBridge
+                    .entityRuntime
+                    .debug()
+                    .setColorShellStateForTest(slot, state, transitionCountdown, direction, speedX, speedY);
         }
     }
 
@@ -185,8 +242,7 @@ final class RoomSessionViews {
 
     void setEntitySwitchBlocksStateForTest(int value) {
         if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException(
-                "Switch-block state must be an unsigned byte: " + value);
+            throw new IllegalArgumentException("Switch-block state must be an unsigned byte: " + value);
         }
         session.context.switchBlocksState = value;
         session.synchronizeSwitchBlockCollisionState();
@@ -194,8 +250,7 @@ final class RoomSessionViews {
 
     void setSwitchableObjectAnimationStageForTest(int value) {
         if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException(
-                "Switch-block animation stage must be an unsigned byte: " + value);
+            throw new IllegalArgumentException("Switch-block animation stage must be an unsigned byte: " + value);
         }
         session.context.switchableObjectAnimationStage = value;
     }
@@ -213,21 +268,27 @@ final class RoomSessionViews {
     }
 
     int entityLedgeTimerForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.enemies().ledgeTransitionTimer(slot);
+        return session.context.entityBridge.entityRuntime == null
+                ? 0
+                : session.context.entityBridge.entityRuntime.enemies().ledgeTransitionTimer(slot);
     }
 
     int entityFallingTargetXForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.enemies().fallingTargetX(slot);
+        return session.context.entityBridge.entityRuntime == null
+                ? 0
+                : session.context.entityBridge.entityRuntime.enemies().fallingTargetX(slot);
     }
 
     int entityTransitionCountdownForTest(int slot) {
         if (session.context.entityBridge.entityRuntime == null) {
             return 0;
         }
-        RoomEntity entity = session.context.activeRoom == null ? null : session.context.activeRoom.entities().slots().get(slot);
+        RoomEntity entity = session.context.activeRoom == null
+                ? null
+                : session.context.activeRoom.entities().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
-            ? session.context.entityBridge.entityRuntime.inspection().warpTransitionCountdownForTest(slot)
-            : session.context.entityBridge.entityRuntime.enemies().transitionCountdown(slot);
+                ? session.context.entityBridge.entityRuntime.inspection().warpTransitionCountdownForTest(slot)
+                : session.context.entityBridge.entityRuntime.enemies().transitionCountdown(slot);
     }
 
     int roomTriggerCountForTest() {
@@ -239,8 +300,9 @@ final class RoomSessionViews {
     }
 
     boolean hasDungeonInstrumentForTest(int mapId) {
-        return mapId >= 0 && mapId < session.context.roomState.dungeonProgressFlags.length
-            && (session.context.roomState.dungeonProgressFlags[mapId] & 0x02) != 0;
+        return mapId >= 0
+                && mapId < session.context.roomState.dungeonProgressFlags.length
+                && (session.context.roomState.dungeonProgressFlags[mapId] & 0x02) != 0;
     }
 
     int indoorTorchPaletteEffectAddressForTest() {
@@ -259,11 +321,15 @@ final class RoomSessionViews {
     }
 
     int entityDropSpeedXForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.inspection().dropSpeedX(slot);
+        return session.context.entityBridge.entityRuntime == null
+                ? 0
+                : session.context.entityBridge.entityRuntime.inspection().dropSpeedX(slot);
     }
 
     int entityDropSpeedZForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.inspection().dropSpeedZ(slot);
+        return session.context.entityBridge.entityRuntime == null
+                ? 0
+                : session.context.entityBridge.entityRuntime.inspection().dropSpeedZ(slot);
     }
 
     void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
@@ -271,23 +337,35 @@ final class RoomSessionViews {
     }
 
     int objectAtRoomLocation(int location) {
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
-            + (location & 0x0F);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         int[] objects = session.context.activeRoom.roomObjectsArea();
         return areaIndex < 0 || areaIndex >= objects.length ? 0xFF : objects[areaIndex] & 0xFF;
     }
 
     int entityPhysicsFlagsForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.enemies().physicsFlags(slot);
+        return session.context.entityBridge.entityRuntime == null
+                ? 0
+                : session.context.entityBridge.entityRuntime.enemies().physicsFlags(slot);
     }
 
-    int adjacentIndoorRoomIdForBombWall(int wallIndex) { return session.context.scrollNavigation.adjacentIndoorRoomIdForBombWall(session.context.activeRoom, session.context.indoorMapPosition, wallIndex); }
+    int adjacentIndoorRoomIdForBombWall(int wallIndex) {
+        return session.context.scrollNavigation.adjacentIndoorRoomIdForBombWall(
+                session.context.activeRoom, session.context.indoorMapPosition, wallIndex);
+    }
 
-    int findIndoorMapPosition(int mapId, int roomId) { return session.context.roomState.findIndoorMapPosition(mapId, roomId); }
+    int findIndoorMapPosition(int mapId, int roomId) {
+        return session.context.roomState.findIndoorMapPosition(mapId, roomId);
+    }
 
-    int indoorMapLayoutOffset(int mapId) { return session.context.roomState.indoorMapLayoutOffset(mapId); }
+    int indoorMapLayoutOffset(int mapId) {
+        return session.context.roomState.indoorMapLayoutOffset(mapId);
+    }
 
-    byte[] indoorStatusTableForMap(int mapId) { return session.context.roomState.indoorStatusTableForMap(mapId); }
+    byte[] indoorStatusTableForMap(int mapId) {
+        return session.context.roomState.indoorStatusTableForMap(mapId);
+    }
 
-    int activeRoomStatusFlags() { return session.context.roomState.activeRoomStatusFlags(session.context.activeRoom); }
+    int activeRoomStatusFlags() {
+        return session.context.roomState.activeRoomStatusFlags(session.context.activeRoom);
+    }
 }

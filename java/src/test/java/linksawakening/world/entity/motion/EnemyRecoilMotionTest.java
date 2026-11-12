@@ -1,17 +1,15 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 final class EnemyRecoilMotionTest {
 
@@ -67,8 +65,9 @@ final class EnemyRecoilMotionTest {
         RoomEntity result = motion.advance(entity(0, 0x40, 0x50, z), null).entity();
         assertEquals(0x3D, result.x());
         assertEquals(0x4D, result.y());
-        assertEquals(new EnemyRecoilMotion.Vector(0x30, 0x30),
-            EnemyRecoilMotion.vectorTowardsLink(0x40, 0x50, z, 0x40, linkY, 0x30));
+        assertEquals(
+                new EnemyRecoilMotion.Vector(0x30, 0x30),
+                EnemyRecoilMotion.vectorTowardsLink(0x40, 0x50, z, 0x40, linkY, 0x30));
     }
 
     @ParameterizedTest
@@ -80,8 +79,7 @@ final class EnemyRecoilMotionTest {
         assertEquals(0x40, first.x());
         assertEquals(0x4F, first.y());
         switch (source) {
-            case "sword" -> motion.configure(0, first.x(), first.y(), 0,
-                first.x() - 0x10, first.y() + 0x10, 8);
+            case "sword" -> motion.configure(0, first.x(), first.y(), 0, first.x() - 0x10, first.y() + 0x10, 8);
             case "projectile" -> motion.configureFromSpeed(0, 8, 0xF8);
             case "bomb" -> motion.configureFromSource(0, 0x20, 0x60, 0, 0x30, 0x50, 8);
             default -> throw new AssertionError(source);
@@ -150,9 +148,8 @@ final class EnemyRecoilMotionTest {
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
         motion.configure(0, entity.x(), entity.y(), entity.z(), 0x70, 0x40, 0x30);
 
-        EnemyRecoilMotion.Update update = motion.advance(
-            entity,
-            (candidate, direction, nextX, nextY) -> direction == 1);
+        EnemyRecoilMotion.Update update =
+                motion.advance(entity, (candidate, direction, nextX, nextY) -> direction == 1);
 
         assertEquals(entity.x(), update.entity().x());
         assertEquals(entity.y(), update.entity().y());
@@ -174,7 +171,19 @@ final class EnemyRecoilMotionTest {
     }
 
     private static RoomEntity entity(int slot, int x, int y, int z) {
-        return new RoomEntity(slot, 0, 0x09, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x09), -1, 0, 0, z, -1, false);
+        return new RoomEntity(
+                slot,
+                0,
+                0x09,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x09),
+                -1,
+                0,
+                0,
+                z,
+                -1,
+                false);
     }
 }

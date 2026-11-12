@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.Objects;
 
 /** Motion state for the side-view moving platform entity (bank $07). */
 public final class SideViewPlatformMotion {
@@ -16,12 +15,10 @@ public final class SideViewPlatformMotion {
     private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int verticalDelta, int speedY, int privateState2,
-                  int privateState4, boolean rumble) {
-    }
+    public record Update(
+            RoomEntity entity, int verticalDelta, int speedY, int privateState2, int privateState4, boolean rumble) {}
 
-    public record Frame(RoomEntity entity, int horizontalDelta, int verticalDelta) {
-    }
+    public record Frame(RoomEntity entity, int horizontalDelta, int verticalDelta) {}
 
     public Frame beginFrame(RoomEntity entity) {
         Objects.requireNonNull(entity, "Platform entity cannot be null");
@@ -32,26 +29,27 @@ public final class SideViewPlatformMotion {
         int oldY = entity.y() & 0xFF;
         int newX = addSpeedToPosition(oldX, speedX[slot], speedXAccumulator, slot);
         int newY = addSpeedToPosition(oldY, speedY[slot], speedYAccumulator, slot);
-        return new Frame(withPosition(entity, newX, newY),
-            signedByte((newX - oldX) & 0xFF), signedByte((newY - oldY) & 0xFF));
+        return new Frame(
+                withPosition(entity, newX, newY), signedByte((newX - oldX) & 0xFF), signedByte((newY - oldY) & 0xFF));
     }
 
     public Frame restoreVerticalPosition(RoomEntity original, Frame frame) {
         Objects.requireNonNull(original, "Platform entity cannot be null");
         Objects.requireNonNull(frame, "Platform frame cannot be null");
-        return new Frame(withPosition(frame.entity(), frame.entity().x(), original.y()),
-            frame.horizontalDelta(), 0);
+        return new Frame(withPosition(frame.entity(), frame.entity().x(), original.y()), frame.horizontalDelta(), 0);
     }
 
     public Frame restoreHorizontalPosition(RoomEntity original, Frame frame) {
         Objects.requireNonNull(original, "Platform entity cannot be null");
         Objects.requireNonNull(frame, "Platform frame cannot be null");
-        return new Frame(withPosition(frame.entity(), original.x(), frame.entity().y()),
-            frame.horizontalDelta(), frame.verticalDelta());
+        return new Frame(
+                withPosition(frame.entity(), original.x(), frame.entity().y()),
+                frame.horizontalDelta(),
+                frame.verticalDelta());
     }
 
-    public Update finishFrame(RoomEntity entity, Frame frame, int frameCounter, boolean standing,
-                       boolean activationAllowed) {
+    public Update finishFrame(
+            RoomEntity entity, Frame frame, int frameCounter, boolean standing, boolean activationAllowed) {
         Objects.requireNonNull(frame, "Platform frame cannot be null");
         if (frame.entity() != entity) {
             throw new IllegalArgumentException("Platform frame entity mismatch");
@@ -75,16 +73,15 @@ public final class SideViewPlatformMotion {
                 speedY[slot] = (speedY[slot] + 1) & 0xFF;
             }
         }
-        return new Update(frame.entity(), frame.verticalDelta(), speedY[slot],
-            privateState2[slot], privateState4[slot], rumble);
+        return new Update(
+                frame.entity(), frame.verticalDelta(), speedY[slot], privateState2[slot], privateState4[slot], rumble);
     }
 
-    Update advance(RoomEntity entity, int frameCounter, boolean standing,
-                   boolean activationAllowed) {
+    Update advance(RoomEntity entity, int frameCounter, boolean standing, boolean activationAllowed) {
         Objects.requireNonNull(entity, "Platform entity cannot be null");
         if (entity.type() != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported side-view platform type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported side-view platform type: 0x" + Integer.toHexString(entity.type()));
         }
         Frame frame = beginFrame(entity);
         return finishFrame(frame.entity(), frame, frameCounter, standing, activationAllowed);
@@ -103,8 +100,7 @@ public final class SideViewPlatformMotion {
     public void setSpeedX(int slot, int value) {
         validateSlot(slot);
         if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException("Platform X speed must be an unsigned byte: "
-                + value);
+            throw new IllegalArgumentException("Platform X speed must be an unsigned byte: " + value);
         }
         speedX[slot] = value;
     }
@@ -112,8 +108,7 @@ public final class SideViewPlatformMotion {
     public void setSpeedY(int slot, int value) {
         validateSlot(slot);
         if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException("Platform Y speed must be an unsigned byte: "
-                + value);
+            throw new IllegalArgumentException("Platform Y speed must be an unsigned byte: " + value);
         }
         speedY[slot] = value;
     }
@@ -138,8 +133,7 @@ public final class SideViewPlatformMotion {
         privateState4[slot] = 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                           int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -154,16 +148,26 @@ public final class SideViewPlatformMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x & 0xFF,
-            y & 0xFF, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static void validateEntity(RoomEntity entity) {
         if (entity.type() != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported side-view platform type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported side-view platform type: 0x" + Integer.toHexString(entity.type()));
         }
         validateSlot(entity.slot());
     }

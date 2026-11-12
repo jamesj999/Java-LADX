@@ -1,7 +1,5 @@
 package linksawakening.render;
 
-
-
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.ScrollController;
@@ -16,17 +14,20 @@ public final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private final int[] palette;
     private final int frameCounter;
 
-    public TransientVfxRenderLayer(TransientVfxSystem transientVfxSystem,
-                                   CutLeavesEffectRenderer cutLeavesEffectRenderer,
-                                   ScrollController scrollController,
-                                   int[] palette) {
+    public TransientVfxRenderLayer(
+            TransientVfxSystem transientVfxSystem,
+            CutLeavesEffectRenderer cutLeavesEffectRenderer,
+            ScrollController scrollController,
+            int[] palette) {
         this(transientVfxSystem, cutLeavesEffectRenderer, scrollController, palette, 0);
     }
 
-    public TransientVfxRenderLayer(TransientVfxSystem transientVfxSystem,
-                                   CutLeavesEffectRenderer cutLeavesEffectRenderer,
-                                   ScrollController scrollController,
-                                   int[] palette, int frameCounter) {
+    public TransientVfxRenderLayer(
+            TransientVfxSystem transientVfxSystem,
+            CutLeavesEffectRenderer cutLeavesEffectRenderer,
+            ScrollController scrollController,
+            int[] palette,
+            int frameCounter) {
         this.transientVfxSystem = transientVfxSystem;
         this.cutLeavesEffectRenderer = cutLeavesEffectRenderer;
         this.scrollController = scrollController;
@@ -40,36 +41,45 @@ public final class TransientVfxRenderLayer implements HardwareRenderLayer {
         }
         int shakeX = -scrollController.screenShakeHorizontal();
         for (TransientVfxSystem.Slot slot : transientVfxSystem.activeSlots()) {
-            var sprites = switch (slot.type()) {
-                case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case WATER_SPLASH -> cutLeavesEffectRenderer.renderWaterSplash(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case POOF, PEGASUS_DUST, CHEST_APPEARS, STAIRS_APPEARS -> cutLeavesEffectRenderer.renderPoof(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case SMOKE -> cutLeavesEffectRenderer.renderSmoke(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case LASER_BEAM -> cutLeavesEffectRenderer.renderLaserBeam(
-                    slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
-                    slot.slotIndex());
-                case MOVING_SPARKLE -> cutLeavesEffectRenderer.renderMovingSparkle(
-                    slot.worldX(), slot.worldY(), slot.countdown(), slot.variant());
-                case SWORD_BEAM -> cutLeavesEffectRenderer.renderSwordBeam(
-                    slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
-                    slot.slotIndex(), slot.variant());
-            };
+            var sprites =
+                    switch (slot.type()) {
+                        case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(
+                                slot.worldX(), slot.worldY(), slot.countdown());
+                        case WATER_SPLASH -> cutLeavesEffectRenderer.renderWaterSplash(
+                                slot.worldX(), slot.worldY(), slot.countdown());
+                        case POOF, PEGASUS_DUST, CHEST_APPEARS, STAIRS_APPEARS -> cutLeavesEffectRenderer.renderPoof(
+                                slot.worldX(), slot.worldY(), slot.countdown());
+                        case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
+                                slot.worldX(), slot.worldY(), slot.countdown());
+                        case SMOKE -> cutLeavesEffectRenderer.renderSmoke(
+                                slot.worldX(), slot.worldY(), slot.countdown());
+                        case LASER_BEAM -> cutLeavesEffectRenderer.renderLaserBeam(
+                                slot.worldX(), slot.worldY(), slot.countdown(), frameCounter, slot.slotIndex());
+                        case MOVING_SPARKLE -> cutLeavesEffectRenderer.renderMovingSparkle(
+                                slot.worldX(), slot.worldY(), slot.countdown(), slot.variant());
+                        case SWORD_BEAM -> cutLeavesEffectRenderer.renderSwordBeam(
+                                slot.worldX(),
+                                slot.worldY(),
+                                slot.countdown(),
+                                frameCounter,
+                                slot.slotIndex(),
+                                slot.variant());
+                    };
             for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
-                OamDrawing.draw8(context, sprite.tile(), sprite.x() + shakeX,
-                    sprite.y(),
-                    (sprite.attributes() & ATTR_FLIP_X) != 0,
-                    (sprite.attributes() & ATTR_FLIP_Y) != 0,
-                    palette);
+                OamDrawing.draw8(
+                        context,
+                        sprite.tile(),
+                        sprite.x() + shakeX,
+                        sprite.y(),
+                        (sprite.attributes() & ATTR_FLIP_X) != 0,
+                        (sprite.attributes() & ATTR_FLIP_Y) != 0,
+                        palette);
             }
         }
     }
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         submitEffects(new RenderContext(new byte[0], gpu, frame));
     }
 }

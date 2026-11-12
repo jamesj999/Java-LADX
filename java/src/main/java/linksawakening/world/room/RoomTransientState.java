@@ -1,16 +1,18 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.room.RoomSession.*;
 
 /** RoomTransientState operations for the live room session. */
 final class RoomTransientState {
     private final RoomSession session;
-    RoomTransientState(RoomSession session) { this.session = session; }
+
+    RoomTransientState(RoomSession session) {
+        this.session = session;
+    }
 
     void clearTransientRoomState() {
-        session.context.pendingShutterCloseMask = session.context.closedShutterMask = session.context.shutterCloseTicks = 0;
+        session.context.pendingShutterCloseMask =
+                session.context.closedShutterMask = session.context.shutterCloseTicks = 0;
         session.context.shutterCloseDirection = session.context.shutterCloseLocation = -1;
         session.context.shutterCloseStarted = false;
         session.context.shutterTileOverrides.clear();

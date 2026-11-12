@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 GibdoEntityHandler's random walk and background-bounce loop. */
 public final class GibdoMotion {
@@ -32,8 +31,8 @@ public final class GibdoMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity, IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -49,13 +48,13 @@ public final class GibdoMotion {
         boolean collidedX = false;
         boolean collidedY = false;
         if (backgroundCollision != null) {
-            if (speedX[slot] != 0 && backgroundCollision.blocks(entity,
-                directionForHorizontalSpeed(speedX[slot]), x, y)) {
+            if (speedX[slot] != 0
+                    && backgroundCollision.blocks(entity, directionForHorizontalSpeed(speedX[slot]), x, y)) {
                 x = entity.x();
                 collidedX = true;
             }
-            if (speedY[slot] != 0 && backgroundCollision.blocks(entity,
-                directionForVerticalSpeed(speedY[slot]), x, y)) {
+            if (speedY[slot] != 0
+                    && backgroundCollision.blocks(entity, directionForVerticalSpeed(speedY[slot]), x, y)) {
                 y = entity.y();
                 collidedY = true;
             }
@@ -75,9 +74,20 @@ public final class GibdoMotion {
         }
         advanceAnimation(slot);
 
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                renderedVariant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -124,8 +134,7 @@ public final class GibdoMotion {
         return signedByte(speed) < 0 ? 2 : 3;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;

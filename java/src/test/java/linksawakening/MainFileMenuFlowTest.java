@@ -1,17 +1,5 @@
 package linksawakening;
 
-import linksawakening.app.*;
-
-import linksawakening.app.screen.*;
-
-import linksawakening.audio.music.MusicTrackIds;
-import linksawakening.config.AppConfig;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.render.RenderScreen;
-import org.junit.jupiter.api.Test;
-
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,25 +8,49 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import linksawakening.app.*;
+import linksawakening.app.screen.*;
+import linksawakening.audio.music.MusicTrackIds;
+import linksawakening.config.AppConfig;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.render.RenderScreen;
+import org.junit.jupiter.api.Test;
+
 final class MainFileMenuFlowTest {
     private static final GameSession game = new GameSession();
 
     @Test
     void titleEnterIsTheFileMenuBoundary() {
-        assertTrue(InputRouter.shouldEnterFileSelection(new TitleScreen(new TitleScreen.Dependencies(() -> null, () -> null, () -> {})), GLFW_KEY_ENTER, GLFW_PRESS));
-        assertFalse(InputRouter.shouldEnterFileSelection(new GameplayScreen(() -> {}, (key, action) -> {}), GLFW_KEY_ENTER, GLFW_PRESS));
+        assertTrue(InputRouter.shouldEnterFileSelection(
+                new TitleScreen(new TitleScreen.Dependencies(() -> null, () -> null, () -> {})),
+                GLFW_KEY_ENTER,
+                GLFW_PRESS));
+        assertFalse(InputRouter.shouldEnterFileSelection(
+                new GameplayScreen(() -> {}, (key, action) -> {}), GLFW_KEY_ENTER, GLFW_PRESS));
     }
 
     @Test
     void fileMenuHasItsOwnRenderScreenAndDisassemblyMusicTrack() {
-        assertEquals(RenderScreen.FILE_MENU, new FileMenuScreen(new FileMenuScreen.Dependencies(() -> null, () -> null, () -> null, () -> null, slot -> {}, () -> {}, saved -> {}, mutation -> {}, () -> {})).renderScreen());
+        assertEquals(
+                RenderScreen.FILE_MENU,
+                new FileMenuScreen(new FileMenuScreen.Dependencies(
+                                () -> null,
+                                () -> null,
+                                () -> null,
+                                () -> null,
+                                slot -> {},
+                                () -> {},
+                                saved -> {},
+                                mutation -> {},
+                                () -> {}))
+                        .renderScreen());
         assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, linksawakening.app.MusicDirector.fileSelectionMusicTrack());
     }
 
     @Test
     void fileSaveChordRequiresExactlyTheFourSourceButtonsRegardlessOfLastKey() {
-        InputConfig inputConfig = new InputConfig(
-            GLFW_KEY_ENTER, 1, 2, 3, 4, 5, 6, GLFW_KEY_TAB);
+        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, 1, 2, 3, 4, 5, 6, GLFW_KEY_TAB);
         InputState inputState = new InputState();
         inputState.onKeyEvent(5, GLFW_PRESS);
         inputState.onKeyEvent(6, GLFW_PRESS);
@@ -61,7 +73,13 @@ final class MainFileMenuFlowTest {
 
     @Test
     void newGameBootstrapResetsPersistentWorldStateBeforeLoadingTheHouse() {
-        CompiledCode.calls("linksawakening.app.SaveCoordinator", "startNewGame", "initializePlayerState", "initializeNewGameWorldState", "loadIndoor", "setRoomEntryRomPosition");
+        CompiledCode.calls(
+                "linksawakening.app.SaveCoordinator",
+                "startNewGame",
+                "initializePlayerState",
+                "initializeNewGameWorldState",
+                "loadIndoor",
+                "setRoomEntryRomPosition");
     }
 
     @Test
@@ -92,47 +110,91 @@ final class MainFileMenuFlowTest {
 
     @Test
     void startupTreatsSavedAndNewGamePositionsAsRomOamCoordinates() {
-        CompiledCode.calls("linksawakening.app.SaveCoordinator", "startSavedGame", "loadIndoorFromSavedPosition", "setRoomEntryRomPosition");
+        CompiledCode.calls(
+                "linksawakening.app.SaveCoordinator",
+                "startSavedGame",
+                "loadIndoorFromSavedPosition",
+                "setRoomEntryRomPosition");
     }
 
     @Test
     void newGameRunsMarinsWakeSequenceWithRomBackedDialog() {
-        CompiledCode.calls("linksawakening.app.story.OpeningStory", "tickNewGameWakeUp", "MarinWakeUpMotion.tick", "DialogTextLoader.load", "openPreformattedForLinkY");
+        CompiledCode.calls(
+                "linksawakening.app.story.OpeningStory",
+                "tickNewGameWakeUp",
+                "MarinWakeUpMotion.tick",
+                "DialogTextLoader.load",
+                "openPreformattedForLinkY");
     }
 
     @Test
     void wakeSequenceConsumesOverworldKeysBeforeSaveAndInventoryActions() {
-        CompiledCode.calls("linksawakening.app.InputRouter", "gameplayKey", "marinWakeUpBlocksKeyInput", "dispatchToggleInput");
+        CompiledCode.calls(
+                "linksawakening.app.InputRouter", "gameplayKey", "marinWakeUpBlocksKeyInput", "dispatchToggleInput");
     }
 
     @Test
     void wakeReleaseUsesHeldDirectionsAndMarinFollowUpUsesOnlyA() {
-        CompiledCode.calls("linksawakening.app.story.OpeningStory", "tickNewGameWakeUp", "InputState.isDown", "MarinWakeUpMotion.tick");
+        CompiledCode.calls(
+                "linksawakening.app.story.OpeningStory",
+                "tickNewGameWakeUp",
+                "InputState.isDown",
+                "MarinWakeUpMotion.tick");
     }
 
     @Test
     void tarinTalkUsesOnlyAAndUnshieldedHouseSavesRestoreHisSequence() {
-        CompiledCode.calls("linksawakening.app.story.OpeningStory", "restoreNewGameHouseRuntimeIfNeeded", "swordLevel", "postWake", "Runnable.run", "shieldLevel");
+        CompiledCode.calls(
+                "linksawakening.app.story.OpeningStory",
+                "restoreNewGameHouseRuntimeIfNeeded",
+                "swordLevel",
+                "postWake",
+                "Runnable.run",
+                "shieldLevel");
     }
 
     @Test
     void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() {
-        CompiledCode.calls("linksawakening.app.ScreenRouter", "startFileSelection", "saveFilesMask", "savedNames", "FileMenuController");
+        CompiledCode.calls(
+                "linksawakening.app.ScreenRouter",
+                "startFileSelection",
+                "saveFilesMask",
+                "savedNames",
+                "FileMenuController");
     }
 
     @Test
     void copyAndErasePersistThenRebuildTheFileMenu() {
-        CompiledCode.calls("linksawakening.app.SaveCoordinator", "persistFileMenuMutation", "Runnable.run", "SaveRamStore.flush", "startFileSelection");
+        CompiledCode.calls(
+                "linksawakening.app.SaveCoordinator",
+                "persistFileMenuMutation",
+                "Runnable.run",
+                "SaveRamStore.flush",
+                "startFileSelection");
     }
 
     @Test
     void saveAndQuitUsesTheModeledPlayerStateWriter() {
-        CompiledCode.calls("linksawakening.app.SaveCoordinator", "saveCurrentPlayerState", "writePlayerState", "saveCurrentSpawnLocation", "writeRoomStatuses", "writeDungeonItemFlags", "SaveRamStore.flush");
+        CompiledCode.calls(
+                "linksawakening.app.SaveCoordinator",
+                "saveCurrentPlayerState",
+                "writePlayerState",
+                "saveCurrentSpawnLocation",
+                "writeRoomStatuses",
+                "writeDungeonItemFlags",
+                "SaveRamStore.flush");
     }
 
     @Test
     void initializedFileSelectionLoadsTheSavedRoomInsteadOfThrowing() {
-        CompiledCode.calls("linksawakening.app.SaveCoordinator", "startSavedGame", "restoreRoomStatuses", "restoreDungeonItemFlags", "setTarinFlag", "setChestPlayerLevels", "loadIndoorFromSavedPosition", "setRoomEntryRomPosition");
+        CompiledCode.calls(
+                "linksawakening.app.SaveCoordinator",
+                "startSavedGame",
+                "restoreRoomStatuses",
+                "restoreDungeonItemFlags",
+                "setTarinFlag",
+                "setChestPlayerLevels",
+                "loadIndoorFromSavedPosition",
+                "setRoomEntryRomPosition");
     }
-
 }

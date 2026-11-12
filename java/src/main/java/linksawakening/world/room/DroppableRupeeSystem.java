@@ -1,16 +1,9 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntSupplier;
-
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
@@ -45,17 +38,25 @@ public final class DroppableRupeeSystem {
     // OAM_GBC_PAL_5 is the sixth always-loaded gameplay OBJ palette in
     // ObjectPalettes: blue/cyan objects such as blue rupees and bombs.
     private static final int[] BLUE_OBJECTS_SPRITE_PALETTE = {
-        0x00000000,
-        0x0070A8F8,
-        0x000000F8,
-        0x00000000,
+        0x00000000, 0x0070A8F8, 0x000000F8, 0x00000000,
     };
 
-    public int spriteTileIndex() { return RUPEE_TILE_INDEX; }
-    public int[] spritePalette() { return BLUE_OBJECTS_SPRITE_PALETTE.clone(); }
+    public int spriteTileIndex() {
+        return RUPEE_TILE_INDEX;
+    }
 
-    public record Slot(int slotIndex, int worldX, int worldY, int posZSubpixels,
-                       int slowCountdown, int pickupDelay, boolean visible) {}
+    public int[] spritePalette() {
+        return BLUE_OBJECTS_SPRITE_PALETTE.clone();
+    }
+
+    public record Slot(
+            int slotIndex,
+            int worldX,
+            int worldY,
+            int posZSubpixels,
+            int slowCountdown,
+            int pickupDelay,
+            boolean visible) {}
 
     private static final class MutableSlot {
         private final int slotIndex;
@@ -76,8 +77,8 @@ public final class DroppableRupeeSystem {
         }
 
         private Slot snapshot() {
-            return new Slot(slotIndex, worldX, worldY, posZSubpixels, slowCountdown,
-                pickupDelay, isVisible(slowCountdown));
+            return new Slot(
+                    slotIndex, worldX, worldY, posZSubpixels, slowCountdown, pickupDelay, isVisible(slowCountdown));
         }
     }
 

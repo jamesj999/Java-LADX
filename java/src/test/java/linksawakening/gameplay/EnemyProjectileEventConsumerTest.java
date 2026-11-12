@@ -1,5 +1,12 @@
 package linksawakening.gameplay;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
@@ -10,14 +17,6 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @linksawakening.testing.RequiresRom
 final class EnemyProjectileEventConsumerTest {
 
@@ -26,19 +25,24 @@ final class EnemyProjectileEventConsumerTest {
         PlayerState player = new PlayerState();
         player.setHealth(16);
         var counters = new java.util.concurrent.atomic.AtomicReference<>(
-            new linksawakening.world.entity.EnemyDropResolver.CounterState(11, 23));
-        var event = new EntityProjectileEvent(0, 0x0A,
-            EntityProjectileEvent.Kind.LINK_DAMAGE, 0xFF, 8,
-            EntityProjectileEvent.SoundChannel.WAVE, 3, false, false);
-        Runnable reset = () -> counters.updateAndGet(
-            linksawakening.world.entity.EnemyDropResolver::resetGuardianAcornCounter);
-        EnemyProjectileEventConsumer.consume(List.of(event), player, null,
-            new RecordingSoundSink(), reset);
+                new linksawakening.world.entity.EnemyDropResolver.CounterState(11, 23));
+        var event = new EntityProjectileEvent(
+                0,
+                0x0A,
+                EntityProjectileEvent.Kind.LINK_DAMAGE,
+                0xFF,
+                8,
+                EntityProjectileEvent.SoundChannel.WAVE,
+                3,
+                false,
+                false);
+        Runnable reset =
+                () -> counters.updateAndGet(linksawakening.world.entity.EnemyDropResolver::resetGuardianAcornCounter);
+        EnemyProjectileEventConsumer.consume(List.of(event), player, null, new RecordingSoundSink(), reset);
         assertEquals(0, counters.get().guardianAcornCounter());
         assertEquals(23, counters.get().pieceOfPowerKillCount());
         counters.set(new linksawakening.world.entity.EnemyDropResolver.CounterState(7, 23));
-        EnemyProjectileEventConsumer.consume(List.of(event), player, null,
-            new RecordingSoundSink(), reset);
+        EnemyProjectileEventConsumer.consume(List.of(event), player, null, new RecordingSoundSink(), reset);
         assertEquals(7, counters.get().guardianAcornCounter());
     }
 
@@ -49,8 +53,15 @@ final class EnemyProjectileEventConsumerTest {
         RecordingSoundSink sounds = new RecordingSoundSink();
 
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE, 0xFF, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false);
+                0,
+                0x0A,
+                EntityProjectileEvent.Kind.LINK_DAMAGE,
+                0xFF,
+                0x08,
+                EntityProjectileEvent.SoundChannel.WAVE,
+                0x03,
+                false,
+                false);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -72,13 +83,30 @@ final class EnemyProjectileEventConsumerTest {
     void appliesAcceptedProjectileRecoilToLinkExactlyOnce() throws IOException {
         PlayerState player = new PlayerState();
         player.setHealth(16);
-        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
-            loadRomTables(), null, null, player, new ItemRegistry());
+        Link link = new Link(
+                new InputState(),
+                new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                loadRomTables(),
+                null,
+                null,
+                player,
+                new ItemRegistry());
         RecordingSoundSink sounds = new RecordingSoundSink();
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE, 0xFF, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false,
-            0, 0, 0xF0, 0x14, 0x10);
+                0,
+                0x0A,
+                EntityProjectileEvent.Kind.LINK_DAMAGE,
+                0xFF,
+                0x08,
+                EntityProjectileEvent.SoundChannel.WAVE,
+                0x03,
+                false,
+                false,
+                0,
+                0,
+                0xF0,
+                0x14,
+                0x10);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
         link.update();
@@ -95,13 +123,30 @@ final class EnemyProjectileEventConsumerTest {
         RomTables romTables = loadRomTables();
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
-        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
-            romTables, collision, null, player, new ItemRegistry());
+        Link link = new Link(
+                new InputState(),
+                new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                romTables,
+                collision,
+                null,
+                player,
+                new ItemRegistry());
         RecordingSoundSink sounds = new RecordingSoundSink();
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0, 0,
-            EntityProjectileEvent.SoundChannel.NONE, -1, false, false,
-            0, 0, 0x20, 0xE0, 0);
+                0,
+                0x02,
+                EntityProjectileEvent.Kind.LINK_DAMAGE,
+                0,
+                0,
+                EntityProjectileEvent.SoundChannel.NONE,
+                -1,
+                false,
+                false,
+                0,
+                0,
+                0x20,
+                0xE0,
+                0);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
         link.update();
@@ -119,8 +164,15 @@ final class EnemyProjectileEventConsumerTest {
         RecordingSoundSink sounds = new RecordingSoundSink();
 
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x0A, EntityProjectileEvent.Kind.SHIELD_BLOCK, 0xFF, 0,
-            EntityProjectileEvent.SoundChannel.JINGLE, 0x16, false, false);
+                0,
+                0x0A,
+                EntityProjectileEvent.Kind.SHIELD_BLOCK,
+                0xFF,
+                0,
+                EntityProjectileEvent.SoundChannel.JINGLE,
+                0x16,
+                false,
+                false);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -135,9 +187,17 @@ final class EnemyProjectileEventConsumerTest {
         RecordingSoundSink sounds = new RecordingSoundSink();
 
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x2B, EntityProjectileEvent.Kind.SHIELD_BLOCK, 0x02, 0,
-            EntityProjectileEvent.SoundChannel.JINGLE, 0x07, false, true,
-            0x40, 0x50);
+                0,
+                0x2B,
+                EntityProjectileEvent.Kind.SHIELD_BLOCK,
+                0x02,
+                0,
+                EntityProjectileEvent.SoundChannel.JINGLE,
+                0x07,
+                false,
+                true,
+                0x40,
+                0x50);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -151,9 +211,20 @@ final class EnemyProjectileEventConsumerTest {
         RecordingSoundSink sounds = new RecordingSoundSink();
 
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x58, EntityProjectileEvent.Kind.SWORD_HIT, 0xFF, 0,
-            EntityProjectileEvent.SoundChannel.JINGLE, 0x09, true, true,
-            0x40, 0x50, 0, 0, 0x0C);
+                0,
+                0x58,
+                EntityProjectileEvent.Kind.SWORD_HIT,
+                0xFF,
+                0,
+                EntityProjectileEvent.SoundChannel.JINGLE,
+                0x09,
+                true,
+                true,
+                0x40,
+                0x50,
+                0,
+                0,
+                0x0C);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -169,8 +240,15 @@ final class EnemyProjectileEventConsumerTest {
         RecordingSoundSink sounds = new RecordingSoundSink();
 
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x0C, EntityProjectileEvent.Kind.LINK_DAMAGE, 0, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, true, false);
+                0,
+                0x0C,
+                EntityProjectileEvent.Kind.LINK_DAMAGE,
+                0,
+                0x08,
+                EntityProjectileEvent.SoundChannel.WAVE,
+                0x03,
+                true,
+                false);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -187,8 +265,15 @@ final class EnemyProjectileEventConsumerTest {
         RecordingSoundSink sounds = new RecordingSoundSink();
 
         EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false);
+                0,
+                0x02,
+                EntityProjectileEvent.Kind.LINK_DAMAGE,
+                0,
+                0x08,
+                EntityProjectileEvent.SoundChannel.WAVE,
+                0x03,
+                false,
+                false);
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 

@@ -1,13 +1,11 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class SwordBeamMotionTest {
 
@@ -71,8 +69,19 @@ final class SwordBeamMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, -1, SwordBeamMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(SwordBeamMotion.ENTITY_TYPE),
-            0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0,
+                -1,
+                SwordBeamMotion.ENTITY_TYPE,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(SwordBeamMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

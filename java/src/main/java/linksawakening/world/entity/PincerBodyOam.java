@@ -9,8 +9,7 @@ public final class PincerBodyOam {
     private static final int BODY_ATTRIBUTES = 0x02;
     private static final int BODY_COUNT = 3;
 
-    private PincerBodyOam() {
-    }
+    private PincerBodyOam() {}
 
     /** A raw OAM entry before the renderer applies the Game Boy OAM origins. */
     public record Entry(int sourceSlot, int rawX, int rawY, int tileIndex, int attributes) {
@@ -23,8 +22,7 @@ public final class PincerBodyOam {
     }
 
     /** Mirrors RenderPincer's three body entries after the head becomes visible. */
-    public static List<Entry> entries(int sourceSlot, int holeX, int holeY,
-                                      int entityX, int entityY, int state) {
+    public static List<Entry> entries(int sourceSlot, int holeX, int holeY, int entityX, int entityY, int state) {
         if (state < 3) {
             return List.of();
         }
@@ -32,8 +30,8 @@ public final class PincerBodyOam {
         int deltaY = signedByte(entityY - holeY) >> 2;
         List<Entry> entries = new ArrayList<>(BODY_COUNT);
         for (int index = 0; index < BODY_COUNT; index++) {
-            entries.add(new Entry(sourceSlot, holeX + 0x04 + deltaX * index,
-                holeY + deltaY * index, BODY_TILE, BODY_ATTRIBUTES));
+            entries.add(new Entry(
+                    sourceSlot, holeX + 0x04 + deltaX * index, holeY + deltaY * index, BODY_TILE, BODY_ATTRIBUTES));
         }
         return List.copyOf(entries);
     }

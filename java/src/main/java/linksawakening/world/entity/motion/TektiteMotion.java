@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 TektiteEntityHandler's ordinary two-state jump loop. */
 public final class TektiteMotion {
@@ -43,9 +42,12 @@ public final class TektiteMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -63,13 +65,11 @@ public final class TektiteMotion {
         // flags before TektiteHorizontal/VerticalCollision. Restore the blocked
         // coordinate and mirror each helper's negate-and-arithmetic-half step.
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
-                    directionForX(speedX[slot]), x, y)) {
+            if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, y)) {
                 x = entity.x();
                 speedX[slot] = negateAndHalve(speedX[slot]);
             }
-            if (y != entity.y() && backgroundCollision.blocks(entity,
-                    directionForY(speedY[slot]), x, y)) {
+            if (y != entity.y() && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
                 y = entity.y();
                 // TektiteVerticalCollision loads the X-speed table in the ROM.
                 speedX[slot] = negateAndHalve(speedX[slot]);
@@ -85,8 +85,7 @@ public final class TektiteMotion {
                 speedX[slot] = 0;
                 speedY[slot] = 0;
                 state[slot] = 1;
-                transitionCountdown[slot] = 0x10
-                    + (randomByteSupplier.getAsInt() & 0x3F);
+                transitionCountdown[slot] = 0x10 + (randomByteSupplier.getAsInt() & 0x3F);
                 variant = 1;
             } else {
                 z = addSpeedToPosition(z, speedZ[slot], speedZAccumulator, slot);
@@ -104,8 +103,7 @@ public final class TektiteMotion {
                 speedY[slot] = SPEED_Y_BY_DIRECTION[direction[slot]];
 
                 if ((randomByteSupplier.getAsInt() & 0x01) != 0) {
-                    Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY,
-                        0x14);
+                    Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, 0x14);
                     speedX[slot] = vector.x();
                     speedY[slot] = vector.y();
                 }
@@ -114,9 +112,20 @@ public final class TektiteMotion {
             }
         }
 
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -144,8 +153,7 @@ public final class TektiteMotion {
         return speedZ[slot];
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         boolean yNegative = distanceY < 0;
@@ -181,8 +189,7 @@ public final class TektiteMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -215,6 +222,5 @@ public final class TektiteMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

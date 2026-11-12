@@ -1,17 +1,14 @@
 package linksawakening.gameplay;
 
-
-
-import linksawakening.dialog.DialogController;
-import linksawakening.entity.Link;
-import linksawakening.world.transition.Warp;
-
-import java.util.Objects;
-
 import static linksawakening.world.room.RoomConstants.OBJECTS_PER_COLUMN;
 import static linksawakening.world.room.RoomConstants.OBJECTS_PER_ROW;
 import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
 import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
+
+import java.util.Objects;
+import linksawakening.dialog.DialogController;
+import linksawakening.entity.Link;
+import linksawakening.world.transition.Warp;
 
 public final class OverworldDialogInteraction {
 
@@ -26,22 +23,23 @@ public final class OverworldDialogInteraction {
         this.dialogTextLoader = Objects.requireNonNull(dialogTextLoader);
     }
 
-    public boolean tryOpenSignpostDialog(int roomId,
-                                         int mapCategory,
-                                         int[] roomObjectsArea,
-                                         int linkPixelX,
-                                         int linkPixelY,
-                                         int linkDirection,
-                                         boolean actionPressed,
-                                         OverworldDialogBlockers blockers,
-                                         DialogController dialogController) {
+    public boolean tryOpenSignpostDialog(
+            int roomId,
+            int mapCategory,
+            int[] roomObjectsArea,
+            int linkPixelX,
+            int linkPixelY,
+            int linkDirection,
+            boolean actionPressed,
+            OverworldDialogBlockers blockers,
+            DialogController dialogController) {
         if (!actionPressed
-            || (blockers != null && blockers.blocksOpening())
-            || mapCategory != Warp.CATEGORY_OVERWORLD
-            || linkDirection != Link.DIRECTION_UP
-            || roomObjectsArea == null
-            || dialogController == null
-            || dialogController.isActive()) {
+                || (blockers != null && blockers.blocksOpening())
+                || mapCategory != Warp.CATEGORY_OVERWORLD
+                || linkDirection != Link.DIRECTION_UP
+                || roomObjectsArea == null
+                || dialogController == null
+                || dialogController.isActive()) {
             return false;
         }
 
@@ -57,8 +55,7 @@ public final class OverworldDialogInteraction {
 
         SignpostDialogRef dialogRef = signpostDialogTable.resolve(roomId);
         dialogController.openPreformattedForLinkY(
-            dialogTextLoader.load(dialogRef),
-            LinkDialogPosition.dialogYFromTopLeft(linkPixelY));
+                dialogTextLoader.load(dialogRef), LinkDialogPosition.dialogYFromTopLeft(linkPixelY));
         return true;
     }
 

@@ -1,16 +1,13 @@
 package linksawakening.world.entity.motion;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class ThreeOfAKindMotionTest {
     @Test
@@ -18,8 +15,7 @@ final class ThreeOfAKindMotionTest {
         ThreeOfAKindMotion motion = new ThreeOfAKindMotion();
         RoomEntity card = card(0);
 
-        ThreeOfAKindMotion.Update update = motion.advance(
-            card, 1, 5, 9, () -> 0, null);
+        ThreeOfAKindMotion.Update update = motion.advance(card, 1, 5, 9, () -> 0, null);
 
         assertEquals(2, motion.state(0));
         assertEquals(0x40, update.transitionCountdown());
@@ -36,8 +32,7 @@ final class ThreeOfAKindMotionTest {
         motion.setSettledForTest(1, 1);
         motion.setSettledForTest(2, 2);
 
-        assertEquals(ThreeOfAKindMotion.PuzzleResult.MISMATCH,
-            motion.resolvePuzzle(cards, countdowns));
+        assertEquals(ThreeOfAKindMotion.PuzzleResult.MISMATCH, motion.resolvePuzzle(cards, countdowns));
         assertEquals(0, motion.state(0));
         assertEquals(0, motion.state(1));
         assertEquals(0, motion.state(2));
@@ -45,8 +40,7 @@ final class ThreeOfAKindMotionTest {
         motion.setSettledForTest(0, 0);
         motion.setSettledForTest(1, 0);
         motion.setSettledForTest(2, 0);
-        assertEquals(ThreeOfAKindMotion.PuzzleResult.MATCH,
-            motion.resolvePuzzle(cards, countdowns));
+        assertEquals(ThreeOfAKindMotion.PuzzleResult.MATCH, motion.resolvePuzzle(cards, countdowns));
         assertEquals(0x2D, motion.matchedDrop(0));
         assertEquals(0x02, motion.matchedJingle(0));
 
@@ -57,8 +51,19 @@ final class ThreeOfAKindMotionTest {
     }
 
     private static RoomEntity card(int slot) {
-        return new RoomEntity(slot, slot, ThreeOfAKindMotion.ENTITY_TYPE,
-            0x40 + slot * 8, 0x50, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(ThreeOfAKindMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                slot,
+                slot,
+                ThreeOfAKindMotion.ENTITY_TYPE,
+                0x40 + slot * 8,
+                0x50,
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(ThreeOfAKindMotion.ENTITY_TYPE),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

@@ -42,20 +42,23 @@ public final class CrowMotion {
      * Advances one handler pass. The shared entity loop has already decremented
      * the transition byte before this method is called.
      */
-    public Update advance(RoomEntity entity, int transitionCountdown,
-                   int linkEntityX, int linkEntityY) {
+    public Update advance(RoomEntity entity, int transitionCountdown, int linkEntityX, int linkEntityY) {
         return advance(entity, transitionCountdown, 0, linkEntityX, linkEntityY);
     }
 
-    public Update advance(RoomEntity entity, int transitionCountdown, int frameCounter,
-                   int linkEntityX, int linkEntityY) {
-        return advance(entity, transitionCountdown, frameCounter,
-            linkEntityX, linkEntityY, true, false);
+    public Update advance(
+            RoomEntity entity, int transitionCountdown, int frameCounter, int linkEntityX, int linkEntityY) {
+        return advance(entity, transitionCountdown, frameCounter, linkEntityX, linkEntityY, true, false);
     }
 
-    public Update advance(RoomEntity entity, int transitionCountdown, int frameCounter,
-                   int linkEntityX, int linkEntityY,
-                   boolean allowLinkProximityTrigger, boolean externalTakeoffTrigger) {
+    public Update advance(
+            RoomEntity entity,
+            int transitionCountdown,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean allowLinkProximityTrigger,
+            boolean externalTakeoffTrigger) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Crow motion entity");
         }
@@ -91,9 +94,11 @@ public final class CrowMotion {
                 int distanceX = signedByte((linkEntityX - x) & 0xFF);
                 int distanceY = signedByte((linkEntityY - y) & 0xFF);
                 if (externalTakeoffTrigger
-                    || allowLinkProximityTrigger
-                    && distanceX >= -0x18 && distanceX < 0x18
-                    && distanceY >= -0x30 && distanceY < 0x30) {
+                        || allowLinkProximityTrigger
+                                && distanceX >= -0x18
+                                && distanceX < 0x18
+                                && distanceY >= -0x30
+                                && distanceY < 0x30) {
                     physicsFlags[slot] = ACTIVE_PHYSICS_FLAGS;
                     countdown = 0x22;
                     state[slot] = 1;
@@ -118,8 +123,7 @@ public final class CrowMotion {
                     state[slot] = 3;
                 } else {
                     if ((countdown & 0x01) == 0) {
-                        Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY,
-                            0x20);
+                        Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, 0x20);
                         speedY[slot] = approach(speedY[slot], vector.y());
                         speedX[slot] = approach(speedX[slot], vector.x());
                         direction[slot] = speedX[slot] & 0x80;
@@ -132,8 +136,7 @@ public final class CrowMotion {
             }
             case 3 -> {
                 if ((frameCounter & 0x03) == 0) {
-                    Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY,
-                        0x20);
+                    Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, 0x20);
                     speedY[slot] = approach(speedY[slot], negate(vector.y()));
                     speedX[slot] = approach(speedX[slot], negate(vector.x()));
                     direction[slot] = speedX[slot] & 0x80;
@@ -144,16 +147,25 @@ public final class CrowMotion {
                 selectedVariant[slot] = flightVariant(y, speedY[slot]);
                 // $5E54 reads the cached active position. The movement helpers
                 // update WRAM positions without refreshing those HRAM bytes.
-                unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88
-                    || entity.x() >= 0xA8;
+                unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88 || entity.x() >= 0xA8;
             }
             default -> throw new IllegalStateException("Invalid Crow state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(),
-            entity.type(), x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z,
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
         return new Update(updated, countdown, physicsFlags[slot], unloaded, boomerangSound);
     }
 
@@ -212,8 +224,7 @@ public final class CrowMotion {
     }
 
     /** Mirrors AddEntitySpeedToPos_06's signed high-nibble fixed point step. */
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -228,8 +239,7 @@ public final class CrowMotion {
     }
 
     /** Port of GetVectorTowardsLink with the requested infinity norm. */
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         // The flight trampoline uses bank $03's height-aware distance helper,
         // unlike the bank $06 helper used for the perched proximity check.
@@ -280,10 +290,8 @@ public final class CrowMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags,
-                  boolean unloaded, boolean boomerangSound) {
-    }
+    public record Update(
+            RoomEntity entity, int transitionCountdown, int physicsFlags, boolean unloaded, boolean boomerangSound) {}
 }

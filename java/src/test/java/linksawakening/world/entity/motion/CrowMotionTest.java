@@ -1,19 +1,16 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 final class CrowMotionTest {
 
@@ -61,8 +58,8 @@ final class CrowMotionTest {
 
         motion.setStateForTest(0, 3);
         motion.setSpeedForTest(0, 0x20, 0, 0);
-        RoomEntity outwardStart = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE,
-            0xA6, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0, -1, false);
+        RoomEntity outwardStart = new RoomEntity(
+                0, 0, CrowMotion.ENTITY_TYPE, 0xA6, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0, -1, false);
         CrowMotion.Update crossing = motion.advance(outwardStart, 0, 0x40, 0x50);
         assertFalse(crossing.unloaded());
         CrowMotion.Update unloaded = motion.advance(crossing.entity(), 0, 0x40, 0x50);
@@ -89,8 +86,8 @@ final class CrowMotionTest {
     void airbornePursuitAndRetreatSteerFromVisualHeight(int state, int speedX, int speedY) {
         CrowMotion motion = new CrowMotion();
         motion.setStateForTest(0, state);
-        RoomEntity airborne = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE,
-            0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x10, -1, false);
+        RoomEntity airborne = new RoomEntity(
+                0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x10, -1, false);
 
         // Link is below the crow's visual Y ($40), but above its ground Y ($50).
         // Both flight states call bank $03 GetVectorTowardsLink via $3BB5.
@@ -107,13 +104,12 @@ final class CrowMotionTest {
         "64, 151, 16, 0, 16, false", "64, 152, 16, 0, 240, true",
         "64, 16, 16, 0, 240, false", "64, 15, 16, 0, 16, true"
     })
-    void escapeBoundsUseTheHandlerEntryPosition(int x, int y, int z,
-                                               int speedX, int speedY, boolean unload) {
+    void escapeBoundsUseTheHandlerEntryPosition(int x, int y, int z, int speedX, int speedY, boolean unload) {
         CrowMotion motion = new CrowMotion();
         motion.setStateForTest(0, 3);
         motion.setSpeedForTest(0, speedX, speedY, 0);
-        RoomEntity crow = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), 0, 0, 0, z, -1, false);
+        RoomEntity crow = new RoomEntity(
+                0, 0, CrowMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), 0, 0, 0, z, -1, false);
 
         // Frame 1 skips steering. Each speed moves one pixel across a boundary.
         // $5E54 reads cached hActiveEntityPosX / hActiveEntityVisualPosY.
@@ -138,8 +134,8 @@ final class CrowMotionTest {
     void climbSelectsNextWingFrameFromAltitudeAfterMovement() {
         CrowMotion motion = new CrowMotion();
         motion.setStateForTest(0, 1);
-        RoomEntity crow = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition(), 0, 0, 0, 7, -1, false);
+        RoomEntity crow = new RoomEntity(
+                0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 7, -1, false);
 
         CrowMotion.Update first = motion.advance(crow, 0x20, 0x40, 0x50);
         assertEquals(7, first.entity().z());
@@ -153,8 +149,7 @@ final class CrowMotionTest {
 
     @ParameterizedTest
     @CsvSource({"2, 16, 3", "3, 16, 3", "2, 0, 2", "3, 0, 2"})
-    void flightSelectsNextWingFrameFromTheMovementHelpersFinalByte(
-        int state, int speedY, int nextVariant) {
+    void flightSelectsNextWingFrameFromTheMovementHelpersFinalByte(int state, int speedY, int nextVariant) {
         CrowMotion motion = new CrowMotion();
         motion.setStateForTest(0, state);
         motion.setSpeedForTest(0, 0, speedY, 0);
@@ -167,21 +162,23 @@ final class CrowMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                0, 0, CrowMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition definition() {
-        EntitySpriteDefinition.OamAttribute first =
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0);
-        EntitySpriteDefinition.OamAttribute second =
-            new EntitySpriteDefinition.OamAttribute(0xFF, 0);
-        return new EntitySpriteDefinition(CrowMotion.ENTITY_TYPE, 0x06, 0x5C89,
-            EntitySpriteDefinition.Shape.PAIR, 0,
-            List.of(
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second),
-                new EntitySpriteDefinition.Variant(first, second)));
+        EntitySpriteDefinition.OamAttribute first = new EntitySpriteDefinition.OamAttribute(0xFF, 0);
+        EntitySpriteDefinition.OamAttribute second = new EntitySpriteDefinition.OamAttribute(0xFF, 0);
+        return new EntitySpriteDefinition(
+                CrowMotion.ENTITY_TYPE,
+                0x06,
+                0x5C89,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second),
+                        new EntitySpriteDefinition.Variant(first, second)));
     }
 }

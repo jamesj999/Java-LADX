@@ -1,26 +1,15 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EnemyDropResolver;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntSupplier;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class FairyRuntimeTest {
@@ -46,19 +35,29 @@ final class FairyRuntimeTest {
     void runsTheFairyHandlerWithItsRomPhysicsAndOptions() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0x2F, 0x40, 0x40, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x10, -1, false)), false, () -> 0, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0, 0, 0x2F, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x10, -1, false)),
+                false,
+                () -> 0,
+                catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x40, sequence(0x0F, 0x00)));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0xB1, runtime.enemies().physicsFlags(0));
         assertEquals(0x13, runtime.options1(0));
         assertEquals(0x30, runtime.enemies().transitionCountdown(0));
         assertEquals(0x07, runtime.inspection().fairySpeedX(0));
         assertEquals(0xF8, runtime.inspection().fairySpeedY(0));
-        assertTrue(runtime.inspection().snapshot().slots().get(0).spriteDefinition().supported());
+        assertTrue(runtime.inspection()
+                .snapshot()
+                .slots()
+                .get(0)
+                .spriteDefinition()
+                .supported());
     }
 
     @Test
@@ -66,11 +65,21 @@ final class FairyRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity source = new RoomEntity(15, 0, 0x09, 0x44, 0x58,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x10, -1, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(source), false,
-            () -> 0, catalog, tables);
+        RoomEntity source = new RoomEntity(
+                15,
+                0,
+                0x09,
+                0x44,
+                0x58,
+                EntityStatus.DYING,
+                catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                0,
+                0,
+                0,
+                0x10,
+                -1,
+                false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(source), false, () -> 0, catalog, tables);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.debug().setDroppedItemForTest(15, 0x2F);
 

@@ -1,5 +1,7 @@
 package linksawakening.world.room;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
@@ -8,22 +10,28 @@ import linksawakening.testing.TestRom;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 @RequiresRom
 class CrackedFloorGroundPhysicsTest {
     private static RoomSession session() throws Exception {
         byte[] rom;
-        try (var input = TestRom.open()) { rom = input.readAllBytes(); }
-        var session = new RoomSession(rom, new GPU(), new RoomLoader(rom),
-            new OverworldTilesetTable(rom), new OverworldCollision(RomTables.loadFromRom(rom)),
-            new TransientVfxSystem(16), null);
+        try (var input = TestRom.open()) {
+            rom = input.readAllBytes();
+        }
+        var session = new RoomSession(
+                rom,
+                new GPU(),
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                new OverworldCollision(RomTables.loadFromRom(rom)),
+                new TransientVfxSystem(16),
+                null);
         session.loadIndoor(0, 0x17);
         return session;
     }
 
-    private static RoomSession.LinkGroundFrame frame(int x, int y, boolean airborne,
-                                                     boolean blocked, boolean dialog, boolean transition) {
+    private static RoomSession.LinkGroundFrame frame(
+            int x, int y, boolean airborne, boolean blocked, boolean dialog, boolean transition) {
         return new RoomSession.LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
     }
 
@@ -47,7 +55,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(frames, session.context.crackedFloorCounter);
     }
 
-    @Test void sideScrollingIsNotExcludedByTheIndoorGateAt77F7() throws Exception {
+    @Test
+    void sideScrollingIsNotExcludedByTheIndoorGateAt77F7() throws Exception {
         var session = session();
         session.loadIndoor(0, 0x19, Warp.CATEGORY_SIDESCROLL);
         seedCrack(session, 39);
@@ -55,7 +64,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(0xAE, session.objectAtRoomLocation(0x33));
     }
 
-    @Test void overworldDfIsSolidBut77FBRetainsRatherThanResetsTheCounter() throws Exception {
+    @Test
+    void overworldDfIsSolidBut77FBRetainsRatherThanResetsTheCounter() throws Exception {
         var session = session();
         seedCrack(session, 17);
         session.loadInitialOverworld(0x40);
@@ -66,7 +76,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(0xDF, session.objectAtRoomLocation(0x33));
     }
 
-    @Test void dialog75C4Through76C0And7757ResetsWithCachedZeroPhysics() throws Exception {
+    @Test
+    void dialog75C4Through76C0And7757ResetsWithCachedZeroPhysics() throws Exception {
         var session = session();
         seedCrack(session, 17);
         // $02:75C4 -> 76C0 -> 7757 -> Default -> $7858/$786C.
@@ -81,7 +92,8 @@ class CrackedFloorGroundPhysicsTest {
         assertTrue(session.tickCrackedFloor(standing(), false));
     }
 
-    @Test void transition7802RetainsEvenWithDialogGotItemAndBlockedInteraction() throws Exception {
+    @Test
+    void transition7802RetainsEvenWithDialogGotItemAndBlockedInteraction() throws Exception {
         var session = session();
         seedCrack(session, 39);
         // $02:75C4 -> 76C0 -> 7757 -> Default returns at $02:7802,
@@ -95,7 +107,8 @@ class CrackedFloorGroundPhysicsTest {
         assertTrue(session.tickCrackedFloor(standing(), false));
     }
 
-    @Test void dialogOnCachedWaterReturnsBeforeDefaultAndRetainsCounter() throws Exception {
+    @Test
+    void dialogOnCachedWaterReturnsBeforeDefaultAndRetainsCounter() throws Exception {
         var session = session();
         seedCrack(session, 17);
         int water = objectWithPhysics(session, 0x07);
@@ -107,7 +120,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(water, session.context.linkGroundObjectUnderEntity);
     }
 
-    @Test void gotItemBlockedInteractionAndNonDfOnDefaultResetTheCounter() throws Exception {
+    @Test
+    void gotItemBlockedInteractionAndNonDfOnDefaultResetTheCounter() throws Exception {
         var session = session();
         seedCrack(session, 17);
         session.tickCrackedFloor(standing(), true); // $02:7854/785C -> $786C
@@ -121,7 +135,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(0, session.context.crackedFloorCounter);
     }
 
-    @Test void previousLocationIsTheLastProbeEvenAcrossEntityMovesAndAirborneFrames() throws Exception {
+    @Test
+    void previousLocationIsTheLastProbeEvenAcrossEntityMovesAndAirborneFrames() throws Exception {
         var session = session();
         seedCrack(session, 17);
         object(session, 0x34, 0xDF);
@@ -145,7 +160,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(0, session.context.crackedFloorCounter);
     }
 
-    @Test void landingProbesBeforeMotionThen7589CopiesThatSampleForTheSecondProbe() throws Exception {
+    @Test
+    void landingProbesBeforeMotionThen7589CopiesThatSampleForTheSecondProbe() throws Exception {
         var session = session();
         seedCrack(session, 17);
         object(session, 0x34, 0xDF);
@@ -158,7 +174,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(0, session.context.crackedFloorCounter);
     }
 
-    @Test void hookshot755BProbesWithout7589CopyOrCounterUpdate() throws Exception {
+    @Test
+    void hookshot755BProbesWithout7589CopyOrCounterUpdate() throws Exception {
         var session = session();
         seedCrack(session, 17);
         assertTrue(session.fireHookshot(48, 56, 0, 0, false, false));
@@ -170,7 +187,8 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(17, session.context.crackedFloorCounter);
     }
 
-    @Test void groundProbeMatches7512To7525IncludingOffsetsAndByteWrap() {
+    @Test
+    void groundProbeMatches7512To7525IncludingOffsetsAndByteWrap() {
         assertEquals(0x00, RoomObjectMutations.linkGroundLocation(7, 3));
         assertEquals(0x01, RoomObjectMutations.linkGroundLocation(8, 3));
         assertEquals(0x10, RoomObjectMutations.linkGroundLocation(7, 4));
@@ -180,14 +198,13 @@ class CrackedFloorGroundPhysicsTest {
         assertEquals(0x00, RoomObjectMutations.linkGroundLocation(248, 244));
     }
 
-    @Test void defaultPathSelectionMatches75EE763A76D276E17757And779F() {
+    @Test
+    void defaultPathSelectionMatches75EE763A76D276E17757And779F() {
         for (int physics : new int[] {0, 1, 2, 3, 4, 5, 8, 9, 0xFF}) {
-            assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(physics, false, 0, 0),
-                "physics=" + physics);
+            assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(physics, false, 0, 0), "physics=" + physics);
         }
         for (int physics : new int[] {6, 7, 0x0B, 0x50, 0x51, 0xE0, 0xF0, 0xF3}) {
-            assertFalse(RoomObjectMutations.reachesDefaultGroundPhysics(physics, false, 0, 0),
-                "physics=" + physics);
+            assertFalse(RoomObjectMutations.reachesDefaultGroundPhysics(physics, false, 0, 0), "physics=" + physics);
         }
         assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(7, false, 0, 0x80)); // raft $76F9
         assertFalse(RoomObjectMutations.reachesDefaultGroundPhysics(7, false, 1, 0x80)); // $76F1 first

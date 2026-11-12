@@ -1,25 +1,22 @@
 package linksawakening.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class OcarinaSongMenuTest {
 
     @Test
     void rightAndLeftSkipSongsThatAreNotInTheSaveFlags() {
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(
-            PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG
-                | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
+        player.setOcarinaSongFlags(PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
         RecordingSoundSink sounds = new RecordingSoundSink();
         OcarinaSongMenu menu = new OcarinaSongMenu(player, sounds);
 
@@ -31,8 +28,7 @@ final class OcarinaSongMenuTest {
 
         menu.moveSelection(-1);
         assertEquals(0, player.selectedSongIndex());
-        assertEquals(List.of(GameplaySoundEvent.MENU_VALIDATE,
-            GameplaySoundEvent.MENU_VALIDATE), sounds.events);
+        assertEquals(List.of(GameplaySoundEvent.MENU_VALIDATE, GameplaySoundEvent.MENU_VALIDATE), sounds.events);
     }
 
     @Test

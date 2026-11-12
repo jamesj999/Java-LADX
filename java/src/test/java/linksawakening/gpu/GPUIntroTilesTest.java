@@ -1,11 +1,10 @@
 package linksawakening.gpu;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class GPUIntroTilesTest {
@@ -35,13 +34,13 @@ final class GPUIntroTilesTest {
         assertVramMatchesRom(gpu, 0x0200, 0x38, 0x6500, 0x10);
     }
 
-    private static void assertVramMatchesRom(GPU gpu, int vramOffset,
-                                             int bank, int address, int length) {
+    private static void assertVramMatchesRom(GPU gpu, int vramOffset, int bank, int address, int length) {
         int romOffset = RomBank.romOffset(bank, address);
         for (int i = 0; i < length; i++) {
-            assertEquals(Byte.toUnsignedInt(ROM[romOffset + i]),
-                Byte.toUnsignedInt(gpu.readVRAM(vramOffset + i)),
-                "VRAM " + String.format("0x%04X", vramOffset + i));
+            assertEquals(
+                    Byte.toUnsignedInt(ROM[romOffset + i]),
+                    Byte.toUnsignedInt(gpu.readVRAM(vramOffset + i)),
+                    "VRAM " + String.format("0x%04X", vramOffset + i));
         }
     }
 

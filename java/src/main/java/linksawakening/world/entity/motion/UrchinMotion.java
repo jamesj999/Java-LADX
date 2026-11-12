@@ -26,10 +26,17 @@ public final class UrchinMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int direction, int speedX, int speedY,
-                  int physicsFlags, int collisionFlags, boolean linkCollision,
-                  boolean pushed, boolean appliesBackgroundInteraction, int jingleId) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int direction,
+            int speedX,
+            int speedY,
+            int physicsFlags,
+            int collisionFlags,
+            boolean linkCollision,
+            boolean pushed,
+            boolean appliesBackgroundInteraction,
+            int jingleId) {}
 
     public void initialize(int slot) {
         validateSlot(slot);
@@ -37,19 +44,24 @@ public final class UrchinMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int physicsFlags,
-                   int linkEntityX, int linkEntityY, int linkDirection,
-                   boolean usingShield, boolean swordCollisionActive,
-                   boolean linkInteractive,
-                   RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int physicsFlags,
+            int linkEntityX,
+            int linkEntityY,
+            int linkDirection,
+            boolean usingShield,
+            boolean swordCollisionActive,
+            boolean linkInteractive,
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         checkType(entity);
         validateByte(frameCounter, "Urchin frame counter");
         validateByte(physicsFlags, "Urchin physics flags");
         validateByte(linkEntityX, "Urchin Link X");
         validateByte(linkEntityY, "Urchin Link Y");
         if (linkDirection < 0 || linkDirection > 3) {
-            throw new IllegalArgumentException("Urchin Link direction must be 0..3: "
-                + linkDirection);
+            throw new IllegalArgumentException("Urchin Link direction must be 0..3: " + linkDirection);
         }
 
         int slot = entity.slot();
@@ -57,8 +69,8 @@ public final class UrchinMotion {
             initialize(slot);
         }
         if (!linkInteractive) {
-            return new Update(entity, direction[slot], speedX[slot], speedY[slot],
-                physicsFlags, 0, false, false, false, -1);
+            return new Update(
+                    entity, direction[slot], speedX[slot], speedY[slot], physicsFlags, 0, false, false, false, -1);
         }
 
         direction[slot] = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
@@ -73,8 +85,7 @@ public final class UrchinMotion {
         // harmless shield/sword contact only changes what happens to the
         // urchin after that collision, it does not make normal contact cease
         // to be a collision.
-        boolean linkCollision = RoomEntityCombatRules.overlapsLink(
-            entity, linkEntityX, linkEntityY);
+        boolean linkCollision = RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
         boolean pushed = false;
         boolean appliesBackgroundInteraction = false;
         int collisionFlags = 0;
@@ -82,8 +93,7 @@ public final class UrchinMotion {
         if (linkCollision && (nextPhysicsFlags & ENTITY_PHYSICS_HARMLESS) != 0) {
             speedX[slot] = PUSH_SPEED_X[direction[slot]];
             speedY[slot] = PUSH_SPEED_Y[direction[slot]];
-            PositionAndCollision moved = moveWithBackground(
-                entity, backgroundInteraction, slot, frameCounter);
+            PositionAndCollision moved = moveWithBackground(entity, backgroundInteraction, slot, frameCounter);
             updated = withPositionAndVariant(updated, moved.x(), moved.y(), updated.spriteVariant());
             collisionFlags = moved.collisionFlags();
             pushed = true;
@@ -91,9 +101,17 @@ public final class UrchinMotion {
             jingleId = PUSH_JINGLE_ID;
         }
 
-        return new Update(updated, direction[slot], speedX[slot], speedY[slot],
-            nextPhysicsFlags, collisionFlags, linkCollision, pushed,
-            appliesBackgroundInteraction, jingleId);
+        return new Update(
+                updated,
+                direction[slot],
+                speedX[slot],
+                speedY[slot],
+                nextPhysicsFlags,
+                collisionFlags,
+                linkCollision,
+                pushed,
+                appliesBackgroundInteraction,
+                jingleId);
     }
 
     int direction(int slot) {
@@ -117,17 +135,17 @@ public final class UrchinMotion {
         initialized[slot] = false;
     }
 
-    private PositionAndCollision moveWithBackground(RoomEntity entity,
-                                                      RoomEntityBackgroundInteraction interaction,
-                                                      int slot, int frameCounter) {
+    private PositionAndCollision moveWithBackground(
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot, int frameCounter) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
         if (interaction != null && x != entity.x()) {
             int movementDirection = signedByte(speedX[slot]) < 0
-                ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result = interaction.probe(
-                entity, movementDirection, x, entity.y(), 0x03, frameCounter);
+                    ? EntityBackgroundCollisionResult.LEFT
+                    : EntityBackgroundCollisionResult.RIGHT;
+            EntityBackgroundCollisionResult result =
+                    interaction.probe(entity, movementDirection, x, entity.y(), 0x03, frameCounter);
             if (result.blocked()) {
                 collisionFlags |= result.collisionFlag();
                 x = entity.x() & 0xFF;
@@ -135,9 +153,10 @@ public final class UrchinMotion {
         }
         if (interaction != null && y != entity.y()) {
             int movementDirection = signedByte(speedY[slot]) < 0
-                ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
-            EntityBackgroundCollisionResult result = interaction.probe(
-                entity, movementDirection, x, y, 0x03, frameCounter);
+                    ? EntityBackgroundCollisionResult.UP
+                    : EntityBackgroundCollisionResult.DOWN;
+            EntityBackgroundCollisionResult result =
+                    interaction.probe(entity, movementDirection, x, y, 0x03, frameCounter);
             if (result.blocked()) {
                 collisionFlags |= result.collisionFlag();
                 y = entity.y() & 0xFF;
@@ -155,8 +174,7 @@ public final class UrchinMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -170,12 +188,21 @@ public final class UrchinMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
@@ -213,6 +240,5 @@ public final class UrchinMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record PositionAndCollision(int x, int y, int collisionFlags) {
-    }
+    private record PositionAndCollision(int x, int y, int collisionFlags) {}
 }

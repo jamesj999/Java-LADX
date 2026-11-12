@@ -1,15 +1,11 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.event.FloatingItemPickupEffect;
-
-
-
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.world.entity.event.FloatingItemPickupEffect;
+import org.junit.jupiter.api.Test;
 
 final class FloatingItemMotionTest {
 
@@ -37,18 +33,12 @@ final class FloatingItemMotionTest {
 
     @Test
     void mapsEachSourceVariantToItsRomPickupEffectAndItemType() {
-        assertEquals(FloatingItemPickupEffect.TEN_RUPEES,
-            FloatingItemMotion.pickupEffect(0x86, 0));
-        assertEquals(FloatingItemPickupEffect.MAGIC_POWDER,
-            FloatingItemMotion.pickupEffect(0x86, 1));
-        assertEquals(FloatingItemPickupEffect.TEN_BOMBS,
-            FloatingItemMotion.pickupEffect(0x86, 2));
-        assertEquals(FloatingItemPickupEffect.TEN_RUPEES,
-            FloatingItemMotion.pickupEffect(0x86, 3));
-        assertEquals(FloatingItemPickupEffect.HEALTH_18,
-            FloatingItemMotion.pickupEffect(0xE5, 4));
-        assertEquals(FloatingItemPickupEffect.TEN_ARROWS,
-            FloatingItemMotion.pickupEffect(0xE5, 5));
+        assertEquals(FloatingItemPickupEffect.TEN_RUPEES, FloatingItemMotion.pickupEffect(0x86, 0));
+        assertEquals(FloatingItemPickupEffect.MAGIC_POWDER, FloatingItemMotion.pickupEffect(0x86, 1));
+        assertEquals(FloatingItemPickupEffect.TEN_BOMBS, FloatingItemMotion.pickupEffect(0x86, 2));
+        assertEquals(FloatingItemPickupEffect.TEN_RUPEES, FloatingItemMotion.pickupEffect(0x86, 3));
+        assertEquals(FloatingItemPickupEffect.HEALTH_18, FloatingItemMotion.pickupEffect(0xE5, 4));
+        assertEquals(FloatingItemPickupEffect.TEN_ARROWS, FloatingItemMotion.pickupEffect(0xE5, 5));
 
         assertEquals(0x2E, FloatingItemMotion.pickupEntityType(0x86, 0));
         assertEquals(0x3B, FloatingItemMotion.pickupEntityType(0x86, 1));

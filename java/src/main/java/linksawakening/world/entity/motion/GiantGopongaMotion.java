@@ -20,15 +20,12 @@ public final class GiantGopongaMotion {
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** The request made by SpawnNewEntity plus ApplyVectorTowardsLink. */
-    public record ProjectileSpawn(int x, int y, int speedX, int speedY) {
-    }
+    public record ProjectileSpawn(int x, int y, int speedX, int speedY) {}
 
-    public record Update(RoomEntity entity, int state, int transitionCountdown,
-                  ProjectileSpawn projectileSpawn) {
-    }
+    public record Update(RoomEntity entity, int state, int transitionCountdown, ProjectileSpawn projectileSpawn) {}
 
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   int linkEntityX, int linkEntityY) {
+    public Update advance(
+            RoomEntity entity, int frameCounter, int transitionCountdown, int linkEntityX, int linkEntityY) {
         checkType(entity);
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -60,10 +57,9 @@ public final class GiantGopongaMotion {
                 // lifetime; retaining state 2 after the zero edge keeps the
                 // render handler in its final mouth-open presentation.
                 if (nextCountdown == PROJECTILE_COUNTDOWN) {
-                    Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(),
-                        linkEntityX, linkEntityY, PROJECTILE_VECTOR_LENGTH);
-                    projectileSpawn = new ProjectileSpawn(entity.x(), entity.y(),
-                        vector.x(), vector.y());
+                    Vector vector = vectorTowardsLink(
+                            entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, PROJECTILE_VECTOR_LENGTH);
+                    projectileSpawn = new ProjectileSpawn(entity.x(), entity.y(), vector.x(), vector.y());
                 }
                 variant = 0x02;
             }
@@ -79,11 +75,9 @@ public final class GiantGopongaMotion {
     }
 
     /** PushLinkOutOfEntity_06 uses collisionEvenInTheAir. */
-    public static boolean overlapsInteractiveLink(RoomEntity entity, int linkEntityX,
-                                            int linkEntityY,
-                                            boolean handlerLinkCollisionEnabled) {
-        return handlerLinkCollisionEnabled
-            && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
+    public static boolean overlapsInteractiveLink(
+            RoomEntity entity, int linkEntityX, int linkEntityY, boolean handlerLinkCollisionEnabled) {
+        return handlerLinkCollisionEnabled && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
     }
 
     public void clear(int slot) {
@@ -92,20 +86,31 @@ public final class GiantGopongaMotion {
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static void checkType(RoomEntity entity) {
         if ((entity.type() & 0xFF) != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported giant Goponga type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported giant Goponga type: 0x" + Integer.toHexString(entity.type()));
         }
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkEntityX, int linkEntityY, int length) {
+    private static Vector vectorTowardsLink(
+            int entityX, int entityY, int entityZ, int linkEntityX, int linkEntityY, int length) {
         int distanceY = signedByte(linkEntityY - entityY + entityZ);
         int distanceX = signedByte(linkEntityX - entityX);
         int absoluteY = Math.abs(distanceY);
@@ -140,6 +145,5 @@ public final class GiantGopongaMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

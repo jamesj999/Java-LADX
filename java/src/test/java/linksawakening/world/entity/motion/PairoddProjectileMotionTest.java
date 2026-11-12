@@ -1,15 +1,12 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
 
 final class PairoddProjectileMotionTest {
 
@@ -65,15 +62,19 @@ final class PairoddProjectileMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, -1, 0x58, x, y, EntityStatus.ACTIVE,
-            projectileDefinition(), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(0, -1, 0x58, x, y, EntityStatus.ACTIVE, projectileDefinition(), 0, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition projectileDefinition() {
-        return new EntitySpriteDefinition(0x58, 0x04, 0x5EF4,
-            EntitySpriteDefinition.Shape.PAIR, 0, List.of(
-                new EntitySpriteDefinition.Variant(attribute(0x7C), attribute(0x7C)),
-                new EntitySpriteDefinition.Variant(attribute(0x7E), attribute(0x7E))));
+        return new EntitySpriteDefinition(
+                0x58,
+                0x04,
+                0x5EF4,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(
+                        new EntitySpriteDefinition.Variant(attribute(0x7C), attribute(0x7C)),
+                        new EntitySpriteDefinition.Variant(attribute(0x7E), attribute(0x7E))));
     }
 
     private static EntitySpriteDefinition.OamAttribute attribute(int tile) {

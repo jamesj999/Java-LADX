@@ -1,11 +1,10 @@
 package linksawakening.world.room;
 
-import linksawakening.world.transition.Warp;
-
 import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
+import linksawakening.world.transition.Warp;
 
 /** Persistent room-status regions, dungeon inventory, and ROM map-layout queries. */
 final class RoomWorldState {
@@ -20,7 +19,9 @@ final class RoomWorldState {
     final byte[] dungeonProgressFlags = new byte[0x1A];
     final DungeonItemState dungeonItemState = new DungeonItemState();
 
-    RoomWorldState(byte[] romData) { this.romData = romData; }
+    RoomWorldState(byte[] romData) {
+        this.romData = romData;
+    }
 
     byte[] overworldRoomStatusSnapshot() {
         return overworldRoomStatus.clone();
@@ -116,16 +117,16 @@ final class RoomWorldState {
         if (mapId == 0xFF) {
             return colorDungeonRoomStatus;
         }
-        return mapId >= 0x06 && mapId < 0x1A
-            ? indoorBRoomStatus : indoorARoomStatus;
+        return mapId >= 0x06 && mapId < 0x1A ? indoorBRoomStatus : indoorARoomStatus;
     }
+
     private static void requireLength(byte[] values, int expectedLength, String label) {
         if (values == null) {
             throw new NullPointerException(label);
         }
         if (values.length != expectedLength) {
-            throw new IllegalArgumentException(label + " must contain " + expectedLength
-                + " bytes, got " + values.length);
+            throw new IllegalArgumentException(
+                    label + " must contain " + expectedLength + " bytes, got " + values.length);
         }
     }
 
@@ -147,22 +148,21 @@ final class RoomWorldState {
             return 0;
         }
         byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
+                ? overworldRoomStatus
+                : indoorStatusTableForMap(activeRoom.mapId());
         return Byte.toUnsignedInt(status[activeRoom.roomId()]);
     }
 
-    void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus,
-                                    byte[] indoorBStatus, byte[] colorDungeonStatus) {
+    void restoreRoomStatuses(
+            byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
         requireLength(overworldStatus, ROOM_STATUS_TABLE_SIZE, "overworldStatus");
         requireLength(indoorAStatus, ROOM_STATUS_TABLE_SIZE, "indoorAStatus");
         requireLength(indoorBStatus, ROOM_STATUS_TABLE_SIZE, "indoorBStatus");
-        requireLength(colorDungeonStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE,
-            "colorDungeonStatus");
+        requireLength(colorDungeonStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE, "colorDungeonStatus");
         System.arraycopy(overworldStatus, 0, overworldRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
         System.arraycopy(indoorAStatus, 0, indoorARoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
         System.arraycopy(indoorBStatus, 0, indoorBRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
         Arrays.fill(colorDungeonRoomStatus, (byte) 0);
-        System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0,
-            COLOR_DUNGEON_SAVE_STATUS_SIZE);
+        System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0, COLOR_DUNGEON_SAVE_STATUS_SIZE);
     }
 }

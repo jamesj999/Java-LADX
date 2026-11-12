@@ -7,8 +7,7 @@ package linksawakening.world.entity;
  */
 @FunctionalInterface
 public interface RoomEntityGroundInteraction {
-    Result apply(RoomEntity entity, int frameCounter, int previousGroundStatus,
-                 int speedZ, boolean sideScrolling);
+    Result apply(RoomEntity entity, int frameCounter, int previousGroundStatus, int speedZ, boolean sideScrolling);
 
     public record PitTransition(int targetX, int targetY) {
         public PitTransition {
@@ -17,8 +16,8 @@ public interface RoomEntityGroundInteraction {
         }
     }
 
-    public record Result(RoomEntity entity, int groundStatus, PitTransition pitTransition,
-                  boolean unloaded, boolean waterSplash) {
+    public record Result(
+            RoomEntity entity, int groundStatus, PitTransition pitTransition, boolean unloaded, boolean waterSplash) {
         public static Result unchanged(RoomEntity entity, int groundStatus) {
             return new Result(entity, groundStatus, null, false, false);
         }
@@ -28,8 +27,7 @@ public interface RoomEntityGroundInteraction {
         }
 
         public static Result pit(RoomEntity entity, int groundStatus, int targetX, int targetY) {
-            return new Result(entity, groundStatus,
-                new PitTransition(targetX, targetY), false, false);
+            return new Result(entity, groundStatus, new PitTransition(targetX, targetY), false, false);
         }
     }
 }

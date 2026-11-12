@@ -1,30 +1,16 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.event.LinkFinalPositionRequest;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class GopongaFlowerRuntimeTest {
@@ -33,7 +19,7 @@ final class GopongaFlowerRuntimeTest {
     @Test
     void decodesGopongaFlowerPairsFromItsBankSixRomDisplayList() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD);
+                .forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
         assertEquals(0x06, definition.bank());
@@ -55,12 +41,25 @@ final class GopongaFlowerRuntimeTest {
     void alternatesOpenAndClosedFlowersOnTheRomFrameMask() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, ENTITY_GOPONGA_FLOWER, 0x40, 0x40,
-                EntityStatus.ACTIVE,
-                catalog.forEntityType(ENTITY_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_GOPONGA_FLOWER,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x00, 0, 0, () -> 0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -79,12 +78,25 @@ final class GopongaFlowerRuntimeTest {
     void usesRomPhysicsOptionsHealthAndContactDamage() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, ENTITY_GOPONGA_FLOWER, 0x40, 0x40,
-                EntityStatus.ACTIVE,
-                catalog.forEntityType(ENTITY_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_GOPONGA_FLOWER,
+                        0x40,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
         assertEquals(0x02, runtime.enemies().physicsFlags(0));
@@ -92,8 +104,7 @@ final class GopongaFlowerRuntimeTest {
         assertEquals(0x04, RoomEntityCombatRules.initialHealth(ENTITY_GOPONGA_FLOWER));
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_GOPONGA_FLOWER));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-            1, 0x40, 0x40, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
     }
@@ -102,18 +113,38 @@ final class GopongaFlowerRuntimeTest {
     void requestsLinkFinalPositionEvenWhenLinkIsInTheAir() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, ENTITY_GOPONGA_FLOWER, 0x38, 0x40,
-                EntityStatus.ACTIVE,
-                catalog.forEntityType(ENTITY_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
-            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(new RoomEntity(
+                        0,
+                        0,
+                        ENTITY_GOPONGA_FLOWER,
+                        0x38,
+                        0x40,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false)),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom));
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0x10, 0, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x40,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x40, 0x40, 0x10, 0, 0, false)));
 
-        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
-            runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(
+                List.of(new LinkFinalPositionRequest(0, true, true, false)),
+                runtime.consumePendingLinkFinalPositionRequests());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

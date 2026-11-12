@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 WizrobeProjectileEntityHandler movement and palette pulse. */
 public final class WizrobeProjectileMotion {
@@ -20,8 +19,7 @@ public final class WizrobeProjectileMotion {
 
     public void initialize(int slot, IntSupplier randomByteSupplier) {
         if (randomByteSupplier == null) {
-            throw new IllegalArgumentException(
-                "Wizrobe projectile random-byte supplier cannot be null");
+            throw new IllegalArgumentException("Wizrobe projectile random-byte supplier cannot be null");
         }
         reset(slot);
         direction[slot] = randomByteSupplier.getAsInt() & 0x03;
@@ -39,8 +37,8 @@ public final class WizrobeProjectileMotion {
 
     public RoomEntity advance(RoomEntity entity) {
         if ((entity.type() & 0xFF) != ENTITY_WIZROBE_PROJECTILE) {
-            throw new IllegalArgumentException("Unsupported Wizrobe projectile type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Wizrobe projectile type: 0x" + Integer.toHexString(entity.type()));
         }
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -48,9 +46,20 @@ public final class WizrobeProjectileMotion {
         }
         int x = addSpeed(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeed(entity.y(), speedY[slot], speedYAccumulator, slot);
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public int flipAttribute(int frameCounter) {
@@ -115,8 +124,7 @@ public final class WizrobeProjectileMotion {
 
     private static void checkDirection(int direction) {
         if (direction < 0 || direction > 3) {
-            throw new IllegalArgumentException("Wizrobe projectile direction out of range: "
-                + direction);
+            throw new IllegalArgumentException("Wizrobe projectile direction out of range: " + direction);
         }
     }
 }

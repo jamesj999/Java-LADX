@@ -1,16 +1,12 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.DungeonItemState;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 final class DungeonItemStateTest {
 
@@ -24,10 +20,8 @@ final class DungeonItemStateTest {
 
         state.reset();
 
-        assertArrayEquals(new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
-            state.dungeonItemFlagsSnapshot());
-        assertArrayEquals(new byte[DungeonItemState.ITEM_FLAG_SIZE],
-            state.currentFlagsSnapshot());
+        assertArrayEquals(new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE], state.dungeonItemFlagsSnapshot());
+        assertArrayEquals(new byte[DungeonItemState.ITEM_FLAG_SIZE], state.currentFlagsSnapshot());
     }
 
     @Test
@@ -71,8 +65,9 @@ final class DungeonItemStateTest {
     @Test
     void synchronizingCurrentFlagsWritesBackToTheSelectedPersistentEntry() {
         DungeonItemState state = new DungeonItemState();
-        state.restore(new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
-            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        state.restore(
+                new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
+                new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
         state.loadForMap(1, true);
 
         state.incrementCurrentFlag(DungeonItemState.CHEST_SMALL_KEY);
@@ -87,8 +82,7 @@ final class DungeonItemStateTest {
         DungeonItemState state = new DungeonItemState();
         byte[] dungeonFlags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
         dungeonFlags[DungeonItemState.SMALL_KEYS_INDEX] = 1;
-        state.restore(dungeonFlags,
-            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        state.restore(dungeonFlags, new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
         state.loadForMap(0x00, true);
 
         assertTrue(state.consumeSmallKey());
@@ -100,8 +94,9 @@ final class DungeonItemStateTest {
     @Test
     void colorDungeonSynchronizationUsesTheSeparateFiveByteBlock() {
         DungeonItemState state = new DungeonItemState();
-        state.restore(new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
-            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        state.restore(
+                new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
+                new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
         state.loadForMap(DungeonItemState.MAP_COLOR_DUNGEON, true);
 
         state.incrementCurrentFlag(DungeonItemState.CHEST_MAP);
@@ -113,9 +108,11 @@ final class DungeonItemStateTest {
     void rejectsWrongPersistentFlagLengths() {
         DungeonItemState state = new DungeonItemState();
 
-        assertThrows(IllegalArgumentException.class,
-            () -> state.restore(new byte[1], new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]));
-        assertThrows(IllegalArgumentException.class,
-            () -> state.restore(new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE], new byte[1]));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> state.restore(new byte[1], new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> state.restore(new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE], new byte[1]));
     }
 }

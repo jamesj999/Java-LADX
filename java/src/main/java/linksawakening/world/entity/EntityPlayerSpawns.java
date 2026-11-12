@@ -1,21 +1,23 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.room.ChestContentsTable;
-import linksawakening.world.entity.event.EntityCombatEvent;
-
-import linksawakening.world.entity.motion.BombMotion;
-import linksawakening.world.entity.motion.MagicRodFireballMotion;
-
 import static linksawakening.world.entity.EntityMotionMath.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import linksawakening.entity.EntitySpriteDefinition;
 import static linksawakening.world.entity.RoomEntityRuntime.*;
+
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.BombMotion;
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import linksawakening.world.room.ChestContentsTable;
 
 /** ROM slot allocation and player-created entity spawning. */
 public final class EntityPlayerSpawns {
     private final RoomEntityRuntime runtime;
-    EntityPlayerSpawns(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    EntityPlayerSpawns(RoomEntityRuntime runtime) {
+        this.runtime = runtime;
+    }
 
     void spawnIronMasksMask(int x, int y, int variant, int sourceHookshotSlot) {
         int freeSlot = runtime.findFreeEntitySlot();
@@ -24,11 +26,21 @@ public final class EntityPlayerSpawns {
         }
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_IRON_MASKS_MASK);
-        int selectedVariant = definition.supported()
-            ? Math.min(variant & 0x01, definition.variantCount() - 1) : -1;
-        RoomEntity mask = new RoomEntity(freeSlot, -1, runtime.ENTITY_IRON_MASKS_MASK,
-            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, selectedVariant,
-            0, 0, 0, -1, false);
+        int selectedVariant = definition.supported() ? Math.min(variant & 0x01, definition.variantCount() - 1) : -1;
+        RoomEntity mask = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_IRON_MASKS_MASK,
+                x & 0xFF,
+                y & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                selectedVariant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.slots[freeSlot] = mask;
         runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
@@ -55,8 +67,7 @@ public final class EntityPlayerSpawns {
         runtime.ironMasksMaskSourceHookshotSlot[freeSlot] = (sourceHookshotSlot + 1) & 0xFF;
     }
 
-    int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ,
-                           int romDirection) {
+    int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         if (runtime.inspection().hookshotActive()) {
             return -1;
         }
@@ -67,23 +78,34 @@ public final class EntityPlayerSpawns {
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_HOOKSHOT_CHAIN);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity chain = new RoomEntity(freeSlot, -1, runtime.ENTITY_HOOKSHOT_CHAIN,
-            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
+        RoomEntity chain = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_HOOKSHOT_CHAIN,
+                linkEntityX & 0xFF,
+                linkEntityY & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                (linkEntityZ + 1) & 0xFF,
+                -1,
+                false);
         runtime.slots[freeSlot] = chain;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.hookshotChainMotion.initializeSpawn(freeSlot, linkEntityX & 0xFF,
-            linkEntityY & 0xFF, linkEntityZ & 0xFF, romDirection);
-        runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_HARMLESS
-            | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        runtime.hookshotChainMotion.initializeSpawn(
+                freeSlot, linkEntityX & 0xFF, linkEntityY & 0xFF, linkEntityZ & 0xFF, romDirection);
+        runtime.enemyPhysicsFlags[freeSlot] =
+                2 | runtime.ENTITY_PHYSICS_HARMLESS | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 0;
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION
-            | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        runtime.entityOptions1Override[freeSlot] =
+                runtime.ENTITY_OPT1_NO_GROUND_INTERACTION | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         return freeSlot;
     }
 
@@ -94,11 +116,23 @@ public final class EntityPlayerSpawns {
         }
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_PUSHED_BLOCK);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_PUSHED_BLOCK,
-            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
+        runtime.slots[freeSlot] = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_PUSHED_BLOCK,
+                x & 0xFF,
+                y & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.initializeHealthGroup(freeSlot);
-        runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_HARMLESS
-            | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        runtime.enemyPhysicsFlags[freeSlot] =
+                2 | runtime.ENTITY_PHYSICS_HARMLESS | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
@@ -112,11 +146,25 @@ public final class EntityPlayerSpawns {
         }
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
         int variant = definition.supported() ? spriteVariant : -1;
-        runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_LIFTABLE_ROCK,
-            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
+        runtime.slots[freeSlot] = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_LIFTABLE_ROCK,
+                x & 0xFF,
+                y & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.initializeHealthGroup(freeSlot);
-        runtime.enemyPhysicsFlags[freeSlot] = 0x02 | runtime.ENTITY_PHYSICS_HARMLESS
-            | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP | runtime.ENTITY_PHYSICS_SHADOW;
+        runtime.enemyPhysicsFlags[freeSlot] = 0x02
+                | runtime.ENTITY_PHYSICS_HARMLESS
+                | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP
+                | runtime.ENTITY_PHYSICS_SHADOW;
         runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_LIFTABLE_ROCK);
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
@@ -129,14 +177,14 @@ public final class EntityPlayerSpawns {
             return -1;
         }
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-            freeSlot, runtime.ENTITY_LIFTABLE_ROCK, 0, false,
-            EntityCombatEvent.SoundChannel.WAVE, 0x02));
+                freeSlot, runtime.ENTITY_LIFTABLE_ROCK, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
         return freeSlot;
     }
 
     int spawnRoomEventKeyDrop() {
         int itemType = runtime.entityMapId >= 0x0A && runtime.entityMapId != 0xFF
-            ? runtime.ENTITY_HIDING_SLIME_KEY : runtime.ENTITY_KEY_DROP_POINT;
+                ? runtime.ENTITY_HIDING_SLIME_KEY
+                : runtime.ENTITY_KEY_DROP_POINT;
         return runtime.pickups.spawnKeyDropAt(itemType, 0x28, 0x3C, 0, 0x70, 0, 0);
     }
 
@@ -144,8 +192,7 @@ public final class EntityPlayerSpawns {
         return spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
-    int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection,
-                   boolean pieceOfPower) {
+    int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
         EntitySlotValidation.validateRomDirection(romDirection);
         runtime.lastArrowShotPlayedWhoosh = false;
         if (runtime.inspection().activeProjectileCount() >= 0x02) {
@@ -158,16 +205,27 @@ public final class EntityPlayerSpawns {
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_ARROW);
         int variant = romDirection;
-        RoomEntity arrow = new RoomEntity(freeSlot, -1, runtime.ENTITY_ARROW,
-            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
+        RoomEntity arrow = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_ARROW,
+                linkEntityX & 0xFF,
+                linkEntityY & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                (linkEntityZ + 1) & 0xFF,
+                -1,
+                false);
         runtime.slots[freeSlot] = arrow;
         runtime.initializeHealthGroup(freeSlot);
         runtime.playerArrowMotion.clear(freeSlot);
         runtime.playerArrowMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION
-            | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        runtime.entityOptions1Override[freeSlot] =
+                runtime.ENTITY_OPT1_NO_GROUND_INTERACTION | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -186,8 +244,8 @@ public final class EntityPlayerSpawns {
             runtime.latestDroppedBombEntityIndex = -1;
             runtime.playerArrowBombArrow[freeSlot] = true;
             if (runtime.spriteHandlers != null) {
-                runtime.slots[freeSlot] = withDefinition(runtime.slots[freeSlot],
-                    runtime.spriteHandlers.forBombArrow(), romDirection);
+                runtime.slots[freeSlot] =
+                        withDefinition(runtime.slots[freeSlot], runtime.spriteHandlers.forBombArrow(), romDirection);
             }
         } else {
             runtime.bombArrowCooldown = runtime.BOMB_ARROW_COOLDOWN;
@@ -196,8 +254,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ,
-                       int romDirection, int pressedButtonsMask) {
+    int spawnBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
         EntitySlotValidation.validateRomDirection(romDirection);
         if (runtime.inspection().activeProjectileCount() != 0) {
             return -1;
@@ -208,9 +265,20 @@ public final class EntityPlayerSpawns {
         }
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOOMERANG);
-        RoomEntity boomerang = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOOMERANG,
-            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, romDirection, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
+        RoomEntity boomerang = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_BOOMERANG,
+                linkEntityX & 0xFF,
+                linkEntityY & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                romDirection,
+                0,
+                0,
+                (linkEntityZ + 1) & 0xFF,
+                -1,
+                false);
         runtime.slots[freeSlot] = boomerang;
         runtime.initializeHealthGroup(freeSlot);
         runtime.boomerangMotion.clear(freeSlot);
@@ -218,8 +286,8 @@ public final class EntityPlayerSpawns {
         runtime.thrownDirection[freeSlot] = romDirection;
         runtime.entityUnknownJ[freeSlot] = 1;
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION
-            | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        runtime.entityOptions1Override[freeSlot] =
+                runtime.ENTITY_OPT1_NO_GROUND_INTERACTION | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -231,8 +299,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ,
-                       int romDirection) {
+    int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
         if (runtime.inspection().activeProjectileCount() != 0) {
             return -1;
@@ -244,9 +311,20 @@ public final class EntityPlayerSpawns {
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_SWORD_BEAM);
         int variant = definition.supported() ? romDirection : -1;
-        RoomEntity beam = new RoomEntity(freeSlot, -1, runtime.ENTITY_SWORD_BEAM,
-            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
+        RoomEntity beam = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_SWORD_BEAM,
+                linkEntityX & 0xFF,
+                linkEntityY & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                (linkEntityZ + 1) & 0xFF,
+                -1,
+                false);
         runtime.slots[freeSlot] = beam;
         runtime.initializeHealthGroup(freeSlot);
         runtime.swordBeamMotion.clear(freeSlot);
@@ -254,8 +332,8 @@ public final class EntityPlayerSpawns {
         runtime.thrownDirection[freeSlot] = romDirection;
         runtime.entityUnknownJ[freeSlot] = 1;
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION
-            | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        runtime.entityOptions1Override[freeSlot] =
+                runtime.ENTITY_OPT1_NO_GROUND_INTERACTION | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -268,13 +346,12 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
-                              int romDirection) {
+    int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         return spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
-    int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
-                              int romDirection, boolean pieceOfPower) {
+    int spawnMagicRodFireball(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
         EntitySlotValidation.validateRomDirection(romDirection);
         if (runtime.inspection().activeProjectileCount() >= 0x02) {
             return -1;
@@ -284,14 +361,24 @@ public final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MAGIC_ROD_FIREBALL);
-        MagicRodFireballMotion.SpawnData spawn =
-            MagicRodFireballMotion.spawnData(romDirection, pieceOfPower);
+        EntitySpriteDefinition definition =
+                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MAGIC_ROD_FIREBALL);
+        MagicRodFireballMotion.SpawnData spawn = MagicRodFireballMotion.spawnData(romDirection, pieceOfPower);
         int variant = definition.supported() ? spawn.initialVariant() : -1;
-        RoomEntity fireball = new RoomEntity(freeSlot, -1, runtime.ENTITY_MAGIC_ROD_FIREBALL,
-            (linkEntityX + spawn.offsetX()) & 0xFF,
-            (linkEntityY + spawn.offsetY()) & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
+        RoomEntity fireball = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_MAGIC_ROD_FIREBALL,
+                (linkEntityX + spawn.offsetX()) & 0xFF,
+                (linkEntityY + spawn.offsetY()) & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                (linkEntityZ + 1) & 0xFF,
+                -1,
+                false);
         runtime.slots[freeSlot] = fireball;
         runtime.initializeHealthGroup(freeSlot);
         runtime.magicRodFireballMotion.clear(freeSlot);
@@ -299,8 +386,8 @@ public final class EntityPlayerSpawns {
         runtime.thrownDirection[freeSlot] = romDirection;
         runtime.entityUnknownJ[freeSlot] = 1;
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION
-            | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        runtime.entityOptions1Override[freeSlot] =
+                runtime.ENTITY_OPT1_NO_GROUND_INTERACTION | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -313,8 +400,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                 int romDirection) {
+    int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -323,14 +409,23 @@ public final class EntityPlayerSpawns {
 
         int[] xOffsets = {0x0E, -0x0E, 0x00, 0x00};
         int[] yOffsets = {0x00, 0x00, -0x0C, 0x0C};
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(
-            runtime.ENTITY_MAGIC_POWDER_SPRINKLE);
+        EntitySpriteDefinition definition =
+                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MAGIC_POWDER_SPRINKLE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity sprinkle = new RoomEntity(freeSlot, -1,
-            runtime.ENTITY_MAGIC_POWDER_SPRINKLE,
-            (linkEntityX + xOffsets[romDirection]) & 0xFF,
-            (linkEntityY + yOffsets[romDirection]) & 0xFF,
-            EntityStatus.ACTIVE, definition, variant, 0, 0, linkEntityZ & 0xFF, -1, false);
+        RoomEntity sprinkle = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_MAGIC_POWDER_SPRINKLE,
+                (linkEntityX + xOffsets[romDirection]) & 0xFF,
+                (linkEntityY + yOffsets[romDirection]) & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                linkEntityZ & 0xFF,
+                -1,
+                false);
         runtime.slots[freeSlot] = sprinkle;
         runtime.initializeHealthGroup(freeSlot);
         runtime.magicPowderState[freeSlot] = 0;
@@ -338,8 +433,8 @@ public final class EntityPlayerSpawns {
         runtime.slowTransitionCountdown[freeSlot] = 0;
         runtime.slowTimerInitialized[freeSlot] = false;
         runtime.enemyHitboxFlags[freeSlot] = 0;
-        runtime.enemyPhysicsFlags[freeSlot] = 0x03 | runtime.ENTITY_PHYSICS_HARMLESS
-            | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        runtime.enemyPhysicsFlags[freeSlot] =
+                0x03 | runtime.ENTITY_PHYSICS_HARMLESS | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.enemyFlashCountdown[freeSlot] = 0;
@@ -362,9 +457,20 @@ public final class EntityPlayerSpawns {
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MUSICAL_NOTE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         int x = linkEntityX + (phase == 0 ? 0x08 : -0x08);
-        RoomEntity note = new RoomEntity(freeSlot, -1, runtime.ENTITY_MUSICAL_NOTE,
-            x & 0xFF, (linkEntityY - 0x08) & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, 0, -1, false);
+        RoomEntity note = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_MUSICAL_NOTE,
+                x & 0xFF,
+                (linkEntityY - 0x08) & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.slots[freeSlot] = note;
         runtime.initializeHealthGroup(freeSlot);
         runtime.musicalNoteInertia[freeSlot] = runtime.MUSICAL_NOTE_INITIAL_INERTIA;
@@ -396,9 +502,20 @@ public final class EntityPlayerSpawns {
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity bomb = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOMB,
-            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
+        RoomEntity bomb = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_BOMB,
+                linkEntityX & 0xFF,
+                linkEntityY & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                (linkEntityZ + 1) & 0xFF,
+                -1,
+                false);
         runtime.slots[freeSlot] = bomb;
         runtime.initializeHealthGroup(freeSlot);
         runtime.bombDirection[freeSlot] = romDirection;
@@ -435,37 +552,60 @@ public final class EntityPlayerSpawns {
 
     public int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
         if (sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK
-            && sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_BUSH
-            && sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_GRASS) {
+                && sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_BUSH
+                && sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_GRASS) {
             throw new IllegalArgumentException("Liftable-rock source variant must be 0, 1, or FF");
         }
         boolean rock = sourceSpriteVariant == runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK;
         int initialCountdown = rock ? 0x0F : 0x1F;
-        return spawnLiftableRockAnimation(entityX, entityY, sourceSpriteVariant,
-            initialCountdown, runtime.LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS, rock ? 0x09 : 0x05);
+        return spawnLiftableRockAnimation(
+                entityX,
+                entityY,
+                sourceSpriteVariant,
+                initialCountdown,
+                runtime.LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS,
+                rock ? 0x09 : 0x05);
     }
 
     public int spawnLiftableRockRubble(int entityX, int entityY) {
-        return spawnLiftableRockAnimation(entityX, entityY, runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK,
-            0x0F, runtime.LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS, -1);
+        return spawnLiftableRockAnimation(
+                entityX,
+                entityY,
+                runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK,
+                0x0F,
+                runtime.LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS,
+                -1);
     }
 
-    int spawnLiftableRockAnimation(int entityX, int entityY, int sourceSpriteVariant,
-                                           int initialCountdown, int physicsFlags, int soundId) {
+    int spawnLiftableRockAnimation(
+            int entityX, int entityY, int sourceSpriteVariant, int initialCountdown, int physicsFlags, int soundId) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;
         }
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
-        boolean swampLeaves = !runtime.indoorRoom && runtime.spriteSelection != null
-            && runtime.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
-            && runtime.spriteSelection.roomId() == 0x32;
+        boolean swampLeaves = !runtime.indoorRoom
+                && runtime.spriteSelection != null
+                && runtime.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
+                && runtime.spriteSelection.roomId() == 0x32;
         int variant = definition.supported()
-            ? EntityMotionMath.liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown) : -1;
-        RoomEntity smash = new RoomEntity(freeSlot, -1, runtime.ENTITY_LIFTABLE_ROCK,
-            entityX & 0xFF, entityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, 0, -1, false);
+                ? EntityMotionMath.liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown)
+                : -1;
+        RoomEntity smash = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_LIFTABLE_ROCK,
+                entityX & 0xFF,
+                entityY & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.slots[freeSlot] = smash;
         runtime.initializeHealthGroup(freeSlot);
         runtime.liftableRockSmashActive[freeSlot] = true;
@@ -482,8 +622,7 @@ public final class EntityPlayerSpawns {
         runtime.entityOptions1Override[freeSlot] = runtime.BOMB_OPTIONS1;
         if (soundId >= 0) {
             runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                freeSlot, runtime.ENTITY_LIFTABLE_ROCK, 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, soundId));
+                    freeSlot, runtime.ENTITY_LIFTABLE_ROCK, 0, false, EntityCombatEvent.SoundChannel.NOISE, soundId));
         }
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
@@ -497,9 +636,20 @@ public final class EntityPlayerSpawns {
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity bomb = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOMB,
-            arrow.x(), arrow.y(), EntityStatus.ACTIVE, definition, variant,
-            0, 0, arrow.z(), -1, false);
+        RoomEntity bomb = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_BOMB,
+                arrow.x(),
+                arrow.y(),
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                arrow.z(),
+                -1,
+                false);
         runtime.slots[freeSlot] = bomb;
         runtime.initializeHealthGroup(freeSlot);
         runtime.bombDirection[freeSlot] = runtime.playerArrowMotion.direction(arrow.slot());
@@ -523,8 +673,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    public boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
-                                        int transitionCountdown) {
+    public boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction, int transitionCountdown) {
         if (!runtime.indoorRoom) {
             return false;
         }
@@ -534,28 +683,38 @@ public final class EntityPlayerSpawns {
         }
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_HOOKSHOT_BRIDGE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity bridge = new RoomEntity(freeSlot, -1, runtime.ENTITY_HOOKSHOT_BRIDGE,
-            bridgeX & 0xFF, bridgeY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, 0, -1, false);
+        RoomEntity bridge = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_HOOKSHOT_BRIDGE,
+                bridgeX & 0xFF,
+                bridgeY & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.slots[freeSlot] = bridge;
         runtime.initializeHealthGroup(freeSlot);
         runtime.hookshotBridgeMotion.initializeSpawn(freeSlot, bridge.x(), bridge.y(), direction);
-        runtime.enemyPhysicsFlags[freeSlot] = runtime.ENTITY_PHYSICS_HARMLESS
-            | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        runtime.enemyPhysicsFlags[freeSlot] =
+                runtime.ENTITY_PHYSICS_HARMLESS | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = transitionCountdown & 0xFF;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 0;
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION
-            | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        runtime.entityOptions1Override[freeSlot] =
+                runtime.ENTITY_OPT1_NO_GROUND_INTERACTION | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return true;
     }
 
-    int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY,
-                        boolean allowDrop) {
+    int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY, boolean allowDrop) {
         if (runtime.defaultRandomByteSupplier == null) {
             throw new IllegalStateException("Shovel drops require a ROM random-byte supplier");
         }
@@ -573,8 +732,20 @@ public final class EntityPlayerSpawns {
         int y = (objectTop & 0xF0) + 0x10;
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, x & 0xFF, y & 0xFF,
-            EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
+        RoomEntity drop = new RoomEntity(
+                freeSlot,
+                -1,
+                itemType,
+                x & 0xFF,
+                y & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.slots[freeSlot] = drop;
         runtime.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
@@ -597,8 +768,8 @@ public final class EntityPlayerSpawns {
         // label_002_4C92 seeds this drop at $20, unlike the common enemy
         // death path's $18 seed.
         runtime.enemyDropMotion.initialize(freeSlot, runtime.groundInteractionSideScrolling, 0x20);
-        runtime.enemyDropMotion.initializeAwayFromLink(freeSlot, x & 0xFF, y & 0xFF,
-            linkEntityX & 0xFF, linkEntityY & 0xFF, 0x0C);
+        runtime.enemyDropMotion.initializeAwayFromLink(
+                freeSlot, x & 0xFF, y & 0xFF, linkEntityX & 0xFF, linkEntityY & 0xFF, 0x0C);
         runtime.enemyDropActive[freeSlot] = true;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
@@ -621,9 +792,20 @@ public final class EntityPlayerSpawns {
         int spriteVariant = definition.supported() ? itemType : -1;
         int x = (objectLeft & 0xF0) + 0x08;
         int y = (objectTop & 0xF0) + 0x10;
-        RoomEntity chest = new RoomEntity(freeSlot, -1, runtime.ENTITY_CHEST_WITH_ITEM,
-            x & 0xFF, y & 0xFF, EntityStatus.INIT, definition, spriteVariant,
-            0, 0, 0, -1, false);
+        RoomEntity chest = new RoomEntity(
+                freeSlot,
+                -1,
+                runtime.ENTITY_CHEST_WITH_ITEM,
+                x & 0xFF,
+                y & 0xFF,
+                EntityStatus.INIT,
+                definition,
+                spriteVariant,
+                0,
+                0,
+                0,
+                -1,
+                false);
         runtime.slots[freeSlot] = chest;
         runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;

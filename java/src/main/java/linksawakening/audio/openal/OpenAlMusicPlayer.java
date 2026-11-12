@@ -1,9 +1,14 @@
 package linksawakening.audio.openal;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import java.util.ArrayDeque;
+import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
-import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
@@ -14,12 +19,6 @@ import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.system.MemoryUtil;
-
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayDeque;
-import java.util.Objects;
 
 public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     private static final int BUFFER_COUNT = 4;
@@ -192,8 +191,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         RuntimeException cleanupFailure = null;
         try {
             if (source != 0 && context != MemoryUtil.NULL) {
-                cleanupFailure = rememberFailure(cleanupFailure,
-                        () -> ALC10.alcMakeContextCurrent(context));
+                cleanupFailure = rememberFailure(cleanupFailure, () -> ALC10.alcMakeContextCurrent(context));
             }
             cleanupFailure = combine(cleanupFailure, stopPlaybackBestEffort(true));
         } finally {

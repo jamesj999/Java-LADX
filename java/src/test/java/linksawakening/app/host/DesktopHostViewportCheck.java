@@ -1,10 +1,10 @@
 package linksawakening.app.host;
 
-import linksawakening.gpu.Framebuffer;
-import org.lwjgl.system.MemoryStack;
-
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+
+import linksawakening.gpu.Framebuffer;
+import org.lwjgl.system.MemoryStack;
 
 /** Native regression check; launch on the main OS thread (-XstartOnFirstThread on macOS). */
 public final class DesktopHostViewportCheck {
@@ -24,8 +24,7 @@ public final class DesktopHostViewportCheck {
             host.pollEvents();
             host.present(pixels);
             assertViewport(window, "resized framebuffer");
-            glfwSetWindowSize(window, Framebuffer.WIDTH * Framebuffer.SCALE,
-                Framebuffer.HEIGHT * Framebuffer.SCALE);
+            glfwSetWindowSize(window, Framebuffer.WIDTH * Framebuffer.SCALE, Framebuffer.HEIGHT * Framebuffer.SCALE);
             host.pollEvents();
             host.present(pixels);
             assertViewport(window, "restored framebuffer");
@@ -75,13 +74,17 @@ public final class DesktopHostViewportCheck {
             glfwGetFramebufferSize(window, width, height);
             glfwGetWindowSize(window, logicalWidth, logicalHeight);
             glGetIntegerv(GL_VIEWPORT, viewport);
-            if (width.get(0) <= 0 || height.get(0) <= 0
-                || viewport.get(0) != 0 || viewport.get(1) != 0
-                || viewport.get(2) != width.get(0) || viewport.get(3) != height.get(0)) {
+            if (width.get(0) <= 0
+                    || height.get(0) <= 0
+                    || viewport.get(0) != 0
+                    || viewport.get(1) != 0
+                    || viewport.get(2) != width.get(0)
+                    || viewport.get(3) != height.get(0)) {
                 throw new AssertionError(checkpoint + ": viewport must cover the drawable framebuffer");
             }
-            System.out.printf("%s: window %dx%d, framebuffer/viewport %dx%d%n", checkpoint,
-                logicalWidth.get(0), logicalHeight.get(0), width.get(0), height.get(0));
+            System.out.printf(
+                    "%s: window %dx%d, framebuffer/viewport %dx%d%n",
+                    checkpoint, logicalWidth.get(0), logicalHeight.get(0), width.get(0), height.get(0));
         }
     }
 }

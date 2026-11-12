@@ -24,10 +24,13 @@ public final class DialogTextLoader {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data is required");
         }
-        requireRange(romData, RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR),
-            DIALOG_TABLE_SIZE * 3 * 2, "DialogPointerTable");
-        requireRange(romData, RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR),
-            DIALOG_TABLE_SIZE * 3, "DialogBankTable");
+        requireRange(
+                romData,
+                RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR),
+                DIALOG_TABLE_SIZE * 3 * 2,
+                "DialogPointerTable");
+        requireRange(
+                romData, RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR), DIALOG_TABLE_SIZE * 3, "DialogBankTable");
         return new DialogTextLoader(romData);
     }
 
@@ -38,7 +41,7 @@ public final class DialogTextLoader {
         int dialogIndex = dialogRef.globalDialogId();
         int pointerOffset = RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR + dialogIndex * 2);
         int address = new Rom(romData).u8(RomAddress.fromOffset(pointerOffset))
-            | (new Rom(romData).u8(RomAddress.fromOffset(pointerOffset + 1)) << 8);
+                | (new Rom(romData).u8(RomAddress.fromOffset(pointerOffset + 1)) << 8);
         int bankOffset = RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR + dialogIndex);
         int bank = new Rom(romData).u8(RomAddress.fromOffset(bankOffset)) & ROM_BANK_MASK;
         int textOffset = RomBank.romOffset(bank, address);
@@ -52,7 +55,7 @@ public final class DialogTextLoader {
             }
         }
         throw new IllegalArgumentException(
-            "Dialog 0x" + Integer.toHexString(dialogIndex) + " has no terminator before end of ROM");
+                "Dialog 0x" + Integer.toHexString(dialogIndex) + " has no terminator before end of ROM");
     }
 
     private static char decode(int codepoint) {

@@ -114,8 +114,7 @@ public final class GameBoyApu {
             case NR42 -> channel4.writeEnvelope(unsignedValue);
             case NR43 -> channel4.writePolynomial(unsignedValue);
             case NR44 -> channel4.writeControl(unsignedValue);
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -189,8 +188,7 @@ public final class GameBoyApu {
             // The capacitors follow NR50, persist across render calls, and disconnect
             // when all DACs are off. Four channels need at most +/-8 after the HPF;
             // the 4096 scale leaves that range representable without routine clipping.
-            if (channel1.dacEnabled() || channel2.dacEnabled()
-                    || channel3.dacEnabled() || channel4.dacEnabled()) {
+            if (channel1.dacEnabled() || channel2.dacEnabled() || channel3.dacEnabled() || channel4.dacEnabled()) {
                 left *= leftVolume();
                 right *= rightVolume();
                 double leftOut = left - leftCapacitor;

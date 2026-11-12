@@ -1,27 +1,15 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.event.EntityProjectileEvent;
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityBackgroundCollision;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @linksawakening.testing.RequiresRom
 final class ArrowPauseTest {
@@ -43,8 +31,9 @@ final class ArrowPauseTest {
             assertEquals(0, countdown(runtime, type));
             setGate(runtime, gate, false);
             tick(runtime, 1, null);
-            assertEquals(before.x() + (type == 0 ? 3 : 2),
-                runtime.inspection().snapshot().slots().get(slot).x());
+            assertEquals(
+                    before.x() + (type == 0 ? 3 : 2),
+                    runtime.inspection().snapshot().slots().get(slot).x());
         }
     }
 
@@ -68,7 +57,9 @@ final class ArrowPauseTest {
             setGate(runtime, gate, false);
             tick(runtime, 2, null);
             assertEquals(gate.equals("got_item") ? 0x16 : 0x17, countdown(runtime, type));
-            assertEquals((before.z() + 1) & 0xFF, runtime.inspection().snapshot().slots().get(slot).z());
+            assertEquals(
+                    (before.z() + 1) & 0xFF,
+                    runtime.inspection().snapshot().slots().get(slot).z());
         }
     }
 
@@ -81,7 +72,9 @@ final class ArrowPauseTest {
         runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 1, null);
         assertEquals(0x18, countdown(runtime, type));
-        assertEquals(before.z() + 1, runtime.inspection().snapshot().slots().get(slot(type)).z());
+        assertEquals(
+                before.z() + 1,
+                runtime.inspection().snapshot().slots().get(slot(type)).z());
     }
 
     @ParameterizedTest
@@ -89,8 +82,14 @@ final class ArrowPauseTest {
     void shieldCollisionBeforePauseIsConsumedWhenTheHandlerResumes(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type);
         runtime.configuration().setDialogActive(true);
-        var events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
+        var events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x40,
+                0x50,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.getFirst().kind());
         assertEquals(0, countdown(runtime, type));
@@ -134,7 +133,8 @@ final class ArrowPauseTest {
         runtime.configuration().setDialogActive(true);
         for (int frame = 2; frame <= 10; frame++) {
             tick(runtime, frame, null);
-            assertEquals(1, runtime.inspection().snapshot().slots().get(slot(type)).spriteVariant());
+            assertEquals(
+                    1, runtime.inspection().snapshot().slots().get(slot(type)).spriteVariant());
             assertEquals(0x17, countdown(runtime, type));
         }
     }
@@ -147,8 +147,9 @@ final class ArrowPauseTest {
         runtime.debug().setGameplayWorldForTest(false);
         runtime.debug().setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, true));
-        assertEquals(startX + (type == 0 ? 3 : 2),
-            runtime.inspection().snapshot().slots().get(slot(type)).x());
+        assertEquals(
+                startX + (type == 0 ? 3 : 2),
+                runtime.inspection().snapshot().slots().get(slot(type)).x());
     }
 
     private static RoomEntityRuntime runtime(int type) throws IOException {
@@ -165,11 +166,24 @@ final class ArrowPauseTest {
             slots.add(RoomEntity.disabled(slot));
         }
         if (type != 0) {
-            slots.set(0, new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
-                catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0, -1, false));
+            slots.set(
+                    0,
+                    new RoomEntity(
+                            0,
+                            -1,
+                            type,
+                            0x40,
+                            0x50,
+                            EntityStatus.ACTIVE,
+                            catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                            0,
+                            0,
+                            0,
+                            0,
+                            -1,
+                            false));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots),
-            false, () -> 0, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, () -> 0, catalog);
         if (type == 0) {
             assertEquals(15, runtime.spawnArrow(0x40, 0x50, 0, 0));
         }
@@ -181,14 +195,14 @@ final class ArrowPauseTest {
     }
 
     private static int countdown(RoomEntityRuntime runtime, int type) {
-        return type == 0 ? runtime.inspection().playerArrowTransitionCountdown(15)
-            : runtime.enemies().enemyProjectileTransitionCountdown(0);
+        return type == 0
+                ? runtime.inspection().playerArrowTransitionCountdown(15)
+                : runtime.enemies().enemyProjectileTransitionCountdown(0);
     }
 
-    private static void tick(RoomEntityRuntime runtime, int frame,
-                             RoomEntityBackgroundCollision collision) {
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, collision,
-            EnemyProjectileCollision.LinkState.nonInteractive()));
+    private static void tick(RoomEntityRuntime runtime, int frame, RoomEntityBackgroundCollision collision) {
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, frame, 0, 0, () -> 0, collision, EnemyProjectileCollision.LinkState.nonInteractive()));
     }
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {

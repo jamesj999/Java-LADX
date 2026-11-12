@@ -1,14 +1,12 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import org.junit.jupiter.api.Test;
 
 final class WitchMotionTest {
     private static final int SLOT = 0;
@@ -33,9 +31,8 @@ final class WitchMotionTest {
     @Test
     void talkingWithoutToadstoolOpensDialog00cAcrossTheCauldron() {
         WitchMotion motion = new WitchMotion();
-        WitchMotion.Input input = new WitchMotion.Input(
-            false, 0, 0, true, false, false, false, 0x48, 0x56, 2,
-            0x04, 0, 0, 0, 0x07);
+        WitchMotion.Input input =
+                new WitchMotion.Input(false, 0, 0, true, false, false, false, 0x48, 0x56, 2, 0x04, 0, 0, 0, 0x07);
 
         WitchMotion.Update update = motion.advance(witch(), 0, input);
 
@@ -46,9 +43,8 @@ final class WitchMotionTest {
     @Test
     void airborneLinkCannotTalkOrStartTheExchange() {
         WitchMotion motion = new WitchMotion();
-        WitchMotion.Input input = new WitchMotion.Input(
-            true, 0x0C, 0, false, true, false, true, 0x48, 0x56, 2,
-            0x04, 0, 0, 0, 0x07);
+        WitchMotion.Input input =
+                new WitchMotion.Input(true, 0x0C, 0, false, true, false, true, 0x48, 0x56, 2, 0x04, 0, 0, 0, 0x07);
 
         WitchMotion.Update update = motion.advance(witch(), 0, input);
 
@@ -59,17 +55,15 @@ final class WitchMotionTest {
     @Test
     void exchangeRequiresTheButtonMatchingTheEquippedEmptyPowderBag() {
         WitchMotion motion = new WitchMotion();
-        WitchMotion.Input wrongButton = new WitchMotion.Input(
-            true, 0x0C, 0, true, false, false, false, 0x48, 0x56, 2,
-            0x04, 0, 0, 0, 0x07);
+        WitchMotion.Input wrongButton =
+                new WitchMotion.Input(true, 0x0C, 0, true, false, false, false, 0x48, 0x56, 2, 0x04, 0, 0, 0, 0x07);
 
         WitchMotion.Update rejected = motion.advance(witch(), 0, wrongButton);
         assertFalse(rejected.exchangeStarted());
         assertEquals(-1, rejected.dialogGlobalId());
 
-        WitchMotion.Input bButton = new WitchMotion.Input(
-            true, 0x0C, 0, false, true, false, false, 0x48, 0x56, 2,
-            0x04, 0, 0, 0, 0x07);
+        WitchMotion.Input bButton =
+                new WitchMotion.Input(true, 0x0C, 0, false, true, false, false, 0x48, 0x56, 2, 0x04, 0, 0, 0, 0x07);
         WitchMotion.Update accepted = motion.advance(witch(), 0, bButton);
         assertTrue(accepted.exchangeStarted());
         assertEquals(WitchMotion.InventorySlot.B, accepted.clearedSlot());
@@ -77,9 +71,8 @@ final class WitchMotionTest {
         assertEquals(1, motion.stateForTest(SLOT));
 
         WitchMotion aMotion = new WitchMotion();
-        WitchMotion.Input aButton = new WitchMotion.Input(
-            true, 0, 0x0C, true, false, false, false, 0x48, 0x56, 2,
-            0x04, 0, 0, 0, 0x07);
+        WitchMotion.Input aButton =
+                new WitchMotion.Input(true, 0, 0x0C, true, false, false, false, 0x48, 0x56, 2, 0x04, 0, 0, 0, 0x07);
         WitchMotion.Update acceptedA = aMotion.advance(witch(), 0, aButton);
         assertEquals(WitchMotion.InventorySlot.A, acceptedA.clearedSlot());
     }
@@ -87,9 +80,10 @@ final class WitchMotionTest {
     @Test
     void runsTheExactDialogTimingRewardAndTorchTutorialSequence() {
         WitchMotion motion = new WitchMotion();
-        WitchMotion.Update update = motion.advance(witch(), 0,
-            new WitchMotion.Input(true, 0x0C, 0, false, true, false, false,
-                0x48, 0x56, 2, 0x04, 0, 0, 0, 0x07));
+        WitchMotion.Update update = motion.advance(
+                witch(),
+                0,
+                new WitchMotion.Input(true, 0x0C, 0, false, true, false, false, 0x48, 0x56, 2, 0x04, 0, 0, 0, 0x07));
 
         update = motion.advance(update.entity(), 7, inputs(false));
         assertTrue(update.blockLink());
@@ -120,9 +114,8 @@ final class WitchMotionTest {
 
         update = motion.advance(update.entity(), 0, inputs(false));
         assertEquals(5, motion.stateForTest(SLOT));
-        WitchMotion.Input torchLit = new WitchMotion.Input(
-            false, 0, 0, false, false, false, false, 0x48, 0x56, 2,
-            0x04, 1, 0, 0, 0x07);
+        WitchMotion.Input torchLit =
+                new WitchMotion.Input(false, 0, 0, false, false, false, false, 0x48, 0x56, 2, 0x04, 1, 0, 0, 0x07);
         update = motion.advance(update.entity(), 0, torchLit);
         assertEquals(6, motion.stateForTest(SLOT));
         update = motion.advance(update.entity(), 0, torchLit);
@@ -135,26 +128,35 @@ final class WitchMotionTest {
         WitchMotion motion = new WitchMotion();
         motion.setStateForTest(SLOT, 5);
 
-        WitchMotion.Input changing = new WitchMotion.Input(
-            false, 0, 0, false, false, false, false, 0, 0, 0,
-            0x04, 1, 2, 0, 0x07);
+        WitchMotion.Input changing =
+                new WitchMotion.Input(false, 0, 0, false, false, false, false, 0, 0, 0, 0x04, 1, 2, 0, 0x07);
         motion.advance(witch(), 0, changing);
         assertEquals(5, motion.stateForTest(SLOT));
 
-        WitchMotion.Input loading = new WitchMotion.Input(
-            false, 0, 0, false, false, false, false, 0, 0, 0,
-            0x04, 1, 0, 0x81, 0x07);
+        WitchMotion.Input loading =
+                new WitchMotion.Input(false, 0, 0, false, false, false, false, 0, 0, 0, 0x04, 1, 0, 0x81, 0x07);
         motion.advance(witch(), 0, loading);
         assertEquals(5, motion.stateForTest(SLOT));
     }
 
     private static WitchMotion.Input inputs(boolean dialogActive) {
-        return new WitchMotion.Input(false, 0, 0, false, false, dialogActive, false,
-            0, 0, 0, 0x04, 0, 0, 0, 0x07);
+        return new WitchMotion.Input(false, 0, 0, false, false, dialogActive, false, 0, 0, 0, 0x04, 0, 0, 0, 0x07);
     }
 
     private static RoomEntity witch() {
-        return new RoomEntity(SLOT, 0, 0x40, 0x48, 0x40, EntityStatus.ACTIVE,
-            linksawakening.entity.EntitySpriteDefinition.unsupported(0x40), 0, 0, 0, 0, -1, false);
+        return new RoomEntity(
+                SLOT,
+                0,
+                0x40,
+                0x48,
+                0x40,
+                EntityStatus.ACTIVE,
+                linksawakening.entity.EntitySpriteDefinition.unsupported(0x40),
+                0,
+                0,
+                0,
+                0,
+                -1,
+                false);
     }
 }

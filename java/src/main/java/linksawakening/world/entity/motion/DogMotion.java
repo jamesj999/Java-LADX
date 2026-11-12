@@ -1,12 +1,11 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-
-import java.util.Objects;
-import java.util.function.IntSupplier;
 
 /** Bank-$19 DogEntityHandler state machine and fixed-point movement. */
 public final class DogMotion {
@@ -18,9 +17,7 @@ public final class DogMotion {
     static final int DIALOG_LOW_ID = 0x20;
 
     // Data_019_4990.
-    private static final int[] SPEEDS = {
-        0x02, 0x08, 0x0C, 0x08, 0xFE, 0xF8, 0xF4, 0xF8
-    };
+    private static final int[] SPEEDS = {0x02, 0x08, 0x0C, 0x08, 0xFE, 0xF8, 0xF4, 0xF8};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -32,22 +29,37 @@ public final class DogMotion {
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record Update(RoomEntity entity, int state, int transitionCountdown, int direction,
-                  int speedX, int speedY, int speedZ, int physicsFlags, int collisionFlags,
-                  boolean appliesBackgroundInteraction, boolean dialogRequested,
-                  int dialogLowId) {
-    }
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int transitionCountdown,
+            int direction,
+            int speedX,
+            int speedY,
+            int speedZ,
+            int physicsFlags,
+            int collisionFlags,
+            boolean appliesBackgroundInteraction,
+            boolean dialogRequested,
+            int dialogLowId) {}
 
     public void initialize(int slot) {
         reset(slot);
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
-                   int physicsFlags, int linkEntityX, int linkEntityY, int linkDirection,
-                   boolean actionButtonAHeld, boolean dialogActive,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            int physicsFlags,
+            int linkEntityX,
+            int linkEntityY,
+            int linkDirection,
+            boolean actionButtonAHeld,
+            boolean dialogActive,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         checkType(entity);
         validateByte(frameCounter, "Dog frame counter");
         validateByte(transitionCountdown, "Dog transition countdown");
@@ -55,8 +67,7 @@ public final class DogMotion {
         validateByte(linkEntityX, "Dog Link X");
         validateByte(linkEntityY, "Dog Link Y");
         if (linkDirection < 0 || linkDirection > 3) {
-            throw new IllegalArgumentException("Dog Link direction must be 0..3: "
-                + linkDirection);
+            throw new IllegalArgumentException("Dog Link direction must be 0..3: " + linkDirection);
         }
         Objects.requireNonNull(randomByteSupplier, "Dog random-byte supplier");
 
@@ -85,8 +96,8 @@ public final class DogMotion {
         RoomEntity updated = withZ(entity, z);
 
         // func_019_7CF0 runs before the state dispatch and only for states 0/1.
-        if (state[slot] < 2 && canTalk(updated, linkEntityX, linkEntityY,
-            linkDirection, actionButtonAHeld, dialogActive)) {
+        if (state[slot] < 2
+                && canTalk(updated, linkEntityX, linkEntityY, linkDirection, actionButtonAHeld, dialogActive)) {
             dialogRequested = true;
             dialogLowId = DIALOG_LOW_ID;
         }
@@ -105,10 +116,8 @@ public final class DogMotion {
                 updated = withVariant(updated, walkingVariant(slot, frameCounter));
             }
             case 1 -> {
-                PositionAndCollision moved = moveWithBackground(updated,
-                    backgroundInteraction, slot);
-                updated = withPositionAndVariant(updated, moved.x(), moved.y(),
-                    walkingVariant(slot, frameCounter));
+                PositionAndCollision moved = moveWithBackground(updated, backgroundInteraction, slot);
+                updated = withPositionAndVariant(updated, moved.x(), moved.y(), walkingVariant(slot, frameCounter));
                 movementCollisionFlags = moved.collisionFlags();
                 appliesBackgroundInteraction = true;
                 if (landed) {
@@ -125,8 +134,8 @@ public final class DogMotion {
             case 2 -> {
                 if (countdown == 0) {
                     state[slot] = 3;
-                    Vector vector = vectorTowardsLink(updated.x(), updated.y(), updated.z(),
-                        linkEntityX, linkEntityY, 0x24);
+                    Vector vector =
+                            vectorTowardsLink(updated.x(), updated.y(), updated.z(), linkEntityX, linkEntityY, 0x24);
                     speedX[slot] = vector.x();
                     speedY[slot] = vector.y();
                     speedZ[slot] = 0x18;
@@ -135,10 +144,8 @@ public final class DogMotion {
                 updated = withVariant(updated, chargeVariant(slot, frameCounter));
             }
             case 3 -> {
-                PositionAndCollision moved = moveWithBackground(updated,
-                    backgroundInteraction, slot);
-                updated = withPositionAndVariant(updated, moved.x(), moved.y(),
-                    entity.spriteVariant());
+                PositionAndCollision moved = moveWithBackground(updated, backgroundInteraction, slot);
+                updated = withPositionAndVariant(updated, moved.x(), moved.y(), entity.spriteVariant());
                 movementCollisionFlags = moved.collisionFlags();
                 appliesBackgroundInteraction = true;
                 // DogState3 briefly exposes $52 to func_003_6C6B, then restores
@@ -155,14 +162,22 @@ public final class DogMotion {
             default -> throw new IllegalStateException("Invalid Dog state: " + state[slot]);
         }
 
-        return new Update(updated, state[slot], countdown, direction[slot] & 0xFF,
-            speedX[slot] & 0xFF, speedY[slot] & 0xFF, speedZ[slot] & 0xFF,
-            nextPhysicsFlags & 0xFF, movementCollisionFlags & 0x0F,
-            appliesBackgroundInteraction, dialogRequested, dialogLowId);
+        return new Update(
+                updated,
+                state[slot],
+                countdown,
+                direction[slot] & 0xFF,
+                speedX[slot] & 0xFF,
+                speedY[slot] & 0xFF,
+                speedZ[slot] & 0xFF,
+                nextPhysicsFlags & 0xFF,
+                movementCollisionFlags & 0x0F,
+                appliesBackgroundInteraction,
+                dialogRequested,
+                dialogLowId);
     }
 
-    void setStateForTest(int slot, int newState, int newDirection,
-                         int newSpeedX, int newSpeedY, int newSpeedZ) {
+    void setStateForTest(int slot, int newState, int newDirection, int newSpeedX, int newSpeedY, int newSpeedZ) {
         if (newState < 0 || newState > 3) {
             throw new IllegalArgumentException("Dog state must be 0..3: " + newState);
         }
@@ -214,17 +229,16 @@ public final class DogMotion {
         return direction[slot] == 0 ? animation + 2 : animation;
     }
 
-    private PositionAndCollision moveWithBackground(RoomEntity entity,
-                                                     RoomEntityBackgroundInteraction interaction,
-                                                     int slot) {
+    private PositionAndCollision moveWithBackground(
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
         if (interaction != null && x != entity.x()) {
             int direction = signedByte(speedX[slot]) < 0
-                ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result = interaction.probe(
-                entity, direction, x, entity.y());
+                    ? EntityBackgroundCollisionResult.LEFT
+                    : EntityBackgroundCollisionResult.RIGHT;
+            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, entity.y());
             if (result.blocked()) {
                 collisionFlags |= result.collisionFlag();
                 x = entity.x() & 0xFF;
@@ -232,7 +246,8 @@ public final class DogMotion {
         }
         if (interaction != null && y != entity.y()) {
             int direction = signedByte(speedY[slot]) < 0
-                ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
+                    ? EntityBackgroundCollisionResult.UP
+                    : EntityBackgroundCollisionResult.DOWN;
             EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, y);
             if (result.blocked()) {
                 collisionFlags |= result.collisionFlag();
@@ -242,9 +257,13 @@ public final class DogMotion {
         return new PositionAndCollision(x, y, collisionFlags);
     }
 
-    private boolean canTalk(RoomEntity entity, int linkEntityX, int linkEntityY,
-                             int linkDirection, boolean actionButtonAHeld,
-                             boolean dialogActive) {
+    private boolean canTalk(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            int linkDirection,
+            boolean actionButtonAHeld,
+            boolean dialogActive) {
         if (dialogActive || !actionButtonAHeld) {
             return false;
         }
@@ -256,8 +275,7 @@ public final class DogMotion {
         if (xWindow >= 0x20) {
             return false;
         }
-        return directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
-            == (linkDirection ^ 0x01);
+        return directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY) == (linkDirection ^ 0x01);
     }
 
     private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
@@ -273,8 +291,7 @@ public final class DogMotion {
         return signedByte(linkX - entityX) < 0 ? 1 : 0;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
@@ -312,8 +329,7 @@ public final class DogMotion {
         return result;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -338,26 +354,55 @@ public final class DogMotion {
         speedZAccumulator[slot] = 0;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static RoomEntity withZ(RoomEntity entity, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            z & 0xFF, entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z & 0xFF,
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
     private static void checkType(RoomEntity entity) {
@@ -377,9 +422,7 @@ public final class DogMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record PositionAndCollision(int x, int y, int collisionFlags) {
-    }
+    private record PositionAndCollision(int x, int y, int collisionFlags) {}
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

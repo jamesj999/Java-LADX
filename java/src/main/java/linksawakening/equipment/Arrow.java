@@ -1,11 +1,10 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
-
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
 
 /** Edge-triggered ordinary bow use from {@code ShootArrow} (bank0.asm:$13BD). */
 public final class Arrow implements EquipmentItem {
@@ -33,8 +32,8 @@ public final class Arrow implements EquipmentItem {
         this(playerState, soundSink, target, () -> true);
     }
 
-    public Arrow(PlayerState playerState, GameplaySoundSink soundSink, ShootTarget target,
-                 BooleanSupplier itemUseAllowed) {
+    public Arrow(
+            PlayerState playerState, GameplaySoundSink soundSink, ShootTarget target, BooleanSupplier itemUseAllowed) {
         this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");
@@ -43,8 +42,9 @@ public final class Arrow implements EquipmentItem {
 
     @Override
     public void onPress() {
-        if (!itemUseAllowed.getAsBoolean() || shootingCountdown != 0
-            || target.activeProjectileCount() >= MAX_ACTIVE_PROJECTILES) {
+        if (!itemUseAllowed.getAsBoolean()
+                || shootingCountdown != 0
+                || target.activeProjectileCount() >= MAX_ACTIVE_PROJECTILES) {
             return;
         }
 

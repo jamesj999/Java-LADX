@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 WaterTektiteEntityHandler's three-state movement loop. */
 public final class WaterTektiteMotion {
@@ -24,9 +23,11 @@ public final class WaterTektiteMotion {
         initialized[slot] = true;
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter,
-                       IntSupplier randomByteSupplier,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -40,13 +41,11 @@ public final class WaterTektiteMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         boolean collision = false;
         if (backgroundCollision != null) {
-            if (speedX[slot] != 0 && backgroundCollision.blocks(entity,
-                horizontalDirection(speedX[slot]), x, y)) {
+            if (speedX[slot] != 0 && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, y)) {
                 x = entity.x();
                 collision = true;
             }
-            if (speedY[slot] != 0 && backgroundCollision.blocks(entity,
-                verticalDirection(speedY[slot]), x, y)) {
+            if (speedY[slot] != 0 && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
                 y = entity.y();
                 collision = true;
             }
@@ -66,9 +65,20 @@ public final class WaterTektiteMotion {
         }
 
         int variant = (frameCounter >>> 4) & 0x01;
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -131,8 +141,7 @@ public final class WaterTektiteMotion {
                     speedY[slot] = convergeSpeedToZero(speedY[slot]);
                 }
             }
-            default -> throw new IllegalStateException("Invalid Water Tektite state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Water Tektite state: " + state[slot]);
         }
     }
 
@@ -144,8 +153,7 @@ public final class WaterTektiteMotion {
         return (speed - 1) & 0xFF;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;

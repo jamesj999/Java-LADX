@@ -1,61 +1,120 @@
 package linksawakening.world.room;
 
+import java.util.List;
 import linksawakening.world.entity.RoomEntitySnapshot;
-
 import linksawakening.world.transition.Warp;
 
-import java.util.List;
+public record LoadedRoom(
+        int roomId,
+        int mapCategory,
+        int mapId,
+        int animatedTilesGroup,
+        int[] roomObjectsArea,
+        int[] gbcOverlay,
+        int[] renderValues,
+        int[] tileIds,
+        int[] tileAttrs,
+        int[][] palettes,
+        List<Warp> warps,
+        boolean indoorHasSouthEntrance,
+        int shutterDoorMask,
+        int staircaseLocation,
+        RoomEntitySnapshot entities) {
 
-public record LoadedRoom(int roomId,
-                         int mapCategory,
-                         int mapId,
-                         int animatedTilesGroup,
-                         int[] roomObjectsArea,
-                         int[] gbcOverlay,
-                         int[] renderValues,
-                         int[] tileIds,
-                         int[] tileAttrs,
-                         int[][] palettes,
-                         List<Warp> warps,
-                         boolean indoorHasSouthEntrance,
-                         int shutterDoorMask,
-                         int staircaseLocation,
-                         RoomEntitySnapshot entities) {
-
-    public LoadedRoom(int roomId, int mapCategory, int mapId, int animatedTilesGroup,
-                      int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues,
-                      int[] tileIds, int[] tileAttrs, int[][] palettes, List<Warp> warps,
-                      boolean indoorHasSouthEntrance, RoomEntitySnapshot entities) {
-        this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
-            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
-            0, -1, entities);
+    public LoadedRoom(
+            int roomId,
+            int mapCategory,
+            int mapId,
+            int animatedTilesGroup,
+            int[] roomObjectsArea,
+            int[] gbcOverlay,
+            int[] renderValues,
+            int[] tileIds,
+            int[] tileAttrs,
+            int[][] palettes,
+            List<Warp> warps,
+            boolean indoorHasSouthEntrance,
+            RoomEntitySnapshot entities) {
+        this(
+                roomId,
+                mapCategory,
+                mapId,
+                animatedTilesGroup,
+                roomObjectsArea,
+                gbcOverlay,
+                renderValues,
+                tileIds,
+                tileAttrs,
+                palettes,
+                warps,
+                indoorHasSouthEntrance,
+                0,
+                -1,
+                entities);
     }
 
-    public LoadedRoom(int roomId, int mapCategory, int mapId, int animatedTilesGroup,
-                      int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues,
-                      int[] tileIds, int[] tileAttrs, int[][] palettes, List<Warp> warps,
-                      boolean indoorHasSouthEntrance, int shutterDoorMask,
-                      RoomEntitySnapshot entities) {
-        this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
-            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
-            shutterDoorMask, -1, entities);
+    public LoadedRoom(
+            int roomId,
+            int mapCategory,
+            int mapId,
+            int animatedTilesGroup,
+            int[] roomObjectsArea,
+            int[] gbcOverlay,
+            int[] renderValues,
+            int[] tileIds,
+            int[] tileAttrs,
+            int[][] palettes,
+            List<Warp> warps,
+            boolean indoorHasSouthEntrance,
+            int shutterDoorMask,
+            RoomEntitySnapshot entities) {
+        this(
+                roomId,
+                mapCategory,
+                mapId,
+                animatedTilesGroup,
+                roomObjectsArea,
+                gbcOverlay,
+                renderValues,
+                tileIds,
+                tileAttrs,
+                palettes,
+                warps,
+                indoorHasSouthEntrance,
+                shutterDoorMask,
+                -1,
+                entities);
     }
 
-    public LoadedRoom(int roomId,
-                      int mapCategory,
-                      int mapId,
-                      int animatedTilesGroup,
-                      int[] roomObjectsArea,
-                      int[] gbcOverlay,
-                      int[] renderValues,
-                      int[] tileIds,
-                      int[] tileAttrs,
-                      int[][] palettes,
-                      List<Warp> warps,
-                      boolean indoorHasSouthEntrance) {
-        this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
-            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
-            0, -1, null);
+    public LoadedRoom(
+            int roomId,
+            int mapCategory,
+            int mapId,
+            int animatedTilesGroup,
+            int[] roomObjectsArea,
+            int[] gbcOverlay,
+            int[] renderValues,
+            int[] tileIds,
+            int[] tileAttrs,
+            int[][] palettes,
+            List<Warp> warps,
+            boolean indoorHasSouthEntrance) {
+        this(
+                roomId,
+                mapCategory,
+                mapId,
+                animatedTilesGroup,
+                roomObjectsArea,
+                gbcOverlay,
+                renderValues,
+                tileIds,
+                tileAttrs,
+                palettes,
+                warps,
+                indoorHasSouthEntrance,
+                0,
+                -1,
+                null);
     }
 
     public LoadedRoom {
@@ -68,8 +127,7 @@ public record LoadedRoom(int roomId,
         warps = List.copyOf(warps);
         shutterDoorMask &= 0x0F;
         if (staircaseLocation < -1 || staircaseLocation > 0xFF) {
-            throw new IllegalArgumentException(
-                "Staircase location must be -1 or an unsigned byte");
+            throw new IllegalArgumentException("Staircase location must be -1 or an unsigned byte");
         }
     }
 

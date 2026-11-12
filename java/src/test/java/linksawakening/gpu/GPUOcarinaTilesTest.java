@@ -1,11 +1,10 @@
 package linksawakening.gpu;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class GPUOcarinaTilesTest {
@@ -39,11 +38,10 @@ final class GPUOcarinaTilesTest {
         assertRomByte(gpu, rom, ROM_BANK, SHARED_VFX_ADDRESS + 0x60, 0x26);
     }
 
-    private static void assertRomByte(GPU gpu, byte[] rom, int bank, int address,
-                                      int vramTile) {
+    private static void assertRomByte(GPU gpu, byte[] rom, int bank, int address, int vramTile) {
         int romOffset = RomBank.romOffset(bank, address);
-        assertEquals(Byte.toUnsignedInt(rom[romOffset]),
-            Byte.toUnsignedInt(gpu.readVRAM(vramTile * GPU.TILE_DATA_SIZE)));
+        assertEquals(
+                Byte.toUnsignedInt(rom[romOffset]), Byte.toUnsignedInt(gpu.readVRAM(vramTile * GPU.TILE_DATA_SIZE)));
     }
 
     private static byte[] loadRom() throws Exception {

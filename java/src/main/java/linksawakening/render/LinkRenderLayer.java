@@ -1,7 +1,5 @@
 package linksawakening.render;
 
-
-
 import linksawakening.entity.Link;
 import linksawakening.world.transition.ScrollController;
 
@@ -14,8 +12,8 @@ public final class LinkRenderLayer implements HardwareRenderLayer {
         this.scrollController = scrollController;
     }
 
-
-    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         collectOam(frame);
     }
 
@@ -30,9 +28,10 @@ public final class LinkRenderLayer implements HardwareRenderLayer {
         int startScreenY = scrollController.linkScreenY();
         int endScreenX = link.pixelX();
         int endScreenY = link.pixelY();
-        int screenX = startScreenX + (endScreenX - startScreenX) * scrollController.offset() / scrollController.target();
-        int screenY = startScreenY + (endScreenY - startScreenY) * scrollController.offset() / scrollController.target();
-        link.submitOam(sink, screenX - link.pixelX() + shakeX,
-            screenY - link.pixelY());
+        int screenX =
+                startScreenX + (endScreenX - startScreenX) * scrollController.offset() / scrollController.target();
+        int screenY =
+                startScreenY + (endScreenY - startScreenY) * scrollController.offset() / scrollController.target();
+        link.submitOam(sink, screenX - link.pixelX() + shakeX, screenY - link.pixelY());
     }
 }

@@ -1,10 +1,12 @@
 package linksawakening.world.entity.motion;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 class SlimeEyeHalfMotionTest {
-    @Test void riseUsesUnsignedByteThresholdAndPreservesVariant() {
+    @Test
+    void riseUsesUnsignedByteThresholdAndPreservesVariant() {
         var below = SlimeEyeHalfMotion.rise(0x6F, 0, 1, 0, 40, 50);
         assertEquals(2, below.state());
         assertEquals(0x60, below.speedZ());
@@ -15,7 +17,8 @@ class SlimeEyeHalfMotionTest {
         assertEquals(2, SlimeEyeHalfMotion.rise(0x100, 0, 1, 0, 40, 50).state());
     }
 
-    @Test void waitHidesWithoutTrackingUntilCountdownExpires() {
+    @Test
+    void waitHidesWithoutTrackingUntilCountdownExpires() {
         var waiting = SlimeEyeHalfMotion.waitAbove(1, 0x60, 0, 40, 50, 80, 90);
         assertEquals(3, waiting.state());
         assertEquals(40, waiting.x());

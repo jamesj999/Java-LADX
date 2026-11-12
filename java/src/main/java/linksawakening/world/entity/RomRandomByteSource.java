@@ -12,9 +12,12 @@ public final class RomRandomByteSource implements IntSupplier {
 
     /** Read-only observation of one actual consumption; no source value is overridden. */
     public record Draw(int frameCounter, int scanline, int previousSeed, int value) {}
+
     private java.util.function.Consumer<Draw> observer;
 
-    public void setObserver(java.util.function.Consumer<Draw> observer) { this.observer = observer; }
+    public void setObserver(java.util.function.Consumer<Draw> observer) {
+        this.observer = observer;
+    }
 
     private final int initialSeed;
     private int frameCounter;

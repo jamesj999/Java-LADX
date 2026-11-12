@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.world.entity.event.BombExplosionEvent;
-
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import linksawakening.world.entity.motion.BoomerangMotion;
 import linksawakening.world.entity.motion.BuzzBlobMotion;
@@ -27,15 +27,11 @@ import linksawakening.world.entity.motion.WitchRatMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-
 /** Immutable ROM handler identifiers, flags, and lookup constants. */
 public abstract class EntityRomConstants {
     static final int ENTITY_PUSHED_BLOCK = 0x06;
 
-    static final int[] INSTRUMENT_MUSIC_TRACKS = {
-        0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E
-    };
+    static final int[] INSTRUMENT_MUSIC_TRACKS = {0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E};
 
     public static final int ENTITY_CHEST_WITH_ITEM = 0x07;
 
@@ -51,14 +47,11 @@ public abstract class EntityRomConstants {
 
     public static final int ENTITY_HINOX = HinoxMotion.ENTITY_TYPE;
 
-    public static final int ENTITY_ROLLING_BONES =
-        EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
+    public static final int ENTITY_ROLLING_BONES = EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
 
-    public static final int ENTITY_ROLLING_BONES_BAR =
-        EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
+    public static final int ENTITY_ROLLING_BONES_BAR = EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
 
-    public static final int ENTITY_THREE_OF_A_KIND =
-        EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND;
+    public static final int ENTITY_THREE_OF_A_KIND = EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND;
 
     static final int ENTITY_PIECE_OF_POWER = 0x33;
 
@@ -106,23 +99,19 @@ public abstract class EntityRomConstants {
 
     public static final int ENTITY_BLOOPER = EntitySpriteHandlerCatalog.ENTITY_BLOOPER;
 
-    public static final int ENTITY_WINGED_OCTOROK =
-        EntitySpriteHandlerCatalog.ENTITY_WINGED_OCTOROK;
+    public static final int ENTITY_WINGED_OCTOROK = EntitySpriteHandlerCatalog.ENTITY_WINGED_OCTOROK;
 
     public static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
 
-    public static final int ENTITY_BUSH_CRAWLER =
-        EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER;
+    public static final int ENTITY_BUSH_CRAWLER = EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER;
 
     public static final int ENTITY_MIMIC = EntitySpriteHandlerCatalog.ENTITY_MIMIC;
 
-    public static final int ENTITY_MINI_MOLDORM =
-        EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
+    public static final int ENTITY_MINI_MOLDORM = EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
 
     public static final int ENTITY_MOLDORM = EntitySpriteHandlerCatalog.ENTITY_MOLDORM;
 
-    public static final int ENTITY_MASKED_MIMIC_GORIYA =
-        EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA;
+    public static final int ENTITY_MASKED_MIMIC_GORIYA = EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA;
 
     public static final int ENTITY_SPIKE_TRAP = 0x27;
 
@@ -197,7 +186,7 @@ public abstract class EntityRomConstants {
     static final int GENIE_OPTIONS1 = 0xD0;
 
     static final int WIZROBE_PROJECTILE_OPTIONS1 =
-        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+            ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     public static final int ENTITY_PHYSICS_HARMLESS = 0x80;
 
@@ -208,11 +197,10 @@ public abstract class EntityRomConstants {
     static final int HITFLAGS_IGNORE_HITS = 0x80;
 
     static final int LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS =
-        0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP
-            | 0x10;
+            0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP | 0x10;
 
     static final int LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS =
-        0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+            0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
 
     public static final int LIFTABLE_ROCK_SMASH_MODE_ROCK = 0;
 
@@ -230,8 +218,7 @@ public abstract class EntityRomConstants {
 
     static final int CHEST_TREASURE_JINGLE_ID = 0x01;
 
-    static final int BOMB_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
-        | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    static final int BOMB_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     static final int BOMB_EXPLOSION_PHYSICS_LOW_BITS = 0x08;
 
@@ -247,8 +234,8 @@ public abstract class EntityRomConstants {
 
     static final int EVASIVE_CLONE_PHYSICS_FLAGS = 0x52;
 
-    static final int EVASIVE_CLONE_OPTIONS = ENTITY_OPT1_NO_GROUND_INTERACTION
-        | ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    static final int EVASIVE_CLONE_OPTIONS =
+            ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     public static final int ENTITY_PEAHAT = 0xA0;
 
@@ -301,20 +288,19 @@ public abstract class EntityRomConstants {
     public static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
 
     public static final int SECRET_SEASHELL_HIDDEN_OPTIONS1 =
-        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
+            ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
 
     public static final int SECRET_SEASHELL_REVEALED_OPTIONS1 =
-        ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+            ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
-    static final int DROPPABLE_HIDDEN_OPTIONS1 =
-        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
+    static final int DROPPABLE_HIDDEN_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
 
-    static final int HIDING_SLIME_KEY_HIDDEN_OPTIONS1 =
-        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_SPLASH_IN_WATER
-            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL | ENTITY_OPT1_NO_WALL_COLLISION;
+    static final int HIDING_SLIME_KEY_HIDDEN_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION
+            | ENTITY_OPT1_SPLASH_IN_WATER
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL
+            | ENTITY_OPT1_NO_WALL_COLLISION;
 
-    static final int DROPPABLE_REVEALED_OPTIONS1 =
-        ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    static final int DROPPABLE_REVEALED_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     static final int DROPPABLE_HIDDEN_STATE_BURIED = 0x02;
 
@@ -384,8 +370,7 @@ public abstract class EntityRomConstants {
 
     static final int BOMBITE_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER;
 
-    static final int KEY_DROP_POINT_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
-        | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    static final int KEY_DROP_POINT_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     public static final int BOMBITE_EXPLOSION_SOUND_ID = 0x0C;
 
@@ -443,8 +428,7 @@ public abstract class EntityRomConstants {
 
     public static final int ENTITY_GIANT_GOPONGA_FLOWER = GiantGopongaMotion.ENTITY_TYPE;
 
-    public static final int ENTITY_GOPONGA_FLOWER_PROJECTILE =
-        GopongaProjectileMotion.ENTITY_TYPE;
+    public static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = GopongaProjectileMotion.ENTITY_TYPE;
 
     public static final int ENTITY_POKEY = PokeyMotion.ENTITY_TYPE;
 
@@ -493,7 +477,7 @@ public abstract class EntityRomConstants {
     static final int SWORD_BEAM_JINGLE_ID = 0x3B;
 
     static final int IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS =
-        0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
+            0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
 
     public static final int MAP_COLOR_DUNGEON = 0xFF;
 
@@ -507,15 +491,12 @@ public abstract class EntityRomConstants {
 
     static final int[] FALLING_VECTOR_LENGTHS = {0, 1, 3, 6};
 
-    static final int GHINI_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION
-        | ENTITY_OPT1_NO_WALL_COLLISION;
+    static final int GHINI_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
 
-    static final int IRON_MASKS_MASK_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
-        | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    static final int IRON_MASKS_MASK_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     static final int FAIRY_INITIAL_PHYSICS_FLAGS = 0xB1;
 
-    static final int FAIRY_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION
-        | ENTITY_OPT1_NO_WALL_COLLISION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-
+    static final int FAIRY_OPTIONS1 =
+            ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 }

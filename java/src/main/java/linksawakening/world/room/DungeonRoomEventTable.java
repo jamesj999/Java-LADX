@@ -1,10 +1,9 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-
-import java.util.Objects;
 
 /** ROM-backed view of {@code DungeonEventsTable} and {@code ColorDungeonEventsTable}. */
 public final class DungeonRoomEventTable {
@@ -25,8 +24,7 @@ public final class DungeonRoomEventTable {
         RomAddress address;
         if (mapId == DungeonItemState.MAP_COLOR_DUNGEON) {
             if (roomId >= COLOR_DUNGEON_ROOM_COUNT) {
-                throw new IllegalArgumentException("Color Dungeon room id out of range: "
-                    + roomId);
+                throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
             }
             address = RomSymbols.ColorDungeonEventsTable.plus(roomId);
         } else {
@@ -35,8 +33,8 @@ public final class DungeonRoomEventTable {
         }
         int offset = address.offset();
         if (offset < 0 || offset >= romData.length) {
-            throw new IllegalArgumentException("Dungeon event table is truncated at ROM offset 0x"
-                + Integer.toHexString(Math.max(offset, 0)));
+            throw new IllegalArgumentException(
+                    "Dungeon event table is truncated at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
         return new Rom(romData).u8(address);
     }

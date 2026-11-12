@@ -1,19 +1,12 @@
 package linksawakening.world.entity;
 
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.SideViewPotContact;
-
-import linksawakening.entity.EntitySpriteDefinition;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import linksawakening.entity.EntitySpriteDefinition;
+import org.junit.jupiter.api.Test;
 
 final class SideViewPotContactTest {
     @Test
@@ -30,10 +23,8 @@ final class SideViewPotContactTest {
     void groundedContactPushesRightAtZeroAndLeftForNegativeRawX() {
         RoomEntity pot = pot(0x50, 0x60);
 
-        SideViewPotContact.Result right = SideViewPotContact.resolve(
-            pot, 0x50, 0x60, false, 0);
-        SideViewPotContact.Result left = SideViewPotContact.resolve(
-            pot, 0x4F, 0x60, false, 0);
+        SideViewPotContact.Result right = SideViewPotContact.resolve(pot, 0x50, 0x60, false, 0);
+        SideViewPotContact.Result left = SideViewPotContact.resolve(pot, 0x4F, 0x60, false, 0);
 
         assertEquals(0x10, right.speedX());
         assertEquals(0xF0, left.speedX());
@@ -53,8 +44,7 @@ final class SideViewPotContactTest {
 
     @Test
     void airborneContactRestoresOnlyFinalXAndDoesNotPush() {
-        SideViewPotContact.Result result = SideViewPotContact.resolve(
-            pot(0x50, 0x60), 0x50, 0x60, true, 0);
+        SideViewPotContact.Result result = SideViewPotContact.resolve(pot(0x50, 0x60), 0x50, 0x60, true, 0);
 
         assertTrue(result.restoreFinalPositionX());
         assertTrue(result.resetPegasusBoots());
@@ -63,8 +53,7 @@ final class SideViewPotContactTest {
 
     @Test
     void topSnapWritesPotMinusTenAndStandingSpeed() {
-        SideViewPotContact.Result result = SideViewPotContact.resolve(
-            pot(0x50, 0x60), 0x50, 0x57, false, 0);
+        SideViewPotContact.Result result = SideViewPotContact.resolve(pot(0x50, 0x60), 0x50, 0x57, false, 0);
 
         assertTrue(result.snapTop());
         assertEquals(0x50, result.positionY());
@@ -73,8 +62,7 @@ final class SideViewPotContactTest {
 
     @Test
     void topSnapIsSuppressedWhileLinkMovesUp() {
-        SideViewPotContact.Result result = SideViewPotContact.resolve(
-            pot(0x50, 0x60), 0x50, 0x57, false, 0x80);
+        SideViewPotContact.Result result = SideViewPotContact.resolve(pot(0x50, 0x60), 0x50, 0x57, false, 0x80);
 
         assertFalse(result.snapTop());
     }
@@ -91,11 +79,14 @@ final class SideViewPotContactTest {
 
     private static RoomEntity pot(int x, int y) {
         EntitySpriteDefinition definition = new EntitySpriteDefinition(
-            0xD6, 0x03, 0x5B65, EntitySpriteDefinition.Shape.PAIR, 0,
-            List.of(new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
-                new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
-        return new RoomEntity(0, 0, 0xD6, x, y,
-            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+                0xD6,
+                0x03,
+                0x5B65,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
+                        new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
+        return new RoomEntity(0, 0, 0xD6, x, y, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 }

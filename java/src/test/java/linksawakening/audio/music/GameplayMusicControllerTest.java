@@ -1,12 +1,11 @@
 package linksawakening.audio.music;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class GameplayMusicControllerTest {
@@ -14,23 +13,35 @@ final class GameplayMusicControllerTest {
     @Test
     void thirdContactHitRestoresDefaultUnlessBossOrOwl() {
         for (int scenario = 0; scenario < 3; scenario++) {
-            var controller = new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()),
-                MusicCatalog.fromRom(loadRom()), new RecordingMusicTrackPlayer());
+            var controller = new GameplayMusicController(
+                    AreaMusicResolver.fromRom(loadRom()),
+                    MusicCatalog.fromRom(loadRom()),
+                    new RecordingMusicTrackPlayer());
             controller.playDirect(0x49);
             var player = new linksawakening.state.PlayerState();
             player.setHealth(24);
             player.setActivePowerUp(1);
             boolean boss = scenario == 1;
             int defaultTrack = scenario == 2 ? 0x22 : MusicTrackIds.MUSIC_MABE_VILLAGE;
-            var event = new linksawakening.world.entity.event.EntityProjectileEvent(0, 0x0A,
-                linksawakening.world.entity.event.EntityProjectileEvent.Kind.LINK_DAMAGE,
-                0xFF, 4, linksawakening.world.entity.event.EntityProjectileEvent.SoundChannel.WAVE,
-                3, false, false);
+            var event = new linksawakening.world.entity.event.EntityProjectileEvent(
+                    0,
+                    0x0A,
+                    linksawakening.world.entity.event.EntityProjectileEvent.Kind.LINK_DAMAGE,
+                    0xFF,
+                    4,
+                    linksawakening.world.entity.event.EntityProjectileEvent.SoundChannel.WAVE,
+                    3,
+                    false,
+                    false);
             for (int hit = 0; hit < 3; hit++) {
                 player.setInvincibilityCounter(0);
-                linksawakening.gameplay.EnemyProjectileEventConsumer.consume(List.of(event), player,
-                    null, linksawakening.gameplay.GameplaySoundSink.none(), () -> {},
-                    () -> controller.restoreAfterPowerUpEnds(boss, defaultTrack));
+                linksawakening.gameplay.EnemyProjectileEventConsumer.consume(
+                        List.of(event),
+                        player,
+                        null,
+                        linksawakening.gameplay.GameplaySoundSink.none(),
+                        () -> {},
+                        () -> controller.restoreAfterPowerUpEnds(boss, defaultTrack));
                 if (hit < 2) assertEquals(0x49, controller.currentTrackId());
             }
             assertEquals(0, player.activePowerUp());
@@ -43,8 +54,8 @@ final class GameplayMusicControllerTest {
     void startsResolvedTrackAfterRoomLoad() {
         MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
-        GameplayMusicController controller = new GameplayMusicController(
-            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        GameplayMusicController controller =
+                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
 
         controller.selectAfterTransition(RoomMusicContext.overworld(0x92, 1));
 
@@ -55,8 +66,8 @@ final class GameplayMusicControllerTest {
     void doesNotRestartWhenResolvedTrackIsAlreadyCurrent() {
         MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
-        GameplayMusicController controller = new GameplayMusicController(
-            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        GameplayMusicController controller =
+                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
 
         controller.selectAfterTransition(RoomMusicContext.overworld(0x92, 1));
         controller.selectAfterTransition(RoomMusicContext.overworld(0x93, 1));
@@ -68,8 +79,8 @@ final class GameplayMusicControllerTest {
     void continueMusicAfterWarpSkipsOneSelectionAndThenClearsFlag() {
         MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
-        GameplayMusicController controller = new GameplayMusicController(
-            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        GameplayMusicController controller =
+                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
 
         controller.continueMusicAfterNextWarp();
         controller.selectAfterTransition(RoomMusicContext.indoor(0x10, 0x00, 1));
@@ -82,8 +93,8 @@ final class GameplayMusicControllerTest {
     void canResolveSilenceWithoutOpeningUnknownCatalogTrack() {
         MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
-        GameplayMusicController controller = new GameplayMusicController(
-            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        GameplayMusicController controller =
+                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
 
         controller.selectAfterTransition(RoomMusicContext.indoor(0x17, 0x00, 1));
 
@@ -95,17 +106,15 @@ final class GameplayMusicControllerTest {
     void directScreenMusicStartsRequestedTrackAndDoesNotRestartIt() {
         MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
-        GameplayMusicController controller = new GameplayMusicController(
-            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        GameplayMusicController controller =
+                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
 
         controller.playDirect(MusicTrackIds.MUSIC_TITLE_CUTSCENE);
         controller.playDirect(MusicTrackIds.MUSIC_TITLE_CUTSCENE);
         controller.playDirect(MusicTrackIds.MUSIC_TITLE_SCREEN);
 
-        assertEquals(List.of(
-            MusicTrackIds.MUSIC_TITLE_CUTSCENE,
-            MusicTrackIds.MUSIC_TITLE_SCREEN
-        ), player.playedTrackIds);
+        assertEquals(
+                List.of(MusicTrackIds.MUSIC_TITLE_CUTSCENE, MusicTrackIds.MUSIC_TITLE_SCREEN), player.playedTrackIds);
         assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, controller.currentTrackId());
     }
 
@@ -113,8 +122,8 @@ final class GameplayMusicControllerTest {
     void directSilenceStopsMusic() {
         MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
-        GameplayMusicController controller = new GameplayMusicController(
-            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        GameplayMusicController controller =
+                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
 
         controller.playDirect(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO);
         controller.playDirect(MusicTrackIds.MUSIC_NONE);
@@ -128,8 +137,8 @@ final class GameplayMusicControllerTest {
     void sourceFadeTimerStopsTheCurrentTrackWhenItsCountdownExpires() {
         MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
-        GameplayMusicController controller = new GameplayMusicController(
-            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        GameplayMusicController controller =
+                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
         controller.playDirect(MusicTrackIds.MUSIC_INSIDE_BUILDING);
 
         controller.requestFadeOut(0x30);

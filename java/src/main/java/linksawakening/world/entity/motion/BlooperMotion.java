@@ -31,9 +31,11 @@ public final class BlooperMotion {
     }
 
     /** Mirrors UpdateEntityPosWithSpeed_07 and its background helper. */
-    public Movement move(RoomEntity entity, int frameCounter,
-                  RoomEntityBackgroundInteraction backgroundInteraction,
-                  int ignoreHitsCountdown) {
+    public Movement move(
+            RoomEntity entity,
+            int frameCounter,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -44,16 +46,19 @@ public final class BlooperMotion {
         if (backgroundInteraction != null) {
             if (x != entity.x()) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, directionForHorizontalSpeed(speedX[slot]), x, entity.y(),
-                    ignoreHitsCountdown, frameCounter);
+                        entity,
+                        directionForHorizontalSpeed(speedX[slot]),
+                        x,
+                        entity.y(),
+                        ignoreHitsCountdown,
+                        frameCounter);
                 if (result.blocked()) {
                     x = entity.x();
                 }
             }
             if (y != entity.y()) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, directionForVerticalSpeed(speedY[slot]), x, y,
-                    ignoreHitsCountdown, frameCounter);
+                        entity, directionForVerticalSpeed(speedY[slot]), x, y, ignoreHitsCountdown, frameCounter);
                 if (result.blocked()) {
                     y = entity.y();
                 }
@@ -68,8 +73,12 @@ public final class BlooperMotion {
      * The runtime invokes the ground helper before this method because the ROM
      * handler reads the status written by ApplyEntityInteractionWithBackground.
      */
-    public Update finish(Movement movement, RoomEntityGroundInteraction.Result groundResult,
-                  int frameCounter, int linkEntityX, int linkEntityY) {
+    public Update finish(
+            Movement movement,
+            RoomEntityGroundInteraction.Result groundResult,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY) {
         if (groundResult == null) {
             throw new IllegalArgumentException("Blooper ground result cannot be null");
         }
@@ -78,7 +87,8 @@ public final class BlooperMotion {
         if ((groundResult.groundStatus() & 0xFF) == 0) {
             // hActiveEntityPosX/Y still contain the pre-move handler position.
             privateCountdown3[slot] = 0x10;
-            updated = withPosition(updated, movement.original().x(), movement.original().y());
+            updated = withPosition(
+                    updated, movement.original().x(), movement.original().y());
         }
 
         int variant = 0;
@@ -104,8 +114,7 @@ public final class BlooperMotion {
                 variant = 1;
                 if ((frameCounter & 0x01) == 0) {
                     speedY[slot] = (speedY[slot] - 1) & 0xFF;
-                    speedX[slot] = (speedX[slot]
-                        + (direction[slot] == DIRECTION_RIGHT ? 1 : -1)) & 0xFF;
+                    speedX[slot] = (speedX[slot] + (direction[slot] == DIRECTION_RIGHT ? 1 : -1)) & 0xFF;
                 }
             }
         } else {
@@ -113,10 +122,12 @@ public final class BlooperMotion {
         }
 
         RoomEntity presented = withVariant(updated, variant);
-        RoomEntityGroundInteraction.Result finalGroundResult =
-            new RoomEntityGroundInteraction.Result(
-                presented, groundResult.groundStatus(), groundResult.pitTransition(),
-                groundResult.unloaded(), groundResult.waterSplash());
+        RoomEntityGroundInteraction.Result finalGroundResult = new RoomEntityGroundInteraction.Result(
+                presented,
+                groundResult.groundStatus(),
+                groundResult.pitTransition(),
+                groundResult.unloaded(),
+                groundResult.waterSplash());
         return new Update(presented, finalGroundResult);
     }
 
@@ -155,8 +166,7 @@ public final class BlooperMotion {
         return privateCountdown3[slot];
     }
 
-    void setStateForTest(int slot, int newState, int newCountdown, int newDirection,
-                         int newSpeedX, int newSpeedY) {
+    void setStateForTest(int slot, int newState, int newCountdown, int newDirection, int newSpeedX, int newSpeedY) {
         if (!initialized[slot]) {
             initialize(slot);
         }
@@ -185,8 +195,7 @@ public final class BlooperMotion {
         if (difference == 0) {
             return speed & 0xFF;
         }
-        return (difference & 0x80) != 0
-            ? (speed + 1) & 0xFF : (speed - 1) & 0xFF;
+        return (difference & 0x80) != 0 ? (speed + 1) & 0xFF : (speed - 1) & 0xFF;
     }
 
     private static int approachZero(int speed) {
@@ -198,40 +207,56 @@ public final class BlooperMotion {
     }
 
     private static int directionToLinkX(int entityX, int linkX) {
-        return signedByte((linkX - entityX) & 0xFF) < 0
-            ? DIRECTION_LEFT : DIRECTION_RIGHT;
+        return signedByte((linkX - entityX) & 0xFF) < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
 
     private static int directionToLinkY(int entityY, int linkY) {
-        return signedByte((linkY - entityY) & 0xFF) < 0
-            ? DIRECTION_UP : DIRECTION_DOWN;
+        return signedByte((linkY - entityY) & 0xFF) < 0 ? DIRECTION_UP : DIRECTION_DOWN;
     }
 
     private static int directionForHorizontalSpeed(int speed) {
-        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.LEFT
-            : EntityBackgroundCollisionResult.RIGHT;
+        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
     }
 
     private static int directionForVerticalSpeed(int speed) {
-        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.UP
-            : EntityBackgroundCollisionResult.DOWN;
+        return signedByte(speed) < 0 ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -251,9 +276,7 @@ public final class BlooperMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    public record Movement(RoomEntity original, RoomEntity entity) {
-    }
+    public record Movement(RoomEntity original, RoomEntity entity) {}
 
-    public record Update(RoomEntity entity, RoomEntityGroundInteraction.Result groundResult) {
-    }
+    public record Update(RoomEntity entity, RoomEntityGroundInteraction.Result groundResult) {}
 }

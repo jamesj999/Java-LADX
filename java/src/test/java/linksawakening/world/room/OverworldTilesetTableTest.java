@@ -1,15 +1,11 @@
 package linksawakening.world.room;
 
-
-
-import linksawakening.world.room.OverworldTilesetTable;
-
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 final class OverworldTilesetTableTest {
 

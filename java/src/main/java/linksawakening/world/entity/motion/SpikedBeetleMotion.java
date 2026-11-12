@@ -1,10 +1,9 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$07 SpikedBeetleEntityHandler's rest, walk, dash, and flip states. */
 public final class SpikedBeetleMotion {
@@ -43,13 +42,18 @@ public final class SpikedBeetleMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
-                   int transitionCountdown, int ignoreHitsCountdown) {
+    public Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown,
+            int ignoreHitsCountdown) {
         if ((entity.type() & 0xFF) != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported Spiked Beetle entity type: 0x"
-                + Integer.toHexString(entity.type()));
+            throw new IllegalArgumentException(
+                    "Unsupported Spiked Beetle entity type: 0x" + Integer.toHexString(entity.type()));
         }
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Spiked Beetle random-byte supplier cannot be null");
@@ -105,8 +109,8 @@ public final class SpikedBeetleMotion {
                     state[slot] = 1;
                     int randomDirection = randomByteSupplier.getAsInt() & 0xFF;
                     int direction = (randomDirection & 0x06) == 0
-                        ? directionToLink(x, y, linkEntityX, linkEntityY)
-                        : (randomByteSupplier.getAsInt() & 0x03);
+                            ? directionToLink(x, y, linkEntityX, linkEntityY)
+                            : (randomByteSupplier.getAsInt() & 0x03);
                     setWalkingSpeed(slot, direction);
                 }
                 if (nearLinkOnOneAxis(x, y, linkEntityX, linkEntityY)) {
@@ -147,8 +151,7 @@ public final class SpikedBeetleMotion {
                     speedX[slot] = (countdown & 0x04) == 0 ? 0xF8 : 0x08;
                 }
             }
-            default -> throw new IllegalStateException("Invalid Spiked Beetle state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Spiked Beetle state: " + state[slot]);
         }
 
         int nextVariant = animationVariant[slot];
@@ -158,19 +161,31 @@ public final class SpikedBeetleMotion {
             nextVariant = 2 + ((frameCounter >>> 4) & 0x01);
         }
         animationVariant[slot] = nextVariant;
-        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
-        return new Update(updated, countdown, flippedHandler
-            ? FLIPPED_OPTIONS1 : NORMAL_OPTIONS1,
-            flippedHandler ? FLIPPED_HITBOX_FLAGS : NORMAL_HITBOX_FLAGS);
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                renderedVariant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
+        return new Update(
+                updated,
+                countdown,
+                flippedHandler ? FLIPPED_OPTIONS1 : NORMAL_OPTIONS1,
+                flippedHandler ? FLIPPED_HITBOX_FLAGS : NORMAL_HITBOX_FLAGS);
     }
 
     /** Mirrors the shield-contact branch at $03:6F2A. */
     public void flipFromShield(int slot, int romLinkDirection) {
         if (romLinkDirection < 0 || romLinkDirection > 3) {
-            throw new IllegalArgumentException("ROM Link direction must be 0..3: "
-                + romLinkDirection);
+            throw new IllegalArgumentException("ROM Link direction must be 0..3: " + romLinkDirection);
         }
         if (!initialized[slot]) {
             initialize(slot);
@@ -214,8 +229,7 @@ public final class SpikedBeetleMotion {
         return initialized[slot];
     }
 
-    private void startDash(int slot, int linkEntityX, int linkEntityY, int entityX,
-                           int entityY) {
+    private void startDash(int slot, int linkEntityX, int linkEntityY, int entityX, int entityY) {
         state[slot]++;
         direction[slot] = directionToLink(entityX, entityY, linkEntityX, linkEntityY);
     }
@@ -228,18 +242,15 @@ public final class SpikedBeetleMotion {
         speedY[slot] = WALKING_Y_SPEEDS[direction[slot]];
     }
 
-    private static boolean nearLinkOnOneAxis(int entityX, int entityY,
-                                              int linkEntityX, int linkEntityY) {
-        return withinSourceWindow((linkEntityX - entityX) & 0xFF)
-            || withinSourceWindow((linkEntityY - entityY) & 0xFF);
+    private static boolean nearLinkOnOneAxis(int entityX, int entityY, int linkEntityX, int linkEntityY) {
+        return withinSourceWindow((linkEntityX - entityX) & 0xFF) || withinSourceWindow((linkEntityY - entityY) & 0xFF);
     }
 
     private static boolean withinSourceWindow(int distance) {
         return (((distance & 0xFF) + 0x06) & 0xFF) < 0x0A;
     }
 
-    private static int directionToLink(int entityX, int entityY, int linkEntityX,
-                                       int linkEntityY) {
+    private static int directionToLink(int entityX, int entityY, int linkEntityX, int linkEntityY) {
         int distanceX = signedByte((linkEntityX - entityX) & 0xFF);
         int distanceY = signedByte((linkEntityY - entityY) & 0xFF);
         if (Math.abs(distanceY) >= Math.abs(distanceX)) {
@@ -248,19 +259,20 @@ public final class SpikedBeetleMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private Position move(RoomEntity entity, int x, int y,
-                           RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
+        if (backgroundCollision != null
+                && nextX != x
+                && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
+        if (backgroundCollision != null
+                && nextY != y
+                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }
@@ -297,8 +309,7 @@ public final class SpikedBeetleMotion {
         return (speed & 0x80) != 0 ? 2 : 3;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -317,9 +328,7 @@ public final class SpikedBeetleMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y, boolean collided) {
-    }
+    private record Position(int x, int y, boolean collided) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, int options1, int hitboxFlags) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown, int options1, int hitboxFlags) {}
 }

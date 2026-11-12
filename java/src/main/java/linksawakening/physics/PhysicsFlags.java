@@ -42,8 +42,7 @@ public final class PhysicsFlags {
     public static final int CAT_SPIKES = 0xE0;
     public static final int CAT_CONVEYOR = 0xF0;
 
-    private PhysicsFlags() {
-    }
+    private PhysicsFlags() {}
 
     /**
      * Return true if an object with this physics flag blocks walking in the

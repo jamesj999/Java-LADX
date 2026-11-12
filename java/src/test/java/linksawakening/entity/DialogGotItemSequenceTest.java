@@ -1,10 +1,12 @@
 package linksawakening.entity;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 final class DialogGotItemSequenceTest {
-    @Test void opensAtTwoPausesDuringDialogAndClearsAtZero() {
+    @Test
+    void opensAtTwoPausesDuringDialogAndClearsAtZero() {
         var sequence = new DialogGotItemSequence();
         sequence.start(2, 0x2A);
         assertEquals(0, sequence.presentedItem());
@@ -26,7 +28,8 @@ final class DialogGotItemSequenceTest {
         assertEquals(0, sequence.presentedItem());
     }
 
-    @Test void byteCountdownWrapsAndExplicitClearPreservesAlreadySubmittedPresentation() {
+    @Test
+    void byteCountdownWrapsAndExplicitClearPreservesAlreadySubmittedPresentation() {
         var sequence = new DialogGotItemSequence();
         sequence.start(2, 0);
         sequence.advance(false);
@@ -38,7 +41,8 @@ final class DialogGotItemSequenceTest {
         assertEquals(0, sequence.presentedItem());
     }
 
-    @Test void groundedUseStartsStateButDoesNotConsumeOwnershipOrChangePoseUntilNextPass() {
+    @Test
+    void groundedUseStartsStateButDoesNotConsumeOwnershipOrChangePoseUntilNextPass() {
         var link = link();
         link.presentToadstool();
         assertTrue(link.dialogGotItemActive());
@@ -50,7 +54,8 @@ final class DialogGotItemSequenceTest {
         assertTrue(link.isCollisionDamageImmune());
     }
 
-    @Test void nonzeroZRejectsUseAndHeldPoseUsesRomFractionalZGravity() {
+    @Test
+    void nonzeroZRejectsUseAndHeldPoseUsesRomFractionalZGravity() {
         var link = link();
         link.linkAirborne.zSubPixels = 16;
         link.presentToadstool();
@@ -70,9 +75,13 @@ final class DialogGotItemSequenceTest {
     }
 
     private static Link link() {
-        return new Link(new linksawakening.input.InputState(),
-            new linksawakening.input.InputConfig(1, 2, 3, 4, 5, 6, 7),
-            null, null, null, new linksawakening.state.PlayerState(),
-            new linksawakening.equipment.ItemRegistry());
+        return new Link(
+                new linksawakening.input.InputState(),
+                new linksawakening.input.InputConfig(1, 2, 3, 4, 5, 6, 7),
+                null,
+                null,
+                null,
+                new linksawakening.state.PlayerState(),
+                new linksawakening.equipment.ItemRegistry());
     }
 }

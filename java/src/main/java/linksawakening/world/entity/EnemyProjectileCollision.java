@@ -1,10 +1,8 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.event.EntityProjectileEvent;
-
-import linksawakening.world.entity.motion.EnemyRecoilMotion;
-
 import java.util.Optional;
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 /**
  * Pure implementation of bank $03's CheckLinkCollisionWithProjectile.
@@ -43,8 +41,7 @@ public final class EnemyProjectileCollision {
     private static final int[] LASER_LINK_SPEED_X = {0xF8, 0x08, 0x00, 0x00};
     private static final int[] LASER_LINK_SPEED_Y = {0x00, 0x00, 0x08, 0xF8};
 
-    private EnemyProjectileCollision() {
-    }
+    private EnemyProjectileCollision() {}
 
     /**
      * Applies the ROM's pre-movement projectile collision check.
@@ -52,19 +49,21 @@ public final class EnemyProjectileCollision {
      * @return one event when the projectile touches Link, otherwise empty
      */
     public static Optional<EntityProjectileEvent> check(
-        RoomEntity projectile, int projectileDirection, LinkState link) {
+            RoomEntity projectile, int projectileDirection, LinkState link) {
         if (projectile == null || link == null) {
             throw new IllegalArgumentException("Projectile collision inputs cannot be null");
         }
         int type = projectile.type() & 0xFF;
-        if (type != ENTITY_OCTOROK_ROCK && type != ENTITY_MOBLIN_ARROW
-            && type != ENTITY_WIZROBE_PROJECTILE
-            && type != ENTITY_PAIRODD_PROJECTILE && type != ENTITY_LASER_BEAM) {
+        if (type != ENTITY_OCTOROK_ROCK
+                && type != ENTITY_MOBLIN_ARROW
+                && type != ENTITY_WIZROBE_PROJECTILE
+                && type != ENTITY_PAIRODD_PROJECTILE
+                && type != ENTITY_LASER_BEAM) {
             return Optional.empty();
         }
         int direction = type == ENTITY_LASER_BEAM
-            ? checkedLaserDirection(projectileDirection)
-            : checkedDirection(projectileDirection);
+                ? checkedLaserDirection(projectileDirection)
+                : checkedDirection(projectileDirection);
 
         // CheckLinkCollisionWithProjectile returns before touching any entity
         // collision state when Link is non-interactive or airborne.
@@ -75,8 +74,7 @@ public final class EnemyProjectileCollision {
         // hActiveEntityVisualPosY is copied as entity Y minus entity Z by
         // CopyEntityPositionToActivePosition.
         int projectileVisualY = (projectile.y() - projectile.z()) & 0xFF;
-        if (!withinRomWindow(link.x(), projectile.x())
-            || !withinRomWindow(link.y(), projectileVisualY)) {
+        if (!withinRomWindow(link.x(), projectile.x()) || !withinRomWindow(link.y(), projectileVisualY)) {
             return Optional.empty();
         }
 
@@ -84,18 +82,23 @@ public final class EnemyProjectileCollision {
             return checkLaserBeam(projectile, direction, link);
         }
 
-        if (link.usingShield()
-            && link.direction() == REVERSED_DIRECTIONS[direction]) {
+        if (link.usingShield() && link.direction() == REVERSED_DIRECTIONS[direction]) {
             boolean pairoddProjectile = type == ENTITY_PAIRODD_PROJECTILE;
             boolean wizrobeProjectile = type == ENTITY_WIZROBE_PROJECTILE;
             int swordPokeX = pairoddProjectile ? projectile.x() : 0;
             int swordPokeY = pairoddProjectile ? projectileVisualY : 0;
             return Optional.of(new EntityProjectileEvent(
-                projectile.slot(), type, EntityProjectileEvent.Kind.SHIELD_BLOCK,
-                COLLISION_PROJECTILE, 0,
-                EntityProjectileEvent.SoundChannel.JINGLE, JINGLE_SHIELD_TING,
-                pairoddProjectile || wizrobeProjectile, pairoddProjectile,
-                swordPokeX, swordPokeY));
+                    projectile.slot(),
+                    type,
+                    EntityProjectileEvent.Kind.SHIELD_BLOCK,
+                    COLLISION_PROJECTILE,
+                    0,
+                    EntityProjectileEvent.SoundChannel.JINGLE,
+                    JINGLE_SHIELD_TING,
+                    pairoddProjectile || wizrobeProjectile,
+                    pairoddProjectile,
+                    swordPokeX,
+                    swordPokeY));
         }
 
         // func_003_6CC0 reaches ApplyLinkCollisionWithEnemy for these generic
@@ -107,11 +110,12 @@ public final class EnemyProjectileCollision {
         boolean wizrobeProjectile = type == ENTITY_WIZROBE_PROJECTILE;
         boolean remove = type == ENTITY_MOBLIN_ARROW || pairoddProjectile || wizrobeProjectile;
         int collisionValue = pairoddProjectile || wizrobeProjectile
-            ? COLLISION_PROJECTILE : (remove ? COLLISION_NONE : COLLISION_PROJECTILE);
+                ? COLLISION_PROJECTILE
+                : (remove ? COLLISION_NONE : COLLISION_PROJECTILE);
         int swordPokeX = pairoddProjectile ? projectile.x() : 0;
         int swordPokeY = pairoddProjectile ? projectileVisualY : 0;
-        return Optional.of(linkDamageEvent(projectile, type, collisionValue, remove,
-            pairoddProjectile, swordPokeX, swordPokeY, link));
+        return Optional.of(linkDamageEvent(
+                projectile, type, collisionValue, remove, pairoddProjectile, swordPokeX, swordPokeY, link));
     }
 
     /**
@@ -120,74 +124,119 @@ public final class EnemyProjectileCollision {
      * are not part of the generic enemy combat pass.
      */
     public static Optional<EntityProjectileEvent> checkSwordCollision(
-        RoomEntity projectile, boolean swordCollisionActive,
-        int swordX, int swordWidth, int swordY, int swordHeight) {
+            RoomEntity projectile,
+            boolean swordCollisionActive,
+            int swordX,
+            int swordWidth,
+            int swordY,
+            int swordHeight) {
         if (projectile == null) {
             throw new IllegalArgumentException("Projectile cannot be null");
         }
         if ((projectile.type() & 0xFF) != ENTITY_PAIRODD_PROJECTILE
-            || !swordCollisionActive || swordWidth <= 0 || swordHeight <= 0) {
+                || !swordCollisionActive
+                || swordWidth <= 0
+                || swordHeight <= 0) {
             return Optional.empty();
         }
 
         int projectileVisualY = (projectile.y() - projectile.z()) & 0xFF;
-        int xDistance = unsignedByteAbs(
-            projectile.x() + NORMAL_HITBOX_X - swordX);
+        int xDistance = unsignedByteAbs(projectile.x() + NORMAL_HITBOX_X - swordX);
         if (xDistance >= NORMAL_HITBOX_WIDTH + swordWidth) {
             return Optional.empty();
         }
-        int yDistance = unsignedByteAbs(
-            projectileVisualY + NORMAL_HITBOX_Y - swordY);
+        int yDistance = unsignedByteAbs(projectileVisualY + NORMAL_HITBOX_Y - swordY);
         if (yDistance >= NORMAL_HITBOX_HEIGHT + swordHeight) {
             return Optional.empty();
         }
 
         return Optional.of(new EntityProjectileEvent(
-            projectile.slot(), ENTITY_PAIRODD_PROJECTILE,
-            EntityProjectileEvent.Kind.SWORD_HIT, COLLISION_PROJECTILE, 0,
-            EntityProjectileEvent.SoundChannel.JINGLE, JINGLE_ENEMY_BUMP,
-            true, true, projectile.x(), projectileVisualY,
-            0, 0, LINK_IGNORE_COLLISION_COUNTDOWN));
+                projectile.slot(),
+                ENTITY_PAIRODD_PROJECTILE,
+                EntityProjectileEvent.Kind.SWORD_HIT,
+                COLLISION_PROJECTILE,
+                0,
+                EntityProjectileEvent.SoundChannel.JINGLE,
+                JINGLE_ENEMY_BUMP,
+                true,
+                true,
+                projectile.x(),
+                projectileVisualY,
+                0,
+                0,
+                LINK_IGNORE_COLLISION_COUNTDOWN));
     }
 
     private static Optional<EntityProjectileEvent> checkLaserBeam(
-        RoomEntity projectile, int projectileDirection, LinkState link) {
-        if (link.usingShield() && link.shieldLevel() >= 2
-            && reflectsFromMirrorShield(projectileDirection, link.direction())) {
+            RoomEntity projectile, int projectileDirection, LinkState link) {
+        if (link.usingShield()
+                && link.shieldLevel() >= 2
+                && reflectsFromMirrorShield(projectileDirection, link.direction())) {
             return Optional.of(new EntityProjectileEvent(
-                projectile.slot(), ENTITY_LASER_BEAM, EntityProjectileEvent.Kind.SHIELD_BLOCK,
-                0x02, 0, EntityProjectileEvent.SoundChannel.JINGLE, JINGLE_SWORD_POKE,
-                false, true, projectile.x(), projectile.y(),
-                LASER_LINK_SPEED_X[link.direction()], LASER_LINK_SPEED_Y[link.direction()],
-                0x10));
+                    projectile.slot(),
+                    ENTITY_LASER_BEAM,
+                    EntityProjectileEvent.Kind.SHIELD_BLOCK,
+                    0x02,
+                    0,
+                    EntityProjectileEvent.SoundChannel.JINGLE,
+                    JINGLE_SWORD_POKE,
+                    false,
+                    true,
+                    projectile.x(),
+                    projectile.y(),
+                    LASER_LINK_SPEED_X[link.direction()],
+                    LASER_LINK_SPEED_Y[link.direction()],
+                    0x10));
         }
 
         // A beam that is not reflected is unloaded by the bank-$15 handler;
         // its source damage group supplies eight points of Link damage.
-        return Optional.of(linkDamageEvent(projectile, ENTITY_LASER_BEAM, COLLISION_NONE,
-            true, false, 0, 0, link));
+        return Optional.of(linkDamageEvent(projectile, ENTITY_LASER_BEAM, COLLISION_NONE, true, false, 0, 0, link));
     }
 
     /** Mirrors ApplyLinkCollisionWithEnemy's generic Link response. */
     private static EntityProjectileEvent linkDamageEvent(
-        RoomEntity projectile, int type, int collisionValue, boolean remove,
-        boolean swordPokeVfx, int swordPokeX, int swordPokeY, LinkState link) {
+            RoomEntity projectile,
+            int type,
+            int collisionValue,
+            boolean remove,
+            boolean swordPokeVfx,
+            int swordPokeX,
+            int swordPokeY,
+            LinkState link) {
         boolean collisionProtected = link.invincibilityCounter() != 0;
         if (collisionProtected) {
             return new EntityProjectileEvent(
-                projectile.slot(), type, EntityProjectileEvent.Kind.LINK_DAMAGE,
-                collisionValue, 0, EntityProjectileEvent.SoundChannel.NONE, -1,
-                remove, swordPokeVfx, swordPokeX, swordPokeY);
+                    projectile.slot(),
+                    type,
+                    EntityProjectileEvent.Kind.LINK_DAMAGE,
+                    collisionValue,
+                    0,
+                    EntityProjectileEvent.SoundChannel.NONE,
+                    -1,
+                    remove,
+                    swordPokeVfx,
+                    swordPokeX,
+                    swordPokeY);
         }
 
         EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-            projectile.x(), projectile.y(), projectile.z(), link.x(), link.y(),
-            LINK_KNOCKBACK_LENGTH);
+                projectile.x(), projectile.y(), projectile.z(), link.x(), link.y(), LINK_KNOCKBACK_LENGTH);
         return new EntityProjectileEvent(
-            projectile.slot(), type, EntityProjectileEvent.Kind.LINK_DAMAGE,
-            collisionValue, LINK_DAMAGE, EntityProjectileEvent.SoundChannel.WAVE, WAVE_LINK_HURT,
-            remove, swordPokeVfx, swordPokeX, swordPokeY,
-            vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+                projectile.slot(),
+                type,
+                EntityProjectileEvent.Kind.LINK_DAMAGE,
+                collisionValue,
+                LINK_DAMAGE,
+                EntityProjectileEvent.SoundChannel.WAVE,
+                WAVE_LINK_HURT,
+                remove,
+                swordPokeVfx,
+                swordPokeX,
+                swordPokeY,
+                vector.x() & 0xFF,
+                vector.y() & 0xFF,
+                0x10);
     }
 
     /* Data_003_6BDA: expected beam direction for Link right/left/up/down. */
@@ -225,11 +274,16 @@ public final class EnemyProjectileCollision {
     }
 
     /** ROM-equivalent Link fields needed by CheckLinkCollisionWithProjectile. */
-    public record LinkState(int x, int y, int z, int motionState,
-                            int direction, boolean usingShield,
-                            int shieldLevel, int invincibilityCounter) {
-        public LinkState(int x, int y, int z, int motionState,
-                         int direction, boolean usingShield) {
+    public record LinkState(
+            int x,
+            int y,
+            int z,
+            int motionState,
+            int direction,
+            boolean usingShield,
+            int shieldLevel,
+            int invincibilityCounter) {
+        public LinkState(int x, int y, int z, int motionState, int direction, boolean usingShield) {
             this(x, y, z, motionState, direction, usingShield, 0, 0);
         }
 
@@ -245,8 +299,7 @@ public final class EnemyProjectileCollision {
                 throw new IllegalArgumentException("Shield level out of range: " + shieldLevel);
             }
             if (invincibilityCounter < 0 || invincibilityCounter > 0xFF) {
-                throw new IllegalArgumentException("Invincibility counter out of range: "
-                    + invincibilityCounter);
+                throw new IllegalArgumentException("Invincibility counter out of range: " + invincibilityCounter);
             }
         }
 

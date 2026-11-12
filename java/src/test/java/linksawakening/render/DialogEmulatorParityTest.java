@@ -1,6 +1,6 @@
 package linksawakening.render;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -8,8 +8,7 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /** Golden full frames from the shipped ROM; no emulator dependency during Gradle tests. */
 @linksawakening.testing.RequiresRom
@@ -57,28 +56,33 @@ final class DialogEmulatorParityTest {
     private void verifyScenario(String scenario, int expectedFrames) throws Exception {
         String prefix = "marin".equals(scenario) ? "" : scenario + "/";
         Map<String, String> hashes = new HashMap<>();
-        for (String line : resource(prefix + "emulator-rgb555-sha256.csv").lines().toList()) {
+        for (String line :
+                resource(prefix + "emulator-rgb555-sha256.csv").lines().toList()) {
             String[] fields = line.split(",");
             hashes.put(fields[0], fields[1]);
         }
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (var in = linksawakening.testing.TestRom.open()) {
-            assertEquals("c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
-                HexFormat.of().formatHex(digest.digest(in.readAllBytes())), "Fixture ROM revision");
+            assertEquals(
+                    "c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
+                    HexFormat.of().formatHex(digest.digest(in.readAllBytes())),
+                    "Fixture ROM revision");
         }
         AtomicInteger checked = new AtomicInteger();
-        DialogEmulatorCapture.capture(scenario, resource(prefix + "initial.tsv"),
-            resource(prefix + "frames.tsv").lines().toList(),
-            (name, rgba) -> {
-                byte[] rgb555 = new byte[160 * 144 * 3];
-                for (int pixel = 0; pixel < 160 * 144; pixel++) {
-                    for (int channel = 0; channel < 3; channel++) {
-                        rgb555[pixel * 3 + channel] = (byte) ((rgba[pixel * 4 + channel] & 255) >>> 3);
+        DialogEmulatorCapture.capture(
+                scenario,
+                resource(prefix + "initial.tsv"),
+                resource(prefix + "frames.tsv").lines().toList(),
+                (name, rgba) -> {
+                    byte[] rgb555 = new byte[160 * 144 * 3];
+                    for (int pixel = 0; pixel < 160 * 144; pixel++) {
+                        for (int channel = 0; channel < 3; channel++) {
+                            rgb555[pixel * 3 + channel] = (byte) ((rgba[pixel * 4 + channel] & 255) >>> 3);
+                        }
                     }
-                }
-                assertEquals(hashes.get(name), HexFormat.of().formatHex(digest.digest(rgb555)), name);
-                checked.incrementAndGet();
-            });
+                    assertEquals(hashes.get(name), HexFormat.of().formatHex(digest.digest(rgb555)), name);
+                    checked.incrementAndGet();
+                });
         assertEquals(expectedFrames, checked.get());
         assertEquals(hashes.size(), checked.get());
     }

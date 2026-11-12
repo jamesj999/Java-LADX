@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$04 PairoddProjectileEntityHandler's vector travel and animation. */
 public final class PairoddProjectileMotion {
@@ -30,8 +29,7 @@ public final class PairoddProjectileMotion {
 
     public void initializeSpawn(int slot, RoomEntity source, int linkEntityX, int linkEntityY) {
         reset(slot);
-        Vector vector = vectorTowardsLink(source.x(), source.y(), source.z(),
-            linkEntityX, linkEntityY, VECTOR_LENGTH);
+        Vector vector = vectorTowardsLink(source.x(), source.y(), source.z(), linkEntityX, linkEntityY, VECTOR_LENGTH);
         speedX[slot] = vector.x();
         speedY[slot] = vector.y();
         initialized[slot] = true;
@@ -46,9 +44,20 @@ public final class PairoddProjectileMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int variant = (frameCounter >>> 3) & 0x01;
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 
     public void clear(int slot) {
@@ -91,8 +100,7 @@ public final class PairoddProjectileMotion {
         direction[slot] = 0;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceY = signedByte(linkY - entityY + entityZ);
         int distanceX = signedByte(linkX - entityX);
         int absoluteY = Math.abs(distanceY);
@@ -122,8 +130,7 @@ public final class PairoddProjectileMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -144,6 +151,5 @@ public final class PairoddProjectileMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 }

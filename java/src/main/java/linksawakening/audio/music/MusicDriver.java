@@ -1,15 +1,12 @@
 package linksawakening.audio.music;
 
-import linksawakening.rom.RomAddress;
-
-import linksawakening.rom.Rom;
-
-import linksawakening.audio.apu.GameBoyApu;
-import linksawakening.rom.RomBank;
-
-import java.util.Objects;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
 
 public final class MusicDriver {
     private static final int CHANNEL_COUNT = 4;
@@ -17,68 +14,44 @@ public final class MusicDriver {
     private static final int WAVE_RAM_BYTES = 16;
     private static final int TRIGGER = 0x80;
     private static final int[] SQUARE_AND_WAVE_FREQUENCY_TABLE = {
-            0x0F00, 0x002C, 0x009C, 0x0106,
-            0x016B, 0x01C9, 0x0223, 0x0277,
-            0x02C6, 0x0312, 0x0356, 0x039B,
-            0x03DA, 0x0416, 0x044E, 0x0483,
-            0x04B5, 0x04E5, 0x0511, 0x053B,
-            0x0563, 0x0589, 0x05AC, 0x05CE,
-            0x05ED, 0x060A, 0x0627, 0x0642,
-            0x065B, 0x0672, 0x0689, 0x069E,
-            0x06B2, 0x06C4, 0x06D6, 0x06E7,
-            0x06F7, 0x0706, 0x0714, 0x0721,
-            0x072D, 0x0739, 0x0744, 0x074F,
-            0x0759, 0x0762, 0x076B, 0x0774,
-            0x077B, 0x0783, 0x078A, 0x0790,
-            0x0797, 0x079D, 0x07A2, 0x07A7,
-            0x07AC, 0x07B1, 0x07B6, 0x07BA,
-            0x07BE, 0x07C1, 0x07C5, 0x07C8,
-            0x07CB, 0x07CE, 0x07D1, 0x07D4,
-            0x07D6, 0x07D9, 0x07DB, 0x07DD,
-            0x07DF
+        0x0F00, 0x002C, 0x009C, 0x0106,
+        0x016B, 0x01C9, 0x0223, 0x0277,
+        0x02C6, 0x0312, 0x0356, 0x039B,
+        0x03DA, 0x0416, 0x044E, 0x0483,
+        0x04B5, 0x04E5, 0x0511, 0x053B,
+        0x0563, 0x0589, 0x05AC, 0x05CE,
+        0x05ED, 0x060A, 0x0627, 0x0642,
+        0x065B, 0x0672, 0x0689, 0x069E,
+        0x06B2, 0x06C4, 0x06D6, 0x06E7,
+        0x06F7, 0x0706, 0x0714, 0x0721,
+        0x072D, 0x0739, 0x0744, 0x074F,
+        0x0759, 0x0762, 0x076B, 0x0774,
+        0x077B, 0x0783, 0x078A, 0x0790,
+        0x0797, 0x079D, 0x07A2, 0x07A7,
+        0x07AC, 0x07B1, 0x07B6, 0x07BA,
+        0x07BE, 0x07C1, 0x07C5, 0x07C8,
+        0x07CB, 0x07CE, 0x07D1, 0x07D4,
+        0x07D6, 0x07D9, 0x07DB, 0x07DD,
+        0x07DF
     };
     private static final int[] NOISE_FREQUENCY_TABLE_1B = {
-            0x00,
-            0x00, 0x00, 0x00, 0x00, 0xC0,
-            0x09, 0x00, 0x38, 0x34, 0xC0,
-            0x19, 0x00, 0x38, 0x33, 0xC0,
-            0x46, 0x00, 0x13, 0x10, 0xC0,
-            0x23, 0x00, 0x20, 0x40, 0x80,
-            0x51, 0x00, 0x20, 0x07, 0x80,
-            0xA1, 0x00, 0x00, 0x18, 0x80,
-            0xF2, 0x00, 0x00, 0x18, 0x80,
-            0x81, 0x00, 0x3A, 0x10, 0xC0,
-            0x80, 0x00, 0x00, 0x10, 0xC0,
-            0x57, 0x00, 0x00, 0x60, 0x80,
-            0x01, 0x02, 0x04, 0x08, 0x10,
-            0x20, 0x06, 0x0C, 0x18, 0x01,
-            0x01, 0x01, 0x01, 0x01, 0x30,
-            0x01, 0x03, 0x06, 0x0C, 0x18,
-            0x30, 0x09, 0x12, 0x24, 0x02,
-            0x04, 0x08, 0x01, 0x01, 0x48
+        0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x09, 0x00, 0x38, 0x34, 0xC0, 0x19, 0x00, 0x38, 0x33, 0xC0, 0x46, 0x00,
+        0x13, 0x10, 0xC0, 0x23, 0x00, 0x20, 0x40, 0x80, 0x51, 0x00, 0x20, 0x07, 0x80, 0xA1, 0x00, 0x00, 0x18, 0x80,
+        0xF2, 0x00, 0x00, 0x18, 0x80, 0x81, 0x00, 0x3A, 0x10, 0xC0, 0x80, 0x00, 0x00, 0x10, 0xC0, 0x57, 0x00, 0x00,
+        0x60, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x06, 0x0C, 0x18, 0x01, 0x01, 0x01, 0x01, 0x01, 0x30, 0x01,
+        0x03, 0x06, 0x0C, 0x18, 0x30, 0x09, 0x12, 0x24, 0x02, 0x04, 0x08, 0x01, 0x01, 0x48
     };
     private static final int[] NOISE_FREQUENCY_TABLE_1E = {
-            0x00,
-            0x00, 0x00, 0x00, 0x00, 0xC0,
-            0x09, 0x00, 0x38, 0x34, 0xC0,
-            0x19, 0x00, 0x38, 0x33, 0xC0,
-            0x46, 0x00, 0x13, 0x10, 0xC0,
-            0x23, 0x00, 0x20, 0x40, 0x80,
-            0x51, 0x00, 0x20, 0x07, 0x80,
-            0xA1, 0x00, 0x00, 0x18, 0x80,
-            0xF2, 0x00, 0x00, 0x18, 0x80,
-            0x81, 0x00, 0x3A, 0x10, 0xC0,
-            0x80, 0x00, 0x00, 0x10, 0xC0,
-            0x57, 0x00, 0x00, 0x60, 0x80,
-            0x10, 0x00, 0x00, 0x10, 0x80,
-            0x01, 0x02, 0x04, 0x08, 0x10,
-            0x20, 0x06, 0x0C, 0x18, 0x01,
-            0x01, 0x01, 0x01, 0x01, 0x30
+        0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x09, 0x00, 0x38, 0x34, 0xC0, 0x19, 0x00, 0x38, 0x33, 0xC0, 0x46, 0x00,
+        0x13, 0x10, 0xC0, 0x23, 0x00, 0x20, 0x40, 0x80, 0x51, 0x00, 0x20, 0x07, 0x80, 0xA1, 0x00, 0x00, 0x18, 0x80,
+        0xF2, 0x00, 0x00, 0x18, 0x80, 0x81, 0x00, 0x3A, 0x10, 0xC0, 0x80, 0x00, 0x00, 0x10, 0xC0, 0x57, 0x00, 0x00,
+        0x60, 0x80, 0x10, 0x00, 0x00, 0x10, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x06, 0x0C, 0x18, 0x01, 0x01,
+        0x01, 0x01, 0x01, 0x30
     };
-    private static final int[] SOFTWARE_ENVELOPE_TABLE_1B = { 0xF0, 0x10, 0x32, 0x22, 0x47, 0x81, 0x20, 0x00 };
-    private static final int[] SOFTWARE_ENVELOPE_TABLE_1E = { 0xF0, 0x10, 0x32, 0x22, 0x47, 0x60, 0x20, 0x00 };
-    private static final int[] NOISE_FF_START_REGISTERS = { 0x3B, 0x80, 0x07, 0xC0 };
-    private static final int[] NOISE_FF_FOLLOW_UP_REGISTERS = { 0x00, 0x42, 0x02, 0xC0 };
+    private static final int[] SOFTWARE_ENVELOPE_TABLE_1B = {0xF0, 0x10, 0x32, 0x22, 0x47, 0x81, 0x20, 0x00};
+    private static final int[] SOFTWARE_ENVELOPE_TABLE_1E = {0xF0, 0x10, 0x32, 0x22, 0x47, 0x60, 0x20, 0x00};
+    private static final int[] NOISE_FF_START_REGISTERS = {0x3B, 0x80, 0x07, 0xC0};
+    private static final int[] NOISE_FF_FOLLOW_UP_REGISTERS = {0x00, 0x42, 0x02, 0xC0};
     private static final int NOISE_FF_START_TICKS = 2;
     private static final int NOISE_FF_FOLLOW_UP_TICKS = 4;
 
@@ -86,27 +59,25 @@ public final class MusicDriver {
     private final Rom romView;
     private final GameBoyApu apu;
     private final MusicChannelState[] channels = {
-            new MusicChannelState(1),
-            new MusicChannelState(2),
-            new MusicChannelState(3),
-            new MusicChannelState(4)
+        new MusicChannelState(1), new MusicChannelState(2), new MusicChannelState(3), new MusicChannelState(4)
     };
 
     private java.util.function.IntPredicate sfxOwnsChannel = channel -> false;
     private java.util.function.BooleanSupplier takeWaveRestoreRequest = () -> false;
     private int waveformPointer;
 
-    public void setSoundEffectState(java.util.function.IntPredicate ownsChannel,
-                                   java.util.function.BooleanSupplier waveRestoreRequest) {
+    public void setSoundEffectState(
+            java.util.function.IntPredicate ownsChannel, java.util.function.BooleanSupplier waveRestoreRequest) {
         sfxOwnsChannel = Objects.requireNonNull(ownsChannel);
         takeWaveRestoreRequest = Objects.requireNonNull(waveRestoreRequest);
     }
 
     private void writeRegister(int register, int value) {
-        int channel = register <= GameBoyApu.NR14 ? 1
-                : register <= GameBoyApu.NR24 ? 2
-                : register <= GameBoyApu.NR34 ? 3
-                : register <= GameBoyApu.NR44 ? 4 : 0;
+        int channel = register <= GameBoyApu.NR14
+                ? 1
+                : register <= GameBoyApu.NR24
+                        ? 2
+                        : register <= GameBoyApu.NR34 ? 3 : register <= GameBoyApu.NR44 ? 4 : 0;
         // Music continues sequencing while bit 7 of D3xF inhibits hardware writes.
         // WriteChannelRegisters (1B:46BF), func_01B_4787 (1B:47A4).
         if (channel == 0 || !sfxOwnsChannel.test(channel)) apu.writeRegister(register, value);
@@ -204,17 +175,17 @@ public final class MusicDriver {
         return channels[channel - 1].active;
     }
 
-    private record ParsePosition(int stream, int program, int loopStart, int remaining) { }
+    private record ParsePosition(int stream, int program, int loopStart, int remaining) {}
 
     private void parseUntilTimeConsumed(MusicChannelState state) {
         Set<ParsePosition> visited = new HashSet<>();
         while (state.active) {
-            ParsePosition position = new ParsePosition(state.streamPointer,
-                state.programCounter, state.loopStart, state.loopRemaining);
+            ParsePosition position =
+                    new ParsePosition(state.streamPointer, state.programCounter, state.loopStart, state.loopRemaining);
             if (!visited.add(position)) {
                 throw new IllegalStateException("Music channel loop consumed no time: channel "
-                    + state.channel + " bank " + hex(trackBank)
-                    + " address " + hex(state.programCounter));
+                        + state.channel + " bank " + hex(trackBank)
+                        + " address " + hex(state.programCounter));
             }
             int opcodeAddress = state.programCounter;
             int opcode = readByte(trackBank, state.programCounter);
@@ -245,8 +216,8 @@ public final class MusicDriver {
                 state.programCounter++;
             } else if (MusicOpcode.isNoteLength(opcode)) {
                 state.selectedLength = readSpeed((opcode & 0x0F));
-                articulationTick[state.channel - 1] = articulationTickFor(state.selectedLength,
-                        softwareEnvelope[state.channel - 1]);
+                articulationTick[state.channel - 1] =
+                        articulationTickFor(state.selectedLength, softwareEnvelope[state.channel - 1]);
             } else if (state.channel == 4 && (MusicOpcode.isPitchedNote(opcode) || MusicOpcode.isNoiseNote(opcode))) {
                 writeNoiseNote(state, opcode);
                 consumeTime(state);
@@ -509,8 +480,8 @@ public final class MusicDriver {
 
     private void requireReadable(int offset, int length, int bank, int address) {
         if (offset < 0 || offset + length > romData.length) {
-            throw new IllegalStateException("Music ROM read out of range: bank " + hex(bank)
-                    + " address " + hex(address));
+            throw new IllegalStateException(
+                    "Music ROM read out of range: bank " + hex(bank) + " address " + hex(address));
         }
     }
 
@@ -549,8 +520,7 @@ public final class MusicDriver {
     }
 
     private static int noiseTableOffset(int noteCode, int[] noiseTable) {
-        if (noteCode < 0x01 || noteCode > 0x51 || (noteCode - 0x01) % 5 != 0
-                || noteCode + 4 >= noiseTable.length) {
+        if (noteCode < 0x01 || noteCode > 0x51 || (noteCode - 0x01) % 5 != 0 || noteCode + 4 >= noiseTable.length) {
             throw new IllegalArgumentException("Invalid noise music note: " + hex(noteCode));
         }
         return noteCode;

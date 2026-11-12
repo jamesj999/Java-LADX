@@ -1,15 +1,13 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.event.EntityProjectileEvent;
-
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 final class HookshotChainMotionTest {
 
@@ -41,8 +39,7 @@ final class HookshotChainMotionTest {
     void outboundStepUsesSignedFourBitFixedPointSpeedAndDecrementsCountdown() {
         HookshotChainMotion.State state = HookshotChainMotion.spawn(0x40, 0x50, 0, 0);
 
-        HookshotChainMotion.Step step = HookshotChainMotion.advance(
-            state, 0x40, 0x50, false);
+        HookshotChainMotion.Step step = HookshotChainMotion.advance(state, 0x40, 0x50, false);
 
         assertEquals(0x43, step.state().x());
         assertEquals(0x50, step.state().y());
@@ -56,8 +53,7 @@ final class HookshotChainMotionTest {
     void blockedOutboundStepReportsCollisionWithoutAdvancingThroughTheWall() {
         HookshotChainMotion.State state = HookshotChainMotion.spawn(0x40, 0x50, 0, 0);
 
-        HookshotChainMotion.Step step = HookshotChainMotion.advance(
-            state, 0x40, 0x50, true);
+        HookshotChainMotion.Step step = HookshotChainMotion.advance(state, 0x40, 0x50, true);
 
         assertEquals(0x40, step.state().x());
         assertTrue(step.collided());
@@ -66,8 +62,7 @@ final class HookshotChainMotionTest {
 
     @Test
     void linkCollisionUsesTheEntityVisualYAndRomSmallHitbox() {
-        HookshotChainMotion.State state = new HookshotChainMotion.State(
-            0x40, 0x51, 0x01, 0, 0, 0, 0, 0, 0);
+        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 0x01, 0, 0, 0, 0, 0, 0);
 
         assertTrue(HookshotChainMotion.overlapsLink(state, 0x40, 0x50));
         assertFalse(HookshotChainMotion.overlapsLink(state, 0x40, 0x5A));
@@ -112,11 +107,9 @@ final class HookshotChainMotionTest {
     @Test
     void pullSpeedNegatesTheZAwareVectorFromChainToLink() {
         HookshotChainMotion.State state = new HookshotChainMotion.State(
-            0x50, 0x50, 0x08, 0, 0, 0, 0, 0, 0,
-            HookshotChainMotion.PULLING_STATE, false);
+                0x50, 0x50, 0x08, 0, 0, 0, 0, 0, 0, HookshotChainMotion.PULLING_STATE, false);
 
-        HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(
-            state, 0x40, 0x50);
+        HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(state, 0x40, 0x50);
 
         assertEquals(0x30, speed.speedX());
         assertEquals(0xE8, speed.speedY());
@@ -125,11 +118,9 @@ final class HookshotChainMotionTest {
     @Test
     void shippedRomKeepsTheZAwarePullWhenRawCoordinatesMatch() {
         HookshotChainMotion.State state = new HookshotChainMotion.State(
-            0x40, 0x50, 0x08, 0, 0, 0, 0, 0, 0,
-            HookshotChainMotion.PULLING_STATE, false);
+                0x40, 0x50, 0x08, 0, 0, 0, 0, 0, 0, HookshotChainMotion.PULLING_STATE, false);
 
-        HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(
-            state, 0x40, 0x50);
+        HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(state, 0x40, 0x50);
 
         assertEquals(0, speed.speedX());
         // The shipped $18:7C1C bytes omit the optional __PATCH_0__ guard.
@@ -139,20 +130,16 @@ final class HookshotChainMotionTest {
     @ParameterizedTest
     @CsvSource({"-8, true", "9, false"})
     void returnCatchUsesTheCachedPositionBeforeMovement(int linkOffsetX, boolean caught) {
-        HookshotChainMotion.State state = new HookshotChainMotion.State(
-            0x40, 0x51, 1, 0, 0x30, 0, 1, 0, 0);
-        HookshotChainMotion.Step step = HookshotChainMotion.advance(
-            state, 0x40 + linkOffsetX, 0x50, false);
+        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 1, 0, 0x30, 0, 1, 0, 0);
+        HookshotChainMotion.Step step = HookshotChainMotion.advance(state, 0x40 + linkOffsetX, 0x50, false);
         assertEquals(0x43, step.state().x());
         assertEquals(caught, step.reachedLink());
     }
 
     @Test
     void zeroVectorDistanceFollowsTheRomsDivisionLoop() {
-        HookshotChainMotion.State state = new HookshotChainMotion.State(
-            0x40, 0x51, 1, 0, 0, 0, 0, 0, 0);
-        HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(
-            state, 0x40, 0x50);
+        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 1, 0, 0, 0, 0, 0, 0);
+        HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(state, 0x40, 0x50);
         assertEquals(0xD0, speed.speedX());
         assertEquals(0xD0, speed.speedY());
     }

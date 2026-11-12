@@ -1,10 +1,10 @@
 package linksawakening.audio.apu;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 final class GameBoyApuTest {
     @Test
@@ -185,7 +185,8 @@ final class GameBoyApuTest {
         int earlyTransitions = countLeftChannelSignTransitions(apu.render(4096));
         int laterTransitions = countLeftChannelSignTransitions(apu.render(4096));
 
-        assertTrue(laterTransitions > earlyTransitions,
+        assertTrue(
+                laterTransitions > earlyTransitions,
                 "expected sweep to raise pitch, early=" + earlyTransitions + " later=" + laterTransitions);
     }
 

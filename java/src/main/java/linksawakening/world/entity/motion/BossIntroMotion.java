@@ -8,9 +8,7 @@ public final class BossIntroMotion {
     private static final int ENTITY_GRIM_CREEPER = 0xBC;
     private static final int MAP_FACE_SHRINE = 0x05;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
-    private static final int[] BOSS_INTRO_DIALOGS = {
-        0xB0, 0xB4, 0xB1, 0xB2, 0xB3, 0xB6, 0xBA, 0xBC, 0xB8
-    };
+    private static final int[] BOSS_INTRO_DIALOGS = {0xB0, 0xB4, 0xB1, 0xB2, 0xB3, 0xB6, 0xBA, 0xBC, 0xB8};
 
     public record Update(int musicTrack, int dialogTableId, int dialogLowId) {
         public static Update none() {
@@ -34,8 +32,7 @@ public final class BossIntroMotion {
         int normalizedOptions = options1 & 0xFF;
         int normalizedType = entityType & 0xFF;
         int normalizedMap = mapId & 0xFF;
-        int musicTrack = (normalizedOptions & 0x04) != 0
-            ? MUSIC_MINIBOSS : MUSIC_BOSS;
+        int musicTrack = (normalizedOptions & 0x04) != 0 ? MUSIC_MINIBOSS : MUSIC_BOSS;
         if ((transitionSequenceCounter & 0xFF) != 0x04) {
             return new Update(musicTrack, -1, -1);
         }
@@ -46,9 +43,9 @@ public final class BossIntroMotion {
         } else if (normalizedType == ENTITY_GRIM_CREEPER) {
             dialogLowId = 0x26;
         } else if ((normalizedOptions & 0x04) == 0
-            && normalizedMap != MAP_COLOR_DUNGEON
-            && normalizedMap != MAP_FACE_SHRINE
-            && normalizedMap < BOSS_INTRO_DIALOGS.length) {
+                && normalizedMap != MAP_COLOR_DUNGEON
+                && normalizedMap != MAP_FACE_SHRINE
+                && normalizedMap < BOSS_INTRO_DIALOGS.length) {
             dialogLowId = BOSS_INTRO_DIALOGS[normalizedMap];
         }
         return new Update(musicTrack, dialogLowId < 0 ? -1 : 0, dialogLowId);

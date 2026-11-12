@@ -5,12 +5,17 @@ public final class SideViewPotContact {
     private static final int COLLISION_X = 0x08;
     private static final int COLLISION_Y = 0x08;
 
-    private SideViewPotContact() {
-    }
+    private SideViewPotContact() {}
 
-    public record Result(boolean collided, boolean resetPegasusBoots,
-                  boolean restoreFinalPositionX, int ignoreCollisionCountdown,
-                  int speedX, boolean snapTop, int positionY, int speedY) {
+    public record Result(
+            boolean collided,
+            boolean resetPegasusBoots,
+            boolean restoreFinalPositionX,
+            int ignoreCollisionCountdown,
+            int speedX,
+            boolean snapTop,
+            int positionY,
+            int speedY) {
         public static Result none() {
             return new Result(false, false, false, 0, 0, false, 0, 0);
         }
@@ -25,8 +30,7 @@ public final class SideViewPotContact {
         // HitboxPositions.$3C is (x=$08, y=$08, width=$02, height=$08)
         // in source storage; CheckLinkCollision uses the visual Y plus the
         // second coordinate byte ($02), then subtracts Link's $08 origin.
-        int yDifference = signedByte((entity.y() - entity.z() + 0x02)
-            - linkPositionY - 0x08);
+        int yDifference = signedByte((entity.y() - entity.z() + 0x02) - linkPositionY - 0x08);
         return Math.abs(yDifference) < COLLISION_Y + 0x04;
     }
 
@@ -34,8 +38,8 @@ public final class SideViewPotContact {
      * Mirrors SideViewPotState0Handler and func_019_599B. The input positions
      * are the ROM hLinkPositionX/Y and entity position bytes.
      */
-    public static Result resolve(RoomEntity entity, int linkPositionX, int linkPositionY,
-                          boolean linkAirborne, int linkSpeedY) {
+    public static Result resolve(
+            RoomEntity entity, int linkPositionX, int linkPositionY, boolean linkAirborne, int linkSpeedY) {
         if (!overlaps(entity, linkPositionX, linkPositionY)) {
             return Result.none();
         }
@@ -58,16 +62,21 @@ public final class SideViewPotContact {
             }
         }
 
-        boolean snapTop = (linkSpeedY & 0x80) == 0
-            && (((yDifference + 0x08) & 0xFF) & 0x80) != 0;
-        return new Result(true, resetPegasusBoots, restoreFinalPositionX,
-            ignoreCollisionCountdown, speedX, snapTop,
-            (entity.y() - 0x10) & 0xFF, snapTop ? 0x02 : 0);
+        boolean snapTop = (linkSpeedY & 0x80) == 0 && (((yDifference + 0x08) & 0xFF) & 0x80) != 0;
+        return new Result(
+                true,
+                resetPegasusBoots,
+                restoreFinalPositionX,
+                ignoreCollisionCountdown,
+                speedX,
+                snapTop,
+                (entity.y() - 0x10) & 0xFF,
+                snapTop ? 0x02 : 0);
     }
 
     public static boolean liftWindow(RoomEntity entity, int linkPositionX, int linkPositionY) {
         return withinSignedWindow(linkPositionX - entity.x(), 0x12)
-            && withinSignedWindow(linkPositionY - entity.y(), 0x12);
+                && withinSignedWindow(linkPositionY - entity.y(), 0x12);
     }
 
     private static boolean withinSignedWindow(int difference, int radius) {

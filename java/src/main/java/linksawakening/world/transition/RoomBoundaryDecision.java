@@ -1,9 +1,6 @@
 package linksawakening.world.transition;
 
-public record RoomBoundaryDecision(Type type,
-                                   int direction,
-                                   int linkTargetX,
-                                   int linkTargetY) {
+public record RoomBoundaryDecision(Type type, int direction, int linkTargetX, int linkTargetY) {
     public enum Type {
         NONE,
         CLAMP_LINK,
@@ -34,7 +31,6 @@ public record RoomBoundaryDecision(Type type,
     }
 
     public static RoomBoundaryDecision sideScrollVerticalWarp() {
-        return new RoomBoundaryDecision(
-            Type.SIDE_SCROLL_VERTICAL_WARP, ScrollController.NONE, 0, 0);
+        return new RoomBoundaryDecision(Type.SIDE_SCROLL_VERTICAL_WARP, ScrollController.NONE, 0, 0);
     }
 }

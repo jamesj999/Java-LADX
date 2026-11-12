@@ -1,18 +1,16 @@
 package linksawakening.world.room;
 
+import java.util.List;
 import linksawakening.world.transition.Warp;
 
-import java.util.List;
-
-public record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps,
-                                    int shutterDoorMask, int staircaseLocation) {
+public record RoomObjectParseResult(
+        int[] roomObjectsArea, List<Warp> warps, int shutterDoorMask, int staircaseLocation) {
 
     public RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps) {
         this(roomObjectsArea, warps, 0, -1);
     }
 
-    public RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps,
-                                 int shutterDoorMask) {
+    public RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps, int shutterDoorMask) {
         this(roomObjectsArea, warps, shutterDoorMask, -1);
     }
 
@@ -21,8 +19,7 @@ public record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps,
         warps = List.copyOf(warps);
         shutterDoorMask &= 0x0F;
         if (staircaseLocation < -1 || staircaseLocation > 0xFF) {
-            throw new IllegalArgumentException(
-                "Staircase location must be -1 or an unsigned byte");
+            throw new IllegalArgumentException("Staircase location must be -1 or an unsigned byte");
         }
     }
 

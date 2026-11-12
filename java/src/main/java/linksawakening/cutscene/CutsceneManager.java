@@ -1,11 +1,10 @@
 package linksawakening.cutscene;
 
-import linksawakening.dialog.DialogController;
-import linksawakening.scene.BackgroundScene;
-
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import linksawakening.dialog.DialogController;
+import linksawakening.scene.BackgroundScene;
 
 public final class CutsceneManager implements CutsceneContext {
 
@@ -19,6 +18,7 @@ public final class CutsceneManager implements CutsceneContext {
         noiseSound = Objects.requireNonNull(sink);
         if (introSequence != null) introSequence.setNoiseSound(noiseSound);
     }
+
     private IntroFrameSnapshot frameSnapshot;
     private String currentScene = "";
 

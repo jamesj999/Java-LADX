@@ -1,14 +1,11 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntity;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class ThrownEntityMotionTest {
 
@@ -64,8 +61,8 @@ final class ThrownEntityMotionTest {
         motion.start(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT, 0x05, false);
         RoomEntity entity = entity(0, 0x05, 0x20, 0x30, 0);
 
-        RoomEntity updated = motion.advance(entity, false,
-            (candidate, direction, nextX, nextY) -> direction == 0).entity();
+        RoomEntity updated = motion.advance(entity, false, (candidate, direction, nextX, nextY) -> direction == 0)
+                .entity();
 
         assertEquals(0x20, updated.x());
         assertEquals(0xFA, motion.speedX(0));
@@ -75,7 +72,8 @@ final class ThrownEntityMotionTest {
     void topViewLandingBouncesAndHalvesHorizontalSpeed() {
         ThrownEntityMotion motion = new ThrownEntityMotion();
         motion.startEnemyBomb(0, 0x18, 0xE8, 0xE0);
-        RoomEntity landed = motion.advance(entity(0, 2, 0x40, 0x50, 1), false, null).entity();
+        RoomEntity landed =
+                motion.advance(entity(0, 2, 0x40, 0x50, 1), false, null).entity();
         assertEquals(0, landed.z());
         // $60FB: SRA then CPL of the post-gravity speed $DE.
         assertEquals(0x10, motion.speedZ(0));
@@ -88,8 +86,8 @@ final class ThrownEntityMotionTest {
         for (int groundStatus : new int[] {0, 2}) {
             ThrownEntityMotion motion = new ThrownEntityMotion();
             motion.startEnemyBomb(0, 0x18, 0xE8, groundStatus == 0 ? 0xFE : 0xE0);
-            RoomEntity landed = motion.advance(entity(0, 2, 0x40, 0x50, 0),
-                false, null, 0, groundStatus).entity();
+            RoomEntity landed = motion.advance(entity(0, 2, 0x40, 0x50, 0), false, null, 0, groundStatus)
+                    .entity();
             assertEquals(0, landed.z());
             assertEquals(0, motion.speedX(0));
             assertEquals(0, motion.speedY(0));
@@ -114,8 +112,9 @@ final class ThrownEntityMotionTest {
     void sideViewFloorBounceUsesComplementThenShiftAndDoesNotReverseAgain() {
         ThrownEntityMotion motion = new ThrownEntityMotion();
         motion.startEnemyBomb(0, 0x18, 0x1E, 0);
-        RoomEntity bounced = motion.advance(entity(0, 2, 0x40, 0x53, 0), true,
-            (candidate, direction, x, y) -> direction == 3).entity();
+        RoomEntity bounced = motion.advance(
+                        entity(0, 2, 0x40, 0x53, 0), true, (candidate, direction, x, y) -> direction == 3)
+                .entity();
         assertEquals(0x55, bounced.y());
         assertEquals(0xEF, motion.speedY(0));
         assertEquals(0x0C, motion.speedX(0));
@@ -125,8 +124,9 @@ final class ThrownEntityMotionTest {
     void sideViewFloorDetectsContactEvenBeforeFractionalSpeedMovesOnePixel() {
         ThrownEntityMotion motion = new ThrownEntityMotion();
         motion.startEnemyBomb(0, 0x18, 0, 0);
-        RoomEntity settled = motion.advance(entity(0, 2, 0x40, 0x55, 0), true,
-            (candidate, direction, x, y) -> direction == 3).entity();
+        RoomEntity settled = motion.advance(
+                        entity(0, 2, 0x40, 0x55, 0), true, (candidate, direction, x, y) -> direction == 3)
+                .entity();
         assertEquals(0x55, settled.y());
         assertEquals(0, motion.speedY(0));
         assertEquals(0, motion.speedX(0));
@@ -136,18 +136,19 @@ final class ThrownEntityMotionTest {
     void wallNegationWrapsAsAByteBeforeArithmeticShifts() {
         ThrownEntityMotion motion = new ThrownEntityMotion();
         motion.startEnemyBomb(0, 0x80, 0, 0);
-        motion.advance(entity(0, 2, 0x40, 0x50, 0x10), false,
-            (candidate, direction, x, y) -> direction == 1);
+        motion.advance(entity(0, 2, 0x40, 0x50, 0x10), false, (candidate, direction, x, y) -> direction == 1);
         assertEquals(0xF0, motion.speedX(0));
     }
 
     private static RoomEntity entity(int slot, int type, int x, int y, int z) {
         EntitySpriteDefinition definition = new EntitySpriteDefinition(
-            type, 0, 0, EntitySpriteDefinition.Shape.PAIR, 0,
-            java.util.List.of(new EntitySpriteDefinition.Variant(
-                new EntitySpriteDefinition.OamAttribute(0, 0),
-                new EntitySpriteDefinition.OamAttribute(2, 0))));
-        return new RoomEntity(slot, 0, type, x, y, EntityStatus.THROWN,
-            definition, 0, 0, 0, z, -1, false);
+                type,
+                0,
+                0,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                java.util.List.of(new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0, 0), new EntitySpriteDefinition.OamAttribute(2, 0))));
+        return new RoomEntity(slot, 0, type, x, y, EntityStatus.THROWN, definition, 0, 0, 0, z, -1, false);
     }
 }

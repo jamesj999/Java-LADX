@@ -1,9 +1,9 @@
 package linksawakening.gpu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class GPUGoldenLeafTilesTest {
 
@@ -20,8 +20,7 @@ final class GPUGoldenLeafTilesTest {
 
         int destination = 0x0CA * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x20; index++) {
-            assertEquals(0x40 + index,
-                Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+            assertEquals(0x40 + index, Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
         }
     }
 }

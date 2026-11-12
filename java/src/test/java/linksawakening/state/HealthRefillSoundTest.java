@@ -1,10 +1,11 @@
 package linksawakening.state;
 
-import linksawakening.gameplay.GameplaySoundEvent;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.gameplay.GameplaySoundEvent;
+import org.junit.jupiter.api.Test;
 
 /** UpdateHealth.increaseHealth/incrementHealth, $02:6342-6382. */
 final class HealthRefillSoundTest {

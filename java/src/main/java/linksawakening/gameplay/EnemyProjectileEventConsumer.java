@@ -1,11 +1,10 @@
 package linksawakening.gameplay;
 
+import java.util.List;
+import java.util.Objects;
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-
-import java.util.List;
-import java.util.Objects;
 
 /** Applies one frame of ROM enemy-projectile events at the gameplay boundary. */
 public final class EnemyProjectileEventConsumer {
@@ -13,33 +12,35 @@ public final class EnemyProjectileEventConsumer {
     private static final int ENEMY_BUMP_ID = 0x09;
     private static final int LINK_HURT_ID = 0x03;
 
-    private EnemyProjectileEventConsumer() {
-    }
+    private EnemyProjectileEventConsumer() {}
 
-    public static void consume(List<EntityProjectileEvent> events,
-                               PlayerState playerState,
-                               GameplaySoundSink soundSink) {
+    public static void consume(
+            List<EntityProjectileEvent> events, PlayerState playerState, GameplaySoundSink soundSink) {
         consume(events, playerState, null, soundSink);
     }
 
     /** Applies projectile damage and the accepted hit's Link motion response. */
-    public static void consume(List<EntityProjectileEvent> events,
-                               PlayerState playerState,
-                               Link link,
-                               GameplaySoundSink soundSink) {
+    public static void consume(
+            List<EntityProjectileEvent> events, PlayerState playerState, Link link, GameplaySoundSink soundSink) {
         consume(events, playerState, link, soundSink, () -> {});
     }
 
-    public static void consume(List<EntityProjectileEvent> events,
-                               PlayerState playerState, Link link,
-                               GameplaySoundSink soundSink, Runnable onContactHurt) {
+    public static void consume(
+            List<EntityProjectileEvent> events,
+            PlayerState playerState,
+            Link link,
+            GameplaySoundSink soundSink,
+            Runnable onContactHurt) {
         consume(events, playerState, link, soundSink, onContactHurt, () -> {});
     }
 
-    public static void consume(List<EntityProjectileEvent> events,
-                               PlayerState playerState, Link link,
-                               GameplaySoundSink soundSink, Runnable onContactHurt,
-                               Runnable onPowerUpEnded) {
+    public static void consume(
+            List<EntityProjectileEvent> events,
+            PlayerState playerState,
+            Link link,
+            GameplaySoundSink soundSink,
+            Runnable onContactHurt,
+            Runnable onPowerUpEnded) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(playerState, "playerState");
         Objects.requireNonNull(soundSink, "soundSink");
@@ -49,8 +50,7 @@ public final class EnemyProjectileEventConsumer {
                 continue;
             }
             if (event.kind() == EntityProjectileEvent.Kind.SHIELD_BLOCK) {
-                if (event.soundChannel() == EntityProjectileEvent.SoundChannel.JINGLE
-                    && event.soundId() == 0x07) {
+                if (event.soundChannel() == EntityProjectileEvent.SoundChannel.JINGLE && event.soundId() == 0x07) {
                     soundSink.play(GameplaySoundEvent.SWORD_POKE);
                 } else {
                     playShieldSound(event, soundSink);
@@ -59,7 +59,7 @@ public final class EnemyProjectileEventConsumer {
             }
             if (event.kind() == EntityProjectileEvent.Kind.SWORD_HIT) {
                 if (event.soundChannel() == EntityProjectileEvent.SoundChannel.JINGLE
-                    && event.soundId() == ENEMY_BUMP_ID) {
+                        && event.soundId() == ENEMY_BUMP_ID) {
                     soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
                 }
                 continue;
@@ -75,8 +75,7 @@ public final class EnemyProjectileEventConsumer {
                 applyLinkResponse(event, link);
                 continue;
             }
-            if (playerState.invincibilityCounter() != 0
-                || (link != null && link.isCollisionDamageImmune())) {
+            if (playerState.invincibilityCounter() != 0 || (link != null && link.isCollisionDamageImmune())) {
                 continue;
             }
 
@@ -88,7 +87,7 @@ public final class EnemyProjectileEventConsumer {
             int previousPowerUp = playerState.activePowerUp();
             playerState.applyRomEnemyDamage(event.linkDamage());
             if (previousPowerUp != PlayerState.ACTIVE_POWER_UP_NONE
-                && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
+                    && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
                 onPowerUpEnded.run();
             }
             onContactHurt.run();
@@ -104,22 +103,17 @@ public final class EnemyProjectileEventConsumer {
     }
 
     private static boolean hasLinkResponse(EntityProjectileEvent event) {
-        return event.linkIgnoreCollisionCountdown() != 0
-            || event.linkSpeedX() != 0 || event.linkSpeedY() != 0;
+        return event.linkIgnoreCollisionCountdown() != 0 || event.linkSpeedX() != 0 || event.linkSpeedY() != 0;
     }
 
-    private static void playShieldSound(EntityProjectileEvent event,
-                                        GameplaySoundSink soundSink) {
-        if (event.soundChannel() == EntityProjectileEvent.SoundChannel.JINGLE
-            && event.soundId() == SHIELD_TING_ID) {
+    private static void playShieldSound(EntityProjectileEvent event, GameplaySoundSink soundSink) {
+        if (event.soundChannel() == EntityProjectileEvent.SoundChannel.JINGLE && event.soundId() == SHIELD_TING_ID) {
             soundSink.play(GameplaySoundEvent.SHIELD_TING);
         }
     }
 
-    private static void playHurtSound(EntityProjectileEvent event,
-                                      GameplaySoundSink soundSink) {
-        if (event.soundChannel() == EntityProjectileEvent.SoundChannel.WAVE
-            && event.soundId() == LINK_HURT_ID) {
+    private static void playHurtSound(EntityProjectileEvent event, GameplaySoundSink soundSink) {
+        if (event.soundChannel() == EntityProjectileEvent.SoundChannel.WAVE && event.soundId() == LINK_HURT_ID) {
             soundSink.play(GameplaySoundEvent.LINK_HURT);
         }
     }

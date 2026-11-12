@@ -14,8 +14,8 @@ public final class OwlEventDialogResolver {
 
     public OwlEventDialogResolver(byte[] romData) {
         int required = Math.max(
-            RomBank.romOffset(BANK, ROOM_TABLE_ADDRESS) + 0x100,
-            RomBank.romOffset(RomSymbols.OverworldMusicTracks.bank(), OVERWORLD_MUSIC_TABLE_ADDRESS) + 0x100);
+                RomBank.romOffset(BANK, ROOM_TABLE_ADDRESS) + 0x100,
+                RomBank.romOffset(RomSymbols.OverworldMusicTracks.bank(), OVERWORLD_MUSIC_TABLE_ADDRESS) + 0x100);
         if (romData == null || romData.length < required) {
             throw new IllegalArgumentException("ROM is too small for owl dialog tables");
         }
@@ -38,7 +38,9 @@ public final class OwlEventDialogResolver {
         if ((roomId & ~0xFF) != 0) {
             throw new IllegalArgumentException("Owl room id must be an unsigned byte");
         }
-        return new Rom(romData).u8(RomAddress.fromOffset(
-            RomBank.romOffset(RomSymbols.OverworldMusicTracks.bank(), OVERWORLD_MUSIC_TABLE_ADDRESS) + roomId));
+        return new Rom(romData)
+                .u8(RomAddress.fromOffset(
+                        RomBank.romOffset(RomSymbols.OverworldMusicTracks.bank(), OVERWORLD_MUSIC_TABLE_ADDRESS)
+                                + roomId));
     }
 }

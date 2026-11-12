@@ -1,5 +1,11 @@
 package linksawakening.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.equipment.ItemRegistry;
@@ -13,13 +19,6 @@ import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
 @RequiresRom
 final class LinkJumpSoundTest {
@@ -71,8 +70,11 @@ final class LinkJumpSoundTest {
             var f = new Fixture(indoor);
             int object = -1;
             for (int id = 0; id < 256; id++) {
-                if (id != 0x61 && f.tables.objectPhysicsFlag(indoor ? RomTables.PHYSICS_TABLE_INDOORS1
-                    : RomTables.PHYSICS_TABLE_OVERWORLD, id) == physics) {
+                if (id != 0x61
+                        && f.tables.objectPhysicsFlag(
+                                        indoor ? RomTables.PHYSICS_TABLE_INDOORS1 : RomTables.PHYSICS_TABLE_OVERWORLD,
+                                        id)
+                                == physics) {
                     object = id;
                     break;
                 }
@@ -80,15 +82,20 @@ final class LinkJumpSoundTest {
             assertTrue(object >= 0, "ROM must contain physics " + physics);
             Arrays.fill(f.room, object);
             f.landAt(32, 32);
-            assertEquals(physics == 5 || physics == 7 || physics == 0x0B
-                ? List.of("0:WATER_SPLASH") : physics == 0 ? List.of("0:LINK_FOOTSTEP") : List.of(),
-                f.sounds, "physics " + physics);
+            assertEquals(
+                    physics == 5 || physics == 7 || physics == 0x0B
+                            ? List.of("0:WATER_SPLASH")
+                            : physics == 0 ? List.of("0:LINK_FOOTSTEP") : List.of(),
+                    f.sounds,
+                    "physics " + physics);
         }
         var well = new Fixture(false);
         Arrays.fill(well.room, 0x61);
         well.landAt(32, 32);
-        assertEquals(List.of("0:PIT_FALL"), well.sounds,
-            "$02:458D excludes landing noise; $02:75D4 starts the well fall sound");
+        assertEquals(
+                List.of("0:PIT_FALL"),
+                well.sounds,
+                "$02:458D excludes landing noise; $02:75D4 starts the well fall sound");
         var bottom = new Fixture(false);
         bottom.landAt(32, 120);
         assertTrue(bottom.sounds.isEmpty(), "$02:4584 excludes ROM Y >= $88");
@@ -104,8 +111,8 @@ final class LinkJumpSoundTest {
         assertEffect(map, GameplaySoundEvent.WATER_SPLASH, SoundEffectNamespace.JINGLE, 0x0E);
     }
 
-    private static void assertEffect(GameplaySoundEffectMap map, GameplaySoundEvent event,
-                                     SoundEffectNamespace namespace, int id) {
+    private static void assertEffect(
+            GameplaySoundEffectMap map, GameplaySoundEvent event, SoundEffectNamespace namespace, int id) {
         var effect = map.resolve(event).orElseThrow();
         assertEquals(namespace, effect.namespace());
         assertEquals(id, effect.id());
@@ -122,14 +129,23 @@ final class LinkJumpSoundTest {
         int frame;
 
         Fixture(boolean indoor) throws Exception {
-            try (var in = TestRom.open()) { rom = in.readAllBytes(); }
+            try (var in = TestRom.open()) {
+                rom = in.readAllBytes();
+            }
             tables = RomTables.loadFromRom(rom);
             var collision = new OverworldCollision(tables);
             if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
             Arrays.fill(room, 0xFF);
             collision.setRoom(room);
-            link = new Link(input, config, tables, collision, null, new PlayerState(),
-                new ItemRegistry(), event -> sounds.add(frame + ":" + event));
+            link = new Link(
+                    input,
+                    config,
+                    tables,
+                    collision,
+                    null,
+                    new PlayerState(),
+                    new ItemRegistry(),
+                    event -> sounds.add(frame + ":" + event));
         }
 
         void advance(int frames) {

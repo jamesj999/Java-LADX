@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$06 BooBuddyEntityHandler's drift, trigger, and flee states. */
 public final class BooBuddyMotion {
@@ -39,12 +38,25 @@ public final class BooBuddyMotion {
      * the transition countdown; the private countdown is reduced here to
      * mirror UpdateEntityTimers' private-counter write.
      */
-    Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                   int transitionCountdown, int roomTriggerCount, boolean swordMiddle,
-                   IntSupplier randomByteSupplier) {
+    Update advance(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int transitionCountdown,
+            int roomTriggerCount,
+            boolean swordMiddle,
+            IntSupplier randomByteSupplier) {
         tickTimers(entity.slot());
-        return advanceAfterTimers(entity, frameCounter, linkEntityX, linkEntityY,
-            transitionCountdown, roomTriggerCount, swordMiddle, randomByteSupplier);
+        return advanceAfterTimers(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                transitionCountdown,
+                roomTriggerCount,
+                swordMiddle,
+                randomByteSupplier);
     }
 
     public void tickTimers(int slot) {
@@ -64,9 +76,15 @@ public final class BooBuddyMotion {
         return withPosition(entity, x, y, selectedVariant[slot]);
     }
 
-    public Update advanceAfterTimers(RoomEntity entity, int frameCounter,
-                   int linkEntityX, int linkEntityY, int transitionCountdown,
-                   int roomTriggerCount, boolean swordMiddle, IntSupplier randomByteSupplier) {
+    public Update advanceAfterTimers(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int transitionCountdown,
+            int roomTriggerCount,
+            boolean swordMiddle,
+            IntSupplier randomByteSupplier) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Boo Buddy motion entity");
         }
@@ -84,16 +102,14 @@ public final class BooBuddyMotion {
         int renderedVariant = selectedVariant[slot];
         int variant = renderedVariant;
         // func_006_5E54 reads the active coordinates cached before movement.
-        boolean unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88
-            || entity.x() >= 0xA8;
+        boolean unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88 || entity.x() >= 0xA8;
         int healthOverride = -1;
 
         // func_006_5E54 runs before the state dispatch. ClearEntityStatus_06
         // does not persist the Boo Buddy when this boundary is reached, so
         // return the unload request before changing its state.
         if (unloaded) {
-            return new Update(withPosition(entity, x, y, variant), countdown,
-                unloaded, healthOverride);
+            return new Update(withPosition(entity, x, y, variant), countdown, unloaded, healthOverride);
         }
 
         switch (state[slot]) {
@@ -121,8 +137,7 @@ public final class BooBuddyMotion {
                         privateState1[slot] = 0;
                         x = (0xA0 - x) & 0xFF;
                         y = (0x90 - y) & 0xFF;
-                        variant = animateTransition(frameCounter, x, linkEntityX, slot,
-                            countdown);
+                        variant = animateTransition(frameCounter, x, linkEntityX, slot, countdown);
                     }
                     break;
                 }
@@ -150,13 +165,11 @@ public final class BooBuddyMotion {
                 speedX[slot] = negate(vector.x());
                 variant = 0x04 + ((frameCounter >>> 4) & 0x01);
             }
-            default -> throw new IllegalStateException("Invalid Boo Buddy state: "
-                + state[slot]);
+            default -> throw new IllegalStateException("Invalid Boo Buddy state: " + state[slot]);
         }
 
         selectedVariant[slot] = variant;
-        return new Update(withPosition(entity, x, y, renderedVariant), countdown,
-            false, healthOverride);
+        return new Update(withPosition(entity, x, y, renderedVariant), countdown, false, healthOverride);
     }
 
     public void clear(int slot) {
@@ -185,8 +198,7 @@ public final class BooBuddyMotion {
         return privateCountdown1[slot];
     }
 
-    public boolean allowsEnemyCollision(int slot, int roomTriggerCount,
-                                 int transitionCountdown, boolean swordMiddle) {
+    public boolean allowsEnemyCollision(int slot, int roomTriggerCount, int transitionCountdown, boolean swordMiddle) {
         if (roomTriggerCount != 0) {
             // State 0 only increments into state 1 on this pass; neither
             // handler path reaches a collision helper on that frame.
@@ -195,8 +207,7 @@ public final class BooBuddyMotion {
         // State 0 calls label_3B44 only on its ordinary drift path. The
         // transition and private-countdown branches, plus the sword-middle
         // branch, clear movement and return without a Link collision check.
-        return state[slot] == 0 && (transitionCountdown & 0xFF) == 0
-            && privateCountdown1[slot] == 0 && !swordMiddle;
+        return state[slot] == 0 && (transitionCountdown & 0xFF) == 0 && privateCountdown1[slot] == 0 && !swordMiddle;
     }
 
     public boolean allowsSwordCollision(int slot, int roomTriggerCount) {
@@ -224,8 +235,7 @@ public final class BooBuddyMotion {
         }
     }
 
-    private int animateTransition(int frameCounter, int x, int linkEntityX, int slot,
-                                  int countdown) {
+    private int animateTransition(int frameCounter, int x, int linkEntityX, int slot, int countdown) {
         int variant;
         if (((frameCounter >>> 2) & 0x01) == 0) {
             variant = -1;
@@ -240,8 +250,7 @@ public final class BooBuddyMotion {
     private static boolean withinSwordTriggerWindow(int x, int y, int linkX, int linkY) {
         int distanceX = signedByte((linkX - x) & 0xFF);
         int distanceY = signedByte((linkY - y) & 0xFF);
-        return distanceX >= -0x24 && distanceX < 0x24
-            && distanceY >= -0x24 && distanceY < 0x24;
+        return distanceX >= -0x24 && distanceX < 0x24 && distanceY >= -0x24 && distanceY < 0x24;
     }
 
     private static int directionVariant(int entityX, int linkX, int frameCounter) {
@@ -250,14 +259,23 @@ public final class BooBuddyMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-            entity.deathSpriteVariant(), entity.powerRecoilDeath());
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -279,16 +297,14 @@ public final class BooBuddyMotion {
         return (current + ((difference & 0x80) == 0 ? 4 : -4)) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
-                                            int linkX, int linkY, int length) {
+    private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         boolean xNegative = distanceX < 0;
         boolean yNegative = distanceY < 0;
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
-        int result = divideComponent(Math.min(absoluteX, absoluteY),
-            Math.max(absoluteX, absoluteY), length);
+        int result = divideComponent(Math.min(absoluteX, absoluteY), Math.max(absoluteX, absoluteY), length);
         int x = absoluteX >= absoluteY ? length : result;
         int y = absoluteY > absoluteX ? length : result;
         if (xNegative) {
@@ -323,10 +339,7 @@ public final class BooBuddyMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {
-    }
+    private record Vector(int x, int y) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, boolean unloaded,
-                  int healthOverride) {
-    }
+    public record Update(RoomEntity entity, int transitionCountdown, boolean unloaded, int healthOverride) {}
 }

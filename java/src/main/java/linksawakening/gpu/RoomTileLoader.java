@@ -1,13 +1,16 @@
 package linksawakening.gpu;
 
 import linksawakening.rom.GbcBanks;
-
-import linksawakening.rom.RomSymbols;
 import linksawakening.rom.Rom;
+import linksawakening.rom.RomSymbols;
 
 final class RoomTileLoader {
     private final RomTileLoader target;
-    RoomTileLoader(RomTileLoader target) { this.target = target; }
+
+    RoomTileLoader(RomTileLoader target) {
+        this.target = target;
+    }
+
     private static final int SWITCH_BLOCK_TILES_BANK = GbcBanks.adjust(RomSymbols.SwitchBlockTiles.bank());
     private static final int SWITCH_BLOCK_TILES_ADDR = RomSymbols.SwitchBlockTiles.address();
     private static final int SWITCH_BLOCK_TILE_COUNT = 0x04;
@@ -41,6 +44,7 @@ final class RoomTileLoader {
     private static final int COLOR_DUNGEON_BG_BANK = RomSymbols.CameraShopIndoorTiles.bank();
     private static final int CAMERA_SHOP_TILES_ADDR = RomSymbols.CameraShopIndoorTiles.address();
     private static final int W_TILESET_NO_UPDATE = 0xFF;
+
     public void loadRoomSpecificTiles(byte[] romData, int roomId, int tilesetId) {
         if (tilesetId == W_TILESET_KEEP) {
             return;
@@ -65,23 +69,35 @@ final class RoomTileLoader {
 
         Rom rom = new Rom(romData);
         // Shared dungeon tiles (96 tiles at VRAM tile 0x120).
-        target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
-            DUNGEONS_TILES_ADDR, DUNGEONS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
+        target.loadTilesFromROM(
+                romData,
+                GbcBanks.adjust(DUNGEONS_TILES_BANK),
+                DUNGEONS_TILES_ADDR,
+                DUNGEONS_TILES_COUNT,
+                DUNGEONS_TILES_VRAM_INDEX);
 
         // Per-map walls overlay the first 32 tiles of the shared block. Each
         // entry in DungeonWallsTilesPointers is a single high byte — the
         // actual source address is that byte * 0x100 within bank 0x0D.
         int wallsHighByte = rom.u8(RomSymbols.DungeonWallsTilesPointers.plus(mapId));
         if (wallsHighByte != 0) {
-            target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
-                wallsHighByte << 8, DUNGEON_WALLS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
+            target.loadTilesFromROM(
+                    romData,
+                    GbcBanks.adjust(DUNGEONS_TILES_BANK),
+                    wallsHighByte << 8,
+                    DUNGEON_WALLS_TILES_COUNT,
+                    DUNGEONS_TILES_VRAM_INDEX);
         }
 
         // Per-map floor tiles at VRAM tile 0x110 (vTiles2 + 0x100).
         int floorHighByte = rom.u8(RomSymbols.DungeonFloorTilesPointers.plus(mapId));
         if (floorHighByte != 0) {
-            target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
-                floorHighByte << 8, DUNGEON_FLOOR_TILES_COUNT, INDOOR_TILES_VRAM_INDEX + 0x10);
+            target.loadTilesFromROM(
+                    romData,
+                    GbcBanks.adjust(DUNGEONS_TILES_BANK),
+                    floorHighByte << 8,
+                    DUNGEON_FLOOR_TILES_COUNT,
+                    INDOOR_TILES_VRAM_INDEX + 0x10);
         }
 
         // Per-map items at VRAM tile 0x0F0 (vTiles1 + 0x700). The original
@@ -89,8 +105,12 @@ final class RoomTileLoader {
         // adjustment depends on GBC (DungeonItemsTiles is bank 0x12 → 0x32).
         int itemsHighByte = rom.u8(RomSymbols.DungeonItemsTilesPointers.plus(mapId));
         if (itemsHighByte != 0) {
-            target.loadTilesFromROM(romData, GbcBanks.adjust(RomSymbols.InventoryIndoorItemsTiles.bank()),
-                itemsHighByte << 8, DUNGEON_ITEMS_TILES_COUNT, DUNGEON_ITEMS_VRAM_INDEX);
+            target.loadTilesFromROM(
+                    romData,
+                    GbcBanks.adjust(RomSymbols.InventoryIndoorItemsTiles.bank()),
+                    itemsHighByte << 8,
+                    DUNGEON_ITEMS_TILES_COUNT,
+                    DUNGEON_ITEMS_VRAM_INDEX);
         }
 
         // LoadIndoorTiles copies the map's indoor-item sheet to vTiles1+$400
@@ -98,11 +118,19 @@ final class RoomTileLoader {
         // item sheet; dungeon maps use InventoryIndoorItemsTiles.
         if (mapId != MAP_COLOR_DUNGEON) {
             if (mapId >= 0x0A) {
-                target.loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_OVERWORLD_ITEMS_TILES_BANK),
-                    INVENTORY_OVERWORLD_ITEMS_TILES_ADDR, 0x30, 0x0C0);
+                target.loadTilesFromROM(
+                        romData,
+                        GbcBanks.adjust(INVENTORY_OVERWORLD_ITEMS_TILES_BANK),
+                        INVENTORY_OVERWORLD_ITEMS_TILES_ADDR,
+                        0x30,
+                        0x0C0);
             } else {
-                target.loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_INDOOR_ITEMS_TILES_BANK),
-                    INVENTORY_INDOOR_ITEMS_TILES_ADDR, 0x30, 0x0C0);
+                target.loadTilesFromROM(
+                        romData,
+                        GbcBanks.adjust(INVENTORY_INDOOR_ITEMS_TILES_BANK),
+                        INVENTORY_INDOOR_ITEMS_TILES_ADDR,
+                        0x30,
+                        0x0C0);
             }
         }
 
@@ -110,9 +138,9 @@ final class RoomTileLoader {
         // region for side-view rooms, then returns before the top-view patch.
         if (sideScrolling) {
             int source = mapId == 0x06 || (mapId >= 0x0A && roomId != 0xE9)
-                ? RomSymbols.DungeonSideview1Tiles.address() : RomSymbols.DungeonSideview2Tiles.address();
-            target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
-                source, 0x80, 0x100);
+                    ? RomSymbols.DungeonSideview1Tiles.address()
+                    : RomSymbols.DungeonSideview2Tiles.address();
+            target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK), source, 0x80, 0x100);
             return;
         }
 
@@ -125,33 +153,42 @@ final class RoomTileLoader {
         int tilesetId = rom.u8(RomSymbols.IndoorsTilesetsTable.plus((isIndoorsB ? 0x100 : 0) + roomId));
         if (tilesetId != W_TILESET_KEEP && tilesetId != W_TILESET_NO_UPDATE) {
             int tilesetAddr = INDOOR_TILES_BASE_ADDR + (tilesetId * 0x100);
-            target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
-                tilesetAddr, INDOOR_TILES_COUNT_PER_SET, INDOOR_TILES_VRAM_INDEX);
+            target.loadTilesFromROM(
+                    romData,
+                    GbcBanks.adjust(DUNGEONS_TILES_BANK),
+                    tilesetAddr,
+                    INDOOR_TILES_COUNT_PER_SET,
+                    INDOOR_TILES_VRAM_INDEX);
         }
 
         if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
-            target.loadTilesFromROM(romData, COLOR_DUNGEON_BG_BANK, CAMERA_SHOP_TILES_ADDR,
-                0x20, DUNGEON_ITEMS_VRAM_INDEX);
+            target.loadTilesFromROM(
+                    romData, COLOR_DUNGEON_BG_BANK, CAMERA_SHOP_TILES_ADDR, 0x20, DUNGEON_ITEMS_VRAM_INDEX);
             return;
         }
     }
 
     public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
         if (sourceOffset != 0x00 && sourceOffset != 0x40 && sourceOffset != 0x80) {
-            throw new IllegalArgumentException("Unknown switch-block source offset: "
-                + sourceOffset);
+            throw new IllegalArgumentException("Unknown switch-block source offset: " + sourceOffset);
         }
         if (destinationTile != 0x104 && destinationTile != 0x108) {
-            throw new IllegalArgumentException("Unknown switch-block destination tile: "
-                + destinationTile);
+            throw new IllegalArgumentException("Unknown switch-block destination tile: " + destinationTile);
         }
-        target.loadTilesFromROM(romData, SWITCH_BLOCK_TILES_BANK,
-            SWITCH_BLOCK_TILES_ADDR + sourceOffset, SWITCH_BLOCK_TILE_COUNT, destinationTile);
+        target.loadTilesFromROM(
+                romData,
+                SWITCH_BLOCK_TILES_BANK,
+                SWITCH_BLOCK_TILES_ADDR + sourceOffset,
+                SWITCH_BLOCK_TILE_COUNT,
+                destinationTile);
     }
 
     public void copyPressedFloorSwitchTiles(byte[] romData) {
-        target.loadTilesFromROM(romData, PRESSED_FLOOR_SWITCH_TILES_BANK,
-            PRESSED_FLOOR_SWITCH_TILES_ADDR, 0x04, PRESSED_FLOOR_SWITCH_VRAM_TILE);
+        target.loadTilesFromROM(
+                romData,
+                PRESSED_FLOOR_SWITCH_TILES_BANK,
+                PRESSED_FLOOR_SWITCH_TILES_ADDR,
+                0x04,
+                PRESSED_FLOOR_SWITCH_VRAM_TILE);
     }
-
 }

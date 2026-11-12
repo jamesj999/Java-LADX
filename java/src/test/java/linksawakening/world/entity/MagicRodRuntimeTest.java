@@ -1,50 +1,46 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.room.ChestContentsTable;
-
-
-
-import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RomEnemyCombatTables;
-import linksawakening.world.entity.RoomEntityObjectSample;
-import linksawakening.world.entity.RoomEntitySnapshot;
-
-import linksawakening.world.entity.motion.MotionTestAccess;
-
-import linksawakening.world.entity.motion.MagicRodFireballMotion;
-
-import linksawakening.world.entity.event.MagicRodObjectRequest;
-
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.event.MagicRodObjectRequest;
+import linksawakening.world.entity.motion.MotionTestAccess;
+import linksawakening.world.room.ChestContentsTable;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 @linksawakening.testing.RequiresRom
 final class MagicRodRuntimeTest {
 
     @Test
-    void spawnUsesTheRomFireballDisplayAndMovesOnTheSharedProjectileTables()
-            throws IOException {
+    void spawnUsesTheRomFireballDisplayAndMovesOnTheSharedProjectileTables() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
 
         assertEquals(0x0F, slot);
         assertEquals(1, runtime.inspection().activeProjectileCount());
-        assertEquals(0x03, runtime.inspection().snapshot().slots().get(slot).spriteDefinition().bank());
-        assertEquals(0x69AA, runtime.inspection().snapshot().slots().get(slot).spriteDefinition().address());
+        assertEquals(
+                0x03,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(slot)
+                        .spriteDefinition()
+                        .bank());
+        assertEquals(
+                0x69AA,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(slot)
+                        .spriteDefinition()
+                        .address());
         assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
 
         tick(runtime, 0, 0x20, 0x20);
@@ -60,23 +56,37 @@ final class MagicRodRuntimeTest {
     }
 
     @Test
-    void solidObjectStartsTheSharedFireDisplayAndUnloadsAtPrivateCountdownOne()
-            throws IOException {
+    void solidObjectStartsTheSharedFireDisplayAndUnloadsAtPrivateCountdownOne() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            0x01, 0x01, 0x40, 0x40));
+        runtime.configuration()
+                .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x01, 0x01, 0x40, 0x40));
 
         tick(runtime, 0, 0x20, 0x20);
 
-        assertEquals(MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN,
-            runtime.inspection().magicRodFireballPrivateCountdown1(slot));
-        assertEquals(0x69AA, runtime.inspection().snapshot().slots().get(slot).spriteDefinition().address());
+        assertEquals(
+                MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN,
+                runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x69AA,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(slot)
+                        .spriteDefinition()
+                        .address());
         assertEquals(0, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
 
         tick(runtime, 1, 0x20, 0x20);
         assertEquals(0x2F, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
-        assertEquals(0x4C44, runtime.inspection().snapshot().slots().get(slot).spriteDefinition().address());
+        assertEquals(
+                0x4C44,
+                runtime.inspection()
+                        .snapshot()
+                        .slots()
+                        .get(slot)
+                        .spriteDefinition()
+                        .address());
         assertEquals(0, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
 
         for (int frame = 2; frame <= 0x2E; frame++) {
@@ -93,14 +103,14 @@ final class MagicRodRuntimeTest {
     void outdoorBushRequestsRomObjectRevealSmokeAndDestroyNoise() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x20, 0x40, 0, 0);
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            0x5C, 0x01, 0x30, 0x40));
+        runtime.configuration()
+                .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 0x01, 0x30, 0x40));
 
         tick(runtime, 0, 0x20, 0x20);
 
         assertEquals(1, runtime.enemies().magicRodObjectRequests().size());
         MagicRodObjectRequest request =
-            runtime.enemies().magicRodObjectRequests().getFirst();
+                runtime.enemies().magicRodObjectRequests().getFirst();
         assertEquals(slot, request.sourceSlot());
         assertEquals(0x43, request.location());
         assertEquals(0x30, request.objectLeft());
@@ -112,8 +122,8 @@ final class MagicRodRuntimeTest {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
         tick(runtime, 7, 0, 0);
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            0x01, 0x01, 0x40, 0x40));
+        runtime.configuration()
+                .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x01, 0x01, 0x40, 0x40));
         tick(runtime, 8, 0, 0);
         assertEquals(0, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
         for (int frame = 9; frame <= 17; frame++) {
@@ -136,15 +146,15 @@ final class MagicRodRuntimeTest {
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(0, runtime.inspection().activeProjectileCount());
         assertTrue(runtime.consumePendingEntityEvents().stream()
-            .anyMatch(event -> event.slot() == 0 && event.type() == 0x09));
+                .anyMatch(event -> event.slot() == 0 && event.type() == 0x09));
     }
 
     @Test
     void wallFlameCanHitAnEnemyWithoutBeingConsumed() throws IOException {
         RoomEntityRuntime runtime = runtimeWithTarget(0x09, 0x40, 0x3F);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            0x01, 0x01, 0x40, 0x40));
+        runtime.configuration()
+                .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x01, 0x01, 0x40, 0x40));
         // Slot 0 is skipped by the collision pass on odd frames.
         tick(runtime, 1, 0, 0);
         assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
@@ -153,7 +163,7 @@ final class MagicRodRuntimeTest {
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(0x2F, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
         assertTrue(runtime.consumePendingEntityEvents().stream()
-            .anyMatch(event -> event.slot() == 0 && event.type() == 0x09));
+                .anyMatch(event -> event.slot() == 0 && event.type() == 0x09));
     }
 
     @Test
@@ -183,8 +193,8 @@ final class MagicRodRuntimeTest {
 
     @ParameterizedTest
     @CsvSource({"1, true", "0, false"})
-    void ironMaskBlocksOnlyWhenItsAttachedMaskFacesTheFireball(
-        int fireballDirection, boolean blocked) throws IOException {
+    void ironMaskBlocksOnlyWhenItsAttachedMaskFacesTheFireball(int fireballDirection, boolean blocked)
+            throws IOException {
         RoomEntityRuntime runtime = runtimeWithTarget(0x24, 0x40, 0x3F);
         assertEquals(0, runtime.enemies().ironMaskDirection(0));
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, fireballDirection);
@@ -195,13 +205,12 @@ final class MagicRodRuntimeTest {
     }
 
     @Test
-    void nonInteractiveLinkAloneDoesNotPauseMovementOrTheStoredPaletteFrame()
-            throws IOException {
+    void nonInteractiveLinkAloneDoesNotPauseMovementOrTheStoredPaletteFrame() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
         for (int frame = 8; frame <= 9; frame++) {
-            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, null,
-                EnemyProjectileCollision.LinkState.nonInteractive()));
+            runtime.tick(EntityTestFrames.projectileFrame(
+                    runtime, frame, 0, 0, () -> 0, null, EnemyProjectileCollision.LinkState.nonInteractive()));
             RoomEntity fireball = runtime.inspection().snapshot().slots().get(slot);
             assertEquals(0x44 + 3 * (frame - 7), fireball.x());
             assertEquals(frame == 8 ? 0 : 1, fireball.spriteVariant());
@@ -213,10 +222,9 @@ final class MagicRodRuntimeTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"0x50, 0x43, true", "0x38, 0x43, false",
-        "0x44, 0x37, true", "0x44, 0x4F, false"})
-    void targetCollisionPreservesTheRomsAsymmetricTwelvePixelBoundary(
-        int targetX, int targetY, boolean hits) throws IOException {
+    @CsvSource({"0x50, 0x43, true", "0x38, 0x43, false", "0x44, 0x37, true", "0x44, 0x4F, false"})
+    void targetCollisionPreservesTheRomsAsymmetricTwelvePixelBoundary(int targetX, int targetY, boolean hits)
+            throws IOException {
         RoomEntityRuntime runtime = runtimeWithTarget(0x09, targetX, targetY);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
         tick(runtime, 0, 0, 0);
@@ -224,13 +232,18 @@ final class MagicRodRuntimeTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"0, false, 4, 4, 3, 0", "1, false, -4, 4, -3, 0",
-        "2, false, -4, -4, 0, -3", "3, false, 4, 4, 0, 3",
-        "0, true, 4, 4, 4, 0", "1, true, -4, 4, -4, 0",
-        "2, true, -4, -4, 0, -4", "3, true, 4, 4, 0, 4"})
+    @CsvSource({
+        "0, false, 4, 4, 3, 0",
+        "1, false, -4, 4, -3, 0",
+        "2, false, -4, -4, 0, -3",
+        "3, false, 4, 4, 0, 3",
+        "0, true, 4, 4, 4, 0",
+        "1, true, -4, 4, -4, 0",
+        "2, true, -4, -4, 0, -4",
+        "3, true, 4, 4, 0, 4"
+    })
     void launchAppliesDirectionOffsetsAndPowerSpeedBeforeTheFirstHandlerPass(
-        int direction, boolean power, int offsetX, int offsetY, int dx, int dy)
-            throws IOException {
+            int direction, boolean power, int offsetX, int offsetY, int dx, int dy) throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x50, 7, direction, power);
         RoomEntity spawn = runtime.inspection().snapshot().slots().get(slot);
@@ -247,15 +260,14 @@ final class MagicRodRuntimeTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"0, false", "1, false", "2, false", "3, false",
-        "0, true", "1, true", "2, true", "3, true"})
-    void solidImpactRestoresTheFireballsPositionBeforeLeavingAStationaryFlame(
-        int direction, boolean power) throws IOException {
+    @CsvSource({"0, false", "1, false", "2, false", "3, false", "0, true", "1, true", "2, true", "3, true"})
+    void solidImpactRestoresTheFireballsPositionBeforeLeavingAStationaryFlame(int direction, boolean power)
+            throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x50, 7, direction, power);
         RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            0x01, 0x01, 0x40, 0x40));
+        runtime.configuration()
+                .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x01, 0x01, 0x40, 0x40));
         tick(runtime, 0, 0, 0);
         assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
         for (int frame = 1; frame <= 3; frame++) {
@@ -269,76 +281,102 @@ final class MagicRodRuntimeTest {
 
     @ParameterizedTest
     @CsvSource({"false, 0x5C", "false, 0xD3", "true, 0x8A"})
-    void burningAnObjectKeepsTheRestoredPositionThenResumesTravel(
-        boolean indoor, int objectId) throws IOException {
+    void burningAnObjectKeepsTheRestoredPositionThenResumesTravel(boolean indoor, int objectId) throws IOException {
         RoomEntityRuntime runtime = runtime(indoor);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x50, 0, 0);
         RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            objectId, 1, 0x40, 0x40));
+        runtime.configuration()
+                .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(objectId, 1, 0x40, 0x40));
         tick(runtime, 0, 0, 0);
-        assertEquals(before.x(), runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                before.x(), runtime.inspection().snapshot().slots().get(slot).x());
         assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
         assertEquals(1, runtime.enemies().magicRodObjectRequests().size());
 
         runtime.configuration().setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());
         tick(runtime, 1, 0, 0);
-        assertEquals(before.x() + 3, runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                before.x() + 3,
+                runtime.inspection().snapshot().slots().get(slot).x());
         assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
     }
 
     @ParameterizedTest
     @CsvSource({"false", "true"})
-    void oppositeDirectionalBarrierBlocksOnThePassAfterCrossingCounterExpires(
-        boolean indoor) throws IOException {
+    void oppositeDirectionalBarrierBlocksOnThePassAfterCrossingCounterExpires(boolean indoor) throws IOException {
         RoomEntityRuntime runtime = runtime(indoor);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x50, 0, 0);
         int startX = runtime.inspection().snapshot().slots().get(slot).x();
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            1, 0xD1, 0x40, 0x40));
+        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 0xD1, 0x40, 0x40));
         // Initial counter one is consumed on frame 1. Frame 2 must block
         // even outdoors, where a nonzero counter would skip this even frame.
         tick(runtime, 1, 0, 0);
         assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
-        assertEquals(startX + 3, runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                startX + 3, runtime.inspection().snapshot().slots().get(slot).x());
         tick(runtime, 2, 0, 0);
         assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
-        assertEquals(startX + 3, runtime.inspection().snapshot().slots().get(slot).x());
+        assertEquals(
+                startX + 3, runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     @Test
     void physicsFFUnloadsImmediatelyBeforeBurningOrStartingAFlame() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x50, 0, 0);
-        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
-            0x5C, 0xFF, 0x40, 0x40));
+        runtime.configuration()
+                .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 0xFF, 0x40, 0x40));
         tick(runtime, 0, 0, 0);
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
         assertTrue(runtime.enemies().magicRodObjectRequests().isEmpty());
     }
 
-    private static RoomEntityRuntime runtimeWithTarget(int type, int x, int y)
-            throws IOException {
+    private static RoomEntityRuntime runtimeWithTarget(int type, int x, int y) throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         List<RoomEntity> slots = new ArrayList<>(emptySnapshot().slots());
-        slots.set(0, new RoomEntity(0, -1, type, x, y, EntityStatus.ACTIVE,
-            catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0, -1, false));
-        return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, () -> 0,
-            catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        slots.set(
+                0,
+                new RoomEntity(
+                        0,
+                        -1,
+                        type,
+                        x,
+                        y,
+                        EntityStatus.ACTIVE,
+                        catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                        0,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false));
+        return RoomEntityRuntime.from(
+                new RoomEntitySnapshot(slots),
+                false,
+                () -> 0,
+                catalog,
+                new RomEnemyCombatTables(rom),
+                new ChestContentsTable(rom));
     }
 
     private static RoomEntityRuntime runtime(boolean indoor) throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        return RoomEntityRuntime.from(emptySnapshot(), indoor, () -> 0, catalog,
-            new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        return RoomEntityRuntime.from(
+                emptySnapshot(), indoor, () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY) {
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                frame,
+                linkX,
+                linkY,
+                () -> 0,
+                null,
+                new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false)));
     }
 
     private static RoomEntitySnapshot emptySnapshot() {

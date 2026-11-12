@@ -1,20 +1,13 @@
 package linksawakening.world.room;
 
-import linksawakening.world.object.SwitchBlockAnimation;
-
-
-
-import linksawakening.world.room.OverworldTilesetTable;
-import linksawakening.world.room.RoomSession;
-import linksawakening.world.room.RoomLoader;
+import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
+import linksawakening.world.object.SwitchBlockAnimation;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @linksawakening.testing.RequiresRom
 final class OpeningHouseRegressionTest {
@@ -28,8 +21,10 @@ final class OpeningHouseRegressionTest {
         actual.loadBaseTiles(rom);
         session(rom, actual).loadIndoor(0x10, 0xA3);
         for (int offset = 0x1040; offset < 0x10C0; offset++) {
-            assertEquals(expected.readVRAM(offset), actual.readVRAM(offset),
-                "Furniture byte $" + Integer.toHexString(offset));
+            assertEquals(
+                    expected.readVRAM(offset),
+                    actual.readVRAM(offset),
+                    "Furniture byte $" + Integer.toHexString(offset));
         }
     }
 
@@ -40,7 +35,10 @@ final class OpeningHouseRegressionTest {
         int blockRoom = -1;
         for (int room = 0; room < 256 && blockRoom < 0; room++) {
             for (int object : loader.loadIndoor(0, room, new int[8][4]).roomObjectsArea()) {
-                if (object == 0xDB || object == 0xDC) { blockRoom = room; break; }
+                if (object == 0xDB || object == 0xDC) {
+                    blockRoom = room;
+                    break;
+                }
             }
         }
         assertTrue(blockRoom >= 0, "Shipped dungeon must contain mobile blocks");
@@ -70,8 +68,14 @@ final class OpeningHouseRegressionTest {
     }
 
     private static RoomSession session(byte[] rom, GPU gpu) {
-        return new RoomSession(rom, gpu, new RoomLoader(rom), new OverworldTilesetTable(rom),
-            new OverworldCollision(RomTables.loadFromRom(rom)), null, null);
+        return new RoomSession(
+                rom,
+                gpu,
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                new OverworldCollision(RomTables.loadFromRom(rom)),
+                null,
+                null);
     }
 
     private static byte[] rom() throws Exception {

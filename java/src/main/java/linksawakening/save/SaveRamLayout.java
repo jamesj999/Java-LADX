@@ -88,8 +88,7 @@ public final class SaveRamLayout {
 
     private static final byte[] VALID_PREFIX = {1, 3, 5, 7, 9};
 
-    private SaveRamLayout() {
-    }
+    private SaveRamLayout() {}
 
     public static int slotOffset(int slot) {
         checkSlot(slot);

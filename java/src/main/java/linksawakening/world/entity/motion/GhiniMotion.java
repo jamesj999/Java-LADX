@@ -1,9 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-
-import java.util.function.IntSupplier;
 
 /** Bank-$04 Ghini motion, including the shared hidden/visible handler state. */
 public final class GhiniMotion {
@@ -100,22 +99,35 @@ public final class GhiniMotion {
                 privateCountdown1[slot] = 0x20;
             }
 
-            speedX[slot] = approachTarget(speedX[slot],
-                TARGET_X_SPEEDS[targetXDirection[slot]]);
-            speedY[slot] = approachTarget(speedY[slot],
-                TARGET_Y_SPEEDS[targetYDirection[slot]]);
+            speedX[slot] = approachTarget(speedX[slot], TARGET_X_SPEEDS[targetXDirection[slot]]);
+            speedY[slot] = approachTarget(speedY[slot], TARGET_Y_SPEEDS[targetYDirection[slot]]);
         }
 
-        int flipAttribute = entity.entityFlipAttribute()
-            ^ (isNegative(speedX[slot]) ? 0 : 0x20);
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(), flipAttribute,
-            entity.spriteTileOffset(), z, -1, false);
+        int flipAttribute = entity.entityFlipAttribute() ^ (isNegative(speedX[slot]) ? 0 : 0x20);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                flipAttribute,
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, int entityType,
-                       int linkEntityX, int linkEntityY, int collisionType,
-                       IntSupplier randomByteSupplier) {
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            int entityType,
+            int linkEntityX,
+            int linkEntityY,
+            int collisionType,
+            IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entityType);
@@ -123,8 +135,7 @@ public final class GhiniMotion {
         rememberBaseFlipAttribute(entity);
 
         if (hidden(slot)) {
-            return advanceHidden(entity, frameCounter, entityType, linkEntityX, linkEntityY,
-                collisionType);
+            return advanceHidden(entity, frameCounter, entityType, linkEntityX, linkEntityY, collisionType);
         }
         return advanceVisible(entity, frameCounter, entityType, randomByteSupplier);
     }
@@ -186,24 +197,31 @@ public final class GhiniMotion {
         }
     }
 
-    private RoomEntity advanceHidden(RoomEntity entity, int frameCounter, int entityType,
-                                      int linkEntityX, int linkEntityY, int collisionType) {
+    private RoomEntity advanceHidden(
+            RoomEntity entity, int frameCounter, int entityType, int linkEntityX, int linkEntityY, int collisionType) {
         int animation = animationVariant(frameCounter, entity.slot());
         int flipAttribute = computedFlipAttribute(entity.slot());
-        RoomEntity hiddenEntity = withPresentation(entity, entity.x(), entity.y(), entity.z(),
-            entityType, animation, flipAttribute, HIDDEN_SPRITE_VARIANT);
+        RoomEntity hiddenEntity = withPresentation(
+                entity,
+                entity.x(),
+                entity.y(),
+                entity.z(),
+                entityType,
+                animation,
+                flipAttribute,
+                HIDDEN_SPRITE_VARIANT);
 
         if (withinRevealWindow(linkEntityX, entity.x())
-            && withinRevealWindow(linkEntityY, entity.y())
-            && (collisionType & 0xFF) != 0) {
+                && withinRevealWindow(linkEntityY, entity.y())
+                && (collisionType & 0xFF) != 0) {
             state[entity.slot()] = 0;
             privateCountdown2[entity.slot()] = 0x30;
         }
         return hiddenEntity;
     }
 
-    private RoomEntity advanceVisible(RoomEntity entity, int frameCounter, int entityType,
-                                      IntSupplier randomByteSupplier) {
+    private RoomEntity advanceVisible(
+            RoomEntity entity, int frameCounter, int entityType, IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         decrementCountdowns(slot);
 
@@ -220,8 +238,8 @@ public final class GhiniMotion {
         return withPresentation(entity, x, y, z, entityType, animation, flipAttribute, animation);
     }
 
-    private void refreshTargetsAndAccelerate(int slot, int frameCounter, int x, int y, int z,
-                                             IntSupplier randomByteSupplier) {
+    private void refreshTargetsAndAccelerate(
+            int slot, int frameCounter, int x, int y, int z, IntSupplier randomByteSupplier) {
         if (transitionCountdown[slot] == 0) {
             int random = randomByteSupplier.getAsInt() & 0xFF;
             transitionCountdown[slot] = 0x20 | (random & 0x1F);
@@ -267,26 +285,40 @@ public final class GhiniMotion {
     }
 
     private int computedFlipAttribute(int slot) {
-        return (baseEntityFlipAttribute[slot]
-            ^ (isNegative(speedX[slot]) ? 0 : 0x20)) & 0xFF;
+        return (baseEntityFlipAttribute[slot] ^ (isNegative(speedX[slot]) ? 0 : 0x20)) & 0xFF;
     }
 
-    private RoomEntity withPresentation(RoomEntity entity, int x, int y, int z,
-                                        int entityType, int animation, int flipAttribute,
-                                        int ordinaryVariant) {
+    private RoomEntity withPresentation(
+            RoomEntity entity,
+            int x,
+            int y,
+            int z,
+            int entityType,
+            int animation,
+            int flipAttribute,
+            int ordinaryVariant) {
         int selectedVariant = ordinaryVariant;
         int genericFlipAttribute = flipAttribute;
         if (entityType == GIANT_GHINI) {
-            int giantVariant = animation
-                + ((flipAttribute & 0x20) != 0 ? GIANT_ORIENTATION_OFFSET : 0);
+            int giantVariant = animation + ((flipAttribute & 0x20) != 0 ? GIANT_ORIENTATION_OFFSET : 0);
             giantRectangleVariant[entity.slot()] = giantVariant;
-            selectedVariant = ordinaryVariant == HIDDEN_SPRITE_VARIANT
-                ? HIDDEN_SPRITE_VARIANT : giantVariant;
+            selectedVariant = ordinaryVariant == HIDDEN_SPRITE_VARIANT ? HIDDEN_SPRITE_VARIANT : giantVariant;
             genericFlipAttribute = flipAttribute & 0x0F;
         }
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x, y, entity.status(), entity.spriteDefinition(), selectedVariant,
-            genericFlipAttribute, entity.spriteTileOffset(), z, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                selectedVariant,
+                genericFlipAttribute,
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 
     private static int animationVariant(int frameCounter, int slot) {
@@ -318,8 +350,7 @@ public final class GhiniMotion {
         return (z - 1) & 0xFF;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator,
-                                          int slot) {
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -340,8 +371,19 @@ public final class GhiniMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteVariant(),
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                z,
+                -1,
+                false);
     }
 }

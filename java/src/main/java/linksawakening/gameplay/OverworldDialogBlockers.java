@@ -1,10 +1,11 @@
 package linksawakening.gameplay;
 
-public record OverworldDialogBlockers(boolean inventoryBlocking,
-                                      boolean scrolling,
-                                      boolean transitionInputBlocked,
-                                      boolean dialogActive,
-                                      boolean dialogInputConsumedThisFrame) {
+public record OverworldDialogBlockers(
+        boolean inventoryBlocking,
+        boolean scrolling,
+        boolean transitionInputBlocked,
+        boolean dialogActive,
+        boolean dialogInputConsumedThisFrame) {
 
     public static OverworldDialogBlockers none() {
         return new OverworldDialogBlockers(false, false, false, false, false);

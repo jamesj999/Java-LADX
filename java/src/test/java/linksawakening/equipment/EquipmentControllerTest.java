@@ -1,10 +1,5 @@
 package linksawakening.equipment;
 
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
@@ -16,13 +11,18 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
+
 final class EquipmentControllerTest {
 
     @Test
     void dispatchesPressReleaseAndHeldStateForEquippedButtons() {
         InputState input = new InputState();
-        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN,
-            GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
+        InputConfig inputConfig = new InputConfig(
+                GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
         player.setItemA(PlayerState.INVENTORY_SWORD);
         player.setItemB(PlayerState.INVENTORY_BOMBS);
@@ -55,8 +55,8 @@ final class EquipmentControllerTest {
     @Test
     void forwardsTheGlobalFrameCounterToEquippedItems() {
         InputState input = new InputState();
-        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN,
-            GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
+        InputConfig inputConfig = new InputConfig(
+                GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
         player.setItemA(PlayerState.INVENTORY_SWORD);
         ItemRegistry registry = new ItemRegistry();
@@ -78,8 +78,8 @@ final class EquipmentControllerTest {
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
         registry.register(PlayerState.INVENTORY_SWORD, sword);
-        EquipmentController controller = new EquipmentController(new InputState(),
-            new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
+        EquipmentController controller =
+                new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
         assertNull(controller.activeSword());
         sword.startSwordAcquisitionSpin(linksawakening.entity.Link.DIRECTION_DOWN);
         assertSame(sword, controller.activeSword());
@@ -94,8 +94,8 @@ final class EquipmentControllerTest {
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
         registry.register(PlayerState.INVENTORY_SWORD, sword);
-        EquipmentController controller = new EquipmentController(new InputState(),
-            new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
+        EquipmentController controller =
+                new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
         sword.onPress();
         for (int frame = 0; frame < 32; frame++) controller.tickEquippedItemsWithoutInput(frame);
         assertEquals(Sword.STATE_NONE, sword.state());

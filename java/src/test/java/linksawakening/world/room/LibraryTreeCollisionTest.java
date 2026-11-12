@@ -1,5 +1,7 @@
 package linksawakening.world.room;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
@@ -11,14 +13,14 @@ import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @RequiresRom
 final class LibraryTreeCollisionTest {
     @Test
     void offscreenTreeStripBlocksLinksLeadingEdgesFromEveryDirection() throws Exception {
         byte[] rom;
-        try (var input = TestRom.open()) { rom = input.readAllBytes(); }
+        try (var input = TestRom.open()) {
+            rom = input.readAllBytes();
+        }
         var room = new RoomLoader(rom).loadOverworld(0xB0);
         assertTrue(room.warps().stream().anyMatch(w -> w.destMap() == 0x1D), "library exterior");
         var tables = RomTables.loadFromRom(rom);
@@ -34,24 +36,27 @@ final class LibraryTreeCollisionTest {
             for (int direction = 0; direction < 4; direction++) {
                 // Positions put both ROM LinkCollisionPointsX/Y probes
                 // ($02:6E15/$6E1D) one pixel outside the chosen tree edge.
-                int x = switch (direction) {
-                    case Link.DIRECTION_LEFT -> tileX + 12;
-                    case Link.DIRECTION_RIGHT -> tileX - 12;
-                    default -> tileX + 1;
-                };
-                int y = switch (direction) {
-                    case Link.DIRECTION_UP -> tileY + 10;
-                    case Link.DIRECTION_DOWN -> tileY - 16;
-                    default -> tileY + 1;
-                };
+                int x =
+                        switch (direction) {
+                            case Link.DIRECTION_LEFT -> tileX + 12;
+                            case Link.DIRECTION_RIGHT -> tileX - 12;
+                            default -> tileX + 1;
+                        };
+                int y =
+                        switch (direction) {
+                            case Link.DIRECTION_UP -> tileY + 10;
+                            case Link.DIRECTION_DOWN -> tileY - 16;
+                            default -> tileY + 1;
+                        };
                 var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
                 var input = new InputState();
-                int key = switch (direction) {
-                    case Link.DIRECTION_LEFT -> config.leftKey();
-                    case Link.DIRECTION_RIGHT -> config.rightKey();
-                    case Link.DIRECTION_UP -> config.upKey();
-                    default -> config.downKey();
-                };
+                int key =
+                        switch (direction) {
+                            case Link.DIRECTION_LEFT -> config.leftKey();
+                            case Link.DIRECTION_RIGHT -> config.rightKey();
+                            case Link.DIRECTION_UP -> config.upKey();
+                            default -> config.downKey();
+                        };
                 input.onKeyEvent(key, 1);
                 var link = new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
                 link.setPixelPosition(x, y);

@@ -9,8 +9,7 @@ public record ChestRewardEvent(int slot, int itemType) implements EntityRequest 
             throw new IllegalArgumentException("Chest entity slot out of range: " + slot);
         }
         if ((itemType & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Chest item must be an unsigned byte: "
-                + itemType);
+            throw new IllegalArgumentException("Chest item must be an unsigned byte: " + itemType);
         }
     }
 }

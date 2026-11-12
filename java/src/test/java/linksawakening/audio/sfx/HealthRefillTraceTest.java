@@ -1,26 +1,28 @@
 package linksawakening.audio.sfx;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import static linksawakening.audio.sfx.SfxRegisterTrace.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
-import static linksawakening.audio.sfx.SfxRegisterTrace.*;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
-import linksawakening.rom.RomBank;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
+import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 class HealthRefillTraceTest {
     private static byte[] rom() throws Exception {
-        try (var stream = linksawakening.testing.TestRom.open()) { return stream.readAllBytes(); }
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            return stream.readAllBytes();
+        }
     }
 
-    @Test void healthRefillMatchesWaveHandTraceAndLoadsRomWaveform() throws Exception {
+    @Test
+    void healthRefillMatchesWaveHandTraceAndLoadsRomWaveform() throws Exception {
         byte[] rom = rom();
         var trace = new SfxRegisterTrace(rom);
         trace.start(SoundEffectNamespace.WAVE, 6);
@@ -54,7 +56,8 @@ class HealthRefillTraceTest {
         assertFalse(trace.player.ownsChannel(3));
     }
 
-    @Test void repeatedHealthRefillRestartsRemainAudibleAndProtectWaveChannelFromMusic() throws Exception {
+    @Test
+    void repeatedHealthRefillRestartsRemainAudibleAndProtectWaveChannelFromMusic() throws Exception {
         byte[] data = rom();
         // Synthetic music stream uses a different waveform, loud notes and rests.
         // It shares the real SFX ROM bank; no ROM-derived fixture is stored.
@@ -73,7 +76,9 @@ class HealthRefillTraceTest {
                 trace.start(SoundEffectNamespace.WAVE, 6);
                 var expectedStart = new ArrayList<SfxRegisterTrace.Write>();
                 addHealthStart(expectedStart, frame);
-                assertEquals(expectedStart, trace.writes().subList(before, trace.writes().size()));
+                assertEquals(
+                        expectedStart,
+                        trace.writes().subList(before, trace.writes().size()));
                 assertEquals(0xE0, trace.apu.readRegister(GameBoyApu.NR33));
                 assertEquals(0x87, trace.apu.readRegister(GameBoyApu.NR34));
             }
@@ -91,5 +96,4 @@ class HealthRefillTraceTest {
         add(writes, frame, 0x1A, 0); // 62F8 disables DAC before register block.
         add(writes, frame, 0x1A, 0x80, 0xD2, 0x40, 0xE0, 0x87);
     }
-
 }
