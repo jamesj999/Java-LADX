@@ -35,6 +35,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
+    ScreenRouter routerInstance;
     InputRouter inputRouterInstance;
     SessionContext context;
     GameplaySimulation simulationInstance;
@@ -367,6 +368,7 @@ public class GameSession {
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         context = new SessionContext(this);
+        routerInstance = new ScreenRouter(context);
         inputRouterInstance = new InputRouter(context);
         simulationInstance = new GameplaySimulation(context);
     }
@@ -504,39 +506,6 @@ public class GameSession {
     }
 
     ScreenRouter router() {
-        return new ScreenRouter(
-                gpu,
-                services.romData(),
-                services.roomSession(),
-                ROOM_PIXEL_WIDTH,
-                ROOM_PIXEL_HEIGHT,
-                services.inputState(),
-                services.playerState(),
-                services.backgroundSceneLoader(),
-                musicDirector,
-                services.cutsceneManager(),
-                saveRamStore,
-                services.link(),
-                titleScreen,
-                cutsceneScreen,
-                fileMenuScreen,
-                gameplayScreen,
-                currentAppConfig(),
-                () -> currentScreen,
-                value -> currentScreen = value,
-                scene -> {
-                    this.scene.currentTilemap = scene.tilemap();
-                    this.scene.currentAttrmap = scene.attrmap();
-                    this.scene.bgPalettes = scene.palettes();
-                    this.scene.objPalettes = scene.objectPalettes();
-                },
-                value -> screens.fileMenuController = value,
-                () -> screens.currentSaveSlot = -1,
-                () -> debug.debugNoClip = false,
-                () -> saves().startNewGame(),
-                () -> screens.fileMenuController = null,
-                () -> screens.fileSaveController = null,
-                () -> newGameWakeUpMotion = null,
-                () -> newGameTarinShieldMotion = null);
+        return routerInstance;
     }
 }

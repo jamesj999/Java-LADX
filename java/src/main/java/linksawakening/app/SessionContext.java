@@ -1,6 +1,7 @@
 package linksawakening.app;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import linksawakening.app.gameplay.BushInteraction;
@@ -12,6 +13,7 @@ import linksawakening.app.story.OpeningStory;
 import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.config.AppConfig;
+import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
@@ -23,7 +25,11 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.rom.RomTables;
+import linksawakening.save.SaveRamStore;
+import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.state.PlayerState;
+import linksawakening.ui.FileMenuController;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.vfx.TransientVfxSystem;
@@ -311,5 +317,161 @@ public final class SessionContext {
     public Supplier<DialogInteractions> inputRouter_dialogs() {
         if (inputRouter_dialogs == null) inputRouter_dialogs = session::dialogs;
         return inputRouter_dialogs;
+    }
+
+    public GPU router_gpu() {
+        return session.gpu;
+    }
+
+    public byte[] router_romData() {
+        return session.services.romData();
+    }
+
+    public RoomSession router_roomSession() {
+        return session.services.roomSession();
+    }
+
+    public int router_ROOM_PIXEL_WIDTH() {
+        return session.ROOM_PIXEL_WIDTH;
+    }
+
+    public int router_ROOM_PIXEL_HEIGHT() {
+        return session.ROOM_PIXEL_HEIGHT;
+    }
+
+    public InputState router_inputState() {
+        return session.services.inputState();
+    }
+
+    public PlayerState router_playerState() {
+        return session.services.playerState();
+    }
+
+    public BackgroundSceneLoader router_backgroundSceneLoader() {
+        return session.services.backgroundSceneLoader();
+    }
+
+    public MusicDirector router_musicDirector() {
+        return session.musicDirector;
+    }
+
+    public CutsceneManager router_cutsceneManager() {
+        return session.services.cutsceneManager();
+    }
+
+    public SaveRamStore router_saveRamStore() {
+        return session.saveRamStore;
+    }
+
+    public Link router_link() {
+        return session.services.link();
+    }
+
+    public Screen router_titleScreen() {
+        return session.titleScreen;
+    }
+
+    public Screen router_cutsceneScreen() {
+        return session.cutsceneScreen;
+    }
+
+    public Screen router_fileMenuScreen() {
+        return session.fileMenuScreen;
+    }
+
+    public Screen router_gameplayScreen() {
+        return session.gameplayScreen;
+    }
+
+    public AppConfig router_config() {
+        return session.currentAppConfig();
+    }
+
+    private Supplier<Screen> router_screen;
+
+    public Supplier<Screen> router_screen() {
+        if (router_screen == null) router_screen = () -> session.currentScreen;
+        return router_screen;
+    }
+
+    private Consumer<Screen> router_showScreen;
+
+    public Consumer<Screen> router_showScreen() {
+        if (router_showScreen == null) router_showScreen = value -> session.currentScreen = value;
+        return router_showScreen;
+    }
+
+    private Consumer<BackgroundScene> router_background;
+
+    public Consumer<BackgroundScene> router_background() {
+        if (router_background == null)
+            router_background = backgroundValue -> {
+                session.scene.currentTilemap = backgroundValue.tilemap();
+                session.scene.currentAttrmap = backgroundValue.attrmap();
+                session.scene.bgPalettes = backgroundValue.palettes();
+                session.scene.objPalettes = backgroundValue.objectPalettes();
+            };
+        return router_background;
+    }
+
+    private Consumer<FileMenuController> router_setFileMenu;
+
+    public Consumer<FileMenuController> router_setFileMenu() {
+        if (router_setFileMenu == null) router_setFileMenu = value -> session.screens.fileMenuController = value;
+        return router_setFileMenu;
+    }
+
+    private Runnable router_clearSaveSlot;
+
+    public Runnable router_clearSaveSlot() {
+        if (router_clearSaveSlot == null) router_clearSaveSlot = () -> session.screens.currentSaveSlot = -1;
+        return router_clearSaveSlot;
+    }
+
+    private Runnable router_resetDebug;
+
+    public Runnable router_resetDebug() {
+        if (router_resetDebug == null) router_resetDebug = () -> session.debug.debugNoClip = false;
+        return router_resetDebug;
+    }
+
+    private Runnable router_startNewGame;
+
+    public Runnable router_startNewGame() {
+        if (router_startNewGame == null)
+            router_startNewGame = () -> session.saves().startNewGame();
+        return router_startNewGame;
+    }
+
+    private Runnable router_clearFileMenuController;
+
+    public Runnable router_clearFileMenuController() {
+        if (router_clearFileMenuController == null)
+            router_clearFileMenuController = () -> session.screens.fileMenuController = null;
+        return router_clearFileMenuController;
+    }
+
+    private Runnable router_clearFileSaveController;
+
+    public Runnable router_clearFileSaveController() {
+        if (router_clearFileSaveController == null)
+            router_clearFileSaveController = () -> session.screens.fileSaveController = null;
+        return router_clearFileSaveController;
+    }
+
+    private Runnable router_clearNewGameWakeUpMotion;
+
+    public Runnable router_clearNewGameWakeUpMotion() {
+        if (router_clearNewGameWakeUpMotion == null)
+            router_clearNewGameWakeUpMotion = () -> session.newGameWakeUpMotion = null;
+        return router_clearNewGameWakeUpMotion;
+    }
+
+    private Runnable router_clearNewGameTarinShieldMotion;
+
+    public Runnable router_clearNewGameTarinShieldMotion() {
+        if (router_clearNewGameTarinShieldMotion == null)
+            router_clearNewGameTarinShieldMotion = () -> session.newGameTarinShieldMotion = null;
+        return router_clearNewGameTarinShieldMotion;
     }
 }
