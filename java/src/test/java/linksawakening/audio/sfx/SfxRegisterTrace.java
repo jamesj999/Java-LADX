@@ -3,6 +3,7 @@ package linksawakening.audio.sfx;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 
 /** Local research harness. Prints register writes, never exports ROM graphics/assets. */
@@ -16,7 +17,7 @@ public final class SfxRegisterTrace {
     private int frame;
 
     SfxRegisterTrace(byte[] rom) {
-        player = new SoundEffectPlayer(apu, rom);
+        player = new SoundEffectPlayer(apu, Rom.of(rom));
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
         apu.writeRegister(GameBoyApu.NR51, 0xFF);

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gameplay.PcmSoundOutput;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -22,10 +23,10 @@ class FrameAudioPlayerTest {
     private short[] capture(byte[] rom) {
         List<short[]> chunks = new ArrayList<>();
         var catalog = new linksawakening.audio.sfx.SoundEffectPlayer(
-                        new linksawakening.audio.apu.GameBoyApu(48000), rom)
+                        new linksawakening.audio.apu.GameBoyApu(48000), Rom.of(rom))
                 .catalog();
-        try (var player = new FrameAudioPlayer(rom, 48000, (pcm, rate) -> chunks.add(pcm))) {
-            player.play(MusicCatalog.fromRom(rom).requireTrack(1));
+        try (var player = new FrameAudioPlayer(Rom.of(rom), 48000, (pcm, rate) -> chunks.add(pcm))) {
+            player.play(MusicCatalog.fromRom(Rom.of(rom)).requireTrack(1));
             for (int frame = 0; frame < 30; frame++) {
                 if (frame == 5)
                     player.playSoundEffect(linksawakening.gameplay.DialogSoundEffectMap.fromCatalog(catalog)
@@ -70,7 +71,7 @@ class FrameAudioPlayerTest {
                 chunks.add(pcm);
             }
         };
-        try (var player = new FrameAudioPlayer(rom, 44101, output)) {
+        try (var player = new FrameAudioPlayer(Rom.of(rom), 44101, output)) {
             for (int i = 0; i < 60; i++) player.update();
             assertEquals(60, chunks.size());
             assertEquals(88202, chunks.stream().mapToInt(a -> a.length).sum());

@@ -3,6 +3,7 @@ package linksawakening.audio.sfx;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -10,8 +11,8 @@ final class RomSoundEffectTablesTest {
     @Test
     void readsHandlerPointersFromRomTables() throws IOException {
         byte[] romData = loadRom();
-        RomSoundEffectTables tables = new RomSoundEffectTables(romData);
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
+        RomSoundEffectTables tables = new RomSoundEffectTables(Rom.of(romData));
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(romData));
 
         SoundEffect dialogBreak =
                 catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();

@@ -3,6 +3,7 @@ package linksawakening.audio.music;
 import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -22,8 +23,8 @@ final class FrameAudioMixerTest {
         System.arraycopy(notes, 0, rom, base + 0x5300, notes.length);
         var apu = new GameBoyApu(rate);
         var reference = new GameBoyApu(rate);
-        var driver = new MusicDriver(rom, apu);
-        var other = new MusicDriver(rom, reference);
+        var driver = new MusicDriver(Rom.of(rom), apu);
+        var other = new MusicDriver(Rom.of(rom), reference);
         var track = new MusicTrack(1, "clock", 0x1b, 0x4077, 0x5000, base + 0x5000);
         driver.start(track);
         other.start(track);

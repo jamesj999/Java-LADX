@@ -9,13 +9,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class SoundEffectPlayerTest {
     @Test
     void supportedEffectsExposeFullCatalogInCatalogOrder() throws IOException {
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(loadRom());
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(loadRom()));
 
         List<SoundEffect> supported = SoundEffectPlayer.supportedEffects(catalog);
 
@@ -29,10 +30,10 @@ final class SoundEffectPlayerTest {
     @Test
     void mappedSfxArePlayableFromRomTables() throws IOException {
         byte[] romData = loadRom();
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(romData));
         for (SoundEffect effect : catalog.effects()) {
             GameBoyApu apu = new GameBoyApu(48_000);
-            SoundEffectPlayer player = new SoundEffectPlayer(apu, romData, catalog);
+            SoundEffectPlayer player = new SoundEffectPlayer(apu, Rom.of(romData), catalog);
             assertTrue(player.supports(effect), effect.name());
             assertDoesNotThrow(
                     () -> {

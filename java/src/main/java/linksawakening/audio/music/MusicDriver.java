@@ -296,9 +296,4 @@ public final class MusicDriver {
     static String hex(int value) {
         return "0x" + Integer.toHexString(value).toUpperCase();
     }
-
-    @Deprecated(forRemoval = true)
-    public MusicDriver(byte[] romData, GameBoyApu apu) {
-        this(new Rom(romData), apu);
-    }
 }

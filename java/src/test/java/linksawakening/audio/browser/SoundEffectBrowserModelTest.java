@@ -8,6 +8,7 @@ import java.io.InputStream;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -15,7 +16,7 @@ final class SoundEffectBrowserModelTest {
     @Test
     void filtersSoundEffectsByNameNamespaceOrHexId() throws IOException {
         SoundEffectBrowserModel model = new SoundEffectBrowserModel(
-                SoundEffectCatalog.fromRom(loadRom()).effects());
+                SoundEffectCatalog.fromRom(Rom.of(loadRom())).effects());
 
         assertEquals(1, model.filteredEffects("rupee").size());
         assertEquals(65, model.filteredEffects("jingle").size());
@@ -27,9 +28,9 @@ final class SoundEffectBrowserModelTest {
     @Test
     void metadataIncludesNamespaceIdNameAndRomPointers() throws IOException {
         byte[] romData = loadRom();
-        SoundEffectBrowserModel model =
-                new SoundEffectBrowserModel(SoundEffectCatalog.fromRom(romData).effects());
-        SoundEffect effect = SoundEffectCatalog.fromRom(romData)
+        SoundEffectBrowserModel model = new SoundEffectBrowserModel(
+                SoundEffectCatalog.fromRom(Rom.of(romData)).effects());
+        SoundEffect effect = SoundEffectCatalog.fromRom(Rom.of(romData))
                 .find(SoundEffectNamespace.NOISE, 0x0C)
                 .orElseThrow();
 

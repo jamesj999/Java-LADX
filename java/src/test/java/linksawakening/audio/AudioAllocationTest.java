@@ -16,7 +16,7 @@ final class AudioAllocationTest {
         byte[] rom = syntheticRom();
         short[] samples = new short[1600];
         var apu = new GameBoyApu(48000);
-        var driver = new MusicDriver(rom, apu);
+        var driver = new MusicDriver(Rom.of(rom), apu);
         driver.start(new MusicTrack(1, "allocation", 0x1b, 0x4077, 0x5000, 0x1b * 0x4000 + 0x1000));
         double bytes = AllocationProbe.bytesPerIteration(5000, 1000, () -> {
             driver.tick60Hz();

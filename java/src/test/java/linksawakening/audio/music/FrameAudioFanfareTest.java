@@ -2,6 +2,7 @@ package linksawakening.audio.music;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -12,8 +13,8 @@ final class FrameAudioFanfareTest {
         try (var in = linksawakening.testing.TestRom.open()) {
             rom = in.readAllBytes();
         }
-        try (var player = new FrameAudioPlayer(rom, 48_000, (pcm, rate) -> {})) {
-            player.play(MusicCatalog.fromRom(rom).requireTrack(0x1B));
+        try (var player = new FrameAudioPlayer(Rom.of(rom), 48_000, (pcm, rate) -> {})) {
+            player.play(MusicCatalog.fromRom(Rom.of(rom)).requireTrack(0x1B));
             assertTrue(player.isMusicPlaying());
             int frames = 0;
             while (player.isMusicPlaying() && frames++ < 1200) player.update();

@@ -9,6 +9,7 @@ import linksawakening.audio.music.MusicCatalog;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectPlayer;
+import linksawakening.rom.Rom;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
@@ -30,8 +31,8 @@ final class AudioGoldenTest {
         try (var input = TestRom.open()) {
             rom = input.readAllBytes();
         }
-        var tracks = MusicCatalog.fromRom(rom).tracks();
-        var effects = SoundEffectCatalog.fromRom(rom).effects();
+        var tracks = MusicCatalog.fromRom(Rom.of(rom)).tracks();
+        var effects = SoundEffectCatalog.fromRom(Rom.of(rom)).effects();
         for (int scenario = 0; scenario < 6; scenario++) {
             var writes = MessageDigest.getInstance("SHA-256");
             var pcm = MessageDigest.getInstance("SHA-256");
@@ -40,8 +41,8 @@ final class AudioGoldenTest {
                 writes.update((byte) (int) register);
                 writes.update((byte) (int) value);
             });
-            var music = new MusicDriver(rom, apu);
-            var sfx = new SoundEffectPlayer(apu, rom);
+            var music = new MusicDriver(Rom.of(rom), apu);
+            var sfx = new SoundEffectPlayer(apu, Rom.of(rom));
             music.setSoundEffectState(sfx::ownsChannel, sfx::takeWaveRestoreRequest);
             if (scenario < 3) music.start(tracks.get(new int[] {0, 20, 50}[scenario]));
             else sfx.play(effects.get(new int[] {0, 70, 110}[scenario - 3]));

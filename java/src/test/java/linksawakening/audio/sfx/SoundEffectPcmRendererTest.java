@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -14,18 +15,18 @@ final class SoundEffectPcmRendererTest {
     @Test
     void oneShotRenderStartsCleanAndLeavesApuResetForNextPreview() throws IOException {
         byte[] romData = loadRom();
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(romData));
         SoundEffect breakJingle =
                 catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();
         SoundEffect textPrint = catalog.find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow();
         GameBoyApu reusedApu = new GameBoyApu(44_100);
-        SoundEffectPlayer reusedPlayer = new SoundEffectPlayer(reusedApu, romData, catalog);
+        SoundEffectPlayer reusedPlayer = new SoundEffectPlayer(reusedApu, Rom.of(romData), catalog);
 
         short[] breakPcm = SoundEffectPcmRenderer.renderOneShot(reusedApu, reusedPlayer, breakJingle);
         short[] textAfterBreak = SoundEffectPcmRenderer.renderOneShot(reusedApu, reusedPlayer, textPrint);
 
         GameBoyApu freshApu = new GameBoyApu(44_100);
-        SoundEffectPlayer freshPlayer = new SoundEffectPlayer(freshApu, romData, catalog);
+        SoundEffectPlayer freshPlayer = new SoundEffectPlayer(freshApu, Rom.of(romData), catalog);
         short[] freshText = SoundEffectPcmRenderer.renderOneShot(freshApu, freshPlayer, textPrint);
 
         assertTrue(hasNonZeroSample(breakPcm));
@@ -38,7 +39,7 @@ final class SoundEffectPcmRendererTest {
     void completedNoiseOneShotsReachSilenceWithoutClippingOrAnAbruptFinalSample() throws IOException {
         byte[] rom = loadRom();
         GameBoyApu apu = new GameBoyApu(48000);
-        SoundEffectPlayer player = new SoundEffectPlayer(apu, rom);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu, Rom.of(rom));
         for (int id : new int[] {2, 12}) {
             SoundEffect effect =
                     player.catalog().find(SoundEffectNamespace.NOISE, id).orElseThrow();
