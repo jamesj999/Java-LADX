@@ -214,7 +214,7 @@ final class SlimeEyeRuntimeTest {
     void roomFacadeLoadsActualD3BossRoomAndRendersPlayableSplit() throws Exception {
         byte[] bytes = rom();
         var gpu = new linksawakening.gpu.GPU();
-        gpu.loadBaseTiles(bytes);
+        gpu.loadBaseTiles(EntityRomTestData.view(bytes));
         var session = new linksawakening.world.room.RoomSession(
                 bytes,
                 gpu,
@@ -224,72 +224,69 @@ final class SlimeEyeRuntimeTest {
                         RomTables.load(linksawakening.world.entity.EntityRomTestData.view(bytes))),
                 null,
                 null);
-        session.loadIndoor(2, 0x5A);
-        for (int i = 0; i < 2; i++) session.tickEntitiesWithProjectileEvents(i, 80, 96, 0, 0, 0, false);
-        session.setEntityScreenShakeCountdown(5);
-        session.tickEntitiesWithProjectileEvents(2, 80, 96, 0, 0, 0, false);
-        session.setEntityScreenShakeCountdown(0);
-        for (int i = 3; i < 160; i++) session.tickEntitiesWithProjectileEvents(i & 255, 80, 96, 0, 0, 0, false);
+        session.rooms().loadIndoor(2, 0x5A);
+        for (int i = 0; i < 2; i++) session.entities().tickEntitiesWithProjectileEvents(i, 80, 96, 0, 0, 0, false);
+        session.entityState().setEntityScreenShakeCountdown(5);
+        session.entities().tickEntitiesWithProjectileEvents(2, 80, 96, 0, 0, 0, false);
+        session.entityState().setEntityScreenShakeCountdown(0);
+        for (int i = 3; i < 160; i++)
+            session.entities().tickEntitiesWithProjectileEvents(i & 255, 80, 96, 0, 0, 0, false);
         capture(session, gpu, "body.png");
         captureFixture(session, gpu, false);
         // Continuous normal blade collision, followed by a Pegasus strike, uses the live facade.
         for (int i = 160; i < 1100; i++) {
-            var eyes = session.activeRoom().entities().loadedEntities().stream()
+            var eyes = session.rooms().activeRoom().entities().loadedEntities().stream()
                     .filter(e -> e.type() == 0x5B)
                     .toList();
             if (eyes.size() == 2) break;
             var eye = eyes.getFirst();
             boolean dash = i % 200 >= 160;
-            session.resolveEntityCombat(
-                    i & 255,
-                    80,
-                    96,
-                    false,
-                    true,
-                    true,
-                    eye.x() + 8,
-                    4,
-                    eye.y() - eye.z() + 8,
-                    4,
-                    new EnemyAttackContext(1, false, false, false, dash));
-            session.tickEntitiesWithProjectileEvents(i & 255, 80, 96, 0, 0, 0, false);
+            session.entities()
+                    .resolveEntityCombat(new linksawakening.world.room.EntityCombatInputs(
+                            i & 255,
+                            80,
+                            96,
+                            false,
+                            0,
+                            true,
+                            new linksawakening.world.room.SwordBox(true, eye.x() + 8, 4, eye.y() - eye.z() + 8, 4),
+                            new EnemyAttackContext(1, false, false, false, dash)));
+            session.entities().tickEntitiesWithProjectileEvents(i & 255, 80, 96, 0, 0, 0, false);
         }
         assertEquals(
                 2,
-                session.activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(e -> e.type() == 0x5B)
                         .count());
-        for (int i = 0; i < 20; i++) session.tickEntitiesWithProjectileEvents(i, 80, 96, 0, 0, 0, false);
+        for (int i = 0; i < 20; i++) session.entities().tickEntitiesWithProjectileEvents(i, 80, 96, 0, 0, 0, false);
         capture(session, gpu, "halves.png");
         captureFixture(session, gpu, true);
         for (int i = 0; i < 2400; i++) {
-            var eyes = session.activeRoom().entities().loadedEntities().stream()
+            var eyes = session.rooms().activeRoom().entities().loadedEntities().stream()
                     .filter(e -> e.type() == 0x5B)
                     .toList();
             if (eyes.isEmpty()) break;
             for (var eye : eyes)
-                session.resolveEntityCombat(
-                        i & 255,
-                        80,
-                        96,
-                        false,
-                        true,
-                        true,
-                        eye.x() + 8,
-                        4,
-                        eye.y() - eye.z() + 8,
-                        4,
-                        EnemyAttackContext.standard());
-            session.tickEntitiesWithProjectileEvents(i & 255, 80, 96, 0, 0, 0, false);
+                session.entities()
+                        .resolveEntityCombat(new linksawakening.world.room.EntityCombatInputs(
+                                i & 255,
+                                80,
+                                96,
+                                false,
+                                0,
+                                true,
+                                new linksawakening.world.room.SwordBox(true, eye.x() + 8, 4, eye.y() - eye.z() + 8, 4),
+                                EnemyAttackContext.standard()));
+            session.entities().tickEntitiesWithProjectileEvents(i & 255, 80, 96, 0, 0, 0, false);
         }
         assertEquals(
                 0,
-                session.activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(e -> e.type() == 0x5B)
                         .count());
         assertEquals(
                 1,
-                session.activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(e -> e.type() == 0x36)
                         .count());
         capture(session, gpu, "defeated.png");
@@ -297,12 +294,12 @@ final class SlimeEyeRuntimeTest {
 
     private void capture(linksawakening.world.room.RoomSession session, linksawakening.gpu.GPU gpu, String name)
             throws Exception {
-        captureSnapshot(session.renderSnapshot(), gpu, name);
+        captureSnapshot(session.rooms().renderSnapshot(), gpu, name);
     }
 
     private void captureFixture(linksawakening.world.room.RoomSession session, linksawakening.gpu.GPU gpu, boolean half)
             throws Exception {
-        var room = session.renderSnapshot();
+        var room = session.rooms().renderSnapshot();
         var catalog = new EntitySpriteHandlerCatalog(rom());
         var slots = new ArrayList<RoomEntity>();
         for (int i = 0; i < 16; i++) slots.add(RoomEntity.disabled(i));
