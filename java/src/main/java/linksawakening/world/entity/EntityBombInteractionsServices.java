@@ -32,59 +32,66 @@ interface EntityBombInteractionsServices {
     RoomEntity[] slots();
 
     static EntityBombInteractionsServices bind(RoomEntityRuntime r) {
-        return new EntityBombInteractionsServices() {
+        return new Binding(() -> r);
+    }
 
-            public int clearEntity(int slot) {
-                return r.clearEntity(slot);
-            }
+    final class Binding implements EntityBombInteractionsServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public int options1(int slot) {
-                return r.options1(slot);
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+        public int clearEntity(int slot) {
+            return room.get().clearEntity(slot);
+        }
 
-            public EntityBackgroundMechanics backgroundMechanics() {
-                return r.backgroundMechanics;
-            }
+        public int options1(int slot) {
+            return room.get().options1(slot);
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public EntityBackgroundMechanics backgroundMechanics() {
+            return room.get().backgroundMechanics;
+        }
 
-            public EntityLiftThrowController liftThrow() {
-                return r.liftThrow;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityLiftThrowController liftThrow() {
+            return room.get().liftThrow;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntitySlotProperties slotProperties() {
-                return r.slotProperties;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public RomEnemyCombatTables enemyCombatTables() {
-                return r.enemyCombatTables;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
-        };
+        public EntitySlotProperties slotProperties() {
+            return room.get().slotProperties;
+        }
+
+        public RomEnemyCombatTables enemyCombatTables() {
+            return room.get().enemyCombatTables;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
     }
 }

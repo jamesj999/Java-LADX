@@ -58,8 +58,8 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
-        assertEquals(0xF4, runtime.enemies().starSpeedX(0));
-        assertEquals(0x0C, runtime.enemies().starSpeedY(0));
+        assertEquals(0xF4, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedX(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedY(0));
     }
 
     @Test
@@ -82,8 +82,8 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
-        assertEquals(0x0C, runtime.enemies().starSpeedX(0));
-        assertEquals(0x0C, runtime.enemies().starSpeedY(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedX(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedY(0));
     }
 
     @Test
@@ -135,7 +135,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityCombatEvent.SoundChannel.JINGLE, endpointEvents.get(0).soundChannel());
         assertEquals(0x07, endpointEvents.get(0).soundId());
-        assertEquals(3, runtime.enemies().spikeTrapState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 27, 80, 64, sequence(0x00)));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -166,7 +166,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityCombatEvent.SoundChannel.JINGLE, collisionEvents.get(0).soundChannel());
         assertEquals(0x07, collisionEvents.get(0).soundId());
-        assertEquals(3, runtime.enemies().spikeTrapState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
     }
 
     @Test
@@ -186,9 +186,9 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
         runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00), wall));
 
-        assertEquals(1, runtime.enemies().spikeTrapState(0));
-        assertEquals(0, runtime.enemies().spikeTrapTransitionCountdown(0));
-        assertEquals(0x20, runtime.enemies().spikeTrapSpeedX(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapTransitionCountdown(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapSpeedX(0));
     }
 
     @Test
@@ -223,7 +223,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x10, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertFalse(runtime.enemies().enemyRecoilActive(0));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
     }
 
     @Test
@@ -245,7 +245,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
-        assertEquals(0x18, runtime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileTransitionCountdown(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
@@ -281,7 +281,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
 
         RoomEntity drop = runtime.inspection().snapshot().slots().get(14);
         assertEquals(0x55, drop.y());
-        assertEquals(0x00, runtime.inspection().dropSpeedY(14));
+        assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).dropSpeedY(14));
     }
 
     @Test

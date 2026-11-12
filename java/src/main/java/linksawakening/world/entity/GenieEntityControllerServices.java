@@ -29,54 +29,62 @@ interface GenieEntityControllerServices {
     void initializeHealthGroup(int slot);
 
     static GenieEntityControllerServices bind(RoomEntityRuntime r) {
-        return new GenieEntityControllerServices() {
-            public int findFreeEntitySlot() {
-                return r.findFreeEntitySlot();
-            }
+        return new Binding(() -> r);
+    }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+    final class Binding implements GenieEntityControllerServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public int findFreeEntitySlot() {
+            return room.get().findFreeEntitySlot();
+        }
 
-            public EntityLiftThrowController liftThrow() {
-                return r.liftThrow;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityPlayerSpawns entityPlayerSpawns() {
-                return r.entityPlayerSpawns;
-            }
+        public EntityLiftThrowController liftThrow() {
+            return room.get().liftThrow;
+        }
 
-            public EntitySlotLifecycle lifecycle() {
-                return r.lifecycle;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntitySlotProperties slotProperties() {
-                return r.slotProperties;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntityPlayerSpawns entityPlayerSpawns() {
+            return room.get().entityPlayerSpawns;
+        }
 
-            public void initializeHealthGroup(int slot) {
-                r.initializeHealthGroup(slot);
-            }
-        };
+        public EntitySlotLifecycle lifecycle() {
+            return room.get().lifecycle;
+        }
+
+        public EntitySlotProperties slotProperties() {
+            return room.get().slotProperties;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
+
+        public void initializeHealthGroup(int slot) {
+            room.get().initializeHealthGroup(slot);
+        }
     }
 }

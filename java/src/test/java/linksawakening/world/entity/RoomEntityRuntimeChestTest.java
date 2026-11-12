@@ -112,10 +112,10 @@ final class RoomEntityRuntimeChestTest {
         RoomEntity zol = runtime.inspection().snapshot().slots().get(zolSlot);
         assertEquals(0x1B, zol.type());
         assertEquals(0x06, zol.z());
-        assertEquals(3, runtime.enemies().zolState(zolSlot));
-        assertEquals(0x08, runtime.enemies().zolSpeedX(zolSlot));
-        assertEquals(0x18, runtime.enemies().zolSpeedZ(zolSlot));
-        assertEquals(0x50, runtime.enemies().zolPrivateCountdown1(zolSlot));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(zolSlot));
+        assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedX(zolSlot));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedZ(zolSlot));
+        assertEquals(0x50, new EntityEnemyInspectionQueries(runtime.enemies()).zolPrivateCountdown1(zolSlot));
         assertTrue(runtime.consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x1D));

@@ -52,7 +52,8 @@ final class PlayerProjectilePauseTest {
         if (type == 1) {
             // wC1A8 gates the handler, but UpdateEntityTimers does not read it.
             assertEquals(
-                    gate.equals("got_item") ? 0x27 : 0x28, runtime.inspection().boomerangTransitionCountdown(slot));
+                    gate.equals("got_item") ? 0x27 : 0x28,
+                    new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         }
 
         setGate(runtime, gate, false);
@@ -82,12 +83,14 @@ final class PlayerProjectilePauseTest {
         int slot = spawn(runtime, 4);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 1, 0x40, 0x40));
         tick(runtime, 0, 0);
-        assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x30, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         setGate(runtime, gate, true);
         tick(runtime, 8, 0);
         tick(runtime, 9, 0);
         assertEquals(
-                gate.equals("got_item") ? 0x2E : 0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+                gate.equals("got_item") ? 0x2E : 0x30,
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         // The fireball writes its next frame before ReturnIfNonInteractive.
         assertEquals(1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
     }
@@ -99,7 +102,7 @@ final class PlayerProjectilePauseTest {
         int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
         EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 8, 0);
-        assertEquals(0x28, runtime.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0x28, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         assertEquals(
                 beforeX + 2, runtime.inspection().snapshot().slots().get(slot).x());
     }

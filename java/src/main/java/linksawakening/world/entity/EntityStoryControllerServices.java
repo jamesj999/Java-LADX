@@ -43,82 +43,90 @@ interface EntityStoryControllerServices {
     void presentWitchGotItem(int slot);
 
     static EntityStoryControllerServices bind(RoomEntityRuntime r) {
-        return new EntityStoryControllerServices() {
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        return new Binding(() -> r);
+    }
 
-            public int findFreeEntitySlot() {
-                return r.findFreeEntitySlot();
-            }
+    final class Binding implements EntityStoryControllerServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public EntityBackgroundMechanics backgroundMechanics() {
-                return r.backgroundMechanics;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        public int findFreeEntitySlot() {
+            return room.get().findFreeEntitySlot();
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public EntityBackgroundMechanics backgroundMechanics() {
+            return room.get().backgroundMechanics;
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityPickupController pickups() {
-                return r.pickups;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityPresentationState presentationState() {
-                return r.entityState.presentationState;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntityRoomInspection inspection() {
-                return r.inspection();
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public EntityRoomInspection roomInspection() {
-                return r.roomInspection;
-            }
+        public EntityPickupController pickups() {
+            return room.get().pickups;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityPresentationState presentationState() {
+            return room.get().entityState.presentationState;
+        }
 
-            public EntitySlotLifecycle lifecycle() {
-                return r.lifecycle;
-            }
+        public EntityRoomInspection inspection() {
+            return room.get().inspection();
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntityRoomInspection roomInspection() {
+            return room.get().roomInspection;
+        }
 
-            public void blockLinkForOwl(int slot) {
-                r.blockLinkForOwl(slot);
-            }
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
 
-            public void initializeHealthGroup(int slot) {
-                r.initializeHealthGroup(slot);
-            }
+        public EntitySlotLifecycle lifecycle() {
+            return room.get().lifecycle;
+        }
 
-            public void presentWitchGotItem(int slot) {
-                r.presentWitchGotItem(slot);
-            }
-        };
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
+
+        public void blockLinkForOwl(int slot) {
+            room.get().blockLinkForOwl(slot);
+        }
+
+        public void initializeHealthGroup(int slot) {
+            room.get().initializeHealthGroup(slot);
+        }
+
+        public void presentWitchGotItem(int slot) {
+            room.get().presentWitchGotItem(slot);
+        }
     }
 }

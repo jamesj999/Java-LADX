@@ -41,7 +41,7 @@ final class MagicRodRuntimeTest {
                         .get(slot)
                         .spriteDefinition()
                         .address());
-        assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
 
         tick(runtime, 0, 0x20, 0x20);
         RoomEntity first = runtime.inspection().snapshot().slots().get(slot);
@@ -66,7 +66,7 @@ final class MagicRodRuntimeTest {
 
         assertEquals(
                 MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN,
-                runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertEquals(
                 0x69AA,
                 runtime.inspection()
@@ -78,7 +78,8 @@ final class MagicRodRuntimeTest {
         assertEquals(0, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
 
         tick(runtime, 1, 0x20, 0x20);
-        assertEquals(0x2F, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x2F, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertEquals(
                 0x4C44,
                 runtime.inspection()
@@ -93,7 +94,7 @@ final class MagicRodRuntimeTest {
             tick(runtime, frame, 0x20, 0x20);
             assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
         }
-        assertEquals(2, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         tick(runtime, 0x2F, 0x20, 0x20);
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(0, runtime.inspection().activeProjectileCount());
@@ -157,11 +158,13 @@ final class MagicRodRuntimeTest {
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x01, 0x01, 0x40, 0x40));
         // Slot 0 is skipped by the collision pass on odd frames.
         tick(runtime, 1, 0, 0);
-        assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x30, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         tick(runtime, 2, 0, 0);
 
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
-        assertEquals(0x2F, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x2F, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertTrue(runtime.consumePendingEntityEvents().stream()
                 .anyMatch(event -> event.slot() == 0 && event.type() == 0x09));
     }
@@ -176,7 +179,8 @@ final class MagicRodRuntimeTest {
         tick(runtime, 0, 0, 0);
 
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
-        assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x30, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertEquals(health, runtime.enemies().enemyHealth(0));
     }
 
@@ -188,7 +192,7 @@ final class MagicRodRuntimeTest {
         tick(runtime, 0, 0, 0);
 
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
-        assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
     }
 
     @ParameterizedTest
@@ -196,12 +200,14 @@ final class MagicRodRuntimeTest {
     void ironMaskBlocksOnlyWhenItsAttachedMaskFacesTheFireball(int fireballDirection, boolean blocked)
             throws IOException {
         RoomEntityRuntime runtime = runtimeWithTarget(0x24, 0x40, 0x3F);
-        assertEquals(0, runtime.enemies().ironMaskDirection(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskDirection(0));
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, fireballDirection);
         tick(runtime, 0, 0, 0);
 
         assertEquals(blocked, runtime.inspection().snapshot().slots().get(slot).loaded());
-        assertEquals(blocked ? 0x30 : 0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                blocked ? 0x30 : 0,
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
     }
 
     @Test
@@ -269,7 +275,8 @@ final class MagicRodRuntimeTest {
         runtime.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x01, 0x01, 0x40, 0x40));
         tick(runtime, 0, 0, 0);
-        assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x30, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         for (int frame = 1; frame <= 3; frame++) {
             RoomEntity after = runtime.inspection().snapshot().slots().get(slot);
             assertEquals(before.x(), after.x());
@@ -290,7 +297,7 @@ final class MagicRodRuntimeTest {
         tick(runtime, 0, 0, 0);
         assertEquals(
                 before.x(), runtime.inspection().snapshot().slots().get(slot).x());
-        assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertEquals(1, runtime.enemies().magicRodObjectRequests().size());
 
         runtime.configuration().setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());
@@ -298,7 +305,7 @@ final class MagicRodRuntimeTest {
         assertEquals(
                 before.x() + 3,
                 runtime.inspection().snapshot().slots().get(slot).x());
-        assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
     }
 
     @ParameterizedTest
@@ -311,11 +318,12 @@ final class MagicRodRuntimeTest {
         // Initial counter one is consumed on frame 1. Frame 2 must block
         // even outdoors, where a nonzero counter would skip this even frame.
         tick(runtime, 1, 0, 0);
-        assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertEquals(
                 startX + 3, runtime.inspection().snapshot().slots().get(slot).x());
         tick(runtime, 2, 0, 0);
-        assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x30, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertEquals(
                 startX + 3, runtime.inspection().snapshot().slots().get(slot).x());
     }
@@ -328,7 +336,7 @@ final class MagicRodRuntimeTest {
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 0xFF, 0x40, 0x40));
         tick(runtime, 0, 0, 0);
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
-        assertEquals(0, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         assertTrue(runtime.enemies().magicRodObjectRequests().isEmpty());
     }
 

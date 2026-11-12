@@ -47,7 +47,7 @@ final class EntityRuntimeSideViewTest extends EntityRuntimeTestSupport {
                 () -> 0,
                 (entity, direction, nextX, nextY) -> direction == 0,
                 EnemyProjectileCollision.LinkState.nonInteractive()));
-        assertEquals(0x18, runtime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileTransitionCountdown(0));
 
         for (int frame = 1; frame <= 9; frame++) {
             runtime.tick(EntityTestFrames.projectileFrame(
@@ -58,6 +58,6 @@ final class EntityRuntimeSideViewTest extends EntityRuntimeTestSupport {
         assertEquals(EntityStatus.ACTIVE, arrow.status());
         assertEquals(0, arrow.z());
         assertEquals(0x54, arrow.y());
-        assertEquals(18, runtime.enemies().enemyProjectileSpeedY(0));
+        assertEquals(18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileSpeedY(0));
     }
 }

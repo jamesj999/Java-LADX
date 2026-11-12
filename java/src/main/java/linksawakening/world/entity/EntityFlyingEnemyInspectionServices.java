@@ -9,14 +9,22 @@ interface EntityFlyingEnemyInspectionServices {
     EntityPhysicsTables physicsTables();
 
     static EntityFlyingEnemyInspectionServices bind(RoomEntityRuntime r) {
-        return new EntityFlyingEnemyInspectionServices() {
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        return new Binding(() -> r);
+    }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
-        };
+    final class Binding implements EntityFlyingEnemyInspectionServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
+
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
+
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
+
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
     }
 }

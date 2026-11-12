@@ -35,67 +35,75 @@ interface EntityRewardControllerServices {
     void initializeHealthGroup(int slot);
 
     static EntityRewardControllerServices bind(RoomEntityRuntime r) {
-        return new EntityRewardControllerServices() {
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        return new Binding(() -> r);
+    }
 
-            public int clearEntity(int slot) {
-                return r.clearEntity(slot);
-            }
+    final class Binding implements EntityRewardControllerServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public int findFreeEntitySlot() {
-                return r.findFreeEntitySlot();
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public int clearEntity(int slot) {
+            return room.get().clearEntity(slot);
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public int findFreeEntitySlot() {
+            return room.get().findFreeEntitySlot();
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityPresentationState presentationState() {
-                return r.entityState.presentationState;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntitySlotLifecycle lifecycle() {
-                return r.lifecycle;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public EntityStoryController story() {
-                return r.story;
-            }
+        public EntityPresentationState presentationState() {
+            return room.get().entityState.presentationState;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
 
-            public void holdSwordAboveLink(
-                    RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
-                r.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, finalPose);
-            }
+        public EntitySlotLifecycle lifecycle() {
+            return room.get().lifecycle;
+        }
 
-            public void initializeHealthGroup(int slot) {
-                r.initializeHealthGroup(slot);
-            }
-        };
+        public EntityStoryController story() {
+            return room.get().story;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
+
+        public void holdSwordAboveLink(
+                RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
+            room.get().holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, finalPose);
+        }
+
+        public void initializeHealthGroup(int slot) {
+            room.get().initializeHealthGroup(slot);
+        }
     }
 }

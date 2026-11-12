@@ -10,15 +10,22 @@ interface EntityDebugConfigurationServices {
     EntityMotionRegistry motions();
 
     static EntityDebugConfigurationServices bind(RoomEntityRuntime r) {
-        return new EntityDebugConfigurationServices() {
+        return new Binding(() -> r);
+    }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+    final class Binding implements EntityDebugConfigurationServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
-        };
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
+
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
+
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
     }
 }

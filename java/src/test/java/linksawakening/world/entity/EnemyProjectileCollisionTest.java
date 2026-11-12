@@ -240,7 +240,8 @@ final class EnemyProjectileCollisionTest {
         assertEquals(1, rockEvents.size());
         assertEquals(
                 EntityProjectileEvent.Kind.SHIELD_BLOCK, rockEvents.getFirst().kind());
-        assertEquals(0x18, rockRuntime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(
+                0x18, new EntityEnemyInspectionQueries(rockRuntime.enemies()).enemyProjectileTransitionCountdown(0));
 
         var nextFrameEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(
                 rockRuntime, 1, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 1, true)));
@@ -258,7 +259,7 @@ final class EnemyProjectileCollisionTest {
         assertEquals(
                 EntityStatus.DISABLED,
                 arrowRuntime.inspection().snapshot().slots().get(0).status());
-        assertEquals(0, arrowRuntime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(arrowRuntime.enemies()).enemyProjectileTransitionCountdown(0));
     }
 
     @Test

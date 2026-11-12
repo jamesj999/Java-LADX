@@ -50,7 +50,7 @@ final class HookshotBridgeRuntimeTest {
         assertTrue(runtime.inspection().hookshotBridgeUpdates().isEmpty());
         assertFalse(runtime.inspection().snapshot().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == HookshotBridgeMotion.ENTITY_TYPE));
-        assertTrue(runtime.inspection()
+        assertTrue(new EntityRoomInspectionQueries(runtime.inspection())
                 .hookshotWallCollisionPending(runtime.inspection().hookshotSlot()));
     }
 

@@ -38,7 +38,7 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0));
 
-        assertEquals(1, runtime.enemies().ironMaskPrivateState2(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskPrivateState2(0));
         RoomEntity mask = runtime.inspection().snapshot().slots().stream()
                 .filter(entity -> entity.loaded() && entity.type() == 0x32)
                 .findFirst()

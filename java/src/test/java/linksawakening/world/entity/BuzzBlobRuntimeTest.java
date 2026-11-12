@@ -228,7 +228,7 @@ final class BuzzBlobRuntimeTest {
         assertEquals(0x40, after.x());
         assertEquals(0x40, after.y());
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
     }
 
     @Test

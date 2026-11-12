@@ -28,17 +28,17 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x00, 0x00)));
-        assertEquals(0x20, runtime.enemies().ghiniTransitionCountdown(0));
-        assertEquals(0x18, runtime.enemies().ghiniPrivateCountdown1(0));
-        assertEquals(0, runtime.enemies().ghiniTargetXDirection(0));
-        assertEquals(0, runtime.enemies().ghiniTargetYDirection(0));
-        assertEquals(1, runtime.enemies().ghiniSpeedX(0));
-        assertEquals(1, runtime.enemies().ghiniSpeedY(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTransitionCountdown(0));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniPrivateCountdown1(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetXDirection(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetYDirection(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedX(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedY(0));
         assertEquals(1, runtime.inspection().snapshot().slots().get(0).z());
 
         runtime.tick(EntityTestFrames.frame(runtime, 4, 96, 96, sequence(0x00, 0x00)));
-        assertEquals(2, runtime.enemies().ghiniSpeedX(0));
-        assertEquals(2, runtime.enemies().ghiniSpeedY(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedX(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedY(0));
         assertEquals(2, runtime.inspection().snapshot().slots().get(0).z());
     }
 
@@ -80,12 +80,12 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x1F, 0x0F)));
 
-        assertEquals(0x3F, runtime.enemies().ghiniTransitionCountdown(0));
-        assertEquals(1, runtime.enemies().ghiniTargetXDirection(0));
-        assertEquals(0x1F, runtime.enemies().ghiniPrivateCountdown1(0));
-        assertEquals(1, runtime.enemies().ghiniTargetYDirection(0));
-        assertEquals(0xFF, runtime.enemies().ghiniSpeedX(0));
-        assertEquals(0xFF, runtime.enemies().ghiniSpeedY(0));
+        assertEquals(0x3F, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTransitionCountdown(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetXDirection(0));
+        assertEquals(0x1F, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniPrivateCountdown1(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetYDirection(0));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedX(0));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedY(0));
     }
 
     @Test
@@ -198,9 +198,17 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
             List<EntityCombatEvent> events = runtime.resolveCombat(new EntityVerticalContactFrame(
                     0, linkX, linkY, false, false, true, linkX, 1, linkY, 1, nonDamaging));
             assertEquals(1, events.size(), "type=0x" + Integer.toHexString(type));
-            assertTrue(runtime.enemies().enemyRecoilActive(0), "type=0x" + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0), "type=0x" + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0), "type=0x" + Integer.toHexString(type));
+            assertTrue(
+                    new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0),
+                    "type=0x" + Integer.toHexString(type));
+            assertEquals(
+                    0xD0,
+                    new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedX(0),
+                    "type=0x" + Integer.toHexString(type));
+            assertEquals(
+                    0xD0,
+                    new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedY(0),
+                    "type=0x" + Integer.toHexString(type));
         }
     }
 

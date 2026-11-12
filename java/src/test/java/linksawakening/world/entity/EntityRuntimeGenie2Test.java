@@ -97,7 +97,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true));
 
         assertEquals(1, EntityRuntimeFixture.bosses(runtime).geniePrivateState4ForTest(0));
-        assertEquals(0x20, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(
                 EntityStatus.THROWN,
                 runtime.inspection().snapshot().slots().get(0).status());

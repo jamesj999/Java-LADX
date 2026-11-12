@@ -225,7 +225,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x60, 0x70, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x60, 0x70, () -> 0));
 
-        assertEquals(10, runtime.inspection().bowWowTargetSlot(5));
+        assertEquals(10, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTargetSlot(5));
     }
 
     @Test
@@ -263,7 +263,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x58, () -> 0));
 
         assertFalse(runtime.inspection().snapshot().slots().get(6).loaded());
-        assertEquals(1, runtime.inspection().killCount());
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).killCount());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
         assertEquals(
                 List.of(new EntityCombatEvent(
@@ -311,8 +311,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(6).status());
-        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(6));
-        assertEquals(1, runtime.inspection().entityInertia(6));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(6));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).entityInertia(6));
         assertEquals(
                 List.of(new EntityCombatEvent(
                         5,
@@ -360,8 +360,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(6).status());
-        assertEquals(0, runtime.inspection().bowWowTransitionCountdown(5));
-        assertEquals(0x80, runtime.inspection().bowWowPrivateCountdown2(5));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(5));
+        assertEquals(0x80, new EntityRoomInspectionQueries(runtime.inspection()).bowWowPrivateCountdown2(5));
         assertEquals(List.of(new DialogRequest(1, 0x15)), runtime.consumePendingDialogRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }

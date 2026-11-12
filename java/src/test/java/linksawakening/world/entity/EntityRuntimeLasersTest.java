@@ -33,7 +33,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
 
         RoomEntity parent = runtime.inspection().snapshot().slots().get(0);
         RoomEntity sensor = runtime.inspection().snapshot().slots().get(15);
-        assertEquals(1, runtime.enemies().laserDirection(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).laserDirection(0));
         assertEquals(0, parent.spriteVariant());
         assertEquals(EntityStatus.ACTIVE, sensor.status());
         assertEquals(0x2A, sensor.type());
@@ -58,15 +58,15 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x10, 0x10, () -> 0));
 
         RoomEntity beam = runtime.inspection().snapshot().slots().get(15);
-        assertEquals(0x0F, runtime.enemies().laserParentTransitionCountdown(0));
+        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).laserParentTransitionCountdown(0));
         assertEquals(EntityStatus.ACTIVE, beam.status());
         assertEquals(0x2B, beam.type());
         assertEquals(-1, beam.sourceLoadOrder());
         assertEquals(-1, beam.spriteVariant());
         assertEquals(0x40, beam.x());
         assertEquals(0x50, beam.y());
-        assertEquals(0x20, runtime.enemies().laserSpeedX(15));
-        assertEquals(0xF0, runtime.enemies().laserSpeedY(15));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).laserSpeedX(15));
+        assertEquals(0xF0, new EntityEnemyInspectionQueries(runtime.enemies()).laserSpeedY(15));
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.NOISE, events.getFirst().soundChannel());
@@ -126,10 +126,10 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(15).status());
-        assertEquals(0x1F, runtime.enemies().laserParentTransitionCountdown(0));
-        assertEquals(0x40, runtime.enemies().laserSpeedX(0));
-        assertEquals(0x40, runtime.enemies().laserSpeedY(0));
-        assertEquals(0x0F, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x1F, new EntityEnemyInspectionQueries(runtime.enemies()).laserParentTransitionCountdown(0));
+        assertEquals(0x40, new EntityEnemyInspectionQueries(runtime.enemies()).laserSpeedX(0));
+        assertEquals(0x40, new EntityEnemyInspectionQueries(runtime.enemies()).laserSpeedY(0));
+        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(0x10, runtime.inspection().snapshot().slots().get(0).entityFlipAttribute());
     }
 
@@ -179,7 +179,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
         assertFalse(events.get(0).remove());
         assertEquals(0x41, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
-        assertEquals(0xF0, runtime.enemies().laserSpeedX(0));
+        assertEquals(0xF0, new EntityEnemyInspectionQueries(runtime.enemies()).laserSpeedX(0));
         assertEquals(1, runtime.enemies().transientVfxRequests().size());
         assertEquals(
                 TransientVfxType.SWORD_POKE,

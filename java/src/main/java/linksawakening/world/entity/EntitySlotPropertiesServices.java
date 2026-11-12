@@ -37,70 +37,78 @@ interface EntitySlotPropertiesServices {
     RoomEntity[] slots();
 
     static EntitySlotPropertiesServices bind(RoomEntityRuntime r) {
-        return new EntitySlotPropertiesServices() {
-            public boolean indoorRoom() {
-                return r.indoorRoom;
-            }
+        return new Binding(() -> r);
+    }
 
-            public int clearEntity(int slot) {
-                return r.clearEntity(slot);
-            }
+    final class Binding implements EntitySlotPropertiesServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        public boolean indoorRoom() {
+            return room.get().indoorRoom;
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public int clearEntity(int slot) {
+            return room.get().clearEntity(slot);
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityLiftThrowController liftThrow() {
-                return r.liftThrow;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityLiftThrowController liftThrow() {
+            return room.get().liftThrow;
+        }
 
-            public EntityPresentationState presentationState() {
-                return r.entityState.presentationState;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntityProjectileController projectiles() {
-                return r.projectiles;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntityRoomInspection inspection() {
-                return r.inspection();
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public EntityRoomInspection roomInspection() {
-                return r.roomInspection;
-            }
+        public EntityPresentationState presentationState() {
+            return room.get().entityState.presentationState;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityProjectileController projectiles() {
+            return room.get().projectiles;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
-        };
+        public EntityRoomInspection inspection() {
+            return room.get().inspection();
+        }
+
+        public EntityRoomInspection roomInspection() {
+            return room.get().roomInspection;
+        }
+
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
     }
 }

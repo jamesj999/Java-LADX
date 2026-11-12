@@ -55,8 +55,8 @@ final class FairyRuntimeTest {
         assertEquals(0xB1, runtime.enemies().physicsFlags(0));
         assertEquals(0x13, runtime.options1(0));
         assertEquals(0x30, runtime.enemies().transitionCountdown(0));
-        assertEquals(0x07, runtime.inspection().fairySpeedX(0));
-        assertEquals(0xF8, runtime.inspection().fairySpeedY(0));
+        assertEquals(0x07, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedX(0));
+        assertEquals(0xF8, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedY(0));
         assertTrue(runtime.inspection()
                 .snapshot()
                 .slots()

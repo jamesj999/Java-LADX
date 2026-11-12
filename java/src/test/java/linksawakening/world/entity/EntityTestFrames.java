@@ -14,29 +14,30 @@ public final class EntityTestFrames {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                null,
-                null,
-                null,
-                0,
-                false,
-                0,
-                0,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                false,
-                true);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(null)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(0)
+                .linkAirborne(false)
+                .linkDirection(0)
+                .entityYOffset(0)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(true)
+                .build();
     }
 
     public static EntityFrameContext frame(
@@ -46,29 +47,30 @@ public final class EntityTestFrames {
             int linkEntityY,
             int collisionType,
             IntSupplier randomByteSupplier) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                collisionType,
-                randomByteSupplier,
-                null,
-                null,
-                null,
-                0,
-                false,
-                0,
-                0,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                false,
-                true);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(null)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(0)
+                .linkAirborne(false)
+                .linkDirection(0)
+                .entityYOffset(0)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(true)
+                .build();
     }
 
     public static EntityFrameContext frame(
@@ -78,29 +80,30 @@ public final class EntityTestFrames {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                null,
-                0,
-                false,
-                0,
-                0,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                false,
-                true);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(0)
+                .linkAirborne(false)
+                .linkDirection(0)
+                .entityYOffset(0)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(true)
+                .build();
     }
 
     public static EntityFrameContext frame(
@@ -111,29 +114,30 @@ public final class EntityTestFrames {
             int collisionType,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                collisionType,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                null,
-                0,
-                false,
-                0,
-                0,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                false,
-                true);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(0)
+                .linkAirborne(false)
+                .linkDirection(0)
+                .entityYOffset(0)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(true)
+                .build();
     }
 
     public static EntityFrameContext frame(
@@ -143,29 +147,30 @@ public final class EntityTestFrames {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             boolean creditsGameplay) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                null,
-                null,
-                null,
-                0,
-                false,
-                0,
-                0,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                creditsGameplay,
-                true);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(null)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(0)
+                .linkAirborne(false)
+                .linkDirection(0)
+                .entityYOffset(0)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .creditsGameplay(creditsGameplay)
+                .handlerLinkCollisionEnabled(true)
+                .build();
     }
 
     public static EntityFrameContext frame(
@@ -179,29 +184,30 @@ public final class EntityTestFrames {
             int linkZ,
             int linkDirection,
             int entityYOffset) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                linkPositionHistory,
-                linkZ,
-                false,
-                linkDirection,
-                entityYOffset,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                false,
-                true);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(false)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(true)
+                .build();
     }
 
     public static EntityFrameContext frame(
@@ -216,29 +222,30 @@ public final class EntityTestFrames {
             int linkZ,
             int linkDirection,
             int entityYOffset) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                collisionType,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                linkPositionHistory,
-                linkZ,
-                false,
-                linkDirection,
-                entityYOffset,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                false,
-                true);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(false)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(true)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -249,29 +256,31 @@ public final class EntityTestFrames {
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                null,
-                projectileLinkState.z(),
-                false,
-                projectileLinkState.direction(),
-                0,
-                projectileLinkState,
-                false,
-                0,
-                0,
-                0,
-                0,
-                runtime.entityState.linkState.currentLinkSpeedX,
-                runtime.entityState.linkState.currentLinkSpeedY,
-                false,
-                projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(projectileLinkState.z())
+                .linkAirborne(false)
+                .linkDirection(projectileLinkState.direction())
+                .entityYOffset(0)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(
+                        projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -308,29 +317,31 @@ public final class EntityTestFrames {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                null,
-                projectileLinkState.z(),
-                false,
-                projectileLinkState.direction(),
-                0,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                runtime.entityState.linkState.currentLinkSpeedX,
-                runtime.entityState.linkState.currentLinkSpeedY,
-                false,
-                projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(projectileLinkState.z())
+                .linkAirborne(false)
+                .linkDirection(projectileLinkState.direction())
+                .entityYOffset(0)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(
+                        projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -347,29 +358,31 @@ public final class EntityTestFrames {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                objectCollision,
-                null,
-                projectileLinkState.z(),
-                false,
-                projectileLinkState.direction(),
-                0,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                runtime.entityState.linkState.currentLinkSpeedX,
-                runtime.entityState.linkState.currentLinkSpeedY,
-                false,
-                projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(objectCollision)
+                .linkPositionHistory(null)
+                .linkZ(projectileLinkState.z())
+                .linkAirborne(false)
+                .linkDirection(projectileLinkState.direction())
+                .entityYOffset(0)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(
+                        projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -391,29 +404,31 @@ public final class EntityTestFrames {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                collisionType,
-                randomByteSupplier,
-                backgroundCollision,
-                objectCollision,
-                linkPositionHistory,
-                linkZ,
-                false,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                runtime.entityState.linkState.currentLinkSpeedX,
-                runtime.entityState.linkState.currentLinkSpeedY,
-                false,
-                projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(objectCollision)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(false)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(
+                        projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -437,27 +452,28 @@ public final class EntityTestFrames {
             int swordHeight,
             int linkSpeedX,
             int linkSpeedY) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                collisionType,
-                randomByteSupplier,
-                backgroundCollision,
-                objectCollision,
-                linkPositionHistory,
-                linkZ,
-                false,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                linkSpeedX,
-                linkSpeedY);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(objectCollision)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(false)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(linkSpeedX)
+                .linkSpeedY(linkSpeedY)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -482,27 +498,28 @@ public final class EntityTestFrames {
             int swordHeight,
             int linkSpeedX,
             int linkSpeedY) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                collisionType,
-                randomByteSupplier,
-                backgroundCollision,
-                objectCollision,
-                linkPositionHistory,
-                linkZ,
-                linkAirborne,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                linkSpeedX,
-                linkSpeedY);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(objectCollision)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(linkAirborne)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(linkSpeedX)
+                .linkSpeedY(linkSpeedY)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -517,29 +534,31 @@ public final class EntityTestFrames {
             int linkDirection,
             int entityYOffset,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                linkPositionHistory,
-                linkZ,
-                false,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                false,
-                0,
-                0,
-                0,
-                0,
-                runtime.entityState.linkState.currentLinkSpeedX,
-                runtime.entityState.linkState.currentLinkSpeedY,
-                false,
-                projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(false)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(
+                        projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -559,29 +578,31 @@ public final class EntityTestFrames {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                null,
-                linkPositionHistory,
-                linkZ,
-                false,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                runtime.entityState.linkState.currentLinkSpeedX,
-                runtime.entityState.linkState.currentLinkSpeedY,
-                false,
-                projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(null)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(false)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(
+                        projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
+                .build();
     }
 
     public static EntityFrameContext projectileFrame(
@@ -602,28 +623,30 @@ public final class EntityTestFrames {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                0,
-                randomByteSupplier,
-                backgroundCollision,
-                objectCollision,
-                linkPositionHistory,
-                linkZ,
-                false,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                runtime.entityState.linkState.currentLinkSpeedX,
-                runtime.entityState.linkState.currentLinkSpeedY,
-                false,
-                projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(0)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(objectCollision)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(false)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .creditsGameplay(false)
+                .handlerLinkCollisionEnabled(
+                        projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
+                .build();
     }
 }

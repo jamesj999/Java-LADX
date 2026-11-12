@@ -116,9 +116,9 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
 
         runtime.resolveCombat(new EntityVerticalContactFrame(
                 0, 80, 64, false, true, true, 112, 16, 112, 16, new EnemyAttackContext(1, false, true, false, false)));
-        assertTrue(runtime.enemies().powerRecoilDeath(15));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(15));
         runtime.clearEntity(15);
-        assertFalse(runtime.enemies().powerRecoilDeath(15));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(15));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, () -> 0, false));
         for (int frame = 1; frame <= 6; frame++) {
@@ -130,7 +130,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(0x0A, projectile.type());
         assertEquals(-1, projectile.deathSpriteVariant());
         assertFalse(projectile.powerRecoilDeath());
-        assertFalse(runtime.enemies().powerRecoilDeath(15));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(15));
     }
 
     @Test
@@ -239,9 +239,9 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(EntityStatus.FALLING, falling.status());
         assertEquals(0x48, runtime.enemies().transitionCountdown(0));
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertEquals(0x00, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(0x68, runtime.enemies().fallingTargetX(0));
-        assertEquals(0x70, runtime.enemies().fallingTargetY(0));
+        assertEquals(0x70, new EntityEnemyInspectionQueries(runtime.enemies()).fallingTargetY(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
@@ -306,7 +306,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(0x43, moving.x());
         assertEquals(0x52, moving.y());
         assertEquals(0x03, moving.spriteVariant());
-        assertEquals(0, runtime.enemies().fallingVisualYOffset(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).fallingVisualYOffset(0));
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x4D, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
                 fallingEvents);
@@ -314,7 +314,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         for (int frame = 17; frame <= 25; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
-        assertEquals(4, runtime.enemies().fallingVisualYOffset(0));
+        assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).fallingVisualYOffset(0));
         assertEquals(4, runtime.inspection().snapshot().visualYOffset(0));
         for (int frame = 26; frame <= 72; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
@@ -488,8 +488,8 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         // GetVectorTowardsLink(2) turns dx=16, dy=8 into (2,1), not (2,2).
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, sequence(0x00, 0x00)));
 
-        assertEquals(2, runtime.enemies().butterflyPrivateStateX(0));
-        assertEquals(1, runtime.enemies().butterflyPrivateStateY(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).butterflyPrivateStateX(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).butterflyPrivateStateY(0));
     }
 
     @Test
@@ -547,9 +547,9 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(2, runtime.enemies().enemyHealth(0));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, randomBytes));
 
-        assertEquals(1, runtime.enemies().ironMaskState(0));
-        assertEquals(0x10, runtime.enemies().ironMaskTransitionCountdown(0));
-        assertEquals(0, runtime.enemies().ironMaskSpeedY(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskState(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskTransitionCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskSpeedY(0));
         assertEquals(
                 0x4FCB,
                 runtime.inspection()
@@ -563,10 +563,10 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, randomBytes));
         }
 
-        assertEquals(0, runtime.enemies().ironMaskState(0));
-        assertEquals(3, runtime.enemies().ironMaskDirection(0));
-        assertEquals(0x0C, runtime.enemies().ironMaskSpeedY(0));
-        assertEquals(0x20, runtime.enemies().ironMaskTransitionCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskDirection(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskSpeedY(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskTransitionCountdown(0));
         assertEquals(
                 0x4FCB,
                 runtime.inspection()
@@ -608,9 +608,14 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         }
 
         assertEquals(1, randomCalls.get());
-        assertEquals(1, runtime.inspection().projectileLaunchRequests().size());
-        RoamingEnemyMotion.LaunchRequest request =
-                runtime.inspection().projectileLaunchRequests().get(0);
+        assertEquals(
+                1,
+                new EntityRoomInspectionQueries(runtime.inspection())
+                        .projectileLaunchRequests()
+                        .size());
+        RoamingEnemyMotion.LaunchRequest request = new EntityRoomInspectionQueries(runtime.inspection())
+                .projectileLaunchRequests()
+                .get(0);
         assertEquals(0, request.sourceSlot());
         assertEquals(0x09, request.sourceType());
         assertEquals(0x0A, request.projectileType());
@@ -644,7 +649,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 EntityStatus.DISABLED,
                 burningRuntime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, burningRuntime.enemies().transitionCountdown(0));
-        assertEquals(0, burningRuntime.enemies().stunnedCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(burningRuntime.enemies()).stunnedCountdown(0));
 
         RomEnemyCombatTables stunnedTables = new RomEnemyCombatTables(loadRom());
         RoomEntityRuntime stunnedRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
@@ -662,6 +667,6 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         stunnedRuntime.clearEntity(0);
 
         assertEquals(0, stunnedRuntime.enemies().transitionCountdown(0));
-        assertEquals(0, stunnedRuntime.enemies().stunnedCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(stunnedRuntime.enemies()).stunnedCountdown(0));
     }
 }

@@ -27,50 +27,58 @@ interface EntityBackgroundMechanicsServices {
     RoomEntity[] slots();
 
     static EntityBackgroundMechanicsServices bind(RoomEntityRuntime r) {
-        return new EntityBackgroundMechanicsServices() {
-            public int clearEntity(int slot) {
-                return r.clearEntity(slot);
-            }
+        return new Binding(() -> r);
+    }
 
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+    final class Binding implements EntityBackgroundMechanicsServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public int clearEntity(int slot) {
+            return room.get().clearEntity(slot);
+        }
 
-            public EntityEnemyInspection enemyInspection() {
-                return r.enemyInspection;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityEnemyInspection enemyInspection() {
+            return room.get().enemyInspection;
+        }
 
-            public EntityRoomInspection roomInspection() {
-                return r.roomInspection;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
-        };
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
+
+        public EntityRoomInspection roomInspection() {
+            return room.get().roomInspection;
+        }
+
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
     }
 }

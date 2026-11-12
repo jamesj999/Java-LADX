@@ -255,7 +255,7 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(0x0F, powderSlot);
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
-        assertEquals(0, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
 
         tick(runtime, 8, 0x50, 0x60);
 
@@ -263,7 +263,7 @@ final class TarinRaccoonRuntimeTest {
         // Powder writes $7F/$10 before Tarin's lower slot receives the
         // runtime's one shared countdown decrement on frame $08.
         assertEquals(0x7E, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
-        assertEquals(0x0F, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(3, runtime.enemies().enemyHealth(0));
 
         tick(runtime, 9, 0x50, 0x1F);
@@ -285,18 +285,18 @@ final class TarinRaccoonRuntimeTest {
 
         assertEquals(0x0E, powderSlot);
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0x0F));
-        assertEquals(0, runtime.enemies().enemyFlashCountdown(0x0F));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0x0F));
 
         tick(runtime, 7, 0x50, 0x60);
 
         assertEquals(0x7F, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0x0F));
-        assertEquals(0x10, runtime.enemies().enemyFlashCountdown(0x0F));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0x0F));
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
 
         tick(runtime, 8, 0x50, 0x60);
 
         assertEquals(0x7E, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0x0F));
-        assertEquals(0x0F, runtime.enemies().enemyFlashCountdown(0x0F));
+        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0x0F));
         assertEquals(List.of(new LinkMotionBlockRequest(0x0F)), runtime.consumePendingLinkMotionBlockRequests());
     }
 
@@ -346,7 +346,7 @@ final class TarinRaccoonRuntimeTest {
 
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
-        assertEquals(0, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
     }
 
     @Test

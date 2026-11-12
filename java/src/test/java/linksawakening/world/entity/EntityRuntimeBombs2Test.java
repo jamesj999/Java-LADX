@@ -157,7 +157,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                         0xE0,
                         0x00)),
                 events);
-        assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
+        assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
         List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
         assertEquals(
                 List.of(BombExplosionEvent.OBJECT_TARGET),
@@ -195,7 +195,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(14).status());
         // The lower-slot target's handler decrements the newly written flash
         // once after the higher-slot bomb has applied it.
-        assertEquals(0x17, runtime.enemies().enemyFlashCountdown(14));
+        assertEquals(0x17, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(14));
         assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(14));
         assertEquals(0x30, EntityRuntimeFixture.enemies(runtime).enemyRecoilSpeedXForTest(14));
         assertEquals(0x00, EntityRuntimeFixture.enemies(runtime).enemyRecoilSpeedYForTest(14));

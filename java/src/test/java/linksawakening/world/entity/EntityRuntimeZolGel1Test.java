@@ -77,7 +77,9 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
 
             assertEquals(64, runtime.inspection().snapshot().slots().get(0).x(), "type=" + Integer.toHexString(type));
             assertEquals(64, runtime.inspection().snapshot().slots().get(0).y(), "type=" + Integer.toHexString(type));
-            assertTrue(runtime.enemies().enemyRecoilActive(0), "type=" + Integer.toHexString(type));
+            assertTrue(
+                    new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0),
+                    "type=" + Integer.toHexString(type));
             assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0), "type=" + Integer.toHexString(type));
         }
     }
@@ -206,16 +208,16 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         assertEquals(2, runtime.enemies().enemyHealth(0));
-        assertEquals(0, runtime.enemies().zolState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x01)));
-        assertEquals(1, runtime.enemies().zolState(0));
-        assertEquals(7, runtime.enemies().zolTransitionCountdown(0));
-        assertEquals(0x04, runtime.enemies().zolSpeedX(0));
-        assertEquals(0x00, runtime.enemies().zolSpeedY(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
+        assertEquals(7, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
+        assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedX(0));
+        assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedY(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x01)));
-        assertEquals(6, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(6, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
     }
 
@@ -274,10 +276,10 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         assertEquals(0x11, runtime.enemies().physicsFlags(15));
         assertEquals(0x10, EntityRuntimeFixture.enemies(runtime).hitboxFlagsForTest(0));
         assertEquals(0x10, EntityRuntimeFixture.enemies(runtime).hitboxFlagsForTest(15));
-        assertEquals(0x20, runtime.enemies().zolSpeedZ(0));
-        assertEquals(0x20, runtime.enemies().zolSpeedZ(15));
-        assertFalse(runtime.enemies().enemyRecoilActive(0));
-        assertFalse(runtime.enemies().enemyRecoilActive(15));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedZ(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedZ(15));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(15));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
     }
 
@@ -299,8 +301,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x01)));
         }
 
-        assertEquals(0, runtime.enemies().zolState(0));
-        assertEquals(0x10, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
         int pausedX = runtime.inspection().snapshot().slots().get(0).x();
         int pausedY = runtime.inspection().snapshot().slots().get(0).y();
         for (int frame = 8; frame < 23; frame++) {
@@ -309,11 +311,11 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
             assertEquals(pausedX, paused.x(), "pause X frame " + frame);
             assertEquals(pausedY, paused.y(), "pause Y frame " + frame);
             assertEquals(0, paused.z(), "no leap frame " + frame);
-            assertEquals(0, runtime.enemies().zolState(0));
+            assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
         }
         runtime.tick(EntityTestFrames.frame(runtime, 23, 80, 64, sequence(0x01)));
-        assertEquals(1, runtime.enemies().zolState(0));
-        assertEquals(7, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
+        assertEquals(7, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
     }
 
     @Test
@@ -333,8 +335,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         for (int frame = 1; frame <= 7; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
-        assertEquals(2, runtime.enemies().zolState(0));
-        assertEquals(0x50, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
+        assertEquals(0x50, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 8, 80, 64, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 9, 80, 64, sequence(0x00)));
@@ -362,7 +364,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         assertEquals(1, contact.size());
         assertEquals(0, contact.get(0).linkDamage());
         assertFalse(contact.get(0).linkCollisionResponse().active());
-        assertEquals(4, runtime.enemies().zolState(0));
+        assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
         assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
     }
@@ -406,24 +408,24 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                 1,
                 runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
                         .size());
-        assertEquals(4, runtime.enemies().zolState(0));
-        assertEquals(0x80, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
+        assertEquals(0x80, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
 
         runtime.configuration().setJoypadHeld(true);
         for (int frame = 0; frame < 42; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 68, 64, sequence(0x00)));
         }
-        assertEquals(4, runtime.enemies().zolState(0));
-        assertEquals(0x02, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
+        assertEquals(0x02, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
 
         // The third decrement reaches zero at the end of this clinging
         // handler invocation; the state-4 release runs on the next frame.
         runtime.tick(EntityTestFrames.frame(runtime, 42, 68, 64, sequence(0x00)));
-        assertEquals(4, runtime.enemies().zolState(0));
-        assertEquals(0, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 43, 68, 64, sequence(0x00)));
-        assertEquals(3, runtime.enemies().zolState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
     }
 
     @Test
@@ -442,29 +444,29 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
-        assertEquals(0, runtime.enemies().hidingZolState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x02)));
-        assertEquals(1, runtime.enemies().hidingZolState(0));
-        assertEquals(0x20, runtime.enemies().hidingZolTransitionCountdown(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolTransitionCountdown(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x02)));
-        assertEquals(0x1F, runtime.enemies().hidingZolTransitionCountdown(0));
+        assertEquals(0x1F, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolTransitionCountdown(0));
         assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 3; frame <= 18; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x02)));
         }
-        assertEquals(0x0F, runtime.enemies().hidingZolTransitionCountdown(0));
+        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolTransitionCountdown(0));
         assertEquals(2, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 19; frame <= 33; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x02)));
         }
-        assertEquals(2, runtime.enemies().hidingZolState(0));
-        assertEquals(0, runtime.enemies().hidingZolTransitionCountdown(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolTransitionCountdown(0));
         assertEquals(3, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(8, runtime.inspection().snapshot().slots().get(0).z());
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
@@ -490,10 +492,10 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                 .isEmpty());
 
         int frame = 1;
-        while (runtime.enemies().hidingZolState(0) != 3 && frame < 200) {
+        while (new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0) != 3 && frame < 200) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
-        assertEquals(3, runtime.enemies().hidingZolState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
 
         // The state-2 handler is the frame that enters state 3, so its
         // state-3 sword continuation has not run yet. Advance one handler
@@ -534,7 +536,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         assertEquals(61, afterRecoil.x());
         assertEquals(61, afterRecoil.y());
         assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
     }
 
     @Test
@@ -560,7 +562,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         assertEquals(64, afterRecoil.x());
         assertEquals(64, afterRecoil.y());
         assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
     }
 
     @Test
@@ -595,10 +597,10 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
 
         int frame = 1;
-        while (runtime.enemies().hidingZolState(0) != 3 && frame < 200) {
+        while (new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0) != 3 && frame < 200) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
-        assertEquals(3, runtime.enemies().hidingZolState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
         observedIgnoreHits.clear();
 
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
@@ -624,10 +626,10 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
 
         int frame = 1;
-        while (runtime.enemies().hidingZolState(0) != 5 && frame < 300) {
+        while (new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0) != 5 && frame < 300) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
-        assertEquals(5, runtime.enemies().hidingZolState(0));
+        assertEquals(5, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
 
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
@@ -674,7 +676,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
 
-        assertEquals(2, runtime.enemies().hidingZolState(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x9B, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
                 runtime.consumePendingEntityEvents());

@@ -11,18 +11,26 @@ interface EntityPickupInspectionServices {
     EntityPhysicsTables physicsTables();
 
     static EntityPickupInspectionServices bind(RoomEntityRuntime r) {
-        return new EntityPickupInspectionServices() {
-            public EntityBombInteractions bombInteractions() {
-                return r.bombInteractions;
-            }
+        return new Binding(() -> r);
+    }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+    final class Binding implements EntityPickupInspectionServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
-        };
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
+
+        public EntityBombInteractions bombInteractions() {
+            return room.get().bombInteractions;
+        }
+
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
+
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
     }
 }

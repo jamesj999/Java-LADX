@@ -54,12 +54,26 @@ final class WingedOctorokRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0x02));
 
-        assertEquals(1, runtime.inspection().wingedOctorokState(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).wingedOctorokState(0));
         assertEquals(0x12, runtime.enemies().transitionCountdown(0));
-        assertEquals(0, runtime.inspection().wingedOctorokSpeedX(0));
-        assertEquals(2, runtime.inspection().wingedOctorokOam().size());
-        assertEquals(0x22, runtime.inspection().wingedOctorokOam().get(0).tileIndex());
-        assertEquals(0x40, runtime.inspection().wingedOctorokOam().get(0).attributes());
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).wingedOctorokSpeedX(0));
+        assertEquals(
+                2,
+                new EntityRoomInspectionQueries(runtime.inspection())
+                        .wingedOctorokOam()
+                        .size());
+        assertEquals(
+                0x22,
+                new EntityRoomInspectionQueries(runtime.inspection())
+                        .wingedOctorokOam()
+                        .get(0)
+                        .tileIndex());
+        assertEquals(
+                0x40,
+                new EntityRoomInspectionQueries(runtime.inspection())
+                        .wingedOctorokOam()
+                        .get(0)
+                        .attributes());
     }
 
     @Test

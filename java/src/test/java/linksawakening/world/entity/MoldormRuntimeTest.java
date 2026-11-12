@@ -376,7 +376,7 @@ final class MoldormRuntimeTest {
         assertEquals(1, tailHit.get(0).enemyDamage());
         assertEquals(0x03, runtime.enemies().enemyHealth(0));
         assertEquals(0xC8, runtime.bosses().moldormPrivateCountdown2(0));
-        assertEquals(0x28, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x28, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
 
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0);
@@ -424,7 +424,7 @@ final class MoldormRuntimeTest {
         assertEquals(
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().getFirst().status());
-        assertEquals(0, runtime.enemies().dyingCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).dyingCountdown(0));
 
         int poofCount = 0;
         int poofSoundCount = 0;
@@ -454,7 +454,7 @@ final class MoldormRuntimeTest {
                             event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x1A)
                     .count();
             if (runtime.bosses().moldormDestructionState(0) == 1 && !sawInitialDestructionFlash) {
-                assertEquals(0xFF, runtime.enemies().enemyFlashCountdown(0));
+                assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
                 sawInitialDestructionFlash = true;
             }
             if (runtime.inspection().snapshot().slots().getFirst().loaded()

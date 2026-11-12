@@ -302,7 +302,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                         .filter(event -> !event.targetsRoomObjects())
                         .map(BombExplosionEvent::targetSlot)
                         .toList());
-        assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
+        assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
         for (BombExplosionEvent event : events) {
             assertEquals(bombSlot, event.bombSlot());
             assertEquals(0x48, event.bombX());
@@ -411,7 +411,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         // CheckExplosionInteractionWithEntities does not pre-arm the normal
         // sword hit flash/ignore timers; a lethal ApplySwordDamagesToEnemy
         // path reaches DYING with both values still clear.
-        assertEquals(0x00, runtime.enemies().enemyFlashCountdown(14));
+        assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(14));
         assertEquals(0x00, runtime.enemies().enemyIgnoreHitsCountdown(14));
         assertEquals(0xD0, EntityRuntimeFixture.enemies(runtime).enemyRecoilSpeedXForTest(14));
         assertEquals(0x00, EntityRuntimeFixture.enemies(runtime).enemyRecoilSpeedYForTest(14));
@@ -481,7 +481,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                         0x28,
                         0x10)),
                 events);
-        assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
+        assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
         assertEquals(
                 List.of(BombExplosionEvent.OBJECT_TARGET),
                 runtime.consumeBombExplosionEvents().stream()
@@ -512,7 +512,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 0xF0));
 
         assertEquals(List.of(), events);
-        assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
+        assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
         List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
         assertEquals(
                 List.of(BombExplosionEvent.OBJECT_TARGET),

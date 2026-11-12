@@ -171,9 +171,9 @@ final class WitchRatRuntimeTest {
                 null,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
-        assertEquals(1, runtime.enemies().witchRatState(0));
-        assertEquals(0x30, runtime.enemies().witchRatTransitionCountdown(0));
-        assertEquals(0xFE, runtime.enemies().witchRatSpeedZ(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).witchRatState(0));
+        assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).witchRatTransitionCountdown(0));
+        assertEquals(0xFE, new EntityEnemyInspectionQueries(runtime.enemies()).witchRatSpeedZ(0));
         assertEquals(
                 0x15,
                 runtime.inspection()

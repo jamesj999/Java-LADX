@@ -90,8 +90,8 @@ final class LeeverContactRecoilTest {
         var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
         for (int frame = 0; frame <= 34; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, x - 10, y, () -> 0));
-        assertEquals(2, runtime.enemies().leeverState(2));
-        assertEquals(0xF8, runtime.enemies().leeverSpeedX(2));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).leeverState(2));
+        assertEquals(0xF8, new EntityEnemyInspectionQueries(runtime.enemies()).leeverSpeedX(2));
         return runtime;
     }
 }

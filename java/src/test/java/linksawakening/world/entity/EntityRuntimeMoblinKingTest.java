@@ -36,7 +36,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(2, runtime.inspection().moblinKingState(0));
+        assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).moblinKingState(0));
         assertTrue(openedIntro);
     }
 
@@ -60,7 +60,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         for (int frame = 0; frame < 300; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
 
-        assertEquals(3, runtime.inspection().moblinKingState(0));
+        assertEquals(3, new EntityRoomInspectionQueries(runtime.inspection()).moblinKingState(0));
         assertEquals(0x20, EntityRuntimeFixture.inspection(runtime).transitionCountdownForTest(0));
         assertEquals(0x30, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
     }
@@ -82,11 +82,11 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(true);
         for (int frame = 0; frame < 60; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
-        assertEquals(3, runtime.inspection().moblinKingState(0));
+        assertEquals(3, new EntityRoomInspectionQueries(runtime.inspection()).moblinKingState(0));
         assertEquals(0x58, runtime.inspection().snapshot().slots().get(0).x());
         EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(false);
         runtime.tick(EntityTestFrames.frame(runtime, 60, 0x30, 0x58, () -> 0));
-        assertEquals(4, runtime.inspection().moblinKingState(0));
+        assertEquals(4, new EntityRoomInspectionQueries(runtime.inspection()).moblinKingState(0));
     }
 
     @Test
@@ -137,7 +137,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0x30, 0x58, () -> 0));
         assertTrue(runtime.inspection().snapshot().slots().get(0).x() > beforeX);
         assertEquals(beforeZ, runtime.inspection().snapshot().slots().get(0).z());
-        assertEquals(5, runtime.inspection().moblinKingState(0));
+        assertEquals(5, new EntityRoomInspectionQueries(runtime.inspection()).moblinKingState(0));
     }
 
     @Test
@@ -156,7 +156,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 4, 0, 0x28, 0, 0, 0x22);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0, true));
-        assertEquals(4, runtime.inspection().moblinKingState(0));
+        assertEquals(4, new EntityRoomInspectionQueries(runtime.inspection()).moblinKingState(0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x58, 0x58, () -> 0, true));
         List<EntityCombatEvent> events =
                 runtime.resolveCombat(new EntitySwordContactFrame(3, 0x58, 0x58, false, true, false, 0, 0, 0, 0));

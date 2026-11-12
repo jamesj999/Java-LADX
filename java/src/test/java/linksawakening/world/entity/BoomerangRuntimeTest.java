@@ -51,14 +51,14 @@ final class BoomerangRuntimeTest {
                         .get(slot)
                         .spriteDefinition()
                         .address());
-        assertEquals(0x28, runtime.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0x28, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
 
         tickInteractive(runtime, 0, 0x20, 0x20);
 
         RoomEntity outbound = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(0x42, outbound.x());
-        assertEquals(0x27, runtime.inspection().boomerangTransitionCountdown(slot));
-        assertEquals(0, runtime.inspection().boomerangState(slot));
+        assertEquals(0x27, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).boomerangState(slot));
         assertFalse(runtime.consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x2D));
@@ -69,7 +69,7 @@ final class BoomerangRuntimeTest {
         }
 
         assertTrue(runtime.inspection().boomerangActive());
-        assertEquals(1, runtime.inspection().boomerangState(slot));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).boomerangState(slot));
 
         for (int frame = 40; frame < 120 && runtime.inspection().boomerangActive(); frame++) {
             tickInteractive(runtime, frame, 0x20, 0x20);
@@ -94,8 +94,8 @@ final class BoomerangRuntimeTest {
                         new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false)));
             }
             assertEquals(8, runtime.inspection().snapshot().slots().get(slot).z());
-            assertEquals(0xF8, runtime.inspection().boomerangSpeedX(slot));
-            assertEquals(1, runtime.inspection().boomerangSpeedY(slot));
+            assertEquals(0xF8, new EntityRoomInspectionQueries(runtime.inspection()).boomerangSpeedX(slot));
+            assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).boomerangSpeedY(slot));
 
             runtime.tick(EntityTestFrames.projectileFrame(
                     runtime,
@@ -105,8 +105,8 @@ final class BoomerangRuntimeTest {
                     () -> 0,
                     null,
                     new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false)));
-            assertEquals(0xE0, runtime.inspection().boomerangSpeedX(slot));
-            assertEquals(4, runtime.inspection().boomerangSpeedY(slot));
+            assertEquals(0xE0, new EntityRoomInspectionQueries(runtime.inspection()).boomerangSpeedX(slot));
+            assertEquals(4, new EntityRoomInspectionQueries(runtime.inspection()).boomerangSpeedY(slot));
         }
     }
 
@@ -128,7 +128,7 @@ final class BoomerangRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0));
         assertEquals(1, runtime.enemies().boomerangObjectRequests().size());
         assertEquals(0x20, runtime.inspection().snapshot().slots().get(slot).x());
-        assertEquals(0x27, runtime.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0x27, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         BoomerangObjectRequest request =
                 runtime.enemies().boomerangObjectRequests().get(0);
 
@@ -185,13 +185,13 @@ final class BoomerangRuntimeTest {
 
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(slot).x());
-        assertEquals(0, runtime.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event -> event.soundId() == 7));
         // A zero outbound countdown permits the next pass through the same
         // object, and the going handler then starts the return state.
         tickInteractive(runtime, 1, 0, 0);
         assertEquals(0x42, runtime.inspection().snapshot().slots().get(slot).x());
-        assertEquals(1, runtime.inspection().boomerangState(slot));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).boomerangState(slot));
     }
 
     @ParameterizedTest
@@ -203,7 +203,7 @@ final class BoomerangRuntimeTest {
         grounded.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, physics, 0x40, 0x40));
         tickInteractive(grounded, 0, 0, 0);
-        assertEquals(0, grounded.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(grounded.inspection()).boomerangTransitionCountdown(slot));
         assertEquals(0x40, grounded.inspection().snapshot().slots().get(slot).x());
         assertEquals(0x50, grounded.inspection().snapshot().slots().get(slot).y());
 
@@ -212,7 +212,7 @@ final class BoomerangRuntimeTest {
         airborne.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, physics, 0x40, 0x40));
         tickInteractive(airborne, 0, 0, 0);
-        assertEquals(0x27, airborne.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0x27, new EntityRoomInspectionQueries(airborne.inspection()).boomerangTransitionCountdown(slot));
     }
 
     @ParameterizedTest
@@ -226,11 +226,13 @@ final class BoomerangRuntimeTest {
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 0xD1, 0x40, 0x40));
         for (int frame = 1; frame < blockingFrame; frame++) {
             tickInteractive(runtime, frame, 0, 0);
-            assertEquals(0x28 - frame - 1, runtime.inspection().boomerangTransitionCountdown(slot));
+            assertEquals(
+                    0x28 - frame - 1,
+                    new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         }
         int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
         tickInteractive(runtime, blockingFrame, 0, 0);
-        assertEquals(0, runtime.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         assertEquals(beforeX, runtime.inspection().snapshot().slots().get(slot).x());
     }
 
@@ -261,7 +263,7 @@ final class BoomerangRuntimeTest {
         for (int frame = 0; frame < 40; frame++) {
             tickInteractive(runtime, frame, 0x20, 0x20);
         }
-        assertEquals(1, runtime.inspection().boomerangState(slot));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).boomerangState(slot));
         RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
 
         // Slot $0F checks Link on frame 40. The returning vector moves left

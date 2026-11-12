@@ -56,8 +56,9 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
             assertEquals(1, events.size());
             assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());
             assertEquals(0x16, events.get(0).soundId());
-            assertEquals(0x18, runtime.enemies().enemyProjectileTransitionCountdown(0));
-            assertEquals(4, runtime.enemies().swordMoblinAlertingSoundCounter());
+            assertEquals(
+                    0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileTransitionCountdown(0));
+            assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
             assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         }
     }
@@ -78,14 +79,17 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
 
         arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 0, 0, 0, () -> 0, wall));
-        assertEquals(0x18, arrowRuntime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(
+                0x18, new EntityEnemyInspectionQueries(arrowRuntime.enemies()).enemyProjectileTransitionCountdown(0));
         arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 1, 0, 0, () -> 0, wall));
-        assertEquals(0x17, arrowRuntime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(
+                0x17, new EntityEnemyInspectionQueries(arrowRuntime.enemies()).enemyProjectileTransitionCountdown(0));
         assertEquals(0, arrowRuntime.inspection().snapshot().slots().get(0).spriteVariant());
         for (int frame = 2; frame <= 9; frame++) {
             arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, frame, 0, 0, () -> 0, wall));
         }
-        assertEquals(0x0F, arrowRuntime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(
+                0x0F, new EntityEnemyInspectionQueries(arrowRuntime.enemies()).enemyProjectileTransitionCountdown(0));
         assertEquals(1, arrowRuntime.inspection().snapshot().slots().get(0).spriteVariant());
         arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 10, 0, 0, () -> 0, wall));
         assertEquals(3, arrowRuntime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -137,9 +141,9 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(1, runtime.enemies().enemyIgnoreHitsCountdown(slot));
         // ShootArrow calls label_140F after SpawnPlayerProjectile. The
         // initial $20 movement table is replaced by data_13AD/data_13B5.
-        assertEquals(0x30, runtime.inspection().playerArrowSpeedY(slot));
-        assertEquals(3, runtime.inspection().playerArrowDirection(slot));
-        assertEquals(1, runtime.inspection().activePlayerArrowCount());
+        assertEquals(0x30, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedY(slot));
+        assertEquals(3, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowDirection(slot));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).activePlayerArrowCount());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
@@ -152,8 +156,8 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
 
         int slot = runtime.spawnArrow(0x40, 0x50, 0, 3, true);
 
-        assertEquals(0x40, runtime.inspection().playerArrowSpeedY(slot));
-        assertEquals(0x00, runtime.inspection().playerArrowSpeedX(slot));
+        assertEquals(0x40, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedY(slot));
+        assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedX(slot));
     }
 
     @Test
@@ -187,7 +191,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().get(15).status());
-        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(15));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(15));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(15));
         assertEquals(
                 List.of(new EntityCombatEvent(
@@ -233,7 +237,8 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         // arrow hits a wall instead, then overlaps the target on frame 1.
         runtime.tick(EntityTestFrames.frame(
                 runtime, 0, 0, 0, () -> 0, (entity, direction, x, y) -> entity.type() == 0 && direction == 0));
-        assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(arrowSlot));
+        assertEquals(
+                0x18, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(arrowSlot));
         runtime.consumePendingEntityEvents();
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
@@ -244,7 +249,8 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(arrowSlot).status());
-        assertEquals(0x17, runtime.inspection().playerArrowTransitionCountdown(arrowSlot));
+        assertEquals(
+                0x17, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(arrowSlot));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
@@ -266,9 +272,9 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         runtime.tick(
                 EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
 
-        assertEquals(0x04, runtime.enemies().swordMoblinAlertingSoundCounter());
-        assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(slot));
-        assertEquals(0xF4, runtime.inspection().playerArrowSpeedX(slot));
+        assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
+        assertEquals(0x18, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(slot));
+        assertEquals(0xF4, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedX(slot));
         assertEquals(
                 List.of(new EntityCombatEvent(slot, 0x00, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
                 runtime.consumePendingEntityEvents());
@@ -307,7 +313,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(EntityStatus.ACTIVE, arrow.status());
         assertEquals(startingZ, arrow.z());
         assertEquals(startingY + 4, arrow.y());
-        assertEquals(18, runtime.inspection().playerArrowSpeedY(slot));
+        assertEquals(18, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedY(slot));
     }
 
     @Test
@@ -320,11 +326,11 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(15, first);
         assertEquals(14, second);
         assertEquals(-1, runtime.spawnArrow(0x40, 0x50, 0, 2));
-        assertEquals(2, runtime.inspection().activePlayerArrowCount());
+        assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).activePlayerArrowCount());
 
         runtime.clearEntity(first);
 
         assertEquals(15, runtime.spawnArrow(0x40, 0x50, 0, 2));
-        assertEquals(2, runtime.inspection().activePlayerArrowCount());
+        assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).activePlayerArrowCount());
     }
 }

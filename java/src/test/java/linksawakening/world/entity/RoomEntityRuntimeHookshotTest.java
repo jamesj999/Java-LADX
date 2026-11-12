@@ -75,7 +75,7 @@ final class RoomEntityRuntimeHookshotTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(0x43, runtime.inspection().snapshot().slots().get(slot).x());
-        assertEquals(0x29, runtime.inspection().hookshotTransitionCountdown(slot));
+        assertEquals(0x29, new EntityRoomInspectionQueries(runtime.inspection()).hookshotTransitionCountdown(slot));
     }
 
     @Test
@@ -102,13 +102,13 @@ final class RoomEntityRuntimeHookshotTest {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(slot).status());
         assertTrue(runtime.inspection().hookshotActive());
-        assertTrue(runtime.inspection().hookshotWallCollisionPending(slot));
+        assertTrue(new EntityRoomInspectionQueries(runtime.inspection()).hookshotWallCollisionPending(slot));
 
         runtime.tick(
                 EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0, (entity, direction, nextX, nextY) -> true));
 
-        assertEquals(0, runtime.inspection().hookshotTransitionCountdown(slot));
-        assertFalse(runtime.inspection().hookshotWallCollisionPending(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).hookshotTransitionCountdown(slot));
+        assertFalse(new EntityRoomInspectionQueries(runtime.inspection()).hookshotWallCollisionPending(slot));
         // On the next pass the source moves before checking the latched
         // collision, then emits the poke at the cached pre-movement position.
         assertEquals(0x43, runtime.inspection().snapshot().slots().get(slot).x());
@@ -136,7 +136,9 @@ final class RoomEntityRuntimeHookshotTest {
         runtime.tick(EntityTestFrames.frame(runtime, 5, 0x40, 0x50, () -> 0));
 
         assertTrue(runtime.inspection().hookshotActive());
-        assertEquals(HookshotChainMotion.PULLING_STATE, runtime.inspection().hookshotEntityState(slot));
+        assertEquals(
+                HookshotChainMotion.PULLING_STATE,
+                new EntityRoomInspectionQueries(runtime.inspection()).hookshotEntityState(slot));
         assertEquals(0x4F, runtime.inspection().snapshot().slots().get(slot).x());
     }
 
@@ -171,7 +173,9 @@ final class RoomEntityRuntimeHookshotTest {
         }
         blocked[0] = true;
         runtime.tick(EntityTestFrames.frame(runtime, 6, 0x40, 0x50, () -> 0));
-        assertEquals(HookshotChainMotion.PULLING_STATE, runtime.inspection().hookshotEntityState(slot));
+        assertEquals(
+                HookshotChainMotion.PULLING_STATE,
+                new EntityRoomInspectionQueries(runtime.inspection()).hookshotEntityState(slot));
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -209,7 +213,9 @@ final class RoomEntityRuntimeHookshotTest {
             throw new AssertionError("Paused hookshot reached background collision");
         }));
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(slot).x());
-        assertEquals(gate.equals("got_item") ? 0x29 : 0x2A, runtime.inspection().hookshotTransitionCountdown(slot));
+        assertEquals(
+                gate.equals("got_item") ? 0x29 : 0x2A,
+                new EntityRoomInspectionQueries(runtime.inspection()).hookshotTransitionCountdown(slot));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         setGate(runtime, gate, false);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x20, () -> 0));
@@ -221,7 +227,7 @@ final class RoomEntityRuntimeHookshotTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0, true));
-        assertEquals(0x29, runtime.inspection().hookshotTransitionCountdown(slot));
+        assertEquals(0x29, new EntityRoomInspectionQueries(runtime.inspection()).hookshotTransitionCountdown(slot));
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(slot).x());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }

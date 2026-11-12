@@ -100,7 +100,7 @@ final class ArrowPauseTest {
         assertEquals(0x18, countdown(runtime, type));
         assertEquals(0x42, runtime.inspection().snapshot().slots().get(0).x());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
-        assertEquals(4, runtime.enemies().swordMoblinAlertingSoundCounter());
+        assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
     }
 
     @ParameterizedTest
@@ -191,8 +191,8 @@ final class ArrowPauseTest {
 
     private static int countdown(RoomEntityRuntime runtime, int type) {
         return type == 0
-                ? runtime.inspection().playerArrowTransitionCountdown(15)
-                : runtime.enemies().enemyProjectileTransitionCountdown(0);
+                ? new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(15)
+                : new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileTransitionCountdown(0);
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, RoomEntityBackgroundCollision collision) {

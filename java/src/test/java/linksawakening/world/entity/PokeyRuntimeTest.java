@@ -82,7 +82,7 @@ final class PokeyRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
-        assertEquals(0, runtime.inspection().entityInertia(0));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).entityInertia(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 8, 0x70, 0x50, () -> 0));
@@ -123,9 +123,10 @@ final class PokeyRuntimeTest {
         assertEquals(0x01, runtime.enemies().enemyHealth(segment.slot()));
         assertEquals(0x12, runtime.enemies().physicsFlags(segment.slot()));
         assertEquals(0x02, runtime.options1(segment.slot()));
-        assertEquals(1, runtime.inspection().pokeyPrivateState1(segment.slot()));
-        assertEquals(0x18, runtime.inspection().pokeyTransitionCountdown(segment.slot()));
-        assertEquals(1, runtime.inspection().entityInertia(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).pokeyPrivateState1(segment.slot()));
+        assertEquals(
+                0x18, new EntityRoomInspectionQueries(runtime.inspection()).pokeyTransitionCountdown(segment.slot()));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).entityInertia(0));
         assertNotNull(segment);
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x70, 0x50, () -> 0));

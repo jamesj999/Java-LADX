@@ -44,7 +44,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
 
         RoomEntity rebuilt = runtime.inspection().snapshot().slots().get(0);
         assertEquals(EntityStatus.DYING, rebuilt.status());
-        assertEquals(0x0F, runtime.enemies().dyingCountdown(0));
+        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).dyingCountdown(0));
         assertEquals(1, rebuilt.deathSpriteVariant());
         assertTrue(rebuilt.powerRecoilDeath());
         assertEquals(
@@ -169,7 +169,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
                 EntityStatus.STUNNED,
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(tables.initialHealth(0xE9), runtime.enemies().enemyHealth(0));
-        assertEquals(0xFF, runtime.enemies().stunnedCountdown(0));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).stunnedCountdown(0));
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x03, events.get(0).soundId());
         assertEquals(EntityCombatEvent.SoundChannel.NONE, events.get(0).secondarySoundChannel());
@@ -183,6 +183,6 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(0, runtime.enemies().stunnedCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).stunnedCountdown(0));
     }
 }

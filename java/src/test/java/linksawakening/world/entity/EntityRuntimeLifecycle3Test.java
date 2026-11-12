@@ -56,17 +56,17 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         assertEquals(sourceZ, drop.z());
         assertTrue(drop.spriteDefinition().supported());
         assertEquals(drop.spriteDefinition().initialVariant(), drop.spriteVariant());
-        assertEquals(0x80, runtime.inspection().slowTransitionCountdown(14));
-        assertEquals(0x18, runtime.inspection().dropPrivateCountdown1(14));
-        assertEquals(0x03, runtime.inspection().dropPrivateCountdown3(14));
+        assertEquals(0x80, new EntityRoomInspectionQueries(runtime.inspection()).slowTransitionCountdown(14));
+        assertEquals(0x18, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
+        assertEquals(0x03, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown3(14));
         assertEquals(0x18, runtime.inspection().dropSpeedZ(14));
-        assertEquals(0x00, runtime.inspection().dropSpeedY(14));
+        assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).dropSpeedY(14));
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).droppedItemForTest(15));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
-        assertEquals(0x17, runtime.inspection().dropPrivateCountdown1(14));
-        assertEquals(0x02, runtime.inspection().dropPrivateCountdown3(14));
+        assertEquals(0x17, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
+        assertEquals(0x02, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown3(14));
         assertEquals(
                 (sourceZ + 1) & 0xFF,
                 runtime.inspection().snapshot().slots().get(14).z());
@@ -76,7 +76,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         for (int frame = 2; frame <= 24; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
-        assertEquals(0, runtime.inspection().dropPrivateCountdown1(14));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
         runtime.tick(EntityTestFrames.frame(runtime, 25, 0, 0, () -> 0));
         EntityPickupEvent pickup = runtime.collectIfNeeded(25, sourceX, sourceY + 2, false, true);
         assertNotNull(pickup);
@@ -86,10 +86,10 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(14).status());
-        assertEquals(0, runtime.inspection().dropPrivateCountdown1(14));
-        assertEquals(0, runtime.inspection().dropPrivateCountdown3(14));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown3(14));
         assertEquals(0, runtime.inspection().dropSpeedZ(14));
-        assertEquals(0, runtime.inspection().dropSpeedY(14));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).dropSpeedY(14));
     }
 
     @Test
@@ -126,10 +126,10 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         assertEquals(0x09, drop.z());
         assertTrue(drop.spriteDefinition().supported());
         assertEquals(drop.spriteDefinition().initialVariant(), drop.spriteVariant());
-        assertEquals(0x80, runtime.inspection().slowTransitionCountdown(14));
-        assertEquals(0x18, runtime.inspection().dropPrivateCountdown1(14));
-        assertEquals(0x03, runtime.inspection().dropPrivateCountdown3(14));
-        assertEquals(0xEC, runtime.inspection().dropSpeedY(14));
+        assertEquals(0x80, new EntityRoomInspectionQueries(runtime.inspection()).slowTransitionCountdown(14));
+        assertEquals(0x18, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
+        assertEquals(0x03, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown3(14));
+        assertEquals(0xEC, new EntityRoomInspectionQueries(runtime.inspection()).dropSpeedY(14));
         assertEquals(0x00, runtime.inspection().dropSpeedZ(14));
     }
 
@@ -174,7 +174,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(15).status());
         assertFalse(runtime.inspection().snapshot().slots().stream()
                 .anyMatch(entity -> entity.loaded() && (entity.type() == 0x2D || entity.type() == 0x2E)));
-        assertEquals(1, runtime.inspection().killCount());
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).killCount());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
     }
 }

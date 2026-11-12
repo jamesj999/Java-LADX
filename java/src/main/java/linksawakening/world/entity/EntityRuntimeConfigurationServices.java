@@ -31,58 +31,66 @@ interface EntityRuntimeConfigurationServices {
     SlimeEyeController slimeEye();
 
     static EntityRuntimeConfigurationServices bind(RoomEntityRuntime r) {
-        return new EntityRuntimeConfigurationServices() {
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+        return new Binding(() -> r);
+    }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+    final class Binding implements EntityRuntimeConfigurationServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public EntityLiftThrowController liftThrow() {
-                return r.liftThrow;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityLiftThrowController liftThrow() {
+            return room.get().liftThrow;
+        }
 
-            public EntityPickupController pickups() {
-                return r.pickups;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntityPresentationState presentationState() {
-                return r.entityState.presentationState;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntityProjectileController projectiles() {
-                return r.projectiles;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityPickupController pickups() {
+            return room.get().pickups;
+        }
 
-            public EntityStoryController story() {
-                return r.story;
-            }
+        public EntityPresentationState presentationState() {
+            return room.get().entityState.presentationState;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntityProjectileController projectiles() {
+            return room.get().projectiles;
+        }
 
-            public SlimeEyeController slimeEye() {
-                return r.slimeEye;
-            }
-        };
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
+
+        public EntityStoryController story() {
+            return room.get().story;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
+
+        public SlimeEyeController slimeEye() {
+            return room.get().slimeEye;
+        }
     }
 }

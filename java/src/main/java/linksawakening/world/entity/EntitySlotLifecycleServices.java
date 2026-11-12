@@ -63,122 +63,130 @@ interface EntitySlotLifecycleServices {
     void startToadstoolPickup(int slot);
 
     static EntitySlotLifecycleServices bind(RoomEntityRuntime r) {
-        return new EntitySlotLifecycleServices() {
-            public void setBombFinalPresentationPending(int slot, boolean value) {
-                r.bombInteractions.setBombFinalPresentationPending(slot, value);
-            }
+        return new Binding(() -> r);
+    }
 
-            public EntityWarpController warpState() {
-                return r.warpState;
-            }
+    final class Binding implements EntitySlotLifecycleServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public boolean beginLift(int slot, int romDirection) {
-                return r.beginLift(slot, romDirection);
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public int findFreeEntitySlot() {
-                return r.findFreeEntitySlot();
-            }
+        public void setBombFinalPresentationPending(int slot, boolean value) {
+            room.get().bombInteractions.setBombFinalPresentationPending(slot, value);
+        }
 
-            public int initialHealth(int type) {
-                return r.initialHealth(type);
-            }
+        public EntityWarpController warpState() {
+            return room.get().warpState;
+        }
 
-            public EntityBackgroundMechanics backgroundMechanics() {
-                return r.backgroundMechanics;
-            }
+        public boolean beginLift(int slot, int romDirection) {
+            return room.get().beginLift(slot, romDirection);
+        }
 
-            public EntityBombInteractions bombInteractions() {
-                return r.bombInteractions;
-            }
+        public int findFreeEntitySlot() {
+            return room.get().findFreeEntitySlot();
+        }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        public int initialHealth(int type) {
+            return room.get().initialHealth(type);
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public EntityBackgroundMechanics backgroundMechanics() {
+            return room.get().backgroundMechanics;
+        }
 
-            public EntityEnemyInspection enemyInspection() {
-                return r.enemyInspection;
-            }
+        public EntityBombInteractions bombInteractions() {
+            return room.get().bombInteractions;
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityLiftThrowController liftThrow() {
-                return r.liftThrow;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public EntityEnemyInspection enemyInspection() {
+            return room.get().enemyInspection;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityLiftThrowController liftThrow() {
+            return room.get().liftThrow;
+        }
 
-            public EntityPickupController pickups() {
-                return r.pickups;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntityPresentationState presentationState() {
-                return r.entityState.presentationState;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntityProjectileController projectiles() {
-                return r.projectiles;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public EntityRewardController rewards() {
-                return r.rewards;
-            }
+        public EntityPickupController pickups() {
+            return room.get().pickups;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityPresentationState presentationState() {
+            return room.get().entityState.presentationState;
+        }
 
-            public EntitySlotProperties slotProperties() {
-                return r.slotProperties;
-            }
+        public EntityProjectileController projectiles() {
+            return room.get().projectiles;
+        }
 
-            public EntityStoryController story() {
-                return r.story;
-            }
+        public EntityRewardController rewards() {
+            return room.get().rewards;
+        }
 
-            public GenieEntityController genie() {
-                return r.genie;
-            }
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
 
-            public RomEnemyCombatTables enemyCombatTables() {
-                return r.enemyCombatTables;
-            }
+        public EntitySlotProperties slotProperties() {
+            return room.get().slotProperties;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntityStoryController story() {
+            return room.get().story;
+        }
 
-            public SlimeEyeController slimeEye() {
-                return r.slimeEye;
-            }
+        public GenieEntityController genie() {
+            return room.get().genie;
+        }
 
-            public void initializeHealthGroup(int slot) {
-                r.initializeHealthGroup(slot);
-            }
+        public RomEnemyCombatTables enemyCombatTables() {
+            return room.get().enemyCombatTables;
+        }
 
-            public void startSwordPickup(int slot) {
-                r.startSwordPickup(slot);
-            }
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
 
-            public void startToadstoolPickup(int slot) {
-                r.startToadstoolPickup(slot);
-            }
-        };
+        public SlimeEyeController slimeEye() {
+            return room.get().slimeEye;
+        }
+
+        public void initializeHealthGroup(int slot) {
+            room.get().initializeHealthGroup(slot);
+        }
+
+        public void startSwordPickup(int slot) {
+            room.get().startSwordPickup(slot);
+        }
+
+        public void startToadstoolPickup(int slot) {
+            room.get().startToadstoolPickup(slot);
+        }
     }
 }

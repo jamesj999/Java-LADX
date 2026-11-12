@@ -72,7 +72,7 @@ final class DogRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
 
         assertEquals(0x4C, runtime.enemies().enemyHealth(0));
-        assertEquals(0x01, runtime.enemies().dogState(0));
+        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).dogState(0));
     }
 
     @Test

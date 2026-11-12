@@ -13,22 +13,30 @@ interface EntityBossInspectionServices {
     EntityPhysicsTables physicsTables();
 
     static EntityBossInspectionServices bind(RoomEntityRuntime r) {
-        return new EntityBossInspectionServices() {
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        return new Binding(() -> r);
+    }
 
-            public EntityEnemyInspection enemyInspection() {
-                return r.enemyInspection;
-            }
+    final class Binding implements EntityBossInspectionServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
-        };
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
+
+        public EntityEnemyInspection enemyInspection() {
+            return room.get().enemyInspection;
+        }
+
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
+
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
     }
 }

@@ -145,7 +145,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, () -> 0));
         assertEquals(71, runtime.inspection().snapshot().slots().get(1).x());
         assertEquals(10, runtime.enemies().enemyIgnoreHitsCountdown(1));
-        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(1));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(1));
         assertEquals(
                 0x18,
                 runtime.enemies().transitionCountdown(1),
@@ -155,7 +155,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
         assertEquals(9, runtime.enemies().enemyIgnoreHitsCountdown(1));
         for (int frame = 2; frame < 24; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 72, () -> 0));
         RoomEntity recovered = runtime.inspection().snapshot().slots().get(1);
-        assertEquals(1, runtime.enemies().enemyFlashCountdown(1));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(1));
         runtime.resolveCombat(
                 new EntitySwordContactFrame(24, 87, 64, false, true, true, recovered.x(), 8, recovered.y(), 8));
         assertEquals(
@@ -198,7 +198,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, sequence(0x00, 0x1F)));
         assertEquals(0xFF, runtime.enemies().transitionCountdown(15));
-        assertEquals(0xFF, runtime.enemies().enemyFlashCountdown(15));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(15));
 
         for (int frame = 1; frame <= 0xFF; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, sequence(0x00, 0x1F)));

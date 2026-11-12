@@ -9,18 +9,26 @@ interface EntityEffectConsumptionServices {
     EntityRoomVariables roomVariables();
 
     static EntityEffectConsumptionServices bind(RoomEntityRuntime r) {
-        return new EntityEffectConsumptionServices() {
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        return new Binding(() -> r);
+    }
 
-            public EntityPresentationState presentationState() {
-                return r.entityState.presentationState;
-            }
+    final class Binding implements EntityEffectConsumptionServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
-        };
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
+
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
+
+        public EntityPresentationState presentationState() {
+            return room.get().entityState.presentationState;
+        }
+
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
     }
 }

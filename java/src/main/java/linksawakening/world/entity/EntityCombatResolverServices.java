@@ -39,74 +39,82 @@ interface EntityCombatResolverServices {
     SlimeEyeController slimeEye();
 
     static EntityCombatResolverServices bind(RoomEntityRuntime r) {
-        return new EntityCombatResolverServices() {
-            public int contactDamage(int slot) {
-                return r.contactDamage(slot);
-            }
+        return new Binding(() -> r);
+    }
 
-            public int options1(int slot) {
-                return r.options1(slot);
-            }
+    final class Binding implements EntityCombatResolverServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public EntityBackgroundMechanics backgroundMechanics() {
-                return r.backgroundMechanics;
-            }
+        public int contactDamage(int slot) {
+            return room.get().contactDamage(slot);
+        }
 
-            public EntityBombInteractions bombInteractions() {
-                return r.bombInteractions;
-            }
+        public int options1(int slot) {
+            return room.get().options1(slot);
+        }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public EntityBackgroundMechanics backgroundMechanics() {
+            return room.get().backgroundMechanics;
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public EntityBombInteractions bombInteractions() {
+            return room.get().bombInteractions;
+        }
 
-            public EntityFrameContext frameContext(int frameCounter) {
-                return r.frameContext(frameCounter);
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityFrameContext frameContext(int frameCounter) {
+            return room.get().frameContext(frameCounter);
+        }
 
-            public EntityRoomInspection roomInspection() {
-                return r.roomInspection;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntitySlotProperties slotProperties() {
-                return r.slotProperties;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public RomEnemyCombatTables enemyCombatTables() {
-                return r.enemyCombatTables;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntityRoomInspection roomInspection() {
+            return room.get().roomInspection;
+        }
 
-            public SlimeEyeController slimeEye() {
-                return r.slimeEye;
-            }
-        };
+        public EntitySlotProperties slotProperties() {
+            return room.get().slotProperties;
+        }
+
+        public RomEnemyCombatTables enemyCombatTables() {
+            return room.get().enemyCombatTables;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
+
+        public SlimeEyeController slimeEye() {
+            return room.get().slimeEye;
+        }
     }
 }

@@ -37,10 +37,6 @@ public final class FollowingNpcEntitySpawner {
         this.spriteHandlers = spriteHandlers;
     }
 
-    /**
-     * Applies the four source-ordered follower creation paths. Link values
-     * are the ROM hLinkPositionX/Y/Z bytes; {@code entityYOffset} is wC13B.
-     */
     /** Compatibility for existing world.room callers. */
     @Deprecated
     public Result synchronize(

@@ -136,7 +136,8 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(
                 runtime, 0, 0x40, 0x50, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
-        assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(arrowSlot));
+        assertEquals(
+                0x18, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(arrowSlot));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
 

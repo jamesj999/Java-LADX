@@ -42,16 +42,16 @@ final class SwordBeamRuntimeTest {
                         .get(slot)
                         .spriteDefinition()
                         .address());
-        assertEquals(0, runtime.inspection().swordBeamState(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).swordBeamState(slot));
 
         tick(runtime, 0, 0x40, 0x40, 3);
 
         RoomEntity first = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(0x40, first.x());
         assertEquals(0x41, first.y());
-        assertEquals(0x40, runtime.inspection().swordBeamSpeedX(slot));
-        assertEquals(0x00, runtime.inspection().swordBeamSpeedY(slot));
-        assertEquals(1, runtime.inspection().swordBeamState(slot));
+        assertEquals(0x40, new EntityRoomInspectionQueries(runtime.inspection()).swordBeamSpeedX(slot));
+        assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).swordBeamSpeedY(slot));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).swordBeamState(slot));
         assertEquals(-1, first.spriteVariant());
         assertTrue(runtime.consumePendingEntityEvents().stream()
                 .anyMatch(event ->

@@ -37,70 +37,78 @@ interface SlimeEyeControllerServices {
     void initializeHealthGroup(int slot);
 
     static SlimeEyeControllerServices bind(RoomEntityRuntime r) {
-        return new SlimeEyeControllerServices() {
-            public int findFreeEntitySlot() {
-                return r.findFreeEntitySlot();
-            }
+        return new Binding(() -> r);
+    }
 
-            public int initialHealth(int type) {
-                return r.initialHealth(type);
-            }
+    final class Binding implements SlimeEyeControllerServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public java.util.List<RoomEntity> slotEntities() {
-                return r.slotEntities;
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
-                return r.spriteHandlers;
-            }
+        public int findFreeEntitySlot() {
+            return room.get().findFreeEntitySlot();
+        }
 
-            public EntityBackgroundMechanics backgroundMechanics() {
-                return r.backgroundMechanics;
-            }
+        public int initialHealth(int type) {
+            return room.get().initialHealth(type);
+        }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        public java.util.List<RoomEntity> slotEntities() {
+            return room.get().slotEntities;
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {
+            return room.get().spriteHandlers;
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public EntityBackgroundMechanics backgroundMechanics() {
+            return room.get().backgroundMechanics;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntitySlotLifecycle lifecycle() {
-                return r.lifecycle;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntitySlotProperties slotProperties() {
-                return r.slotProperties;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public RomEnemyCombatTables enemyCombatTables() {
-                return r.enemyCombatTables;
-            }
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntitySlotLifecycle lifecycle() {
+            return room.get().lifecycle;
+        }
 
-            public void initializeHealthGroup(int slot) {
-                r.initializeHealthGroup(slot);
-            }
-        };
+        public EntitySlotProperties slotProperties() {
+            return room.get().slotProperties;
+        }
+
+        public RomEnemyCombatTables enemyCombatTables() {
+            return room.get().enemyCombatTables;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
+
+        public void initializeHealthGroup(int slot) {
+            room.get().initializeHealthGroup(slot);
+        }
     }
 }

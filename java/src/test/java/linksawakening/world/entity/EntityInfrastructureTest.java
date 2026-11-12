@@ -157,27 +157,28 @@ class EntityInfrastructureTest {
     void effectiveFrameCopyPreservesInputAndServiceIdentity() {
         java.util.function.IntSupplier random = () -> 91;
         RoomEntityBackgroundCollision collision = (entity, direction, x, y) -> false;
-        EntityFrameContext original = new EntityFrameContext(
-                4,
-                10,
-                20,
-                0,
-                random,
-                collision,
-                null,
-                null,
-                0,
-                false,
-                2,
-                0,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                1,
-                2);
+        EntityFrameContext original = EntityFrameContext.builder()
+                .frameCounter(4)
+                .linkEntityX(10)
+                .linkEntityY(20)
+                .collisionType(0)
+                .randomByteSupplier(random)
+                .backgroundCollision(collision)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(0)
+                .linkAirborne(false)
+                .linkDirection(2)
+                .entityYOffset(0)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(1)
+                .linkSpeedY(2)
+                .build();
         EntityFrameContext effective = original.withRuntimeInputs(5, 30, 40, collision);
         assertEquals(10, original.linkEntityX());
         assertEquals(30, effective.linkEntityX());

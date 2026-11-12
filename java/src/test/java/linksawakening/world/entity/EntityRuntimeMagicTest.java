@@ -109,8 +109,8 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
 
         // GetVectorTowardsLink's repeated-remainder loop increments both
         // components when both source distances are zero.
-        assertEquals(0x0A, runtime.enemies().polsVoiceSpeedX(0));
-        assertEquals(0x0A, runtime.enemies().polsVoiceSpeedY(0));
+        assertEquals(0x0A, new EntityEnemyInspectionQueries(runtime.enemies()).polsVoiceSpeedX(0));
+        assertEquals(0x0A, new EntityEnemyInspectionQueries(runtime.enemies()).polsVoiceSpeedY(0));
     }
 
     @Test
@@ -203,7 +203,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(61, afterRecoil.x());
         assertEquals(61, afterRecoil.y());
         assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
     }
 
     @Test
@@ -376,7 +376,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(0x44, drop.x());
         assertEquals(0x58, drop.y());
         assertEquals(0x07, drop.z());
-        assertEquals(0x10, runtime.inspection().dropPrivateCountdown1(14));
+        assertEquals(0x10, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
         assertEquals(0x10, runtime.inspection().dropSpeedZ(14));
         assertEquals(
                 List.of(new EntityCombatEvent(15, 0x87, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13)),
@@ -424,7 +424,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(0x4C, drop.x());
         assertEquals(0x5A, drop.y());
         assertEquals(0x00, drop.z());
-        assertEquals(0x20, runtime.inspection().dropPrivateCountdown1(14));
+        assertEquals(0x20, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
         assertEquals(0x18, runtime.inspection().dropSpeedZ(14));
         assertEquals(
                 List.of(new EntityCombatEvent(15, 0x5F, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)),

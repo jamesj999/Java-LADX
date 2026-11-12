@@ -29,7 +29,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         for (int frame = 0; frame <= 31; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        assertEquals(2, runtime.enemies().leeverState(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).leeverState(0));
 
         runtime.resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
@@ -38,7 +38,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
         assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0));
     }
 
@@ -57,16 +57,16 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         runtime.tick(EntityTestFrames.frame(runtime, 32, 80, 64, sequence(0x00)));
-        assertEquals(2, runtime.enemies().leeverState(0));
-        assertEquals(0x08, runtime.enemies().leeverSpeedX(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).leeverState(0));
+        assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).leeverSpeedX(0));
 
         RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
         runtime.tick(EntityTestFrames.frame(runtime, 33, 80, 64, sequence(0x00), rightWall));
         runtime.tick(EntityTestFrames.frame(runtime, 34, 80, 64, sequence(0x00), rightWall));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
-        assertEquals(0x08, runtime.enemies().leeverSpeedX(0));
-        assertEquals(2, runtime.enemies().leeverState(0));
+        assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).leeverSpeedX(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).leeverState(0));
     }
 
     @Test
@@ -88,7 +88,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 34, 80, 64, sequence(0x00)));
 
         assertEquals(65, runtime.inspection().snapshot().slots().get(0).x());
-        assertEquals(0x08, runtime.enemies().leeverSpeedX(0));
+        assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).leeverSpeedX(0));
     }
 
     @Test
@@ -103,37 +103,37 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
-        assertEquals(1, runtime.enemies().stalfosState(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosState(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).z());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, sequence(0x00)));
-        assertEquals(2, runtime.enemies().stalfosState(0));
-        assertEquals(0x28, runtime.enemies().stalfosSpeedZ(0));
-        assertEquals(0x10, runtime.enemies().stalfosSpeedX(0));
-        assertEquals(0x10, runtime.enemies().stalfosSpeedY(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosState(0));
+        assertEquals(0x28, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosSpeedZ(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosSpeedX(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosSpeedY(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 64, 64, sequence(0x00)));
         assertEquals(0x02, runtime.inspection().snapshot().slots().get(0).z());
-        assertEquals(0x26, runtime.enemies().stalfosSpeedZ(0));
+        assertEquals(0x26, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosSpeedZ(0));
         assertEquals(2, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 3; frame <= 21; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 64, 64, sequence(0x00)));
         }
-        assertEquals(3, runtime.enemies().stalfosState(0));
-        assertEquals(0x10, runtime.enemies().stalfosTransitionCountdown(0));
-        assertEquals(0xC0, runtime.enemies().stalfosSpeedZ(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosState(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosTransitionCountdown(0));
+        assertEquals(0xC0, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosSpeedZ(0));
         assertEquals(2, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         int frame = 22;
-        while (runtime.enemies().stalfosState(0) != 0 && frame < 100) {
+        while (new EntityEnemyInspectionQueries(runtime.enemies()).stalfosState(0) != 0 && frame < 100) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 64, 64, sequence(0x00)));
         }
-        assertEquals(0, runtime.enemies().stalfosState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosState(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).z());
-        assertEquals(0x20, runtime.enemies().stalfosTransitionCountdown(0));
-        assertEquals(0, runtime.enemies().stalfosSpeedZ(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosTransitionCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosSpeedZ(0));
     }
 
     @Test
@@ -176,22 +176,22 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(1, runtime.enemies().gibdoState(0));
-        assertEquals(0, runtime.enemies().gibdoSpeedX(0));
-        assertEquals(0, runtime.enemies().gibdoSpeedY(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).gibdoState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).gibdoSpeedX(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).gibdoSpeedY(0));
 
         // LikeLikeGibdoSpeeds[2] is $F8 (-8 pixels per 16 frames).
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x02)));
-        assertEquals(0, runtime.enemies().gibdoState(0));
-        assertEquals(0xF8, runtime.enemies().gibdoSpeedX(0));
-        assertEquals(0, runtime.enemies().gibdoSpeedY(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).gibdoState(0));
+        assertEquals(0xF8, new EntityEnemyInspectionQueries(runtime.enemies()).gibdoSpeedX(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).gibdoSpeedY(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
 
         // A nonzero random low six bits keeps the selected direction and the
         // ROM fixed-point update moves the entity left by one pixel here.
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x01)));
         assertEquals(63, runtime.inspection().snapshot().slots().get(0).x());
-        assertEquals(0xF8, runtime.enemies().gibdoSpeedX(0));
+        assertEquals(0xF8, new EntityEnemyInspectionQueries(runtime.enemies()).gibdoSpeedX(0));
     }
 
     @Test
@@ -210,12 +210,12 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(1, runtime.inspection().likeLikeWalkState(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeWalkState(0));
 
         // LikeLikeGibdoSpeeds[1] is $08 (+8 pixels per 16 frames).
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00, 0x01)));
-        assertEquals(0, runtime.inspection().likeLikeWalkState(0));
-        assertEquals(0x08, runtime.inspection().likeLikeWalkSpeedY(0));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeWalkState(0));
+        assertEquals(0x08, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeWalkSpeedY(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0xFF)));
@@ -257,7 +257,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         assertEquals(1, events.size());
         assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertEquals(-1, events.getFirst().stolenInventorySlot());
-        assertEquals(1, runtime.inspection().likeLikeState(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeState(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
 
         assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(3, 64, 64, false, true, true, 72, 1, 72, 1))
@@ -300,7 +300,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         assertEquals(LikeLikeEvent.Kind.CAPTURE, stolen.kind());
         assertEquals(0, stolen.stolenInventorySlot());
         assertEquals(1, stolen.stolenShieldLevel());
-        assertEquals(1, runtime.inspection().likeLikePrivateState1(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikePrivateState1(0));
 
         RoomEntityRuntime levelTwo = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -331,7 +331,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
         LikeLikeEvent protectedShield = levelTwo.consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
-        assertEquals(0, levelTwo.inspection().likeLikePrivateState1(0));
+        assertEquals(0, new EntityRoomInspectionQueries(levelTwo.inspection()).likeLikePrivateState1(0));
     }
 
     @Test
@@ -369,7 +369,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertFalse(events.getFirst().pinLinkPosition());
         assertEquals(0, events.getFirst().stolenInventorySlot());
-        assertEquals(1, runtime.inspection().likeLikePrivateState1(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikePrivateState1(0));
     }
 
     @Test
@@ -406,8 +406,8 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                     new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
             runtime.consumePendingLikeLikeEvents();
         }
-        assertEquals(1, runtime.inspection().likeLikeState(0));
-        assertEquals(7, runtime.inspection().likeLikeInertia(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeState(0));
+        assertEquals(7, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeInertia(0));
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -419,8 +419,8 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         LikeLikeEvent release = runtime.consumePendingLikeLikeEvents().getFirst();
         assertEquals(LikeLikeEvent.Kind.RELEASE, release.kind());
-        assertEquals(0, runtime.inspection().likeLikeState(0));
-        assertEquals(0x15, runtime.inspection().slowTransitionCountdown(0));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeState(0));
+        assertEquals(0x15, new EntityRoomInspectionQueries(runtime.inspection()).slowTransitionCountdown(0));
     }
 
     @Test
@@ -447,16 +447,16 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00, 0x00)));
 
-        assertEquals(1, runtime.enemies().goombaState(0));
-        assertEquals(0x30, runtime.enemies().goombaTransitionCountdown(0));
-        assertEquals(0x08, runtime.enemies().goombaSpeedX(0));
-        assertEquals(0x00, runtime.enemies().goombaSpeedY(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).goombaState(0));
+        assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).goombaTransitionCountdown(0));
+        assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).goombaSpeedX(0));
+        assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).goombaSpeedY(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0xFF)));
-        assertEquals(0x2F, runtime.enemies().goombaTransitionCountdown(0));
+        assertEquals(0x2F, new EntityEnemyInspectionQueries(runtime.enemies()).goombaTransitionCountdown(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
-        assertEquals(0x02, runtime.enemies().goombaSpeedY(0));
+        assertEquals(0x02, new EntityEnemyInspectionQueries(runtime.enemies()).goombaSpeedY(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x10, 120, 120, sequence(0xFF)));
         assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -521,8 +521,8 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 events.get(0).linkAction());
         assertEquals(EntityCombatEvent.SoundChannel.WAVE, events.get(0).soundChannel());
         assertEquals(0x0E, events.get(0).soundId());
-        assertEquals(2, runtime.enemies().goombaState(0));
-        assertEquals(0x30, runtime.enemies().goombaTransitionCountdown(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).goombaState(0));
+        assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).goombaTransitionCountdown(0));
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
@@ -534,7 +534,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x2D, EntityRuntimeFixture.inspection(runtime).droppedItemForTest(0));
-        assertEquals(0x0C, runtime.enemies().dyingCountdown(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).dyingCountdown(0));
         assertEquals(0x04, runtime.enemies().physicsFlags(0));
         assertEquals(2, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
@@ -560,7 +560,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         List<EntityCombatEvent> events =
                 runtime.resolveCombat(new EntityAttackContactFrame(1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0));
         assertTrue(events.isEmpty());
-        assertEquals(0, runtime.enemies().goombaState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).goombaState(0));
     }
 
     @Test
@@ -589,7 +589,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING,
                 events.get(0).linkAction());
-        assertEquals(2, runtime.enemies().goombaState(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).goombaState(0));
 
         for (int frame = 0; frame < 0x30; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
@@ -621,16 +621,16 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
 
-        assertEquals(1, runtime.enemies().snakeState(0));
-        assertEquals(0x30, runtime.enemies().snakeTransitionCountdown(0));
-        assertEquals(0x2F, runtime.enemies().snakePrivateCountdown1(0));
-        assertEquals(0x08, runtime.enemies().snakeSpeedX(0));
-        assertEquals(0x00, runtime.enemies().snakeSpeedY(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).snakeState(0));
+        assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).snakeTransitionCountdown(0));
+        assertEquals(0x2F, new EntityEnemyInspectionQueries(runtime.enemies()).snakePrivateCountdown1(0));
+        assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedX(0));
+        assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedY(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0xFF)));
-        assertEquals(0x2F, runtime.enemies().snakeTransitionCountdown(0));
-        assertEquals(0x2E, runtime.enemies().snakePrivateCountdown1(0));
+        assertEquals(0x2F, new EntityEnemyInspectionQueries(runtime.enemies()).snakeTransitionCountdown(0));
+        assertEquals(0x2E, new EntityEnemyInspectionQueries(runtime.enemies()).snakePrivateCountdown1(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
 
         runtime.tick(EntityTestFrames.frame(runtime, 8, 120, 120, sequence(0xFF)));
@@ -661,10 +661,10 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 64, 120, sequence(0x02)));
         }
 
-        assertEquals(2, runtime.enemies().snakeState(0));
-        assertEquals(0x30, runtime.enemies().snakeTransitionCountdown(0));
-        assertEquals(0x00, runtime.enemies().snakeSpeedX(0));
-        assertEquals(0x10, runtime.enemies().snakeSpeedY(0));
-        assertEquals(0, runtime.enemies().snakePrivateCountdown1(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).snakeState(0));
+        assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).snakeTransitionCountdown(0));
+        assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedX(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedY(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).snakePrivateCountdown1(0));
     }
 }

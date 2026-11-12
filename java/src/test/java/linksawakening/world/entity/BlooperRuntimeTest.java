@@ -63,17 +63,17 @@ final class BlooperRuntimeTest {
         });
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 48, 40, () -> 0));
-        assertEquals(1, runtime.enemies().blooperState(0));
-        assertEquals(0x25, runtime.enemies().blooperTransitionCountdown(0));
-        assertEquals(1, runtime.enemies().blooperDirection(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).blooperState(0));
+        assertEquals(0x25, new EntityEnemyInspectionQueries(runtime.enemies()).blooperTransitionCountdown(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).blooperDirection(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 48, 40, () -> 0));
         assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 48, 40, () -> 0));
-        assertEquals(0xFF, runtime.enemies().blooperSpeedX(0));
-        assertEquals(0xFF, runtime.enemies().blooperSpeedY(0));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).blooperSpeedX(0));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).blooperSpeedY(0));
         assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(3, groundCalls.get());
         assertEquals(0x02, runtime.enemies().physicsFlags(0));
@@ -113,10 +113,10 @@ final class BlooperRuntimeTest {
                 new EnemyProjectileCollision.LinkState(
                         48, 40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
-        assertEquals(0, runtime.enemies().blooperState(0));
-        assertEquals(0, runtime.enemies().blooperTransitionCountdown(0));
-        assertEquals(0, runtime.enemies().blooperSpeedX(0));
-        assertEquals(0, runtime.enemies().blooperSpeedY(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).blooperState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).blooperTransitionCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).blooperSpeedX(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).blooperSpeedY(0));
         assertEquals(0, groundCalls.get());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());

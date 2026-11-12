@@ -33,14 +33,14 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
         for (int frame = 2; frame <= 33; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
-        assertEquals(2, runtime.enemies().hidingZolState(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
         assertEquals(0x24, runtime.consumePendingEntityEvents().getFirst().soundId());
 
         int frame = 34;
-        while (runtime.enemies().hidingZolState(0) != 4 && frame < 200) {
+        while (new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0) != 4 && frame < 200) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
-        assertEquals(4, runtime.enemies().hidingZolState(0));
+        assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
 
         boolean foundSecondJumpJingle = false;
         for (int count = 0; count < 40; count++) {
@@ -56,7 +56,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
             }
         }
         assertTrue(foundSecondJumpJingle);
-        assertEquals(5, runtime.enemies().hidingZolState(0));
+        assertEquals(5, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
     }
 
     @Test
@@ -78,11 +78,11 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
 
         int frame = 2;
-        while (runtime.enemies().hidingZolState(0) != 6 && frame < 1000) {
+        while (new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0) != 6 && frame < 1000) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
 
-        assertEquals(6, runtime.enemies().hidingZolState(0));
+        assertEquals(6, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
         assertEquals(0xD2, runtime.enemies().physicsFlags(0));
     }
 

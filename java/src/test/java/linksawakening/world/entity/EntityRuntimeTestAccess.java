@@ -5,7 +5,7 @@ public final class EntityRuntimeTestAccess {
     private EntityRuntimeTestAccess() {}
 
     public static int killCount(RoomEntityRuntime runtime) {
-        return runtime.inspection().killCount();
+        return new EntityRoomInspectionQueries(runtime.inspection()).killCount();
     }
 
     public static void setEnemyHealthForTest(RoomEntityRuntime runtime, int slot, int value) {

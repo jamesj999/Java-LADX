@@ -93,13 +93,13 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
         assertEquals(0xA0, runtime.enemies().transitionCountdown(15));
-        assertEquals(0xFF, runtime.enemies().enemyFlashCountdown(15));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(15));
 
         for (int frame = 1; frame <= 0xA0; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x40, () -> 0));
         }
         assertEquals(0xC0, runtime.enemies().transitionCountdown(15));
-        assertEquals(0xFF, runtime.enemies().enemyFlashCountdown(15));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(15));
 
         for (int frame = 0xA1; frame <= 0x160; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x40, () -> 0));

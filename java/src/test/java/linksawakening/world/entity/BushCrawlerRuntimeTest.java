@@ -80,9 +80,9 @@ final class BushCrawlerRuntimeTest {
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x47, () -> 0));
-        assertEquals(1, runtime.inspection().bushCrawlerState(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).bushCrawlerState(0));
         assertEquals(0x30, runtime.enemies().transitionCountdown(0));
-        assertEquals(0x10, runtime.inspection().bushCrawlerSpeedY(0));
+        assertEquals(0x10, new EntityRoomInspectionQueries(runtime.inspection()).bushCrawlerSpeedY(0));
         assertEquals(0, runtime.inspection().snapshot().visualYOffset(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x00, 0x00, () -> 0));

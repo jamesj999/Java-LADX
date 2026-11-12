@@ -76,8 +76,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         // EntityRandomSpeedX/Y[1] = (+12, -12). The init handler runs before
         // the first active handler pass.
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x01)));
-        assertEquals(0x0C, runtime.enemies().antiFairySpeedX(0));
-        assertEquals(0xF4, runtime.enemies().antiFairySpeedY(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).antiFairySpeedX(0));
+        assertEquals(0xF4, new EntityEnemyInspectionQueries(runtime.enemies()).antiFairySpeedY(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
@@ -108,8 +108,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         // the fifth ROM display-list variant available but selects variants
         // 0..3 from (hFrameCounter >> 3) & 3.
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x01)));
-        assertEquals(0x0C, runtime.enemies().starSpeedX(0));
-        assertEquals(0xF4, runtime.enemies().starSpeedY(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedX(0));
+        assertEquals(0xF4, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedY(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
@@ -145,8 +145,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
-        assertEquals(0x0C, runtime.enemies().starSpeedX(0));
-        assertEquals(0x0C, runtime.enemies().starSpeedY(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedX(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).starSpeedY(0));
     }
 
     @Test
@@ -165,41 +165,41 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(0, runtime.enemies().spikeTrapState(0));
-        assertEquals(0, runtime.enemies().spikeTrapDirection(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapDirection(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
-        assertEquals(1, runtime.enemies().spikeTrapState(0));
-        assertEquals(64, runtime.enemies().spikeTrapPrivateState1(0));
-        assertEquals(64, runtime.enemies().spikeTrapPrivateState2(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
+        assertEquals(64, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapPrivateState1(0));
+        assertEquals(64, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapPrivateState2(0));
 
         // Link is within the Y window, so state 1 chooses the right-facing
         // $20 X speed and immediately enters state 2.
         runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00)));
-        assertEquals(2, runtime.enemies().spikeTrapState(0));
-        assertEquals(0, runtime.enemies().spikeTrapDirection(0));
-        assertEquals(0x20, runtime.enemies().spikeTrapSpeedX(0));
-        assertEquals(0, runtime.enemies().spikeTrapSpeedY(0));
-        assertEquals(0x18, runtime.enemies().spikeTrapTransitionCountdown(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapDirection(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapSpeedX(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapSpeedY(0));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapTransitionCountdown(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 3, 80, 64, sequence(0x00)));
         assertEquals(66, runtime.inspection().snapshot().slots().get(0).x());
-        assertEquals(0x17, runtime.enemies().spikeTrapTransitionCountdown(0));
+        assertEquals(0x17, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapTransitionCountdown(0));
 
         for (int frame = 4; frame <= 26; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
-        assertEquals(3, runtime.enemies().spikeTrapState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
         assertEquals(112, runtime.inspection().snapshot().slots().get(0).x());
 
         int frame = 27;
-        while (runtime.enemies().spikeTrapState(0) != 1 && frame < 280) {
+        while (new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0) != 1 && frame < 280) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
-        assertEquals(1, runtime.enemies().spikeTrapState(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
-        assertEquals(0x20, runtime.enemies().spikeTrapTransitionCountdown(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapTransitionCountdown(0));
     }
 
     @Test
@@ -265,11 +265,11 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 100, sequence(0x02)));
         runtime.tick(EntityTestFrames.frame(runtime, 2, 64, 100, sequence(0x02)));
 
-        assertEquals(2, runtime.enemies().spikeTrapState(0));
-        assertEquals(3, runtime.enemies().spikeTrapDirection(0));
-        assertEquals(0, runtime.enemies().spikeTrapSpeedX(0));
-        assertEquals(0x20, runtime.enemies().spikeTrapSpeedY(0));
-        assertEquals(0x10, runtime.enemies().spikeTrapTransitionCountdown(0));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapDirection(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapSpeedX(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapSpeedY(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapTransitionCountdown(0));
     }
 
     @Test
@@ -298,7 +298,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
         }
         runtime.tick(EntityTestFrames.frame(runtime, 7, 0x70, 0x50, () -> 0, rightWall));
-        assertEquals(0x18, runtime.enemies().enemyProjectileTransitionCountdown(14));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileTransitionCountdown(14));
 
         for (int frame = 8; frame <= 30; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0, rightWall));
@@ -307,8 +307,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(14).status());
-        assertEquals(0, runtime.enemies().enemyProjectileSpeedX(14));
-        assertEquals(0, runtime.enemies().enemyProjectileTransitionCountdown(14));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileSpeedX(14));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileTransitionCountdown(14));
     }
 
     @Test
@@ -343,7 +343,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         }
 
         assertEquals(0x0B, runtime.inspection().snapshot().slots().get(15).type());
-        assertEquals(0x0A, runtime.enemies().octorokTransitionCountdown(15));
+        assertEquals(0x0A, new EntityEnemyInspectionQueries(runtime.enemies()).octorokTransitionCountdown(15));
         for (int slot = 0; slot < 15; slot++) {
             assertNotEquals(
                     0x0C, runtime.inspection().snapshot().slots().get(slot).type());
@@ -522,17 +522,17 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
-        assertEquals(0x02, runtime.inspection().droppablePrivateState3(0));
+        assertEquals(0x02, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState3(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
-        assertEquals(0x00, runtime.inspection().droppablePrivateState3(0));
-        assertEquals(0x00, runtime.inspection().droppablePrivateState4(0));
+        assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState3(0));
+        assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState4(0));
         assertEquals(0x0A, runtime.options1(0));
-        assertEquals(0x18, runtime.inspection().dropPrivateCountdown1(0));
+        assertEquals(0x18, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(0));
         assertEquals(0x0C, runtime.inspection().dropSpeedX(0));
-        assertEquals(0x0C, runtime.inspection().dropSpeedY(0));
+        assertEquals(0x0C, new EntityRoomInspectionQueries(runtime.inspection()).dropSpeedY(0));
         assertEquals(0x20, runtime.inspection().dropSpeedZ(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).z());
@@ -551,16 +551,16 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
-        assertEquals(0x01, runtime.inspection().droppablePrivateState3(0));
+        assertEquals(0x01, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState3(0));
 
         EntityRuntimeFixture.debug(runtime).setDroppablePegasusCollisionForTest(true, true, 0x48, 0x58);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
-        assertEquals(0x00, runtime.inspection().droppablePrivateState3(0));
+        assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState3(0));
         assertEquals(0x0A, runtime.options1(0));
         // $629C returns past the fairy handler on the reveal frame too.
-        assertEquals(0x0C, runtime.inspection().fairySpeedX(0));
-        assertEquals(0x0C, runtime.inspection().fairySpeedY(0));
+        assertEquals(0x0C, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedX(0));
+        assertEquals(0x0C, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedY(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
@@ -584,7 +584,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 staticRuntime.inspection().snapshot().slots().get(0).status());
-        assertEquals(1, staticRuntime.inspection().killCount());
+        assertEquals(1, new EntityRoomInspectionQueries(staticRuntime.inspection()).killCount());
         assertEquals(0, staticRuntime.inspection().killOrderAt(0));
         assertEquals(1, staticRuntime.consumePendingClearedEntityMask());
 
@@ -601,7 +601,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 dynamicRuntime.inspection().snapshot().slots().get(0).status());
-        assertEquals(0, dynamicRuntime.inspection().killCount());
+        assertEquals(0, new EntityRoomInspectionQueries(dynamicRuntime.inspection()).killCount());
         assertEquals(
                 new EnemyDropResolver.CounterState(0, 0),
                 dynamicRuntime.inspection().enemyDropCounters());
@@ -632,7 +632,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
 
         assertFalse(runtime.inspection().snapshot().slots().get(0).loaded());
         assertFalse(runtime.inspection().snapshot().slots().get(1).loaded());
-        assertEquals(2, runtime.inspection().killCount());
+        assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).killCount());
         assertEquals(1, runtime.inspection().killOrderAt(0));
         assertEquals(0, runtime.inspection().killOrderAt(1));
         assertEquals(

@@ -55,7 +55,7 @@ final class BombLiftThrowRuntimeTest {
         assertEquals(0x02, lifted.type());
         assertEquals(EntityStatus.LIFTED, lifted.status());
         assertNormalBombDefinition(lifted);
-        assertEquals(0, runtime.enemies().enemyFlashCountdown(slot));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(slot));
         assertTrue(runtime.inspection().bombActive());
     }
 

@@ -159,7 +159,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime =
                 RoomEntityRuntime.builder(snapshot(initialEntity)).build();
 
-        assertTrue(runtime.enemies().powerRecoilDeath(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(0));
         assertEquals(2, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
     }
 
@@ -175,14 +175,14 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
         runtime.resolveCombat(new EntityVerticalContactFrame(
                 0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false)));
-        assertTrue(runtime.enemies().powerRecoilDeath(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(0));
 
         for (int frame = 0; frame < 0x40; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
 
         assertFalse(runtime.inspection().snapshot().slots().get(0).loaded());
-        assertFalse(runtime.enemies().powerRecoilDeath(0));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(0));
     }
 
     @Test
@@ -212,7 +212,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         List<EntityCombatEvent> events = runtime.resolveCombat(
                 new EntitySwordContactFrame(0, 0x40, 0x40, false, false, true, 0x30, 0x30, 0x30, 0x30));
         assertEquals(1, events.size());
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true));
 
@@ -222,7 +222,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                         + " x=" + runtime.inspection().snapshot().slots().get(0).x()
                         + " status="
                         + runtime.inspection().snapshot().slots().get(0).status()
-                        + " recoil=" + runtime.enemies().enemyRecoilActive(0)
+                        + " recoil=" + new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0)
                         + " countdown=" + runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x3D, runtime.inspection().snapshot().slots().get(0).x());
     }
@@ -268,15 +268,15 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(0x20, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertEquals(0x40, runtime.enemies().dyingCountdown(0));
+        assertEquals(0x40, new EntityEnemyInspectionQueries(runtime.enemies()).dyingCountdown(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertTrue(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
         for (int frame = 1; frame <= 11; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        assertEquals(0x40 - 11, runtime.enemies().dyingCountdown(0));
+        assertEquals(0x40 - 11, new EntityEnemyInspectionQueries(runtime.enemies()).dyingCountdown(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertTrue(runtime.enemies().enemyIgnoreHitsCountdown(0) > 0);
     }
@@ -330,16 +330,16 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
 
         assertEquals(1, runtime.clearEntity(0));
 
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertFalse(runtime.enemies().enemyRecoilActive(0));
-        assertEquals(0, runtime.enemies().enemyRecoilSpeedX(0));
-        assertEquals(0, runtime.enemies().enemyRecoilSpeedY(0));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedX(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedY(0));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
     }
 
@@ -355,7 +355,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
 
         for (int frame = 0; frame < 0x40; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
@@ -364,9 +364,9 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertFalse(runtime.enemies().enemyRecoilActive(0));
-        assertEquals(0, runtime.enemies().enemyRecoilSpeedX(0));
-        assertEquals(0, runtime.enemies().enemyRecoilSpeedY(0));
+        assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedX(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedY(0));
     }
 
     @Test
@@ -410,7 +410,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(0x1F, runtime.enemies().dyingCountdown(0));
+        assertEquals(0x1F, new EntityEnemyInspectionQueries(runtime.enemies()).dyingCountdown(0));
         assertEquals(3, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertFalse(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
         assertEquals(0x04, runtime.enemies().physicsFlags(0));
@@ -617,8 +617,8 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         List<EntityCombatEvent> events =
                 runtime.resolveCombat(new EntitySwordContactFrame(0, 64, 64, false, false, true, 72, 1, 72, 1));
         assertEquals(1, events.size());
-        assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0));
-        assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0));
+        assertEquals(0xD0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedX(0));
+        assertEquals(0xD0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedY(0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, sequence(0)));
         assertEquals(61, runtime.inspection().snapshot().slots().getFirst().x());
         assertEquals(61, runtime.inspection().snapshot().slots().getFirst().y());
@@ -642,9 +642,17 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
             assertEquals(1, events.size(), "type=" + Integer.toHexString(type));
             assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0), "type=" + Integer.toHexString(type));
-            assertTrue(runtime.enemies().enemyRecoilActive(0), "type=" + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0), "type=" + Integer.toHexString(type));
-            assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedY(0), "type=" + Integer.toHexString(type));
+            assertTrue(
+                    new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0),
+                    "type=" + Integer.toHexString(type));
+            assertEquals(
+                    0xD0,
+                    new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedX(0),
+                    "type=" + Integer.toHexString(type));
+            assertEquals(
+                    0xD0,
+                    new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedY(0),
+                    "type=" + Integer.toHexString(type));
         }
     }
 
@@ -665,7 +673,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00), leftWall));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
-        assertEquals(0x0C, runtime.enemies().antiFairySpeedX(0));
+        assertEquals(0x0C, new EntityEnemyInspectionQueries(runtime.enemies()).antiFairySpeedX(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
     }
 }

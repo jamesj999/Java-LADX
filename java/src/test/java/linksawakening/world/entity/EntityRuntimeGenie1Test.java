@@ -260,7 +260,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
 
-        assertEquals(1, runtime.inspection().entityInertia(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).entityInertia(0));
         assertEquals(0x30, EntityRuntimeFixture.bosses(runtime).geniePrivateCountdown1ForTest(0));
         assertEquals(0x10, EntityRuntimeFixture.bosses(runtime).geniePrivateCountdown2ForTest(0));
         RoomEntity fireball = runtime.inspection().snapshot().loadedEntities().stream()

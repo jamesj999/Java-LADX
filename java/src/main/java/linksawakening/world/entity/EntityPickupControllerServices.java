@@ -41,78 +41,86 @@ interface EntityPickupControllerServices {
     void initializeHealthGroup(int slot);
 
     static EntityPickupControllerServices bind(RoomEntityRuntime r) {
-        return new EntityPickupControllerServices() {
-            public boolean indoorRoom() {
-                return r.indoorRoom;
-            }
+        return new Binding(() -> r);
+    }
 
-            public int clearEntity(int slot) {
-                return r.clearEntity(slot);
-            }
+    final class Binding implements EntityPickupControllerServices {
+        private final java.util.function.Supplier<RoomEntityRuntime> room;
 
-            public int findFreeEntitySlot() {
-                return r.findFreeEntitySlot();
-            }
+        Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
+            this.room = room;
+        }
 
-            public int initialHealth(int type) {
-                return r.initialHealth(type);
-            }
+        public boolean indoorRoom() {
+            return room.get().indoorRoom;
+        }
 
-            public EntityBossRewards bossRewards() {
-                return r.bossRewards;
-            }
+        public int clearEntity(int slot) {
+            return room.get().clearEntity(slot);
+        }
 
-            public EntityCombatTables combatTables() {
-                return r.entityState.combatTables;
-            }
+        public int findFreeEntitySlot() {
+            return room.get().findFreeEntitySlot();
+        }
 
-            public EntityEventChannels events() {
-                return r.entityState.events;
-            }
+        public int initialHealth(int type) {
+            return room.get().initialHealth(type);
+        }
 
-            public EntityLinkState linkState() {
-                return r.entityState.linkState;
-            }
+        public EntityBossRewards bossRewards() {
+            return room.get().bossRewards;
+        }
 
-            public EntityMotionRegistry motions() {
-                return r.entityState.motions;
-            }
+        public EntityCombatTables combatTables() {
+            return room.get().entityState.combatTables;
+        }
 
-            public EntityPhysicsTables physicsTables() {
-                return r.entityState.physicsTables;
-            }
+        public EntityEventChannels events() {
+            return room.get().entityState.events;
+        }
 
-            public EntityPresentationState presentationState() {
-                return r.entityState.presentationState;
-            }
+        public EntityLinkState linkState() {
+            return room.get().entityState.linkState;
+        }
 
-            public EntityRoomVariables roomVariables() {
-                return r.entityState.roomVariables;
-            }
+        public EntityMotionRegistry motions() {
+            return room.get().entityState.motions;
+        }
 
-            public EntitySlotLifecycle lifecycle() {
-                return r.lifecycle;
-            }
+        public EntityPhysicsTables physicsTables() {
+            return room.get().entityState.physicsTables;
+        }
 
-            public EntitySlotProperties slotProperties() {
-                return r.slotProperties;
-            }
+        public EntityPresentationState presentationState() {
+            return room.get().entityState.presentationState;
+        }
 
-            public EntityStoryController story() {
-                return r.story;
-            }
+        public EntityRoomVariables roomVariables() {
+            return room.get().entityState.roomVariables;
+        }
 
-            public RoomEntity[] slots() {
-                return r.slots;
-            }
+        public EntitySlotLifecycle lifecycle() {
+            return room.get().lifecycle;
+        }
 
-            public linksawakening.world.room.ChestContentsTable chestContentsTable() {
-                return r.chestContentsTable;
-            }
+        public EntitySlotProperties slotProperties() {
+            return room.get().slotProperties;
+        }
 
-            public void initializeHealthGroup(int slot) {
-                r.initializeHealthGroup(slot);
-            }
-        };
+        public EntityStoryController story() {
+            return room.get().story;
+        }
+
+        public RoomEntity[] slots() {
+            return room.get().slots;
+        }
+
+        public linksawakening.world.room.ChestContentsTable chestContentsTable() {
+            return room.get().chestContentsTable;
+        }
+
+        public void initializeHealthGroup(int slot) {
+            room.get().initializeHealthGroup(slot);
+        }
     }
 }

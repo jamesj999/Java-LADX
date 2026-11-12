@@ -24,7 +24,9 @@ final class BowWowPauseTest {
             throw new AssertionError("Paused BowWow must not select targets");
         }));
         assertEquals(before, runtime.inspection().snapshot().slots().getFirst());
-        assertEquals(gate.equals("got_item") ? 7 : 8, runtime.inspection().bowWowTransitionCountdown(0));
+        assertEquals(
+                gate.equals("got_item") ? 7 : 8,
+                new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(0));
         assertEquals(3, runtime.enemies().enemyIgnoreHitsCountdown(0));
         setGate(runtime, gate, false);
         runtime.tick(EntityTestFrames.frame(runtime, 17, 0x44, 0x58, () -> 0));
@@ -45,7 +47,7 @@ final class BowWowPauseTest {
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 3);
         EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 16, 0x44, 0x58, () -> 0));
-        assertEquals(8, runtime.inspection().bowWowTransitionCountdown(0));
+        assertEquals(8, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(0));
         assertEquals(2, runtime.enemies().enemyIgnoreHitsCountdown(0));
         // Speeds use four fractional bits; one tick need not cross a pixel.
         for (int frame = 17; frame < 21; frame++) {
@@ -64,7 +66,7 @@ final class BowWowPauseTest {
         EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 16, 0x44, 0x58, () -> 0, true));
         assertEquals(before, runtime.inspection().snapshot().slots().getFirst());
-        assertEquals(7, runtime.inspection().bowWowTransitionCountdown(0));
+        assertEquals(7, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(0));
     }
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {
