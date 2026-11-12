@@ -560,3 +560,13 @@ Sword owns ordinary swing/charge, movement/facing gates and the public equipment
 | `MAX_CHARGE` | `onRelease`, `tick`, `chargedFlashActive` |
 
 Result: depth 3 → 0; four chain files (740 lines) → Sword (398) and SwordSpin (159), retaining the existing renderer/palette collaborators. Spin queue/delay/sector/frame/base-direction state is private and independent of Sword. Two independent tests cover release delay, 25 visible frames, invalid-input atomicity and unknown inactive directions. Full suite: 2,895 tests, zero failures/errors, one skipped.
+
+## Compiled inheritance guard
+
+The shared class-file reader now reads super_class and PermittedSubclasses after the constant pool, skipping member/attribute payloads without loading classes. NoImplementationInheritanceTest checks every main-output class; only JDK/LWJGL framework superclasses and explicitly permitted sealed children pass without an exception. A second test checks the reader against compiled sealed, record and enum fixtures.
+
+The two headless driver aliases also had implementation inheritance: State → HeadlessState and Diagnostics → SessionDiagnostics. Their original public names/accessors now implement the corresponding interface contracts and compose ReplayCheckpoint / SessionDiagnosticSnapshot. Subtype use through the contracts is retained; both superclass depths are now zero.
+
+Temporary off-limits exceptions: GPU, RomTileLoader, SfxCpu, EntitySpritePainter (explicit coordinator correction), and EntitySpriteTileSnapshot.FrozenTile (additional immutable Tile subclass found by the compiled audit). All are in render/gpu/audio and assigned to that engineer. No owned package has an exception.
+
+Full suite: 2,897 tests, zero failures/errors, one skipped.
