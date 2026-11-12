@@ -117,24 +117,8 @@ public final class DialogEmulatorCapture {
         int inertia = Integer.parseInt(initial[1]);
         // One read-only initial synchronization, then continuous NPC ticks.
         // As with captureHouse, displayed OAM trails the observed clocks by two frames.
-        var marin = motion.tickMarinPresentation(1, marinSource.x(), marinSource.y(), linkX, linkY);
-        for (int i = inertia - 2; i > 0; i--) {
-            marin = motion.tickMarinPresentation(
-                    (firstFrame - i + 1) & 255, marinSource.x(), marinSource.y(), linkX, linkY);
-        }
-        var dialog = DialogController.forGameplay();
-        dialog.setPlayerName("A");
-        if (!heldShield && !bedExit)
-            dialog.openPreformattedForLinkY(
-                    DialogTextLoader.loadFromRom(rom)
-                            .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)),
-                    linkY);
-        if ("marin-close".equals(scenario)) {
-            for (int i = 0; i < 6; i++) {
-                if (i > 0) dialog.advance();
-                for (int tick = 0; tick < 128; tick++) dialog.tick();
-            }
-        }
+        var marin = synchronizeMarin(motion, marinSource.x(), marinSource.y(), linkX, linkY, firstFrame, inertia);
+        var dialog = createDialog(scenario, heldShield, bedExit, rom, inBed, receivedShield, linkY);
         int page = -1;
         int elapsed = 0;
         session.updateHouseTarinPresentation(0, linkX, linkY);
@@ -182,5 +166,38 @@ public final class DialogEmulatorCapture {
                     .drawTo(pixels, gpu);
             consumer.accept(String.format("%02d-%02d.png", nextPage, f), pixels);
         }
+    }
+
+    private static DialogController createDialog(
+            String scenario,
+            boolean heldShield,
+            boolean bedExit,
+            byte[] rom,
+            boolean inBed,
+            boolean receivedShield,
+            int linkY) {
+        var dialog = DialogController.forGameplay();
+        dialog.setPlayerName("A");
+        if (!heldShield && !bedExit)
+            dialog.openPreformattedForLinkY(
+                    DialogTextLoader.loadFromRom(rom)
+                            .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)),
+                    linkY);
+        if ("marin-close".equals(scenario)) {
+            for (int i = 0; i < 6; i++) {
+                if (i > 0) dialog.advance();
+                for (int tick = 0; tick < 128; tick++) dialog.tick();
+            }
+        }
+        return dialog;
+    }
+
+    private static MarinWakeUpMotion.MarinPresentation synchronizeMarin(
+            MarinWakeUpMotion motion, int sourceX, int sourceY, int linkX, int linkY, int firstFrame, int inertia) {
+        var marin = motion.tickMarinPresentation(1, sourceX, sourceY, linkX, linkY);
+        for (int i = inertia - 2; i > 0; i--) {
+            marin = motion.tickMarinPresentation((firstFrame - i + 1) & 255, sourceX, sourceY, linkX, linkY);
+        }
+        return marin;
     }
 }
