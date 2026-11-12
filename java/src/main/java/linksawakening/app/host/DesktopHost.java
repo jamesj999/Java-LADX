@@ -90,7 +90,8 @@ public final class DesktopHost implements Host {
         });
         centerWindowOnPrimaryMonitor();
         glfwMakeContextCurrent(window);
-        glfwSwapInterval(1);
+        // FramePacer owns the rational 60 Hz simulation cadence, independent of display refresh.
+        glfwSwapInterval(0);
         framePresenter = OpenGlFramePresenter.initialize(window);
         resources.add(this::releasePresentation);
 

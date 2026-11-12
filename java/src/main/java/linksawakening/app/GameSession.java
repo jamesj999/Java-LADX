@@ -53,8 +53,6 @@ public class GameSession implements AutoCloseable {
 
     final RomRandomByteSource random;
 
-    final long frameDurationNs = 1_000_000_000L / 60L;
-
     SessionContext context;
 
     public SessionState state() {
@@ -111,7 +109,7 @@ public class GameSession implements AutoCloseable {
 
         context.host().open(context.runtime().input()::onKeyEvent);
 
-        long nextFrameNs = System.nanoTime();
+        var pacer = new FramePacer();
 
         while (!context.host().shouldClose() && context.lifecycle().running()) {
             context.host().pollEvents();
@@ -119,18 +117,7 @@ public class GameSession implements AutoCloseable {
             context.runtime().presentation().composeFrameBuffer();
             context.host().present(context.services().visual().indexedDisplayBuffer());
 
-            nextFrameNs += frameDurationNs;
-            long sleepNs = nextFrameNs - System.nanoTime();
-            if (sleepNs > 0) {
-                try {
-                    Thread.sleep(sleepNs / 1_000_000L, (int) (sleepNs % 1_000_000L));
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
-                }
-            } else {
-                // We're behind — drop the backlog so we don't spiral.
-                nextFrameNs = System.nanoTime();
-            }
+            if (!pacer.awaitNextFrame()) break;
         }
 
         cleanup();
