@@ -92,13 +92,14 @@ The audio implementation lives under `java/src/main/java/linksawakening/audio`.
 - `SoundEffectPlayer`: 60 Hz SFX playback facade.
 - `RomSoundEffectTables`: reads SFX handler pointers from ROM bank `0x1F`.
 - `RomSoundEffectEngine`: ROM memory/register bus, requests and channel ownership.
-- `SfxCpu`: decodes ROM SFX instructions.
-- `SfxCpuState`: reusable registers, stack, flags and arithmetic.
+- `SfxCpu`: one cohesive ROM instruction interpreter owning private registers,
+  reusable stack, flags and ALU operations. There is no interpreter superclass.
 
 `linksawakening.audio.browser`
 
 - `AudioBrowserMain`: standalone entry point.
-- `AudioBrowserFrame` / `BrowserPanels`: Swing view and panel assembly.
+- `AudioBrowserFrame`: package-local Swing view with its own private panel assembly;
+  `AudioBrowserMain` remains the public launcher entry point.
 - `MusicBrowserModel` / `BrowserTransportState`: headless search and transport state.
   The frame uses the standalone models directly; former nested aliases were removed.
 
@@ -388,3 +389,30 @@ The engine still renders PCM for discarded headless output, preserving sample
 clocks and APU state. Only explicitly reusable outputs receive retained storage;
 third-party `PcmSoundOutput` implementations continue receiving fresh owned arrays.
 Frame pacing belongs to the app loop and is independent of these output contracts.
+
+
+## Structural boundaries after the round-4 review
+
+Implementation inheritance is absent from the audio packages. The former
+SfxCpu/SfxCpuState chain was one interpreter split for line limits, so it is now
+one 506-line class. BrowserPanels was a view slice reaching back into every
+AudioBrowserFrame widget; its assembly methods now belong to the 448-line view.
+Cohesion takes priority over file-length targets. MusicVoiceEmitter remains a
+collaborator because it owns waveform/NOISE_FF articulation state and ordered
+channel register emission; ParsePositions owns reusable cycle-detection storage.
+
+All remaining GPU byte-array migration delegates were removed after world callers
+migrated. Audio has no deprecated production members. A clean temporary
+`-Xlint:deprecation,removal` compile reports zero warnings in the owned platform
+main/test roots; the active music test now uses EntityProjectileEvent.builder.
+The normal headless suite retains the register/PCM golden tests and the allocation
+guards. No native device or Swing window is needed for verification.
+
+See [the structural audit](archive/history/platform-round-4.md) for the inheritance,
+helper-responsibility and public-visibility inventory. Platform main sources have
+zero project-class inheritance and 63 public top-level types after the review.
+
+After merging the interpreter, the final escape-analysis-disabled ROM-free check
+still measured 0.0 bytes/tick for music+APU and active SFX, and 0.0 bytes/frame or
+buffer for FrameAudioPlayer and FrameAudioMixer. The temporary test JVM argument
+was not added to build configuration.
