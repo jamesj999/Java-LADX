@@ -212,8 +212,9 @@ final class RoomDoorInteractions {
 
     boolean tryLiftIndoorObject(
             int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) {
-        return session.tryLiftIndoorObject(
-                linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, false);
+        return session.doors()
+                .tryLiftIndoorObject(
+                        linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, false);
     }
 
     boolean tryLiftIndoorObject(
@@ -389,10 +390,10 @@ final class RoomDoorInteractions {
     }
 
     boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        if (session.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType)) {
+        if (session.doors().tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType)) {
             return true;
         }
-        return session.tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
+        return session.doors().tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {

@@ -147,7 +147,7 @@ final class RoomTransitionController {
     }
 
     int ocarinaAnimationState() {
-        if (!session.ocarinaPlaying()) {
+        if (!session.transitions().ocarinaPlaying()) {
             return -1;
         }
         return session.context.ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
@@ -197,7 +197,7 @@ final class RoomTransitionController {
     }
 
     void tickOcarinaAnimationHandler() {
-        if (!session.ocarinaPlaying()) {
+        if (!session.transitions().ocarinaPlaying()) {
             return;
         }
         session.context.ocarinaAnimationCounter++;

@@ -79,7 +79,7 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return session.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return session.playerItems().fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     boolean fireMagicRodFireball(
@@ -245,12 +245,13 @@ final class RoomPlayerItemActions {
     }
 
     boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return session.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
+        return session.playerItems()
+                .shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
                 .spawned();
     }
 
     ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return session.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return session.playerItems().shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     ArrowShotResult shootArrowResult(

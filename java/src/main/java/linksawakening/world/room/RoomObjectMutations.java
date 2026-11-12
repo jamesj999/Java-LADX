@@ -34,7 +34,7 @@ final class RoomObjectMutations {
     boolean tickCrackedFloor(RoomSession.LinkGroundFrame frame, boolean dialogGotItemActive) {
         var context = session.context;
         if (context.activeRoom == null) return false;
-        if (session.hookshotActive()) {
+        if (session.playerItems().hookshotActive()) {
             // $02:7549-754D takes func_002_755B: sample, but no $7589 copy
             // and no ApplyLinkGroundPhysics call.
             sampleLinkGround(frame.pixelX(), frame.pixelY());

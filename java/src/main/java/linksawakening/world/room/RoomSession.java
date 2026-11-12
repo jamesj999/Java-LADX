@@ -339,6 +339,177 @@ public final class RoomSession extends RoomSessionRules {
         }
     }
 
+    public interface Doors {
+        ChestOpenResult tryOpenChest(
+                int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel);
+
+        boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryLiftObject(
+                int x, int y, int direction, boolean held, int buttons, boolean power, int level, boolean anyPowerUp);
+
+        boolean tryLiftObject(int x, int y, int direction, boolean held, int buttons, boolean power, int level);
+
+        boolean tryLiftIndoorObject(
+                int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask);
+
+        boolean tryLiftIndoorObject(
+                int linkPixelX,
+                int linkPixelY,
+                int linkDirection,
+                boolean braceletButtonHeld,
+                int pressedButtonsMask,
+                boolean pieceOfPowerActive);
+
+        boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryUnlockTailCaveKeyhole(
+                int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey);
+
+        boolean tryUnlockKeyCavernKeyhole(
+                int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount);
+
+        int tickTailCaveKeyholeSequence();
+
+        boolean tailCaveKeyholeSequenceActive();
+    }
+
+    public Doors doors() {
+        return new RoomDoorsView(context.roomDoorInteractions);
+    }
+
+    public interface Transitions {
+        void loadWarpDestination(Warp warp);
+
+        int tickDungeonTitleMessage(
+                boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement);
+
+        void startAdjacentOverworldScroll(
+                ScrollController scrollController, int direction, int linkScreenX, int linkScreenY);
+
+        void startAdjacentIndoorScroll(
+                ScrollController scrollController, int direction, int linkScreenX, int linkScreenY);
+
+        boolean startOcarina(int countdown, int songFlags, int selectedSong);
+
+        boolean ocarinaPlaying();
+
+        int ocarinaAnimationState();
+
+        Warp consumeManboPondTransitionRequest();
+
+        Warp consumeInstrumentTransitionRequest();
+
+        Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject);
+    }
+
+    public Transitions transitions() {
+        return new RoomTransitionsView(context.roomTransitionController);
+    }
+
+    public interface PlayerItems {
+        boolean throwLiftedEntity(int linkDirection);
+
+        boolean fireHookshot(
+                int linkEntityX,
+                int linkEntityY,
+                int linkEntityZ,
+                int romDirection,
+                boolean linkAirborne,
+                boolean linkPushing);
+
+        boolean fireBoomerang(
+                int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask);
+
+        boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        boolean fireMagicRodFireball(
+                int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower);
+
+        boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne);
+
+        void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer);
+
+        int shovelAnimationState(int javaDirection, int timer);
+
+        boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        boolean lastBombPlacementPlayedBump();
+
+        boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        ArrowShotResult shootArrowResult(
+                int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower);
+
+        int activeProjectileCount();
+
+        boolean bombActive();
+
+        boolean hookshotActive();
+
+        boolean boomerangActive();
+    }
+
+    public PlayerItems playerItems() {
+        return new RoomPlayerItemsView(context.roomPlayerItemActions);
+    }
+
+    public interface Story {
+        boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant);
+
+        void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY);
+
+        void setBirdKeyOwned(boolean owned);
+
+        void setTailKeyOwned(boolean owned);
+
+        void initializeNewGameWorldState();
+
+        void restoreRoomStatuses(
+                byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus);
+
+        void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides);
+
+        void setFollowingNpcState(
+                FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection);
+
+        FollowingNpcState followingNpcState();
+
+        int bowWowState();
+
+        void setBowWowState(int state);
+
+        int richardSpokenFlag();
+
+        void setRichardSpokenFlag(int flag);
+
+        int tarinFlag();
+
+        void setTarinFlag(int flag);
+
+        void setHouseNpcTradeItem(int tradeItem);
+
+        void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel);
+
+        void setEntityDefaultMusicTrack(int trackId);
+
+        boolean shouldGetLostInMysteriousWoods();
+    }
+
+    public Story story() {
+        return new RoomStoryView(context.roomStoryState);
+    }
+
     final RoomSessionContext context;
     static long nextRoomSessionId;
 
@@ -441,19 +612,17 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public void loadWarpDestination(Warp warp) {
-        context.roomTransitionController.loadWarpDestination(warp);
+        transitions().loadWarpDestination(warp);
     }
     /** $00:0F53 countdown and $01:61EE dungeon-title dialog gates. */
     public int tickDungeonTitleMessage(
             boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) {
-        return context.roomTransitionController.tickDungeonTitleMessage(
-                dialogActive, inventoryClosed, linkMotionState, freeMovement);
+        return transitions().tickDungeonTitleMessage(dialogActive, inventoryClosed, linkMotionState, freeMovement);
     }
 
     public void startAdjacentOverworldScroll(
             ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        context.roomTransitionController.startAdjacentOverworldScroll(
-                scrollController, direction, linkScreenX, linkScreenY);
+        transitions().startAdjacentOverworldScroll(scrollController, direction, linkScreenX, linkScreenY);
     }
 
     void startMysteriousWoodsLostScroll(ScrollController scrollController, int linkScreenX, int linkScreenY) {
@@ -462,8 +631,7 @@ public final class RoomSession extends RoomSessionRules {
 
     public void startAdjacentIndoorScroll(
             ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        context.roomTransitionController.startAdjacentIndoorScroll(
-                scrollController, direction, linkScreenX, linkScreenY);
+        transitions().startAdjacentIndoorScroll(scrollController, direction, linkScreenX, linkScreenY);
     }
     /** Whether the most recent load follows room_transition.asm rather than the warp loader. */
     public boolean musicSelectionIsScroll() {
@@ -511,19 +679,19 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        return context.roomStoryState.applyMarinWakeUpPresentation(x, y, spriteVariant);
+        return story().applyMarinWakeUpPresentation(x, y, spriteVariant);
     }
     /** Tarin's indoor handler updates his facing every 32 frames, even during the bed scene. */
     public void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
-        context.roomStoryState.updateHouseTarinPresentation(frameCounter, linkX, linkY);
+        story().updateHouseTarinPresentation(frameCounter, linkX, linkY);
     }
     /** Supplies the patched EntityInitKeyDropPoint inventory byte. */
     public void setBirdKeyOwned(boolean owned) {
-        context.roomStoryState.setBirdKeyOwned(owned);
+        story().setBirdKeyOwned(owned);
     }
     /** Supplies wHasTailKey to the active owl-event handler. */
     public void setTailKeyOwned(boolean owned) {
-        context.roomStoryState.setTailKeyOwned(owned);
+        story().setTailKeyOwned(owned);
     }
 
     public int currentRoomId() {
@@ -573,12 +741,12 @@ public final class RoomSession extends RoomSessionRules {
      * as the beach sword and owl.
      */
     public void initializeNewGameWorldState() {
-        context.roomStoryState.initializeNewGameWorldState();
+        story().initializeNewGameWorldState();
     }
     /** Restores the room-status WRAM tables loaded by the source save path. */
     public void restoreRoomStatuses(
             byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
-        context.roomStoryState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
+        story().restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
     }
 
     public void setDungeonItemForDebug(int mapId, int index, int value) {
@@ -677,7 +845,7 @@ public final class RoomSession extends RoomSessionRules {
      * so spawning and selection stay in one ROM-shaped path.
      */
     public void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
-        context.roomStoryState.setFollowerSpriteOverrides(overrides);
+        story().setFollowerSpriteOverrides(overrides);
     }
     /**
      * Binds the current WRAM-like follower flags and Link coordinates to the
@@ -687,35 +855,35 @@ public final class RoomSession extends RoomSessionRules {
      */
     public void setFollowingNpcState(
             FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) {
-        context.roomStoryState.setFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
+        story().setFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
     }
 
     public FollowingNpcState followingNpcState() {
-        return context.roomStoryState.followingNpcState();
+        return story().followingNpcState();
     }
     /** Mirrors wIsBowWowFollowingLink, including BOW_WOW_KIDNAPPED=$80. */
     public int bowWowState() {
-        return context.roomStoryState.bowWowState();
+        return story().bowWowState();
     }
 
     public void setBowWowState(int state) {
-        context.roomStoryState.setBowWowState(state);
+        story().setBowWowState(state);
     }
 
     public int richardSpokenFlag() {
-        return context.roomStoryState.richardSpokenFlag();
+        return story().richardSpokenFlag();
     }
 
     public void setRichardSpokenFlag(int flag) {
-        context.roomStoryState.setRichardSpokenFlag(flag);
+        story().setRichardSpokenFlag(flag);
     }
     /** Mirrors the unsigned-byte world progression flag at wTarinFlag. */
     public int tarinFlag() {
-        return context.roomStoryState.tarinFlag();
+        return story().tarinFlag();
     }
 
     public void setTarinFlag(int flag) {
-        context.roomStoryState.setTarinFlag(flag);
+        story().setTarinFlag(flag);
     }
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
@@ -763,11 +931,11 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
     public void setHouseNpcTradeItem(int tradeItem) {
-        context.roomStoryState.setHouseNpcTradeItem(tradeItem);
+        story().setHouseNpcTradeItem(tradeItem);
     }
 
     public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
-        context.roomStoryState.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+        story().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
     }
     /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
@@ -784,7 +952,7 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public void setEntityDefaultMusicTrack(int trackId) {
-        context.roomStoryState.setEntityDefaultMusicTrack(trackId);
+        story().setEntityDefaultMusicTrack(trackId);
     }
 
     void updateWitchEnvironment() {
@@ -824,19 +992,19 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Returns wShouldGetLostInMysteriousWoods from the latest entity pass. */
     public boolean shouldGetLostInMysteriousWoods() {
-        return context.roomStoryState.shouldGetLostInMysteriousWoods();
+        return story().shouldGetLostInMysteriousWoods();
     }
     /** Starts the source UseOcarina countdown consumed by active entities. */
     public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
-        return context.roomTransitionController.startOcarina(countdown, songFlags, selectedSong);
+        return transitions().startOcarina(countdown, songFlags, selectedSong);
     }
     /** Mirrors wLinkPlayingOcarinaCountdown for Link's motion gate. */
     public boolean ocarinaPlaying() {
-        return context.roomTransitionController.ocarinaPlaying();
+        return transitions().ocarinaPlaying();
     }
     /** Mirrors hLinkAnimationState $75/$76 while LinkPlayingOcarinaHandler runs. */
     public int ocarinaAnimationState() {
-        return context.roomTransitionController.ocarinaAnimationState();
+        return transitions().ocarinaAnimationState();
     }
     /**
      * Returns the ROM destination prepared by the completed Mambo branch.
@@ -844,11 +1012,11 @@ public final class RoomSession extends RoomSessionRules {
      * only after the source's {@code $C0}-frame effect has finished.
      */
     public Warp consumeManboPondTransitionRequest() {
-        return context.roomTransitionController.consumeManboPondTransitionRequest();
+        return transitions().consumeManboPondTransitionRequest();
     }
     /** Returns the room's prepared warp after the instrument effect completes. */
     public Warp consumeInstrumentTransitionRequest() {
-        return context.roomTransitionController.consumeInstrumentTransitionRequest();
+        return transitions().consumeInstrumentTransitionRequest();
     }
     /** Returns the completed entity-$61 request emitted by the ROM handler. */
     Warp consumeClearedDungeonWarp() {
@@ -864,7 +1032,7 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Throws the currently held object using Link's Java direction order. */
     public boolean throwLiftedEntity(int linkDirection) {
-        return context.roomPlayerItemActions.throwLiftedEntity(linkDirection);
+        return playerItems().throwLiftedEntity(linkDirection);
     }
     /** Register inputs used by ApplyLinkMotionState/ApplyLinkGroundPhysics ($00:1794/$02:75BD). */
     public record LinkGroundFrame(
@@ -898,32 +1066,30 @@ public final class RoomSession extends RoomSessionRules {
             int romDirection,
             boolean linkAirborne,
             boolean linkPushing) {
-        return context.roomPlayerItemActions.fireHookshot(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing);
+        return playerItems()
+                .fireHookshot(linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing);
     }
     /** Mirrors UseBoomerang's player-projectile spawn bridge. */
     public boolean fireBoomerang(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
-        return context.roomPlayerItemActions.fireBoomerang(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
+        return playerItems().fireBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
     }
     /** Mirrors the level-two branch of UseSword's player-projectile spawn. */
     public boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.fireSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().fireSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /** Mirrors the delayed UseMagicRod player-projectile spawn bridge. */
     public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
 
     public boolean fireMagicRodFireball(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        return context.roomPlayerItemActions.fireMagicRodFireball(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+        return playerItems().fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
     }
     /** Mirrors the delayed UseMagicPowder sprinkle-entity spawn bridge. */
     public boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.sprinkleMagicPowder(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().sprinkleMagicPowder(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /**
      * Mirrors {@code UseShovel}: the item always enters its 24-frame pose
@@ -934,15 +1100,15 @@ public final class RoomSession extends RoomSessionRules {
      * caller supplies ROM direction order: RIGHT, LEFT, UP, DOWN.</p>
      */
     public ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) {
-        return context.roomPlayerItemActions.startShovel(linkEntityX, linkEntityY, romDirection, linkAirborne);
+        return playerItems().startShovel(linkEntityX, linkEntityY, romDirection, linkAirborne);
     }
     /** Applies the ROM shovel timer's delayed room mutation and finish path. */
     public void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) {
-        context.roomPlayerItemActions.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
+        playerItems().advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
     }
     /** Resolves the ROM shovel animation table through Java's Link direction order. */
     public int shovelAnimationState(int javaDirection, int timer) {
-        return context.roomPlayerItemActions.shovelAnimationState(javaDirection, timer);
+        return playerItems().shovelAnimationState(javaDirection, timer);
     }
 
     ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) {
@@ -958,35 +1124,34 @@ public final class RoomSession extends RoomSessionRules {
      * allocation and immutable snapshot refresh.
      */
     public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /** Returns whether the last successful bomb placement queued the top-view bump jingle. */
     public boolean lastBombPlacementPlayedBump() {
-        return context.roomPlayerItemActions.lastBombPlacementPlayedBump();
+        return playerItems().lastBombPlacementPlayedBump();
     }
     /** Result of the ROM ShootArrow bridge, including its conditional whoosh. */
     public record ArrowShotResult(boolean spawned, boolean playWhoosh) {}
     /** Mirrors ShootArrow's player-projectile bridge and refreshes the room snapshot. */
     public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.shootArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().shootArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
 
     public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /** ShootArrow's label_140F speed-table selector for Piece of Power. */
     public ArrowShotResult shootArrowResult(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        return context.roomPlayerItemActions.shootArrowResult(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+        return playerItems().shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
     }
     /** Returns the modeled player-projectile count used by the item gates. */
     public int activeProjectileCount() {
-        return context.roomPlayerItemActions.activeProjectileCount();
+        return playerItems().activeProjectileCount();
     }
     /** Returns whether the live room currently owns an ordinary bomb entity. */
     public boolean bombActive() {
-        return context.roomPlayerItemActions.bombActive();
+        return playerItems().bombActive();
     }
 
     int bombDirectionForTest(int slot) {
@@ -994,11 +1159,11 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Returns whether the live room currently owns entity {@code $03}. */
     public boolean hookshotActive() {
-        return context.roomPlayerItemActions.hookshotActive();
+        return playerItems().hookshotActive();
     }
     /** Returns whether the live room currently owns the boomerang entity. */
     public boolean boomerangActive() {
-        return context.roomPlayerItemActions.boomerangActive();
+        return playerItems().boomerangActive();
     }
 
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
@@ -1753,13 +1918,11 @@ public final class RoomSession extends RoomSessionRules {
      */
     public ChestOpenResult tryOpenChest(
             int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel) {
-        return context.roomDoorInteractions.tryOpenChest(
-                linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
+        return doors().tryOpenChest(linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
     }
     /** Mirrors bank 2's locked-door branch for physics categories $90-$93. */
     public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryUnlockIndoorKeyDoor(
-                linkPixelX, linkPixelY, linkDirection, collisionType);
+        return doors().tryUnlockIndoorKeyDoor(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
     /** $02:70F2-$710F checks ROM Link coordinates against the authored door origin. */
     static boolean alignedWithIndoorKeyDoor(int location, int direction, int linkPixelX, int linkPixelY) {
@@ -1767,7 +1930,7 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Mirrors bank 2's $A7 collision counter and entity-$06 spawn branch. */
     public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
+        return doors().tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
     /** Mirrors bank 0's sustained Power Bracelet pull on indoor object $20/$8E. */
     public void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
@@ -1778,17 +1941,17 @@ public final class RoomSession extends RoomSessionRules {
 
     public boolean tryLiftObject(
             int x, int y, int direction, boolean held, int buttons, boolean power, int level, boolean anyPowerUp) {
-        return context.roomDoorInteractions.tryLiftObject(x, y, direction, held, buttons, power, level, anyPowerUp);
+        return doors().tryLiftObject(x, y, direction, held, buttons, power, level, anyPowerUp);
     }
 
     public boolean tryLiftObject(int x, int y, int direction, boolean held, int buttons, boolean power, int level) {
-        return context.roomDoorInteractions.tryLiftObject(x, y, direction, held, buttons, power, level);
+        return doors().tryLiftObject(x, y, direction, held, buttons, power, level);
     }
 
     public boolean tryLiftIndoorObject(
             int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) {
-        return context.roomDoorInteractions.tryLiftIndoorObject(
-                linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
+        return doors().tryLiftIndoorObject(
+                        linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
     }
     /** Includes the source's shortened pull while Piece of Power is active. */
     public boolean tryLiftIndoorObject(
@@ -1798,8 +1961,13 @@ public final class RoomSession extends RoomSessionRules {
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
-        return context.roomDoorInteractions.tryLiftIndoorObject(
-                linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, pieceOfPowerActive);
+        return doors().tryLiftIndoorObject(
+                        linkPixelX,
+                        linkPixelY,
+                        linkDirection,
+                        braceletButtonHeld,
+                        pressedButtonsMask,
+                        pieceOfPowerActive);
     }
 
     int entityPhysicsFlagsForTest(int slot) {
@@ -1807,13 +1975,11 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Dispatches bank 2's shared $A7/$DE interactive-block collision branch. */
     public boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryInteractWithIndoorBlock(
-                linkPixelX, linkPixelY, linkDirection, collisionType);
+        return doors().tryInteractWithIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
     /** Mirrors bank 2's $DE interactive-block branch and TryOpenLockedDoor. */
     public boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryUnlockIndoorKeyholeBlock(
-                linkPixelX, linkPixelY, linkDirection, collisionType);
+        return doors().tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     static int keyDoorDirectionIndex(int linkDirection) {
@@ -1834,14 +2000,13 @@ public final class RoomSession extends RoomSessionRules {
      */
     public boolean tryUnlockTailCaveKeyhole(
             int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey) {
-        return context.roomDoorInteractions.tryUnlockTailCaveKeyhole(
-                linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
+        return doors().tryUnlockTailCaveKeyhole(linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
     }
     /** Mirrors bank 2's room-$B5 Slime Key branch of the shared keyhole handler. */
     public boolean tryUnlockKeyCavernKeyhole(
             int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount) {
-        return context.roomDoorInteractions.tryUnlockKeyCavernKeyhole(
-                linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
+        return doors().tryUnlockKeyCavernKeyhole(
+                        linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
     }
 
     boolean tryUnlockOverworldDungeonKeyhole(
@@ -1857,11 +2022,11 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** One RenderTranscientRumble step, called once per unpaused gameplay frame. */
     public int tickTailCaveKeyholeSequence() {
-        return context.roomDoorInteractions.tickTailCaveKeyholeSequence();
+        return doors().tickTailCaveKeyholeSequence();
     }
 
     public boolean tailCaveKeyholeSequenceActive() {
-        return context.roomDoorInteractions.tailCaveKeyholeSequenceActive();
+        return doors().tailCaveKeyholeSequenceActive();
     }
 
     int tailCaveKeyholeCountdownForTest() {
@@ -2017,7 +2182,7 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Mirrors renderTranscientVFXs' hStaircase leave-and-return state machine. */
     public Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject) {
-        return context.roomTransitionController.pollStaircaseWarp(linkEntityX, linkEntityY, linkZ, carryingObject);
+        return transitions().pollStaircaseWarp(linkEntityX, linkEntityY, linkZ, carryingObject);
     }
 
     void configureStaircase(int location) {

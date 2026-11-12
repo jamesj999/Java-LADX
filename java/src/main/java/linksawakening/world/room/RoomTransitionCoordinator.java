@@ -82,7 +82,9 @@ public final class RoomTransitionCoordinator {
                 int previousY = link.pixelY();
                 // $02:790B: 32 scroll steps * $3A / 16 = 116 pixels.
                 link.setRoomEntryPixelPosition(previousX, previousY + 116);
-                roomSession.startAdjacentIndoorScroll(scrollController, ScrollController.UP, previousX, previousY);
+                roomSession
+                        .transitions()
+                        .startAdjacentIndoorScroll(scrollController, ScrollController.UP, previousX, previousY);
                 scrollController.onCompletion(() -> link.finishRoomScroll(false));
                 return;
             }
@@ -106,7 +108,9 @@ public final class RoomTransitionCoordinator {
                 int previousX = link.pixelX();
                 int previousY = link.pixelY();
                 link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
-                roomSession.startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
+                roomSession
+                        .transitions()
+                        .startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
                 scrollController.onCompletion(
                         () -> link.finishRoomScroll(boundary.direction() == ScrollController.DOWN));
                 return;
@@ -117,8 +121,10 @@ public final class RoomTransitionCoordinator {
             return;
         }
 
-        Warp staircaseWarp = roomSession.pollStaircaseWarp(
-                link.romEntityX(), link.romEntityY(), link.romEntityZ(), link.isCarryingLiftedObject());
+        Warp staircaseWarp = roomSession
+                .transitions()
+                .pollStaircaseWarp(
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), link.isCarryingLiftedObject());
         if (staircaseWarp != null) {
             startEntranceWarp(staircaseWarp, link);
             return;
@@ -157,10 +163,13 @@ public final class RoomTransitionCoordinator {
                 boundaryController.decide(roomSession.boundaryState(previousX, previousY, link.isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
             link.setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
-            if (boundary.direction() == ScrollController.UP && roomSession.shouldGetLostInMysteriousWoods()) {
+            if (boundary.direction() == ScrollController.UP
+                    && roomSession.story().shouldGetLostInMysteriousWoods()) {
                 roomSession.startMysteriousWoodsLostScroll(scrollController, previousX, previousY);
             } else {
-                roomSession.startAdjacentOverworldScroll(scrollController, boundary.direction(), previousX, previousY);
+                roomSession
+                        .transitions()
+                        .startAdjacentOverworldScroll(scrollController, boundary.direction(), previousX, previousY);
             }
             scrollController.onCompletion(() -> link.finishRoomScroll(boundary.direction() == ScrollController.DOWN));
         } else if (boundary.type() == RoomBoundaryDecision.Type.CLAMP_LINK) {
@@ -173,7 +182,7 @@ public final class RoomTransitionCoordinator {
         if (link == null || !roomSession.hasActiveRoom() || transitionController.isActive()) {
             return false;
         }
-        Warp target = roomSession.consumeManboPondTransitionRequest();
+        Warp target = roomSession.transitions().consumeManboPondTransitionRequest();
         if (target == null) {
             return false;
         }
@@ -186,7 +195,7 @@ public final class RoomTransitionCoordinator {
         if (link == null || !roomSession.hasActiveRoom() || transitionController.isActive()) {
             return false;
         }
-        Warp target = roomSession.consumeInstrumentTransitionRequest();
+        Warp target = roomSession.transitions().consumeInstrumentTransitionRequest();
         if (target == null) {
             return false;
         }
@@ -202,7 +211,7 @@ public final class RoomTransitionCoordinator {
     }
 
     private void applyWarp(Warp warp, Link link) {
-        roomSession.loadWarpDestination(warp);
+        roomSession.transitions().loadWarpDestination(warp);
         ActiveRoom destination = roomSession.activeRoom();
         link.setRoomPhysicsForRoom(
                 roomSession.roomLoadToken(), destination.mapId(), destination.roomId(), destination.mapCategory());
