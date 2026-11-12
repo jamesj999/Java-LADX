@@ -28,6 +28,7 @@ import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomSessionConfig;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
@@ -88,8 +89,14 @@ public final class DialogEmulatorCapture {
         gpu.loadBaseTiles(rom);
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var session =
-                new RoomSession(rom, gpu, new RoomLoader(rom), new OverworldTilesetTable(rom), collision, null, null);
+        var session = new RoomSession(new RoomSessionConfig(
+                rom,
+                gpu,
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                collision,
+                new RoomSessionConfig.Presentation(null, null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
         var profile = NewGameStartProfile.romDefaults();
         session.rooms().loadIndoor(profile.mapId(), profile.roomId());
         // Enter the normal entity init pass before synchronizing NPC clocks.

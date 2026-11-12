@@ -64,15 +64,14 @@ final class RoomSessionTestSupport {
     static RoomSession newSession(TransientVfxSystem transientVfxSystem, RoomLoadListener roomLoadListener) {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
-        return new RoomSession(
+        return new RoomSession(new RoomSessionConfig(
                 rom,
                 new GPU(),
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 new OverworldCollision(romTables),
-                transientVfxSystem,
-                null,
-                roomLoadListener);
+                new RoomSessionConfig.Presentation(transientVfxSystem, null, roomLoadListener),
+                new linksawakening.world.entity.RomRandomByteSource()));
     }
 
     static byte[] loadRom() {

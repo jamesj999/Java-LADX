@@ -26,14 +26,14 @@ final class WarpEntranceRegressionTest {
         }
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var session = new RoomSession(
+        var session = new RoomSession(new RoomSessionConfig(
                 rom,
                 new GPU(),
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 collision,
-                new TransientVfxSystem(16),
-                null);
+                new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
         var transition = new TransitionController();
         var sounds = new java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
         var coordinator = new RoomTransitionCoordinator(
@@ -73,14 +73,14 @@ final class WarpEntranceRegressionTest {
         }
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var session = new RoomSession(
+        var session = new RoomSession(new RoomSessionConfig(
                 rom,
                 new GPU(),
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 collision,
-                new TransientVfxSystem(16),
-                null);
+                new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
         var transition = new TransitionController();
         var sounds = new java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
         var coordinator = new RoomTransitionCoordinator(

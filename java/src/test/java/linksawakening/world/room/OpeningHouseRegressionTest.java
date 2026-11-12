@@ -68,14 +68,14 @@ final class OpeningHouseRegressionTest {
     }
 
     private static RoomSession session(byte[] rom, GPU gpu) {
-        return new RoomSession(
+        return new RoomSession(new RoomSessionConfig(
                 rom,
                 gpu,
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 new OverworldCollision(RomTables.loadFromRom(rom)),
-                null,
-                null);
+                new RoomSessionConfig.Presentation(null, null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
     }
 
     private static byte[] rom() throws Exception {

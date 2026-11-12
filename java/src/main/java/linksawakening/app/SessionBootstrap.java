@@ -74,6 +74,7 @@ import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomSessionConfig;
 import linksawakening.world.room.RoomTransitionCoordinator;
 import linksawakening.world.room.ShovelStartResult;
 import linksawakening.world.transition.RoomBoundaryController;
@@ -448,16 +449,15 @@ public final class SessionBootstrap {
         droppableRupeeSystem = new DroppableRupeeSystem(16, random);
         cutLeavesEffectRenderer = new CutLeavesEffectRenderer(transientVfxSpriteSheet);
         itemRegistry = new ItemRegistry();
-        roomSession = new RoomSession(
+        roomSession = new RoomSession(new RoomSessionConfig(
                 romData.unsafeBytes(),
                 gpu,
                 new RoomLoader(romData.unsafeBytes()),
                 new OverworldTilesetTable(romData.unsafeBytes()),
                 overworldCollision,
-                transientVfxSystem,
-                droppableRupeeSystem,
-                callbacks.roomMusic()::accept,
-                random);
+                new RoomSessionConfig.Presentation(
+                        transientVfxSystem, droppableRupeeSystem, callbacks.roomMusic()::accept),
+                random));
         roomSession.entityState().setColorShellSoundSink(gameplaySoundSink);
         LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData.unsafeBytes());
         link = new Link(

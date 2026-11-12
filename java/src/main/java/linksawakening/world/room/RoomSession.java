@@ -135,67 +135,6 @@ public final class RoomSession {
 
     static long nextRoomSessionId;
 
-    public RoomSession(
-            byte[] romData,
-            GPU gpu,
-            RoomLoader roomLoader,
-            OverworldTilesetTable overworldTilesetTable,
-            OverworldCollision overworldCollision,
-            TransientVfxSystem transientVfxSystem,
-            DroppableRupeeSystem droppableRupeeSystem) {
-        this(
-                romData,
-                gpu,
-                roomLoader,
-                overworldTilesetTable,
-                overworldCollision,
-                transientVfxSystem,
-                droppableRupeeSystem,
-                null);
-    }
-
-    public RoomSession(
-            byte[] romData,
-            GPU gpu,
-            RoomLoader roomLoader,
-            OverworldTilesetTable overworldTilesetTable,
-            OverworldCollision overworldCollision,
-            TransientVfxSystem transientVfxSystem,
-            DroppableRupeeSystem droppableRupeeSystem,
-            RoomLoadListener roomLoadListener) {
-        this(new RoomSessionConfig(
-                romData,
-                gpu,
-                roomLoader,
-                overworldTilesetTable,
-                overworldCollision,
-                new RoomSessionConfig.Presentation(transientVfxSystem, droppableRupeeSystem, roomLoadListener),
-                new linksawakening.world.entity.RomRandomByteSource()));
-    }
-
-    /** @deprecated Use RoomSession(RoomSessionConfig); retained for app/SessionBootstrap.java. */
-    @Deprecated(forRemoval = true)
-    /** Shares GetRandomByte's single wRandomSeed with equipment and world actions. */
-    public RoomSession(
-            byte[] romData,
-            GPU gpu,
-            RoomLoader roomLoader,
-            OverworldTilesetTable overworldTilesetTable,
-            OverworldCollision overworldCollision,
-            TransientVfxSystem transientVfxSystem,
-            DroppableRupeeSystem droppableRupeeSystem,
-            RoomLoadListener roomLoadListener,
-            linksawakening.world.entity.RomRandomByteSource randomByteSource) {
-        this(new RoomSessionConfig(
-                romData,
-                gpu,
-                roomLoader,
-                overworldTilesetTable,
-                overworldCollision,
-                new RoomSessionConfig.Presentation(transientVfxSystem, droppableRupeeSystem, roomLoadListener),
-                randomByteSource));
-    }
-
     void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) {
         components.roomLoadCoordinator().loadIndoor(mapId, roomId, mapCategory, transitionDirection);
     }
@@ -266,6 +205,26 @@ public final class RoomSession {
     }
 
     // Deprecated bridges awaiting entity-test migration
+    /** @deprecated Use RoomSession(RoomSessionConfig); retained for world/entity/TarinRaccoonRuntimeTest. */
+    @Deprecated(forRemoval = true)
+    public RoomSession(
+            byte[] romData,
+            GPU gpu,
+            RoomLoader roomLoader,
+            OverworldTilesetTable overworldTilesetTable,
+            OverworldCollision overworldCollision,
+            TransientVfxSystem transientVfxSystem,
+            DroppableRupeeSystem droppableRupeeSystem) {
+        this(new RoomSessionConfig(
+                romData,
+                gpu,
+                roomLoader,
+                overworldTilesetTable,
+                overworldCollision,
+                new RoomSessionConfig.Presentation(transientVfxSystem, droppableRupeeSystem, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
+    }
+
     /** @deprecated Use {@code entities().tickEntities()}. */
     @Deprecated(forRemoval = true)
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
