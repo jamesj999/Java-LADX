@@ -184,5 +184,19 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
             LinkTunicPalette tunicPalette) {}
 
     /** Held-Link grab flags, preserving the source write order. */
-    public record GrabFlags(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {}
+    public record GrabFlags(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {
+        private static final GrabFlags[] BYTE_VALUES = cachedValues();
+
+        /** Reuses immutable byte combinations; invalid bytes retain downstream validation order. */
+        public static GrabFlags of(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {
+            if ((airborneState & ~255) != 0) return new GrabFlags(airborneState, motionBlocked, applyHeldLinkPose);
+            return BYTE_VALUES[(airborneState << 2) | (motionBlocked ? 2 : 0) | (applyHeldLinkPose ? 1 : 0)];
+        }
+
+        private static GrabFlags[] cachedValues() {
+            GrabFlags[] values = new GrabFlags[1024];
+            for (int i = 0; i < values.length; i++) values[i] = new GrabFlags(i >>> 2, (i & 2) != 0, (i & 1) != 0);
+            return values;
+        }
+    }
 }

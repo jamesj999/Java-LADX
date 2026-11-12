@@ -102,7 +102,7 @@ public interface LinkCommand {
                     speedX,
                     speedY,
                     velocityZ,
-                    new Link.GrabFlags(airborneState, motionBlocked, heldPose));
+                    Link.GrabFlags.of(airborneState, motionBlocked, heldPose));
         }
     }
 

@@ -61,7 +61,7 @@ abstract class LinkActionView extends LinkMovementView {
                 speedX,
                 speedY,
                 velocityZ,
-                new Link.GrabFlags(airborneState, motionBlocked, applyHeldLinkPose));
+                Link.GrabFlags.of(airborneState, motionBlocked, applyHeldLinkPose));
     }
 
     public void applyHinoxGrabState(
@@ -83,7 +83,7 @@ abstract class LinkActionView extends LinkMovementView {
                 speedX,
                 speedY,
                 velocityZ,
-                new Link.GrabFlags(airborneState, motionBlocked, applyHeldLinkPose));
+                Link.GrabFlags.of(airborneState, motionBlocked, applyHeldLinkPose));
     }
 
     public void applyWarpState3(int romPositionX, int visualRomPositionY, int immunityCountdown) {

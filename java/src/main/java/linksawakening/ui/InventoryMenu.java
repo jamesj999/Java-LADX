@@ -10,6 +10,10 @@ import linksawakening.state.PlayerState;
 
 /** DX inventory UI; InventoryTransition owns the ROM fade/load/interactive states. */
 public final class InventoryMenu {
+    private final InventoryDungeonPanel.Presentation dungeonPresentation =
+            new InventoryDungeonPanel.Presentation(0, 0, 0, null);
+
+    private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
     // Subscreen grid: 2 cols x 5 rows. Even slot index = left column,
     // odd = right column. Up/down moves by 2 slots (next row, same col);
@@ -260,7 +264,7 @@ public final class InventoryMenu {
                 tilemap,
                 attrmap,
                 windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
-                new TilemapRenderer.Region(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
+                tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
@@ -273,7 +277,7 @@ public final class InventoryMenu {
                     attrmap,
                     inventoryPalettes,
                     offsetY,
-                    new InventoryDungeonPanel.Presentation(
+                    dungeonPresentation.set(
                             dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
         if (instrumentPanel != null && isFullyOpen()) {
@@ -335,7 +339,7 @@ public final class InventoryMenu {
                 tilemap,
                 attrmap,
                 windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
-                new TilemapRenderer.Region(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
+                tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.submit(frameModel, attrmap, inventoryPalettes, instrumentFlags, offsetY);
@@ -348,7 +352,7 @@ public final class InventoryMenu {
                     attrmap,
                     inventoryPalettes,
                     offsetY,
-                    new InventoryDungeonPanel.Presentation(
+                    dungeonPresentation.set(
                             dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
         if (instrumentPanel != null && isFullyOpen()) {

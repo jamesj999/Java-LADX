@@ -5,6 +5,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 
 public final class TilemapRenderer {
+    private static final ThreadLocal<Region> LEGACY_REGION = ThreadLocal.withInitial(() -> new Region(0, 0, 0, 0));
 
     private TilemapRenderer() {}
     /** @deprecated Use the Region argument bundle overload. */
@@ -19,7 +20,13 @@ public final class TilemapRenderer {
             int tileHeight,
             int offsetX,
             int offsetY) {
-        render(displayBuffer, gpu, tileIds, tileAttrs, palettes, new Region(tileWidth, tileHeight, offsetX, offsetY));
+        render(
+                displayBuffer,
+                gpu,
+                tileIds,
+                tileAttrs,
+                palettes,
+                LEGACY_REGION.get().set(tileWidth, tileHeight, offsetX, offsetY));
     }
 
     public static void render(
@@ -94,7 +101,7 @@ public final class TilemapRenderer {
             int height,
             int offsetX,
             int offsetY) {
-        submit(frame, gpu, tileIds, attrs, palettes, new Region(width, height, offsetX, offsetY));
+        submit(frame, gpu, tileIds, attrs, palettes, LEGACY_REGION.get().set(width, height, offsetX, offsetY));
     }
 
     public static void submit(
@@ -124,5 +131,38 @@ public final class TilemapRenderer {
     }
 
     /** Arguments shared by render operations. */
-    public record Region(int tileWidth, int tileHeight, int offsetX, int offsetY) {}
+    public static final class Region {
+        private int tileWidth;
+        private int tileHeight;
+        private int offsetX;
+        private int offsetY;
+
+        public Region(int tileWidth, int tileHeight, int offsetX, int offsetY) {
+            set(tileWidth, tileHeight, offsetX, offsetY);
+        }
+
+        Region set(int tileWidth, int tileHeight, int offsetX, int offsetY) {
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            return this;
+        }
+
+        public int tileWidth() {
+            return tileWidth;
+        }
+
+        public int tileHeight() {
+            return tileHeight;
+        }
+
+        public int offsetX() {
+            return offsetX;
+        }
+
+        public int offsetY() {
+            return offsetY;
+        }
+    }
 }

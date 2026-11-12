@@ -22,7 +22,7 @@ public final class PlayerResources {
         vitals.subtractHealthBuffer = 0;
         wallet.addRupeeBuffer = 0;
         wallet.rupeeUpdateDelay = 0;
-        playerSounds.resourceSounds.clear();
+        playerSounds.clear();
         vitals.onLowHealth = false;
         vitals.timeToNextLowHealthSound = 0;
     }
@@ -35,7 +35,7 @@ public final class PlayerResources {
         if (vitals.onLowHealth) {
             vitals.timeToNextLowHealthSound = (vitals.timeToNextLowHealthSound - 1) & 0xFF;
             if (vitals.timeToNextLowHealthSound == 0xFF) {
-                playerSounds.resourceSounds.add(ResourceSound.LOW_HEARTS);
+                playerSounds.write(ResourceSound.LOW_HEARTS);
                 vitals.timeToNextLowHealthSound = 0x30;
             }
         }

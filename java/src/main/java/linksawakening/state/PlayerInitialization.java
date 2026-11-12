@@ -72,7 +72,7 @@ public final class PlayerInitialization {
         vitals.subtractHealthBuffer = 0;
         wallet.addRupeeBuffer = 0;
         wallet.rupeeUpdateDelay = 0;
-        playerSounds.resourceSounds.clear();
+        playerSounds.clear();
         vitals.onLowHealth = false;
         vitals.timeToNextLowHealthSound = 0;
         equipmentLevels.powerUpHits = 0;

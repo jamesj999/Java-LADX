@@ -128,7 +128,7 @@ public final class Vitals {
             } else {
                 health++;
                 if ((health & 7) == 6) {
-                    playerSounds.resourceSounds.add(ResourceSound.HEART_PICKED_UP);
+                    playerSounds.write(ResourceSound.HEART_PICKED_UP);
                 }
                 addHealthBuffer--;
                 return;

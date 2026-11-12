@@ -25,11 +25,11 @@ public final class EquipmentController {
     }
 
     public void tickEquippedItems() {
-        tickEquippedItems(null);
+        tickEquippedItems(false, 0);
     }
 
     public void tickEquippedItems(int frameCounter) {
-        tickEquippedItems(Integer.valueOf(frameCounter));
+        tickEquippedItems(true, frameCounter);
     }
 
     /** Finish existing animations without activating or holding equipment. */
@@ -37,10 +37,10 @@ public final class EquipmentController {
         itemRegistry.tickWithoutInput(playerState, frameCounter);
     }
 
-    private void tickEquippedItems(Integer frameCounter) {
+    private void tickEquippedItems(boolean hasFrame, int frameCounter) {
         boolean aHeld = inputState.isDown(inputConfig.aKey());
         boolean bHeld = inputState.isDown(inputConfig.bKey());
-        if (frameCounter == null) {
+        if (!hasFrame) {
             itemRegistry.tickAll(
                     aHeld,
                     bHeld,

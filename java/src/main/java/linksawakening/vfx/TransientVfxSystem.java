@@ -95,7 +95,9 @@ public final class TransientVfxSystem {
 
     public List<Slot> activeSlots() {
         List<Slot> active = new ArrayList<>(slots.length);
-        Arrays.stream(slots).filter(slot -> slot != null).forEach(slot -> active.add(slot.snapshot()));
+        for (MutableSlot slot : slots) {
+            if (slot != null) active.add(slot.snapshot());
+        }
         return List.copyOf(active);
     }
 }

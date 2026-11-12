@@ -158,7 +158,7 @@ final class LinkEntityEffects {
                 speedX,
                 speedY,
                 velocityZ,
-                new Link.GrabFlags(airborneState, true, true));
+                Link.GrabFlags.of(airborneState, true, true));
     }
 
     void applyHinoxGrabState(
@@ -327,7 +327,7 @@ final class LinkEntityEffects {
                 speedX,
                 speedY,
                 velocityZ,
-                new Link.GrabFlags(airborneState, motionBlocked, applyHeldLinkPose));
+                Link.GrabFlags.of(airborneState, motionBlocked, applyHeldLinkPose));
     }
 
     void accessApplyWarpState3(int romPositionX, int visualRomPositionY, int immunityCountdown) {

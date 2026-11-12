@@ -1,15 +1,20 @@
 package linksawakening.state;
 
-import static linksawakening.state.PlayerNumbers.*;
-import static linksawakening.state.PlayerState.*;
-
-/** PlayerSounds owns its player-state fields and their update rules. */
+/** Last ROM resource sound write awaiting presentation. */
 public final class PlayerSounds {
-    final java.util.List<ResourceSound> resourceSounds = new java.util.ArrayList<>();
+    private ResourceSound pending;
+
+    void write(ResourceSound sound) {
+        pending = sound;
+    }
+
+    void clear() {
+        pending = null;
+    }
 
     public ResourceSound takeResourceSound() {
-        var sound = resourceSounds.isEmpty() ? null : resourceSounds.get(resourceSounds.size() - 1);
-        resourceSounds.clear();
+        ResourceSound sound = pending;
+        pending = null;
         return sound;
     }
 }
