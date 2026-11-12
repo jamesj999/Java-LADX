@@ -13,92 +13,87 @@ import linksawakening.world.transition.Warp;
 
 final class CombatPhase {
     Sword.CollisionBox tick(GameplaySimulation context, boolean dialogBlocksGameplay) {
-        var roomSession = context.roomSession();
-        var transitionController = context.transitionController();
-        var debugNoClip = context.debugNoClip();
-        var frameCounter = context.frameCounter();
-        var scrollController = context.scrollController();
-        var playerState = context.playerState();
-        var inventoryController = context.inventoryController();
-        var gameplaySoundSink = context.gameplaySoundSink();
-        var transientVfxSystem = context.transientVfxSystem();
-        var equipmentController = context.equipmentController();
-        var link = context.link();
-        var direction = context.direction();
         Sword.CollisionBox swordBoxForEntityTick = Sword.CollisionBox.inactive();
-        if (link != null
-                && roomSession != null
-                && !scrollController.isActive()
-                && !transitionController.isInputBlocked()
-                && !inventoryController.shouldBlockOverworldInput()
+        if (context.link() != null
+                && context.roomSession() != null
+                && !context.scrollController().isActive()
+                && !context.transitionController().isInputBlocked()
+                && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
-            Sword sword = equipmentController.activeSword();
+            Sword sword = context.equipmentController().activeSword();
             swordBoxForEntityTick = sword == null
                     ? Sword.CollisionBox.inactive()
                     : sword.enemyCollisionBox(
-                            link.romEntityX(),
-                            link.romSwordCollisionY(),
-                            link.direction(),
-                            playerState.runningWithPegasusBoots());
+                            context.link().romEntityX(),
+                            context.link().romSwordCollisionY(),
+                            context.link().direction(),
+                            context.playerState().runningWithPegasusBoots());
             EnemyAttackContext attackContext = new EnemyAttackContext(
-                    playerState.swordLevel(),
-                    playerState.tunicType() == PlayerState.TUNIC_RED,
-                    playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
+                    context.playerState().swordLevel(),
+                    context.playerState().tunicType() == PlayerState.TUNIC_RED,
+                    context.playerState().activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
                     sword != null && sword.spinAttackActive(),
-                    playerState.runningWithPegasusBoots(),
-                    link.isUsingShield(),
-                    direction.applyAsInt(link.direction()),
-                    link.romEntityZ());
-            var combatEvents = roomSession.resolveEntityCombat(
-                    frameCounter,
-                    link.romEntityX(),
-                    link.romEntityY(),
-                    link.isAirborne(),
-                    roomSession.mapCategory() == Warp.CATEGORY_SIDESCROLL ? link.romSpeedY() : link.zVelocity(),
-                    !debugNoClip,
-                    swordBoxForEntityTick.active(),
-                    swordBoxForEntityTick.x(),
-                    swordBoxForEntityTick.width(),
-                    swordBoxForEntityTick.y(),
-                    swordBoxForEntityTick.height(),
-                    attackContext);
-            EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink, transientVfxSystem);
+                    context.playerState().runningWithPegasusBoots(),
+                    context.link().isUsingShield(),
+                    context.direction().applyAsInt(context.link().direction()),
+                    context.link().romEntityZ());
+            var combatEvents = context.roomSession()
+                    .resolveEntityCombat(
+                            context.frameCounter(),
+                            context.link().romEntityX(),
+                            context.link().romEntityY(),
+                            context.link().isAirborne(),
+                            context.roomSession().mapCategory() == Warp.CATEGORY_SIDESCROLL
+                                    ? context.link().romSpeedY()
+                                    : context.link().zVelocity(),
+                            !context.debugNoClip(),
+                            swordBoxForEntityTick.active(),
+                            swordBoxForEntityTick.x(),
+                            swordBoxForEntityTick.width(),
+                            swordBoxForEntityTick.y(),
+                            swordBoxForEntityTick.height(),
+                            attackContext);
+            EnemyCombatEventConsumer.consume(combatEvents, context.gameplaySoundSink(), context.transientVfxSystem());
             for (EntityCombatEvent event : combatEvents) {
                 if (event.linkDamage() > 0
-                        && playerState.invincibilityCounter() == 0
-                        && (link == null || !link.isCollisionDamageImmune())) {
-                    int previousPowerUp = playerState.activePowerUp();
-                    playerState.applyRomEnemyDamage(event.linkDamage());
+                        && context.playerState().invincibilityCounter() == 0
+                        && (context.link() == null || !context.link().isCollisionDamageImmune())) {
+                    int previousPowerUp = context.playerState().activePowerUp();
+                    context.playerState().applyRomEnemyDamage(event.linkDamage());
                     if (previousPowerUp != PlayerState.ACTIVE_POWER_UP_NONE
-                            && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
-                        context.musicDirector().restoreMusicAfterPowerUpEnds(roomSession);
+                            && context.playerState().activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
+                        context.musicDirector().restoreMusicAfterPowerUpEnds(context.roomSession());
                     }
-                    roomSession.resetGuardianAcornCounterOnHurt();
+                    context.roomSession().resetGuardianAcornCounterOnHurt();
                     if (event.linkCollisionResponse().active()) {
                         EntityCombatEvent.LinkCollisionResponse response = event.linkCollisionResponse();
-                        if (!roomSession.deferContactRecoil(event.slot(), link.romEntityX(), link.romEntityY())) {
-                            link.applyRomSpeed(response.speedX(), response.speedY());
+                        if (!context.roomSession()
+                                .deferContactRecoil(
+                                        event.slot(),
+                                        context.link().romEntityX(),
+                                        context.link().romEntityY())) {
+                            context.link().applyRomSpeed(response.speedX(), response.speedY());
                         }
-                        link.setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
+                        context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
                         if (response.invincibilityCountdown() != 0) {
-                            playerState.setInvincibilityCounter(response.invincibilityCountdown());
+                            context.playerState().setInvincibilityCounter(response.invincibilityCountdown());
                         }
-                        playerState.setRunningWithPegasusBoots(false);
+                        context.playerState().setRunningWithPegasusBoots(false);
                         // ApplyLinkCollisionWithEnemy writes WAVE_SFX_LINK_HURT
                         // before the shared Link response helper.
-                        gameplaySoundSink.play(GameplaySoundEvent.LINK_HURT);
+                        context.gameplaySoundSink().play(GameplaySoundEvent.LINK_HURT);
                     }
                 }
                 if (event.linkDamage() == 0 && event.linkCollisionResponse().active()) {
                     var response = event.linkCollisionResponse();
-                    link.applyRomSpeed(response.speedX(), response.speedY());
-                    link.setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
-                    playerState.setRunningWithPegasusBoots(false);
+                    context.link().applyRomSpeed(response.speedX(), response.speedY());
+                    context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
+                    context.playerState().setRunningWithPegasusBoots(false);
                 }
                 if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {
-                    link.bounceFromGoomba();
+                    context.link().bounceFromGoomba();
                 } else if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING) {
-                    link.applyRomSpeed(0, 0xF0);
+                    context.link().applyRomSpeed(0, 0xF0);
                 }
             }
         }

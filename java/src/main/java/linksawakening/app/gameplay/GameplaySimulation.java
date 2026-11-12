@@ -32,6 +32,11 @@ import linksawakening.world.transition.TransitionController;
 
 /** ROM-ordered simulation between transition advancement and input completion. */
 public final class GameplaySimulation {
+    private final AnimatedTilesPhase animatedTilesPhase = new AnimatedTilesPhase();
+    private final EntityPhase entityPhase = new EntityPhase();
+    private final CombatPhase combatPhase = new CombatPhase();
+    private final LinkEquipmentPhase linkEquipmentPhase = new LinkEquipmentPhase();
+    private final DialogStoryPhase dialogStoryPhase = new DialogStoryPhase();
     private final linksawakening.app.SessionContext context;
 
     public GameplaySimulation(linksawakening.app.SessionContext context) {
@@ -192,14 +197,14 @@ public final class GameplaySimulation {
                 inventoryController().dispatchMenuInput();
             if (!worldHandler) return;
         }
-        if (!new DialogStoryPhase().tick(this)) return;
+        if (!dialogStoryPhase.tick(this)) return;
         boolean dialogBlocksGameplay = dialogBlockers().get().pausesGameplay();
-        new LinkEquipmentPhase().tick(this, dialogBlocksGameplay, inventoryBlockedAtStart);
+        linkEquipmentPhase.tick(this, dialogBlocksGameplay, inventoryBlockedAtStart);
         if (link() != null && (link().isPassingOut() || passOutController().handledFrame())) return;
-        Sword.CollisionBox swordBox = new CombatPhase().tick(this, dialogBlocksGameplay);
-        new EntityPhase().tick(this, swordBox);
+        Sword.CollisionBox swordBox = combatPhase.tick(this, dialogBlocksGameplay);
+        entityPhase.tick(this, swordBox);
         completeGameplayFrame(dialogController());
-        new AnimatedTilesPhase().tick(this, dialogBlocksGameplay);
+        animatedTilesPhase.tick(this, dialogBlocksGameplay);
     }
 
     public static boolean shouldTickRoomEntities(

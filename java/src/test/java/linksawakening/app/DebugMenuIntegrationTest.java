@@ -61,7 +61,7 @@ class DebugMenuIntegrationTest {
         assertFalse(menu.isOpen());
         var running = SessionTestAccess.field(game, "running");
         running.setAccessible(true);
-        assertTrue(running.getBoolean(game));
+        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
         game.headlessFrame();
         assertEquals((frame + 1) & 255, game.diagnostics().frameCounter());
     }
@@ -99,9 +99,9 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
         var running = SessionTestAccess.field(game, "running");
         running.setAccessible(true);
-        assertTrue(running.getBoolean(game));
+        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
         game.headlessFrame(); // Wake-up blocks and discards the save request.
-        assertTrue(running.getBoolean(game));
+        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
     }
 
     @Test

@@ -10,10 +10,15 @@ public final class SessionTestAccess {
             GameSession.class.getDeclaredField(name);
             return session;
         } catch (NoSuchFieldException ignored) {
+            try {
+                session.context.getClass().getDeclaredField(name);
+                return session.context;
+            } catch (NoSuchFieldException absent) {
+            }
             for (String holder : new String[] {"services", "scene", "debug", "screens"}) {
-                Field field = GameSession.class.getDeclaredField(holder);
+                Field field = SessionContext.class.getDeclaredField(holder);
                 field.setAccessible(true);
-                Object value = field.get(session);
+                Object value = field.get(session.context);
                 try {
                     value.getClass().getDeclaredField(name);
                     return value;
