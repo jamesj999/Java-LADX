@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.room.ChestContentsTable;
 
@@ -14,7 +15,7 @@ public final class RoomEntityRuntimeBuilder {
     private RomEnemyCombatTables enemyCombatTables;
     private ChestContentsTable chestContentsTable;
     private RomTables romTables;
-    private byte[] romData;
+    private Rom romData;
     private boolean enemyCombatTablesSupplied;
     private boolean chestContentsTableSupplied;
     private boolean romTablesSupplied;
@@ -85,14 +86,20 @@ public final class RoomEntityRuntimeBuilder {
         return this;
     }
 
-    byte[] romData() {
+    Rom rom() {
         return romData;
     }
 
-    public RoomEntityRuntimeBuilder romData(byte[] value) {
+    public RoomEntityRuntimeBuilder rom(Rom value) {
         romData = value;
         romDataSupplied = true;
         return this;
+    }
+
+    /** @deprecated External callers: world.room.RoomActiveRoomInitializer and RoomFollowerSynchronizer. Use rom(Rom). */
+    @Deprecated(forRemoval = true)
+    public RoomEntityRuntimeBuilder romData(byte[] value) {
+        return rom(value == null ? null : new Rom(value));
     }
 
     public RoomEntityRuntime build() {

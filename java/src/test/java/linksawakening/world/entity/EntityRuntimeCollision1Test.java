@@ -285,7 +285,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void maskedIronMaskRejectsARearSwordHitWithTheRomPokeResponse() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -372,7 +372,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     @Test
     void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath() throws IOException {
         byte[] rom = romWithSwordResult(0x09, 0xFE);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x09)
@@ -423,7 +423,8 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
     @Test
     void unknownRomSpecialDamageRemainsEventDataWithoutChangingHealthOrStatus() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(romWithSwordResult(0x09, 0xFD));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(
+                linksawakening.world.entity.EntityRomTestData.view(romWithSwordResult(0x09, 0xFD)));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x09)
@@ -452,7 +453,8 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
     @Test
     void romCombatTablesDriveInitialHealthAndContactDamage() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
@@ -484,7 +486,8 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
     @Test
     void attackContextUsesRomSwordUpgradeDamageInTheRuntime() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0B)
@@ -511,7 +514,8 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
     @Test
     void zeroRomSwordResultKeepsHealthAndReportsOnlyTheBump() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x15)
@@ -539,7 +543,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void collisionTypeIsExplicitPerTickAndRevealKeepsHiddenPresentationForThatTick() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
 
         RoomEntityRuntime compatibilityRuntime = RoomEntityRuntime.builder(
                         snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)))
@@ -583,7 +587,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void visibleGiantUsesTheExistingLethalCombatStatusPath() throws IOException {
         byte[] rom = romWithSwordResult(0x11, 0x08);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(
                         snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)))
                 .indoorRoom(false)

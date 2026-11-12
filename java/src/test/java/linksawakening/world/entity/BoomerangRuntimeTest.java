@@ -22,7 +22,8 @@ final class BoomerangRuntimeTest {
     void spawnPublishesTheRomEntityAndLaunchesThenReturns() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables combatTables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables combatTables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
@@ -118,7 +119,7 @@ final class BoomerangRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
                 .build();
         int slot = runtime.spawnBoomerang(0x20, 0x40, 0, 0, 0);
@@ -150,7 +151,7 @@ final class BoomerangRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
                 .build();
 
@@ -330,7 +331,7 @@ final class BoomerangRuntimeTest {
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
                 .build();
     }

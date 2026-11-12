@@ -24,10 +24,10 @@ final class EntityRuntimeWarpTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
-                .romTables(linksawakening.rom.RomTables.loadFromRom(rom))
-                .romData(rom)
+                .romTables(linksawakening.rom.RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0);
         runtime.configuration().setEntityRoomId(0x11);

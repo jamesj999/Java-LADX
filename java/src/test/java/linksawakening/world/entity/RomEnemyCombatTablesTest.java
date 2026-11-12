@@ -11,7 +11,8 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void decodesHealthAndSwordTablesFromTheShippedRom() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         assertEquals(0x00, tables.healthGroup(0x09));
         assertEquals(0x01, tables.healthGroup(0x0B));
@@ -30,7 +31,8 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void decodesBowWowEatableEntityTableFromBankFourteen() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         assertTrue(tables.canBowWowEatEntity(0x09));
         assertTrue(tables.canBowWowEatEntity(0x0B));
@@ -41,7 +43,8 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void resolvesSwordLevelAndEveryRomAttackModifier() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         RomEnemyCombatTables.SwordDamageResult levelOne =
                 tables.resolveSwordDamage(0x09, new EnemyAttackContext(1, false, false, false, false));
@@ -80,7 +83,8 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void resolvesFixedProjectileAttackTypesThroughTheSameRomMatrix() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         RomEnemyCombatTables.SwordDamageResult arrow = tables.resolveAttackDamage(0x09, 0x05);
         assertEquals(0, arrow.healthGroup());
@@ -103,7 +107,8 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void distinguishesIgnoredAndSpecialRawSwordResults() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         RomEnemyCombatTables.SwordDamageResult ignored =
                 tables.resolveSwordDamage(0x15, new EnemyAttackContext(1, false, false, false, false));
@@ -121,7 +126,8 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void swordlessContextProducesAnIgnoredResult() throws IOException {
-        RomEnemyCombatTables.SwordDamageResult result = new RomEnemyCombatTables(loadRom())
+        RomEnemyCombatTables.SwordDamageResult result = new RomEnemyCombatTables(
+                        linksawakening.world.entity.EntityRomTestData.view(loadRom()))
                 .resolveSwordDamage(0x09, new EnemyAttackContext(0, false, false, false, false));
 
         assertEquals(-1, result.effectiveDamageType());
@@ -130,7 +136,7 @@ final class RomEnemyCombatTablesTest {
 
     @Test
     void acquisitionSpinUsesNormalSwordDamageBeforeOwnershipIsGranted() throws IOException {
-        var tables = new RomEnemyCombatTables(loadRom());
+        var tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         var acquisition = tables.resolveSwordDamage(0xC5, new EnemyAttackContext(0, false, false, true, false));
         var equipped = tables.resolveSwordDamage(0xC5, EnemyAttackContext.standard());
         assertEquals(0, acquisition.effectiveDamageType());

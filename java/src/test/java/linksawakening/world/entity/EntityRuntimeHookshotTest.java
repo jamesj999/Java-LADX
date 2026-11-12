@@ -18,7 +18,7 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
     void hookshotUnmasksAnIronMaskAndSpawnsItsRomMaskEntity() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition ironMaskDefinition =
                 catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()

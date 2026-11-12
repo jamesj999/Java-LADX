@@ -20,7 +20,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
     void bouncingBombiteUsesItsRomSwordRecoilInsteadOfTakingSwordDamage() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
         assertEquals(0x04, definition.bank());
@@ -57,7 +57,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
     void litBouncingBombiteCollidesWithAnotherBombiteUsingTheRomEntityPass() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
 
@@ -125,7 +125,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
@@ -168,7 +168,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
     @Test
     void bombExplosionUsesNonlethalRomDamageBeforeTheTargetRecoilHandler() throws IOException {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity ghini = new RoomEntityBuilder()
                 .slot(14)
                 .sourceLoadOrder(14)

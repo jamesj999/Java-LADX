@@ -17,7 +17,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void bombArrowCollisionIsHarmlessButSetsTheTargetTransitionCountdown() throws IOException {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition moblinDefinition = pairDefinition(0x0B, 8);
         RoomEntity moblin = new RoomEntityBuilder()
                 .slot(15)

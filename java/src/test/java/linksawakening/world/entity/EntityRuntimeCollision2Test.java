@@ -253,7 +253,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     void sideScrollDropUsesDownCollisionToAlignAndStopWeakLanding() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
@@ -269,7 +269,8 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(15, 0x2D);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));

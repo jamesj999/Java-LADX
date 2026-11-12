@@ -54,7 +54,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x48, () -> 0));
@@ -107,7 +107,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(1, 87, 64, 0x30);
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(1, 10);
@@ -138,7 +138,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.resolveCombat(new EntitySwordContactFrame(0, 87, 64, false, true, true, 71, 8, 64, 8));
         assertEquals(7, runtime.enemies().enemyHealth(1));
@@ -188,10 +188,11 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(sequence(0x00, 0x1F))
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x00);
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         runtime.configuration().setEnemyDropPlayerState(3, 4, false);
         runtime.entityState.slotView.setOptions1Override(15, 0x80);
         runtime.initializeBossBattle(boss);
@@ -237,7 +238,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(runtime.resolveCombat(

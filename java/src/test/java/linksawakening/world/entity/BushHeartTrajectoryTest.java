@@ -15,7 +15,8 @@ final class BushHeartTrajectoryTest {
         try (var input = TestRom.open()) {
             rom = input.readAllBytes();
         }
-        var initial = new EntityRoomLoader(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 0xA0);
+        var initial = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0xA0);
         var heart = initial.loadedEntities().stream()
                 .filter(e -> e.type() == 0x2D)
                 .findFirst()
@@ -24,7 +25,7 @@ final class BushHeartTrajectoryTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setObjectQuery(e -> new RoomEntityObjectSample(0x04, 0, 0, 0));
         int slot = heart.slot();

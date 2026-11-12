@@ -32,7 +32,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x70, () -> 0));
         assertTrue(runtime.inspection().snapshot().slots().stream()

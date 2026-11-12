@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
+import linksawakening.rom.EntityPropertyTables;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -80,7 +82,7 @@ public final class RoomEntityRuntime
 
     final EntitySpriteTileSnapshot spriteTiles;
     final boolean indoorRoom;
-    private final RomTables romTables;
+    private final EntityPropertyTables entityProperties;
     final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
     final EntitySpriteHandlerCatalog spriteHandlers;
@@ -134,7 +136,7 @@ public final class RoomEntityRuntime
         RomEnemyCombatTables enemyCombatTables = builder.enemyCombatTables();
         ChestContentsTable chestContentsTable = builder.chestContentsTable();
         RomTables romTables = builder.romTables();
-        byte[] romData = builder.romData();
+        Rom romData = builder.rom();
 
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.slotEntities = java.util.Arrays.asList(slots);
@@ -147,7 +149,7 @@ public final class RoomEntityRuntime
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
-        this.romTables = romTables;
+        this.entityProperties = romTables == null ? null : romTables.entityPropertyTables();
         slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
@@ -188,7 +190,7 @@ public final class RoomEntityRuntime
     }
 
     /** Compatibility for world.room.RoomLoadCoordinator and RoomStoryState; use builder for new callers. */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static RoomEntityRuntime from(
             RoomEntitySnapshot initial,
             boolean indoorRoom,
@@ -205,7 +207,7 @@ public final class RoomEntityRuntime
                 .enemyCombatTables(enemyCombatTables)
                 .chestContentsTable(chestContentsTable)
                 .romTables(romTables)
-                .romData(romData)
+                .rom(romData == null ? null : new Rom(romData))
                 .build();
     }
 
@@ -292,7 +294,7 @@ public final class RoomEntityRuntime
     boolean initializeBossBattle(RoomEntity entity) {
         int options = entityState.physicsTables.readEntityOptions1Override(entity.slot()) >= 0
                 ? entityState.physicsTables.readEntityOptions1Override(entity.slot())
-                : romTables == null ? 0 : romTables.entityOptions1(entity.type());
+                : entityProperties == null ? 0 : entityProperties.entityOptions1(entity.type());
         return initializeBossBattle(entity, options);
     }
 
@@ -312,7 +314,8 @@ public final class RoomEntityRuntime
         // Active spawns bypass the INIT dispatch; use their fresh ROM options,
         // not an override remaining from the previous occupant of this slot.
         if (slots[slot].status() == EntityStatus.ACTIVE) {
-            initializeBossBattle(slots[slot], romTables == null ? 0 : romTables.entityOptions1(slots[slot].type()));
+            initializeBossBattle(
+                    slots[slot], entityProperties == null ? 0 : entityProperties.entityOptions1(slots[slot].type()));
         }
         entityState.combatTables.writeEnemyHealthGroup(
                 slot, enemyCombatTables == null ? 0 : enemyCombatTables.healthGroup(slots[slot].type()));

@@ -27,28 +27,8 @@ final class EntityRoomInitialization {
         return registry;
     }
 
-    void initializeRomPresentation(byte[] romData) {
-        if (romData != null) {
-            for (int i = 0; i < runtime.pickups().storageHeartPieceMeterPairs().length; i++)
-                runtime.pickups().writeHeartPieceMeterPairs(i, romData[3 * 0x4000 + 0x1B17 + i] & 255);
-            for (int i = 0; i < runtime.rewards().storageInstrumentPaletteCycle().length; i++) {
-                int offset = 0x36 * 0x4000 + 0x3096 + i * 2;
-                int rgb555 = (romData[offset] & 255) | ((romData[offset + 1] & 255) << 8);
-                runtime.rewards().writeInstrumentPaletteCycle(i, linksawakening.rom.RomUtil.decodeRgb555(rgb555));
-            }
-            for (int i = 0; i < runtime.rewards().storageInstrumentWarpSprites().length; i++) {
-                runtime.rewards().writeInstrumentWarpSprites(i, romData[6 * 0x4000 + 0x373C + i] & 255);
-            }
-            // Eighteen fixed repeat commands, two rows per controller frame.
-            // Shipped ROM symbols: Data_007_6493=$6493, Data_007_64F6=$64DB.
-            for (int row = 0; row < 18; row++) {
-                int tile = romData[7 * 0x4000 + 0x2493 + row * 4 + 3] & 255;
-                int attr = romData[7 * 0x4000 + 0x24DB + row * 4 + 3] & 255;
-                java.util.Arrays.fill(runtime.rewards().storageInstrumentHintTiles(), row * 20, (row + 1) * 20, tile);
-                java.util.Arrays.fill(
-                        runtime.rewards().storageInstrumentHintAttributes(), row * 20, (row + 1) * 20, attr);
-            }
-        }
+    void initializeRomPresentation(linksawakening.rom.Rom romData) {
+        EntityPresentationRom.initialize(runtime, romData);
     }
 
     void initializeRoomSlots(RoomEntitySnapshot initial) {

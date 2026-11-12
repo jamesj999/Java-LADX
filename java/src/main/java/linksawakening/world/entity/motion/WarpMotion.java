@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 import linksawakening.world.entity.*;
@@ -22,17 +21,17 @@ public final class WarpMotion {
     public static final int STATE_TRANSITION = 3;
     static final int DUNGEON_WARP_PAIR_COUNT = 8;
 
-    private final byte[] romData;
+    private final int[] dungeonWarps;
 
-    public WarpMotion(byte[] romData) {
+    public WarpMotion(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         int tableEnd = RomSymbols.DungeonWarps.offset() + DUNGEON_WARP_PAIR_COUNT * 2;
-        if (tableEnd > romData.length) {
+        if (tableEnd > romData.size()) {
             throw new IllegalArgumentException("ROM is missing DungeonWarps table");
         }
-        this.romData = Arrays.copyOf(romData, romData.length);
+        this.dungeonWarps = romData.u8Table(RomSymbols.DungeonWarps, DUNGEON_WARP_PAIR_COUNT * 2);
     }
 
     public Update advance(WarpFrame inputs) {
@@ -92,8 +91,8 @@ public final class WarpMotion {
         if (mapId >= DUNGEON_WARP_PAIR_COUNT) {
             return null;
         }
-        int first = new Rom(romData).u8(RomSymbols.DungeonWarps.plus(mapId * 2));
-        int second = new Rom(romData).u8(RomSymbols.DungeonWarps.plus(mapId * 2 + 1));
+        int first = dungeonWarps[mapId * 2];
+        int second = dungeonWarps[mapId * 2 + 1];
         int destinationRoom = roomId == first ? second : first;
         int destinationY = destinationRoom == 0x64 ? 0x28 : 0x48;
         return new WarpDestination(mapId, destinationRoom, 0x50, destinationY);

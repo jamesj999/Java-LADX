@@ -627,7 +627,7 @@ final class TarinRaccoonRuntimeTest {
 
     private static RoomSession newSession() {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom));
         return new RoomSession(
                 rom,
                 new GPU(),
@@ -670,7 +670,7 @@ final class TarinRaccoonRuntimeTest {
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
                 .build();
     }

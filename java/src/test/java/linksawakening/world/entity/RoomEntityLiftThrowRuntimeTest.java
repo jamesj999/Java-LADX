@@ -191,7 +191,8 @@ final class RoomEntityLiftThrowRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
         int initialHealth = runtime.enemies().enemyHealth(targetSlot);
 

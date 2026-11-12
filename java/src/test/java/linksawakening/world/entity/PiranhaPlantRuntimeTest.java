@@ -56,7 +56,8 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         assertEquals(0x14, runtime.enemies().physicsFlags(0));
@@ -78,7 +79,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
@@ -110,7 +111,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         creditsRuntime.tick(EntityTestFrames.frame(creditsRuntime, 0, 0x20, 0x40, () -> 0, true));
         assertEquals(0, creditsRuntime.enemies().transitionCountdown(0));
@@ -125,7 +126,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(transitionRuntime).setTransitionSequenceCounterForTest(0x03);
         transitionRuntime.tick(EntityTestFrames.frame(transitionRuntime, 0, 0x20, 0x40, () -> 0));
@@ -148,7 +149,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
@@ -169,7 +170,8 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x20, () -> 0));
@@ -203,7 +205,8 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x20, () -> 0));

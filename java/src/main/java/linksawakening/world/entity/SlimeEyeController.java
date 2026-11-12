@@ -35,8 +35,8 @@ public final class SlimeEyeController {
         this.runtime = runtime;
     }
 
-    void loadRom(byte[] bytes) {
-        if (bytes != null) rom = new Rom(bytes);
+    void loadRom(Rom source) {
+        if (source != null) rom = source;
     }
 
     public void setScreenShakeCountdown(int value) {

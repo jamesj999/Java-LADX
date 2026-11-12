@@ -39,10 +39,10 @@ final class SlimeEyeRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(sprites)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
-                .romTables(RomTables.loadFromRom(rom))
-                .romData(rom)
+                .romTables(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
         runtime.configuration().setEntityMapId(2);
         return runtime;
@@ -220,7 +220,8 @@ final class SlimeEyeRuntimeTest {
                 gpu,
                 new linksawakening.world.room.RoomLoader(bytes),
                 new linksawakening.world.room.OverworldTilesetTable(bytes),
-                new linksawakening.physics.OverworldCollision(RomTables.loadFromRom(bytes)),
+                new linksawakening.physics.OverworldCollision(
+                        RomTables.load(linksawakening.world.entity.EntityRomTestData.view(bytes))),
                 null,
                 null);
         session.loadIndoor(2, 0x5A);

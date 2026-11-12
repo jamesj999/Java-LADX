@@ -236,7 +236,8 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x01))
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
@@ -272,7 +273,8 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x01))
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         runtime.resolveCombat(

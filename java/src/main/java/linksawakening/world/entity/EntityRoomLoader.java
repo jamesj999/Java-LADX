@@ -47,15 +47,22 @@ public final class EntityRoomLoader {
         }
     }
 
-    private final byte[] romData;
+    private final Rom romData;
     private final EntitySpriteHandlerCatalog spriteHandlers;
 
+    /** @deprecated External callers: world.room.RoomLoader; pass a Rom to the typed constructor. */
+    @Deprecated(forRemoval = true)
     public EntityRoomLoader(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
+    }
+
+    public EntityRoomLoader(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         this.romData = romData;
-        this.spriteHandlers = new EntitySpriteHandlerCatalog(romData);
+        // entity.EntitySpriteHandlerCatalog still requires bytes outside this package ownership.
+        this.spriteHandlers = new EntitySpriteHandlerCatalog(romData.unsafeBytes());
     }
 
     public RoomEntitySnapshot load(RoomTable table, int roomId) {
@@ -90,7 +97,7 @@ public final class EntityRoomLoader {
 
         RomAddress pointerAddress = table.pointerTable.plus(roomId * 2);
         int pointerOffset = checkedRomOffset(pointerAddress, 2, "entity pointer");
-        int streamAddress = new Rom(romData).u16le(pointerAddress);
+        int streamAddress = romData.u16le(pointerAddress);
         if (streamAddress < 0x4000 || streamAddress > 0x7FFF) {
             throw new IllegalArgumentException(
                     "Invalid entity stream address: 0x" + Integer.toHexString(streamAddress));
@@ -107,13 +114,13 @@ public final class EntityRoomLoader {
         int loadedSlot = 0;
         while (true) {
             requireRange(streamOffset, 1, "entity stream location");
-            int location = new Rom(romData).u8(RomAddress.fromOffset(streamOffset++));
+            int location = romData.u8(RomAddress.fromOffset(streamOffset++));
             if (location == ENTITY_STREAM_END) {
                 break;
             }
 
             requireRange(streamOffset, 1, "entity stream type");
-            int type = new Rom(romData).u8(RomAddress.fromOffset(streamOffset++));
+            int type = romData.u8(RomAddress.fromOffset(streamOffset++));
             boolean cleared = sourceLoadOrder < 8 && (clearedMask & (1 << sourceLoadOrder)) != 0;
             boolean unloadedByInitialization = shouldUnloadAtInit(table, roomId, type, roomStatusTable, hasBirdKey);
             if (!cleared && !unloadedByInitialization && loadedSlot < MAX_ENTITIES) {
@@ -294,7 +301,7 @@ public final class EntityRoomLoader {
     }
 
     private void requireRange(int offset, int length, String description) {
-        if (offset < 0 || length < 0 || offset > romData.length - length) {
+        if (offset < 0 || length < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException(
                     "Truncated " + description + " at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }

@@ -36,7 +36,13 @@ public final class EnemyDropResolver {
     private final int[] dropTableRandom;
     private final int[] thresholdLowHealthTable;
 
+    /** @deprecated External callers: world.room.RoomSessionContext and RoomSessionTestSupport; pass a Rom to the typed constructor. */
+    @Deprecated(forRemoval = true)
     public EnemyDropResolver(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
+    }
+
+    public EnemyDropResolver(Rom romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
         destroyedHealthGroupOffsets = loadTable(
                 romData,
@@ -238,12 +244,12 @@ public final class EnemyDropResolver {
         return new Result(ENTITY_NONE, counters, randomReads);
     }
 
-    private static int[] loadTable(byte[] romData, RomAddress address, int length, String tableName) {
+    private static int[] loadTable(Rom romData, RomAddress address, int length, String tableName) {
         int offset = address.offset();
-        if (offset < 0 || length < 0 || offset > romData.length - length) {
+        if (offset < 0 || length < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException("ROM table is truncated: " + tableName);
         }
-        Rom rom = new Rom(romData);
+        Rom rom = romData;
         int[] values = new int[length];
         for (int index = 0; index < length; index++) {
             values[index] = rom.u8(address.plus(index));

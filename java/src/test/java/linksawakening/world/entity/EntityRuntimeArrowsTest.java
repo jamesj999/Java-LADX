@@ -163,7 +163,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void ordinaryPlayerArrowRunsTheRomEntityDamagePassBeforeMoving() throws IOException {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition octorokDefinition = pairDefinition(0x09, 8);
         RoomEntity octorok = new RoomEntityBuilder()
                 .slot(15)
@@ -228,7 +228,8 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
 

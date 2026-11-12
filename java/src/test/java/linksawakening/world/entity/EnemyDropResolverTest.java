@@ -41,7 +41,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void decodesAllDropTablesFromTheShippedRom() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         assertArrayEquals(DESTROYED_HEALTH_GROUP_OFFSETS, resolver.destroyedHealthGroupOffsets());
         assertArrayEquals(DROP_TABLE_BY_INDEX, resolver.dropTableByIndex());
@@ -53,7 +54,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void tableAccessorsReturnDefensiveCopies() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         int[] first = resolver.destroyedHealthGroupOffsets();
         int[] second = resolver.destroyedHealthGroupOffsets();
@@ -66,7 +68,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void noneAndDirectItemsReturnBeforeAnyRandomRead() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         CounterState counters = new CounterState(0x03, 0x04);
 
         RecordingRandom noneRandom = new RecordingRandom(0x12);
@@ -90,7 +93,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void guardianAcornCounterIncrementsAndDropsAtTwelveOnlyWhenUngated() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         RecordingRandom belowThresholdRandom = new RecordingRandom(0x01);
         Result belowThreshold = resolver.resolve(context(
@@ -130,7 +134,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void pieceOfPowerUsesThreeMaxHeartThresholdsAndResetsBeforeGates() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         assertPieceOfPowerAtThreshold(resolver, 0x06, 0x1E);
         assertPieceOfPowerAtThreshold(resolver, 0x0A, 0x23);
@@ -158,7 +163,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void zeroHealthGroupStopsBeforePieceCounterOrRandomness() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RecordingRandom random = new RecordingRandom(0x00);
 
         Result result = resolver.resolve(
@@ -172,7 +178,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void latchedLowHealthOverridesLiveHealthForDropChance() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         assertEquals(
                 0x2E,
                 resolver.resolve(
@@ -209,7 +216,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void normalAndLowHealthMasksUseTheCurrentHealthAgainstClampedThreshold() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         assertTrue(resolver.isLowHealth(0x03, 0x04));
         assertFalse(resolver.isLowHealth(0x03, 0x05));
@@ -235,7 +243,8 @@ final class EnemyDropResolverTest {
 
     @Test
     void sentinelDropUsesChanceRandomThenFallbackRandomInOrder() throws IOException {
-        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        EnemyDropResolver resolver =
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RecordingRandom random = new RecordingRandom(0x100, -1);
 
         Result result = resolver.resolve(
@@ -249,7 +258,9 @@ final class EnemyDropResolverTest {
 
     @Test
     void validatesByteFieldsAndRequiredReferences() throws IOException {
-        assertThrows(NullPointerException.class, () -> new EnemyDropResolver(null));
+        assertThrows(
+                NullPointerException.class,
+                () -> new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(null)));
 
         assertThrows(IllegalArgumentException.class, () -> new CounterState(-1, 0));
         assertThrows(IllegalArgumentException.class, () -> new CounterState(0, 0x100));

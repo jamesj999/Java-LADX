@@ -54,7 +54,8 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
 
     @Test
     void colorShellsAreAdmittedAsRomCombatTargets() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
@@ -146,7 +147,8 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
 
     @Test
     void romStunStatusUsesColorShellsRawSpecialDamageValueAndRecovers() throws IOException {
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xE9)
