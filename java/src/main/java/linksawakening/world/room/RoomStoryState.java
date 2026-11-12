@@ -2,557 +2,167 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSession.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.ColorShellWorld;
-import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
-import linksawakening.world.entity.FollowingNpcRoomContext;
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.entity.RoomEntitySnapshot;
-import linksawakening.world.transition.Warp;
 
 /** RoomStoryState operations for the live room session. */
 final class RoomStoryState {
     private final Dependencies dependencies;
+    private final RoomNpcPresentation roomNpcPresentation;
+    private final RoomFollowerSynchronizer roomFollowerSynchronizer;
+    private final RoomPlayerStoryState roomPlayerStoryState;
+    private final RoomStoryRestoration roomStoryRestoration;
 
     RoomStoryState(Dependencies dependencies) {
         this.dependencies = dependencies;
+        roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(
+                dependencies.entityBridge(), dependencies.followers(), dependencies.location()));
+        roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
+                dependencies.chestContentsTable(),
+                dependencies.colorShellWorld(),
+                dependencies.enemyCombatTables(),
+                dependencies.entityBackgroundInteraction(),
+                dependencies.entityBridge(),
+                dependencies.entityInputs(),
+                dependencies.entityRandomByteSource(),
+                dependencies.entitySpriteHandlerCatalog(),
+                dependencies.followers(),
+                dependencies.followingNpcEntitySpawner(),
+                dependencies.location(),
+                dependencies.owlEventDialogResolver(),
+                dependencies.romData(),
+                dependencies.romTables(),
+                dependencies.roomCollisionQueries(),
+                dependencies.roomLoadCoordinator(),
+                dependencies.roomSessionViews(),
+                dependencies.roomState(),
+                () -> this));
+        roomPlayerStoryState = new RoomPlayerStoryState(new RoomPlayerStoryState.Dependencies(
+                dependencies.entityBridge(),
+                dependencies.followers(),
+                dependencies.indoorTorchPaletteEffect(),
+                dependencies.location(),
+                dependencies.roomState(),
+                dependencies.roomStoryState(),
+                () -> this));
+        roomStoryRestoration = new RoomStoryRestoration(new RoomStoryRestoration.Dependencies(
+                dependencies.entityBridge(),
+                dependencies.entityFrame(),
+                dependencies.entityInputs(),
+                dependencies.followers(),
+                dependencies.location(),
+                dependencies.puzzles(),
+                dependencies.roomSessionViews(),
+                dependencies.roomState(),
+                dependencies.roomStoryState(),
+                dependencies.roomTransientState(),
+                dependencies.terrain()));
     }
 
     boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null
-                || !dependencies.entityBridge().get().entityRuntime.applyMarinWakeUpPresentation(x, y, spriteVariant)) {
-            return false;
-        }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
-        return true;
+        return roomNpcPresentation.applyMarinWakeUpPresentation(x, y, spriteVariant);
     }
 
     void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
-        if (dependencies.location().activeRoom != null
-                && dependencies.location().activeRoom.mapId() == 0x10
-                && dependencies.location().activeRoom.roomId() == 0xA3
-                && dependencies.followers().tarinFlag != 1
-                && dependencies.followers().tarinFlag != 2
-                && dependencies.entityBridge().get().entityRuntime != null
-                && (frameCounter & 0x1F) == 0) {
-            dependencies.entityBridge().get().entityRuntime.updateHouseTarinPresentation(linkX, linkY);
-            dependencies
-                    .location()
-                    .activeRoom
-                    .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
-                            .inspection()
-                            .snapshot());
-        }
+        roomNpcPresentation.updateHouseTarinPresentation(frameCounter, linkX, linkY);
     }
 
     void setBirdKeyOwned(boolean owned) {
-        dependencies.followers().hasBirdKey = owned;
+        roomStoryRestoration.setBirdKeyOwned(owned);
     }
 
     void setTailKeyOwned(boolean owned) {
-        dependencies.followers().hasTailKey = owned;
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies.entityBridge().get().entityRuntime.configuration().setTailKeyOwned(owned);
-        }
+        roomStoryRestoration.setTailKeyOwned(owned);
     }
 
     void initializeNewGameWorldState() {
-        Arrays.fill(dependencies.roomState().overworldRoomStatus, (byte) 0);
-        Arrays.fill(dependencies.roomState().indoorARoomStatus, (byte) 0);
-        Arrays.fill(dependencies.roomState().indoorBRoomStatus, (byte) 0);
-        Arrays.fill(dependencies.roomState().colorDungeonRoomStatus, (byte) 0);
-        dependencies.location().shouldGetLostInMysteriousWoods = false;
-        dependencies.entityFrame().recentRoomEntityClears.reset();
-        Arrays.fill(dependencies.roomState().dungeonProgressFlags, (byte) 0);
-        dependencies.roomState().dungeonItemState.reset();
-        dependencies.followers().followingNpcState = FollowingNpcState.none();
-        dependencies.followers().followingNpcRoomNeedsSync = true;
-        dependencies.followers().followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
-        dependencies.followers().hasBirdKey = false;
-        dependencies.followers().hasTailKey = false;
-        dependencies.followers().bowWowState = 0;
-        dependencies.followers().richardSpokenFlag = 0;
-        dependencies.followers().tarinFlag = 0;
-        dependencies.followers().playerShieldLevel = 0;
-        dependencies.followers().playerSwordLevel = 0;
-        dependencies.followers().playerBraceletLevel = 0;
-        dependencies.followers().houseNpcTradeItem = 0;
-        dependencies.entityInputs().get().entityGoldenLeavesCount = 0;
-        dependencies.entityFrame().enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
-        dependencies.entityFrame().boomerangSoundCounter = 0;
-        dependencies.entityFrame().boomerangSoundClockProvided = false;
-        dependencies.puzzles().dungeonTitleMessageCountdown = 0;
-        dependencies.terrain().switchBlocksState = 0;
-        dependencies.terrain().switchableObjectAnimationStage = 0;
-        dependencies.puzzles().switchButtonPressed = 0;
-        dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-        dependencies.roomTransientState().get().clearTransientRoomState();
+        roomStoryRestoration.initializeNewGameWorldState();
     }
 
     void restoreRoomStatuses(
             byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
-        dependencies.roomState().restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
-        if (dependencies.entityBridge().get().entityRuntime != null && dependencies.location().activeRoom != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setTailKeyOwned(dependencies.followers().hasTailKey);
-        }
+        roomStoryRestoration.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
     }
 
     void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.location().activeRoom.entities() == null
-                || dependencies.location().activeRoom.entities().spriteSelection() == null) {
-            return;
-        }
-        Map<Integer, EntitySpriteDefinition> merged = new HashMap<>(
-                dependencies.location().activeRoom.entities().spriteSelection().spriteOverrides());
-        if (overrides != null) {
-            merged.putAll(overrides);
-        }
-        RoomEntitySnapshot updated = dependencies
-                .location()
-                .activeRoom
-                .entities()
-                .withSpriteSelection(dependencies
-                        .location()
-                        .activeRoom
-                        .entities()
-                        .spriteSelection()
-                        .withSpriteOverrides(merged));
-        dependencies.location().activeRoom.replaceEntities(updated);
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setSpriteSelection(updated.spriteSelection());
-        }
+        roomNpcPresentation.setFollowerSpriteOverrides(overrides);
     }
 
     void setFollowingNpcState(
             FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) {
-        if (state == null) {
-            throw new IllegalArgumentException("Follower state cannot be null");
-        }
-        dependencies.followers().followingLinkX = linkX & 0xFF;
-        dependencies.followers().followingLinkY = linkY & 0xFF;
-        dependencies.followers().followingLinkZ = linkZ & 0xFF;
-        dependencies.followers().followingEntityYOffset = entityYOffset & 0xFF;
-        dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
-        if (!state.equals(dependencies.followers().followingNpcState)) {
-            dependencies.followers().followingNpcRoomNeedsSync = true;
-        }
-        dependencies.followers().followingNpcState = state;
-        dependencies.roomStoryState().get().synchronizeFollowingNpcEntitiesIfNeeded();
+        roomStoryRestoration.setFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
     }
 
     FollowingNpcState followingNpcState() {
-        return dependencies.followers().followingNpcState;
+        return roomStoryRestoration.followingNpcState();
     }
 
     int bowWowState() {
-        return dependencies.followers().bowWowState & 0xFF;
+        return roomStoryRestoration.bowWowState();
     }
 
     void setBowWowState(int state) {
-        if ((state & ~0xFF) != 0) {
-            throw new IllegalArgumentException("BowWow state must be an unsigned byte");
-        }
-        dependencies.followers().bowWowState = state;
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies.entityBridge().get().entityRuntime.configuration().setBowWowState(state);
-        }
+        roomStoryRestoration.setBowWowState(state);
     }
 
     int richardSpokenFlag() {
-        return dependencies.followers().richardSpokenFlag & 0xFF;
+        return roomStoryRestoration.richardSpokenFlag();
     }
 
     void setRichardSpokenFlag(int flag) {
-        if ((flag & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Richard spoken flag must be an unsigned byte");
-        }
-        dependencies.followers().richardSpokenFlag = flag;
+        roomStoryRestoration.setRichardSpokenFlag(flag);
     }
 
     int tarinFlag() {
-        return dependencies.followers().tarinFlag & 0xFF;
+        return roomStoryRestoration.tarinFlag();
     }
 
     void setTarinFlag(int flag) {
-        if ((flag & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Tarin flag must be an unsigned byte");
-        }
-        dependencies.followers().tarinFlag = flag;
+        roomStoryRestoration.setTarinFlag(flag);
     }
 
     void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
-        if ((shieldLevel & ~0xFF) != 0 || (swordLevel & ~0xFF) != 0 || (powerBraceletLevel & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Player upgrade levels must be unsigned bytes");
-        }
-        dependencies.followers().playerShieldLevel = shieldLevel;
-        dependencies.followers().playerSwordLevel = swordLevel;
-        dependencies.followers().playerBraceletLevel = powerBraceletLevel;
-        configureHouseNpcStoryState();
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
-            if (dependencies.location().activeRoom != null) {
-                dependencies
-                        .location()
-                        .activeRoom
-                        .replaceEntities(dependencies
-                                .entityBridge()
-                                .get()
-                                .entityRuntime
-                                .inspection()
-                                .snapshot());
-            }
-        }
+        roomPlayerStoryState.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
     }
 
     void setHouseNpcTradeItem(int tradeItem) {
-        if ((tradeItem & ~0xFF) != 0) throw new IllegalArgumentException("Trade item must be a byte");
-        dependencies.followers().houseNpcTradeItem = tradeItem;
-        configureHouseNpcStoryState();
+        roomPlayerStoryState.setHouseNpcTradeItem(tradeItem);
     }
 
-    private void configureHouseNpcStoryState() {
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setHouseNpcStoryState(
-                            dependencies.followers().tarinFlag,
-                            dependencies.followers().houseNpcTradeItem,
-                            Byte.toUnsignedInt(dependencies.roomState().dungeonProgressFlags[2]),
-                            Byte.toUnsignedInt(dependencies.roomState().overworldRoomStatus[0xFD]));
-        }
+    void configureHouseNpcStoryState() {
+        roomPlayerStoryState.configureHouseNpcStoryState();
     }
 
     void setEntityDefaultMusicTrack(int trackId) {
-        if ((trackId & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Default music track must be an unsigned byte");
-        }
-        dependencies.followers().entityDefaultMusicTrack = trackId;
-        dependencies.roomStoryState().get().updateWitchEnvironment();
+        roomPlayerStoryState.setEntityDefaultMusicTrack(trackId);
     }
 
     void updateWitchEnvironment() {
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setWitchEnvironment(
-                            dependencies.indoorTorchPaletteEffect().effectAddress(),
-                            dependencies.indoorTorchPaletteEffect().paletteDataFlags(),
-                            dependencies.followers().entityDefaultMusicTrack);
-        }
+        roomPlayerStoryState.updateWitchEnvironment();
     }
 
     boolean shouldGetLostInMysteriousWoods() {
-        return dependencies.location().shouldGetLostInMysteriousWoods;
+        return roomStoryRestoration.shouldGetLostInMysteriousWoods();
     }
 
     void synchronizeFollowingNpcEntitiesIfNeeded() {
-        if (!dependencies.followers().followingNpcRoomNeedsSync
-                || dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null
-                || dependencies.location().activeRoom.entities() == null) {
-            return;
-        }
-        FollowingNpcRoomContext room = new FollowingNpcRoomContext(
-                dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL,
-                dependencies.location().activeRoom.mapId(),
-                dependencies.location().activeRoom.roomId());
-        FollowingNpcEntitySpawner.Result result = dependencies
-                .followingNpcEntitySpawner()
-                .synchronize(
-                        dependencies.location().activeRoom.entities(),
-                        room,
-                        dependencies.followers().followingNpcState,
-                        dependencies.followers().followingLinkX,
-                        dependencies.followers().followingLinkY,
-                        dependencies.followers().followingLinkZ,
-                        dependencies.followers().followingEntityYOffset,
-                        dependencies.followers().followingLinkDirection,
-                        dependencies.followers().followingLinkPositionHistory);
-        dependencies.followers().followingNpcState = result.state();
-        dependencies.followers().followingNpcRoomNeedsSync = false;
-        dependencies.location().activeRoom.replaceEntities(result.snapshot());
-        dependencies.entityBridge().get().entityRuntime = RoomEntityRuntime.from(
-                result.snapshot(),
-                dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                dependencies.entityRandomByteSource(),
-                dependencies.entitySpriteHandlerCatalog(),
-                dependencies.enemyCombatTables(),
-                dependencies.chestContentsTable(),
-                dependencies.romTables(),
-                dependencies.romData());
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setColorShellWorld(dependencies.colorShellWorld());
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setFollowingNpcState(dependencies.followers().followingNpcState);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setEntityMapId(dependencies.location().activeRoom.mapId());
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setEntityRoomId(dependencies.location().activeRoom.roomId());
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setDungeonMinibossReady(dependencies.location().activeRoom.mapId() >= 0
-                        && dependencies.location().activeRoom.mapId()
-                                < dependencies.roomState().dungeonProgressFlags.length
-                        && (dependencies.roomState()
-                                                .dungeonProgressFlags[
-                                                dependencies
-                                                        .location()
-                                                        .activeRoom
-                                                        .mapId()]
-                                        & 0x01)
-                                != 0);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setOwlDialogResolver(dependencies.owlEventDialogResolver()::globalDialogId);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setOwlDefaultMusicResolver(dependencies.owlEventDialogResolver()::defaultMusicTrack);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setGroundInteraction(dependencies.roomCollisionQueries().get()::entityGroundInteraction);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setBackgroundInteraction(dependencies.entityBackgroundInteraction());
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setObjectQuery(dependencies.roomCollisionQueries().get()::entityObjectSample);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setObjectIntersectionQuery(dependencies.roomCollisionQueries().get()::entityObjectIntersectionSample);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setGroundInteractionSideScrolling(
-                        dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setActionButtonsHeld(
-                        dependencies.entityInputs().get().actionButtonAHeld,
-                        dependencies.entityInputs().get().actionButtonBHeld);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setTalkState(
-                        dependencies.entityInputs().get().entityInventoryAppearing,
-                        dependencies.entityInputs().get().entityDialogCooldown,
-                        dependencies.entityInputs().get().entityWindowY);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setJoypadHeld(dependencies.entityInputs().get().joypadHeld);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setPressedButtonsMask(dependencies.entityInputs().get().entityPressedButtonsMask);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setPowerBraceletButtonHeld(dependencies.entityInputs().get().powerBraceletButtonHeld);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setBombButtonHeld(dependencies.entityInputs().get().bombButtonHeld);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setLiftedLinkC13B(dependencies.followers().followingEntityYOffset);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setDungeonMinibossReady(dependencies.location().activeRoom.mapId() >= 0
-                        && dependencies.location().activeRoom.mapId()
-                                < dependencies.roomState().dungeonProgressFlags.length
-                        && (dependencies.roomState()
-                                                .dungeonProgressFlags[
-                                                dependencies
-                                                        .location()
-                                                        .activeRoom
-                                                        .mapId()]
-                                        & 0x01)
-                                != 0);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setTailKeyOwned(dependencies.followers().hasTailKey);
-        dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .configuration()
-                .setSecretSeashellPegasusCollisionState(
-                        dependencies.entityInputs().get().secretSeashellScreenShakeActive,
-                                dependencies.entityInputs().get().secretSeashellPegasusCollisionActive,
-                        dependencies.entityInputs().get().secretSeashellPegasusCollisionX,
-                                dependencies.entityInputs().get().secretSeashellPegasusCollisionY);
-        configureHouseNpcStoryState();
-        if (dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
-                && dependencies.location().activeRoom.mapId() == 0x10
-                && dependencies.location().activeRoom.roomId() == 0xA3) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setChestPlayerLevels(
-                            dependencies.followers().playerShieldLevel,
-                            dependencies.followers().playerSwordLevel,
-                            dependencies.followers().playerBraceletLevel);
-            dependencies
-                    .location()
-                    .activeRoom
-                    .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
-                            .inspection()
-                            .snapshot());
-        }
-        dependencies.roomLoadCoordinator().get().configureEnemyDropRuntime();
+        roomFollowerSynchronizer.synchronizeFollowingNpcEntitiesIfNeeded();
     }
 
     void markHeartContainerCollected() {
-        if (dependencies.location().activeRoom == null) {
-            return;
-        }
-        byte[] activeStatus = dependencies
-                .roomSessionViews()
-                .get()
-                .indoorStatusTableForMap(dependencies.location().activeRoom.mapId());
-        activeStatus[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
-        if (dependencies.location().activeRoom.mapId() == 0x06) {
-            dependencies.roomState().indoorBRoomStatus[0x2E] |= (byte) ROOM_STATUS_EVENT_2;
-        } else if (dependencies.location().activeRoom.mapId() == 0x03) {
-            dependencies.roomState().indoorARoomStatus[0x66] |= (byte) ROOM_STATUS_EVENT_2;
-        }
+        roomStoryRestoration.markHeartContainerCollected();
     }
 
     void markActiveRoomCompleted() {
-        if (dependencies.location().activeRoom == null) {
-            return;
-        }
-        byte[] status = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-                ? dependencies.roomState().overworldRoomStatus
-                : dependencies
-                        .roomSessionViews()
-                        .get()
-                        .indoorStatusTableForMap(
-                                dependencies.location().activeRoom.mapId());
-        status[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_1;
+        roomStoryRestoration.markActiveRoomCompleted();
     }
 
     record Dependencies(

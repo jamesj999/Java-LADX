@@ -4,8 +4,6 @@ import static linksawakening.world.room.RoomSession.*;
 
 import java.util.List;
 import linksawakening.gpu.GPU;
-import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.EntityFrameContext;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -17,15 +15,28 @@ final class RoomEntityBridge {
     RoomEntityRuntime entityRuntime;
     final RoomEntityOutbox outbox = new RoomEntityOutbox(() -> entityRuntime);
     final RoomEntityCombatBridge combat;
-    private final RoomEntityFrameSetup frameSetup;
-    private final RoomEntityAfterTick afterTick;
+    final RoomEntityFrameSetup frameSetup;
+    final RoomEntityAfterTick afterTick;
     private final Dependencies dependencies;
+    private final RoomEntityTickDefaults roomEntityTickDefaults;
+    private final RoomEntitySimulation roomEntitySimulation;
 
     RoomEntityBridge(Dependencies dependencies) {
         this.dependencies = dependencies;
         afterTick = dependencies.entityAfterTick().get();
         frameSetup = dependencies.entityFrameSetup().get();
         combat = dependencies.entityCombatBridge().get();
+        roomEntityTickDefaults = new RoomEntityTickDefaults(
+                new RoomEntityTickDefaults.Dependencies(dependencies.entityBridge(), dependencies.followers()));
+        roomEntitySimulation = new RoomEntitySimulation(new RoomEntitySimulation.Dependencies(
+                dependencies.entityBridge(),
+                dependencies.entityFrame(),
+                dependencies.entityRandomByteSource(),
+                dependencies.followers(),
+                dependencies.items(),
+                dependencies.location(),
+                dependencies.roomCollisionQueries(),
+                () -> this));
     }
 
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
@@ -53,33 +64,15 @@ final class RoomEntityBridge {
     }
 
     void tickEntities(int frameCounter) {
-        dependencies.entityBridge().get().tickEntities(frameCounter, 0, 0);
+        roomEntityTickDefaults.tickEntities(frameCounter);
     }
 
     void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
-        dependencies
-                .entityBridge()
-                .get()
-                .tickEntities(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        dependencies.followers().followingLinkZ,
-                        dependencies.followers().followingLinkDirection);
+        roomEntityTickDefaults.tickEntities(frameCounter, linkEntityX, linkEntityY);
     }
 
     void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
-        dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-                        linkDirection,
-                        false);
+        roomEntityTickDefaults.tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
     }
 
     void tickEntities(
@@ -89,18 +82,8 @@ final class RoomEntityBridge {
             int linkEntityZ,
             boolean linkAirborne,
             int linkDirection) {
-        dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkAirborne,
-                        EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-                        linkDirection,
-                        false);
+        roomEntityTickDefaults.tickEntities(
+                frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkDirection);
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -111,19 +94,8 @@ final class RoomEntityBridge {
             int linkMotionState,
             int linkDirection,
             boolean usingShield) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        usingShield,
-                        1,
-                        0);
+        return roomEntityTickDefaults.tickEntitiesWithProjectileEvents(
+                frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, linkDirection, usingShield);
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -135,28 +107,15 @@ final class RoomEntityBridge {
             int linkMotionState,
             int linkDirection,
             boolean usingShield) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkAirborne,
-                        linkMotionState,
-                        linkDirection,
-                        0,
-                        usingShield,
-                        1,
-                        0,
-                        false,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0);
+        return roomEntityTickDefaults.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                linkAirborne,
+                linkMotionState,
+                linkDirection,
+                usingShield);
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -169,24 +128,16 @@ final class RoomEntityBridge {
             boolean usingShield,
             int shieldLevel,
             int invincibilityCounter) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        false,
-                        0,
-                        0,
-                        0,
-                        0);
+        return roomEntityTickDefaults.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                linkMotionState,
+                linkDirection,
+                usingShield,
+                shieldLevel,
+                invincibilityCounter);
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -204,25 +155,21 @@ final class RoomEntityBridge {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        0,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight);
+        return roomEntityTickDefaults.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                linkMotionState,
+                linkDirection,
+                usingShield,
+                shieldLevel,
+                invincibilityCounter,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight);
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -241,27 +188,22 @@ final class RoomEntityBridge {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        collisionType,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        0,
-                        0);
+        return roomEntityTickDefaults.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                linkMotionState,
+                linkDirection,
+                collisionType,
+                usingShield,
+                shieldLevel,
+                invincibilityCounter,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight);
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -282,28 +224,24 @@ final class RoomEntityBridge {
             int swordHeight,
             int linkSpeedX,
             int linkSpeedY) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        false,
-                        linkMotionState,
-                        linkDirection,
-                        collisionType,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        linkSpeedX,
-                        linkSpeedY);
+        return roomEntityTickDefaults.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                linkMotionState,
+                linkDirection,
+                collisionType,
+                usingShield,
+                shieldLevel,
+                invincibilityCounter,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                linkSpeedX,
+                linkSpeedY);
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -325,69 +263,25 @@ final class RoomEntityBridge {
             int swordHeight,
             int linkSpeedX,
             int linkSpeedY) {
-        dependencies.followers().followingLinkX = linkEntityX & 0xFF;
-        dependencies.followers().followingLinkY = linkEntityY & 0xFF;
-        dependencies.followers().followingLinkZ = linkEntityZ & 0xFF;
-        dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
-        dependencies.entityFrame().currentLinkMotionState = linkMotionState & 0xFF;
-        dependencies.location().shouldGetLostInMysteriousWoods = false;
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
-            return List.of();
-        }
-        frameSetup.configure();
-        // rLY is not a meaningful value in the host renderer. Keep the
-        // non-emulator policy explicit while preserving the ROM seed update.
-        dependencies.entityRandomByteSource().beginFrame(frameCounter & 0xFF, 0);
-        if (dependencies.items().pendingShovelDrop != null) {
-            PendingShovelDrop drop = dependencies.items().pendingShovelDrop;
-            dependencies.items().pendingShovelDrop = null;
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .spawnShovelDrop(
-                            drop.objectLeft(),
-                            drop.objectTop(),
-                            drop.linkEntityX(),
-                            drop.linkEntityY(),
-                            drop.allowDrop());
-        }
-        List<EntityProjectileEvent> events = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .tick(new EntityFrameContext(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        collisionType & 0xFF,
-                        dependencies.entityRandomByteSource(),
-                        dependencies.roomCollisionQueries().get()::entityBackgroundCollision,
-                        dependencies.roomCollisionQueries().get()::pairoddProjectileObjectCollision,
-                        dependencies.followers().followingLinkPositionHistory,
-                        dependencies.followers().followingLinkZ,
-                        linkAirborne,
-                        dependencies.followers().followingLinkDirection,
-                        dependencies.followers().followingEntityYOffset,
-                        new EnemyProjectileCollision.LinkState(
-                                linkEntityX,
-                                linkEntityY,
-                                linkEntityZ,
-                                linkMotionState,
-                                RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection),
-                                usingShield,
-                                shieldLevel,
-                                invincibilityCounter),
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        linkSpeedX,
-                        linkSpeedY));
-        afterTick.complete(linkEntityX, linkEntityY);
-        return events;
+        return roomEntitySimulation.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                linkAirborne,
+                linkMotionState,
+                linkDirection,
+                collisionType,
+                usingShield,
+                shieldLevel,
+                invincibilityCounter,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                linkSpeedX,
+                linkSpeedY);
     }
 
     List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
