@@ -101,7 +101,7 @@ public final class LiftInteraction {
         if (link == null || roomSession == null) {
             return;
         }
-        var state = roomSession.liftedEntityState();
+        var state = roomSession.rooms().liftedEntityState();
         if (state.active()) {
             link.setCarryingLiftedObjectState(state.carryState(), state.effectiveRomDirection());
         } else {

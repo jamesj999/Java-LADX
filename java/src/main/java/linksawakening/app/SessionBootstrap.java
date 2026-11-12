@@ -456,7 +456,7 @@ public final class SessionBootstrap {
                 droppableRupeeSystem,
                 callbacks.roomMusic()::accept,
                 random);
-        roomSession.setColorShellSoundSink(gameplaySoundSink);
+        roomSession.entityState().setColorShellSoundSink(gameplaySoundSink);
         LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData.unsafeBytes());
         link = new Link(
                 inputState,
@@ -470,18 +470,20 @@ public final class SessionBootstrap {
                 linkTunicPalette);
         link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
                 && (roomSession == null
-                        || (!roomSession.powerUpPickupSequenceActive() && !roomSession.heartPiecePickupActive())));
+                        || (!roomSession.entityState().powerUpPickupSequenceActive()
+                                && !roomSession.rooms().heartPiecePickupActive())));
         itemRegistry.register(
                 PlayerState.INVENTORY_OCARINA,
                 new Ocarina(playerState, gameplaySoundSink, new Ocarina.PlaybackTarget() {
                     @Override
                     public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
-                        return roomSession != null && roomSession.startOcarina(countdown, songFlags, selectedSong);
+                        return roomSession != null
+                                && roomSession.transitions().startOcarina(countdown, songFlags, selectedSong);
                     }
 
                     @Override
                     public boolean ocarinaPlaying() {
-                        return roomSession != null && roomSession.ocarinaPlaying();
+                        return roomSession != null && roomSession.transitions().ocarinaPlaying();
                     }
 
                     @Override
@@ -490,12 +492,14 @@ public final class SessionBootstrap {
                                 && roomSession != null
                                 && link.canUseItems()
                                 && !link.isAirborne()
-                                && !roomSession.hookshotActive();
+                                && !roomSession.playerItems().hookshotActive();
                     }
 
                     @Override
                     public int ocarinaAnimationState() {
-                        return roomSession == null ? -1 : roomSession.ocarinaAnimationState();
+                        return roomSession == null
+                                ? -1
+                                : roomSession.transitions().ocarinaAnimationState();
                     }
                 }));
         itemRegistry.register(
@@ -509,11 +513,12 @@ public final class SessionBootstrap {
                         int romDirection = link.applyRomItemDirectionFromInput();
                         if (playerState.swordLevel() != 2
                                 || !playerState.fullHearts()
-                                || roomSession.activeProjectileCount() != 0) {
+                                || roomSession.playerItems().activeProjectileCount() != 0) {
                             return false;
                         }
-                        boolean spawned = roomSession.fireSwordBeam(
-                                link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
+                        boolean spawned = roomSession
+                                .playerItems()
+                                .fireSwordBeam(link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
                         if (spawned) {
                             link.startRomItemAttackStep();
                         }
@@ -541,18 +546,23 @@ public final class SessionBootstrap {
                                     return false;
                                 }
                                 int romDirection = link.applyRomItemDirectionFromInput();
-                                boolean spawned = roomSession.fireMagicRodFireball(
-                                        link.romEntityX(),
-                                        link.romEntityY(),
-                                        link.romEntityZ(),
-                                        romDirection,
-                                        playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+                                boolean spawned = roomSession
+                                        .playerItems()
+                                        .fireMagicRodFireball(
+                                                link.romEntityX(),
+                                                link.romEntityY(),
+                                                link.romEntityZ(),
+                                                romDirection,
+                                                playerState.activePowerUp()
+                                                        == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
                                 return spawned;
                             }
 
                             @Override
                             public int activeProjectileCount() {
-                                return roomSession == null ? 0 : roomSession.activeProjectileCount();
+                                return roomSession == null
+                                        ? 0
+                                        : roomSession.playerItems().activeProjectileCount();
                             }
                         },
                         link::canUseItems));
@@ -568,8 +578,10 @@ public final class SessionBootstrap {
                                     return false;
                                 }
                                 int romDirection = link.applyRomItemDirectionFromInput();
-                                return roomSession.sprinkleMagicPowder(
-                                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
+                                return roomSession
+                                        .playerItems()
+                                        .sprinkleMagicPowder(
+                                                link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
                             }
 
                             @Override
@@ -613,15 +625,18 @@ public final class SessionBootstrap {
                                 romDirection = link.applyRomItemDirectionFromInput();
                                 linkEntityX = link.romEntityX();
                                 linkEntityY = link.romEntityY();
-                                RoomSession.ShovelStartResult result = roomSession.startShovel(
-                                        linkEntityX, linkEntityY, romDirection, link.isAirborne());
+                                RoomSession.ShovelStartResult result = roomSession
+                                        .playerItems()
+                                        .startShovel(linkEntityX, linkEntityY, romDirection, link.isAirborne());
                                 return new Shovel.StartResult(result.started(), result.poking());
                             }
 
                             @Override
                             public void advanceShovel(int timer) {
                                 if (roomSession != null) {
-                                    roomSession.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
+                                    roomSession
+                                            .playerItems()
+                                            .advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
                                 }
                             }
 
@@ -629,7 +644,7 @@ public final class SessionBootstrap {
                             public int shovelAnimationState(int javaDirection, int timer) {
                                 return roomSession == null
                                         ? -1
-                                        : roomSession.shovelAnimationState(javaDirection, timer);
+                                        : roomSession.playerItems().shovelAnimationState(javaDirection, timer);
                             }
                         },
                         link::canUseItems));
@@ -648,12 +663,15 @@ public final class SessionBootstrap {
                                     playBumpForLastPlacement = false;
                                     return false;
                                 }
-                                boolean placed = roomSession.placeBomb(
-                                        link.romEntityX(),
-                                        link.romEntityY(),
-                                        link.romEntityZ(),
-                                        callbacks.romDirection().applyAsInt(link.direction()));
-                                playBumpForLastPlacement = placed && roomSession.lastBombPlacementPlayedBump();
+                                boolean placed = roomSession
+                                        .playerItems()
+                                        .placeBomb(
+                                                link.romEntityX(),
+                                                link.romEntityY(),
+                                                link.romEntityZ(),
+                                                callbacks.romDirection().applyAsInt(link.direction()));
+                                playBumpForLastPlacement =
+                                        placed && roomSession.playerItems().lastBombPlacementPlayedBump();
                                 if (placed) {
                                     link.startRomItemAttackStep();
                                 }
@@ -667,7 +685,8 @@ public final class SessionBootstrap {
 
                             @Override
                             public boolean bombActive() {
-                                return roomSession != null && roomSession.bombActive();
+                                return roomSession != null
+                                        && roomSession.playerItems().bombActive();
                             }
                         },
                         link::canUseItems));
@@ -685,12 +704,15 @@ public final class SessionBootstrap {
                                     playWhooshForLastShot = false;
                                     return false;
                                 }
-                                RoomSession.ArrowShotResult result = roomSession.shootArrowResult(
-                                        link.romEntityX(),
-                                        link.romEntityY(),
-                                        link.romEntityZ(),
-                                        link.applyRomItemDirectionFromInput(),
-                                        playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+                                RoomSession.ArrowShotResult result = roomSession
+                                        .playerItems()
+                                        .shootArrowResult(
+                                                link.romEntityX(),
+                                                link.romEntityY(),
+                                                link.romEntityZ(),
+                                                link.applyRomItemDirectionFromInput(),
+                                                playerState.activePowerUp()
+                                                        == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
                                 playWhooshForLastShot = result.playWhoosh();
                                 if (result.spawned()) {
                                     link.startRomItemAttackStep();
@@ -705,7 +727,9 @@ public final class SessionBootstrap {
 
                             @Override
                             public int activeProjectileCount() {
-                                return roomSession == null ? 0 : roomSession.activeProjectileCount();
+                                return roomSession == null
+                                        ? 0
+                                        : roomSession.playerItems().activeProjectileCount();
                             }
                         },
                         link::canUseItems));
@@ -715,18 +739,20 @@ public final class SessionBootstrap {
                 if (link == null || roomSession == null) {
                     return false;
                 }
-                return roomSession.fireHookshot(
-                        link.romEntityX(),
-                        link.romEntityY(),
-                        link.romEntityZ(),
-                        callbacks.romDirection().applyAsInt(link.direction()),
-                        link.isAirborne(),
-                        link.isRomLinkPushing());
+                return roomSession
+                        .playerItems()
+                        .fireHookshot(
+                                link.romEntityX(),
+                                link.romEntityY(),
+                                link.romEntityZ(),
+                                callbacks.romDirection().applyAsInt(link.direction()),
+                                link.isAirborne(),
+                                link.isRomLinkPushing());
             }
 
             @Override
             public boolean hookshotActive() {
-                return roomSession != null && roomSession.hookshotActive();
+                return roomSession != null && roomSession.playerItems().hookshotActive();
             }
         }));
         itemRegistry.register(
@@ -738,12 +764,14 @@ public final class SessionBootstrap {
                                 if (link == null || roomSession == null) {
                                     return false;
                                 }
-                                boolean spawned = roomSession.fireBoomerang(
-                                        link.romEntityX(),
-                                        link.romEntityY(),
-                                        link.romEntityZ(),
-                                        link.applyRomItemDirectionFromInput(),
-                                        link.romPressedButtonsMask());
+                                boolean spawned = roomSession
+                                        .playerItems()
+                                        .fireBoomerang(
+                                                link.romEntityX(),
+                                                link.romEntityY(),
+                                                link.romEntityZ(),
+                                                link.applyRomItemDirectionFromInput(),
+                                                link.romPressedButtonsMask());
                                 if (spawned) {
                                     link.startRomItemAttackStep();
                                 }
@@ -752,12 +780,13 @@ public final class SessionBootstrap {
 
                             @Override
                             public boolean boomerangActive() {
-                                return roomSession != null && roomSession.boomerangActive();
+                                return roomSession != null
+                                        && roomSession.playerItems().boomerangActive();
                             }
                         },
                         link::canUseItems));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
-        roomSession.onMapBoundaryWarp(playerState::clearActivePowerUpForWarp);
+        roomSession.progress().onMapBoundaryWarp(playerState::clearActivePowerUpForWarp);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
                 roomSession, new RoomBoundaryController(), transitionController, scrollController, gameplaySoundSink);
     }

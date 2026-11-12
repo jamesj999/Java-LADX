@@ -101,13 +101,13 @@ public final class HeadlessGameDriver {
 
         private State(Diagnostics snapshot) {
 
-            var tarin = snapshot.roomSession.activeRoom().entities().loadedEntities().stream()
+            var tarin = snapshot.roomSession.rooms().activeRoom().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x3F)
                     .findFirst()
                     .orElse(null);
             this.frame = snapshot.frameCounter;
-            this.map = snapshot.roomSession.mapId();
-            this.room = snapshot.roomSession.currentRoomId();
+            this.map = snapshot.roomSession.rooms().mapId();
+            this.room = snapshot.roomSession.rooms().currentRoomId();
             this.x = snapshot.link.romEntityX();
             this.y = snapshot.link.romEntityY();
             this.dialog = snapshot.dialogController.isActive();
@@ -116,7 +116,7 @@ public final class HeadlessGameDriver {
             this.shield = snapshot.playerState.shieldLevel();
             this.health = snapshot.playerState.health();
             this.sword = snapshot.playerState.swordLevel();
-            this.urchins = (int) snapshot.roomSession.activeRoom().entities().loadedEntities().stream()
+            this.urchins = (int) snapshot.roomSession.rooms().activeRoom().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0xC5 && entity.status() == EntityStatus.ACTIVE)
                     .count();
             this.toadstool = snapshot.playerState.hasToadstool();
@@ -124,13 +124,13 @@ public final class HeadlessGameDriver {
             this.inventoryTick = snapshot.inventoryMenu.instrumentPaletteTick();
             this.tarinX = tarin == null ? -1 : tarin.x();
             this.tarinY = tarin == null ? -1 : tarin.y();
-            this.forestCleared = (snapshot.roomSession.overworldRoomStatusSnapshot()[0x51] & 0x10) != 0;
+            this.forestCleared = (snapshot.roomSession.dungeon().overworldRoomStatusSnapshot()[0x51] & 0x10) != 0;
             this.tailKey = snapshot.playerState.tailKeyCount();
             this.bgTick = snapshot.gpu.animatedTilesFrameCount();
-            this.smallKeys = snapshot.roomSession.currentDungeonItemFlagsSnapshot()[4] & 0xFF;
-            this.compass = snapshot.roomSession.currentDungeonItemFlagsSnapshot()[1] & 0xFF;
-            this.dungeonMap = snapshot.roomSession.currentDungeonItemFlagsSnapshot()[0] & 0xFF;
-            this.nightmareKey = snapshot.roomSession.currentDungeonItemFlagsSnapshot()[3] & 0xFF;
+            this.smallKeys = snapshot.roomSession.dungeon().currentDungeonItemFlagsSnapshot()[4] & 0xFF;
+            this.compass = snapshot.roomSession.dungeon().currentDungeonItemFlagsSnapshot()[1] & 0xFF;
+            this.dungeonMap = snapshot.roomSession.dungeon().currentDungeonItemFlagsSnapshot()[0] & 0xFF;
+            this.nightmareKey = snapshot.roomSession.dungeon().currentDungeonItemFlagsSnapshot()[3] & 0xFF;
             this.animation = snapshot.link.romAnimationState();
             this.direction = 3 - snapshot.link.direction();
             this.swordAnimation = snapshot.equipmentController.activeSword() == null
@@ -142,7 +142,7 @@ public final class HeadlessGameDriver {
             this.speedY = snapshot.link.romSpeedY();
             this.loading = snapshot.scrollController.isActive() || snapshot.transitionController.isInputBlocked();
             this.maxHearts = snapshot.playerState.maxHearts();
-            this.instrument1Flags = snapshot.roomSession.dungeonProgressFlagsSnapshot()[0] & 0xFF;
+            this.instrument1Flags = snapshot.roomSession.dungeon().dungeonProgressFlagsSnapshot()[0] & 0xFF;
         }
 
         public int frame() {
@@ -488,15 +488,17 @@ public final class HeadlessGameDriver {
         }
 
         public String headlessInstrumentTrace() {
-            return roomSession == null ? "" : roomSession.instrumentTrace();
+            return roomSession == null ? "" : roomSession.rooms().instrumentTrace();
         }
 
         public String headlessMoblinKingTrace() {
-            return roomSession == null ? "-1" : roomSession.moblinKingTrace() + "," + playerState.activePowerUp();
+            return roomSession == null
+                    ? "-1"
+                    : roomSession.rooms().moblinKingTrace() + "," + playerState.activePowerUp();
         }
 
         public int headlessBowWowState() {
-            return roomSession == null ? 0 : roomSession.bowWowState();
+            return roomSession == null ? 0 : roomSession.story().bowWowState();
         }
 
         public String headlessCombatTrace() {
@@ -511,7 +513,7 @@ public final class HeadlessGameDriver {
                             box.width(),
                             box.y(),
                             box.height(),
-                            roomSession.activeRoom().entities().loadedEntities().stream()
+                            roomSession.rooms().activeRoom().entities().loadedEntities().stream()
                                     .filter(e -> e.type() == 0x81 || e.type() == 0x82 || e.type() == 0x59)
                                     .map(e -> "%d,%d,%d,%d,%d,%d"
                                             .formatted(
@@ -519,13 +521,13 @@ public final class HeadlessGameDriver {
                                                     e.x(),
                                                     e.y(),
                                                     e.z(),
-                                                    roomSession.entityHealth(e.slot()),
+                                                    roomSession.entityState().entityHealth(e.slot()),
                                                     e.status() == EntityStatus.ACTIVE ? 5 : 1))
                                     .collect(Collectors.joining(";")));
         }
 
         public String headlessEntityPositions() {
-            return roomSession.activeRoom().entities().loadedEntities().stream()
+            return roomSession.rooms().activeRoom().entities().loadedEntities().stream()
                     .map(e -> "%02X:%s@%d,%d".formatted(e.type(), e.status(), e.x(), e.y()))
                     .collect(Collectors.joining(" "));
         }

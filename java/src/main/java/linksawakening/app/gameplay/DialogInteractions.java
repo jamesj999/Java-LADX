@@ -61,10 +61,10 @@ public final class DialogInteractions {
     public boolean tryOpenOverworldDialog(int key) {
         if (!GameplayDialogInput.isActionButtonKey(key, inputConfig())
                 || overworldDialogInteraction() == null
-                || !roomSession().hasActiveRoom()) {
+                || !roomSession().rooms().hasActiveRoom()) {
             return false;
         }
-        ActiveRoom room = roomSession().activeRoom();
+        ActiveRoom room = roomSession().rooms().activeRoom();
         return overworldDialogInteraction()
                 .tryOpenSignpostDialog(
                         room.roomId(),
@@ -80,11 +80,12 @@ public final class DialogInteractions {
 
     public boolean tryOpenChest(int key) {
         if (!GameplayDialogInput.isActionButtonKey(key, inputConfig())
-                || !roomSession().hasActiveRoom()
+                || !roomSession().rooms().hasActiveRoom()
                 || blockers().get().blocksOpening()) {
             return false;
         }
         RoomSession.ChestOpenResult result = roomSession()
+                .doors()
                 .tryOpenChest(
                         link().pixelX(),
                         link().pixelY(),
@@ -98,7 +99,7 @@ public final class DialogInteractions {
         if (dialogTextLoader() == null || dialogController().isActive()) {
             return;
         }
-        for (var request : roomSession().consumeEntityDialogRequests()) {
+        for (var request : roomSession().entityState().consumeEntityDialogRequests()) {
             SignpostDialogRef dialogRef = new SignpostDialogRef(request.tableId(), request.dialogLowId());
             if (request.forceTop()) {
                 dialogController()

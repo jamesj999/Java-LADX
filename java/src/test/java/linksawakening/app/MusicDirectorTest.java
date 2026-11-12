@@ -50,15 +50,16 @@ final class MusicDirectorTest {
                     null,
                     room -> director.selectMusicForLoadedRoom(room, state, holder[0]));
             holder[0] = rooms;
-            rooms.loadInitialOverworld(0xF2);
+            rooms.rooms().loadInitialOverworld(0xF2);
             state.setSwordLevel(1);
             director.playDirectMusic(0x31);
             var scroll = new linksawakening.world.transition.ScrollController();
-            rooms.startAdjacentOverworldScroll(scroll, linksawakening.world.transition.ScrollController.UP, 64, 0);
-            assertEquals(0xE2, rooms.currentRoomId());
+            rooms.transitions()
+                    .startAdjacentOverworldScroll(scroll, linksawakening.world.transition.ScrollController.UP, 64, 0);
+            assertEquals(0xE2, rooms.rooms().currentRoomId());
             assertEquals(0x31, controller.currentTrackId());
-            assertEquals(0x05, rooms.entityDefaultMusicTrack());
-            rooms.loadWarpDestination(new linksawakening.world.transition.Warp(0, 0, 0xE2, 64, 64, -1));
+            assertEquals(0x05, rooms.entityState().entityDefaultMusicTrack());
+            rooms.transitions().loadWarpDestination(new linksawakening.world.transition.Warp(0, 0, 0xE2, 64, 64, -1));
             assertEquals(0x05, controller.currentTrackId());
         }
     }

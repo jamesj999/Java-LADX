@@ -15,7 +15,7 @@ final class ToadstoolPresentationTest {
     void equippedUseHoldsItemOpens00ePausesAndReturnsToNormalWithoutSpendingIt() throws Exception {
         var game = game();
         var d = game.diagnostics();
-        d.roomSession().loadIndoorFromSavedPosition(0x10, 0xA3, 0);
+        d.roomSession().rooms().loadIndoorFromSavedPosition(0x10, 0xA3, 0);
         d.link().setRoomEntryPixelPosition(40, 80);
         game.headlessFrame();
         use(game, "a");
@@ -52,7 +52,7 @@ final class ToadstoolPresentationTest {
     void activePresentationBypassesInventoryAndPassOutDispatch() throws Exception {
         var game = game();
         var d = game.diagnostics();
-        d.roomSession().loadIndoorFromSavedPosition(0x10, 0xA3, 0);
+        d.roomSession().rooms().loadIndoorFromSavedPosition(0x10, 0xA3, 0);
         d.link().setRoomEntryPixelPosition(40, 80);
         game.headlessFrame();
         use(game, "a");
@@ -73,7 +73,7 @@ final class ToadstoolPresentationTest {
             d.link().presentToadstool();
             // This tests the ownership/presentation distinction, including the
             // ROM's A/B asymmetry at $05:4833-4847.
-            d.roomSession().loadIndoorFromSavedPosition(0x0E, 0xA2, 0);
+            d.roomSession().rooms().loadIndoorFromSavedPosition(0x0E, 0xA2, 0);
             d.link().setRoomEntryRomPosition(0x48, 0x56);
             d.link().setDirection(Link.DIRECTION_UP);
             if (bSlot) {

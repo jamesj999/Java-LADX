@@ -754,14 +754,14 @@ public final class SessionContext {
         if (currentAppConfig().debugEnabled() && DebugMenu.isToggle(key, action)) {
             if (screens.currentScreen == gameplayScreen
                     && inputRouter().canPresentFileSave()
-                    && !services().roomSession().tailCaveKeyholeSequenceActive()) {
+                    && !services().roomSession().doors().tailCaveKeyholeSequenceActive()) {
                 if (debug.debugMenu == null)
                     debug.debugMenu =
                             new DebugMenu(services().playerState(), services().roomSession(), this::debugTeleport);
                 debug.debugMenu.open(
-                        services().roomSession().mapCategory(),
-                        services().roomSession().mapId(),
-                        services().roomSession().currentRoomId(),
+                        services().roomSession().rooms().mapCategory(),
+                        services().roomSession().rooms().mapId(),
+                        services().roomSession().rooms().currentRoomId(),
                         services().link().pixelX(),
                         services().link().pixelY());
                 services().inputState().clear();
@@ -773,7 +773,7 @@ public final class SessionContext {
     }
 
     void debugTeleport(Warp destination) {
-        services().roomSession().loadWarpDestination(destination);
+        services().roomSession().transitions().loadWarpDestination(destination);
         session.newGameWakeUpMotion = null;
         session.newGameTarinShieldMotion = null;
         services().link().resetTransientStateForDebug();

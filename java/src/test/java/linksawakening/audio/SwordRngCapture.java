@@ -50,7 +50,7 @@ public final class SwordRngCapture {
             player.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
             player.setMaxHearts(6);
             player.setHealth(48);
-            room.loadIndoor(2, 0x5A);
+            room.rooms().loadIndoor(2, 0x5A);
             link.setRoomEntryRomPosition(72, 80);
             link.setDirection(Link.DIRECTION_UP);
             d.scrollController().startScreenShake(7, 0);

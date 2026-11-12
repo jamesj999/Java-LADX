@@ -106,14 +106,15 @@ public final class SaveCoordinator {
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
         profile.initializePlayerState(playerState());
-        roomSession().initializeNewGameWorldState();
-        roomSession().setBirdKeyOwned(playerState().birdKeyCount() != 0);
-        roomSession().setTailKeyOwned(playerState().tailKeyCount() != 0);
-        roomSession().setBowWowState(0);
+        roomSession().story().initializeNewGameWorldState();
+        roomSession().story().setBirdKeyOwned(playerState().birdKeyCount() != 0);
+        roomSession().story().setTailKeyOwned(playerState().tailKeyCount() != 0);
+        roomSession().story().setBowWowState(0);
         link().setDirection(Link.DIRECTION_DOWN);
         gpu().loadBaseTiles(romData());
-        roomSession().loadIndoor(profile.mapId(), profile.roomId());
+        roomSession().rooms().loadIndoor(profile.mapId(), profile.roomId());
         roomSession()
+                .progress()
                 .setRespawnPoint(
                         new Warp(
                                 Warp.CATEGORY_INDOOR,
@@ -133,21 +134,23 @@ public final class SaveCoordinator {
         enterGameplay().run();
         clearOpening().run();
         playerState().applySavedGame(saved);
-        roomSession().setBirdKeyOwned(playerState().birdKeyCount() != 0);
-        roomSession().setTailKeyOwned(playerState().tailKeyCount() != 0);
+        roomSession().story().setBirdKeyOwned(playerState().birdKeyCount() != 0);
+        roomSession().story().setTailKeyOwned(playerState().tailKeyCount() != 0);
         roomSession()
+                .story()
                 .restoreRoomStatuses(
                         saved.overworldRoomStatus(),
                         saved.indoorARoomStatus(),
                         saved.indoorBRoomStatus(),
                         saved.colorDungeonRoomStatus());
-        roomSession().restoreDungeonItemFlags(saved.dungeonItemFlags(), saved.colorDungeonItemFlags());
-        roomSession().restoreDungeonProgressFlags(saved.dungeonProgressFlags());
-        roomSession().setBowWowState(saved.bowWowState());
-        roomSession().setTarinFlag(saved.tarinFlag());
-        roomSession().setRichardSpokenFlag(saved.richardSpokenFlag());
-        roomSession().setHouseNpcTradeItem(playerState().tradeSequenceItem());
+        roomSession().dungeon().restoreDungeonItemFlags(saved.dungeonItemFlags(), saved.colorDungeonItemFlags());
+        roomSession().dungeon().restoreDungeonProgressFlags(saved.dungeonProgressFlags());
+        roomSession().story().setBowWowState(saved.bowWowState());
+        roomSession().story().setTarinFlag(saved.tarinFlag());
+        roomSession().story().setRichardSpokenFlag(saved.richardSpokenFlag());
+        roomSession().story().setHouseNpcTradeItem(playerState().tradeSequenceItem());
         roomSession()
+                .story()
                 .setChestPlayerLevels(
                         playerState().shieldLevel(),
                         playerState().swordLevel(),
@@ -155,14 +158,16 @@ public final class SaveCoordinator {
         if (saved.spawnIsIndoor() != 0) {
             gpu().loadBaseTiles(romData());
             roomSession()
+                    .rooms()
                     .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
             link().setDirection(Link.DIRECTION_UP);
         } else {
-            roomSession().loadInitialOverworld(saved.spawnMapRoom());
+            roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
             link().setDirection(Link.DIRECTION_DOWN);
         }
         link().setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
         roomSession()
+                .progress()
                 .setRespawnPoint(
                         new Warp(
                                 saved.spawnIsIndoor() != 0 ? 1 : 0,
@@ -187,8 +192,8 @@ public final class SaveCoordinator {
         link().finishGameOver();
         playerState().clearResourceBuffersForDebug();
         playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
-        roomSession().clearGameOverPowerCounter();
-        roomSession().resetGameOverSwitchBlocks();
+        roomSession().progress().clearGameOverPowerCounter();
+        roomSession().progress().resetGameOverSwitchBlocks();
         if (option == 1) {
             startFileSelection().run();
             return;
@@ -196,16 +201,19 @@ public final class SaveCoordinator {
         if (option == 0 && currentSaveSlot() >= 0) {
             startSavedGame(saveRamStore().readSlot(currentSaveSlot()));
         } else {
-            Warp spawn = roomSession().respawnPoint();
+            Warp spawn = roomSession().progress().respawnPoint();
             if (spawn == null) throw new IllegalStateException("No game-over spawn point");
             gpu().loadBaseTiles(romData());
             if (spawn.category() == Warp.CATEGORY_OVERWORLD) {
-                roomSession().loadInitialOverworld(spawn.destRoom());
+                roomSession().rooms().loadInitialOverworld(spawn.destRoom());
                 link().setDirection(Link.DIRECTION_DOWN);
             } else {
                 roomSession()
+                        .rooms()
                         .loadIndoorFromSavedPosition(
-                                spawn.destMap(), spawn.destRoom(), roomSession().respawnIndoorRoom());
+                                spawn.destMap(),
+                                spawn.destRoom(),
+                                roomSession().progress().respawnIndoorRoom());
                 link().setDirection(Link.DIRECTION_UP);
             }
             link().setRoomEntryRomPosition(spawn.destX(), spawn.destY());
@@ -242,21 +250,25 @@ public final class SaveCoordinator {
             saveRamStore()
                     .writeRoomStatuses(
                             currentSaveSlot(),
-                            roomSession().overworldRoomStatusSnapshot(),
-                            roomSession().indoorARoomStatusSnapshot(),
-                            roomSession().indoorBRoomStatusSnapshot(),
-                            roomSession().colorDungeonRoomStatusSnapshot());
+                            roomSession().dungeon().overworldRoomStatusSnapshot(),
+                            roomSession().dungeon().indoorARoomStatusSnapshot(),
+                            roomSession().dungeon().indoorBRoomStatusSnapshot(),
+                            roomSession().dungeon().colorDungeonRoomStatusSnapshot());
             saveRamStore()
                     .writeDungeonItemFlags(
                             currentSaveSlot(),
-                            roomSession().dungeonItemFlagsSnapshot(),
-                            roomSession().colorDungeonItemFlagsSnapshot());
+                            roomSession().dungeon().dungeonItemFlagsSnapshot(),
+                            roomSession().dungeon().colorDungeonItemFlagsSnapshot());
             saveRamStore()
-                    .writeDungeonProgressFlags(currentSaveSlot(), roomSession().dungeonProgressFlagsSnapshot());
-            saveRamStore().writeBowWowState(currentSaveSlot(), roomSession().bowWowState());
-            saveRamStore().writeTarinFlag(currentSaveSlot(), roomSession().tarinFlag());
+                    .writeDungeonProgressFlags(
+                            currentSaveSlot(), roomSession().dungeon().dungeonProgressFlagsSnapshot());
             saveRamStore()
-                    .writeRichardSpokenFlag(currentSaveSlot(), roomSession().richardSpokenFlag());
+                    .writeBowWowState(currentSaveSlot(), roomSession().story().bowWowState());
+            saveRamStore()
+                    .writeTarinFlag(currentSaveSlot(), roomSession().story().tarinFlag());
+            saveRamStore()
+                    .writeRichardSpokenFlag(
+                            currentSaveSlot(), roomSession().story().richardSpokenFlag());
         }
         try {
             saveRamStore().flush();
@@ -266,11 +278,11 @@ public final class SaveCoordinator {
     }
 
     public void saveCurrentSpawnLocation() {
-        if (!roomSession().hasActiveRoom()) {
+        if (!roomSession().rooms().hasActiveRoom()) {
             return;
         }
 
-        Warp spawn = roomSession().respawnPoint();
+        Warp spawn = roomSession().progress().respawnPoint();
         if (spawn != null) {
             saveRamStore()
                     .writeSpawnLocation(
@@ -280,12 +292,12 @@ public final class SaveCoordinator {
                             spawn.destRoom(),
                             spawn.destX(),
                             spawn.destY(),
-                            roomSession().respawnIndoorRoom());
+                            roomSession().progress().respawnIndoorRoom());
             return;
         }
-        ActiveRoom room = roomSession().activeRoom();
+        ActiveRoom room = roomSession().rooms().activeRoom();
         boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
-        int indoorRoom = roomSession().indoorRoomPositionForSave();
+        int indoorRoom = roomSession().rooms().indoorRoomPositionForSave();
         if (indoorRoom < 0) {
             // Small houses/caves have no map-layout table. The source leaves
             // wIndoorRoom at its previous value in that case.

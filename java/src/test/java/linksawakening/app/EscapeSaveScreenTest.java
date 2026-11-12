@@ -56,7 +56,12 @@ final class EscapeSaveScreenTest {
                 assertTrue(state.inventoryMenu().isFullyOpen());
             }
             case SCROLL -> state.scrollController()
-                    .start(ScrollController.RIGHT, 80, 80, state.roomSession().renderSnapshot(), 160);
+                    .start(
+                            ScrollController.RIGHT,
+                            80,
+                            80,
+                            state.roomSession().rooms().renderSnapshot(),
+                            160);
             case TRANSITION -> state.transitionController().startFadeOut(() -> {});
             case PASS_OUT -> state.link().beginPassOut();
         }

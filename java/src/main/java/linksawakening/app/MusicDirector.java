@@ -23,17 +23,18 @@ public final class MusicDirector {
             return;
         }
         RoomMusicContext context = RoomMusicContext.from(room, playerState);
-        if (roomSession != null && roomSession.musicSelectionIsScroll()) context = context.forScroll();
+        if (roomSession != null && roomSession.rooms().musicSelectionIsScroll()) context = context.forScroll();
         gameplayMusicController.selectAfterTransition(context);
         if (roomSession != null) {
-            roomSession.setEntityDefaultMusicTrack(gameplayMusicController.defaultTrackId());
+            roomSession.story().setEntityDefaultMusicTrack(gameplayMusicController.defaultTrackId());
         }
     }
 
     public void restoreMusicAfterPowerUpEnds(RoomSession roomSession) {
         if (gameplayMusicController != null && roomSession != null) {
             gameplayMusicController.restoreAfterPowerUpEnds(
-                    roomSession.inBossBattle(), roomSession.entityDefaultMusicTrack());
+                    roomSession.entities().inBossBattle(),
+                    roomSession.entityState().entityDefaultMusicTrack());
         }
     }
 

@@ -237,10 +237,10 @@ public final class ScreenRouter {
         clearSaveSlot().run();
         link().resetTransientStateForDebug();
         playerState().initializeDebugState();
-        roomSession().initializeNewGameWorldState();
-        roomSession().setBowWowState(0);
-        roomSession().setBirdKeyOwned(true);
-        roomSession().setTailKeyOwned(true);
+        roomSession().story().initializeNewGameWorldState();
+        roomSession().story().setBowWowState(0);
+        roomSession().story().setBirdKeyOwned(true);
+        roomSession().story().setTailKeyOwned(true);
         showScreen().accept(gameplayScreen());
         resetDebug().run();
         link().setDirection(Link.DIRECTION_DOWN);
@@ -264,7 +264,7 @@ public final class ScreenRouter {
     }
 
     public void loadOverworldScreen() {
-        roomSession().loadInitialOverworld(StartupCoordinator.gameplayStartRoomId(config()));
+        roomSession().rooms().loadInitialOverworld(StartupCoordinator.gameplayStartRoomId(config()));
         // Center of Mabe Village Square has the statue (solid). Spawn Link two
         // tiles to the left of the room center so he lands on walkable ground.
         int startX = ROOM_PIXEL_WIDTH() / 2 - Link.SPRITE_SIZE / 2 - 32 + 10;

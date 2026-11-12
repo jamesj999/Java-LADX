@@ -35,7 +35,7 @@ public final class HouseEmulatorCapture {
         var session =
                 new RoomSession(rom, gpu, new RoomLoader(rom), new OverworldTilesetTable(rom), collision, null, null);
         var profile = NewGameStartProfile.romDefaults();
-        session.loadIndoor(profile.mapId(), profile.roomId());
+        session.rooms().loadIndoor(profile.mapId(), profile.roomId());
         var player = new PlayerState();
         profile.initializePlayerState(player);
         var input = new InputState();
@@ -43,7 +43,7 @@ public final class HouseEmulatorCapture {
         var link = new Link(
                 input, config, tables, collision, LinkSpriteSheet.loadFromRom(rom), player, new ItemRegistry());
         var motion = new MarinWakeUpMotion();
-        var marinSource = session.activeRoom().entities().slots().get(0);
+        var marinSource = session.rooms().activeRoom().entities().slots().get(0);
         var clocks = Files.readAllLines(out.resolve("clocks.tsv"));
         String[] first = clocks.get(0).split("\t");
         int firstFrame = Integer.parseInt(first[0]);
@@ -58,7 +58,7 @@ public final class HouseEmulatorCapture {
             marin = motion.tickMarinPresentation(
                     (firstFrame - i + 1) & 255, marinSource.x(), marinSource.y(), 0x38, 0x34);
         }
-        session.updateHouseTarinPresentation(0, 0x38, 0x34);
+        session.story().updateHouseTarinPresentation(0, 0x38, 0x34);
         var inventory = new InventoryController(
                 input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
         Path folder = out.resolve("ours");
@@ -69,14 +69,17 @@ public final class HouseEmulatorCapture {
             if (f > 0) {
                 marin = motion.tickMarinPresentation(frame, marinSource.x(), marinSource.y(), 0x38, 0x34);
             }
-            session.applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
-            session.updateHouseTarinPresentation(frame, 0x38, 0x34);
+            session.story().applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
+            session.story().updateHouseTarinPresentation(frame, 0x38, 0x34);
             link.showMarinWakeUpBed(wake.bedSpriteVariant());
             byte[] pixels = new byte[160 * 144 * 4];
             new GameFrameSceneBuilder()
                     .build(GameFrameState.empty()
                             .withScreen(RenderScreen.OVERWORLD)
-                            .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())
+                            .withRoom(
+                                    session.rooms().renderSnapshot(),
+                                    new ScrollController(),
+                                    new TransitionController())
                             .withLink(link)
                             .withInventoryController(inventory)
                             .withFrameCounter(frame))

@@ -9,6 +9,8 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.room.EntityCombatInputs;
+import linksawakening.world.room.SwordBox;
 import linksawakening.world.transition.Warp;
 
 final class CombatPhase {
@@ -36,7 +38,8 @@ final class CombatPhase {
                     context.direction().applyAsInt(context.link().direction()),
                     context.link().romEntityZ());
             var combatEvents = context.roomSession()
-                    .resolveEntityCombat(
+                    .entities()
+                    .resolveEntityCombat(new EntityCombatInputs(
                             context.frameCounter(),
                             context.link().romEntityX(),
                             context.link().romEntityY(),
@@ -45,12 +48,13 @@ final class CombatPhase {
                                     ? context.link().romSpeedY()
                                     : context.link().zVelocity(),
                             !context.debugNoClip(),
-                            swordBoxForEntityTick.active(),
-                            swordBoxForEntityTick.x(),
-                            swordBoxForEntityTick.width(),
-                            swordBoxForEntityTick.y(),
-                            swordBoxForEntityTick.height(),
-                            attackContext);
+                            new SwordBox(
+                                    swordBoxForEntityTick.active(),
+                                    swordBoxForEntityTick.x(),
+                                    swordBoxForEntityTick.width(),
+                                    swordBoxForEntityTick.y(),
+                                    swordBoxForEntityTick.height()),
+                            attackContext));
             EnemyCombatEventConsumer.consume(combatEvents, context.gameplaySoundSink(), context.transientVfxSystem());
             for (EntityCombatEvent event : combatEvents) {
                 if (event.linkDamage() > 0
@@ -62,10 +66,11 @@ final class CombatPhase {
                             && context.playerState().activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
                         context.musicDirector().restoreMusicAfterPowerUpEnds(context.roomSession());
                     }
-                    context.roomSession().resetGuardianAcornCounterOnHurt();
+                    context.roomSession().entityState().resetGuardianAcornCounterOnHurt();
                     if (event.linkCollisionResponse().active()) {
                         EntityCombatEvent.LinkCollisionResponse response = event.linkCollisionResponse();
                         if (!context.roomSession()
+                                .entityState()
                                 .deferContactRecoil(
                                         event.slot(),
                                         context.link().romEntityX(),

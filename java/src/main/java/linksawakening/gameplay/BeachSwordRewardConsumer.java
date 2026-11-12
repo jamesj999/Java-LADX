@@ -12,7 +12,7 @@ public final class BeachSwordRewardConsumer {
         Objects.requireNonNull(roomSession, "roomSession");
         Objects.requireNonNull(playerState, "playerState");
 
-        for (var ignored : roomSession.consumeSwordPickupRewards()) {
+        for (var ignored : roomSession.entityState().consumeSwordPickupRewards()) {
             playerState.playerRewards().applyBeachSwordReward();
         }
     }

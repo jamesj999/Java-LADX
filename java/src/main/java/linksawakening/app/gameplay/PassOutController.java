@@ -42,8 +42,8 @@ public final class PassOutController {
                 || context.transitionController().isInputBlocked();
         boolean itemBlocked = link.dialogGotItemActive()
                 || link.romItemAnimationFrameBlocked()
-                || ((context.roomSession().gotItemPresentationActive()
-                        || context.roomSession().swordPickupSequenceActive()));
+                || ((context.roomSession().entityState().gotItemPresentationActive()
+                        || context.roomSession().entityState().swordPickupSequenceActive()));
         if (LinkPassOutAnimation.shouldStart(
                 context.playerState().health(),
                 itemBlocked ? 1 : 0,

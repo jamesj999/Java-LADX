@@ -55,10 +55,10 @@ public final class BushInteraction {
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
 
     public void maybeCutBushWithSword() {
-        if (!roomSession().hasActiveRoom() || overworldBushInteraction() == null) {
+        if (!roomSession().rooms().hasActiveRoom() || overworldBushInteraction() == null) {
             return;
         }
-        ActiveRoom room = roomSession().activeRoom();
+        ActiveRoom room = roomSession().rooms().activeRoom();
 
         Sword sword = equipmentController().activeSword();
         if (sword == null || !sword.staticCollisionActive()) {
@@ -72,8 +72,8 @@ public final class BushInteraction {
             return;
         }
 
-        if (roomSession().mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            if (roomSession().breakIndoorSwordCrystal(location)) {
+        if (roomSession().rooms().mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            if (roomSession().terrain().breakIndoorSwordCrystal(location)) {
                 link().clearRomAttackStepAnimationCountdown();
             }
             return;
