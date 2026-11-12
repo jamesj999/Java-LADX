@@ -31,35 +31,34 @@ final class EntitySpriteArmoredEnemyRegistrations {
 
     private EntitySpriteArmoredEnemyRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_MOBLIN) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, MOBLIN_SPRITE_VARIANTS.bank(), MOBLIN_SPRITE_VARIANTS.address(), 8, 0);
         }
         if (entityType == ENTITY_IRON_MASK) {
-            return catalog.forIronMaskState(0);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.IRON_MASK, entityType);
         }
         if (entityType == ENTITY_BOMBER) {
-            return catalog.decodeRectangle(entityType, DATA_018_77ED.bank(), DATA_018_77ED.address(), 4, 3, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_018_77ED.bank(), DATA_018_77ED.address(), 4, 3, 0);
         }
         if (entityType == ENTITY_MAD_BOMBER) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, MAD_BOMBER_SPRITE_VARIANTS.bank(), MAD_BOMBER_SPRITE_VARIANTS.address(), 5, 0);
         }
         if (entityType == ENTITY_MOBLIN_SWORD) {
-            return catalog.decodeMoblinSword(entityType);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.MOBLIN_SWORD, entityType);
         }
         if (entityType == ENTITY_MOBLIN_ARROW) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, ENTITY_ARROW_SPRITE_VARIANTS.bank(), ENTITY_ARROW_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_ARMOS_STATUE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, ARMOS_STATUE_SPRITE_VARIANTS.bank(), ARMOS_STATUE_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_HARDHAT_BEETLE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     HARD_HAT_BEETLE_CAVE_BSPRITE_VARIANTS.bank(),
                     mapId == 0x0A
@@ -69,7 +68,7 @@ final class EntitySpriteArmoredEnemyRegistrations {
                     0);
         }
         if (entityType == ENTITY_SPIKED_BEETLE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     SPIKED_BEETLE2_SPRITE_VARIANTS.bank(),
                     mapId == 0x03 ? SPIKED_BEETLE2_SPRITE_VARIANTS.address() : SPIKED_BEETLE1_SPRITE_VARIANTS.address(),
@@ -77,7 +76,7 @@ final class EntitySpriteArmoredEnemyRegistrations {
                     0);
         }
         if (entityType == ENTITY_IRON_MASKS_MASK) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     IRON_MASKS_MASK_SPRITE_VARIANTS.bank(),
                     IRON_MASKS_MASK_SPRITE_VARIANTS.address(),

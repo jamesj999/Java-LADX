@@ -20,14 +20,14 @@ final class LinkStateMachineTest {
                 .player(player)
                 .items(null)
                 .build();
-        link.linkMotion.lastRomSpeedX = 0x14;
-        link.linkMotion.lastRomSpeedY = 0xF1;
+        link.linkMotion.position().lastRomSpeedX(0x14);
+        link.linkMotion.position().lastRomSpeedY(0xF1);
         link.linkDamage.hurtBySpikes();
         assertEquals(0xEC, link.position().romSpeedX());
         assertEquals(0x0F, link.position().romSpeedY());
-        assertTrue(link.linkAirborne.airborne);
-        assertEquals(0x10, link.linkAirborne.zVelocity);
-        assertEquals(2 << Link.SUB_PIXEL_SHIFT, link.linkAirborne.zSubPixels);
+        assertTrue(link.linkAirborne.elevation().airborne());
+        assertEquals(0x10, link.linkAirborne.elevation().zVelocity());
+        assertEquals(2 << Link.SUB_PIXEL_SHIFT, link.linkAirborne.elevation().zSubPixels());
         assertEquals(0x10, link.linkDamage.collisionIgnoreFramesRemaining);
         assertEquals(0x30, player.vitals().invincibilityCounter());
         assertEquals(4, player.vitals().subtractHealthBuffer());
@@ -49,10 +49,10 @@ final class LinkStateMachineTest {
                 .items(null)
                 .build();
         link.linkSideView.sideScrolling = true;
-        link.linkAirborne.zVelocity = 7;
+        link.linkAirborne.elevation().zVelocity(7);
         link.linkDamage.hurtBySpikes();
-        assertEquals(7, link.linkAirborne.zVelocity);
-        assertEquals(0, link.linkAirborne.zSubPixels);
+        assertEquals(7, link.linkAirborne.elevation().zVelocity());
+        assertEquals(0, link.linkAirborne.elevation().zSubPixels());
         assertEquals(4, player.vitals().subtractHealthBuffer());
     }
 
@@ -67,13 +67,17 @@ final class LinkStateMachineTest {
                 .player(null)
                 .items(null)
                 .build();
-        link.linkMotion.subX = (148 << Link.SUB_PIXEL_SHIFT) + 10;
-        link.linkMotion.subY = (80 << Link.SUB_PIXEL_SHIFT) + 5;
+        link.linkMotion.position().subX((148 << Link.SUB_PIXEL_SHIFT) + 10);
+        link.linkMotion.position().subY((80 << Link.SUB_PIXEL_SHIFT) + 5);
         link.position().setRoomScrollEntryPixelPosition(3, 80);
-        assertEquals((3 << Link.SUB_PIXEL_SHIFT) + 10, link.linkMotion.subX);
-        assertEquals((80 << Link.SUB_PIXEL_SHIFT) + 5, link.linkMotion.subY);
-        assertEquals(link.linkMotion.subX, link.linkMotion.roomEntrySubX);
-        assertEquals(link.linkMotion.subY, link.linkMotion.roomEntrySubY);
+        assertEquals(
+                (3 << Link.SUB_PIXEL_SHIFT) + 10, link.linkMotion.position().subX());
+        assertEquals(
+                (80 << Link.SUB_PIXEL_SHIFT) + 5, link.linkMotion.position().subY());
+        assertEquals(
+                link.linkMotion.position().subX(), link.linkMotion.position().roomEntrySubX());
+        assertEquals(
+                link.linkMotion.position().subY(), link.linkMotion.position().roomEntrySubY());
         assertEquals(11, link.position().roomEntryRomPositionX());
         assertEquals(96, link.position().roomEntryRomPositionY());
     }
@@ -95,11 +99,11 @@ final class LinkStateMachineTest {
         player.vitals().setInvincibilityCounter(2);
         link.position().applyRomSpeed(16, 0);
         link.motion().update();
-        assertFalse(link.linkStateMachine.romInteractiveMotionBlocked);
+        assertFalse(link.linkStateMachine.status().romInteractiveMotionBlocked());
         assertEquals(1, player.vitals().invincibilityCounter());
         assertEquals(64, link.position().pixelX());
         assertEquals(0, link.position().romSpeedX());
-        assertTrue(link.linkMotion.forcedSpeedPending);
+        assertTrue(link.linkMotion.position().forcedSpeedPending());
     }
 
     @Test
@@ -113,12 +117,12 @@ final class LinkStateMachineTest {
                 .player(null)
                 .items(null)
                 .build();
-        link.linkStateMachine.motionState = LinkMotionState.REVOLVING_DOOR;
-        link.linkStateMachine.revolvingDoorFrame = 70;
-        link.linkStateMachine.tickRevolvingDoor();
+        link.linkStateMachine.status().motionState(LinkMotionState.REVOLVING_DOOR);
+        link.linkStateMachine.door().revolvingDoorFrame(70);
+        link.linkStateMachine.door().tickRevolvingDoor();
         assertEquals(5, link.airborne().romMotionState());
         assertFalse(link.motion().consumeRevolvingDoorTransition());
-        link.linkStateMachine.tickRevolvingDoor();
+        link.linkStateMachine.door().tickRevolvingDoor();
         assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
         assertEquals(Direction.UP.javaIndex(), link.animation().direction());
         assertEquals(-5, link.position().romEntityY());

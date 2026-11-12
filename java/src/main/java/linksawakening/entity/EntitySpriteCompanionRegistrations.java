@@ -18,13 +18,13 @@ final class EntitySpriteCompanionRegistrations {
 
     private EntitySpriteCompanionRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_CUCCO) {
-            return catalog.decodePair(entityType, CUCCO_SPRITE_VARIANTS.bank(), CUCCO_SPRITE_VARIANTS.address(), 4, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, CUCCO_SPRITE_VARIANTS.bank(), CUCCO_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_BOW_WOW) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     BOW_WOW_AT_HOME_SPRITE_VARIANTS.bank(),
                     BOW_WOW_AT_HOME_SPRITE_VARIANTS.address(),
@@ -32,10 +32,10 @@ final class EntitySpriteCompanionRegistrations {
                     0);
         }
         if (entityType == ENTITY_DOG) {
-            return catalog.decodePair(entityType, DOG_SPRITE_VARIANTS.bank(), DOG_SPRITE_VARIANTS.address(), 4, 2);
+            return EntitySpriteRecipe.pair(entityType, DOG_SPRITE_VARIANTS.bank(), DOG_SPRITE_VARIANTS.address(), 4, 2);
         }
         if (entityType == ENTITY_BUTTERFLY) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, BUTTERFLY_OAMATTRIBUTES.bank(), BUTTERFLY_OAMATTRIBUTES.address(), 2, 0);
         }
         return null;

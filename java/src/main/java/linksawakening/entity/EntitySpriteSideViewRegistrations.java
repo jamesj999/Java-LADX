@@ -12,10 +12,9 @@ final class EntitySpriteSideViewRegistrations {
 
     private EntitySpriteSideViewRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_GOOMBA) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, GOOMBA_SPRITE_VARIANTS.bank(), GOOMBA_SPRITE_VARIANTS.address(), 3, 0);
         }
         return null;

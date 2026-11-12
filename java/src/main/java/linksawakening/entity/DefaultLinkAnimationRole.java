@@ -61,11 +61,11 @@ final class DefaultLinkAnimationRole implements LinkAnimationRole {
     }
 
     public int romAnimationState() {
-        return linkAnimator.accessRomAnimationState();
+        return linkAnimator.resolveAnimationState();
     }
 
     public void showRomFallenPose() {
-        linkAnimator.accessShowRomFallenPose();
+        linkAnimator.showRomFallenPose();
     }
 
     public boolean dialogGotItemActive() {
@@ -93,42 +93,42 @@ final class DefaultLinkAnimationRole implements LinkAnimationRole {
     }
 
     public void showHeldItemPose() {
-        linkAnimator.accessShowHeldItemPose();
+        linkAnimator.showHeldItemPose();
     }
 
     public void showPowerUpPickupPose() {
-        linkAnimator.accessShowPowerUpPickupPose();
+        linkAnimator.showPowerUpPickupPose();
     }
 
     public void showTarinShieldPresentation(int[] palette) {
-        linkAnimator.accessShowTarinShieldPresentation(palette);
+        linkAnimator.showTarinShieldPresentation(palette);
     }
 
     public void clearTarinShieldPresentation() {
-        linkAnimator.accessClearTarinShieldPresentation();
+        linkAnimator.clearTarinShieldPresentation();
     }
 
     public void showStandingShieldDownPose() {
-        linkAnimator.accessShowStandingShieldDownPose();
+        linkAnimator.showStandingShieldDownPose();
     }
 
     public void showSwordAcquisitionSpinPose(int countdown) {
-        linkAnimator.accessShowSwordAcquisitionSpinPose(countdown);
+        linkAnimator.showSwordAcquisitionSpinPose(countdown);
     }
 
     public void showSwordAcquisitionFinalPose() {
-        linkAnimator.accessShowSwordAcquisitionFinalPose();
+        linkAnimator.showSwordAcquisitionFinalPose();
     }
 
     public void showMarinWakeUpBed(int spriteVariant) {
-        linkAnimator.accessShowMarinWakeUpBed(spriteVariant);
+        linkAnimator.showMarinWakeUpBed(spriteVariant);
     }
 
     public void render(byte[] displayBuffer, int offsetX, int offsetY) {
-        linkAnimator.accessRender(displayBuffer, offsetX, offsetY);
+        linkAnimator.render(displayBuffer, offsetX, offsetY);
     }
 
     public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
-        linkAnimator.accessSubmitOam(sink, offsetX, offsetY);
+        linkAnimator.submitOam(sink, offsetX, offsetY);
     }
 }

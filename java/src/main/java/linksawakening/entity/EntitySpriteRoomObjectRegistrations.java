@@ -2,7 +2,6 @@ package linksawakening.entity;
 
 import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
-import java.util.List;
 import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.EntityRoomLoader;
 
@@ -19,47 +18,25 @@ final class EntitySpriteRoomObjectRegistrations {
 
     private EntitySpriteRoomObjectRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == 0x42 && mapId != 0x16) {
-            // Ordinary owl: hActiveEntityVisualPosY + 1, not a world-position change.
-            // South Face Shrine instead uses the separate four-sprite mural handler.
-            EntitySpriteDefinition.Variant pair = catalog.decodePair(
-                            entityType, OWL_STATUE_SPRITE_VARIANTS.bank(), OWL_STATUE_SPRITE_VARIANTS.address(), 1, 0)
-                    .variant(0);
-            return EntitySpriteDefinition.dynamic(
-                    entityType,
-                    OWL_STATUE_SPRITE_VARIANTS.bank(),
-                    OWL_STATUE_SPRITE_VARIANTS.address(),
-                    0,
-                    List.of(List.of(
-                            new EntitySpriteDefinition.DynamicSprite(
-                                    1,
-                                    0,
-                                    pair.first(),
-                                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
-                                    true),
-                            new EntitySpriteDefinition.DynamicSprite(
-                                    1,
-                                    8,
-                                    pair.second(),
-                                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
-                                    true))));
+            return EntitySpriteRecipe.owlStatue(
+                    entityType, OWL_STATUE_SPRITE_VARIANTS.bank(), OWL_STATUE_SPRITE_VARIANTS.address());
         }
         if (entityType == ENTITY_CHEST_WITH_ITEM) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, CHEST_ITEM_SPRITE_TABLE.bank(), CHEST_ITEM_SPRITE_TABLE.address(), 0x21, 0);
         }
         if (entityType == 0x06) {
             // Unknown011SpriteVariants, used by the transient pushed block.
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, UNKNOWN011_SPRITE_VARIANTS.bank(), UNKNOWN011_SPRITE_VARIANTS.address(), 2, 1);
         }
-        if (entityType == 0x61 && catalog.isIndoorRoomTable(roomTable)) {
-            return catalog.decodeDungeonWarp();
+        if (entityType == 0x61 && EntitySpriteGeometry.isIndoorRoomTable(roomTable)) {
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.DUNGEON_WARP, entityType);
         }
         if (entityType == ENTITY_CRYSTAL_SWITCH) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, CRYSTAL_SWITCH_SPRITE_VARIANTS.bank(), CRYSTAL_SWITCH_SPRITE_VARIANTS.address(), 1, 0);
         }
         return null;

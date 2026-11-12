@@ -58,7 +58,7 @@ final class LinkRoles {
     LinkRoles(LinkAssembly assembly) {
         sideView = new DefaultLinkSideViewRole(assembly);
         motion = new DefaultLinkMotionRole(assembly);
-        status = new DefaultLinkStatusRole(assembly);
+        status = new DefaultLinkStatusRole(assembly, motion);
         equipment = new DefaultLinkEquipmentRole(assembly);
         animation = new DefaultLinkAnimationRole(assembly);
         actions = new DefaultLinkActionsRole(assembly);

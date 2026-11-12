@@ -252,8 +252,8 @@ final class LinkAdditionalTest extends LinkFixture {
         for (int i = 0; i < 32 && link.airborne().romMotionState() != LinkMotionState.RECOVER.romValue(); i++)
             link.motion().update();
         assertEquals(LinkMotionState.RECOVER.romValue(), link.airborne().romMotionState());
-        assertEquals(lava, link.linkStateMachine.physicsModifier);
-        assertEquals(0x50, link.linkStateMachine.recoverCountdown);
+        assertEquals(lava, link.linkStateMachine.roomPhysics().physicsModifier());
+        assertEquals(0x50, link.linkStateMachine.status().recoverCountdown());
         for (int i = 0; i < 80; i++) link.motion().update();
         assertEquals(0x20, link.position().pixelX());
         assertEquals(0x20, link.position().pixelY());
@@ -269,9 +269,9 @@ final class LinkAdditionalTest extends LinkFixture {
             Link link = linkInRoom(config, tables, emptyRoomObjectsArea(), player, RomTables.PHYSICS_TABLE_OVERWORLD);
             link.position().setRoomEntryPixelPosition(16, 24);
             link.position().setPixelPosition(64, 64);
-            link.linkStateMachine.motionState = LinkMotionState.RECOVER;
-            link.linkStateMachine.physicsModifier = object;
-            link.linkStateMachine.recoverCountdown = 0x50;
+            link.linkStateMachine.status().motionState(LinkMotionState.RECOVER);
+            link.linkStateMachine.roomPhysics().physicsModifier(object);
+            link.linkStateMachine.status().recoverCountdown(0x50);
             for (int frame = 1; frame < 80; frame++) {
                 link.motion().update();
                 int remaining = 80 - frame;

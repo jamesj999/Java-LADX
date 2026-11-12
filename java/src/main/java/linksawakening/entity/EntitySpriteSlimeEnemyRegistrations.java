@@ -16,19 +16,20 @@ final class EntitySpriteSlimeEnemyRegistrations {
 
     private EntitySpriteSlimeEnemyRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_ZOL) {
-            return catalog.decodePair(entityType, ZOL_SPRITE_VARIANTS.bank(), ZOL_SPRITE_VARIANTS.address(), 2, 0);
+            return EntitySpriteRecipe.pair(entityType, ZOL_SPRITE_VARIANTS.bank(), ZOL_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_GEL) {
-            return catalog.decodeSingle(entityType, GEL_SPRITE_VARIANTS.bank(), GEL_SPRITE_VARIANTS.address(), 2, 0);
+            return EntitySpriteRecipe.single(
+                    entityType, GEL_SPRITE_VARIANTS.bank(), GEL_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_HIDING_ZOL) {
-            return catalog.decodeHidingZol(entityType);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.HIDING_ZOL, entityType);
         }
         if (entityType == ENTITY_STAR) {
-            return catalog.decodePair(entityType, STAR_SPRITE_VARIANTS.bank(), STAR_SPRITE_VARIANTS.address(), 5, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, STAR_SPRITE_VARIANTS.bank(), STAR_SPRITE_VARIANTS.address(), 5, 0);
         }
         return null;
     }

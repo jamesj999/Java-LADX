@@ -29,7 +29,7 @@ final class LinkDamageTest {
         assertEquals(63, link.position().pixelX());
         assertEquals(64, link.position().pixelY());
         assertEquals(0xFF, link.position().romSpeedX());
-        assertFalse(link.linkMotion.forcedSpeedPending);
+        assertFalse(link.linkMotion.position().forcedSpeedPending());
         assertTrue(link.linkDamage.hasRecoil());
         link.linkDamage.tickRecoil();
         assertEquals(65, link.position().pixelY());

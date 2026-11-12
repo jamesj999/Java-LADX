@@ -28,41 +28,41 @@ final class EntitySpriteOverworldCreatureRegistrations {
 
     private EntitySpriteOverworldCreatureRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_CROW) {
-            return catalog.decodePair(entityType, CROW_SPRITE_VARIANTS.bank(), CROW_SPRITE_VARIANTS.address(), 4, 2);
+            return EntitySpriteRecipe.pair(
+                    entityType, CROW_SPRITE_VARIANTS.bank(), CROW_SPRITE_VARIANTS.address(), 4, 2);
         }
         if (entityType == ENTITY_BUZZ_BLOB) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, BUZZ_BLOB_SPRITE_VARIANTS.bank(), BUZZ_BLOB_SPRITE_VARIANTS.address(), 9, 0);
         }
         if (entityType == ENTITY_OCTOROK) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, OCTOROK_SPRITE_VARIANTS.bank(), OCTOROK_SPRITE_VARIANTS.address(), 8, 0);
         }
         if (entityType == ENTITY_OCTOROK_ROCK) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, OCTOROK_ROCK_SPRITE_VARIANTS.bank(), OCTOROK_ROCK_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_TEKTITE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, TEKTITE_SPRITE_VARIANTS.bank(), TEKTITE_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_LEEVER) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, LEEVER_SPRITE_VARIANTS.bank(), LEEVER_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_WINGED_OCTOROK) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, WINGED_OCTOROK_SPRITE_VARIANTS.bank(), WINGED_OCTOROK_SPRITE_VARIANTS.address(), 8, 0);
         }
         if (entityType == ENTITY_PINCER) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, PINCER_SPRITE_VARIANTS.bank(), PINCER_SPRITE_VARIANTS.address(), 10, 0);
         }
         if (entityType == ENTITY_PEAHAT) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, PEA_HAT_SPRITE_VARIANTS.bank(), PEA_HAT_SPRITE_VARIANTS.address(), 2, 0);
         }
         return null;
