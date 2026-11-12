@@ -3,8 +3,6 @@ package linksawakening.app;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import linksawakening.app.screen.Screen;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
@@ -100,54 +98,14 @@ public final class ScreenRouter {
         return context.config();
     }
 
-    public Supplier<Screen> screen() {
-        return context.routerScreen();
-    }
-
-    public Consumer<Screen> showScreen() {
-        return context.showScreen();
-    }
-
-    public Consumer<BackgroundScene> background() {
-        return context.routerBackground();
-    }
-
-    public Consumer<FileMenuController> setFileMenu() {
-        return context.setFileMenu();
-    }
-
-    public Runnable clearSaveSlot() {
-        return context.clearSaveSlot();
-    }
-
-    public Runnable resetDebug() {
-        return context.resetDebug();
-    }
-
-    public Runnable startNewGame() {
-        return context.startNewGame();
-    }
-
-    public Runnable clearFileMenuController() {
-        return context.routerClearFileMenuController();
-    }
-
-    public Runnable clearFileSaveController() {
-        return context.routerClearFileSaveController();
-    }
-
-    public Runnable clearNewGameWakeUpMotion() {
-        return context.routerClearNewGameWakeUpMotion();
-    }
-
-    public Runnable clearNewGameTarinShieldMotion() {
-        return context.routerClearNewGameTarinShieldMotion();
+    private void setFileMenuController(FileMenuController controller) {
+        context.screens.fileMenuController = controller;
     }
 
     public void startIntroCutscene() {
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        showScreen().accept(cutsceneScreen());
+        context.screens.fileMenuController = null;
+        context.screens.fileSaveController = null;
+        context.navigator.show(linksawakening.app.screen.ScreenKind.CUTSCENE);
         musicDirector().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
         gpu().loadIntroSequenceTiles(romData());
         cutsceneManager().startIntro(romData().unsafeBytes(), this::loadIntroBackgroundScene);
@@ -162,32 +120,31 @@ public final class ScreenRouter {
     }
 
     public void startTitleScreenWithoutIntro() {
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        showScreen().accept(titleScreen());
+        context.screens.fileMenuController = null;
+        context.screens.fileSaveController = null;
+        context.navigator.show(linksawakening.app.screen.ScreenKind.TITLE);
         musicDirector().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
     }
 
     public void startFileSelection() {
-        showScreen().accept(fileMenuScreen());
-        clearFileSaveController().run();
+        context.navigator.show(linksawakening.app.screen.ScreenKind.FILE_MENU);
+        context.screens.fileSaveController = null;
         gpu().loadMenuTiles(romData());
-        setFileMenu()
-                .accept(new FileMenuController(
-                        new FileMenuRomData(romData().unsafeBytes()),
-                        this::loadFileMenuBackgroundScene,
-                        saveRamStore().saveFilesMask(),
-                        saveRamStore().savedNames(),
-                        new int[] {
-                            saveRamStore().readSlot(0).maxHearts(),
-                            saveRamStore().readSlot(1).maxHearts(),
-                            saveRamStore().readSlot(2).maxHearts()
-                        },
-                        new int[] {
-                            saveRamStore().readSlot(0).deathCountBcd(),
-                            saveRamStore().readSlot(1).deathCountBcd(),
-                            saveRamStore().readSlot(2).deathCountBcd()
-                        }));
+        setFileMenuController(new FileMenuController(
+                new FileMenuRomData(romData().unsafeBytes()),
+                this::loadFileMenuBackgroundScene,
+                saveRamStore().saveFilesMask(),
+                saveRamStore().savedNames(),
+                new int[] {
+                    saveRamStore().readSlot(0).maxHearts(),
+                    saveRamStore().readSlot(1).maxHearts(),
+                    saveRamStore().readSlot(2).maxHearts()
+                },
+                new int[] {
+                    saveRamStore().readSlot(0).deathCountBcd(),
+                    saveRamStore().readSlot(1).deathCountBcd(),
+                    saveRamStore().readSlot(2).deathCountBcd()
+                }));
         musicDirector().playDirectMusic(MusicDirector.fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
@@ -206,7 +163,7 @@ public final class ScreenRouter {
         if (BackgroundSceneCatalog.requiresTitleTileset(sceneId)) {
             gpu().loadTitleScreenTiles(romData());
         }
-        if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && screen().get() == cutsceneScreen()) {
+        if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && context.navigator.current() == cutsceneScreen()) {
             musicDirector().playDirectMusic(MusicDirector.naturalIntroTitleMusicTrack());
         }
         BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
@@ -216,33 +173,34 @@ public final class ScreenRouter {
     }
 
     public void applyBackgroundScene(BackgroundScene scene) {
-        background().accept(scene);
+        context.scene.apply(scene);
     }
 
     public void startConfiguredGameplay() {
-        dispatchConfiguredGameplay(config(), () -> startNewGame().run(), this::startConfiguredLocationGameplay);
+        dispatchConfiguredGameplay(
+                config(), () -> context.saves().startNewGame(), this::startConfiguredLocationGameplay);
     }
 
     public void startDebugGameplay() {
         if (link() == null) {
             return;
         }
-        if (screen().get() == cutsceneScreen()) {
+        if (context.navigator.current() == cutsceneScreen()) {
             cutsceneManager().skipIntroToTitle();
         }
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        clearNewGameWakeUpMotion().run();
-        clearNewGameTarinShieldMotion().run();
-        clearSaveSlot().run();
+        context.screens.fileMenuController = null;
+        context.screens.fileSaveController = null;
+        context.openingState().wakeUp(null);
+        context.openingState().shield(null);
+        context.screens.currentSaveSlot = -1;
         link().resetTransientStateForDebug();
         playerState().initializeDebugState();
         roomSession().story().initializeNewGameWorldState();
         roomSession().story().setBowWowState(0);
         roomSession().story().setBirdKeyOwned(true);
         roomSession().story().setTailKeyOwned(true);
-        showScreen().accept(gameplayScreen());
-        resetDebug().run();
+        context.navigator.show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
+        context.debug.debugNoClip = false;
         link().setDirection(Link.DIRECTION_DOWN);
         gpu().loadBaseTiles(romData());
         loadOverworldScreen();
@@ -250,12 +208,12 @@ public final class ScreenRouter {
     }
 
     public void startConfiguredLocationGameplay() {
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        clearSaveSlot().run();
-        clearNewGameWakeUpMotion().run();
-        clearNewGameTarinShieldMotion().run();
-        showScreen().accept(gameplayScreen());
+        context.screens.fileMenuController = null;
+        context.screens.fileSaveController = null;
+        context.screens.currentSaveSlot = -1;
+        context.openingState().wakeUp(null);
+        context.openingState().shield(null);
+        context.navigator.show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
         applyConfiguredItemProfile(config(), playerState());
         if (config().playIntroStory()) {
             System.err.println("Intro story startup is not implemented yet; spawning at start location");

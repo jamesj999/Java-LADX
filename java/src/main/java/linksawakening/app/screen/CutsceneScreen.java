@@ -3,7 +3,6 @@ package linksawakening.app.screen;
 import static linksawakening.world.room.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.function.Supplier;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
 import linksawakening.input.InputConfig;
@@ -12,13 +11,13 @@ import linksawakening.render.RenderScreen;
 
 public final class CutsceneScreen implements Screen {
     public record Dependencies(
-            Supplier<CutsceneManager> cutsceneManager,
-            Supplier<InputState> inputState,
-            Supplier<DialogController> dialogController,
-            Supplier<InputConfig> inputConfig,
-            Runnable routeDialogSounds,
-            Runnable showTitle,
-            Runnable skipToTitle) {}
+            CutsceneManager cutsceneManager,
+            InputState inputState,
+            DialogController dialogController,
+            InputConfig inputConfig,
+            linksawakening.app.gameplay.DialogSoundRouting sounds,
+            ScreenNavigator navigator,
+            linksawakening.app.story.MusicRequests music) {}
 
     private final Dependencies dependencies;
 
@@ -28,20 +27,20 @@ public final class CutsceneScreen implements Screen {
 
     @Override
     public void tick() {
-        if (dependencies.dialogController().get() != null) {
-            dependencies.dialogController().get().tick();
-            dependencies.routeDialogSounds().run();
+        if (dependencies.dialogController() != null) {
+            dependencies.dialogController().tick();
+            dependencies.sounds().route();
         }
-        if (dependencies.cutsceneManager().get() != null
-                && dependencies.cutsceneManager().get().isActive()) {
-            dependencies.cutsceneManager().get().tick();
+        if (dependencies.cutsceneManager() != null
+                && dependencies.cutsceneManager().isActive()) {
+            dependencies.cutsceneManager().tick();
         }
-        if (dependencies.cutsceneManager().get() != null
-                && !dependencies.cutsceneManager().get().isActive()
-                && dependencies.cutsceneManager().get().isShowingTitleScene()) {
-            dependencies.showTitle().run();
+        if (dependencies.cutsceneManager() != null
+                && !dependencies.cutsceneManager().isActive()
+                && dependencies.cutsceneManager().isShowingTitleScene()) {
+            dependencies.navigator().show(ScreenKind.TITLE);
         }
-        dependencies.inputState().get().tickEdges();
+        dependencies.inputState().tickEdges();
         return;
     }
 
@@ -49,17 +48,18 @@ public final class CutsceneScreen implements Screen {
     public void onKey(int key, int action) {
         if (key == GLFW_KEY_ENTER
                 && action == GLFW_PRESS
-                && dependencies.cutsceneManager().get() != null
-                && dependencies.cutsceneManager().get().skipIntroToTitle()) {
-            dependencies.skipToTitle().run();
+                && dependencies.cutsceneManager() != null
+                && dependencies.cutsceneManager().skipIntroToTitle()) {
+            dependencies.navigator().show(ScreenKind.TITLE);
+            dependencies.music().playDirectMusic(linksawakening.app.MusicDirector.directTitleScreenMusicTrack());
             return;
         }
         if (action == GLFW_PRESS
-                && dependencies.dialogController().get() != null
-                && (key == dependencies.inputConfig().get().aKey()
-                        || key == dependencies.inputConfig().get().bKey()
+                && dependencies.dialogController() != null
+                && (key == dependencies.inputConfig().aKey()
+                        || key == dependencies.inputConfig().bKey()
                         || key == GLFW_KEY_ENTER)) {
-            dependencies.dialogController().get().advance();
+            dependencies.dialogController().advance();
         }
     }
 

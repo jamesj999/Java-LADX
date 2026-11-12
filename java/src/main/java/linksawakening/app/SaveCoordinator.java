@@ -4,8 +4,6 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
@@ -13,7 +11,6 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
-import linksawakening.scene.BackgroundScene;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.FileSaveController;
@@ -22,7 +19,7 @@ import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 
 /** Persistence and room-entry orchestration, using the current session snapshot. */
-public final class SaveCoordinator {
+public final class SaveCoordinator implements linksawakening.app.screen.SaveActions {
     private final SessionContext context;
 
     public SaveCoordinator(SessionContext context) {
@@ -61,48 +58,23 @@ public final class SaveCoordinator {
         return context.inputState();
     }
 
-    public Runnable enterGameplay() {
-        return context.savesEnterGameplay();
+    private void enterGameplay() {
+        context.screens.fileMenuController = null;
+        context.screens.fileSaveController = null;
+        context.navigator.show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
     }
 
-    public Runnable clearOpening() {
-        return context.savesClearOpening();
+    private void enterFileSave() {
+        context.navigator.show(linksawakening.app.screen.ScreenKind.FILE_SAVE);
+        context.screens.fileMenuController = null;
     }
 
-    public Runnable initializeOpening() {
-        return context.savesInitializeOpening();
-    }
-
-    public Runnable playHouseMusic() {
-        return context.savesPlayHouseMusic();
-    }
-
-    public Runnable refreshOpening() {
-        return context.savesRefreshOpening();
-    }
-
-    public Consumer<SaveSlotState> restoreOpening() {
-        return context.savesRestoreOpening();
-    }
-
-    public Runnable startFileSelection() {
-        return context.startFileSelection();
-    }
-
-    public Runnable enterFileSave() {
-        return context.savesEnterFileSave();
-    }
-
-    public Consumer<FileSaveController> showFileSave() {
-        return context.showFileSave();
-    }
-
-    public Function<String, BackgroundScene> fileMenuBackground() {
-        return context.savesFileMenuBackground();
+    private void setFileSaveController(FileSaveController controller) {
+        context.screens.fileSaveController = controller;
     }
 
     public void startNewGame() {
-        enterGameplay().run();
+        enterGameplay();
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
         profile.initializePlayerState(playerState());
@@ -125,14 +97,14 @@ public final class SaveCoordinator {
                                 -1),
                         0);
         link().setRoomEntryRomPosition(profile.entryX(), profile.entryY());
-        initializeOpening().run();
-        playHouseMusic().run();
-        refreshOpening().run();
+        context.openingState().initialize();
+        context.music().playDirectMusic(MusicDirector.newGameHouseMusicTrack());
+        context.story().updateNewGameMarinPresentation();
     }
 
     public void startSavedGame(SaveSlotState saved) {
-        enterGameplay().run();
-        clearOpening().run();
+        enterGameplay();
+        context.openingState().clear();
         playerState().applySavedGame(saved);
         roomSession().story().setBirdKeyOwned(playerState().birdKeyCount() != 0);
         roomSession().story().setTailKeyOwned(playerState().tailKeyCount() != 0);
@@ -177,7 +149,7 @@ public final class SaveCoordinator {
                                 saved.spawnPositionY(),
                                 -1),
                         saved.spawnIndoorRoom());
-        restoreOpening().accept(saved);
+        context.story().restoreNewGameHouseRuntimeIfNeeded(saved);
     }
 
     /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */
@@ -188,14 +160,14 @@ public final class SaveCoordinator {
                             .u8(new RomAddress(1, 0x5295).plus(playerState().maxHearts())));
         }
         if (option != 2) saveCurrentPlayerState();
-        clearOpening().run();
+        context.openingState().clear();
         link().finishGameOver();
         playerState().clearResourceBuffersForDebug();
         playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
         roomSession().progress().clearGameOverPowerCounter();
         roomSession().progress().resetGameOverSwitchBlocks();
         if (option == 1) {
-            startFileSelection().run();
+            context.navigator.startFileSelection();
             return;
         }
         if (option == 0 && currentSaveSlot() >= 0) {
@@ -217,7 +189,7 @@ public final class SaveCoordinator {
                 link().setDirection(Link.DIRECTION_UP);
             }
             link().setRoomEntryRomPosition(spawn.destX(), spawn.destY());
-            enterGameplay().run();
+            enterGameplay();
         }
         playerState().setInvincibilityCounter(0x80);
         inputState().tickEdges();
@@ -230,13 +202,13 @@ public final class SaveCoordinator {
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to persist file-menu mutation", exception);
         }
-        startFileSelection().run();
+        context.navigator.startFileSelection();
     }
 
     public void startFileSave() {
-        enterFileSave().run();
+        enterFileSave();
         gpu().loadSaveMenuTiles(romData());
-        showFileSave().accept(new FileSaveController(fileMenuBackground()::apply));
+        setFileSaveController(new FileSaveController(context.navigator::loadFileMenuBackgroundScene));
         inputState().tickEdges();
     }
 

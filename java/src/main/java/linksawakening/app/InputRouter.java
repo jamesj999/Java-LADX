@@ -4,7 +4,6 @@ import static linksawakening.world.room.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 import linksawakening.app.gameplay.DialogInteractions;
 import linksawakening.app.screen.FileSaveScreen;
 import linksawakening.app.screen.GameplayScreen;
@@ -94,31 +93,23 @@ public final class InputRouter {
         return context.inputRouterToggleDebug();
     }
 
-    public Supplier<Screen> screen() {
-        return context.screen();
+    public Screen screen() {
+        return context.navigator.current();
     }
 
-    public Runnable startDebug() {
-        return context.startDebug();
+    public OpeningStory story() {
+        return context.story();
     }
 
-    public Supplier<OpeningStory> story() {
-        return context.inputRouterStory();
-    }
-
-    public Runnable fileSave() {
-        return context.fileSave();
-    }
-
-    public Supplier<DialogInteractions> dialogs() {
-        return context.inputRouterDialogs();
+    public DialogInteractions dialogs() {
+        return context.dialogInteractions();
     }
 
     public void onKeyEvent(int key, int action) {
         // Desktop shortcut only: Escape never enters the Game Boy button state.
         if (key == GLFW_KEY_ESCAPE) {
             if (action == GLFW_PRESS) {
-                Screen current = screen().get();
+                Screen current = screen();
                 if (current instanceof GameplayScreen gameplay) {
                     gameplay.requestFileSave();
                 } else if (!(current instanceof FileSaveScreen)) {
@@ -133,7 +124,7 @@ public final class InputRouter {
 
         if (action == GLFW_PRESS && config().debugEnabled()) {
             if (key == GLFW_KEY_F2) {
-                startDebug().run();
+                context.navigator.startDebugGameplay();
                 return;
             }
             if (key == GLFW_KEY_F3) {
@@ -142,7 +133,7 @@ public final class InputRouter {
             }
         }
 
-        screen().get().onKey(key, action);
+        screen().onKey(key, action);
     }
 
     public void gameplayKey(int key, int action) {
@@ -153,7 +144,7 @@ public final class InputRouter {
             return;
         }
 
-        if (story().get().marinWakeUpBlocksKeyInput()) {
+        if (story().marinWakeUpBlocksKeyInput()) {
             if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig(), dialogController())) {
                 context.gameplayInput().consume();
             }
@@ -168,16 +159,16 @@ public final class InputRouter {
         // including its inventory/map and normal interaction input.
         if (link().dialogGotItemActive()) return;
 
-        if (story().get().tryOpenTarinShieldDialog(key)) {
+        if (story().tryOpenTarinShieldDialog(key)) {
             return;
         }
-        if (story().get().tryOpenMarinFollowUpDialog(key)) {
+        if (story().tryOpenMarinFollowUpDialog(key)) {
             return;
         }
-        if (dialogs().get().tryOpenChest(key)) {
+        if (dialogs().tryOpenChest(key)) {
             return;
         }
-        if (dialogs().get().tryOpenOverworldDialog(key)) {
+        if (dialogs().tryOpenOverworldDialog(key)) {
             return;
         }
 
@@ -277,15 +268,15 @@ public final class InputRouter {
     /** presentSaveScreenIfNeeded ($00:0E46), before ordinary frame input. */
     public boolean tryPresentFileSave() {
         // Consume before gating: a blocked desktop request must not fire later.
-        boolean requested = screen().get() instanceof GameplayScreen gameplay && gameplay.consumeFileSaveRequest();
+        boolean requested = screen() instanceof GameplayScreen gameplay && gameplay.consumeFileSaveRequest();
         if (link().isPassingOut()
                 || roomSession().doors().tailCaveKeyholeSequenceActive()
-                || story().get().marinWakeUpBlocksKeyInput()) return false;
+                || story().marinWakeUpBlocksKeyInput()) return false;
         if ((requested
                         || shouldEnterFileSave(
                                 inputConfig(), inputState(), inputConfig().selectKey(), GLFW_PRESS))
                 && canPresentFileSave()) {
-            fileSave().run();
+            context.saves().startFileSave();
             return true;
         }
         return false;

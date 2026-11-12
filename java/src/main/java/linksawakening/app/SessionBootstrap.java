@@ -5,7 +5,6 @@ import static linksawakening.world.room.RoomConstants.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.function.Consumer;
 import linksawakening.app.host.Host;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.AreaMusicResolver;
@@ -68,7 +67,6 @@ import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.object.OverworldBushInteraction;
-import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ArrowShotResult;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.OverworldTilesetTable;
@@ -83,7 +81,9 @@ import linksawakening.world.transition.TransitionController;
 
 /** Builds a session's ROM-backed collaborators before any frames run. */
 public final class SessionBootstrap {
-    public record Callbacks(Consumer<String> cutsceneScene, Consumer<ActiveRoom> roomMusic) {}
+    public record Callbacks(
+            linksawakening.app.screen.ScreenNavigator cutsceneScene,
+            linksawakening.world.room.RoomLoadListener roomMusic) {}
 
     public static final class Collaborators {
         private final int[][] bgPalettes;
@@ -430,7 +430,7 @@ public final class SessionBootstrap {
         dialogTextLoader = DialogTextLoader.loadFromRom(romData.unsafeBytes());
         overworldDialogInteraction = new OverworldDialogInteraction(
                 SignpostDialogTable.loadFromRom(romData.unsafeBytes()), dialogTextLoader);
-        cutsceneManager = new CutsceneManager(dialogController, callbacks.cutsceneScene());
+        cutsceneManager = new CutsceneManager(dialogController, callbacks.cutsceneScene()::setCutsceneScene);
         var introCatalog = SoundEffectCatalog.fromRom(romData);
         cutsceneManager.setIntroNoiseSound(id -> introCatalog
                 .find(SoundEffectNamespace.NOISE, id)
@@ -454,8 +454,7 @@ public final class SessionBootstrap {
                 new RoomLoader(romData.unsafeBytes()),
                 new OverworldTilesetTable(romData.unsafeBytes()),
                 overworldCollision,
-                new RoomSessionConfig.Presentation(
-                        transientVfxSystem, droppableRupeeSystem, callbacks.roomMusic()::accept),
+                new RoomSessionConfig.Presentation(transientVfxSystem, droppableRupeeSystem, callbacks.roomMusic()),
                 random));
         roomSession.entityState().setColorShellSoundSink(gameplaySoundSink);
         LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData.unsafeBytes());

@@ -29,7 +29,7 @@ class FileMenuBehaviorTest {
         }
 
         void store(SaveRamStore store) {
-            c.saveRamStore = store;
+            c.saveState.saveRamStore = store;
         }
 
         void press(String key) {
