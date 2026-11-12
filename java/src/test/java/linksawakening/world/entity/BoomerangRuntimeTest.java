@@ -29,7 +29,8 @@ final class BoomerangRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(combatTables)
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
 
         int slot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
@@ -120,7 +121,8 @@ final class BoomerangRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
         int slot = runtime.spawnBoomerang(0x20, 0x40, 0, 0, 0);
         runtime.configuration()
@@ -152,7 +154,8 @@ final class BoomerangRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
 
         int boomerangSlot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
@@ -332,7 +335,8 @@ final class BoomerangRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
     }
 

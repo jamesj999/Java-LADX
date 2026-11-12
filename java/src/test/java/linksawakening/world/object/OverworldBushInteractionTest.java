@@ -37,7 +37,8 @@ final class OverworldBushInteractionTest {
 
     private static final byte[] ROM = loadRom();
     private static final RomTables ROM_TABLES = RomTables.loadFromRom(ROM);
-    private static final OverworldBushInteraction INTERACTION = new OverworldBushInteraction(ROM, ROM_TABLES);
+    private static final OverworldBushInteraction INTERACTION = new OverworldBushInteraction(
+            (ROM == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(ROM)), ROM_TABLES);
 
     @Test
     void plainBushRevealsShortGrassInNormalRoom() {

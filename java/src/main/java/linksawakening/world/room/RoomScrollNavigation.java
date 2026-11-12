@@ -3,15 +3,17 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.world.transition.ScrollController;
 
 /** Resolves scroll and bomb-passage neighbors through the ROM map layout. */
 final class RoomScrollNavigation {
     private static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
-    private final byte[] romData;
+    private final Rom romData;
     private final RoomWorldState roomState;
 
-    RoomScrollNavigation(byte[] romData, RoomWorldState roomState) {
+    RoomScrollNavigation(Rom romData, RoomWorldState roomState) {
         this.romData = romData;
         this.roomState = roomState;
     }
@@ -59,7 +61,7 @@ final class RoomScrollNavigation {
                 && adjacentPosition < INDOOR_MAP_LAYOUT_SIZE
                 && layoutOffset >= 0) {
             return new IndoorRoomDestination(
-                    Byte.toUnsignedInt(romData[layoutOffset + adjacentPosition]), adjacentPosition);
+                    romData.u8(RomAddress.fromOffset(layoutOffset + adjacentPosition)), adjacentPosition);
         }
 
         // room_transition.asm:$7A0C skips the wIndoorRoom/MapLayout path for
@@ -92,8 +94,8 @@ final class RoomScrollNavigation {
             int adjacentPosition = mapPosition + mapPositionDelta;
             if (adjacentPosition >= 0 && adjacentPosition < INDOOR_MAP_LAYOUT_SIZE) {
                 int layoutOffset = roomState.indoorMapLayoutOffset(activeRoom.mapId());
-                if (layoutOffset >= 0 && layoutOffset + adjacentPosition < romData.length) {
-                    int roomId = Byte.toUnsignedInt(romData[layoutOffset + adjacentPosition]);
+                if (layoutOffset >= 0 && layoutOffset + adjacentPosition < romData.size()) {
+                    int roomId = romData.u8(RomAddress.fromOffset(layoutOffset + adjacentPosition));
                     if (roomId != 0) {
                         return roomId;
                     }

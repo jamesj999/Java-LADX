@@ -1,6 +1,8 @@
 package linksawakening.world.room;
 
 import linksawakening.rom.*;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 
 /** Resolves label_2A07's two-stage overworld-room to owl-dialog lookup. */
@@ -10,13 +12,13 @@ public final class OwlEventDialogResolver {
     private static final int ROOM_TABLE_ADDRESS = RomSymbols.MapSpecialLocationNamesTable.address();
     private static final int OVERWORLD_MUSIC_TABLE_ADDRESS = RomSymbols.OverworldMusicTracks.address();
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    public OwlEventDialogResolver(byte[] romData) {
+    public OwlEventDialogResolver(Rom romData) {
         int required = Math.max(
                 RomBank.romOffset(BANK, ROOM_TABLE_ADDRESS) + 0x100,
                 RomBank.romOffset(RomSymbols.OverworldMusicTracks.bank(), OVERWORLD_MUSIC_TABLE_ADDRESS) + 0x100);
-        if (romData == null || romData.length < required) {
+        if (romData == null || romData.size() < required) {
             throw new IllegalArgumentException("ROM is too small for owl dialog tables");
         }
         this.romData = romData;
@@ -27,9 +29,9 @@ public final class OwlEventDialogResolver {
             throw new IllegalArgumentException("Owl room id must be an unsigned byte");
         }
         int roomTable = RomBank.romOffset(BANK, ROOM_TABLE_ADDRESS);
-        int lookupIndex = new Rom(romData).u8(RomAddress.fromOffset(roomTable + roomId));
+        int lookupIndex = romData.u8(RomAddress.fromOffset(roomTable + roomId));
         int lookupTable = RomBank.romOffset(BANK, LOOKUP_TABLE_ADDRESS);
-        int lowId = new Rom(romData).u8(RomAddress.fromOffset(lookupTable + lookupIndex));
+        int lowId = romData.u8(RomAddress.fromOffset(lookupTable + lookupIndex));
         return lowId;
     }
 
@@ -38,9 +40,7 @@ public final class OwlEventDialogResolver {
         if ((roomId & ~0xFF) != 0) {
             throw new IllegalArgumentException("Owl room id must be an unsigned byte");
         }
-        return new Rom(romData)
-                .u8(RomAddress.fromOffset(
-                        RomBank.romOffset(RomSymbols.OverworldMusicTracks.bank(), OVERWORLD_MUSIC_TABLE_ADDRESS)
-                                + roomId));
+        return romData.u8(RomAddress.fromOffset(
+                RomBank.romOffset(RomSymbols.OverworldMusicTracks.bank(), OVERWORLD_MUSIC_TABLE_ADDRESS) + roomId));
     }
 }

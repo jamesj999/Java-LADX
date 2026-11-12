@@ -12,9 +12,9 @@ public final class ManboWarpResolver {
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int FIRST_UNSUPPORTED_INDOOR_MAP = 0x0A;
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    public ManboWarpResolver(byte[] romData) {
+    public ManboWarpResolver(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
@@ -49,9 +49,9 @@ public final class ManboWarpResolver {
     }
 
     private int readByte(int offset) {
-        if (offset < 0 || offset >= romData.length) {
+        if (offset < 0 || offset >= romData.size()) {
             throw new IllegalArgumentException("Manbo warp table exceeds ROM bounds");
         }
-        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 }

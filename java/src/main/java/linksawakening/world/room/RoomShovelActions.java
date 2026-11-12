@@ -65,6 +65,7 @@ final class RoomShovelActions {
     int shovelAnimationState(int javaDirection, int timer) {
         return dependencies
                 .romTables()
+                .equipmentTables()
                 .shovelAnimationState(timer, RoomInteractionGeometry.romDirectionForProjectileCollision(javaDirection));
     }
 
@@ -95,7 +96,7 @@ final class RoomShovelActions {
                 : dependencies.location().activeRoom.mapId() == 0xFF
                         ? RomTables.PHYSICS_TABLE_INDOORS2
                         : RomTables.PHYSICS_TABLE_INDOORS1;
-        boolean valid = dependencies.romTables().objectPhysicsFlag(physicsTable, objectId) == 0;
+        boolean valid = dependencies.romTables().physicsTables().objectPhysicsFlag(physicsTable, objectId) == 0;
         if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             valid &= objectId != OBJECT_SHOVEL_BLOCKER_A
                     && objectId != OBJECT_SHOVEL_BLOCKER_B

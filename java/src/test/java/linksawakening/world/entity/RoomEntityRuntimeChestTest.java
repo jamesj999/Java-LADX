@@ -18,7 +18,8 @@ final class RoomEntityRuntimeChestTest {
     @Test
     void chestInitializesWithTheRomOpenAnimationAndRewardEvent() {
         byte[] rom = loadRom();
-        ChestContentsTable chestTable = new ChestContentsTable(rom);
+        ChestContentsTable chestTable =
+                new ChestContentsTable((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
@@ -50,7 +51,8 @@ final class RoomEntityRuntimeChestTest {
     @Test
     void chestEmitsTheRomPresentationSoundAtInertiaEightAndDialogAtThirtyEight() {
         byte[] rom = loadRom();
-        ChestContentsTable chestTable = new ChestContentsTable(rom);
+        ChestContentsTable chestTable =
+                new ChestContentsTable((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
@@ -101,7 +103,8 @@ final class RoomEntityRuntimeChestTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
         int chestSlot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_ZOL);
 

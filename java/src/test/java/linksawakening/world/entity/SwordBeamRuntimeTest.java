@@ -149,7 +149,8 @@ final class SwordBeamRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
     }
 

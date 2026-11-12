@@ -6,6 +6,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.world.transition.Warp;
 
 final class RoomChestInteractions {
@@ -26,8 +27,10 @@ final class RoomChestInteractions {
         if (linkPixelX < 0 || linkPixelY < 0 || linkPixelX >= ROOM_PIXEL_WIDTH || linkPixelY >= ROOM_PIXEL_HEIGHT) {
             return new ChestOpenResult(false, -1, -1, -1);
         }
-        int column = Math.floorDiv(linkPixelX + (dependencies.romData()[0x1F4B] & 0xFF), 0x10);
-        int row = Math.floorDiv(linkPixelY + (dependencies.romData()[0x1F4F] & 0xFF), 0x10);
+        int column = Math.floorDiv(
+                linkPixelX + (dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4B))), 0x10);
+        int row = Math.floorDiv(
+                linkPixelY + (dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4F))), 0x10);
         if (column < 0
                 || column >= RoomConstants.OBJECTS_PER_ROW
                 || row < 0
@@ -90,7 +93,7 @@ final class RoomChestInteractions {
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             RoomLocationState location,
             OverworldCollision overworldCollision,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,

@@ -9,7 +9,8 @@ import org.junit.jupiter.api.Test;
 final class OwlEventDialogResolverTest {
     @Test
     void resolvesBeachAndTailCaveApproachDialogsFromRomTables() throws IOException {
-        OwlEventDialogResolver resolver = new OwlEventDialogResolver(loadRom());
+        OwlEventDialogResolver resolver = new OwlEventDialogResolver(
+                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
 
         assertEquals(0x0D9, resolver.globalDialogId(0xF2));
         assertEquals(0x0C1, resolver.globalDialogId(0x41));
@@ -20,7 +21,11 @@ final class OwlEventDialogResolverTest {
     @Test
     void rejectsRomThatCannotContainTheMusicTable() {
         org.junit.jupiter.api.Assertions.assertThrows(
-                IllegalArgumentException.class, () -> new OwlEventDialogResolver(new byte[0x8000]));
+                IllegalArgumentException.class,
+                () -> new OwlEventDialogResolver(
+                        (new byte[0x8000] == null
+                                ? (linksawakening.rom.Rom) null
+                                : new linksawakening.rom.Rom(new byte[0x8000]))));
     }
 
     private static byte[] loadRom() throws IOException {

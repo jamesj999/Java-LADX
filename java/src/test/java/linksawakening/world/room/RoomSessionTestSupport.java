@@ -65,10 +65,11 @@ final class RoomSessionTestSupport {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
         return new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new OverworldTilesetTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
                 new OverworldCollision(romTables),
                 new RoomSessionConfig.Presentation(transientVfxSystem, null, roomLoadListener),
                 new linksawakening.world.entity.RomRandomByteSource()));

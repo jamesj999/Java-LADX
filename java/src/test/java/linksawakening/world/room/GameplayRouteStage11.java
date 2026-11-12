@@ -128,7 +128,8 @@ final class GameplayRouteStage11 {
         assertEquals(ChestContentsTable.CHEST_NIGHTMARE_KEY, route.room27Chest.itemType());
         assertEquals(0x28, route.room27Chest.location());
         route.room27ChestSlot = route.room27Chest.entitySlot();
-        route.room27DialogId = new ChestContentsTable(route.rom)
+        route.room27DialogId = new ChestContentsTable(
+                        (route.rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(route.rom)))
                 .dialogLowIdFor(
                         ChestContentsTable.CHEST_NIGHTMARE_KEY,
                         route.playerState.shieldLevel(),

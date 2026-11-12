@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.ScrollController;
@@ -25,7 +26,7 @@ final class RoomTransitionController {
             int indoorRoom = dependencies.roomSessionViews().get().indoorRoomPositionForSave();
             if (indoorRoom < 0) indoorRoom = dependencies.location().respawnIndoorRoom;
             if (warp.category() == Warp.CATEGORY_INDOOR && (warp.destMap() < 0x0A || warp.destMap() == 0xFF)) {
-                var rom = new linksawakening.rom.Rom(dependencies.romData());
+                var rom = dependencies.romData();
                 var address = new linksawakening.rom.RomAddress(
                         0x14, warp.destMap() == 0xFF ? 0x4E3C : 0x4DF1 + warp.destMap() * 5);
                 spawn = new Warp(
@@ -297,7 +298,7 @@ final class RoomTransitionController {
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             GPU gpu,
             ManboWarpResolver manboWarpResolver,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,

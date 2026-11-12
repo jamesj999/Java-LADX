@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomObjectFormat.*;
 
+import linksawakening.rom.Rom;
 import linksawakening.world.transition.Warp;
 
 final class RoomObjectStreamDecoder {
@@ -12,7 +13,7 @@ final class RoomObjectStreamDecoder {
     }
 
     void parseRoomObjectStream(int pos, boolean isIndoor) {
-        while (pos < dependencies.romData().length - 1) {
+        while (pos < dependencies.romData().size() - 1) {
             int firstByte = dependencies.owner().get().readRomByte(pos);
             if (firstByte == RoomConstants.ROOM_END) {
                 break;
@@ -27,7 +28,7 @@ final class RoomObjectStreamDecoder {
             int type;
             int location;
             if (isStrip) {
-                if (pos + 2 >= dependencies.romData().length) {
+                if (pos + 2 >= dependencies.romData().size()) {
                     break;
                 }
                 location = dependencies.owner().get().readRomByte(pos + 1);
@@ -47,7 +48,7 @@ final class RoomObjectStreamDecoder {
                     }
                 }
             } else {
-                if (pos + 1 >= dependencies.romData().length) {
+                if (pos + 1 >= dependencies.romData().size()) {
                     break;
                 }
                 location = firstByte;
@@ -73,7 +74,7 @@ final class RoomObjectStreamDecoder {
     }
 
     void collectWarpRecord(int pos) {
-        if (pos + 4 >= dependencies.romData().length) {
+        if (pos + 4 >= dependencies.romData().size()) {
             return;
         }
         int category = dependencies.owner().get().readRomByte(pos) & 0x03;
@@ -171,5 +172,5 @@ final class RoomObjectStreamDecoder {
     }
 
     record Dependencies(
-            byte[] romData, RoomObjectDecodeState state, java.util.function.Supplier<RoomObjectParser> owner) {}
+            Rom romData, RoomObjectDecodeState state, java.util.function.Supplier<RoomObjectParser> owner) {}
 }

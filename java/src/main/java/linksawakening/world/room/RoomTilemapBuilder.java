@@ -8,7 +8,7 @@ import linksawakening.rom.RomSymbols;
 
 public final class RoomTilemapBuilder {
     private int readRomByte(int offset) {
-        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 
     private static final int MAP_COLOR_DUNGEON = 0xFF;
@@ -46,9 +46,9 @@ public final class RoomTilemapBuilder {
     private static final int GBC_OVERLAY_ROOM_SIZE = 0x50;
     private static final int GBC_OVERLAY_BANK_B_START_ROOM = 0xCC;
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    public RoomTilemapBuilder(byte[] romData) {
+    public RoomTilemapBuilder(Rom romData) {
         this.romData = romData;
     }
 
@@ -102,7 +102,7 @@ public final class RoomTilemapBuilder {
                         int tileByteIndex = ty * 2 + tx;
                         int tileId = readRomByte(tileTableOffset + tileByteIndex);
                         int attrByte = 0;
-                        if (attrTableOffset >= 0 && attrTableOffset + tileByteIndex < romData.length) {
+                        if (attrTableOffset >= 0 && attrTableOffset + tileByteIndex < romData.size()) {
                             attrByte = readRomByte(attrTableOffset + tileByteIndex);
                         }
 

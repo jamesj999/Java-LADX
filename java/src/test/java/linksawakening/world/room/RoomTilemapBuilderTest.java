@@ -30,7 +30,9 @@ final class RoomTilemapBuilderTest {
         int[] objects = new int[RoomConstants.ROOM_OBJECTS_AREA_SIZE];
         objects[RoomConstants.ROOM_OBJECTS_BASE] = 0x99;
 
-        RoomTilemap tilemap = new RoomTilemapBuilder(rom).buildOverworld(0, objects);
+        RoomTilemap tilemap = new RoomTilemapBuilder(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .buildOverworld(0, objects);
 
         assertEquals(0x22, tilemap.renderValues()[RoomConstants.ROOM_OBJECTS_BASE]);
         assertEquals(0x11, tilemap.tileIds()[0]);
@@ -53,7 +55,9 @@ final class RoomTilemapBuilderTest {
         int colorAttr = RomBank.romOffset(0x23, 0x6000) + objectId * 4;
         rom[colorAttr] = 0x57;
 
-        RoomTilemap result = new RoomTilemapBuilder(rom).buildIndoor(0xFF, 0x00, objects);
+        RoomTilemap result = new RoomTilemapBuilder(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .buildIndoor(0xFF, 0x00, objects);
 
         assertEquals(0x66, result.tileIds()[0]);
         assertEquals(0x57, result.tileAttrs()[0]);
@@ -67,7 +71,9 @@ final class RoomTilemapBuilderTest {
         Arrays.fill(objects, 0x100);
         objects[RoomConstants.ROOM_OBJECTS_BASE] = objectId;
 
-        RoomTilemap result = new RoomTilemapBuilder(rom).buildIndoor(0x10, 0xB5, objects);
+        RoomTilemap result = new RoomTilemapBuilder(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .buildIndoor(0x10, 0xB5, objects);
 
         int colorTile = RomBank.romOffset(0x08, 0x4760) + objectId * 4;
         int pointer = RomBank.romOffset(0x1A, 0x6276 + 0x1FE);
@@ -112,7 +118,9 @@ final class RoomTilemapBuilderTest {
                 int[] objects = new int[RoomConstants.ROOM_OBJECTS_AREA_SIZE];
                 Arrays.fill(objects, 0x100);
                 objects[RoomConstants.ROOM_OBJECTS_BASE] = object;
-                var result = new RoomTilemapBuilder(rom).buildIndoor(c[0], c[1], objects);
+                var result = new RoomTilemapBuilder(
+                                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                        .buildIndoor(c[0], c[1], objects);
                 for (int tile = 0; tile < 4; tile++) {
                     int index = tile / 2 * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
                     assertEquals(

@@ -9,7 +9,7 @@ import linksawakening.world.transition.Warp;
 /** Persistent room-status regions, dungeon inventory, and ROM map-layout queries. */
 final class RoomWorldState {
     private static final int ROOM_STATUS_TABLE_SIZE = 0x100;
-    private final byte[] romData;
+    private final Rom romData;
     private static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
     private static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
     final byte[] overworldRoomStatus = new byte[0x100];
@@ -19,7 +19,7 @@ final class RoomWorldState {
     final byte[] dungeonProgressFlags = new byte[0x1A];
     final DungeonItemState dungeonItemState = new DungeonItemState();
 
-    RoomWorldState(byte[] romData) {
+    RoomWorldState(Rom romData) {
         this.romData = romData;
     }
 
@@ -81,7 +81,7 @@ final class RoomWorldState {
 
     int findIndoorMapPosition(int mapId, int roomId) {
         int layoutOffset = indoorMapLayoutOffset(mapId);
-        if (layoutOffset < 0 || layoutOffset + INDOOR_MAP_LAYOUT_SIZE > romData.length) {
+        if (layoutOffset < 0 || layoutOffset + INDOOR_MAP_LAYOUT_SIZE > romData.size()) {
             return -1;
         }
         if ((roomId & 0xFF) == 0) {
@@ -91,7 +91,7 @@ final class RoomWorldState {
             return mapId == 0xFF ? 0x19 : -1;
         }
         for (int position = 0; position < INDOOR_MAP_LAYOUT_SIZE; position++) {
-            if (new Rom(romData).u8(RomAddress.fromOffset(layoutOffset + position)) == (roomId & 0xFF)) {
+            if (romData.u8(RomAddress.fromOffset(layoutOffset + position)) == (roomId & 0xFF)) {
                 return position;
             }
         }
@@ -137,7 +137,7 @@ final class RoomWorldState {
         if (offset < 0) return result;
         byte[] status = indoorStatusTableForMap(activeRoom.mapId());
         for (int i = 0; i < result.length; i++) {
-            int room = new Rom(romData).u8(RomAddress.fromOffset(offset + i));
+            int room = romData.u8(RomAddress.fromOffset(offset + i));
             if (room < status.length) result[i] = status[room];
         }
         return result;

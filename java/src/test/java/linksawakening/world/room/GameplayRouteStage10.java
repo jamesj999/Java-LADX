@@ -249,7 +249,11 @@ final class GameplayRouteStage10 {
                 route.room22Hearts.stream().map(RoomEntity::x).collect(java.util.stream.Collectors.toSet()));
         assertEquals(
                 ChestContentsTable.CHEST_SMALL_KEY,
-                new ChestContentsTable(route.rom).itemForSpawn(0x01, 0x22, route.playerState.swordLevel(), true));
+                new ChestContentsTable(
+                                (route.rom == null
+                                        ? (linksawakening.rom.Rom) null
+                                        : new linksawakening.rom.Rom(route.rom)))
+                        .itemForSpawn(0x01, 0x22, route.playerState.swordLevel(), true));
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
 
         route.room22SwitchApproach = reachableSwordContactPathWithFeather(
@@ -327,7 +331,8 @@ final class GameplayRouteStage10 {
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, route.room22Chest.itemType());
         assertEquals(0x27, route.room22Chest.location());
         route.room22ChestSlot = route.room22Chest.entitySlot();
-        route.room22DialogId = new ChestContentsTable(route.rom)
+        route.room22DialogId = new ChestContentsTable(
+                        (route.rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(route.rom)))
                 .dialogLowIdFor(
                         ChestContentsTable.CHEST_SMALL_KEY,
                         route.playerState.shieldLevel(),

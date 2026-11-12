@@ -505,7 +505,9 @@ final class RoomSessionRewards1Test {
         }
         assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
         assertEquals(
-                ChestContentsTable.CHEST_NIGHTMARE_KEY, new ChestContentsTable(rom).itemForSpawn(0x01, 0x27, 1, true));
+                ChestContentsTable.CHEST_NIGHTMARE_KEY,
+                new ChestContentsTable((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                        .itemForSpawn(0x01, 0x27, 1, true));
     }
 
     @Test

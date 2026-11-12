@@ -21,7 +21,8 @@ final class LibraryTreeCollisionTest {
         try (var input = TestRom.open()) {
             rom = input.readAllBytes();
         }
-        var room = new RoomLoader(rom).loadOverworld(0xB0);
+        var room = new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .loadOverworld(0xB0);
         assertTrue(room.warps().stream().anyMatch(w -> w.destMap() == 0x1D), "library exterior");
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);

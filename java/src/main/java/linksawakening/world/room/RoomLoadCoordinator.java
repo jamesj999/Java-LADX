@@ -5,6 +5,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EnemyDropResolver;
@@ -282,7 +283,7 @@ final class RoomLoadCoordinator {
             OverworldCollision overworldCollision,
             OverworldTilesetTable overworldTilesetTable,
             OwlEventDialogResolver owlEventDialogResolver,
-            byte[] romData,
+            Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,

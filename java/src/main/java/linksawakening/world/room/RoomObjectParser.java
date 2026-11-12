@@ -15,10 +15,10 @@ public final class RoomObjectParser {
     private final RoomObjectStatusPatches roomObjectStatusPatches;
 
     int readRomByte(int offset) {
-        return new Rom(dependencies.romData()).u8(RomAddress.fromOffset(offset));
+        return dependencies.romData().u8(RomAddress.fromOffset(offset));
     }
 
-    public RoomObjectParser(byte[] romData) {
+    public RoomObjectParser(Rom romData) {
         this.dependencies = new Dependencies(romData, new RoomObjectDecodeState());
         roomObjectMacroDecoder = new RoomObjectMacroDecoder(
                 new RoomObjectMacroDecoder.Dependencies(dependencies.romData(), dependencies.state(), () -> this));
@@ -246,5 +246,5 @@ public final class RoomObjectParser {
                 : objectId == OBJECT_DOOR_C5 || objectId == OBJECT_GROUND_STAIRS;
     }
 
-    record Dependencies(byte[] romData, RoomObjectDecodeState state) {}
+    record Dependencies(Rom romData, RoomObjectDecodeState state) {}
 }

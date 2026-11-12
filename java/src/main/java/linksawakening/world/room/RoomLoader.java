@@ -14,20 +14,20 @@ public final class RoomLoader {
 
     private static final int ROOM_SECTION_OW_SECOND_HALF = 0x80;
 
-    private final byte[] romData;
+    private final Rom romData;
     private final RoomObjectParser parser;
     private final RoomTilemapBuilder tilemapBuilder;
     private final RoomPaletteLoader paletteLoader;
     private final EntityRoomLoader entityLoader;
     private final EntitySpriteCatalog entitySpriteCatalog;
 
-    public RoomLoader(byte[] romData) {
+    public RoomLoader(Rom romData) {
         this.romData = romData;
         this.parser = new RoomObjectParser(romData);
         this.tilemapBuilder = new RoomTilemapBuilder(romData);
         this.paletteLoader = new RoomPaletteLoader(romData);
-        this.entityLoader = new EntityRoomLoader(romData == null ? null : new linksawakening.rom.Rom(romData));
-        this.entitySpriteCatalog = new EntitySpriteCatalog(romData);
+        this.entityLoader = new EntityRoomLoader(romData);
+        this.entitySpriteCatalog = new EntitySpriteCatalog(romData.unsafeBytes());
     }
 
     public LoadedRoom loadOverworld(int roomId) {
@@ -41,8 +41,8 @@ public final class RoomLoader {
     LoadedRoom loadOverworld(int roomId, int clearedEntitiesMask, byte[] overworldRoomStatus) {
         int roomPointerOffset =
                 RomSymbols.OverworldRoomPointers.plus(roomId * 2).offset();
-        int roomLo = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset));
-        int roomHi = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset + 1));
+        int roomLo = romData.u8(RomAddress.fromOffset(roomPointerOffset));
+        int roomHi = romData.u8(RomAddress.fromOffset(roomPointerOffset + 1));
         int roomAddr = (roomHi << 8) | roomLo;
 
         int roomDataBank = roomId >= ROOM_SECTION_OW_SECOND_HALF
@@ -50,8 +50,8 @@ public final class RoomLoader {
                 : RomSymbols.OverworldRoomPointers.bank();
         int roomDataOffset = RomBank.romOffset(roomDataBank, roomAddr);
 
-        int animatedTilesGroup = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset));
-        int floorObject = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset + 1));
+        int animatedTilesGroup = romData.u8(RomAddress.fromOffset(roomDataOffset));
+        int floorObject = romData.u8(RomAddress.fromOffset(roomDataOffset + 1));
         int roomStatusFlags = overworldRoomStatus == null || roomId < 0 || roomId >= overworldRoomStatus.length
                 ? 0
                 : Byte.toUnsignedInt(overworldRoomStatus[roomId]);
@@ -143,13 +143,13 @@ public final class RoomLoader {
 
         RoomPointerTable pointerTable = IndoorRoomPointerTables.forMap(mapId);
         int roomPointerOffset = RomBank.romOffset(pointerTable.bank(), pointerTable.address() + roomId * 2);
-        int roomLo = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset));
-        int roomHi = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset + 1));
+        int roomLo = romData.u8(RomAddress.fromOffset(roomPointerOffset));
+        int roomHi = romData.u8(RomAddress.fromOffset(roomPointerOffset + 1));
         int roomAddr = (roomHi << 8) | roomLo;
         int roomDataOffset = RomBank.romOffset(pointerTable.bank(), roomAddr);
 
-        int animatedTilesGroup = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset));
-        int floorAndTemplate = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset + 1));
+        int animatedTilesGroup = romData.u8(RomAddress.fromOffset(roomDataOffset));
+        int floorAndTemplate = romData.u8(RomAddress.fromOffset(roomDataOffset + 1));
         int roomStatusFlags = indoorRoomStatus == null || roomId < 0 || roomId >= indoorRoomStatus.length
                 ? 0
                 : Byte.toUnsignedInt(indoorRoomStatus[roomId]);
@@ -262,5 +262,11 @@ public final class RoomLoader {
             }
         }
         return false;
+    }
+
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java; test/java/linksawakening/app/MabeCollisionSweepTest.java; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
+    @Deprecated(forRemoval = true)
+    public RoomLoader(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
     }
 }

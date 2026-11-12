@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomObjectFormat.*;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 
 final class RoomObjectMacroDecoder {
@@ -63,7 +64,8 @@ final class RoomObjectMacroDecoder {
         int offsetsOffset = RomBank.romOffset(offsetsBank, offsetsAddr);
         int idsOffset = RomBank.romOffset(idsBank, idsAddr);
 
-        while (offsetsOffset < dependencies.romData().length && idsOffset < dependencies.romData().length) {
+        while (offsetsOffset < dependencies.romData().size()
+                && idsOffset < dependencies.romData().size()) {
             int offset = dependencies.owner().get().readRomByte(offsetsOffset++);
             if (offset == 0xFF) {
                 break;
@@ -188,7 +190,8 @@ final class RoomObjectMacroDecoder {
         int offsetsOffset = RomBank.romOffset(OVERWORLD_MACROS_BANK, offsetsAddr);
         int idsOffset = RomBank.romOffset(OVERWORLD_MACROS_BANK, idsAddr);
 
-        while (offsetsOffset < dependencies.romData().length && idsOffset < dependencies.romData().length) {
+        while (offsetsOffset < dependencies.romData().size()
+                && idsOffset < dependencies.romData().size()) {
             int offset = dependencies.owner().get().readRomByte(offsetsOffset++);
             if (offset == 0xFF) {
                 break;
@@ -205,5 +208,5 @@ final class RoomObjectMacroDecoder {
     }
 
     record Dependencies(
-            byte[] romData, RoomObjectDecodeState state, java.util.function.Supplier<RoomObjectParser> owner) {}
+            Rom romData, RoomObjectDecodeState state, java.util.function.Supplier<RoomObjectParser> owner) {}
 }

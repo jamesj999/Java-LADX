@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.world.object.OverworldBushInteraction;
 
 /** RoomDoorInteractions operations for the live room session. */
@@ -196,7 +197,7 @@ final class RoomDoorInteractions {
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomDoorInteractions> roomDoorInteractions,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,

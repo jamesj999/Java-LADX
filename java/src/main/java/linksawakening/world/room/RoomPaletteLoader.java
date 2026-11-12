@@ -7,7 +7,7 @@ import linksawakening.rom.RomSymbols;
 
 public final class RoomPaletteLoader {
     private int readRomByte(int offset) {
-        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 
     private static final int MAP_COLOR_DUNGEON = 0xFF;
@@ -41,9 +41,9 @@ public final class RoomPaletteLoader {
     private static final int ROOM_MABE_VILLAGE_SQUARE = 0x92;
     private static final int MABE_VILLAGE_SQUARE_COLORS_ADDR = RomSymbols.Data_021_56C8.address();
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    public RoomPaletteLoader(byte[] romData) {
+    public RoomPaletteLoader(Rom romData) {
         this.romData = romData;
     }
 
@@ -238,7 +238,7 @@ public final class RoomPaletteLoader {
         for (int p = 0; p < 8; p++) {
             for (int c = 0; c < 4; c++) {
                 int colorOffset = paletteOffset + (p * 4 + c) * 2;
-                if (colorOffset + 1 < romData.length) {
+                if (colorOffset + 1 < romData.size()) {
                     int low = readRomByte(colorOffset);
                     int high = readRomByte(colorOffset + 1);
                     palettes[p][c] = RomBank.decodeRgb555(low | (high << 8));
@@ -246,5 +246,11 @@ public final class RoomPaletteLoader {
             }
         }
         return palettes;
+    }
+
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/entity/EntitySpriteCatalog.java. Legacy partial buffers retain their validation timing. */
+    @Deprecated(forRemoval = true)
+    public RoomPaletteLoader(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
     }
 }

@@ -151,7 +151,7 @@ final class RoomCollisionQueries {
 
     RoomEntityGroundInteraction.Result entityGroundInteraction(
             RoomEntity entity, int frameCounter, int previousGroundStatus, int speedZ, boolean sideScrolling) {
-        int options = dependencies.romTables().entityOptions1(entity.type());
+        int options = dependencies.romTables().entityPropertyTables().entityOptions1(entity.type());
         if ((options & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0) {
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0);
         }

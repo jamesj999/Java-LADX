@@ -387,7 +387,11 @@ final class GameplayRouteStage9 {
         assertEquals(0xA0, objectAt(route.session, 0x27));
         assertEquals(
                 ChestContentsTable.CHEST_RUPEES_20,
-                new ChestContentsTable(route.rom).itemForSpawn(0x01, 0x21, route.playerState.swordLevel(), true));
+                new ChestContentsTable(
+                                (route.rom == null
+                                        ? (linksawakening.rom.Rom) null
+                                        : new linksawakening.rom.Rom(route.rom)))
+                        .itemForSpawn(0x01, 0x21, route.playerState.swordLevel(), true));
         assertEquals(1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
 
         route.braceletDoorPath = reachablePositionPath(
@@ -430,7 +434,11 @@ final class GameplayRouteStage9 {
         assertEquals(0x07, objectAt(route.session, 0x28));
         assertEquals(
                 ChestContentsTable.CHEST_POWER_BRACELET,
-                new ChestContentsTable(route.rom).itemForSpawn(0x01, 0x20, route.playerState.swordLevel(), true));
+                new ChestContentsTable(
+                                (route.rom == null
+                                        ? (linksawakening.rom.Rom) null
+                                        : new linksawakening.rom.Rom(route.rom)))
+                        .itemForSpawn(0x01, 0x20, route.playerState.swordLevel(), true));
 
         assertEquals(0xAB, objectAt(route.session, 0x22));
         assertEquals(0xAB, objectAt(route.session, 0x65));

@@ -17,10 +17,11 @@ final class RoomSessionFloatingItemTest {
         byte[] rom = loadRom();
         RomTables tables = RomTables.loadFromRom(rom);
         RoomSession session = new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new OverworldTilesetTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
                 new OverworldCollision(tables),
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));

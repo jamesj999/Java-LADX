@@ -1,14 +1,16 @@
 package linksawakening.world.room;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 
 /** OwlStatueEntityHandler and bank-$36 GetOwlStatueDialogId's ROM lookup. */
 public final class OwlStatueDialogResolver {
     private static final int BANK = 0x36;
-    private final byte[] romData;
+    private final Rom romData;
 
-    public OwlStatueDialogResolver(byte[] romData) {
-        if (romData == null || romData.length < RomBank.romOffset(BANK, 0x7FFF) + 1) {
+    public OwlStatueDialogResolver(Rom romData) {
+        if (romData == null || romData.size() < RomBank.romOffset(BANK, 0x7FFF) + 1) {
             throw new IllegalArgumentException("ROM is too small for owl statue hint tables");
         }
         this.romData = romData;
@@ -32,6 +34,6 @@ public final class OwlStatueDialogResolver {
     }
 
     private int byteAt(int address) {
-        return Byte.toUnsignedInt(romData[RomBank.romOffset(BANK, address)]);
+        return romData.u8(RomAddress.fromOffset(RomBank.romOffset(BANK, address)));
     }
 }

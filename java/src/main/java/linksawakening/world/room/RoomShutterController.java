@@ -3,6 +3,8 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.world.transition.Warp;
 
@@ -31,15 +33,15 @@ final class RoomShutterController {
         if (dependencies.puzzles().shutterCloseLocation >= 0) {
             int direction = dependencies.puzzles().shutterCloseDirection;
             int left = (dependencies.puzzles().shutterCloseLocation & 15) * 16
-                    + Byte.toUnsignedInt(dependencies.romData()[RomBank.romOffset(2, 0x5BE0 + direction + 4)]);
+                    + dependencies.romData().u8(RomAddress.fromOffset(RomBank.romOffset(2, 0x5BE0 + direction + 4)));
             int top = (dependencies.puzzles().shutterCloseLocation >>> 4) * 16;
             int source = RomBank.romOffset(2, 0x5BC4 + direction * 4);
             int rowOffset = RomBank.romOffset(2, 0x5BE8 + direction + 4);
             for (int row = 0; row < 2; row++) {
-                int y = top + Byte.toUnsignedInt(dependencies.romData()[rowOffset + row * 4]);
+                int y = top + dependencies.romData().u8(RomAddress.fromOffset(rowOffset + row * 4));
                 int index = (y / 8) * RoomConstants.ROOM_TILE_WIDTH + left / 8;
                 for (int col = 0; col < 2; col++) {
-                    int tile = Byte.toUnsignedInt(dependencies.romData()[source + row * 2 + col]);
+                    int tile = dependencies.romData().u8(RomAddress.fromOffset(source + row * 2 + col));
                     if (index + col < dependencies.location().activeRoom.tileIds().length) {
                         dependencies.location().activeRoom.tileIds()[index + col] = tile;
                         dependencies.puzzles().shutterTileOverrides.put(index + col, tile);
@@ -119,7 +121,7 @@ final class RoomShutterController {
             RoomLocationState location,
             OverworldCollision overworldCollision,
             RoomPuzzleState puzzles,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomPuzzleController> roomPuzzleController,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,

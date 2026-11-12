@@ -128,7 +128,8 @@ final class RoomEventTriggers {
     boolean killAllEnemiesTriggerResolved() {
         for (RoomEntity entity : dependencies.location().activeRoom.entities().slots()) {
             if (entity.status() != EntityStatus.DISABLED
-                    && (dependencies.romTables().entityOptions1(entity.type()) & ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL)
+                    && (dependencies.romTables().entityPropertyTables().entityOptions1(entity.type())
+                                    & ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL)
                             == 0) {
                 return false;
             }

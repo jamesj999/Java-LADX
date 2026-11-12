@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -42,7 +43,7 @@ final class RoomActiveRoomInitializer {
                         .enemyCombatTables(dependencies.enemyCombatTables())
                         .chestContentsTable(dependencies.chestContentsTable())
                         .romTables(dependencies.romTables())
-                        .rom(dependencies.romData() == null ? null : new linksawakening.rom.Rom(dependencies.romData()))
+                        .rom(dependencies.romData())
                         .build();
         if (dependencies.entityBridge().get().entityRuntime != null) {
             configureRuntimeWorld();
@@ -70,7 +71,7 @@ final class RoomActiveRoomInitializer {
             RoomLocationState location,
             OwlEventDialogResolver owlEventDialogResolver,
             RoomPuzzleState puzzles,
-            byte[] romData,
+            Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,

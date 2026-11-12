@@ -175,7 +175,8 @@ final class GameplayRouteStage7 {
         assertEquals(0x24, route.stoneBeakChest.location());
         assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x2E) & 0x10);
         route.stoneBeakChestSlot = route.stoneBeakChest.entitySlot();
-        route.stoneBeakDialogId = new ChestContentsTable(route.rom)
+        route.stoneBeakDialogId = new ChestContentsTable(
+                        (route.rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(route.rom)))
                 .dialogLowIdFor(
                         ChestContentsTable.CHEST_STONE_BEAK,
                         route.playerState.shieldLevel(),
@@ -443,7 +444,8 @@ final class GameplayRouteStage7 {
         assertEquals(0x43, route.room38Chest.location());
         assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x38) & 0x10);
         route.room38ChestSlot = route.room38Chest.entitySlot();
-        route.room38DialogId = new ChestContentsTable(route.rom)
+        route.room38DialogId = new ChestContentsTable(
+                        (route.rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(route.rom)))
                 .dialogLowIdFor(
                         ChestContentsTable.CHEST_SMALL_KEY,
                         route.playerState.shieldLevel(),
