@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -70,8 +70,8 @@ public final class EntityRewardController {
                 && !runtime.activeMusic
                 && !runtime.linkState.dialogActive) {
             int mapId = runtime.entityMapId & 0xFF;
-            if (mapId < runtime.INSTRUMENT_MUSIC_TRACKS.length) {
-                runtime.pendingMusicTrack = runtime.INSTRUMENT_MUSIC_TRACKS[mapId];
+            if (mapId < EntityRomConstants.INSTRUMENT_MUSIC_TRACKS.length) {
+                runtime.pendingMusicTrack = EntityRomConstants.INSTRUMENT_MUSIC_TRACKS[mapId];
                 runtime.instrumentPickupState[slot] = 2;
                 runtime.enemyTransitionCountdown[slot] = 0xFF;
             }
@@ -179,7 +179,7 @@ public final class EntityRewardController {
         runtime.enemyPhysicsFlags[freeSlot] = ENTITY_PHYSICS_HARMLESS;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.enemyHitboxFlags[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION;
+        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 

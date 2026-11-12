@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.Objects;
 import linksawakening.vfx.TransientVfxType;
@@ -34,7 +34,7 @@ final class EntitySlotPhase5 {
                 && !state.keyDropTransitionActive
                 && state.applyGenericGroundInteraction
                 && !state.runtime.backgroundMechanics.hasNoGroundInteraction(state.updated)
-                && (state.handlerLinkCollisionEnabled || state.updated.type() != state.runtime.ENTITY_BLOOPER)) {
+                && (state.handlerLinkCollisionEnabled || state.updated.type() != EntityRomConstants.ENTITY_BLOOPER)) {
             // ApplyEntityInteractionWithBackground runs after each ROM
             // entity handler's movement and before the final display-list
             // presentation. The room session supplies terrain physics;
@@ -106,7 +106,7 @@ final class EntitySlotPhase5 {
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
                 && state.handlerLinkCollisionEnabled
-                && state.updated.type() != state.runtime.ENTITY_GENIE
+                && state.updated.type() != EntityRomConstants.ENTITY_GENIE
                 && state.genericLinkPushPolicy.restoreFinalPosition()
                 && RoomEntityCombatRules.overlapsLink(state.updated, state.linkEntityX, state.linkEntityY)) {
             // The shared PushLinkOutOfEntity_* helpers run after their
@@ -212,7 +212,7 @@ final class EntitySlotPhase5 {
                         || state.preserveTarinPresentation
                 ? state.updated.entityFlipAttribute()
                 : state.runtime.baseEntityFlipAttribute[state.entity.slot()];
-        if (state.preserveBombitePresentation && state.updated.type() == state.runtime.ENTITY_TIMER_BOMBITE) {
+        if (state.preserveBombitePresentation && state.updated.type() == EntityRomConstants.ENTITY_TIMER_BOMBITE) {
             state.renderFlipAttribute |= (state.runtime.bombPrivateCountdown1[state.updated.slot()] << 3) & 0x10;
         }
         if (state.runtime.enemyFlashCountdown[state.entity.slot()] > 0) {

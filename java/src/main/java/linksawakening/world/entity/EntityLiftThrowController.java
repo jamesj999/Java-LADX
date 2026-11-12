@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -130,7 +130,7 @@ public final class EntityLiftThrowController {
         ThrownEntityMotion.Update update = runtime.thrownEntityMotion.advance(
                 entity, sideScrolling, backgroundCollision, frame, runtime.entityGroundStatus[slot]);
         RoomEntity updated = update.entity();
-        if (entity.type() == runtime.ENTITY_GENIE && (update.blockedX() || update.blockedY())) {
+        if (entity.type() == EntityRomConstants.ENTITY_GENIE && (update.blockedX() || update.blockedY())) {
             updated = runtime.genie.registerGenieJarImpact(updated);
             if (updated.status() == EntityStatus.ACTIVE) {
                 return updated;
@@ -143,7 +143,7 @@ public final class EntityLiftThrowController {
             smashStatue(updated);
             return runtime.slots[slot];
         }
-        if (entity.type() == runtime.ENTITY_LIFTABLE_ROCK
+        if (entity.type() == EntityRomConstants.ENTITY_LIFTABLE_ROCK
                 && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             collideThrownEntityWithEntities(updated, frame);
             runtime.slots[slot] = RoomEntity.disabled(slot);
@@ -208,17 +208,18 @@ public final class EntityLiftThrowController {
             RoomEntity target = runtime.slots[targetSlot];
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
-                    || (runtime.enemyPhysicsFlags[targetSlot] & runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                    || (runtime.enemyPhysicsFlags[targetSlot] & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP)
+                            != 0
                     || target.spriteVariant() < 0
                     || unsignedByteAbs(thrown.x() - target.x()) >= 0x0C
                     || unsignedByteAbs(sourceVisualY - ((target.y() - target.z()) & 0xFF)) >= 0x0C
-                    || (runtime.enemyHitboxFlags[targetSlot] & runtime.HITFLAGS_IGNORE_HITS) != 0
+                    || (runtime.enemyHitboxFlags[targetSlot] & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0
                     || runtime.enemyIgnoreHitsCountdown[targetSlot] != 0) {
                 continue;
             }
             runtime.projectiles.applyPlayerProjectileDamage(
                     target,
-                    runtime.DAMAGE_TYPE_THROW_AT,
+                    EntityRomConstants.DAMAGE_TYPE_THROW_AT,
                     runtime.thrownEntityMotion.speedX(sourceSlot),
                     runtime.thrownEntityMotion.speedY(sourceSlot));
         }
@@ -274,7 +275,7 @@ public final class EntityLiftThrowController {
     }
 
     public boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4, int romLinkDirection) {
-        if (source.type() != runtime.ENTITY_BUSH_CRAWLER) {
+        if (source.type() != EntityRomConstants.ENTITY_BUSH_CRAWLER) {
             return false;
         }
         runtime.slots[index] = source;
@@ -285,26 +286,26 @@ public final class EntityLiftThrowController {
         int slot = source.slot();
         RoomEntity carried = runtime.slots[slot];
         EntitySpriteDefinition rockDefinition =
-                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
-        carried = withType(carried, runtime.ENTITY_LIFTABLE_ROCK, rockDefinition);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
+        carried = withType(carried, EntityRomConstants.ENTITY_LIFTABLE_ROCK, rockDefinition);
         carried = withVariant(carried, rockDefinition.supported() ? (privateState4 ^ 0x01) & 0x01 : -1);
         runtime.slots[slot] = carried;
         runtime.fallingVisualYOffset[slot] = 0;
         runtime.bushCrawlerMotion.clear(slot);
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                slot, runtime.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
+                slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
 
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return true;
         }
         EntitySpriteDefinition crawlerDefinition =
-                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BUSH_CRAWLER);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BUSH_CRAWLER);
         int crawlerVariant = crawlerDefinition.supported() ? crawlerDefinition.initialVariant() : -1;
         RoomEntity replacement = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_BUSH_CRAWLER,
+                EntityRomConstants.ENTITY_BUSH_CRAWLER,
                 carried.x(),
                 carried.y(),
                 EntityStatus.ACTIVE,
@@ -321,11 +322,11 @@ public final class EntityLiftThrowController {
         runtime.entityOptions1Override[freeSlot] = -1;
         runtime.enemyTransitionCountdown[freeSlot] = 0x40;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_BUSH_CRAWLER);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_BUSH_CRAWLER);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(runtime.ENTITY_BUSH_CRAWLER);
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_BUSH_CRAWLER);
+        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER);
+        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER);
         runtime.enemyRecoilMotion.clear(freeSlot);
         runtime.fallingVisualYOffset[freeSlot] = 0;
         runtime.bushCrawlerMotion.initializeSpecial(freeSlot);
@@ -349,7 +350,7 @@ public final class EntityLiftThrowController {
                 && runtime.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
                 && runtime.spriteSelection.roomId() == 0x32;
         int variant = EntityMotionMath.liftableRockSmashVariant(sourceVariant, swampLeaves, countdown);
-        if (sourceVariant == runtime.LIFTABLE_ROCK_SMASH_MODE_GRASS && ((frameCounter ^ slot) & 0x01) != 0) {
+        if (sourceVariant == EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_GRASS && ((frameCounter ^ slot) & 0x01) != 0) {
             // The $FF tall-grass path in func_019_7C50 only emits OAM on
             // alternating frames. -1 is the same hidden-display sentinel
             // consumed by RenderActiveEntitySpritesRect.
@@ -359,11 +360,13 @@ public final class EntityLiftThrowController {
     }
 
     public RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) {
-        if (entity.type() != runtime.ENTITY_BOMB) {
-            return entity.type() == runtime.ENTITY_CUCCO ? withVariant(entity, (frameCounter >>> 2) & 0x01) : entity;
+        if (entity.type() != EntityRomConstants.ENTITY_BOMB) {
+            return entity.type() == EntityRomConstants.ENTITY_CUCCO
+                    ? withVariant(entity, (frameCounter >>> 2) & 0x01)
+                    : entity;
         }
         runtime.enemyFlashCountdown[entity.slot()] = 0;
-        return withDefinition(entity, runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB), 0);
+        return withDefinition(entity, runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB), 0);
     }
 
     RoomEntity renderLiftedBomb(RoomEntity entity) {
@@ -382,7 +385,7 @@ public final class EntityLiftThrowController {
         }
         RoomEntity entity = runtime.slots[index];
         if (!entity.loaded()
-                || entity.type() != runtime.ENTITY_BOMB
+                || entity.type() != EntityRomConstants.ENTITY_BOMB
                 || runtime.bombPrivateState4[entity.slot()] != 0
                 || runtime.bombPrivateCountdown1[entity.slot()] != 0
                 || !RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {

@@ -1,6 +1,7 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySlotValidation.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
@@ -59,6 +60,109 @@ import linksawakening.world.room.ChestContentsTable;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
+    // Compatibility aliases for constants previously inherited by the public facade.
+    public static final int ENTITY_CHEST_WITH_ITEM = EntityRomConstants.ENTITY_CHEST_WITH_ITEM;
+    public static final int ENTITY_KEY_DROP_POINT = EntityRomConstants.ENTITY_KEY_DROP_POINT;
+    public static final int ENTITY_GENIE = EntityRomConstants.ENTITY_GENIE;
+    public static final int ENTITY_ARMOS_KNIGHT = EntityRomConstants.ENTITY_ARMOS_KNIGHT;
+    public static final int ENTITY_HINOX = EntityRomConstants.ENTITY_HINOX;
+    public static final int ENTITY_ROLLING_BONES = EntityRomConstants.ENTITY_ROLLING_BONES;
+    public static final int ENTITY_ROLLING_BONES_BAR = EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
+    public static final int ENTITY_THREE_OF_A_KIND = EntityRomConstants.ENTITY_THREE_OF_A_KIND;
+    public static final int ENTITY_CRYSTAL_SWITCH = EntityRomConstants.ENTITY_CRYSTAL_SWITCH;
+    public static final int ENTITY_KID_71 = EntityRomConstants.ENTITY_KID_71;
+    public static final int ENTITY_KID_72 = EntityRomConstants.ENTITY_KID_72;
+    public static final int ENTITY_MADAM_MEOWMEOW = EntityRomConstants.ENTITY_MADAM_MEOWMEOW;
+    public static final int ENTITY_MOBLIN_KING = EntityRomConstants.ENTITY_MOBLIN_KING;
+    public static final int ENTITY_OCTOROK = EntityRomConstants.ENTITY_OCTOROK;
+    public static final int ENTITY_MOBLIN = EntityRomConstants.ENTITY_MOBLIN;
+    public static final int ENTITY_IRON_MASK = EntityRomConstants.ENTITY_IRON_MASK;
+    public static final int ENTITY_MOBLIN_ARROW = EntityRomConstants.ENTITY_MOBLIN_ARROW;
+    public static final int ENTITY_LEEVER = EntityRomConstants.ENTITY_LEEVER;
+    public static final int ENTITY_HIDING_ZOL = EntityRomConstants.ENTITY_HIDING_ZOL;
+    public static final int ENTITY_STAR = EntityRomConstants.ENTITY_STAR;
+    public static final int ENTITY_BLOOPER = EntityRomConstants.ENTITY_BLOOPER;
+    public static final int ENTITY_WINGED_OCTOROK = EntityRomConstants.ENTITY_WINGED_OCTOROK;
+    public static final int ENTITY_PINCER = EntityRomConstants.ENTITY_PINCER;
+    public static final int ENTITY_BUSH_CRAWLER = EntityRomConstants.ENTITY_BUSH_CRAWLER;
+    public static final int ENTITY_MIMIC = EntityRomConstants.ENTITY_MIMIC;
+    public static final int ENTITY_MINI_MOLDORM = EntityRomConstants.ENTITY_MINI_MOLDORM;
+    public static final int ENTITY_MOLDORM = EntityRomConstants.ENTITY_MOLDORM;
+    public static final int ENTITY_MASKED_MIMIC_GORIYA = EntityRomConstants.ENTITY_MASKED_MIMIC_GORIYA;
+    public static final int ENTITY_SPIKE_TRAP = EntityRomConstants.ENTITY_SPIKE_TRAP;
+    public static final int ENTITY_PAIRODD = EntityRomConstants.ENTITY_PAIRODD;
+    public static final int ENTITY_PAIRODD_PROJECTILE = EntityRomConstants.ENTITY_PAIRODD_PROJECTILE;
+    public static final int ENTITY_WATER_TEKTITE = EntityRomConstants.ENTITY_WATER_TEKTITE;
+    public static final int ENTITY_FISH = EntityRomConstants.ENTITY_FISH;
+    public static final int ENTITY_CROW = EntityRomConstants.ENTITY_CROW;
+    public static final int ENTITY_KANALET_BOMBABLE_WALL = EntityRomConstants.ENTITY_KANALET_BOMBABLE_WALL;
+    public static final int ENTITY_BOO_BUDDY = EntityRomConstants.ENTITY_BOO_BUDDY;
+    public static final int ENTITY_DROPPABLE_FAIRY = EntityRomConstants.ENTITY_DROPPABLE_FAIRY;
+    public static final int ENTITY_SLEEPY_TOADSTOOL = EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL;
+    public static final int ENTITY_HIDING_SLIME_KEY = EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
+    public static final int ENTITY_RICHARD = EntityRomConstants.ENTITY_RICHARD;
+    public static final int ENTITY_STALFOS_AGGRESSIVE = EntityRomConstants.ENTITY_STALFOS_AGGRESSIVE;
+    public static final int ENTITY_STALFOS_EVASIVE = EntityRomConstants.ENTITY_STALFOS_EVASIVE;
+    public static final int ENTITY_LIKE_LIKE = EntityRomConstants.ENTITY_LIKE_LIKE;
+    public static final int ENTITY_GOOMBA = EntityRomConstants.ENTITY_GOOMBA;
+    public static final int ENTITY_SNAKE = EntityRomConstants.ENTITY_SNAKE;
+    public static final int ENTITY_PHYSICS_HARMLESS = EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
+    public static final int LIFTABLE_ROCK_SMASH_MODE_ROCK = EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK;
+    public static final int ENTITY_PEAHAT = EntityRomConstants.ENTITY_PEAHAT;
+    public static final int ENTITY_ARMOS_STATUE = EntityRomConstants.ENTITY_ARMOS_STATUE;
+    public static final int ENTITY_POLS_VOICE = EntityRomConstants.ENTITY_POLS_VOICE;
+    public static final int ENTITY_HARDHAT_BEETLE = EntityRomConstants.ENTITY_HARDHAT_BEETLE;
+    public static final int ENTITY_SPIKED_BEETLE = EntityRomConstants.ENTITY_SPIKED_BEETLE;
+    public static final int ENTITY_WIZROBE = EntityRomConstants.ENTITY_WIZROBE;
+    public static final int ENTITY_WIZROBE_PROJECTILE = EntityRomConstants.ENTITY_WIZROBE_PROJECTILE;
+    public static final int ENTITY_ROOSTER = EntityRomConstants.ENTITY_ROOSTER;
+    public static final int ENTITY_MARIN_INDOOR = EntityRomConstants.ENTITY_MARIN_INDOOR;
+    public static final int ENTITY_TARIN = EntityRomConstants.ENTITY_TARIN;
+    public static final int ENTITY_BOW_WOW = EntityRomConstants.ENTITY_BOW_WOW;
+    public static final int ENTITY_DROPPABLE_SECRET_SEASHELL = EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL;
+    public static final int SECRET_SEASHELL_HIDDEN_OPTIONS1 = EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1;
+    public static final int SECRET_SEASHELL_REVEALED_OPTIONS1 = EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1;
+    public static final int ENTITY_HEART_CONTAINER = EntityRomConstants.ENTITY_HEART_CONTAINER;
+    public static final int ENTITY_MOBLIN_SWORD = EntityRomConstants.ENTITY_MOBLIN_SWORD;
+    public static final int ENTITY_ARROW = EntityRomConstants.ENTITY_ARROW;
+    public static final int ENTITY_BOOMERANG = EntityRomConstants.ENTITY_BOOMERANG;
+    public static final int ENTITY_MAGIC_ROD_FIREBALL = EntityRomConstants.ENTITY_MAGIC_ROD_FIREBALL;
+    public static final int ENTITY_MAGIC_POWDER_SPRINKLE = EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE;
+    public static final int ENTITY_MUSICAL_NOTE = EntityRomConstants.ENTITY_MUSICAL_NOTE;
+    public static final int ENTITY_SWORD_BEAM = EntityRomConstants.ENTITY_SWORD_BEAM;
+    public static final int ENTITY_BOMB = EntityRomConstants.ENTITY_BOMB;
+    public static final int ENTITY_SWORD_SHIELD_PICKUP = EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP;
+    public static final int ENTITY_OWL_EVENT = EntityRomConstants.ENTITY_OWL_EVENT;
+    public static final int ENTITY_WITCH = EntityRomConstants.ENTITY_WITCH;
+    public static final int ENTITY_BOUNCING_BOMBITE = EntityRomConstants.ENTITY_BOUNCING_BOMBITE;
+    public static final int ENTITY_MAD_BOMBER = EntityRomConstants.ENTITY_MAD_BOMBER;
+    public static final int ENTITY_BOMBER = EntityRomConstants.ENTITY_BOMBER;
+    public static final int BOMBITE_EXPLOSION_SOUND_ID = EntityRomConstants.BOMBITE_EXPLOSION_SOUND_ID;
+    public static final int BOMBITE_EXPLOSION_COUNTDOWN = EntityRomConstants.BOMBITE_EXPLOSION_COUNTDOWN;
+    public static final int BOMBER_THROW_JINGLE_ID = EntityRomConstants.BOMBER_THROW_JINGLE_ID;
+    public static final int ENTITY_HOOKSHOT_CHAIN = EntityRomConstants.ENTITY_HOOKSHOT_CHAIN;
+    public static final int ENTITY_HOOKSHOT_BRIDGE = EntityRomConstants.ENTITY_HOOKSHOT_BRIDGE;
+    public static final int OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN = EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN;
+    public static final int OBJECT_HOOKSHOT_BRIDGE_PULL_UP = EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
+    public static final int ENTITY_LIFTABLE_ROCK = EntityRomConstants.ENTITY_LIFTABLE_ROCK;
+    public static final int ENTITY_SIDE_VIEW_POT = EntityRomConstants.ENTITY_SIDE_VIEW_POT;
+    public static final int ENTITY_CUCCO = EntityRomConstants.ENTITY_CUCCO;
+    public static final int ENTITY_GOPONGA_FLOWER = EntityRomConstants.ENTITY_GOPONGA_FLOWER;
+    public static final int ENTITY_GIANT_GOPONGA_FLOWER = EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER;
+    public static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE;
+    public static final int ENTITY_POKEY = EntityRomConstants.ENTITY_POKEY;
+    public static final int ENTITY_PIRANHA_PLANT = EntityRomConstants.ENTITY_PIRANHA_PLANT;
+    public static final int ENTITY_ZORA = EntityRomConstants.ENTITY_ZORA;
+    public static final int ENTITY_ZOMBIE = EntityRomConstants.ENTITY_ZOMBIE;
+    public static final int ENTITY_BUZZ_BLOB = EntityRomConstants.ENTITY_BUZZ_BLOB;
+    public static final int ENTITY_SAND_CRAB = EntityRomConstants.ENTITY_SAND_CRAB;
+    public static final int ENTITY_DOG = EntityRomConstants.ENTITY_DOG;
+    public static final int ENTITY_URCHIN = EntityRomConstants.ENTITY_URCHIN;
+    public static final int ENTITY_WITCH_RAT = EntityRomConstants.ENTITY_WITCH_RAT;
+    public static final int BOOMERANG_SFX_COUNTER_PERIOD = EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
+    public static final int MAP_COLOR_DUNGEON = EntityRomConstants.MAP_COLOR_DUNGEON;
+    public static final int DIALOG_MOBLIN = EntityRomConstants.DIALOG_MOBLIN;
+
     private final EntityPlayerCommands playerCommands = new EntityPlayerCommands(this);
 
     private void disableEntityWithoutPersistence(int slot) {
@@ -412,7 +516,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         // boomerang exists or dialogs/room transitions suspend its handler.
         if (!state.runtime.boomerangSoundClockProvided && state.runtime.gameplayWorld && !state.creditsGameplay) {
             state.runtime.boomerangSfxCounter =
-                    (state.runtime.boomerangSfxCounter + 1) % state.runtime.BOOMERANG_SFX_COUNTER_PERIOD;
+                    (state.runtime.boomerangSfxCounter + 1) % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
         }
         state.runtime.boomerangSoundClockProvided = false;
         if (state.runtime.swordMoblinAlertingSoundCounter > 0) {
@@ -490,7 +594,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
             if (state.runtime.bossAgonySfxCountdown == 0) {
                 state.runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         state.runtime.bossAgonySourceSlot,
-                        state.runtime.ENTITY_GENIE,
+                        EntityRomConstants.ENTITY_GENIE,
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.WAVE,

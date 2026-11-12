@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
@@ -113,9 +113,9 @@ final class EntitySlotPhase2 {
             if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMB_2, state)) return false;
             if (state.runtime.linkState.powerBraceletButtonHeld
                     && isLiftableEntity(state.entity)
-                    && (state.entity.type() == state.runtime.ENTITY_BOMB
+                    && (state.entity.type() == EntityRomConstants.ENTITY_BOMB
                             || (state.runtime.enemyPhysicsFlags[state.entity.slot()]
-                                            & state.runtime.ENTITY_PHYSICS_GRABBABLE)
+                                            & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE)
                                     != 0)
                     && RoomEntityPickupRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)) {
                 if (state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
@@ -192,20 +192,20 @@ final class EntitySlotPhase2 {
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
                 && (usesSharedRecoil(state.entity.type())
-                        || (state.entity.type() == state.runtime.ENTITY_POKEY
+                        || (state.entity.type() == EntityRomConstants.ENTITY_POKEY
                                 && state.runtime.pokeyMotion.isSegment(state.entity.slot())
                                 && state.handlerLinkCollisionEnabled))
-                && state.entity.type() != state.runtime.ENTITY_ROLLING_BONES
-                && state.entity.type() != state.runtime.ENTITY_MINI_MOLDORM
-                && state.entity.type() != state.runtime.ENTITY_BOO_BUDDY
-                && (state.entity.type() != state.runtime.ENTITY_MASKED_MIMIC_GORIYA
+                && state.entity.type() != EntityRomConstants.ENTITY_ROLLING_BONES
+                && state.entity.type() != EntityRomConstants.ENTITY_MINI_MOLDORM
+                && state.entity.type() != EntityRomConstants.ENTITY_BOO_BUDDY
+                && (state.entity.type() != EntityRomConstants.ENTITY_MASKED_MIMIC_GORIYA
                         || state.runtime.entityMapId != 0x1F)
-                && ((state.entity.type() != state.runtime.ENTITY_STAR
-                                && state.entity.type() != state.runtime.ENTITY_BLOOPER)
+                && ((state.entity.type() != EntityRomConstants.ENTITY_STAR
+                                && state.entity.type() != EntityRomConstants.ENTITY_BLOOPER)
                         || state.handlerLinkCollisionEnabled)
-                && ((state.entity.type() != state.runtime.ENTITY_ZOMBIE
-                                && state.entity.type() != state.runtime.ENTITY_BUZZ_BLOB
-                                && state.entity.type() != state.runtime.ENTITY_SAND_CRAB)
+                && ((state.entity.type() != EntityRomConstants.ENTITY_ZOMBIE
+                                && state.entity.type() != EntityRomConstants.ENTITY_BUZZ_BLOB
+                                && state.entity.type() != EntityRomConstants.ENTITY_SAND_CRAB)
                         || state.handlerLinkCollisionEnabled)) {
             // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
             // handlers apply the shared recoil before their own movement.
@@ -228,7 +228,7 @@ final class EntitySlotPhase2 {
                     state.entity,
                     state.context.withRuntimeInputs(
                             state.frame, state.linkEntityX, state.linkEntityY, state.backgroundCollision));
-            if (state.entity.type() == state.runtime.ENTITY_LEEVER
+            if (state.entity.type() == EntityRomConstants.ENTITY_LEEVER
                     && state.handlerInteractive
                     && state.handlerLinkCollisionEnabled) {
                 state.runtime.finishLeeverContactRecoil(state.updated);

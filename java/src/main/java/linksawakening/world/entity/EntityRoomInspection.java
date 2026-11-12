@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +61,7 @@ public final class EntityRoomInspection {
     int activePlayerArrowCount() {
         int count = 0;
         for (RoomEntity entity : runtime.slots) {
-            if (entity.loaded() && entity.type() == runtime.ENTITY_ARROW) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ARROW) {
                 count++;
             }
         }
@@ -75,10 +75,10 @@ public final class EntityRoomInspection {
                 continue;
             }
             int type = entity.type() & 0xFF;
-            if (type == runtime.ENTITY_ARROW
-                    || type == runtime.ENTITY_BOOMERANG
-                    || type == runtime.ENTITY_MAGIC_ROD_FIREBALL
-                    || type == runtime.ENTITY_SWORD_BEAM) {
+            if (type == EntityRomConstants.ENTITY_ARROW
+                    || type == EntityRomConstants.ENTITY_BOOMERANG
+                    || type == EntityRomConstants.ENTITY_MAGIC_ROD_FIREBALL
+                    || type == EntityRomConstants.ENTITY_SWORD_BEAM) {
                 count++;
             }
         }
@@ -87,7 +87,7 @@ public final class EntityRoomInspection {
 
     public boolean boomerangActive() {
         for (RoomEntity entity : runtime.slots) {
-            if (entity.loaded() && entity.type() == runtime.ENTITY_BOOMERANG) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOOMERANG) {
                 return true;
             }
         }
@@ -96,7 +96,7 @@ public final class EntityRoomInspection {
 
     int activeBoomerangSlot() {
         for (RoomEntity entity : runtime.slots) {
-            if (entity.loaded() && entity.type() == runtime.ENTITY_BOOMERANG) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOOMERANG) {
                 return entity.slot();
             }
         }
@@ -223,7 +223,7 @@ public final class EntityRoomInspection {
     public boolean bombActive() {
         for (RoomEntity entity : runtime.slots) {
             if (entity.loaded()
-                    && entity.type() == runtime.ENTITY_BOMB
+                    && entity.type() == EntityRomConstants.ENTITY_BOMB
                     && !runtime.bombFinalPresentationPending[entity.slot()]) {
                 return true;
             }
@@ -556,7 +556,7 @@ public final class EntityRoomInspection {
             int linkVerticalVelocity,
             boolean linkInteractive,
             int frameCounter) {
-        if (entity.type() != runtime.ENTITY_GOOMBA
+        if (entity.type() != EntityRomConstants.ENTITY_GOOMBA
                 || !linkAirborne
                 || !linkInteractive
                 || !RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
@@ -574,19 +574,19 @@ public final class EntityRoomInspection {
 
     boolean hasNoGroundInteractionOverride(int slot) {
         return runtime.entityOptions1Override[slot] >= 0
-                && (runtime.entityOptions1Override[slot] & runtime.ENTITY_OPT1_NO_GROUND_INTERACTION) != 0;
+                && (runtime.entityOptions1Override[slot] & EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION) != 0;
     }
 
     boolean hasNoGroundInteraction(RoomEntity entity) {
         return isGhiniType(entity.type())
-                || entity.type() == runtime.ENTITY_MAD_BOMBER
-                || entity.type() == runtime.ENTITY_WIZROBE_PROJECTILE
-                || entity.type() == runtime.ENTITY_GIANT_GOPONGA_FLOWER
-                || entity.type() == runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE
-                || entity.type() == runtime.ENTITY_BOO_BUDDY
-                || entity.type() == runtime.ENTITY_DROPPABLE_FAIRY
-                || entity.type() == runtime.ENTITY_PINCER
-                || entity.type() == runtime.ENTITY_MOLDORM
+                || entity.type() == EntityRomConstants.ENTITY_MAD_BOMBER
+                || entity.type() == EntityRomConstants.ENTITY_WIZROBE_PROJECTILE
+                || entity.type() == EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER
+                || entity.type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE
+                || entity.type() == EntityRomConstants.ENTITY_BOO_BUDDY
+                || entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY
+                || entity.type() == EntityRomConstants.ENTITY_PINCER
+                || entity.type() == EntityRomConstants.ENTITY_MOLDORM
                 || hasNoGroundInteractionOverride(entity.slot());
     }
 
@@ -634,7 +634,7 @@ public final class EntityRoomInspection {
 
     public String moblinKingTrace() {
         for (RoomEntity entity : runtime.slots)
-            if (entity.loaded() && entity.type() == runtime.ENTITY_MOBLIN_KING) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 int slot = entity.slot();
                 return "%d,%d,%d,%d,%d,%d,%d"
                         .formatted(
@@ -696,20 +696,20 @@ public final class EntityRoomInspection {
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
         if (runtime.spriteHandlers == null) {
-            return EntitySpriteDefinition.unsupported(runtime.ENTITY_BUSH_CRAWLER);
+            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER);
         }
         return runtime.spriteHandlers.forBushCrawlerState(privateState1, spriteRoomTable());
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
         return runtime.spriteHandlers == null
-                ? EntitySpriteDefinition.unsupported(runtime.ENTITY_POKEY)
+                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_POKEY)
                 : runtime.spriteHandlers.forPokeySegment();
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
         if (runtime.spriteHandlers == null) {
-            return EntitySpriteDefinition.unsupported(runtime.ENTITY_BUSH_CRAWLER);
+            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER);
         }
         return runtime.spriteHandlers.forBushCrawlerCrawlState(spriteRoomTable(), privateState4);
     }

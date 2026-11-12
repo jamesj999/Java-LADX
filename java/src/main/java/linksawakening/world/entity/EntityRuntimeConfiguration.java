@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.Objects;
 import java.util.function.IntUnaryOperator;
@@ -19,7 +19,7 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setBoomerangSoundCounterForFrame(int counter) {
-        if (counter < 0 || counter >= runtime.BOOMERANG_SFX_COUNTER_PERIOD) {
+        if (counter < 0 || counter >= EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD) {
             throw new IllegalArgumentException("Boomerang sound counter out of range: " + counter);
         }
         runtime.boomerangSfxCounter = counter;
@@ -180,13 +180,13 @@ public final class EntityRuntimeConfiguration {
         EntitySlotValidation.validateByte(roomId, "Entity room id");
         runtime.entityRoomId = roomId;
         for (RoomEntity entity : runtime.slots) {
-            if (entity.loaded() && entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
                 runtime.secretSeashellMotion.ensureInitialized(entity.slot(), roomId);
                 runtime.entityOptions1Override[entity.slot()] = runtime.secretSeashellMotion.privateState3(
                                         entity.slot())
                                 != 0
-                        ? runtime.SECRET_SEASHELL_HIDDEN_OPTIONS1
-                        : runtime.SECRET_SEASHELL_REVEALED_OPTIONS1;
+                        ? EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1
+                        : EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1;
             }
         }
     }
@@ -237,7 +237,7 @@ public final class EntityRuntimeConfiguration {
         if (runtime.spriteHandlers != null) {
             EntitySpriteDefinition pickupDefinition = runtime.spriteHandlers.forSwordShieldPickup(swordLevel == 0);
             for (int index = 0; index < runtime.slots.length; index++) {
-                if (runtime.slots[index].type() == runtime.ENTITY_SWORD_SHIELD_PICKUP) {
+                if (runtime.slots[index].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
                     runtime.slots[index] = withDefinition(
                             runtime.slots[index], pickupDefinition, runtime.slots[index].spriteVariant());
                 }

@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.Arrays;
 
@@ -17,7 +17,7 @@ public final class EntityDebugConfiguration {
 
     void setMagicPowderTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: " + slot);
         }
         runtime.enemyTransitionCountdown[slot] = value;
@@ -25,7 +25,7 @@ public final class EntityDebugConfiguration {
 
     void setMagicPowderSlowTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: " + slot);
         }
         runtime.slowTransitionCountdown[slot] = value;
@@ -34,7 +34,7 @@ public final class EntityDebugConfiguration {
 
     void setBombTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.slots[slot].loaded() || runtime.slots[slot].type() != runtime.ENTITY_BOMB) {
+        if (!runtime.slots[slot].loaded() || runtime.slots[slot].type() != EntityRomConstants.ENTITY_BOMB) {
             throw new IllegalArgumentException("Entity slot does not contain a bomb: " + slot);
         }
         runtime.enemyTransitionCountdown[slot] = value;
@@ -42,7 +42,7 @@ public final class EntityDebugConfiguration {
 
     void setBowWowTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_BOW_WOW)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_BOW_WOW)) {
             throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
         }
         runtime.bowWowMotion.setTransitionCountdownForTest(slot, value);
@@ -108,7 +108,7 @@ public final class EntityDebugConfiguration {
         }
         runtime.droppablePrivateState3[slot] = 0;
         runtime.droppablePrivateState4[slot] = 0;
-        runtime.entityOptions1Override[slot] = runtime.DROPPABLE_REVEALED_OPTIONS1;
+        runtime.entityOptions1Override[slot] = EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1;
         runtime.slowTransitionCountdown[slot] = slowCountdown;
         runtime.slowTimerInitialized[slot] = true;
         runtime.enemyDropActive[slot] = false;
@@ -134,7 +134,7 @@ public final class EntityDebugConfiguration {
 
     void setHinoxStateForTest(int slot, int state) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (runtime.slots[slot].type() != runtime.ENTITY_HINOX) {
+        if (runtime.slots[slot].type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
         runtime.hinoxMotion.setStateForTest(slot, state, 0, 0);
@@ -142,7 +142,7 @@ public final class EntityDebugConfiguration {
 
     void setHinoxSpeedForTest(int slot, int speedX, int speedY) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (runtime.slots[slot].type() != runtime.ENTITY_HINOX) {
+        if (runtime.slots[slot].type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
         runtime.hinoxMotion.setSpeedForTest(slot, speedX, speedY);
@@ -324,7 +324,7 @@ public final class EntityDebugConfiguration {
 
     void setKeyDropTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_KEY_DROP_POINT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_KEY_DROP_POINT)) {
             throw new IllegalArgumentException("Entity slot does not contain a key drop point: " + slot);
         }
         runtime.enemyTransitionCountdown[slot] = value;
@@ -332,7 +332,7 @@ public final class EntityDebugConfiguration {
 
     void setHidingSlimeKeyTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_HIDING_SLIME_KEY)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_HIDING_SLIME_KEY)) {
             throw new IllegalArgumentException("Entity slot does not contain a Hiding Slime Key: " + slot);
         }
         runtime.enemyTransitionCountdown[slot] = value;

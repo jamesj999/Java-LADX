@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -40,7 +40,7 @@ public final class EntityBombInteractions {
     void markArrowAsBombArrow(int slot) {
         runtime.playerArrowBombArrow[slot] = true;
         RoomEntity arrow = runtime.slots[slot];
-        if (runtime.spriteHandlers != null && arrow.loaded() && arrow.type() == runtime.ENTITY_ARROW) {
+        if (runtime.spriteHandlers != null && arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
             runtime.slots[slot] = withDefinition(
                     arrow, runtime.spriteHandlers.forBombArrow(), runtime.playerArrowMotion.direction(slot));
         }
@@ -65,7 +65,7 @@ public final class EntityBombInteractions {
         BombMotion.Decision decision = BombMotion.decide(runtime.enemyTransitionCountdown[slot] & 0xFF);
         if (decision.playExplosionSound()) {
             runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, runtime.ENTITY_BOMB, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
+                    slot, EntityRomConstants.ENTITY_BOMB, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
         }
         if (decision.countdownOverride().isPresent()) {
             runtime.enemyTransitionCountdown[slot] =
@@ -73,17 +73,17 @@ public final class EntityBombInteractions {
         }
         if (decision.phase() == BombMotion.Phase.EXPLOSION) {
             runtime.enemyPhysicsFlags[slot] =
-                    (runtime.enemyPhysicsFlags[slot] & 0xF0) | runtime.BOMB_EXPLOSION_PHYSICS_LOW_BITS;
+                    (runtime.enemyPhysicsFlags[slot] & 0xF0) | EntityRomConstants.BOMB_EXPLOSION_PHYSICS_LOW_BITS;
         }
 
         EntitySpriteDefinition definition =
                 switch (decision.phase()) {
-                    case NORMAL -> runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
+                    case NORMAL -> runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB);
                     case WARNING -> runtime.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(runtime.ENTITY_BOMB)
+                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
                             : runtime.spriteHandlers.forBombRightBeforeExploding();
                     case EXPLOSION -> runtime.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(runtime.ENTITY_BOMB)
+                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
                             : runtime.spriteHandlers.forBombExplosion();
                 };
         int variant = decision.explosionVariant().orElse(0);
@@ -141,9 +141,10 @@ public final class EntityBombInteractions {
             RoomEntity target = runtime.slots[targetSlot];
             if (target.status().value() < EntityStatus.ACTIVE.value()
                     || (runtime.enemyPhysicsFlags[targetSlot]
-                                    & (runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP | runtime.ENTITY_PHYSICS_GRABBABLE))
+                                    & (EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP
+                                            | EntityRomConstants.ENTITY_PHYSICS_GRABBABLE))
                             != 0
-                    || (runtime.enemyHitboxFlags[targetSlot] & runtime.HITFLAGS_IGNORE_HITS) != 0
+                    || (runtime.enemyHitboxFlags[targetSlot] & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0
                     || !isWithinBombExplosionWindow(bombX, target.x())
                     || !isWithinBombExplosionWindow((target.y() - target.z()) & 0xFF, bombVisualY)) {
                 continue;
@@ -175,7 +176,7 @@ public final class EntityBombInteractions {
                 bomb.x(), bomb.y(), bomb.z(), linkEntityX, linkEntityY, 0x14);
         projectileEvents.add(new EntityProjectileEvent(
                 bomb.slot(),
-                runtime.ENTITY_BOMB,
+                EntityRomConstants.ENTITY_BOMB,
                 EntityProjectileEvent.Kind.LINK_DAMAGE,
                 0,
                 collisionProtected ? 0 : linkDamage,
@@ -195,7 +196,7 @@ public final class EntityBombInteractions {
         RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables == null
                 ? null
                 : runtime.enemyCombatTables.resolveAttackDamage(
-                        target.type(), runtime.enemyHealthGroup[target.slot()], runtime.DAMAGE_TYPE_BOMB);
+                        target.type(), runtime.enemyHealthGroup[target.slot()], EntityRomConstants.DAMAGE_TYPE_BOMB);
         int rawDamage =
                 damageResult == null ? RoomEntityCombatRules.basicSwordDamage(target.type()) : damageResult.rawValue();
 

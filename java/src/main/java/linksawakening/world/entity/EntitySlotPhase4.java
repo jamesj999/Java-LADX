@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.Arrays;
 import linksawakening.world.entity.motion.BowWowMotion;
@@ -37,8 +37,8 @@ final class EntitySlotPhase4 {
         if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_SPIKED_BEETLE, state)) return false;
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
-                && (isDynamicFollowingNpc(state.entity) || state.entity.type() == state.runtime.ENTITY_BOW_WOW)) {
-            if (state.entity.type() == state.runtime.ENTITY_BOW_WOW) {
+                && (isDynamicFollowingNpc(state.entity) || state.entity.type() == EntityRomConstants.ENTITY_BOW_WOW)) {
+            if (state.entity.type() == EntityRomConstants.ENTITY_BOW_WOW) {
                 BowWowMotion.Update bowWowUpdate = state.runtime.bowWowMotion.advanceAfterTimers(
                         state.entity,
                         state.frame,

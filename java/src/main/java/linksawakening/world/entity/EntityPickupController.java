@@ -1,11 +1,13 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
+import linksawakening.world.entity.RoomEntityRuntime.SlimeKeyTransitionUpdate;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -28,16 +30,16 @@ public final class EntityPickupController {
         // powder directly. The other ordinary drops use the tree/pot init
         // handler, which selects the Pegasus branch outdoors and the buried
         // branch indoors.
-        runtime.droppablePrivateState3[slot] = entity.type() == runtime.ENTITY_DROPPABLE_HEART
-                        || entity.type() == runtime.ENTITY_DROPPABLE_MAGIC_POWDER
-                        || entity.type() == runtime.ENTITY_HIDING_SLIME_KEY
+        runtime.droppablePrivateState3[slot] = entity.type() == EntityRomConstants.ENTITY_DROPPABLE_HEART
+                        || entity.type() == EntityRomConstants.ENTITY_DROPPABLE_MAGIC_POWDER
+                        || entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
                         || runtime.indoorRoom
-                ? runtime.DROPPABLE_HIDDEN_STATE_BURIED
-                : runtime.DROPPABLE_HIDDEN_STATE_PEGASUS;
+                ? EntityRomConstants.DROPPABLE_HIDDEN_STATE_BURIED
+                : EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS;
         runtime.droppablePrivateState4[slot] = 0;
-        runtime.entityOptions1Override[slot] = entity.type() == runtime.ENTITY_HIDING_SLIME_KEY
-                ? runtime.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
-                : runtime.DROPPABLE_HIDDEN_OPTIONS1;
+        runtime.entityOptions1Override[slot] = entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
+                ? EntityRomConstants.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
+                : EntityRomConstants.DROPPABLE_HIDDEN_OPTIONS1;
     }
 
     public CommonDroppableUpdate advanceCommonDroppable(
@@ -46,22 +48,22 @@ public final class EntityPickupController {
         int hiddenState = runtime.droppablePrivateState3[slot];
         if (hiddenState != 0) {
             boolean reveal = false;
-            if (hiddenState == runtime.DROPPABLE_HIDDEN_STATE_BURIED) {
+            if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_BURIED) {
                 // DroppableRevealOrReturnIfNeeded deliberately keeps ordinary
                 // buried drops invisible indoors. Outdoors, hearts reveal on
                 // short grass or a shovel hole; the remaining shared drops
                 // require the shovel-hole path and set privateState4 first.
                 if (!runtime.indoorRoom) {
                     int objectId = objectUnderEntity == null ? 0xFF : objectUnderEntity.objectId() & 0xFF;
-                    if (entity.type() == runtime.ENTITY_DROPPABLE_HEART) {
-                        reveal = objectId == runtime.DROPPABLE_OBJECT_SHORT_GRASS
-                                || objectId == runtime.DROPPABLE_OBJECT_SHOVEL_HOLE;
+                    if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_HEART) {
+                        reveal = objectId == EntityRomConstants.DROPPABLE_OBJECT_SHORT_GRASS
+                                || objectId == EntityRomConstants.DROPPABLE_OBJECT_SHOVEL_HOLE;
                     } else {
                         runtime.droppablePrivateState4[slot] = 1;
-                        reveal = objectId == runtime.DROPPABLE_OBJECT_SHOVEL_HOLE;
+                        reveal = objectId == EntityRomConstants.DROPPABLE_OBJECT_SHOVEL_HOLE;
                     }
                 }
-            } else if (hiddenState == runtime.DROPPABLE_HIDDEN_STATE_PEGASUS) {
+            } else if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS) {
                 reveal = runtime.secretSeashellScreenShakeActive
                         && runtime.secretSeashellPegasusCollisionActive
                         && (!runtime.secretSeashellPegasusCollisionCoordinatesKnown
@@ -72,9 +74,9 @@ public final class EntityPickupController {
             }
 
             if (!reveal) {
-                runtime.entityOptions1Override[slot] = entity.type() == runtime.ENTITY_HIDING_SLIME_KEY
-                        ? runtime.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
-                        : runtime.DROPPABLE_HIDDEN_OPTIONS1;
+                runtime.entityOptions1Override[slot] = entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
+                        ? EntityRomConstants.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
+                        : EntityRomConstants.DROPPABLE_HIDDEN_OPTIONS1;
                 return new CommonDroppableUpdate(withVariant(entity, -1), true);
             }
             revealCommonDroppable(entity, linkEntityX, linkEntityY);
@@ -84,9 +86,10 @@ public final class EntityPickupController {
             return new CommonDroppableUpdate(withVariant(entity, -1), true);
         }
 
-        runtime.entityOptions1Override[slot] =
-                hiddenState == 0 ? runtime.entityOptions1Override[slot] : runtime.DROPPABLE_REVEALED_OPTIONS1;
-        if (entity.type() != runtime.ENTITY_DROPPABLE_FAIRY && !runtime.enemyDropActive[slot]) {
+        runtime.entityOptions1Override[slot] = hiddenState == 0
+                ? runtime.entityOptions1Override[slot]
+                : EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1;
+        if (entity.type() != EntityRomConstants.ENTITY_DROPPABLE_FAIRY && !runtime.enemyDropActive[slot]) {
             runtime.enemyDropMotion.initialize(slot, runtime.groundInteractionSideScrolling);
             runtime.enemyDropActive[slot] = true;
         }
@@ -98,24 +101,33 @@ public final class EntityPickupController {
         int slot = entity.slot();
         runtime.droppablePrivateState3[slot] = 0;
         runtime.droppablePrivateState4[slot] = 0;
-        runtime.dropPrivateCountdown1[slot] = runtime.DROPPABLE_REVEAL_COUNTDOWN;
-        runtime.slowTransitionCountdown[slot] = runtime.DROPPABLE_REVEAL_SLOW_COUNTDOWN;
+        runtime.dropPrivateCountdown1[slot] = EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN;
+        runtime.slowTransitionCountdown[slot] = EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN;
         runtime.slowTimerInitialized[slot] = true;
 
-        runtime.entityOptions1Override[slot] = runtime.DROPPABLE_REVEALED_OPTIONS1;
-        if (entity.type() == runtime.ENTITY_DROPPABLE_FAIRY) {
+        runtime.entityOptions1Override[slot] = EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1;
+        if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
             Vector vector = vectorAwayFromLink(
-                    entity.x(), entity.y(), linkEntityX, linkEntityY, runtime.DROPPABLE_REVEAL_VECTOR_LENGTH);
+                    entity.x(),
+                    entity.y(),
+                    linkEntityX,
+                    linkEntityY,
+                    EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
             runtime.fairyMotion.setSpeed(slot, vector.x(), vector.y());
             return;
         }
 
         runtime.enemyDropMotion.initialize(
-                slot, runtime.groundInteractionSideScrolling, runtime.DROPPABLE_REVEAL_SPEED_Z);
+                slot, runtime.groundInteractionSideScrolling, EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
         runtime.enemyDropMotion.initializeAwayFromLink(
-                slot, entity.x(), entity.y(), linkEntityX, linkEntityY, runtime.DROPPABLE_REVEAL_VECTOR_LENGTH);
+                slot,
+                entity.x(),
+                entity.y(),
+                linkEntityX,
+                linkEntityY,
+                EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
         runtime.enemyDropActive[slot] = true;
-        runtime.entityOptions1Override[slot] = runtime.DROPPABLE_REVEALED_OPTIONS1;
+        runtime.entityOptions1Override[slot] = EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1;
     }
 
     public SlimeKeyTransitionUpdate advanceHidingSlimeKey(
@@ -136,16 +148,16 @@ public final class EntityPickupController {
         if (transition == 0x10) {
             nextTransition = 0x0F;
             int leaves = Math.min(0x63, runtime.entityGoldenLeavesCount & 0xFF);
-            if (!runtime.indoorRoom && runtime.entityRoomId == runtime.ROOM_OW_POTHOLE_FIELD_SLIME_KEY) {
-                leaves = runtime.GOLDEN_LEAVES_FIVE_COUNT;
+            if (!runtime.indoorRoom && runtime.entityRoomId == EntityRomConstants.ROOM_OW_POTHOLE_FIELD_SLIME_KEY) {
+                leaves = EntityRomConstants.GOLDEN_LEAVES_FIVE_COUNT;
             }
             leaves = Math.min(0x63, leaves + 1);
             runtime.entityGoldenLeavesCount = leaves;
-            int dialogLowId = leaves == runtime.GOLDEN_LEAVES_FINAL_COUNT
-                    ? runtime.DIALOG_SLIME_KEY
-                    : leaves == runtime.GOLDEN_LEAVES_FIVE_COUNT
-                            ? runtime.DIALOG_FINAL_GOLDEN_LEAF
-                            : runtime.DIALOG_GOLDEN_LEAF;
+            int dialogLowId = leaves == EntityRomConstants.GOLDEN_LEAVES_FINAL_COUNT
+                    ? EntityRomConstants.DIALOG_SLIME_KEY
+                    : leaves == EntityRomConstants.GOLDEN_LEAVES_FIVE_COUNT
+                            ? EntityRomConstants.DIALOG_FINAL_GOLDEN_LEAF
+                            : EntityRomConstants.DIALOG_GOLDEN_LEAF;
             reward = new SlimeKeyRewardEvent(slot, leaves, dialogLowId);
         }
 
@@ -160,9 +172,9 @@ public final class EntityPickupController {
         if (isCommonDroppableType(entity.type())) {
             initializeCommonDroppable(entity);
         }
-        if (entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+        if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
             runtime.secretSeashellMotion.ensureInitialized(slot, runtime.entityRoomId);
-            runtime.entityOptions1Override[slot] = runtime.SECRET_SEASHELL_HIDDEN_OPTIONS1;
+            runtime.entityOptions1Override[slot] = EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1;
         }
         if (runtime.indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
             runtime.slowTransitionCountdown[slot] = 0x80;
@@ -227,14 +239,14 @@ public final class EntityPickupController {
         runtime.chestInertia[slot] = 0;
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot,
-                runtime.ENTITY_CHEST_WITH_ITEM,
+                EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
                 0,
                 false,
                 EntityCombatEvent.SoundChannel.NOISE,
-                runtime.CHEST_OPEN_NOISE_ID));
+                EntityRomConstants.CHEST_OPEN_NOISE_ID));
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
             for (RoomEntity candidate : runtime.slots) {
-                if (candidate.loaded() && candidate.type() == runtime.ENTITY_OWL_EVENT) {
+                if (candidate.loaded() && candidate.type() == EntityRomConstants.ENTITY_OWL_EVENT) {
                     runtime.owlPrivateCountdown1[candidate.slot()] = 0x38;
                     break;
                 }
@@ -268,14 +280,14 @@ public final class EntityPickupController {
         }
         if (inertia == 0x08 && runtime.chestContentsTable != null) {
             int soundValue = runtime.chestContentsTable.presentationSoundValue(itemType);
-            if (soundValue == runtime.CHEST_TREASURE_JINGLE_ID) {
+            if (soundValue == EntityRomConstants.CHEST_TREASURE_JINGLE_ID) {
                 runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot,
-                        runtime.ENTITY_CHEST_WITH_ITEM,
+                        EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
-                        runtime.CHEST_TREASURE_JINGLE_ID));
+                        EntityRomConstants.CHEST_TREASURE_JINGLE_ID));
             } else if (soundValue != 0) {
                 runtime.pendingMusicTrack = soundValue;
             }
@@ -305,12 +317,12 @@ public final class EntityPickupController {
         if (freeSlot < 0) {
             return;
         }
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_ZOL);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOL);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity zol = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_ZOL,
+                EntityRomConstants.ENTITY_ZOL,
                 chest.x(),
                 chest.y(),
                 EntityStatus.ACTIVE,
@@ -324,13 +336,13 @@ public final class EntityPickupController {
         runtime.slots[freeSlot] = zol;
         runtime.initializeHealthGroup(freeSlot);
         runtime.zolGelMotion.prepareChestSpawn(freeSlot);
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_ZOL);
+        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL);
         runtime.enemyHitboxFlags[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_ZOL);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_ZOL);
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                freeSlot, runtime.ENTITY_ZOL, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
+                freeSlot, EntityRomConstants.ENTITY_ZOL, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
     }
 
     void spawnEnemyDrop(RoomEntity source, int itemType) {
@@ -341,7 +353,8 @@ public final class EntityPickupController {
 
         EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        if (itemType == runtime.ENTITY_KEY_DROP_POINT && source.type() == runtime.ENTITY_ARMOS_KNIGHT) {
+        if (itemType == EntityRomConstants.ENTITY_KEY_DROP_POINT
+                && source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
             variant = 3;
         }
         RoomEntity drop = new RoomEntity(
@@ -377,7 +390,7 @@ public final class EntityPickupController {
         runtime.enemyRecoilMotion.clear(freeSlot);
         runtime.dropPrivateCountdown1[freeSlot] = 0x18;
         runtime.dropPrivateCountdown3[freeSlot] = 0x03;
-        if (itemType == runtime.ENTITY_DROPPABLE_FAIRY) {
+        if (itemType == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
             runtime.fairyMotion.initialize(freeSlot);
         } else {
             runtime.enemyDropMotion.initialize(freeSlot, runtime.groundInteractionSideScrolling);
@@ -388,7 +401,13 @@ public final class EntityPickupController {
 
     void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) {
         spawnKeyDropAt(
-                runtime.ENTITY_KEY_DROP_POINT, source.x(), source.y(), spriteVariant, z, speedZ, privateCountdown1);
+                EntityRomConstants.ENTITY_KEY_DROP_POINT,
+                source.x(),
+                source.y(),
+                spriteVariant,
+                z,
+                speedZ,
+                privateCountdown1);
     }
 
     int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) {

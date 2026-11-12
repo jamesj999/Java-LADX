@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -57,12 +57,12 @@ public final class EntityEnemySpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bomb = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_BOMB,
+                EntityRomConstants.ENTITY_BOMB,
                 entityX,
                 entityY,
                 EntityStatus.ACTIVE,
@@ -92,13 +92,13 @@ public final class EntityEnemySpawns {
         runtime.enemyHitboxFlags[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = transitionCountdown;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_BOMB);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_BOMB);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = initializeMotion ? 1 : 0;
-        runtime.enemyPhysicsFlags[freeSlot] = runtime.BOMB_INITIAL_PHYSICS_FLAGS;
+        runtime.enemyPhysicsFlags[freeSlot] = EntityRomConstants.BOMB_INITIAL_PHYSICS_FLAGS;
         runtime.entityGroundStatus[freeSlot] = 0;
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.BOMB_OPTIONS1;
+        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.BOMB_OPTIONS1;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
     }
@@ -112,12 +112,13 @@ public final class EntityEnemySpawns {
         if (freeSlot < 0) {
             return false;
         }
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MOBLIN_SWORD);
+        EntitySpriteDefinition definition =
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_MOBLIN_SWORD);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(
                 freeSlot,
                 0xFF,
-                runtime.ENTITY_MOBLIN_SWORD,
+                EntityRomConstants.ENTITY_MOBLIN_SWORD,
                 wall.x(),
                 (wall.y() + 0x08) & 0xFF,
                 EntityStatus.INIT,
@@ -130,9 +131,9 @@ public final class EntityEnemySpawns {
                 false);
         runtime.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
-        runtime.droppedItemBySlot[freeSlot] = runtime.ENTITY_HIDING_SLIME_KEY;
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_MOBLIN_SWORD);
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_MOBLIN_SWORD);
+        runtime.droppedItemBySlot[freeSlot] = EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
+        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_MOBLIN_SWORD);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_MOBLIN_SWORD);
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.entityOptions1Override[freeSlot] = -1;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
@@ -146,12 +147,12 @@ public final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_PAIRODD_PROJECTILE);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE);
         int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_PAIRODD_PROJECTILE,
+                EntityRomConstants.ENTITY_PAIRODD_PROJECTILE,
                 source.x(),
                 source.y(),
                 EntityStatus.ACTIVE,
@@ -167,7 +168,7 @@ public final class EntityEnemySpawns {
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_PAIRODD_PROJECTILE);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.enemyRecoilMotion.clear(freeSlot);
@@ -183,12 +184,12 @@ public final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE);
         int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE,
+                EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE,
                 spawn.x(),
                 spawn.y(),
                 EntityStatus.ACTIVE,
@@ -223,12 +224,12 @@ public final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE);
         int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE,
+                EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE,
                 spawn.x(),
                 spawn.y(),
                 EntityStatus.ACTIVE,
@@ -262,12 +263,13 @@ public final class EntityEnemySpawns {
             return;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_ZOMBIE);
+        EntitySpriteDefinition definition =
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOMBIE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity child = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_ZOMBIE,
+                EntityRomConstants.ENTITY_ZOMBIE,
                 spawn.x(),
                 spawn.y(),
                 EntityStatus.ACTIVE,
@@ -289,8 +291,8 @@ public final class EntityEnemySpawns {
         // ConfigureNewEntity starts from the static $52 row; the handler
         // clears projectile noclip before the child is first dispatched.
         runtime.enemyPhysicsFlags[freeSlot] = ZombieMotion.INITIAL_PHYSICS_FLAGS & ~ZombieMotion.PROJECTILE_NOCLIP_FLAG;
-        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(runtime.ENTITY_ZOMBIE);
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_ZOMBIE);
+        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_ZOMBIE);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_ZOMBIE);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.enemyRecoilMotion.clear(freeSlot);
@@ -309,7 +311,7 @@ public final class EntityEnemySpawns {
         RoomEntity segment = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_POKEY,
+                EntityRomConstants.ENTITY_POKEY,
                 spawn.x(),
                 spawn.y(),
                 EntityStatus.ACTIVE,
@@ -328,9 +330,9 @@ public final class EntityEnemySpawns {
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.dyingCountdown[freeSlot] = 0;
         runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_POKEY);
-        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(runtime.ENTITY_POKEY);
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_POKEY);
+        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_POKEY);
+        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_POKEY);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_POKEY);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         // ConfigureNewEntity seeds one ignored-hit frame; the child handler
         // decrements it before its first interactive collision pass.
@@ -348,12 +350,12 @@ public final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_WIZROBE_PROJECTILE);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE);
         int projectileVariant = projectileDefinition.supported() ? spawn.direction() : -1;
         RoomEntity projectile = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_WIZROBE_PROJECTILE,
+                EntityRomConstants.ENTITY_WIZROBE_PROJECTILE,
                 spawn.x(),
                 spawn.y(),
                 EntityStatus.ACTIVE,
@@ -367,13 +369,13 @@ public final class EntityEnemySpawns {
         runtime.slots[freeSlot] = projectile;
         runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.WIZROBE_PROJECTILE_OPTIONS1;
+        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.dyingCountdown[freeSlot] = 0;
         runtime.powerRecoilDeath[freeSlot] = false;
         runtime.enemyPhysicsFlags[freeSlot] = 0x42;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_WIZROBE_PROJECTILE);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.enemyRecoilMotion.clear(freeSlot);
@@ -393,7 +395,7 @@ public final class EntityEnemySpawns {
         RoomEntity clone = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_STALFOS_EVASIVE,
+                EntityRomConstants.ENTITY_STALFOS_EVASIVE,
                 request.x(),
                 request.y(),
                 EntityStatus.ACTIVE,
@@ -407,13 +409,13 @@ public final class EntityEnemySpawns {
         runtime.slots[freeSlot] = clone;
         runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = runtime.EVASIVE_CLONE_OPTIONS;
+        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.EVASIVE_CLONE_OPTIONS;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.dyingCountdown[freeSlot] = 0;
         runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = runtime.EVASIVE_CLONE_PHYSICS_FLAGS;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_STALFOS_EVASIVE);
+        runtime.enemyPhysicsFlags[freeSlot] = EntityRomConstants.EVASIVE_CLONE_PHYSICS_FLAGS;
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_STALFOS_EVASIVE);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         // SpawnNewEntity writes one frame, but the Evasive handler immediately
         // stores register B over it. AnimateEntities keeps B at zero, so this
@@ -487,14 +489,15 @@ public final class EntityEnemySpawns {
             return;
         }
 
-        EnemyProjectileMotion.SpawnData spawn = EnemyProjectileMotion.spawnData(runtime.ENTITY_OCTOROK_ROCK, direction);
+        EnemyProjectileMotion.SpawnData spawn =
+                EnemyProjectileMotion.spawnData(EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
         EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_OCTOROK_ROCK);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_OCTOROK_ROCK);
         int projectileVariant = projectileDefinition.supported() ? 1 : -1;
         RoomEntity projectile = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_OCTOROK_ROCK,
+                EntityRomConstants.ENTITY_OCTOROK_ROCK,
                 byteValue(source.x() + signedByte(spawn.offsetX())),
                 byteValue(source.y() + signedByte(spawn.offsetY())),
                 EntityStatus.ACTIVE,
@@ -510,13 +513,13 @@ public final class EntityEnemySpawns {
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_OCTOROK_ROCK);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_OCTOROK_ROCK);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.enemyRecoilMotion.clear(freeSlot);
         runtime.dyingCountdown[freeSlot] = 0;
         runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyProjectileMotion.initializeSpawn(freeSlot, runtime.ENTITY_OCTOROK_ROCK, direction);
+        runtime.enemyProjectileMotion.initializeSpawn(freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
         runtime.enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
@@ -533,12 +536,12 @@ public final class EntityEnemySpawns {
             return false;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_CUCCO);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_CUCCO);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity angry = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_CUCCO,
+                EntityRomConstants.ENTITY_CUCCO,
                 request.x(),
                 request.y(),
                 EntityStatus.ACTIVE,
@@ -574,11 +577,11 @@ public final class EntityEnemySpawns {
         RoomEntity sensor = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_LASER,
+                EntityRomConstants.ENTITY_LASER,
                 parent.x(),
                 parent.y(),
                 EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(runtime.ENTITY_LASER),
+                EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_LASER),
                 -1,
                 0,
                 0,
@@ -608,11 +611,11 @@ public final class EntityEnemySpawns {
         RoomEntity beam = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_LASER_BEAM,
+                EntityRomConstants.ENTITY_LASER_BEAM,
                 parent.x(),
                 parent.y(),
                 EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(runtime.ENTITY_LASER_BEAM),
+                EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_LASER_BEAM),
                 -1,
                 0,
                 0,

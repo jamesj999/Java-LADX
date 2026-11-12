@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
@@ -30,7 +30,7 @@ public final class EntityBackgroundMechanics {
         if (RoomEntityCombatRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight)) {
             return true;
         }
-        if (entity.type() != runtime.ENTITY_MOLDORM) {
+        if (entity.type() != EntityRomConstants.ENTITY_MOLDORM) {
             return false;
         }
         if (runtime.enemyFlashCountdown[entity.slot()] != 0) {
@@ -55,7 +55,7 @@ public final class EntityBackgroundMechanics {
                 withPositionAndVariant(entity, step.state().x(), step.state().y(), entity.spriteVariant());
         RoomEntityObjectSample object = runtime.objectQuery == null ? null : runtime.objectQuery.sample(moved);
         boolean clear = object != null
-                && object.objectId() != runtime.OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
+                && object.objectId() != EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
                 && object.physicsFlag() == 0;
         runtime.events.hookshotBridgeUpdates.add(
                 new HookshotBridgeUpdate(cell.objectLeft(), cell.objectTop(), bridgeState.direction(), !clear));
@@ -69,7 +69,7 @@ public final class EntityBackgroundMechanics {
     void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
         if (slot >= 0
                 && slot < runtime.slots.length
-                && runtime.slots[slot].type() == runtime.ENTITY_PUSHED_BLOCK
+                && runtime.slots[slot].type() == EntityRomConstants.ENTITY_PUSHED_BLOCK
                 && runtime.slots[slot].status() == EntityStatus.ACTIVE
                 && RoomEntityCombatRules.overlapsLink(runtime.slots[slot], linkEntityX, linkEntityY)) {
             requestLinkPush(runtime.slots[slot], EntityLinkCollisionRules.PUSHED_BLOCK);
@@ -113,14 +113,19 @@ public final class EntityBackgroundMechanics {
         runtime.fallingSpeedYAccumulator[slot] = 0;
         runtime.fallingVisualYOffset[slot] = 0;
 
-        boolean longFallingTransition = entity.type() == runtime.ENTITY_MOBLIN_SWORD
-                || entity.type() == runtime.ENTITY_MOBLIN
-                || entity.type() == runtime.ENTITY_OCTOROK;
+        boolean longFallingTransition = entity.type() == EntityRomConstants.ENTITY_MOBLIN_SWORD
+                || entity.type() == EntityRomConstants.ENTITY_MOBLIN
+                || entity.type() == EntityRomConstants.ENTITY_OCTOROK;
         runtime.enemyTransitionCountdown[slot] = longFallingTransition ? 0x6F : 0x48;
         if (!longFallingTransition && ignoreHitsCountdown == 0) {
             runtime.enemyTransitionCountdown[slot] = 0x2F;
             runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, runtime.FALLING_JINGLE_ID));
+                    slot,
+                    entity.type(),
+                    0,
+                    false,
+                    EntityCombatEvent.SoundChannel.JINGLE,
+                    EntityRomConstants.FALLING_JINGLE_ID));
         }
         return true;
     }
@@ -139,19 +144,25 @@ public final class EntityBackgroundMechanics {
             // still FALLING, so movement and wall collision must not run here.
             runtime.fallingVisualYOffset[slot] = 0;
             int variant = entity.spriteVariant();
-            if (entity.type() == runtime.ENTITY_OCTOROK || entity.type() == runtime.ENTITY_MOBLIN) {
+            if (entity.type() == EntityRomConstants.ENTITY_OCTOROK
+                    || entity.type() == EntityRomConstants.ENTITY_MOBLIN) {
                 variant = runtime.roamingEnemyMotion.advancePresentationVariant(slot, 3);
-            } else if (entity.type() == runtime.ENTITY_MOBLIN_SWORD) {
+            } else if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_SWORD) {
                 variant = runtime.moblinSwordMotion.advancePresentationVariant(slot, entity.x(), 3);
             }
             return withPositionAndVariant(entity, entity.x(), entity.y(), variant);
         }
 
         int phase = (transition >>> 4) & 0x03;
-        runtime.fallingVisualYOffset[slot] = runtime.FALLING_VISUAL_Y_OFFSETS[phase];
+        runtime.fallingVisualYOffset[slot] = EntityRomConstants.FALLING_VISUAL_Y_OFFSETS[phase];
         if (transition == 0x3F) {
             runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, runtime.FALLING_JINGLE_ID));
+                    slot,
+                    entity.type(),
+                    0,
+                    false,
+                    EntityCombatEvent.SoundChannel.JINGLE,
+                    EntityRomConstants.FALLING_JINGLE_ID));
         }
 
         FallingVector vector = vectorTowardsTarget(
@@ -160,7 +171,7 @@ public final class EntityBackgroundMechanics {
                 entity.z(),
                 runtime.fallingTargetX[slot],
                 runtime.fallingTargetY[slot],
-                runtime.FALLING_VECTOR_LENGTHS[phase]);
+                EntityRomConstants.FALLING_VECTOR_LENGTHS[phase]);
         runtime.fallingSpeedX[slot] = vector.x();
         runtime.fallingSpeedY[slot] = vector.y();
         int x = addFallingSpeedToPosition(
@@ -178,49 +189,49 @@ public final class EntityBackgroundMechanics {
         if (runtime.enemyDropActive[slot]) {
             return runtime.enemyDropMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_TEKTITE) {
+        if (entity.type() == EntityRomConstants.ENTITY_TEKTITE) {
             return runtime.tektiteMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_FISH) {
+        if (entity.type() == EntityRomConstants.ENTITY_FISH) {
             return runtime.fishMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_CROW) {
+        if (entity.type() == EntityRomConstants.ENTITY_CROW) {
             return runtime.crowMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_CUCCO) {
+        if (entity.type() == EntityRomConstants.ENTITY_CUCCO) {
             return runtime.cuccoMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+        if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
             return runtime.secretSeashellMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_WINGED_OCTOROK) {
+        if (entity.type() == EntityRomConstants.ENTITY_WINGED_OCTOROK) {
             return runtime.wingedOctorokMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_STALFOS_AGGRESSIVE) {
+        if (entity.type() == EntityRomConstants.ENTITY_STALFOS_AGGRESSIVE) {
             return runtime.stalfosAggressiveMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_STALFOS_EVASIVE) {
+        if (entity.type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE) {
             return runtime.stalfosEvasiveMotion.speedZ(slot);
         }
         if (isZolGelType(entity.type())) {
             return runtime.zolGelMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_HIDING_ZOL) {
+        if (entity.type() == EntityRomConstants.ENTITY_HIDING_ZOL) {
             return runtime.hidingZolMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_POLS_VOICE) {
+        if (entity.type() == EntityRomConstants.ENTITY_POLS_VOICE) {
             return runtime.polsVoiceMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_SPIKED_BEETLE) {
+        if (entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
             return runtime.spikedBeetleMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_DOG) {
+        if (entity.type() == EntityRomConstants.ENTITY_DOG) {
             return runtime.dogMotion.speedZ(slot);
         }
         if (isEnemyProjectileType(entity.type())) {
             return runtime.enemyProjectileMotion.speedZ(slot);
         }
-        if (entity.type() == runtime.ENTITY_ARROW) {
+        if (entity.type() == EntityRomConstants.ENTITY_ARROW) {
             return runtime.playerArrowMotion.speedZ(slot);
         }
         if (ColorShellMotion.isColorShellType(entity.type())) {
@@ -263,7 +274,7 @@ public final class EntityBackgroundMechanics {
     void resetHookshotChainAfterLinkPush() {
         for (int slot = 0; slot < runtime.slots.length; slot++) {
             if (!runtime.slots[slot].loaded()
-                    || runtime.slots[slot].type() != runtime.ENTITY_HOOKSHOT_CHAIN
+                    || runtime.slots[slot].type() != EntityRomConstants.ENTITY_HOOKSHOT_CHAIN
                     || !runtime.hookshotChainMotion.active(slot)) {
                 continue;
             }

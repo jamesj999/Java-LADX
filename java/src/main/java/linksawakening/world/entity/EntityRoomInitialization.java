@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.Arrays;
 import linksawakening.world.entity.handler.EntityHandlerFamilies;
@@ -23,82 +23,119 @@ final class EntityRoomInitialization {
     EntityHandlerRegistry createEntityHandlers() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         registry.register(
-                runtime.ENTITY_KEESE, (entity, random) -> runtime.keeseMotion.initialize(entity.slot(), random));
+                EntityRomConstants.ENTITY_KEESE,
+                (entity, random) -> runtime.keeseMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_IRON_MASK, (entity, random) -> runtime.roamingEnemyMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_IRON_MASK,
+                (entity, random) -> runtime.roamingEnemyMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_TEKTITE, (entity, random) -> runtime.tektiteMotion.initialize(entity.slot(), random));
-        registry.register(runtime.ENTITY_LEEVER, (entity, random) -> runtime.leeverMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_TEKTITE,
+                (entity, random) -> runtime.tektiteMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_ANTI_FAIRY,
+                EntityRomConstants.ENTITY_LEEVER, (entity, random) -> runtime.leeverMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_ANTI_FAIRY,
                 (entity, random) -> runtime.antiFairyMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_HIDING_ZOL, (entity, random) -> runtime.hidingZolMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_HIDING_ZOL,
+                (entity, random) -> runtime.hidingZolMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_STAR, (entity, random) -> runtime.starMotion.initialize(entity.slot(), random));
-        registry.register(runtime.ENTITY_BLOOPER, (entity, random) -> runtime.blooperMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_PINCER, (entity, random) -> runtime.pincerMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_STAR,
+                (entity, random) -> runtime.starMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_WINGED_OCTOROK,
+                EntityRomConstants.ENTITY_BLOOPER, (entity, random) -> runtime.blooperMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_PINCER, (entity, random) -> runtime.pincerMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_WINGED_OCTOROK,
                 (entity, random) -> runtime.wingedOctorokMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_SPIKE_TRAP,
+                EntityRomConstants.ENTITY_SPIKE_TRAP,
                 (entity, random) -> runtime.spikeTrapMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_PAIRODD, (entity, random) -> runtime.pairoddMotion.initialize(entity.slot(), random));
+                EntityRomConstants.ENTITY_PAIRODD,
+                (entity, random) -> runtime.pairoddMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_PAIRODD_PROJECTILE,
+                EntityRomConstants.ENTITY_PAIRODD_PROJECTILE,
                 (entity, random) -> runtime.pairoddProjectileMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_WATER_TEKTITE, (entity, random) -> runtime.waterTektiteMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_FISH, (entity, random) -> runtime.fishMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_CROW, (entity, random) -> runtime.crowMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_CUCCO, (entity, random) -> runtime.cuccoMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_POKEY, (entity, random) -> runtime.pokeyMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_WATER_TEKTITE,
+                (entity, random) -> runtime.waterTektiteMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_PIRANHA_PLANT, (entity, random) -> runtime.piranhaMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_ZORA, (entity, random) -> runtime.zoraMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_ZOMBIE, (entity, random) -> runtime.zombieMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_FISH, (entity, random) -> runtime.fishMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_BUZZ_BLOB, (entity, random) -> runtime.buzzBlobMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_CROW, (entity, random) -> runtime.crowMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_SAND_CRAB, (entity, random) -> runtime.sandCrabMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_DOG, (entity, random) -> runtime.dogMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_URCHIN, (entity, random) -> runtime.urchinMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_CUCCO, (entity, random) -> runtime.cuccoMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_WITCH_RAT, (entity, random) -> runtime.witchRatMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_POKEY, (entity, random) -> runtime.pokeyMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_BOO_BUDDY, (entity, random) -> runtime.booBuddyMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_PIRANHA_PLANT,
+                (entity, random) -> runtime.piranhaMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_DROPPABLE_FAIRY, (entity, random) -> runtime.fairyMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_ZORA, (entity, random) -> runtime.zoraMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_STALFOS_AGGRESSIVE,
+                EntityRomConstants.ENTITY_ZOMBIE, (entity, random) -> runtime.zombieMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_BUZZ_BLOB,
+                (entity, random) -> runtime.buzzBlobMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_SAND_CRAB,
+                (entity, random) -> runtime.sandCrabMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_DOG, (entity, random) -> runtime.dogMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_URCHIN, (entity, random) -> runtime.urchinMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_WITCH_RAT,
+                (entity, random) -> runtime.witchRatMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_BOO_BUDDY,
+                (entity, random) -> runtime.booBuddyMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_DROPPABLE_FAIRY,
+                (entity, random) -> runtime.fairyMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_STALFOS_AGGRESSIVE,
                 (entity, random) -> runtime.stalfosAggressiveMotion.initialize(entity.slot(), random));
         registry.register(
-                runtime.ENTITY_STALFOS_EVASIVE,
+                EntityRomConstants.ENTITY_STALFOS_EVASIVE,
                 (entity, random) -> runtime.stalfosEvasiveMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_GIBDO, (entity, random) -> runtime.gibdoMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_LIKE_LIKE, (entity, random) -> runtime.likeLikeMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_GIBDO, (entity, random) -> runtime.gibdoMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_POLS_VOICE, (entity, random) -> runtime.polsVoiceMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_GOOMBA, (entity, random) -> runtime.goombaMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_SNAKE, (entity, random) -> runtime.snakeMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_PEAHAT, (entity, random) -> runtime.peaHatMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_LIKE_LIKE,
+                (entity, random) -> runtime.likeLikeMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_ARMOS_STATUE, (entity, random) -> runtime.armosMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_POLS_VOICE,
+                (entity, random) -> runtime.polsVoiceMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_ARMOS_KNIGHT, (entity, random) -> runtime.armosKnightMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_HINOX, (entity, random) -> runtime.hinoxMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_GOOMBA, (entity, random) -> runtime.goombaMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_HARDHAT_BEETLE, (entity, random) -> runtime.hardHatMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_SNAKE, (entity, random) -> runtime.snakeMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_SPIKED_BEETLE, (entity, random) -> runtime.spikedBeetleMotion.initialize(entity.slot()));
-        registry.register(runtime.ENTITY_BOMBER, (entity, random) -> runtime.bomberMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_PEAHAT, (entity, random) -> runtime.peaHatMotion.initialize(entity.slot()));
         registry.register(
-                runtime.ENTITY_MAD_BOMBER, (entity, random) -> runtime.madBomberMotion.initialize(entity.slot()));
+                EntityRomConstants.ENTITY_ARMOS_STATUE,
+                (entity, random) -> runtime.armosMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_ARMOS_KNIGHT,
+                (entity, random) -> runtime.armosKnightMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_HINOX, (entity, random) -> runtime.hinoxMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_HARDHAT_BEETLE,
+                (entity, random) -> runtime.hardHatMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_SPIKED_BEETLE,
+                (entity, random) -> runtime.spikedBeetleMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_BOMBER, (entity, random) -> runtime.bomberMotion.initialize(entity.slot()));
+        registry.register(
+                EntityRomConstants.ENTITY_MAD_BOMBER,
+                (entity, random) -> runtime.madBomberMotion.initialize(entity.slot()));
         registry.registerAdvance(
-                runtime.ENTITY_BUTTERFLY,
+                EntityRomConstants.ENTITY_BUTTERFLY,
                 (entity, context) -> runtime.butterflyMotion.advance(
                         entity,
                         context.frameCounter(),
@@ -106,7 +143,7 @@ final class EntityRoomInitialization {
                         context.linkEntityY(),
                         context.randomByteSupplier()));
         registry.registerAdvance(
-                runtime.ENTITY_KEESE,
+                EntityRomConstants.ENTITY_KEESE,
                 (entity, context) -> runtime.keeseMotion.advance(
                         entity,
                         context.frameCounter(),
@@ -114,7 +151,7 @@ final class EntityRoomInitialization {
                         context.linkEntityY(),
                         context.randomByteSupplier()));
         registry.registerAdvance(
-                runtime.ENTITY_TEKTITE,
+                EntityRomConstants.ENTITY_TEKTITE,
                 (entity, context) -> runtime.tektiteMotion.advance(
                         entity,
                         context.linkEntityX(),
@@ -122,7 +159,7 @@ final class EntityRoomInitialization {
                         context.randomByteSupplier(),
                         context.backgroundCollision()));
         registry.registerAdvance(
-                runtime.ENTITY_LEEVER,
+                EntityRomConstants.ENTITY_LEEVER,
                 (entity, context) -> runtime.leeverMotion.advance(
                         entity,
                         context.frameCounter(),
@@ -131,11 +168,11 @@ final class EntityRoomInitialization {
                         context.randomByteSupplier(),
                         context.backgroundCollision()));
         registry.registerAdvance(
-                runtime.ENTITY_ANTI_FAIRY,
+                EntityRomConstants.ENTITY_ANTI_FAIRY,
                 (entity, context) -> runtime.antiFairyMotion.advance(
                         entity, context.frameCounter(), context.backgroundCollision(), context.randomByteSupplier()));
         registry.registerAdvance(
-                runtime.ENTITY_GIBDO,
+                EntityRomConstants.ENTITY_GIBDO,
                 (entity, context) -> runtime.gibdoMotion.advance(
                         entity, context.randomByteSupplier(), context.backgroundCollision()));
         EntityHandlerFamilies.install(registry);
@@ -200,7 +237,7 @@ final class EntityRoomInitialization {
                 runtime.warpState[entity.slot()] = WarpMotion.STATE_APPROACH;
                 runtime.slots[entity.slot()] = withPositionAndVariant(entity, entity.x(), entity.y(), -1);
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_GENIE) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_GENIE) {
                 GenieMotion.JarState jar = runtime.genieMotion.initialize(entity.slot());
                 runtime.genieActiveState[entity.slot()] = 0;
                 runtime.geniePrivateState1[entity.slot()] = jar.privateState1();
@@ -208,13 +245,13 @@ final class EntityRoomInitialization {
                 runtime.enemyHealth[entity.slot()] = jar.health();
                 runtime.enemyPhysicsFlags[entity.slot()] = jar.physicsFlags();
                 runtime.enemyHitboxFlags[entity.slot()] = jar.hitboxFlags();
-                runtime.entityOptions1Override[entity.slot()] = runtime.GENIE_OPTIONS1;
+                runtime.entityOptions1Override[entity.slot()] = EntityRomConstants.GENIE_OPTIONS1;
                 if (entity.status() == EntityStatus.INIT) {
                     runtime.slots[entity.slot()] =
                             withPositionAndVariant(entity, entity.x() + 0x08, entity.y(), entity.spriteVariant());
                 }
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_CHEST_WITH_ITEM) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CHEST_WITH_ITEM) {
                 runtime.chestItemBySlot[entity.slot()] = entity.spriteVariant();
             }
             if (entity.loaded() && isBombiteType(entity.type())) {
@@ -227,67 +264,67 @@ final class EntityRoomInitialization {
             if (entity.loaded() && isGhiniType(entity.type())) {
                 runtime.ghiniMotion.initialize(entity.slot(), entity.type());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_LIKE_LIKE) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE) {
                 runtime.likeLikeMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_POLS_VOICE) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_POLS_VOICE) {
                 runtime.polsVoiceMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_FISH) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_FISH) {
                 runtime.fishMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_CROW) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CROW) {
                 runtime.crowMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_BOO_BUDDY) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOO_BUDDY) {
                 runtime.booBuddyMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_BUZZ_BLOB) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BUZZ_BLOB) {
                 runtime.buzzBlobMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_SAND_CRAB) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_SAND_CRAB) {
                 runtime.sandCrabMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_DOG) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DOG) {
                 runtime.dogMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_URCHIN) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_URCHIN) {
                 runtime.urchinMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_WITCH_RAT) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_WITCH_RAT) {
                 runtime.witchRatMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_DROPPABLE_FAIRY) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
                 runtime.fairyMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_SPIKED_BEETLE) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
                 runtime.spikedBeetleMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_PINCER) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_PINCER) {
                 runtime.pincerMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_BUSH_CRAWLER) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BUSH_CRAWLER) {
                 runtime.bushCrawlerMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_MIMIC) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MIMIC) {
                 runtime.mimicMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_MASKED_MIMIC_GORIYA) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MASKED_MIMIC_GORIYA) {
                 runtime.maskedMimicMotion.initialize(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_MINI_MOLDORM) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
                 runtime.miniMoldormMotion.initialize(entity);
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_MOLDORM) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
                 runtime.moldormMotion.initialize(entity);
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_ROLLING_BONES) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
                 runtime.rollingBonesMotion.initializeBoss(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_ROLLING_BONES_BAR) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
                 runtime.rollingBonesMotion.initializeBar(entity.slot());
             }
-            if (entity.loaded() && entity.type() == runtime.ENTITY_CUCCO) {
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CUCCO) {
                 runtime.cuccoMotion.initialize(entity.slot());
             }
             if (entity.status() == EntityStatus.DYING) {
@@ -297,7 +334,7 @@ final class EntityRoomInitialization {
                 runtime.laserMotion.initializeForEntity(entity);
             }
             if (isFollowingNpcType(entity.type())) {
-                if (entity.type() == runtime.ENTITY_BOW_WOW) {
+                if (entity.type() == EntityRomConstants.ENTITY_BOW_WOW) {
                     runtime.bowWowMotion.initialize(entity.slot());
                 } else {
                     runtime.followingNpcMotion.initialize(entity.slot(), entity.type());

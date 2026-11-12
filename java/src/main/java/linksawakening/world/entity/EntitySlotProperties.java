@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,8 +40,8 @@ public final class EntitySlotProperties {
             return;
         }
         int coordinatorSlot = Arrays.stream(runtime.slots)
-                .filter(entity ->
-                        entity.status() == EntityStatus.ACTIVE && entity.type() == runtime.ENTITY_THREE_OF_A_KIND)
+                .filter(entity -> entity.status() == EntityStatus.ACTIVE
+                        && entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND)
                 .mapToInt(RoomEntity::slot)
                 .findFirst()
                 .orElse(0);
@@ -50,7 +50,7 @@ public final class EntitySlotProperties {
                 : 0x1D;
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 coordinatorSlot,
-                runtime.ENTITY_THREE_OF_A_KIND,
+                EntityRomConstants.ENTITY_THREE_OF_A_KIND,
                 0,
                 false,
                 EntityCombatEvent.SoundChannel.JINGLE,
@@ -60,7 +60,7 @@ public final class EntitySlotProperties {
         }
         for (int index = 0; index < runtime.slots.length; index++) {
             RoomEntity entity = runtime.slots[index];
-            if (!entity.loaded() || entity.type() != runtime.ENTITY_THREE_OF_A_KIND) {
+            if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_THREE_OF_A_KIND) {
                 continue;
             }
             int slot = entity.slot();
@@ -73,7 +73,12 @@ public final class EntitySlotProperties {
         // The source writes the shared noise register once per card in the
         // same handler pass; only the final register value is audible.
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                coordinatorSlot, runtime.ENTITY_THREE_OF_A_KIND, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                coordinatorSlot,
+                EntityRomConstants.ENTITY_THREE_OF_A_KIND,
+                0,
+                false,
+                EntityCombatEvent.SoundChannel.NOISE,
+                0x13));
     }
 
     int initialHealth(int type) {
@@ -131,7 +136,7 @@ public final class EntitySlotProperties {
                 != 0;
         for (int slot = 0; slot < runtime.slots.length; slot++) {
             RoomEntity entity = runtime.slots[slot];
-            if (entity.type() != runtime.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
+            if (entity.type() != EntityRomConstants.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
             runtime.slots[slot] = runtime.bowWowMotion.advanceChain(entity, runtime.bowWowState, moving);
             entries.addAll(runtime.bowWowMotion.chainEntries(slot, runtime.bowWowState, frame));
         }
@@ -141,7 +146,7 @@ public final class EntitySlotProperties {
     void updatePincerBodyOam() {
         List<PincerBodyOam.Entry> entries = new ArrayList<>();
         for (RoomEntity entity : runtime.slots) {
-            if (!entity.loaded() || entity.type() != runtime.ENTITY_PINCER) {
+            if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
                 continue;
             }
             entries.addAll(PincerBodyOam.entries(
@@ -158,7 +163,7 @@ public final class EntitySlotProperties {
     void updateWingedOctorokOam() {
         List<WingedOctorokOam.Entry> entries = new ArrayList<>();
         for (RoomEntity entity : runtime.slots) {
-            if (!entity.loaded() || entity.type() != runtime.ENTITY_WINGED_OCTOROK) {
+            if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
             entries.addAll(WingedOctorokOam.entries(
@@ -176,10 +181,10 @@ public final class EntitySlotProperties {
             if (!candidate.loaded()) {
                 continue;
             }
-            if (candidate.type() == runtime.ENTITY_LIFTABLE_ROCK
+            if (candidate.type() == EntityRomConstants.ENTITY_LIFTABLE_ROCK
                     && runtime.liftableRockSmashActive[candidate.slot()]
                     && runtime.liftableRockSmashSourceVariant[candidate.slot()]
-                            == runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK) {
+                            == EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK) {
                 int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
                 int distanceY = signedByte(((crow.y() - crow.z()) - candidate.y()) & 0xFF);
                 if (distanceX < 0x10 && distanceY >= -0x28 && distanceY < 0x28) {
@@ -187,7 +192,7 @@ public final class EntitySlotProperties {
                 }
                 continue;
             }
-            if (candidate.type() != runtime.ENTITY_BOMB) {
+            if (candidate.type() != EntityRomConstants.ENTITY_BOMB) {
                 continue;
             }
             int countdown = runtime.enemyTransitionCountdown[candidate.slot()] & 0xFF;
@@ -221,17 +226,17 @@ public final class EntitySlotProperties {
 
     EntitySpriteDefinition spriteDefinitionForChest(int itemType) {
         if (itemType == ChestContentsTable.CHEST_ZOL) {
-            return EntitySpriteDefinition.unsupported(runtime.ENTITY_CHEST_WITH_ITEM);
+            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
         if (runtime.spriteHandlers == null) {
-            return EntitySpriteDefinition.unsupported(runtime.ENTITY_CHEST_WITH_ITEM);
+            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
         int roomId = runtime.spriteSelection == null ? -1 : runtime.spriteSelection.roomId();
         if (runtime.entityMapId >= 0 && roomId >= 0) {
             return runtime.spriteHandlers.forChestState(runtime.entityMapId, roomId, itemType);
         }
         return runtime.spriteHandlers.forEntityType(
-                runtime.ENTITY_CHEST_WITH_ITEM,
+                EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
                 runtime.spriteSelection == null
                         ? (runtime.indoorRoom
                                 ? EntityRoomLoader.RoomTable.INDOORS_A
@@ -256,112 +261,113 @@ public final class EntitySlotProperties {
             return runtime.entityOptions1Override[slot];
         }
         if (isGhiniType(runtime.slots[slot].type())) {
-            return runtime.GHINI_OPTIONS1;
+            return EntityRomConstants.GHINI_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_BOMB) {
-            return runtime.BOMB_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BOMB) {
+            return EntityRomConstants.BOMB_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_BOMBER) {
-            return runtime.BOMBER_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BOMBER) {
+            return EntityRomConstants.BOMBER_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_MAD_BOMBER) {
-            return runtime.MAD_BOMBER_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MAD_BOMBER) {
+            return EntityRomConstants.MAD_BOMBER_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_WIZROBE_PROJECTILE) {
-            return runtime.WIZROBE_PROJECTILE_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_WIZROBE_PROJECTILE) {
+            return EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_SWORD_SHIELD_PICKUP) {
-            return runtime.ENTITY_OPT1_SPLASH_IN_WATER | runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
+            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
+                    | EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_KEY_DROP_POINT) {
-            return runtime.KEY_DROP_POINT_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_KEY_DROP_POINT) {
+            return EntityRomConstants.KEY_DROP_POINT_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_ARMOS_KNIGHT) {
-            return runtime.ARMOS_KNIGHT_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
+            return EntityRomConstants.ARMOS_KNIGHT_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_HINOX) {
-            return runtime.HINOX_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_HINOX) {
+            return EntityRomConstants.HINOX_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_ROLLING_BONES) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
             return 0x84;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_ROLLING_BONES_BAR) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
             return 0x40;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_CHEST_WITH_ITEM) {
-            return runtime.CHEST_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_CHEST_WITH_ITEM) {
+            return EntityRomConstants.CHEST_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            return runtime.SECRET_SEASHELL_HIDDEN_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            return EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_FISH) {
-            return runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_FISH) {
+            return EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_CROW) {
-            return runtime.ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_CROW) {
+            return EntityRomConstants.ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_CUCCO) {
-            return runtime.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_CUCCO) {
+            return EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_GOPONGA_FLOWER) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER) {
             return GopongaFlowerMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_GIANT_GOPONGA_FLOWER) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER) {
             return GiantGopongaMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_POKEY) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_POKEY) {
             return PokeyMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_ZORA) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ZORA) {
             return ZoraMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_ZOMBIE) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ZOMBIE) {
             return ZombieMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_BUZZ_BLOB) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BUZZ_BLOB) {
             return BuzzBlobMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_SAND_CRAB) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_SAND_CRAB) {
             return SandCrabMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_URCHIN) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_URCHIN) {
             return UrchinMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_WITCH_RAT) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_WITCH_RAT) {
             return WitchRatMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE) {
             return GopongaProjectileMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_BOO_BUDDY) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BOO_BUDDY) {
             return BooBuddyMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_DROPPABLE_FAIRY) {
-            return runtime.FAIRY_OPTIONS1;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
+            return EntityRomConstants.FAIRY_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_SPIKED_BEETLE) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
-            return runtime.ENTITY_OPT1_SPLASH_IN_WATER;
+            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_POLS_VOICE) {
-            return runtime.ENTITY_OPT1_SPLASH_IN_WATER;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_POLS_VOICE) {
+            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_MINI_MOLDORM) {
-            return runtime.ENTITY_OPT1_SPLASH_IN_WATER;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
+            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_MOLDORM) {
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MOLDORM) {
             return MoldormMotion.INITIAL_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == runtime.ENTITY_MIMIC) {
-            return runtime.ENTITY_OPT1_SPLASH_IN_WATER;
+        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MIMIC) {
+            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
         if (isBombiteType(runtime.slots[slot].type())) {
-            return runtime.BOMBITE_OPTIONS1;
+            return EntityRomConstants.BOMBITE_OPTIONS1;
         }
-        return runtime.slots[slot].type() == runtime.ENTITY_STALFOS_EVASIVE
-                        || runtime.slots[slot].type() == runtime.ENTITY_LIKE_LIKE
-                ? runtime.ENTITY_OPT1_SPLASH_IN_WATER
+        return runtime.slots[slot].type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE
+                        || runtime.slots[slot].type() == EntityRomConstants.ENTITY_LIKE_LIKE
+                ? EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
                 : 0;
     }
 }

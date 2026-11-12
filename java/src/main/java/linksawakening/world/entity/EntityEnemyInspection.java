@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.List;
 import linksawakening.world.entity.event.BoomerangObjectRequest;
@@ -624,7 +624,7 @@ public final class EntityEnemyInspection {
 
     int dogState(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_DOG)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_DOG)) {
             throw new IllegalArgumentException("Entity slot does not contain a dog: " + slot);
         }
         return runtime.dogMotion.state(slot);
@@ -632,7 +632,7 @@ public final class EntityEnemyInspection {
 
     int witchRatState(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
         return runtime.witchRatMotion.state(slot);
@@ -640,7 +640,7 @@ public final class EntityEnemyInspection {
 
     int witchRatTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
         return runtime.enemyTransitionCountdown[slot];
@@ -648,7 +648,7 @@ public final class EntityEnemyInspection {
 
     int witchRatSpeedZ(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
         return runtime.witchRatMotion.speedZ(slot);
@@ -763,7 +763,7 @@ public final class EntityEnemyInspection {
     boolean shouldDisappear(RoomEntity entity) {
         return runtime.slowTimerInitialized[entity.slot()]
                 && isCommonDroppableType(entity.type())
-                && entity.type() != runtime.ENTITY_HIDING_SLIME_KEY
+                && entity.type() != EntityRomConstants.ENTITY_HIDING_SLIME_KEY
                 // DroppableDisappearIfNeeded is after the hidden-state helper in
                 // every shared drop handler. A hidden item therefore must not be
                 // unloaded merely because its global fade timer reached zero.

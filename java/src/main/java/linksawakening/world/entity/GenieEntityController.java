@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -73,7 +73,7 @@ public final class GenieEntityController {
             if (landed && runtime.geniePrivateState3[slot] == 0) {
                 runtime.genieSpeedZ[slot] = 0x10;
                 runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20));
+                        slot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20));
             }
             RoomEntity movedJar = advanceGenieJarAttract(runtime.slots[slot]);
             runtime.slots[slot] = movedJar;
@@ -87,7 +87,7 @@ public final class GenieEntityController {
                         GenieMotion.INITIAL_PHYSICS_FLAGS,
                         GenieMotion.INITIAL_HITBOX_FLAGS);
                 runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x06));
+                        slot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x06));
             }
         }
 
@@ -101,7 +101,12 @@ public final class GenieEntityController {
         }
         if (update.noiseSfx() >= 0) {
             runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, update.noiseSfx()));
+                    slot,
+                    EntityRomConstants.ENTITY_GENIE,
+                    0,
+                    false,
+                    EntityCombatEvent.SoundChannel.NOISE,
+                    update.noiseSfx()));
         }
         if (update.sourceUnloaded()) {
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
@@ -132,7 +137,7 @@ public final class GenieEntityController {
                 if (runtime.genieControllerSlot >= 0
                         && runtime.genieControllerSlot < runtime.slots.length
                         && runtime.slots[runtime.genieControllerSlot].loaded()
-                        && runtime.slots[runtime.genieControllerSlot].type() == runtime.ENTITY_GENIE) {
+                        && runtime.slots[runtime.genieControllerSlot].type() == EntityRomConstants.ENTITY_GENIE) {
                     runtime.genieActiveState[runtime.genieControllerSlot] = 3;
                 }
                 runtime.lifecycle.disableEntityWithoutPersistence(slot);
@@ -161,7 +166,7 @@ public final class GenieEntityController {
             boolean jarExists = runtime.genieControllerSlot >= 0
                     && runtime.genieControllerSlot < runtime.slots.length
                     && runtime.slots[runtime.genieControllerSlot].loaded()
-                    && runtime.slots[runtime.genieControllerSlot].type() == runtime.ENTITY_GENIE;
+                    && runtime.slots[runtime.genieControllerSlot].type() == EntityRomConstants.ENTITY_GENIE;
             if (jarExists) {
                 runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x52));
                 return;
@@ -270,7 +275,7 @@ public final class GenieEntityController {
                         GenieMotion.INITIAL_PHYSICS_FLAGS,
                         GenieMotion.INITIAL_HITBOX_FLAGS);
                 runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1F));
+                        slot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1F));
             }
             return;
         }
@@ -347,7 +352,7 @@ public final class GenieEntityController {
                 runtime.genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
                 runtime.geniePrivateCountdown2[slot] = 0x10;
                 runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x28));
+                        slot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x28));
             }
         }
         if (runtime.geniePrivateCountdown2[slot] != 0) {
@@ -373,7 +378,7 @@ public final class GenieEntityController {
         runtime.genieSpeedX[fireballSlot] = towardLink.x() & 0xFF;
         runtime.genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                bodySlot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x28));
+                bodySlot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x28));
         return fireballSlot;
     }
 
@@ -403,7 +408,12 @@ public final class GenieEntityController {
                     runtime.bossRewards.spawnMoldormHeartContainer(genie);
                     runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                            slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A));
+                            slot,
+                            EntityRomConstants.ENTITY_GENIE,
+                            0,
+                            false,
+                            EntityCombatEvent.SoundChannel.NOISE,
+                            0x1A));
                     return;
                 }
                 if ((countdown & 0x07) == 0) {
@@ -411,7 +421,12 @@ public final class GenieEntityController {
                     int y = ((genie.y() - genie.z()) + ((randomByteSupplier.getAsInt() & 0x1F) - 0x10)) & 0xFF;
                     runtime.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
                     runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                            slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                            slot,
+                            EntityRomConstants.ENTITY_GENIE,
+                            0,
+                            false,
+                            EntityCombatEvent.SoundChannel.NOISE,
+                            0x13));
                 }
             }
         }
@@ -476,12 +491,12 @@ public final class GenieEntityController {
         if (freeSlot < 0) {
             return -1;
         }
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GENIE);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GENIE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_GENIE,
+                EntityRomConstants.ENTITY_GENIE,
                 x & 0xFF,
                 y & 0xFF,
                 EntityStatus.ACTIVE,
@@ -516,7 +531,7 @@ public final class GenieEntityController {
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.entityOptions1Override[freeSlot] = runtime.GENIE_OPTIONS1;
+        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.GENIE_OPTIONS1;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
     }
@@ -529,8 +544,8 @@ public final class GenieEntityController {
         runtime.genieImpactRegisteredThisFrame[slot] = true;
         runtime.geniePrivateState4[slot] = (runtime.geniePrivateState4[slot] + 1) & 0xFF;
         runtime.enemyFlashCountdown[slot] = 0x20;
-        runtime.events.pendingEntityEvents.add(
-                new EntityCombatEvent(slot, runtime.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x07));
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                slot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x07));
         if (runtime.geniePrivateState4[slot] != GenieMotion.JAR_HEALTH_THRESHOLD) {
             return jar;
         }

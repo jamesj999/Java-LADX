@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.DungeonWarpRequest;
@@ -83,7 +83,7 @@ public final class EntityStoryController {
                     runtime.initializeHealthGroup(ball);
                     runtime.enemyPhysicsFlags[ball] = ENTITY_PHYSICS_HARMLESS;
                     runtime.enemyHitboxFlags[ball] = 0;
-                    runtime.entityOptions1Override[ball] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION;
+                    runtime.entityOptions1Override[ball] = EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION;
                     runtime.kidBall[ball] = true;
                     runtime.kidPlayTimer[ball] = 0x24;
                     runtime.kidPlayState[ball] = entity.type() == 0x71 ? 0x14 : 0xEC;
@@ -137,7 +137,7 @@ public final class EntityStoryController {
             case 1 -> {
                 if ((yDistance >= -0x20 && yDistance < 0x20 || --runtime.kidKidnapDelay[slot] == 0)
                         && runtime.transitionSequenceCounter == 0x04) {
-                    if (entity.type() == runtime.ENTITY_KID_71) {
+                    if (entity.type() == EntityRomConstants.ENTITY_KID_71) {
                         runtime.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
                     }
                     runtime.kidKidnapState[slot] = 2;
@@ -330,7 +330,12 @@ public final class EntityStoryController {
                             slot, new linksawakening.world.entity.event.WarpDestination(0x11, 0xD8, 0x88, 0x70)));
                     runtime.pendingMusicFadeOutCountdown = 0x30;
                     runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                            slot, runtime.ENTITY_RICHARD, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x06));
+                            slot,
+                            EntityRomConstants.ENTITY_RICHARD,
+                            0,
+                            false,
+                            EntityCombatEvent.SoundChannel.NOISE,
+                            0x06));
                     runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     return;
                 }
@@ -345,18 +350,18 @@ public final class EntityStoryController {
         int slot = entity.slot();
         switch (runtime.owlEventState[slot]) {
             case 0 -> {
-                if (runtime.entityRoomId == runtime.ROOM_OW_BEACH_WITH_SWORD) {
+                if (runtime.entityRoomId == EntityRomConstants.ROOM_OW_BEACH_WITH_SWORD) {
                     if (linkEntityY < 0x44 || linkEntityX < 0x40 || linkEntityX >= 0x70) {
                         return;
                     }
                     runtime.owlPreviousMusicTrack[slot] = 0x1D;
-                } else if (runtime.entityRoomId == runtime.ROOM_OW_TAIL_KEY_CHEST) {
+                } else if (runtime.entityRoomId == EntityRomConstants.ROOM_OW_TAIL_KEY_CHEST) {
                     if (!runtime.playerHasTailKey || runtime.owlPrivateCountdown1[slot] != 0) {
                         return;
                     }
                     runtime.owlPreviousMusicTrack[slot] =
                             runtime.owlDefaultMusicResolver.applyAsInt(runtime.entityRoomId);
-                } else if (runtime.entityRoomId == runtime.ROOM_OW_WEST_OF_TAIL_CAVE) {
+                } else if (runtime.entityRoomId == EntityRomConstants.ROOM_OW_WEST_OF_TAIL_CAVE) {
                     if (runtime.chestSwordLevel == 0 || (runtime.instrument1Flags & 0x02) == 0) {
                         runtime.lifecycle.disableEntityWithoutPersistence(slot);
                         return;
@@ -366,7 +371,7 @@ public final class EntityStoryController {
                     runtime.pendingMusicTrack = 0x22;
                     runtime.owlEventState[slot] = 2;
                     return;
-                } else if (runtime.entityRoomId == runtime.ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
+                } else if (runtime.entityRoomId == EntityRomConstants.ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
                     if (runtime.chestSwordLevel == 0
                             || runtime.instrument2Flags != 0
                             || runtime.bowWowState != 0x01

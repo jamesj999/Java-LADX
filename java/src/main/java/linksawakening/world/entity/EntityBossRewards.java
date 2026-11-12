@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -47,15 +47,15 @@ public final class EntityBossRewards {
     }
 
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
-        boolean swallowedShield =
-                entity.type() == runtime.ENTITY_LIKE_LIKE && runtime.likeLikeMotion.privateState1(entity.slot()) != 0;
-        if (entity.type() == runtime.ENTITY_MOBLIN_KING) {
+        boolean swallowedShield = entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE
+                && runtime.likeLikeMotion.privateState1(entity.slot()) != 0;
+        if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // The mini-boss option reaches DidKillEnemy's room-event branch,
             // permanently opening the east rescue-room path.
             runtime.pendingRoomStatusMask |= 0x20;
         }
         if (entity.sourceLoadOrder() < 0 || (runtime.enemyDropResolver == null && !swallowedShield)) {
-            if (entity.type() == runtime.ENTITY_MOBLIN_KING) {
+            if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 runtime.pendingClearedEntityMask |= persistentClearMask(entity);
             }
             runtime.lifecycle.disableEntityWithoutPersistence(entity.slot());
@@ -64,7 +64,8 @@ public final class EntityBossRewards {
 
         EnemyDropResolver.Result result;
         if (swallowedShield) {
-            result = new EnemyDropResolver.Result(runtime.ENTITY_SWORD_SHIELD_PICKUP, runtime.enemyDropCounters, 0);
+            result = new EnemyDropResolver.Result(
+                    EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP, runtime.enemyDropCounters, 0);
         } else {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
                     entity.type(),
@@ -254,12 +255,13 @@ public final class EntityBossRewards {
         }
         int x = Math.max(0x18, Math.min(0x88, source.x()));
         int y = Math.max(0x20, Math.min(0x70, source.y()));
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_HEART_CONTAINER);
+        EntitySpriteDefinition definition =
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_HEART_CONTAINER);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(
                 freeSlot,
                 -1,
-                runtime.ENTITY_HEART_CONTAINER,
+                EntityRomConstants.ENTITY_HEART_CONTAINER,
                 x,
                 y,
                 EntityStatus.ACTIVE,
@@ -280,8 +282,8 @@ public final class EntityBossRewards {
         runtime.enemyStunnedCountdown[freeSlot] = 0;
         runtime.dyingCountdown[freeSlot] = 0;
         runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_HEART_CONTAINER);
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_HEART_CONTAINER);
+        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_HEART_CONTAINER);
+        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_HEART_CONTAINER);
         runtime.enemyFlashCountdown[freeSlot] = 0;
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.entityGroundStatus[freeSlot] = 0;
@@ -317,7 +319,7 @@ public final class EntityBossRewards {
         }
 
         int state = runtime.bossDeathProducerState[slot];
-        if (source.type() == runtime.ENTITY_DESERT_LANMOLA) {
+        if (source.type() == EntityRomConstants.ENTITY_DESERT_LANMOLA) {
             switch (state) {
                 case 0 -> {
                     // func_006_5629: transition $60, then private state 2++.
@@ -343,7 +345,8 @@ public final class EntityBossRewards {
             return;
         }
 
-        if (source.type() == runtime.ENTITY_ARMOS_KNIGHT || source.type() == runtime.ENTITY_HINOX) {
+        if (source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT
+                || source.type() == EntityRomConstants.ENTITY_HINOX) {
             switch (state) {
                 case 0 -> {
                     // ArmosKnightPrivateState0Handler: transition $A0 and
@@ -365,12 +368,12 @@ public final class EntityBossRewards {
                     // The shared inactive handler emits the boss explosion,
                     // then calls DidKillEnemy. Armos has pre-forced the key;
                     // Hinox uses the ordinary drop resolver here.
-                    if (source.type() == runtime.ENTITY_ARMOS_KNIGHT) {
+                    if (source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
                         int killIndex = runtime.killCount & 0xFF;
                         runtime.killOrder[killIndex] = source.sourceLoadOrder() & 0xFF;
                         runtime.killCount = (runtime.killCount + 1) & 0xFF;
                         runtime.pendingClearedEntityMask |= persistentClearMask(source);
-                        runtime.pickups.spawnEnemyDrop(source, runtime.ENTITY_KEY_DROP_POINT);
+                        runtime.pickups.spawnEnemyDrop(source, EntityRomConstants.ENTITY_KEY_DROP_POINT);
                         runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     } else {
                         handleTerminalEnemyDeath(source, randomByteSupplier);

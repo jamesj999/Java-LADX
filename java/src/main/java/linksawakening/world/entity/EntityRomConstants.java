@@ -28,7 +28,9 @@ import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 
 /** Immutable ROM handler identifiers, flags, and lookup constants. */
-public abstract class EntityRomConstants {
+public final class EntityRomConstants {
+    private EntityRomConstants() {}
+
     static final int ENTITY_PUSHED_BLOCK = 0x06;
 
     static final int[] INSTRUMENT_MUSIC_TRACKS = {0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E};
