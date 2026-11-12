@@ -12,10 +12,8 @@ import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ColorShellMotion;
-import linksawakening.world.entity.motion.HookshotChainMotion;
 
-/** Read-only views over ROM slot state for gameplay and diagnostics. */
+/** Queries over ExecuteEntities slot state; snapshot() owns data, view() follows the live room. */
 public final class EntityRoomInspection {
     private final EntityRoomInspectionServices runtime;
     private final RoomEntitySnapshot liveView;
@@ -284,11 +282,10 @@ public final class EntityRoomInspection {
         return EntityRoomQueries.spriteDefinitionFor(runtime, entityType);
     }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
-        if (runtime.spriteHandlers() == null) {
-            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER);
-        }
-        return runtime.spriteHandlers().forBushCrawlerState(privateState1, spriteRoomTable());
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int disguiseState) {
+        return runtime.spriteHandlers() == null
+                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
+                : runtime.spriteHandlers().forBushCrawlerState(disguiseState, spriteRoomTable());
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
@@ -297,24 +294,20 @@ public final class EntityRoomInspection {
                 : runtime.spriteHandlers().forPokeySegment();
     }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
-        if (runtime.spriteHandlers() == null) {
-            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER);
-        }
-        return runtime.spriteHandlers().forBushCrawlerCrawlState(spriteRoomTable(), privateState4);
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int crawlState) {
+        return runtime.spriteHandlers() == null
+                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
+                : runtime.spriteHandlers().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
     }
 
     EntityRoomLoader.RoomTable spriteRoomTable() {
-        return runtime.presentationState().readSpriteSelection() == null
-                ? (runtime.indoorRoom() ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
-                : runtime.presentationState().readSpriteSelection().roomTable();
+        return EntityRoomQueries.spriteRoomTable(runtime);
     }
 
-    EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int privateState1) {
-        if (runtime.spriteHandlers() == null) {
-            return fallback;
-        }
-        return runtime.spriteHandlers().forStalfosEvasiveState(privateState1);
+    EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int evadeState) {
+        return runtime.spriteHandlers() == null
+                ? fallback
+                : runtime.spriteHandlers().forStalfosEvasiveState(evadeState);
     }
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {

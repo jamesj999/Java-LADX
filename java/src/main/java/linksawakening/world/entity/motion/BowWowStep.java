@@ -51,7 +51,7 @@ final class BowWowStep {
             owner.selectedVariant[slot] = owner.movementVariant(frameCounter, slot);
         }
 
-        if (owner.privateState4[slot] == 0) {
+        if (owner.setupComplete[slot] == 0) {
             return new BowWowMotion.Update(owner.setup(entity), owner.targetSlot[slot], null);
         }
 

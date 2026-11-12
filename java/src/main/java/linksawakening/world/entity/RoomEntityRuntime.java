@@ -21,9 +21,9 @@ import linksawakening.world.entity.motion.WarpMotion;
 import linksawakening.world.room.ChestContentsTable;
 
 /**
- * Mutable per-room entity state for the handler work that can be expressed by
- * the current room snapshot model. ROM display lists remain immutable; this
- * class only advances handler-owned status and sprite-variant fields.
+ * Per-room composition root for ExecuteEntities and EntityInitHandler.
+ * Owns shared slot tables, handler services and reusable frame scratch;
+ * entity-specific state belongs to motions. Slots remain immutable values.
  */
 public final class RoomEntityRuntime
         implements EntityRuntimeEffects, EntityRuntimeCombat, EntityRuntimeSpawns, EntityRuntimePlayerCommands {
@@ -36,10 +36,6 @@ public final class RoomEntityRuntime
 
     private final EntityPlayerCommands playerCommands =
             new EntityPlayerCommands(EntityPlayerCommandsServices.bind(this));
-
-    private void disableEntityWithoutPersistence(int slot) {
-        lifecycle.disableEntityWithoutPersistence(slot);
-    }
 
     final EntityRoomInitialization roomInitialization =
             new EntityRoomInitialization(EntityRoomInitializationServices.bind(this));
@@ -99,7 +95,6 @@ public final class RoomEntityRuntime
 
     final WarpMotion warpMotion;
 
-    /** Object-side effect emitted by MagicPowderSprinkleEntityHandler. */
     public EntityEnemyInspection enemies() {
         return enemyInspection;
     }
@@ -365,7 +360,6 @@ public final class RoomEntityRuntime
             boolean unload,
             SlimeKeyRewardEvent reward) {}
 
-    /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
     @Override
     public EntityEffectConsumption entityEffects() {
         return effects;

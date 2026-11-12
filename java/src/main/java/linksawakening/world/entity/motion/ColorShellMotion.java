@@ -9,7 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-/** Bank-$36 Color Shell state machine and fixed-point movement tables. */
+/** Bank-$36 ColorShellRed/Green/BlueEntityHandler state machine and fixed-point movement. */
 public final class ColorShellMotion {
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
 
@@ -47,20 +47,7 @@ public final class ColorShellMotion {
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
-        state[slot] = 0;
-        transitionCountdown[slot] = 0;
-        direction[slot] = 0;
-        speedX[slot] = 0;
-        speedY[slot] = 0;
-        speedZ[slot] = 0;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        speedZAccumulator[slot] = 0;
-        spriteVariant[slot] = 0;
-        physicsFlags[slot] = 0;
-        positionX[slot] = 0;
-        positionY[slot] = 0;
-        positionZ[slot] = 0;
+        resetSlot(slot);
         initialized[slot] = true;
     }
 
@@ -99,6 +86,11 @@ public final class ColorShellMotion {
     }
 
     public void clear(int slot) {
+        resetSlot(slot);
+        initialized[slot] = false;
+    }
+
+    private void resetSlot(int slot) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
         direction[slot] = 0;
@@ -113,7 +105,6 @@ public final class ColorShellMotion {
         positionX[slot] = 0;
         positionY[slot] = 0;
         positionZ[slot] = 0;
-        initialized[slot] = false;
     }
 
     public int state(int slot) {

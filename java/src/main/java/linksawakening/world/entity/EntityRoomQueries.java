@@ -13,6 +13,12 @@ import linksawakening.world.entity.motion.ColorShellMotion;
 
 /** Snapshot, presentation and collision queries over the narrow room inspection services. */
 final class EntityRoomQueries {
+    static EntityRoomLoader.RoomTable spriteRoomTable(EntityRoomInspectionServices runtime) {
+        return runtime.presentationState().readSpriteSelection() == null
+                ? (runtime.indoorRoom() ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
+                : runtime.presentationState().readSpriteSelection().roomTable();
+    }
+
     static LiftedEntityState liftedEntityState(EntityRoomInspectionServices runtime) {
         if (runtime.liftThrow().readLiftedEntitySlot() < 0
                 || runtime.liftThrow().readLiftedEntitySlot() >= runtime.slots().length) {

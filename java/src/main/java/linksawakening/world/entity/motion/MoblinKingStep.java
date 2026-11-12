@@ -1,17 +1,21 @@
 package linksawakening.world.entity.motion;
 
-/** Reused, reentrancy-safe scratch for MoblinKingMotion.advance; values are assigned in source order. */
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
+
+/** MoblinKingEntityHandler (bank $15) scratch; nested calls use a separate scratch instance. */
 final class MoblinKingStep {
     private MoblinKingMotion owner;
-    private linksawakening.world.entity.motion.MoblinKingFrame inputs;
-    private linksawakening.world.entity.RoomEntity entity;
+    private MoblinKingFrame inputs;
+    private RoomEntity entity;
     private int linkX;
     private int linkY;
     private int transitionCountdown;
     private int slowTransitionCountdown;
     private int frameCounter;
-    private java.util.function.IntSupplier randomByteSupplier;
-    private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
+    private IntSupplier randomByteSupplier;
+    private RoomEntityBackgroundCollision backgroundCollision;
     private boolean touchingLink;
     private int slot;
     private int x;
@@ -19,7 +23,7 @@ final class MoblinKingStep {
     private int z;
     private boolean blocked;
     private boolean landed;
-    private linksawakening.world.entity.motion.MoblinKingMotion.ArrowRequest arrow;
+    private MoblinKingMotion.ArrowRequest arrow;
     private boolean openDialog;
     private int jingle;
     private boolean strongBump;
@@ -30,7 +34,7 @@ final class MoblinKingStep {
 
     MoblinKingStep() {}
 
-    linksawakening.world.entity.motion.MoblinKingMotion.Update run() {
+    private MoblinKingMotion.Update run() {
         if (!prepareMotion()) return completedResult;
         if (!advanceBehavior()) return completedResult;
 
@@ -47,9 +51,9 @@ final class MoblinKingStep {
                 ignoreLinkCollisions);
     }
 
-    private linksawakening.world.entity.motion.MoblinKingMotion.Update completedResult;
+    private MoblinKingMotion.Update completedResult;
 
-    private boolean advanceState0() {
+    private boolean advanceInitialize() {
         transitionCountdown = 0x20;
         owner.speedX[slot] = 0;
         owner.speedY[slot] = 0;
@@ -61,7 +65,7 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState1() {
+    private boolean advanceWaitToOpenDialog() {
         if (transitionCountdown == 0) {
             openDialog = true;
             owner.state[slot] = 2;
@@ -73,7 +77,7 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState2() {
+    private boolean advanceHopAndShoot() {
         if (owner.privateCountdown1[slot] != 0) {
             if (owner.privateCountdown1[slot] == 0x0C) {
                 int facing = owner.direction[slot] & 1;
@@ -112,7 +116,7 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState3() {
+    private boolean advanceChargeWindup() {
         owner.weaponVisible[slot] = false;
         if (transitionCountdown == 0) {
             transitionCountdown = 0x22;
@@ -131,16 +135,14 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState4() {
+    private boolean advanceCharge() {
         owner.weaponVisible[slot] = false;
         if (touchingLink) {
             owner.state[slot] = 8;
             MoblinKingMotion.Update hit =
                     owner.applyLinkImpact(entity, x, y, z, variant, transitionCountdown, slowTransitionCountdown);
-            {
-                completedResult = hit;
-                return false;
-            }
+            completedResult = hit;
+            return false;
         }
         if (transitionCountdown == 0 && !blocked) {
             owner.state[slot] = 6;
@@ -158,7 +160,7 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState5() {
+    private boolean advanceRecoverFromWall() {
         owner.weaponVisible[slot] = false;
         if (transitionCountdown == 0) {
             transitionCountdown = 0x40;
@@ -177,7 +179,7 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState6() {
+    private boolean advanceDecelerate() {
         owner.weaponFrame[slot] = 0;
         int signedSpeedX = MoblinKingMotion.signedByte(owner.speedX[slot]);
         if ((signedSpeedX & 0xFE) == 0) {
@@ -193,7 +195,7 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState7() {
+    private boolean advancePause() {
         owner.weaponFrame[slot] = 0;
         owner.speedX[slot] = 0;
         owner.speedY[slot] = 0;
@@ -205,16 +207,13 @@ final class MoblinKingStep {
         return true;
     }
 
-    private boolean advanceState8() {
+    private boolean advanceLinkImpact() {
         owner.weaponVisible[slot] = false;
-        {
-            completedResult =
-                    owner.applyLinkImpact(entity, x, y, z, variant, transitionCountdown, slowTransitionCountdown);
-            return false;
-        }
+        completedResult = owner.applyLinkImpact(entity, x, y, z, variant, transitionCountdown, slowTransitionCountdown);
+        return false;
     }
 
-    private boolean advanceState9() {
+    private boolean advanceRecoverFromLink() {
         owner.speedX[slot] = 0;
         owner.speedY[slot] = 0;
         if (transitionCountdown == 0) {
@@ -293,39 +292,24 @@ final class MoblinKingStep {
         variant = owner.bodyVariant[slot];
         owner.weaponVisible[slot] = true;
 
-        switch (owner.state[slot]) {
-            case 0 -> {
-                if (!advanceState0()) return false;
-            }
-            case 1 -> {
-                if (!advanceState1()) return false;
-            }
-            case 2 -> {
-                if (!advanceState2()) return false;
-            }
-            case 3 -> {
-                if (!advanceState3()) return false;
-            }
-            case 4 -> {
-                if (!advanceState4()) return false;
-            }
-            case 5 -> {
-                if (!advanceState5()) return false;
-            }
-            case 6 -> {
-                if (!advanceState6()) return false;
-            }
-            case 7 -> {
-                if (!advanceState7()) return false;
-            }
-            case 8 -> {
-                if (!advanceState8()) return false;
-            }
-            case 9 -> {
-                if (!advanceState9()) return false;
-            }
-            default -> owner.state[slot] = 0;
-        }
+        boolean continueFrame =
+                switch (owner.state[slot]) {
+                    case 0 -> advanceInitialize();
+                    case 1 -> advanceWaitToOpenDialog();
+                    case 2 -> advanceHopAndShoot();
+                    case 3 -> advanceChargeWindup();
+                    case 4 -> advanceCharge();
+                    case 5 -> advanceRecoverFromWall();
+                    case 6 -> advanceDecelerate();
+                    case 7 -> advancePause();
+                    case 8 -> advanceLinkImpact();
+                    case 9 -> advanceRecoverFromLink();
+                    default -> {
+                        owner.state[slot] = 0;
+                        yield true;
+                    }
+                };
+        if (!continueFrame) return false;
 
         owner.bodyVariant[slot] = variant;
         return true;
@@ -333,8 +317,7 @@ final class MoblinKingStep {
 
     private boolean inUse;
 
-    linksawakening.world.entity.motion.MoblinKingMotion.Update run(
-            MoblinKingMotion owner, linksawakening.world.entity.motion.MoblinKingFrame inputs) {
+    MoblinKingMotion.Update run(MoblinKingMotion owner, MoblinKingFrame inputs) {
         if (inUse) {
             return new MoblinKingStep().run(owner, inputs);
         }

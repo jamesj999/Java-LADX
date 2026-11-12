@@ -41,6 +41,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_GOOMBA;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_GOPONGA_FLOWER;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HARDHAT_BEETLE;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HEART_CONTAINER;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_GHINI;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_ZOL;
@@ -135,7 +136,7 @@ import linksawakening.world.entity.motion.WitchRatMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 
-/** ROM entity-type policies shared by initialization, collision and persistence. */
+/** EntityInitHandler policies from PhysicsFlagsForEntity, HitboxFlagsForEntity and pickup handlers. */
 public final class EntityTypeRules {
     private EntityTypeRules() {}
 
@@ -327,28 +328,18 @@ public final class EntityTypeRules {
     }
 
     static int initialHitboxFlags(int type) {
-        if (type == ENTITY_GEL) {
-            // HitboxFlagsForEntity ($03:40FB): small Gel contact hitbox.
-            return 0x10;
-        }
-        if (type == ENTITY_GENIE) {
-            return GenieMotion.INITIAL_HITBOX_FLAGS;
-        }
-        if (type == ENTITY_SIDE_VIEW_POT) {
-            // HITFLAGS_COLLISION_BOX_SMALL | HITFLAGS_HITBOX_SIDE_VIEW_POT
-            // | HITFLAGS_IGNORE_HITS (bank $0D hitbox table, entry $D6).
-            return 0xBD;
-        }
-        if (type == ENTITY_MOLDORM) {
-            return MoldormMotion.INITIAL_HITBOX_FLAGS;
-        }
-        if (type == ENTITY_MOBLIN_KING) {
-            return 0x84;
-        }
-        if (type == ENTITY_ARMOS_KNIGHT) {
-            return ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS;
-        }
-        return type == ENTITY_HINOX ? 0x08 : 0;
+        // HitboxFlagsForEntity: Gel's small contact box and the side-view pot's
+        // HITFLAGS_COLLISION_BOX_SMALL | HITFLAGS_HITBOX_SIDE_VIEW_POT | HITFLAGS_IGNORE_HITS.
+        return switch (type) {
+            case ENTITY_GEL -> 0x10;
+            case ENTITY_GENIE -> GenieMotion.INITIAL_HITBOX_FLAGS;
+            case ENTITY_SIDE_VIEW_POT -> 0xBD;
+            case ENTITY_MOLDORM -> MoldormMotion.INITIAL_HITBOX_FLAGS;
+            case ENTITY_MOBLIN_KING -> 0x84;
+            case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS;
+            case ENTITY_HINOX -> 0x08;
+            default -> 0;
+        };
     }
 
     public static int persistentClearMask(RoomEntity entity) {
@@ -357,7 +348,10 @@ public final class EntityTypeRules {
 
     static boolean requiresHeldPickupTransition(int type) {
         return switch (type) {
-            case 0x30, 0x31, 0x36, 0x3C -> true;
+            case ENTITY_KEY_DROP_POINT,
+                    ENTITY_SWORD_SHIELD_PICKUP,
+                    ENTITY_HEART_CONTAINER,
+                    ENTITY_HIDING_SLIME_KEY -> true;
             default -> false;
         };
     }

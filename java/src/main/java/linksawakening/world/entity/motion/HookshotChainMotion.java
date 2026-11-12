@@ -3,12 +3,12 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 
 /**
- * ROM-facing state for entity {@code $03}, the hookshot chain.
+ * HookshotChainEntityHandler (bank $18), entity {@code $03}.
  *
  * <p>The source stores position speed as unsigned bytes whose signed high
  * nibble is the whole-pixel delta and whose low nibble is a 1/16-pixel
  * accumulator. This class keeps that WRAM-like state outside the immutable
- * {@link RoomEntity} snapshot.</p>
+ * {@link linksawakening.world.entity.RoomEntity} snapshot.</p>
  */
 public final class HookshotChainMotion {
     public static final int ENTITY_TYPE = 0x03;
@@ -113,6 +113,7 @@ public final class HookshotChainMotion {
                 false));
     }
 
+    /** Latches the collision; the sword-poke effect is emitted on the following handler visit. */
     public static State deferWallPoke(State state) {
         requireState(state);
         return copy(new HookshotChainSnapshot(
@@ -238,9 +239,7 @@ public final class HookshotChainMotion {
      * Y to Link would miss the ROM's spawn-at-Link-Z-plus-one case.
      */
     public static boolean overlapsLink(State state, int linkX, int linkY) {
-        if (state == null) {
-            throw new IllegalArgumentException("Hookshot state cannot be null");
-        }
+        requireState(state);
         validateByte(linkX, "linkX");
         validateByte(linkY, "linkY");
 

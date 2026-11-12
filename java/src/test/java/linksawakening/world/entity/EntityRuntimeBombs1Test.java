@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -244,9 +243,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
 
         assertTrue(runtime.bombInteractions.bombFinalPresentationPending(slot));
 
-        Method disable = RoomEntityRuntime.class.getDeclaredMethod("disableEntityWithoutPersistence", int.class);
-        disable.setAccessible(true);
-        disable.invoke(runtime, slot);
+        EntityRuntimeFixture.disableWithoutPersistence(runtime, slot);
 
         assertFalse(runtime.bombInteractions.bombFinalPresentationPending(slot));
         assertEquals(0xFF, runtime.inspection().bombDirection(slot));

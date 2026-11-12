@@ -10,7 +10,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
-/** Bank-$04 active movement and 128-entry tail history for Moldorm ($59). */
+/** MoldormEntityActiveHandler and MiniMoldormEntityHandler.sharedMoldormBehavior (bank $04). */
 public final class MoldormMotion {
     private final int[] destructionTailState = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -43,10 +43,14 @@ public final class MoldormMotion {
     private final int[][] historyX = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
     private final int[][] historyY = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // wEntitiesPrivateState1Table: 16-direction speed-table index.
+    private final int[] headingIndex = new int[EntityRoomLoader.MAX_ENTITIES];
+    // wEntitiesPrivateState2Table: signed +1/-1 heading step (never byte-mask the negation).
+    private final int[] turnStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    // GetEntityPrivateCountdown1: six-frame steering cadence.
+    private final int[] steeringCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // GetEntityPrivateCountdown2: $C8-frame acceleration after a sword hit.
+    private final int[] hitAccelerationCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -83,10 +87,10 @@ public final class MoldormMotion {
         Arrays.fill(historyX[slot], 0);
         Arrays.fill(historyY[slot], 0);
         inertia[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateCountdown2[slot] = 0;
+        headingIndex[slot] = 0;
+        turnStep[slot] = 0;
+        steeringCountdown[slot] = 0;
+        hitAccelerationCountdown[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -113,10 +117,10 @@ public final class MoldormMotion {
         Arrays.fill(historyY[slot], 0);
         initialized[slot] = false;
         inertia[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateCountdown2[slot] = 0;
+        headingIndex[slot] = 0;
+        turnStep[slot] = 0;
+        steeringCountdown[slot] = 0;
+        hitAccelerationCountdown[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -142,11 +146,11 @@ public final class MoldormMotion {
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Moldorm random source cannot be null");
         }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
+        if (steeringCountdown[slot] > 0) {
+            steeringCountdown[slot]--;
         }
-        if (privateCountdown2[slot] > 0) {
-            privateCountdown2[slot]--;
+        if (hitAccelerationCountdown[slot] > 0) {
+            hitAccelerationCountdown[slot]--;
         }
 
         int nextTransition = transitionCountdown & 0xFF;
@@ -160,9 +164,10 @@ public final class MoldormMotion {
         RoomEntity moved = entity;
         int collisionFlags = 0;
 
-        boolean accelerated = (health & 0xFF) < 0x02 || privateCountdown2[slot] != 0;
+        boolean accelerated = (health & 0xFF) < 0x02 || hitAccelerationCountdown[slot] != 0;
         int movementPasses = accelerated ? 2 : 1;
         for (int pass = 0; pass < movementPasses; pass++) {
+            // Both accelerated passes record the entry position, not the first pass result.
             recordHistory(slot, entity.x(), (entity.y() - entity.z()) & 0xFF);
             Movement movement = moveAndSteer(
                     moved,
@@ -184,7 +189,7 @@ public final class MoldormMotion {
             noiseCadence[slot] = 0;
         }
 
-        headSpriteVariant[slot] = HEAD_SPRITE_VARIANTS[privateState1[slot] >> 1];
+        headSpriteVariant[slot] = HEAD_SPRITE_VARIANTS[headingIndex[slot] >> 1];
         List<MoldormSegmentPosition> segments = tailSegments(slot);
         vulnerableTail[slot] = segments.get(3);
         return new Update(
@@ -209,11 +214,11 @@ public final class MoldormMotion {
     }
 
     public int privateCountdown2(int slot) {
-        return privateCountdown2[slot];
+        return hitAccelerationCountdown[slot];
     }
 
     public void onSwordHit(int slot) {
-        privateCountdown2[slot] = 0xC8;
+        hitAccelerationCountdown[slot] = 0xC8;
     }
 
     public MoldormSegmentPosition vulnerableTail(int slot) {
@@ -275,24 +280,24 @@ public final class MoldormMotion {
         }
 
         if (collisionFlags != 0) {
-            privateState1[slot] = (collisionFlags & 0x01) != 0
+            headingIndex[slot] = (collisionFlags & 0x01) != 0
                     ? 0x08
                     : (collisionFlags & 0x02) != 0 ? 0x00 : (collisionFlags & 0x04) != 0 ? 0x04 : 0x0C;
             if ((randomByteSupplier.getAsInt() & 0x01) == 0) {
-                privateState2[slot] = -privateState2[slot];
+                turnStep[slot] = -turnStep[slot];
             }
             transitionCountdown = 0x10;
         }
 
-        if (privateCountdown1[slot] == 0) {
-            privateCountdown1[slot] = 0x06;
-            privateState1[slot] = (privateState1[slot] + privateState2[slot]) & 0x0F;
-            speedY[slot] = Y_SPEEDS[privateState1[slot]];
-            speedX[slot] = X_SPEEDS[privateState1[slot]];
+        if (steeringCountdown[slot] == 0) {
+            steeringCountdown[slot] = 0x06;
+            headingIndex[slot] = (headingIndex[slot] + turnStep[slot]) & 0x0F;
+            speedY[slot] = Y_SPEEDS[headingIndex[slot]];
+            speedX[slot] = X_SPEEDS[headingIndex[slot]];
         }
         if (transitionCountdown == 0) {
             transitionCountdown = 0x10 + (randomByteSupplier.getAsInt() & 0x1F);
-            privateState2[slot] = (randomByteSupplier.getAsInt() & 0x02) - 1;
+            turnStep[slot] = (randomByteSupplier.getAsInt() & 0x02) - 1;
         }
         return new Movement(withPosition(entity, x, y), transitionCountdown, collisionFlags);
     }

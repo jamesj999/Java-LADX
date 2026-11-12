@@ -5,10 +5,14 @@ import java.util.List;
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 
-/** Immutable room entity slots captured at room-load time. */
+/**
+ * Read-only entity presentation. Public constructors capture an owned immutable snapshot;
+ * EntityRoomInspection.view() instead returns a cached live view of ExecuteEntities output.
+ * Live views are for immediate same-thread reads. Every withX method produces owned data.
+ */
 public final class RoomEntitySnapshot {
 
-    private final EntityRoomInspectionServices live;
+    private final EntityRoomInspectionServices liveSource;
     private final List<RoomEntity> slots;
     private final List<RoomEntity> loadedEntities;
     private final EntitySpriteSelection spriteSelection;
@@ -21,14 +25,14 @@ public final class RoomEntitySnapshot {
     private final List<BowWowChain.Entry> bowWowChainOam;
 
     /** Live read-only view; lists and metadata follow the owning room until it is discarded. */
-    static RoomEntitySnapshot liveView(EntityRoomInspectionServices live) {
-        return new RoomEntitySnapshot(live);
+    static RoomEntitySnapshot liveView(EntityRoomInspectionServices liveSource) {
+        return new RoomEntitySnapshot(liveSource);
     }
 
-    private RoomEntitySnapshot(EntityRoomInspectionServices live) {
-        this.live = live;
-        this.slots = new EntityLiveSlotList(live, false);
-        this.loadedEntities = new EntityLiveSlotList(live, true);
+    private RoomEntitySnapshot(EntityRoomInspectionServices liveSource) {
+        this.liveSource = liveSource;
+        this.slots = new EntityLiveSlotList(liveSource, false);
+        this.loadedEntities = new EntityLiveSlotList(liveSource, true);
         this.spriteSelection = null;
         this.spriteTiles = null;
         this.sideScrolling = false;
@@ -145,7 +149,7 @@ public final class RoomEntitySnapshot {
             List<WingedOctorokOam.Entry> wingedOctorokOam,
             int[] visualYOffsetBySlot,
             List<BowWowChain.Entry> bowWowChainOam) {
-        this.live = null;
+        this.liveSource = null;
         this.bowWowChainOam = List.copyOf(bowWowChainOam);
         if (slots == null || slots.size() != EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException(
@@ -186,7 +190,7 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withSpriteSelection(EntitySpriteSelection selection) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withSpriteSelection(selection);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withSpriteSelection(selection);
         return new RoomEntitySnapshot(
                 slots,
                 selection,
@@ -200,7 +204,7 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withSpriteTiles(EntitySpriteTileSnapshot tiles) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withSpriteTiles(tiles);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withSpriteTiles(tiles);
         return new RoomEntitySnapshot(
                 slots,
                 spriteSelection,
@@ -215,11 +219,11 @@ public final class RoomEntitySnapshot {
 
     /** Returns whether the room uses the side-scroll OAM path. */
     public boolean sideScrolling() {
-        return live == null ? sideScrolling : live.physicsTables().readGroundInteractionSideScrolling();
+        return liveSource == null ? sideScrolling : liveSource.physicsTables().readGroundInteractionSideScrolling();
     }
 
     public RoomEntitySnapshot withSideScrolling(boolean sideScrolling) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withSideScrolling(sideScrolling);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withSideScrolling(sideScrolling);
         return new RoomEntitySnapshot(
                 slots,
                 spriteSelection,
@@ -241,23 +245,27 @@ public final class RoomEntitySnapshot {
     }
 
     public EntitySpriteSelection spriteSelection() {
-        return live == null ? spriteSelection : live.presentationState().readSpriteSelection();
+        return liveSource == null
+                ? spriteSelection
+                : liveSource.presentationState().readSpriteSelection();
     }
 
     public EntitySpriteTileSnapshot spriteTiles() {
-        return live == null ? spriteTiles : live.spriteTiles();
+        return liveSource == null ? spriteTiles : liveSource.spriteTiles();
     }
 
     public List<HookshotChainOam.Entry> hookshotChainOam() {
-        return live == null ? hookshotChainOam : live.slotProperties().readHookshotChainOam();
+        return liveSource == null
+                ? hookshotChainOam
+                : liveSource.slotProperties().readHookshotChainOam();
     }
 
     public List<PincerBodyOam.Entry> pincerBodyOam() {
-        return live == null ? pincerBodyOam : live.slotProperties().readPincerBodyOam();
+        return liveSource == null ? pincerBodyOam : liveSource.slotProperties().readPincerBodyOam();
     }
 
     public RoomEntitySnapshot withBowWowChainOam(List<BowWowChain.Entry> entries) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withBowWowChainOam(entries);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withBowWowChainOam(entries);
         return new RoomEntitySnapshot(
                 slots,
                 spriteSelection,
@@ -271,18 +279,20 @@ public final class RoomEntitySnapshot {
     }
 
     public List<BowWowChain.Entry> bowWowChainOam() {
-        return live == null ? bowWowChainOam : live.slotProperties().readBowWowChainOam();
+        return liveSource == null ? bowWowChainOam : liveSource.slotProperties().readBowWowChainOam();
     }
 
     public List<WingedOctorokOam.Entry> wingedOctorokOam() {
-        return live == null ? wingedOctorokOam : live.slotProperties().readWingedOctorokOam();
+        return liveSource == null
+                ? wingedOctorokOam
+                : liveSource.slotProperties().readWingedOctorokOam();
     }
 
     /** Returns the ROM display-only Y correction for an entity slot. */
     public int visualYOffset(int slot) {
-        if (live != null) {
+        if (liveSource != null) {
             java.util.Objects.checkIndex(slot, RoomEntity.SLOT_COUNT);
-            return live.physicsTables().readFallingVisualYOffset(slot);
+            return liveSource.physicsTables().readFallingVisualYOffset(slot);
         }
         if (slot < 0 || slot >= visualYOffsetBySlot.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -291,7 +301,7 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withVisualYOffset(int slot, int offset) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withVisualYOffset(slot, offset);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withVisualYOffset(slot, offset);
         if (slot < 0 || slot >= visualYOffsetBySlot.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -313,7 +323,7 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withHookshotChainOam(List<HookshotChainOam.Entry> hookshotChainOam) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withHookshotChainOam(hookshotChainOam);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withHookshotChainOam(hookshotChainOam);
         return new RoomEntitySnapshot(
                 slots,
                 spriteSelection,
@@ -327,7 +337,7 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withPincerBodyOam(List<PincerBodyOam.Entry> pincerBodyOam) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withPincerBodyOam(pincerBodyOam);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withPincerBodyOam(pincerBodyOam);
         return new RoomEntitySnapshot(
                 slots,
                 spriteSelection,
@@ -341,7 +351,7 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withWingedOctorokOam(List<WingedOctorokOam.Entry> wingedOctorokOam) {
-        if (live != null) return EntityRoomQueries.snapshot(live).withWingedOctorokOam(wingedOctorokOam);
+        if (liveSource != null) return EntityRoomQueries.snapshot(liveSource).withWingedOctorokOam(wingedOctorokOam);
         return new RoomEntitySnapshot(
                 slots,
                 spriteSelection,

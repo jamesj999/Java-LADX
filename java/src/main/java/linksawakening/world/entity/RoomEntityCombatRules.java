@@ -1,6 +1,6 @@
 package linksawakening.world.entity;
 
-/** ROM collision constants and predicates for the currently ported enemies. */
+/** CheckLinkCollisionWithEnemy and DefaultEnemyDamageCollisionHandler hitbox policies. */
 public final class RoomEntityCombatRules {
     static final int ENTITY_PUSHED_BLOCK = 0x06;
     static final int ENTITY_OCTOROK = 0x09;
@@ -131,6 +131,9 @@ public final class RoomEntityCombatRules {
     // HitboxPositions in home/entities.asm:3AAA. The NPC entries are not the
     // ordinary enemy entry: Marin and Tarin select HITFLAGS_HITBOX_NPC ($18),
     // while Bear/Mamu/Walrus select HITFLAGS_HITBOX_BIG_NPC ($34).
+    // CheckLinkCollisionWithEnemy subtracts Link's center, then adds its half-extent.
+    private static final int LINK_CENTER_OFFSET = 0x08;
+    private static final int LINK_HALF_EXTENT = 0x04;
     private static final int HITBOX_X = 0x08;
     static final int HITBOX_WIDTH = 0x05;
     private static final int HITBOX_Y = 0x08;
@@ -270,12 +273,12 @@ public final class RoomEntityCombatRules {
         int hitboxWidth = hitboxWidth(entity.type());
         int hitboxY = hitboxY(entity.type());
         int hitboxHeight = hitboxHeight(entity.type());
-        int xDistance = unsignedByteAbs(entity.x() + hitboxX - linkPixelX - 0x08);
-        if (xDistance >= hitboxWidth + 0x04) {
+        int xDistance = unsignedByteAbs(entity.x() + hitboxX - linkPixelX - LINK_CENTER_OFFSET);
+        if (xDistance >= hitboxWidth + LINK_HALF_EXTENT) {
             return false;
         }
-        int yDistance = unsignedByteAbs(entity.y() - entity.z() + hitboxY - linkPixelY - 0x08);
-        return yDistance < hitboxHeight + 0x04;
+        int yDistance = unsignedByteAbs(entity.y() - entity.z() + hitboxY - linkPixelY - LINK_CENTER_OFFSET);
+        return yDistance < hitboxHeight + LINK_HALF_EXTENT;
     }
 
     /**
