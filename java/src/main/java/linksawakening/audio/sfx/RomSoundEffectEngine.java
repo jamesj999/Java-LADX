@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
@@ -23,6 +22,8 @@ final class RomSoundEffectEngine {
     private final byte[] romData;
     private final Rom romView;
     private final GameBoyApu apu;
+    private static final SoundEffectNamespace[] NAMESPACES = SoundEffectNamespace.values();
+    private final Cpu cpu = new Cpu();
     private final int[] memory = new int[0x10000];
     private final RomSoundEffectTables tables;
 
@@ -41,14 +42,14 @@ final class RomSoundEffectEngine {
         // Keep the other namespaces alive, including their ownership flags.
         write8(activeAddress(effect.namespace()), effect.id());
         if ((apu.readRegister(GameBoyApu.NR52) & 0x80) == 0) enableApu();
-        new Cpu(entryAddress(effect.namespace())).run();
+        cpu.runFrom(entryAddress(effect.namespace()));
         write8(activeAddress(effect.namespace()), 0);
     }
 
     void tick60Hz() {
         // ROM order matters: jingles can cancel wave effects.
-        for (SoundEffectNamespace namespace : SoundEffectNamespace.values()) {
-            new Cpu(entryAddress(namespace)).run();
+        for (SoundEffectNamespace namespace : NAMESPACES) {
+            cpu.runFrom(entryAddress(namespace));
         }
         write8(W_ACTIVE_JINGLE, 0);
         write8(W_ACTIVE_WAVE, 0);
@@ -135,7 +136,7 @@ final class RomSoundEffectEngine {
             if (offset < 0 || offset >= romData.length) {
                 throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x" + hex16(address));
             }
-            return romView.u8(RomAddress.fromOffset(offset));
+            return Byte.toUnsignedInt(romData[offset]);
         }
         if (address >= 0xFF10 && address <= 0xFF26) {
             return apu.readRegister(address & 0xFF);
@@ -190,8 +191,11 @@ final class RomSoundEffectEngine {
         private boolean flagC;
         private boolean stopped;
 
-        Cpu(int entryAddress) {
+        void runFrom(int entryAddress) {
             pc = entryAddress & 0xFFFF;
+            stackSize = a = b = c = d = e = h = l = 0;
+            flagZ = flagN = flagH = flagC = stopped = false;
+            run();
         }
 
         void run() {

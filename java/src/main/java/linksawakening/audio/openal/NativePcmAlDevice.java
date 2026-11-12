@@ -2,11 +2,13 @@ package linksawakening.audio.openal;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryUtil;
 
 final class NativePcmAlDevice implements PcmAlDevice {
+    private ShortBuffer pcmStorage;
     private long device;
     private long context;
     private int source;
@@ -61,7 +63,10 @@ final class NativePcmAlDevice implements PcmAlDevice {
         int buffer = AL10.alGenBuffers();
         try {
             check("create PCM buffer");
-            var data = BufferUtils.createShortBuffer(pcm.length);
+            if (pcmStorage == null || pcmStorage.capacity() < pcm.length)
+                pcmStorage = BufferUtils.createShortBuffer(pcm.length);
+            var data = pcmStorage;
+            data.clear();
             data.put(pcm).flip();
             AL10.alBufferData(buffer, AL10.AL_FORMAT_STEREO16, data, sampleRate);
             check("fill PCM buffer");

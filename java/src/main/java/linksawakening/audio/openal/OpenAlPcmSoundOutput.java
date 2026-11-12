@@ -14,7 +14,7 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
     private long recoveryCount;
     private boolean needsRecovery;
     private Throwable lastFailure;
-    private final java.util.Set<Integer> allocatedBuffers = new java.util.LinkedHashSet<>();
+    private final DialogPcmBufferQueue allocatedBuffers = new DialogPcmBufferQueue(MAX_BUFFERS);
 
     public OpenAlPcmSoundOutput() {
         try {
@@ -127,7 +127,7 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
                 }
             }
             int buffer = device.createBuffer(pcm, rate);
-            allocatedBuffers.add(buffer); // Retain ownership even if queue() fails after submission.
+            allocatedBuffers.trackQueued(buffer); // Retain ownership even if queue() fails after submission.
             device.queue(buffer);
             bufferQueue.trackQueued(buffer, pcm.length / 2);
             int state = device.state();
@@ -188,7 +188,7 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
             int buffer = device.unqueue();
             bufferQueue.markDeleted(buffer);
             device.deleteBuffer(buffer);
-            allocatedBuffers.remove(buffer);
+            allocatedBuffers.markDeleted(buffer);
         }
     }
 
@@ -196,11 +196,9 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         // Deleting/recreating the source detaches buffers even in AL_INITIAL,
         // where alSourceStop is a no-op and unqueueing pending buffers is illegal.
         device.resetSource();
-        for (var ids = allocatedBuffers.iterator(); ids.hasNext(); ) {
-            device.deleteBuffer(ids.next());
-            ids.remove();
-        }
-        bufferQueue.buffersToDeleteOnClose();
+        for (int buffer : allocatedBuffers.liveBuffers()) device.deleteBuffer(buffer);
+        allocatedBuffers.clear();
+        bufferQueue.clear();
         buffering.reset();
     }
 

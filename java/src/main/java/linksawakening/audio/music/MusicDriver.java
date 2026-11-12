@@ -1,8 +1,6 @@
 package linksawakening.audio.music;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
@@ -175,14 +173,12 @@ public final class MusicDriver {
         return channels[channel - 1].active;
     }
 
-    private record ParsePosition(int stream, int program, int loopStart, int remaining) {}
+    private final ParsePositions visited = new ParsePositions();
 
     private void parseUntilTimeConsumed(MusicChannelState state) {
-        Set<ParsePosition> visited = new HashSet<>();
+        visited.clear();
         while (state.active) {
-            ParsePosition position =
-                    new ParsePosition(state.streamPointer, state.programCounter, state.loopStart, state.loopRemaining);
-            if (!visited.add(position)) {
+            if (!visited.add(state.streamPointer, state.programCounter, state.loopStart, state.loopRemaining)) {
                 throw new IllegalStateException("Music channel loop consumed no time: channel "
                         + state.channel + " bank " + hex(trackBank)
                         + " address " + hex(state.programCounter));
@@ -465,7 +461,7 @@ public final class MusicDriver {
     private int readByte(int bank, int address) {
         int offset = RomBank.romOffset(bank, address);
         requireReadable(offset, 1, bank, address);
-        return romView.u8(RomAddress.fromOffset(offset));
+        return Byte.toUnsignedInt(romData[offset]);
     }
 
     private int readWord(int bank, int address) {
@@ -475,7 +471,7 @@ public final class MusicDriver {
     }
 
     private int readWordAtOffset(int offset) {
-        return romView.u8(RomAddress.fromOffset(offset)) | (romView.u8(RomAddress.fromOffset(offset + 1)) << 8);
+        return Byte.toUnsignedInt(romData[offset]) | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
     }
 
     private void requireReadable(int offset, int length, int bank, int address) {

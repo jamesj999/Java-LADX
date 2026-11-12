@@ -31,14 +31,16 @@ public final class FrameAudioMixer {
         loopEnabled = enabled;
     }
 
+    private final short[] pcm = new short[BUFFER_FRAMES * 2];
+
+    /** Returned storage is reused by the next call. */
     public short[] renderBufferPcm() {
-        short[] pcm = new short[BUFFER_FRAMES * 2];
+        java.util.Arrays.fill(pcm, (short) 0);
         int framesRendered = 0;
 
         while (framesRendered < BUFFER_FRAMES && ensureAudioPlaying()) {
             int chunkFrames = Math.min(BUFFER_FRAMES - framesRendered, samplesUntilNextTick);
-            short[] chunk = apu.render(chunkFrames);
-            System.arraycopy(chunk, 0, pcm, framesRendered * 2, chunk.length);
+            apu.renderInto(pcm, framesRendered * 2, chunkFrames);
 
             framesRendered += chunkFrames;
             samplesUntilNextTick -= chunkFrames;

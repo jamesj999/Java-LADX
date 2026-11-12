@@ -31,6 +31,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
 
     private boolean closed;
     private boolean paused;
+    private final ShortBuffer streamingPcm = BufferUtils.createShortBuffer(BUFFER_FRAMES * 2);
     private float volume = 1.0f;
     private MusicTrack currentTrack;
 
@@ -195,7 +196,8 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         while (stream.queuedBuffers < BUFFER_COUNT && !stream.freeBuffers.isEmpty() && mixer.ensureAudioPlaying()) {
             short[] pcm = mixer.renderBufferPcm();
             int buffer = stream.freeBuffers.removeFirst();
-            ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(pcm.length);
+            ShortBuffer pcmBuffer = streamingPcm;
+            pcmBuffer.clear();
             pcmBuffer.put(pcm).flip();
             AL10.alBufferData(buffer, AL10.AL_FORMAT_STEREO16, pcmBuffer, sampleRate);
             AL10.alSourceQueueBuffers(stream.source, buffer);

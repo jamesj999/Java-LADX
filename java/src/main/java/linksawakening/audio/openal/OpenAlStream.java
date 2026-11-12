@@ -2,7 +2,6 @@ package linksawakening.audio.openal;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayDeque;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryUtil;
 
@@ -10,7 +9,7 @@ import org.lwjgl.system.MemoryUtil;
 final class OpenAlStream {
     static final int BUFFER_COUNT = 4;
     final int[] buffers = new int[BUFFER_COUNT];
-    final ArrayDeque<Integer> freeBuffers = new ArrayDeque<>(BUFFER_COUNT);
+    final IntBufferRing freeBuffers = new IntBufferRing(BUFFER_COUNT);
     boolean available;
     String statusMessage;
     long device;

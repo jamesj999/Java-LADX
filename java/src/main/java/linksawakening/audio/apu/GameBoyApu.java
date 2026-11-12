@@ -1,5 +1,10 @@
 package linksawakening.audio.apu;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+
+/** Deterministic register-driven Game Boy stereo synthesizer. */
 public final class GameBoyApu {
     public static final int NR10 = 0x10;
     public static final int NR11 = 0x11;
@@ -66,20 +71,26 @@ public final class GameBoyApu {
         return sampleRate;
     }
 
-    private java.util.function.BiConsumer<Integer, Integer> registerObserver = (register, value) -> {};
+    private RegisterObserver registerObserver;
 
     /** Optional diagnostic tap; observes writes without changing synthesis. */
-    public void setRegisterObserver(java.util.function.BiConsumer<Integer, Integer> observer) {
-        registerObserver = java.util.Objects.requireNonNull(observer);
+    public void setRegisterObserver(BiConsumer<Integer, Integer> observer) {
+        Objects.requireNonNull(observer);
+        registerObserver = observer::accept;
+    }
+
+    /** Primitive diagnostic tap; null disables observation. */
+    public void setPrimitiveRegisterObserver(RegisterObserver observer) {
+        registerObserver = observer;
     }
 
     public void writeRegister(int register, int value) {
         validateRegister(register);
         int unsignedValue = value & 0xFF;
-        registerObserver.accept(register, unsignedValue);
+        if (registerObserver != null) registerObserver.accept(register, unsignedValue);
         if (register == NR52) {
             if ((unsignedValue & 0x80) == 0) {
-                java.util.Arrays.fill(registers, 0);
+                Arrays.fill(registers, 0);
                 channel1.reset();
                 channel2.reset();
                 channel3.powerOff();
@@ -143,9 +154,16 @@ public final class GameBoyApu {
             throw new IllegalArgumentException("frames must be non-negative");
         }
         short[] pcm = new short[frames * 2];
-        if (!masterEnabled()) {
-            return pcm;
-        }
+        renderInto(pcm, 0, frames);
+        return pcm;
+    }
+
+    /** Renders interleaved stereo into caller-owned storage without allocation. */
+    public void renderInto(short[] pcm, int sampleOffset, int frames) {
+        if (frames < 0) throw new IllegalArgumentException("frames must be non-negative");
+        Objects.checkFromIndexSize(sampleOffset, Math.multiplyExact(frames, 2), pcm.length);
+        Arrays.fill(pcm, sampleOffset, sampleOffset + frames * 2, (short) 0);
+        if (!masterEnabled()) return;
 
         for (int frame = 0; frame < frames; frame++) {
             channel1.tick();
@@ -195,11 +213,10 @@ public final class GameBoyApu {
                 double rightOut = right - rightCapacitor;
                 leftCapacitor = left - leftOut * capacitorCharge;
                 rightCapacitor = right - rightOut * capacitorCharge;
-                pcm[frame * 2] = toPcm(leftOut, 1);
-                pcm[frame * 2 + 1] = toPcm(rightOut, 1);
+                pcm[sampleOffset + frame * 2] = toPcm(leftOut, 1);
+                pcm[sampleOffset + frame * 2 + 1] = toPcm(rightOut, 1);
             }
         }
-        return pcm;
     }
 
     public boolean isChannelActive(int channel) {
