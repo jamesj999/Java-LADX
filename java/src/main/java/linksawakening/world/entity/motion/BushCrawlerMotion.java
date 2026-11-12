@@ -1,7 +1,6 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -11,12 +10,12 @@ public final class BushCrawlerMotion {
     static final int ENTITY_SWORD = 0x01;
     static final int ENTITY_POWER_BRACELET = 0x03;
 
-    private static final int[] SPEED_X_BY_DIRECTION = {0x10, 0xF0, 0x00, 0x00};
-    private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF0, 0x10};
+    static final int[] SPEED_X_BY_DIRECTION = {0x10, 0xF0, 0x00, 0x00};
+    static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF0, 0x10};
     // Data_007_41E6 is immediately followed by Data_007_41E8 in bank $07.
     // The handler intentionally indexes across that label boundary for Y.
-    private static final int[] SPECIAL_SPEED_X = {0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4, 0xF0, 0xF4};
-    private static final int[] SPECIAL_SPEED_Y = {0xF0, 0xF4, 0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4};
+    static final int[] SPECIAL_SPEED_X = {0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4, 0xF0, 0xF4};
+    static final int[] SPECIAL_SPEED_Y = {0xF0, 0xF4, 0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4};
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -51,106 +50,7 @@ public final class BushCrawlerMotion {
     }
 
     public Update advance(BushCrawlerFrame inputs) {
-        RoomEntity entity = inputs.entity();
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
-        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
-        int transitionCountdown = inputs.transitionCountdown();
-        boolean linkCollision = inputs.linkCollision();
-        boolean actionButtonAHeld = inputs.actionButtonAHeld();
-        boolean actionButtonBHeld = inputs.actionButtonBHeld();
-        int linkItemA = inputs.linkItemA();
-        int linkItemB = inputs.linkItemB();
-        if ((entity.type() & 0xFF) != ENTITY_BUSH_CRAWLER) {
-            throw new IllegalArgumentException(
-                    "Unsupported Bush Crawler motion entity type: 0x" + Integer.toHexString(entity.type()));
-        }
-        if (randomByteSupplier == null) {
-            throw new IllegalArgumentException("Bush Crawler random-byte supplier cannot be null");
-        }
-
-        int slot = entity.slot();
-        boolean wasInitialized = initialized[slot];
-        if (!wasInitialized) {
-            initialize(slot);
-        }
-        if (privateState1[slot] == 0) {
-            privateState1[slot] = 1;
-            privateState4[slot] = ((entity.x() & 0xFF) >>> 4) & 0x01;
-        }
-
-        boolean crawlOverlayRendered = privateState1[slot] != 2 && privateState2[slot] == 4;
-        int renderedVariant = privateState1[slot] == 2 || crawlOverlayRendered
-                ? (wasInitialized ? presentationVariant[slot] : entity.spriteVariant())
-                : privateState4[slot];
-        int renderedVisualYOffset = privateState2[slot] == 4 ? -4 : 0;
-        int countdown = transitionCountdown & 0xFF;
-        int x = entity.x() & 0xFF;
-        int y = entity.y() & 0xFF;
-        boolean liftRequested = false;
-
-        if (privateState1[slot] == 2) {
-            Position moved = move(entity, x, y, backgroundCollision);
-            x = moved.x();
-            y = moved.y();
-            if (countdown == 0) {
-                int randomByte = randomByteSupplier.getAsInt() & 0xFF;
-                int random = randomByte & 0x07;
-                countdown = 0x20 + (randomByte & 0x1F);
-                speedX[slot] = SPECIAL_SPEED_X[random];
-                speedY[slot] = SPECIAL_SPEED_Y[random];
-            }
-            presentationVariant[slot] = (frameCounter >>> 3) & 0x01;
-        } else {
-            switch (state[slot]) {
-                case 0 -> {
-                    privateState2[slot] = 0;
-                    if (countdown == 0 && startsCrawl(x, y, linkEntityX, linkEntityY)) {
-                        state[slot] = 1;
-                        int direction = directionToLink(x, y, linkEntityX, linkEntityY);
-                        speedX[slot] = SPEED_X_BY_DIRECTION[direction];
-                        speedY[slot] = SPEED_Y_BY_DIRECTION[direction];
-                        countdown = 0x30;
-                    } else if (linkCollision
-                            && powerBraceletHeld(actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB)) {
-                        liftRequested = true;
-                    }
-                }
-                case 1 -> {
-                    privateState2[slot] = 4;
-                    if (countdown == 0) {
-                        countdown = 0x20;
-                        state[slot] = 0;
-                    } else {
-                        Position moved = move(entity, x, y, backgroundCollision);
-                        x = moved.x();
-                        y = moved.y();
-                        if (moved.collided()) {
-                            countdown = 0x20;
-                            state[slot] = 0;
-                        } else {
-                            presentationVariant[slot] = (frameCounter >>> 3) & 0x01;
-                        }
-                    }
-                }
-                default -> throw new IllegalStateException("Invalid Bush Crawler state: " + state[slot]);
-            }
-        }
-
-        RoomEntity updated = EntitySnapshots.withMotion(
-                entity, x, y, renderedVariant, entity.entityFlipAttribute(), entity.z(), -1, false);
-        return new Update(
-                updated,
-                state[slot],
-                countdown,
-                privateState1[slot],
-                privateState4[slot],
-                renderedVisualYOffset,
-                liftRequested,
-                privateState1[slot] == 2,
-                crawlOverlayRendered);
+        return new BushCrawlerStep(this, inputs).run();
     }
 
     public void clear(int slot) {
@@ -186,7 +86,7 @@ public final class BushCrawlerMotion {
         return speedY[slot] & 0xFF;
     }
 
-    private static boolean startsCrawl(int x, int y, int linkX, int linkY) {
+    static boolean startsCrawl(int x, int y, int linkX, int linkY) {
         int distanceY = signedByte(linkY - y);
         if (!inSignedWindow(distanceY, 8)) {
             return false;
@@ -198,7 +98,7 @@ public final class BushCrawlerMotion {
         return directionToLink(x, y, linkX, linkY) != 2;
     }
 
-    private static boolean powerBraceletHeld(
+    static boolean powerBraceletHeld(
             boolean actionButtonAHeld, boolean actionButtonBHeld, int linkItemA, int linkItemB) {
         if ((linkItemB & 0xFF) == ENTITY_POWER_BRACELET) {
             return actionButtonBHeld;
@@ -206,7 +106,7 @@ public final class BushCrawlerMotion {
         return (linkItemA & 0xFF) == ENTITY_POWER_BRACELET && actionButtonAHeld;
     }
 
-    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -226,7 +126,7 @@ public final class BushCrawlerMotion {
         return new Position(nextX, nextY, collided);
     }
 
-    private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
+    static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY);
         if (Math.abs(distanceY) >= Math.abs(distanceX)) {
@@ -267,5 +167,5 @@ public final class BushCrawlerMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y, boolean collided) {}
+    record Position(int x, int y, boolean collided) {}
 }

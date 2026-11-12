@@ -1,13 +1,10 @@
 package linksawakening.world.entity.motion;
 
-import java.util.Objects;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.RoomEntityObjectQuery;
-import linksawakening.world.entity.RoomEntityObjectSample;
 
 /** Bank-$18 ZombieEntityHandler hidden-parent and child state machine. */
 public final class ZombieMotion {
@@ -17,17 +14,17 @@ public final class ZombieMotion {
     public static final int PROJECTILE_NOCLIP_FLAG = 0x40;
 
     // Data_018_637D and Data_018_6385.
-    private static final int[] SPAWN_Y = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80};
-    private static final int[] SPAWN_X = {0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88};
+    static final int[] SPAWN_Y = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80};
+    static final int[] SPAWN_X = {0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record SpawnRequest(int x, int y) {}
 
@@ -56,130 +53,7 @@ public final class ZombieMotion {
     }
 
     public Update advance(ZombieFrame inputs) {
-        RoomEntity entity = inputs.entity();
-        int frameCounter = inputs.frameCounter();
-        int transitionCountdown = inputs.transitionCountdown();
-        int physicsFlags = inputs.physicsFlags();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
-        RoomEntityObjectQuery objectQuery = inputs.objectQuery();
-        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
-        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
-        checkType(entity);
-        Objects.requireNonNull(randomByteSupplier, "Zombie random-byte supplier");
-        validateByte(transitionCountdown, "Zombie transition countdown");
-        validateByte(physicsFlags, "Zombie physics flags");
-        validateByte(ignoreHitsCountdown, "Zombie ignore-hits countdown");
-
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-
-        int countdown = transitionCountdown;
-        int nextPhysicsFlags = physicsFlags;
-        int nextSpeedX = speedX[slot];
-        int nextSpeedY = speedY[slot];
-        RoomEntity updated = entity;
-        SpawnRequest spawnRequest = null;
-        boolean unloadRequested = false;
-        boolean appliesBackgroundInteraction = false;
-
-        if (privateState1[slot] == 0) {
-            // The room-loaded entity is a permanently hidden spawn marker. The
-            // handler still relocates it before testing the object physics.
-            int variant = -1;
-            if (countdown == 0) {
-                int index = randomByteSupplier.getAsInt() & 0x07;
-                int x = SPAWN_X[index];
-                int y = SPAWN_Y[index];
-                updated = withPositionAndVariant(entity, x, y, variant);
-                RoomEntityObjectSample object = objectQuery == null ? null : objectQuery.sample(updated);
-                if (object != null && isAllowedSpawnPhysics(object.physicsFlag())) {
-                    countdown = (randomByteSupplier.getAsInt() & 0x3F) + 0x40;
-                    spawnRequest = new SpawnRequest(x, y);
-                }
-            } else {
-                updated = withVariant(entity, variant);
-            }
-            return update(
-                    updated,
-                    countdown,
-                    nextPhysicsFlags,
-                    nextSpeedX,
-                    nextSpeedY,
-                    spawnRequest,
-                    false,
-                    appliesBackgroundInteraction);
-        }
-
-        // $640F renders before any state handler writes the next stored frame.
-        int renderedVariant = selectedVariant[slot];
-        int variant = renderedVariant;
-        switch (state[slot]) {
-            case 0 -> {
-                countdown = 0x30;
-                state[slot] = 1;
-            }
-            case 1 -> {
-                int animationSelector = countdown;
-                if (countdown == 0) {
-                    countdown = (randomByteSupplier.getAsInt() & 0x3F) + 0x70;
-                    int vectorLength = (randomByteSupplier.getAsInt() & 0x07) + 0x05;
-                    Vector vector = vectorTowardsLink(entity.x(), entity.y(), linkEntityX, linkEntityY, vectorLength);
-                    speedX[slot] = vector.x();
-                    speedY[slot] = vector.y();
-                    nextSpeedX = speedX[slot];
-                    nextSpeedY = speedY[slot];
-                    state[slot] = 2;
-                    // ApplyVectorTowardsLink returns A = X speed, and both
-                    // ReloadSavedBank and IncrementEntityState preserve A.
-                    // The fall-through comparison at $6447 reads that byte.
-                    animationSelector = speedX[slot];
-                }
-                variant = animationSelector >= 0x18 ? 1 : 2;
-            }
-            case 2 -> {
-                appliesBackgroundInteraction = true;
-                PositionAndCollision moved = backgroundInteraction == null
-                        ? new PositionAndCollision(
-                                addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot),
-                                addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot),
-                                0)
-                        : moveWithBackground(entity, backgroundInteraction, ignoreHitsCountdown, frameCounter);
-                int x = moved.x();
-                int y = moved.y();
-                int collisionMask = moved.collisionMask();
-                updated = withPosition(entity, x, y);
-                if ((collisionMask & 0x0F) != 0 || countdown == 0) {
-                    countdown = 0x30;
-                    state[slot] = 3;
-                    nextPhysicsFlags |= PROJECTILE_NOCLIP_FLAG;
-                }
-                variant = 3 + ((frameCounter >>> 4) & 0x01);
-            }
-            case 3 -> {
-                if (countdown == 0) {
-                    unloadRequested = true;
-                } else {
-                    variant = countdown >= 0x18 ? 2 : 1;
-                }
-            }
-            default -> throw new IllegalStateException("Invalid Zombie state: " + state[slot]);
-        }
-
-        selectedVariant[slot] = variant;
-        updated = withVariant(updated, renderedVariant);
-        return update(
-                updated,
-                countdown,
-                nextPhysicsFlags,
-                nextSpeedX,
-                nextSpeedY,
-                null,
-                unloadRequested,
-                appliesBackgroundInteraction);
+        return new ZombieStep(this, inputs).run();
     }
 
     boolean isChild(int slot) {
@@ -212,7 +86,7 @@ public final class ZombieMotion {
         initialized[slot] = false;
     }
 
-    private Update update(
+    Update update(
             RoomEntity entity,
             int countdown,
             int physicsFlags,
@@ -234,7 +108,7 @@ public final class ZombieMotion {
                 appliesBackgroundInteraction);
     }
 
-    private PositionAndCollision moveWithBackground(
+    PositionAndCollision moveWithBackground(
             RoomEntity entity, RoomEntityBackgroundInteraction interaction, int ignoreHitsCountdown, int frameCounter) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
@@ -266,11 +140,11 @@ public final class ZombieMotion {
         return new PositionAndCollision(x, y, collisionMask);
     }
 
-    private static boolean isAllowedSpawnPhysics(int physicsFlag) {
+    static boolean isAllowedSpawnPhysics(int physicsFlag) {
         return physicsFlag == 0x00 || physicsFlag == 0x06 || physicsFlag == 0x09;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -285,7 +159,7 @@ public final class ZombieMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int linkEntityX, int linkEntityY, int length) {
+    static Vector vectorTowardsLink(int entityX, int entityY, int linkEntityX, int linkEntityY, int length) {
         int distanceX = signedByte(linkEntityX - entityX);
         int distanceY = signedByte(linkEntityY - entityY);
         int absoluteX = Math.abs(distanceX);
@@ -314,12 +188,12 @@ public final class ZombieMotion {
         return new Vector(x & 0xFF, y & 0xFF);
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+    static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
         return EntitySnapshots.withMotion(
                 entity, x & 0xFF, y & 0xFF, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
-    private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
+    static RoomEntity withPosition(RoomEntity entity, int x, int y) {
         return EntitySnapshots.withMotion(
                 entity,
                 x & 0xFF,
@@ -331,7 +205,7 @@ public final class ZombieMotion {
                 false);
     }
 
-    private static RoomEntity withVariant(RoomEntity entity, int variant) {
+    static RoomEntity withVariant(RoomEntity entity, int variant) {
         return EntitySnapshots.withMotion(
                 entity, entity.x(), entity.y(), variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
@@ -346,13 +220,13 @@ public final class ZombieMotion {
         selectedVariant[slot] = 0;
     }
 
-    private static void checkType(RoomEntity entity) {
+    static void checkType(RoomEntity entity) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Zombie entity");
         }
     }
 
-    private static void validateByte(int value, String name) {
+    static void validateByte(int value, String name) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(name + " must be an unsigned byte: " + value);
         }
@@ -363,7 +237,7 @@ public final class ZombieMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Vector(int x, int y) {}
+    record Vector(int x, int y) {}
 
-    private record PositionAndCollision(int x, int y, int collisionMask) {}
+    record PositionAndCollision(int x, int y, int collisionMask) {}
 }
