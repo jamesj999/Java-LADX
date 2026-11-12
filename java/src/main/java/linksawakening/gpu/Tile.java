@@ -1,5 +1,6 @@
 package linksawakening.gpu;
 
+/** Stores one decoded eight-by-eight indexed hardware tile. */
 public class Tile {
     private final int[] colorIndex;
 

@@ -3,6 +3,7 @@ package linksawakening.render;
 import linksawakening.entity.Link;
 import linksawakening.world.transition.ScrollController;
 
+/** Submits Link OAM using interpolated scrolling coordinates and screen shake. */
 public final class LinkRenderLayer implements HardwareRenderLayer {
     private final Link link;
     private final ScrollController scrollController;

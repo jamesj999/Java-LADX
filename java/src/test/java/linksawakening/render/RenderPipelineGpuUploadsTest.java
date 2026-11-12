@@ -37,8 +37,8 @@ final class RenderPipelineGpuUploadsTest {
         GPU gpu = new GPU();
         gpu.loadBaseTiles(bytes);
         FrameScene scene = FrameScene.of(List.of(new InventoryRenderLayer(controller)));
-        var observer = FrameScene.DRAW_OBSERVER.get();
-        FrameScene.DRAW_OBSERVER.remove();
+        var observer = TestDrawObservers.CURRENT.get();
+        TestDrawObservers.CURRENT.remove();
         try {
             player.setHasToadstool(true);
             scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu);
@@ -47,7 +47,7 @@ final class RenderPipelineGpuUploadsTest {
             scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu);
             assertUpload(gpu, bytes, RomSymbols.InventoryEquipmentItemsTiles.plus(0xE0));
         } finally {
-            if (observer != null) FrameScene.DRAW_OBSERVER.set(observer);
+            if (observer != null) TestDrawObservers.CURRENT.set(observer);
         }
     }
 

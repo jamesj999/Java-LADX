@@ -14,8 +14,9 @@ public final class PaletteOverlayRenderLayer implements HardwareRenderLayer {
 
     @Override
     public boolean supportsHardware() {
-        return layers.stream()
-                .allMatch(layer -> layer instanceof HardwareRenderLayer indexed && indexed.supportsHardware());
+        for (RenderLayer layer : layers)
+            if (!(layer instanceof HardwareRenderLayer indexed) || !indexed.supportsHardware()) return false;
+        return true;
     }
 
     @Override

@@ -2,6 +2,7 @@ package linksawakening.render;
 
 import linksawakening.ui.InventoryController;
 
+/** Applies inventory entry hiding and submits the ROM-backed window. */
 public final class InventoryRenderLayer implements HardwareRenderLayer {
     private final InventoryController inventoryController;
     private final int[][] roomPalettes;

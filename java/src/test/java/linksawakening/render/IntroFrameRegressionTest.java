@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSequence;
 import linksawakening.gpu.Framebuffer;
@@ -35,7 +36,7 @@ final class IntroFrameRegressionTest {
         byte[] lightningFrame = render(builder, gpu, lightning);
 
         assertArrayEquals(initial.tilemap(), lightning.tilemap());
-        assertFalse(java.util.Arrays.equals(initialFrame, lightningFrame));
+        assertFalse(Arrays.equals(initialFrame, lightningFrame));
     }
 
     private static byte[] render(GameFrameSceneBuilder builder, GPU gpu, IntroFrameSnapshot snapshot) {

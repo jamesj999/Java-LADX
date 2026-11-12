@@ -6,9 +6,8 @@ import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 import linksawakening.world.room.RoomConstants;
 
+/** IndexedRenderer supplies frame rendering inputs or composition. */
 public final class IndexedRenderer {
-    private static final int ATTR_FLIP_X = 0x20;
-    private static final int ATTR_FLIP_Y = 0x40;
 
     private IndexedRenderer() {}
 
@@ -26,7 +25,7 @@ public final class IndexedRenderer {
         for (int y = 0; y < RoomConstants.ROOM_TILE_HEIGHT; y++) {
             for (int x = 0; x < RoomConstants.ROOM_TILE_WIDTH; x++) {
                 int mapIndex = y * RoomConstants.ROOM_TILE_WIDTH + x;
-                renderTile(
+                RgbaTileRasterizer.renderTile(
                         buffer,
                         gpu,
                         tileIds[mapIndex],
@@ -69,7 +68,7 @@ public final class IndexedRenderer {
                 int mapX = sourceX / 8;
                 int tileX = sourceX & 0x07;
                 int mapIndex = mapY * RoomConstants.ROOM_TILE_WIDTH + mapX;
-                renderBackgroundPixel(
+                RgbaTileRasterizer.renderBackgroundPixel(
                         buffer, gpu, tileIds[mapIndex], tileAttrs[mapIndex], palettes, screenX, screenY, tileX, tileY);
             }
         }
@@ -103,7 +102,7 @@ public final class IndexedRenderer {
                 int mapX = (baseTileX + x) & (mapWidth - 1);
                 int mapY = (baseTileY + y) & (mapHeight - 1);
                 int mapIndex = mapY * mapWidth + mapX;
-                renderTile(
+                RgbaTileRasterizer.renderTile(
                         buffer,
                         gpu,
                         tilemap[mapIndex],
@@ -168,7 +167,7 @@ public final class IndexedRenderer {
                 int mapX = sourceX / 8;
                 int tileX = sourceX & 0x07;
                 int mapIndex = mapY * mapWidth + mapX;
-                renderBackgroundPixel(
+                RgbaTileRasterizer.renderBackgroundPixel(
                         buffer, gpu, tilemap[mapIndex], attrmap[mapIndex], palettes, px, py, tileX, tileY);
             }
         }
@@ -179,7 +178,8 @@ public final class IndexedRenderer {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int mapIndex = y * width + x;
-                renderTile(buffer, gpu, tilemap[mapIndex], attrmap[mapIndex], palettes, x * 8, y * 8, false);
+                RgbaTileRasterizer.renderTile(
+                        buffer, gpu, tilemap[mapIndex], attrmap[mapIndex], palettes, x * 8, y * 8, false);
             }
         }
     }
@@ -202,7 +202,7 @@ public final class IndexedRenderer {
                 if (colorIndex == 0) {
                     continue;
                 }
-                writePixel(buffer, px, py, palette[colorIndex]);
+                RgbaTileRasterizer.writePixel(buffer, px, py, palette[colorIndex]);
             }
         }
     }
@@ -252,80 +252,5 @@ public final class IndexedRenderer {
 
     public static int resolveSignedBgTileIndex(int tileId) {
         return tileId < 0x80 ? tileId + 0x100 : tileId;
-    }
-
-    private static void renderTile(
-            byte[] buffer,
-            GPU gpu,
-            int tileId,
-            int attributes,
-            int[][] palettes,
-            int screenX,
-            int screenY,
-            boolean skipOffscreen) {
-        int tileIndex = resolveSignedBgTileIndex(tileId & 0xFF);
-        int attr = attributes & 0xFF;
-        int paletteIndex = attr & 0x07;
-        boolean flipX = (attr & ATTR_FLIP_X) != 0;
-        boolean flipY = (attr & ATTR_FLIP_Y) != 0;
-
-        Tile tile = gpu.getTile(tileIndex);
-        if (tile == null) {
-            return;
-        }
-        if (skipOffscreen
-                && (screenX + 8 <= 0
-                        || screenX >= Framebuffer.WIDTH
-                        || screenY + 8 <= 0
-                        || screenY >= Framebuffer.HEIGHT)) {
-            return;
-        }
-
-        int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
-        for (int ty = 0; ty < 8; ty++) {
-            for (int tx = 0; tx < 8; tx++) {
-                int px = screenX + tx;
-                int py = screenY + ty;
-                if (px < 0 || px >= Framebuffer.WIDTH || py < 0 || py >= Framebuffer.HEIGHT) {
-                    continue;
-                }
-                int sourceX = flipX ? 7 - tx : tx;
-                int sourceY = flipY ? 7 - ty : ty;
-                writePixel(buffer, px, py, palette[tile.getPixel(sourceX, sourceY)]);
-            }
-        }
-    }
-
-    private static void renderBackgroundPixel(
-            byte[] buffer,
-            GPU gpu,
-            int tileId,
-            int attributes,
-            int[][] palettes,
-            int screenX,
-            int screenY,
-            int tileX,
-            int tileY) {
-        int tileIndex = resolveSignedBgTileIndex(tileId & 0xFF);
-        int attr = attributes & 0xFF;
-        int paletteIndex = attr & 0x07;
-        boolean flipX = (attr & ATTR_FLIP_X) != 0;
-        boolean flipY = (attr & ATTR_FLIP_Y) != 0;
-        Tile tile = gpu.getTile(tileIndex);
-        if (tile == null) {
-            return;
-        }
-        int sourceX = flipX ? 7 - tileX : tileX;
-        int sourceY = flipY ? 7 - tileY : tileY;
-        int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
-        writePixel(buffer, screenX, screenY, palette[tile.getPixel(sourceX, sourceY)]);
-    }
-
-    private static void writePixel(byte[] buffer, int x, int y, int color) {
-        int offset = (y * Framebuffer.WIDTH + x) * 4;
-        buffer[offset] = (byte) ((color >> 16) & 0xFF);
-        buffer[offset + 1] = (byte) ((color >> 8) & 0xFF);
-        buffer[offset + 2] = (byte) (color & 0xFF);
-        buffer[offset + 3] = (byte) 0xFF;
     }
 }

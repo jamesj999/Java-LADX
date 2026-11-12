@@ -3,6 +3,7 @@ package linksawakening.render;
 import linksawakening.dialog.DialogController;
 import linksawakening.dialog.DialogRenderer;
 
+/** Submits dialog window pixels and the timed page-advance prompt. */
 public final class DialogRenderLayer implements HardwareRenderLayer {
     private final DialogController dialogController;
     private final int[] backgroundPalette;
@@ -28,7 +29,7 @@ public final class DialogRenderLayer implements HardwareRenderLayer {
         DialogRenderer.submitWindow(frame, dialogController, backgroundPalette);
         if (objectPalettes != null && dialogController.isWaitingForPageAdvance() && (frameCounter & 0x10) == 0)
             OamDrawing.draw8x16(
-                    new RenderContext(new byte[0], gpu, frame),
+                    RenderContext.indexed(gpu, frame),
                     gpu,
                     0xA2,
                     0x97 - 8,

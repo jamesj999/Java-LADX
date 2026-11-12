@@ -1,5 +1,6 @@
 package linksawakening.render;
 
+import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.transition.ScrollController;
@@ -30,7 +31,7 @@ final class StorySprites {
             int palette = variant < 2 ? 7 : 0;
             // List order is OAM priority order; preserve the former painter order.
             new SpriteListRenderLayer(
-                            java.util.List.of(
+                            List.of(
                                     new SpriteListRenderLayer.Sprite(
                                             pair[0], originX, originY, palette, flipX, false, 16),
                                     new SpriteListRenderLayer.Sprite(
@@ -55,7 +56,7 @@ final class StorySprites {
             int screenX = link.pixelX() + 4 - scrollController.screenShakeHorizontal();
             int screenY = link.pixelY() - 0x0C;
             new SpriteListRenderLayer(
-                            java.util.List.of(new SpriteListRenderLayer.Sprite(
+                            List.of(new SpriteListRenderLayer.Sprite(
                                     SHIELD_TILE, screenX, screenY, 0, false, false, 16)),
                             new int[][] {link.tarinShieldPalette()})
                     .submit(frame, gpu);
@@ -67,7 +68,7 @@ final class StorySprites {
         return (frame, gpu) -> {
             if (link.presentedDialogGotItem() != 2) return;
             new SpriteListRenderLayer(
-                            java.util.List.of(new SpriteListRenderLayer.Sprite(
+                            List.of(new SpriteListRenderLayer.Sprite(
                                     0x8E,
                                     link.pixelX() - scroll.screenShakeHorizontal(),
                                     link.pixelY() - link.romEntityZ() - 0x0E,

@@ -1,9 +1,7 @@
 package linksawakening.render;
 
-import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import javax.imageio.ImageIO;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.equipment.ItemRegistry;
@@ -29,10 +27,7 @@ import linksawakening.world.transition.TransitionController;
 public final class HouseEmulatorCapture {
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]);
-        byte[] rom;
-        try (var in = linksawakening.testing.TestRom.open()) {
-            rom = in.readAllBytes();
-        }
+        byte[] rom = CaptureImageWriter.readRom();
         GPU gpu = new GPU();
         gpu.loadBaseTiles(rom);
         var tables = RomTables.loadFromRom(rom);
@@ -86,20 +81,7 @@ public final class HouseEmulatorCapture {
                             .withInventoryController(inventory)
                             .withFrameCounter(frame))
                     .drawTo(pixels, gpu);
-            BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
-            for (int y = 0; y < 144; y++)
-                for (int x = 0; x < 160; x++) {
-                    int i = (y * 160 + x) * 4;
-                    image.setRGB(
-                            x,
-                            y,
-                            0xff000000
-                                    | ((pixels[i] & 255) << 16)
-                                    | ((pixels[i + 1] & 255) << 8)
-                                    | (pixels[i + 2] & 255));
-                }
-            ImageIO.write(
-                    image, "png", folder.resolve(String.format("%03d.png", f)).toFile());
+            CaptureImageWriter.write(pixels, folder.resolve(String.format("%03d.png", f)));
         }
     }
 }

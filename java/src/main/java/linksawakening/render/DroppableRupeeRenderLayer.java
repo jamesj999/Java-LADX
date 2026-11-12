@@ -3,6 +3,7 @@ package linksawakening.render;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.transition.ScrollController;
 
+/** Submits visible dropped rupee entries using their world and height offsets. */
 public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
     private final DroppableRupeeSystem droppableRupeeSystem;
     private final ScrollController scrollController;

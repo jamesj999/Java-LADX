@@ -1,8 +1,6 @@
 package linksawakening.render;
 
-import java.awt.image.BufferedImage;
 import java.nio.file.*;
-import javax.imageio.ImageIO;
 import linksawakening.gpu.*;
 import linksawakening.input.*;
 import linksawakening.scene.*;
@@ -13,10 +11,7 @@ import linksawakening.ui.*;
 final class MenuEmulatorCapture {
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]);
-        byte[] rom;
-        try (var stream = linksawakening.testing.TestRom.open()) {
-            rom = stream.readAllBytes();
-        }
+        byte[] rom = CaptureImageWriter.readRom();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         for (String line : Files.readAllLines(out.resolve("scenarios.tsv"))) {
             String[] fields = line.split("\t", -1);
@@ -68,22 +63,7 @@ final class MenuEmulatorCapture {
                                 .withScreen(RenderScreen.FILE_MENU)
                                 .withFileMenuFrame(menu.snapshot()))
                         .drawTo(pixels, gpu);
-                BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
-                for (int y = 0; y < 144; y++)
-                    for (int x = 0; x < 160; x++) {
-                        int i = (y * 160 + x) * 4;
-                        image.setRGB(
-                                x,
-                                y,
-                                0xff000000
-                                        | ((pixels[i] & 255) << 16)
-                                        | ((pixels[i + 1] & 255) << 8)
-                                        | (pixels[i + 2] & 255));
-                    }
-                ImageIO.write(
-                        image,
-                        "png",
-                        folder.resolve(String.format("%02d.png", frame)).toFile());
+                CaptureImageWriter.write(pixels, folder.resolve(String.format("%02d.png", frame)));
                 menu.tick(input, config);
                 input.tickEdges();
             }
