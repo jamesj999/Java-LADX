@@ -6,6 +6,7 @@ import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.RomRandomByteSource;
 
 /**
@@ -525,48 +526,15 @@ public final class Sword implements EquipmentItem {
     }
 
     private static int toSpinDirectionIndex(int javaDirection) {
-        switch (javaDirection) {
-            case Link.DIRECTION_RIGHT:
-                return 0;
-            case Link.DIRECTION_LEFT:
-                return 1;
-            case Link.DIRECTION_UP:
-                return 2;
-            case Link.DIRECTION_DOWN:
-                return 3;
-            default:
-                return 3;
-        }
+        return Direction.fromJavaOrDown(javaDirection).romIndex();
     }
 
     private static int toRomDirection(int javaDirection) {
-        switch (javaDirection) {
-            case Link.DIRECTION_RIGHT:
-                return 0;
-            case Link.DIRECTION_LEFT:
-                return 1;
-            case Link.DIRECTION_UP:
-                return 2;
-            case Link.DIRECTION_DOWN:
-                return 3;
-            default:
-                return 3;
-        }
+        return Direction.fromJavaOrDown(javaDirection).romIndex();
     }
 
     private static int fromRomDirection(int romDirection) {
-        switch (romDirection & 0x03) {
-            case 0:
-                return Link.DIRECTION_RIGHT;
-            case 1:
-                return Link.DIRECTION_LEFT;
-            case 2:
-                return Link.DIRECTION_UP;
-            case 3:
-                return Link.DIRECTION_DOWN;
-            default:
-                throw new AssertionError(romDirection);
-        }
+        return Direction.fromRom(romDirection & 0x03).javaIndex();
     }
 
     private static GameplaySoundEvent swordSwingSound(int randomByte) {

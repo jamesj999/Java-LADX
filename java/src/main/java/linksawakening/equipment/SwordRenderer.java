@@ -2,6 +2,7 @@ package linksawakening.equipment;
 
 import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 
 /** Blade geometry and raster/OAM submission; attack timing remains in Sword. */
 final class SwordRenderer {
@@ -98,11 +99,6 @@ final class SwordRenderer {
     }
 
     private static int toRomDirection(int direction) {
-        return switch (direction) {
-            case linksawakening.entity.Link.DIRECTION_RIGHT -> 0;
-            case linksawakening.entity.Link.DIRECTION_LEFT -> 1;
-            case linksawakening.entity.Link.DIRECTION_UP -> 2;
-            default -> 3;
-        };
+        return Direction.fromJavaOrDown(direction).romIndex();
     }
 }

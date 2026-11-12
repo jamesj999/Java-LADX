@@ -6,21 +6,50 @@ import linksawakening.save.SaveSlotState;
 import linksawakening.world.entity.event.FloatingItemPickupEffect;
 import linksawakening.world.room.ChestContentsTable;
 
+/** Persistent player resources, progression and transient resource-update state. */
 public final class PlayerState implements LinkPlayerState {
 
+    /** @deprecated Use {@link InventoryItem#EMPTY}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_EMPTY = 0x00;
+    /** @deprecated Use {@link InventoryItem#SWORD}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_SWORD = 0x01;
+    /** @deprecated Use {@link InventoryItem#BOMBS}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_BOMBS = 0x02;
+    /** @deprecated Use {@link InventoryItem#POWER_BRACELET}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_POWER_BRACELET = 0x03;
+    /** @deprecated Use {@link InventoryItem#SHIELD}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_SHIELD = 0x04;
+    /** @deprecated Use {@link InventoryItem#BOW}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_BOW = 0x05;
+    /** @deprecated Use {@link InventoryItem#HOOKSHOT}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_HOOKSHOT = 0x06;
+    /** @deprecated Use {@link InventoryItem#MAGIC_ROD}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_MAGIC_ROD = 0x07;
+    /** @deprecated Use {@link InventoryItem#PEGASUS_BOOTS}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_PEGASUS_BOOTS = 0x08;
+    /** @deprecated Use {@link InventoryItem#OCARINA}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_OCARINA = 0x09;
+    /** @deprecated Use {@link InventoryItem#ROCS_FEATHER}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_ROCS_FEATHER = 0x0A;
+    /** @deprecated Use {@link InventoryItem#SHOVEL}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_SHOVEL = 0x0B;
+    /** @deprecated Use {@link InventoryItem#MAGIC_POWDER}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_MAGIC_POWDER = 0x0C;
+    /** @deprecated Use {@link InventoryItem#BOOMERANG}. */
+    @Deprecated(forRemoval = true)
     public static final int INVENTORY_BOOMERANG = 0x0D;
 
     // Values stored in the ROM's wOcarinaSongFlags byte.
@@ -29,12 +58,24 @@ public final class PlayerState implements LinkPlayerState {
     public static final int BALLAD_OF_THE_WIND_FISH_FLAG = 0x04;
 
     // Values written to the ROM's wTunicType ($DC0F).
+    /** @deprecated Use {@link Tunic#GREEN}. */
+    @Deprecated(forRemoval = true)
     public static final int TUNIC_GREEN = 0x00;
+    /** @deprecated Use {@link Tunic#RED}. */
+    @Deprecated(forRemoval = true)
     public static final int TUNIC_RED = 0x01;
+    /** @deprecated Use {@link Tunic#BLUE}. */
+    @Deprecated(forRemoval = true)
     public static final int TUNIC_BLUE = 0x02;
 
+    /** @deprecated Use {@link PowerUp#NONE}. */
+    @Deprecated(forRemoval = true)
     public static final int ACTIVE_POWER_UP_NONE = 0x00;
+    /** @deprecated Use {@link PowerUp#PIECE_OF_POWER}. */
+    @Deprecated(forRemoval = true)
     public static final int ACTIVE_POWER_UP_PIECE_OF_POWER = 0x01;
+    /** @deprecated Use {@link PowerUp#GUARDIAN_ACORN}. */
+    @Deprecated(forRemoval = true)
     public static final int ACTIVE_POWER_UP_GUARDIAN_ACORN = 0x02;
 
     public static final int MAX_RUPEES = 999;
@@ -77,8 +118,8 @@ public final class PlayerState implements LinkPlayerState {
     private int faceKeyCount;
     private int birdKeyCount;
     private int goldenLeavesCount;
-    private int activePowerUp;
-    private int tunicType = TUNIC_GREEN;
+    private PowerUp activePowerUp = PowerUp.NONE;
+    private Tunic tunicType = Tunic.GREEN;
     private boolean runningWithPegasusBoots;
     private int addHealthBuffer;
     private int subtractHealthBuffer;
@@ -166,8 +207,8 @@ public final class PlayerState implements LinkPlayerState {
         faceKeyCount = 0;
         birdKeyCount = 0;
         goldenLeavesCount = 0;
-        activePowerUp = ACTIVE_POWER_UP_NONE;
-        tunicType = TUNIC_GREEN;
+        activePowerUp = PowerUp.NONE;
+        tunicType = Tunic.GREEN;
         runningWithPegasusBoots = false;
         addHealthBuffer = 0;
         subtractHealthBuffer = 0;
@@ -280,18 +321,18 @@ public final class PlayerState implements LinkPlayerState {
      */
     public int applyRomEnemyDamage(int nominalDamage) {
         int effectiveDamage = nominalDamage & 0xFF;
-        if (tunicType == TUNIC_BLUE) {
+        if (tunicType == Tunic.BLUE) {
             effectiveDamage >>= 1;
-        } else if (activePowerUp == ACTIVE_POWER_UP_GUARDIAN_ACORN) {
+        } else if (activePowerUp == PowerUp.GUARDIAN_ACORN) {
             effectiveDamage = effectiveDamage == 0x04 ? 0 : effectiveDamage >> 1;
         }
 
         subtractHealthBuffer = (subtractHealthBuffer + effectiveDamage) & 0xFF;
         invincibilityCounter = 0x50;
-        if (activePowerUp != ACTIVE_POWER_UP_NONE) {
+        if (activePowerUp != PowerUp.NONE) {
             powerUpHits = (powerUpHits + 1) & 0xFF;
             if (powerUpHits >= 3) {
-                activePowerUp = ACTIVE_POWER_UP_NONE;
+                activePowerUp = PowerUp.NONE;
             }
         }
         return effectiveDamage;
@@ -361,8 +402,8 @@ public final class PlayerState implements LinkPlayerState {
                 // PickDroppableFairy ($03:64C6) adds six hearts to the byte buffer.
             case 0x2F -> addHealthBuffer = (addHealthBuffer + 0x30) & 0xFF;
             case 0x2E -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 1);
-            case 0x33 -> setActivePowerUp(ACTIVE_POWER_UP_PIECE_OF_POWER);
-            case 0x34 -> setActivePowerUp(ACTIVE_POWER_UP_GUARDIAN_ACORN);
+            case 0x33 -> setPowerUp(PowerUp.PIECE_OF_POWER);
+            case 0x34 -> setPowerUp(PowerUp.GUARDIAN_ACORN);
             case 0x37 -> arrowCount = incrementUpTo(arrowCount, maxArrows);
             case 0x38 -> {
                 giveInventoryItem(INVENTORY_BOMBS);
@@ -710,19 +751,31 @@ public final class PlayerState implements LinkPlayerState {
         seashells = clamp(value, 0, 99);
     }
 
-    public int activePowerUp() {
+    public PowerUp powerUp() {
         return activePowerUp;
     }
 
-    /** Mirrors the ROM pickup boundary that starts a fresh power-up streak. */
-    public void setActivePowerUp(int value) {
-        activePowerUp = clamp(value, ACTIVE_POWER_UP_NONE, ACTIVE_POWER_UP_GUARDIAN_ACORN);
+    /** Starts a fresh power-up streak, including when selecting NONE. */
+    public void setPowerUp(PowerUp value) {
+        activePowerUp = Objects.requireNonNull(value, "value");
         powerUpHits = 0;
+    }
+
+    /** @deprecated Use {@link #powerUp()}. */
+    @Deprecated(forRemoval = true)
+    public int activePowerUp() {
+        return powerUp().romValue();
+    }
+
+    /** @deprecated Use {@link #setPowerUp(PowerUp)}; this bridge retains legacy clamping. */
+    @Deprecated(forRemoval = true)
+    public void setActivePowerUp(int value) {
+        setPowerUp(PowerUp.fromRom(clamp(value, 0, 2)));
     }
 
     /** Warp loads ($00:1904/$00:1952) clear only wActivePowerUp. */
     public void clearActivePowerUpForWarp() {
-        activePowerUp = ACTIVE_POWER_UP_NONE;
+        activePowerUp = PowerUp.NONE;
     }
 
     /** Number of accepted enemy hits taken while the current power-up was active. */
@@ -730,12 +783,24 @@ public final class PlayerState implements LinkPlayerState {
         return powerUpHits;
     }
 
-    public int tunicType() {
+    public Tunic tunic() {
         return tunicType;
     }
 
+    public void setTunic(Tunic value) {
+        tunicType = Objects.requireNonNull(value, "value");
+    }
+
+    /** @deprecated Use {@link #tunic()}. */
+    @Deprecated(forRemoval = true)
+    public int tunicType() {
+        return tunic().romValue();
+    }
+
+    /** @deprecated Use {@link #setTunic(Tunic)}; this bridge retains legacy clamping. */
+    @Deprecated(forRemoval = true)
     public void setTunicType(int value) {
-        tunicType = clamp(value, TUNIC_GREEN, TUNIC_BLUE);
+        setTunic(Tunic.fromRom(clamp(value, 0, 2)));
     }
 
     /** Mirrors wIsRunningWithPegasusBoots; movement owns when this is set. */
@@ -831,7 +896,7 @@ public final class PlayerState implements LinkPlayerState {
         setTunicType(saved.tunicType());
 
         invincibilityCounter = 0;
-        activePowerUp = ACTIVE_POWER_UP_NONE;
+        activePowerUp = PowerUp.NONE;
         runningWithPegasusBoots = false;
         addHealthBuffer = 0;
         subtractHealthBuffer = 0;

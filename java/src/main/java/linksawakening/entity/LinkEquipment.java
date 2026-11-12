@@ -6,6 +6,7 @@ import static linksawakening.entity.LinkRomConstants.*;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import linksawakening.equipment.EquipmentItem;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 
 /** ROM-faithful equipment collaborator for Link. */
@@ -59,7 +60,7 @@ final class LinkEquipment {
         if (newDirection != -1) {
             link.direction = newDirection;
         }
-        return Link.romDirectionForJavaDirection(link.direction);
+        return Direction.fromJava(link.direction).romIndex();
     }
 
     boolean itemsBlockMotion() {

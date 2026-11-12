@@ -4,6 +4,7 @@ import static linksawakening.entity.Link.*;
 
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
 final class LinkMotion {
@@ -102,8 +103,8 @@ final class LinkMotion {
                     && (physicsFlag == 0x7C || physicsFlag == 0x7D)
                     && (objectId == 0xB1 || objectId == 0xB2)
                     && (pointY & 15) < 6
-                    && link.linkStateMachine.motionState != 0x05) {
-                link.linkStateMachine.motionState = 0x05;
+                    && link.linkStateMachine.motionState != LinkMotionState.REVOLVING_DOOR) {
+                link.linkStateMachine.motionState = LinkMotionState.REVOLVING_DOOR;
                 link.linkStateMachine.revolvingDoorFrame = 0;
                 link.linkStateMachine.revolvingDoorTransitionPending = false;
                 link.linkStateMachine.revolvingDoorPaletteVariant = -1;
@@ -227,7 +228,7 @@ final class LinkMotion {
         link.linkAnimator.ledgeJumpRenderY = pixelY() - link.zPixels();
         subX = (link.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
-        link.linkStateMachine.motionState = 0x02;
+        link.linkStateMachine.motionState = LinkMotionState.UNSTUCKING;
         link.linkStateMachine.physicsModifier = 0;
         link.linkAirborne.overworldLedgeFallActive = true;
         // The collision changes wLinkMotionState only. The dispatcher runs

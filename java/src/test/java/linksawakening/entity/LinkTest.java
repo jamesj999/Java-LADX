@@ -27,6 +27,7 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -1613,7 +1614,7 @@ final class LinkTest {
             Link link = linkInRoom(config, tables, emptyRoomObjectsArea(), player, RomTables.PHYSICS_TABLE_OVERWORLD);
             link.setRoomEntryPixelPosition(16, 24);
             link.setPixelPosition(64, 64);
-            link.linkStateMachine.motionState = Link.LINK_MOTION_RECOVER;
+            link.linkStateMachine.motionState = LinkMotionState.RECOVER;
             link.linkStateMachine.physicsModifier = object;
             link.linkStateMachine.recoverCountdown = 0x50;
             for (int frame = 1; frame < 80; frame++) {

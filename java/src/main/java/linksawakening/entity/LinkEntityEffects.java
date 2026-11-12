@@ -2,6 +2,10 @@ package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
 
+import linksawakening.state.Direction;
+import linksawakening.state.GroundStatus;
+import linksawakening.state.LinkMotionState;
+
 /** ROM-faithful entityeffects collaborator for Link. */
 final class LinkEntityEffects {
     private final Link link;
@@ -44,8 +48,8 @@ final class LinkEntityEffects {
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0;
         link.linkAirborne.fallingIntoPit = false;
-        link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
-        link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkAirborne.groundStatus = GroundStatus.NORMAL;
+        link.linkStateMachine.motionState = LinkMotionState.DEFAULT;
         link.linkStateMachine.physicsModifier = 0;
         link.linkSwimming.swimmingSpeedX = 0;
         link.linkSwimming.swimmingSpeedY = 0;
@@ -80,7 +84,7 @@ final class LinkEntityEffects {
         carryingLiftedObjectState = carryState;
         carryingLiftedObjectRomDirection = romDirection;
         if (carryState != 0) {
-            link.direction = Link.javaDirectionForRomDirection(romDirection);
+            link.direction = Direction.fromRom(romDirection).javaIndex();
         }
     }
 
@@ -92,15 +96,15 @@ final class LinkEntityEffects {
         if (romDirection < 0 || romDirection > 3) {
             throw new IllegalArgumentException("Rooster ROM link.direction must be between 0 and 3");
         }
-        link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkStateMachine.motionState = LinkMotionState.DEFAULT;
         link.linkAirborne.airborne = true;
         link.linkAirborne.zSubPixels = (positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT;
         link.linkAirborne.zVelocity = velocityZ & 0xFF;
-        link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+        link.linkAirborne.groundStatus = GroundStatus.NORMAL;
         link.linkAirborne.fallingIntoPit = false;
         link.linkStateMachine.physicsModifier = 0;
         roosterCarryActive = true;
-        link.direction = Link.javaDirectionForRomDirection(romDirection);
+        link.direction = Direction.fromRom(romDirection).javaIndex();
         link.linkMotion.applyRomSpeed(speedX, speedY);
     }
 
@@ -166,7 +170,7 @@ final class LinkEntityEffects {
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0;
         link.linkAirborne.fallingIntoPit = false;
-        link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+        link.linkAirborne.groundStatus = GroundStatus.NORMAL;
         if (immunityCountdown != 0) {
             link.linkDamage.collisionDamageImmune = true;
         }
@@ -178,7 +182,7 @@ final class LinkEntityEffects {
 
     /** Applies Marin's final writes when Link jumps out of the bed. */
     void leaveMarinWakeUpBed() {
-        link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkStateMachine.motionState = LinkMotionState.DEFAULT;
         link.linkStateMachine.romInteractiveMotionBlocked = false;
         link.linkAnimator.romAnimationStateOverride = -1;
         // The entity handler has already drawn the bed on the launch frame.
@@ -189,7 +193,7 @@ final class LinkEntityEffects {
         link.linkAirborne.airborne = true;
         link.linkAirborne.zSubPixels = 1 << Link.SUB_PIXEL_SHIFT;
         link.linkAirborne.zVelocity = 0x12;
-        link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+        link.linkAirborne.groundStatus = GroundStatus.NORMAL;
         link.linkAirborne.fallingIntoPit = false;
         link.direction = Link.DIRECTION_RIGHT;
         link.linkMotion.lastRomSpeedX = 0x0C;
@@ -204,9 +208,9 @@ final class LinkEntityEffects {
         link.linkAirborne.airborne = false;
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0;
-        link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+        link.linkAirborne.groundStatus = GroundStatus.NORMAL;
         link.linkAirborne.fallingIntoPit = false;
-        link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkStateMachine.motionState = LinkMotionState.DEFAULT;
         link.linkStateMachine.physicsModifier = 0;
         link.linkMotion.forcedSpeedPending = false;
         link.linkMotion.forcedSpeedXOnly = false;

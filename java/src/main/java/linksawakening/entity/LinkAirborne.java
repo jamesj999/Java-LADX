@@ -4,6 +4,8 @@ import linksawakening.equipment.EquipmentItem;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.state.GroundStatus;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
 /** ROM-faithful airborne collaborator for Link. */
@@ -16,7 +18,7 @@ final class LinkAirborne {
     int zSubPixels;
     int zVelocity;
     boolean fallingIntoPit;
-    int groundStatus = Link.GROUND_STATUS_NORMAL;
+    GroundStatus groundStatus = GroundStatus.NORMAL;
     int pitSlippingCounter;
     int fallingFrameCounter;
     int pitSlipTargetTopLeftX;
@@ -81,8 +83,8 @@ final class LinkAirborne {
         directionalLedgeJumpSpeedX = 0;
         directionalLedgeJumpSpeedY = 0;
         overworldLedgeFallActive = false;
-        if (link.linkStateMachine.motionState == 0x02) {
-            link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        if (link.linkStateMachine.motionState == LinkMotionState.UNSTUCKING) {
+            link.linkStateMachine.motionState = LinkMotionState.DEFAULT;
             link.linkStateMachine.physicsModifier = 0;
         }
         zSubPixels = 0;
@@ -169,13 +171,13 @@ final class LinkAirborne {
         } else if (linkOverPit()) {
             enterPitGroundState();
         } else if (!fallingIntoPit) {
-            groundStatus = Link.GROUND_STATUS_NORMAL;
+            groundStatus = GroundStatus.NORMAL;
             hasPitSlipTarget = false;
         }
     }
 
     void enterPitGroundState() {
-        if (groundStatus != Link.GROUND_STATUS_PIT) {
+        if (groundStatus != GroundStatus.PIT) {
             pitSlippingCounter = 0;
             OverworldCollision.PitCell pit = link.collision == null
                     ? null
@@ -187,12 +189,12 @@ final class LinkAirborne {
                 hasPitSlipTarget = true;
             }
         }
-        groundStatus = Link.GROUND_STATUS_PIT;
+        groundStatus = GroundStatus.PIT;
     }
 
     void slipTowardPitCenter() {
         if (!hasPitSlipTarget) {
-            groundStatus = Link.GROUND_STATUS_NORMAL;
+            groundStatus = GroundStatus.NORMAL;
             return;
         }
 
@@ -226,7 +228,7 @@ final class LinkAirborne {
 
     private void startPitFall(boolean slipping) {
         // $02:7644 routes $50 and $51 through the same slip/fall path.
-        groundStatus = Link.GROUND_STATUS_PIT;
+        groundStatus = GroundStatus.PIT;
         fallingIntoPit = true;
         airborne = false;
         zSubPixels = 0;
@@ -246,7 +248,7 @@ final class LinkAirborne {
         }
 
         fallingIntoPit = false;
-        groundStatus = Link.GROUND_STATUS_NORMAL;
+        groundStatus = GroundStatus.NORMAL;
         hasPitSlipTarget = false;
         pitSlippingCounter = 0;
         fallingFrameCounter = 0;
@@ -269,7 +271,7 @@ final class LinkAirborne {
     }
 
     void updateLastSafePositionIfPossible() {
-        if (airborne || fallingIntoPit || groundStatus == Link.GROUND_STATUS_PIT || linkOverPit()) {
+        if (airborne || fallingIntoPit || groundStatus == GroundStatus.PIT || linkOverPit()) {
             return;
         }
         link.linkMotion.lastSafeSubX = link.linkMotion.subX;

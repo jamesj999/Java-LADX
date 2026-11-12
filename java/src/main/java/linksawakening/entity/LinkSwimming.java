@@ -1,5 +1,8 @@
 package linksawakening.entity;
 
+import linksawakening.state.Direction;
+import linksawakening.state.LinkMotionState;
+
 /** ROM-faithful swimming collaborator for Link. */
 final class LinkSwimming {
     private final Link link;
@@ -21,29 +24,31 @@ final class LinkSwimming {
             return true;
         }
         if (link.linkStateMachine.itemUsageContext == 0x80) return false;
-        if (link.linkStateMachine.motionState == Link.LINK_MOTION_RECOVER
-                || link.linkStateMachine.motionState == Link.LINK_MOTION_SWIMMING) return true;
+        if (link.linkStateMachine.motionState == LinkMotionState.RECOVER
+                || link.linkStateMachine.motionState == LinkMotionState.SWIMMING) return true;
         int object = link.collision.objectIdAtPoint(link.pixelX() + 8, link.pixelY() + 12);
         link.pendingWaterSplash = new Link.WaterSplash(link.romEntityX(), (link.romEntityY() - 2) & 0xFF);
         link.soundSink.play(linksawakening.gameplay.GameplaySoundEvent.WATER_SPLASH);
         if (object == 6 || !link.playerHasFlippers()) {
             link.linkStateMachine.recoverCountdown = 0x50;
-            link.linkStateMachine.motionState = Link.LINK_MOTION_RECOVER;
+            link.linkStateMachine.motionState = LinkMotionState.RECOVER;
             link.linkStateMachine.physicsModifier = object;
             link.linkMotion.subY += 2 << Link.SUB_PIXEL_SHIFT;
             link.linkStateMachine.recoveringInWater = true;
             return true;
         }
 
-        link.linkStateMachine.motionState = Link.LINK_MOTION_SWIMMING;
+        link.linkStateMachine.motionState = LinkMotionState.SWIMMING;
         link.linkStateMachine.physicsModifier = 0;
         swimmingFastCountdown = 0;
         divingCountdown = 0;
         link.linkAirborne.airborne = false;
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0;
-        swimmingSpeedX = link.romTables.swimmingEntrySpeedX(Link.romDirectionForJavaDirection(link.direction));
-        swimmingSpeedY = link.romTables.swimmingEntrySpeedY(Link.romDirectionForJavaDirection(link.direction));
+        swimmingSpeedX = link.romTables.swimmingEntrySpeedX(
+                Direction.fromJava(link.direction).romIndex());
+        swimmingSpeedY = link.romTables.swimmingEntrySpeedY(
+                Direction.fromJava(link.direction).romIndex());
         link.linkMotion.lastRomSpeedX = swimmingSpeedX & 0xFF;
         link.linkMotion.lastRomSpeedY = swimmingSpeedY & 0xFF;
         return true;
@@ -98,7 +103,7 @@ final class LinkSwimming {
             link.linkMotion.subX = link.linkMotion.roomEntrySubX;
             link.linkMotion.subY = link.linkMotion.roomEntrySubY;
         }
-        link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkStateMachine.motionState = LinkMotionState.DEFAULT;
         link.linkAnimator.romAnimationStateOverride = -1;
     }
 
@@ -193,7 +198,7 @@ final class LinkSwimming {
     }
 
     void leaveSwimming() {
-        link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkStateMachine.motionState = LinkMotionState.DEFAULT;
         link.linkStateMachine.physicsModifier = 0;
         swimmingSpeedX = 0;
         swimmingSpeedY = 0;

@@ -12,6 +12,9 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.state.GroundStatus;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.LinkPlayerState;
 import linksawakening.state.PlayerState;
 
@@ -48,18 +51,38 @@ public final class Link implements RocsFeather.JumpTarget {
 
     final LinkDamage linkDamage = new LinkDamage(this);
 
+    /** @deprecated Use {@link Direction#DOWN}. */
+    @Deprecated(forRemoval = true)
     public static final int DIRECTION_DOWN = 0;
+    /** @deprecated Use {@link Direction#UP}. */
+    @Deprecated(forRemoval = true)
     public static final int DIRECTION_UP = 1;
+    /** @deprecated Use {@link Direction#LEFT}. */
+    @Deprecated(forRemoval = true)
     public static final int DIRECTION_LEFT = 2;
+    /** @deprecated Use {@link Direction#RIGHT}. */
+    @Deprecated(forRemoval = true)
     public static final int DIRECTION_RIGHT = 3;
 
     public static final int SPRITE_SIZE = 16;
     public static final int SUB_PIXEL_SHIFT = 4;
+    /** @deprecated Use {@link GroundStatus#NORMAL}. */
+    @Deprecated(forRemoval = true)
     public static final int GROUND_STATUS_NORMAL = 0x00;
+    /** @deprecated Use {@link GroundStatus#PIT}. */
+    @Deprecated(forRemoval = true)
     public static final int GROUND_STATUS_PIT = 0x07;
+    /** @deprecated Use {@link LinkMotionState#DEFAULT}. */
+    @Deprecated(forRemoval = true)
     public static final int LINK_MOTION_DEFAULT = 0x00;
+    /** @deprecated Use {@link LinkMotionState#PASS_OUT}. */
+    @Deprecated(forRemoval = true)
     public static final int LINK_MOTION_PASS_OUT = 0x07;
+    /** @deprecated Use {@link LinkMotionState#SWIMMING}. */
+    @Deprecated(forRemoval = true)
     public static final int LINK_MOTION_SWIMMING = 0x01;
+    /** @deprecated Use {@link LinkMotionState#RECOVER}. */
+    @Deprecated(forRemoval = true)
     public static final int LINK_MOTION_RECOVER = 0x08;
 
     final InputState inputState;
@@ -247,7 +270,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void setPitWarpArrival(int z) {
-        linkStateMachine.motionState = LINK_MOTION_DEFAULT;
+        linkStateMachine.motionState = LinkMotionState.DEFAULT;
         linkAirborne.zSubPixels = z << SUB_PIXEL_SHIFT;
         linkAirborne.zVelocity = 0;
         linkAirborne.airborne = z != 0;
@@ -314,7 +337,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void beginPassOut() {
-        linkStateMachine.motionState = LINK_MOTION_PASS_OUT;
+        linkStateMachine.motionState = LinkMotionState.PASS_OUT;
         linkStateMachine.physicsModifier = 0;
         if (playerState != null) playerState.setInvincibilityCounter(0);
         linkDamage.collisionIgnoreFramesRemaining = 0;
@@ -331,14 +354,14 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public int romMotionState() {
-        if (linkAirborne.groundStatus == GROUND_STATUS_PIT || linkAirborne.fallingIntoPit) {
+        if (linkAirborne.groundStatus == GroundStatus.PIT || linkAirborne.fallingIntoPit) {
             return 0x06;
         }
-        return linkStateMachine.motionState;
+        return linkStateMachine.motionState.romValue();
     }
 
     public boolean isSwimming() {
-        return linkStateMachine.motionState == LINK_MOTION_SWIMMING;
+        return linkStateMachine.motionState == LinkMotionState.SWIMMING;
     }
 
     public boolean isDiving() {
@@ -488,7 +511,7 @@ public final class Link implements RocsFeather.JumpTarget {
     public void useRocsFeather() {
         if (linkAirborne.airborne
                 || linkSideView.sideViewFeatherPending
-                || linkAirborne.groundStatus == GROUND_STATUS_PIT
+                || linkAirborne.groundStatus == GroundStatus.PIT
                 || linkAirborne.fallingIntoPit
                 || isSwimming()) {
             return;
@@ -513,7 +536,7 @@ public final class Link implements RocsFeather.JumpTarget {
         linkAirborne.airborne = true;
         linkAirborne.zVelocity = 0x10;
         linkAirborne.fallingIntoPit = false;
-        linkAirborne.groundStatus = GROUND_STATUS_NORMAL;
+        linkAirborne.groundStatus = GroundStatus.NORMAL;
         linkSwimming.leaveSwimming();
     }
 
@@ -531,7 +554,7 @@ public final class Link implements RocsFeather.JumpTarget {
                 && !linkSideView.sideScrolling
                 && !linkAirborne.airborne
                 && !linkAirborne.fallingIntoPit
-                && linkStateMachine.motionState != 0x02
+                && linkStateMachine.motionState != LinkMotionState.UNSTUCKING
                 && romEntityY() < 0x88
                 && collision.objectPhysicsFlagAtPoint(pixelX() + 8, pixelY() + 12)
                         == linksawakening.physics.PhysicsFlags.GRASS;
@@ -617,13 +640,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     static int romDirectionForJavaDirection(int javaDirection) {
-        return switch (javaDirection) {
-            case DIRECTION_RIGHT -> 0;
-            case DIRECTION_LEFT -> 1;
-            case DIRECTION_UP -> 2;
-            case DIRECTION_DOWN -> 3;
-            default -> throw new IllegalArgumentException("Link direction out of range: " + javaDirection);
-        };
+        return Direction.fromJava(javaDirection).romIndex();
     }
 
     int zPixels() {
@@ -639,13 +656,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     static int javaDirectionForRomDirection(int romDirection) {
-        return switch (romDirection) {
-            case 0 -> DIRECTION_RIGHT;
-            case 1 -> DIRECTION_LEFT;
-            case 2 -> DIRECTION_UP;
-            case 3 -> DIRECTION_DOWN;
-            default -> throw new AssertionError(romDirection);
-        };
+        return Direction.fromRom(romDirection).javaIndex();
     }
 
     public void setPixelPosition(int pixelX, int pixelY) {

@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +72,7 @@ final class LinkStateMachineTest {
     @Test
     void revolvingDoorExitsOnFrameSeventyTwoAndEmitsOneTransition() {
         Link link = new Link(null, null, null, null, null, null, null);
-        link.linkStateMachine.motionState = 5;
+        link.linkStateMachine.motionState = LinkMotionState.REVOLVING_DOOR;
         link.linkStateMachine.revolvingDoorFrame = 70;
         link.linkStateMachine.tickRevolvingDoor();
         assertEquals(5, link.romMotionState());

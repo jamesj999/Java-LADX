@@ -6,6 +6,8 @@ import static linksawakening.entity.LinkRomConstants.*;
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
+import linksawakening.state.Direction;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
 /** ROM pose selection and sprite data for both rendering paths. */
@@ -207,7 +209,7 @@ final class LinkAnimator {
             return LinkAnimator.FALL_ANIMATION_STATE[frame];
         }
 
-        if (link.linkStateMachine.motionState == Link.LINK_MOTION_SWIMMING) {
+        if (link.linkStateMachine.motionState == LinkMotionState.SWIMMING) {
             return link.linkStateMachine.physicsModifier != 0
                     ? LinkAnimator.DIVING_ANIMATION_STATE[link.walkFrame]
                     : LinkAnimator.SWIMMING_ANIMATION_STATE[link.direction][link.walkFrame];
@@ -215,7 +217,7 @@ final class LinkAnimator {
 
         if (link.linkEntityEffects.grabbingObject) {
             return 0x36
-                    + 2 * Link.romDirectionForJavaDirection(link.direction)
+                    + 2 * Direction.fromJava(link.direction).romIndex()
                     + (link.linkEntityEffects.pullingObject ? 1 : 0);
         }
         // func_002_4338 copies the intermediate ROM carry animation state
@@ -257,7 +259,7 @@ final class LinkAnimator {
                     ? link.playerState.shieldLevel()
                     : 0;
             return link.spriteSheet.walkingAnimationState(
-                    Link.romDirectionForJavaDirection(link.direction),
+                    Direction.fromJava(link.direction).romIndex(),
                     normalFrame,
                     carriedShield,
                     link.linkEquipment.isUsingShield());
@@ -280,7 +282,8 @@ final class LinkAnimator {
                 && (link.collision == null || !link.collision.linkOnSlowGround(link.pixelX(), link.pixelY()))) {
             int frame = (link.romConsecutiveStepsCount >> 3) & 1;
             pushingAnimationState = link.spriteSheet != null
-                    ? link.spriteSheet.pushingAnimationState(Link.romDirectionForJavaDirection(link.direction), frame)
+                    ? link.spriteSheet.pushingAnimationState(
+                            Direction.fromJava(link.direction).romIndex(), frame)
                     : new int[] {0x1A, 0x1C, 0x1E, 0x20}[link.direction] + frame;
         }
     }
@@ -350,7 +353,8 @@ final class LinkAnimator {
             throw new IllegalStateException("Sword acquisition spin requires ROM tables");
         }
         if (swordAcquisitionBaseRomDirection < 0) {
-            swordAcquisitionBaseRomDirection = Link.romDirectionForJavaDirection(link.direction);
+            swordAcquisitionBaseRomDirection =
+                    Direction.fromJava(link.direction).romIndex();
             swordAcquisitionAnimationState = resolveAnimationState();
         }
         // The spin handler writes a fresh hLinkAnimationState. Do not let a
@@ -367,7 +371,7 @@ final class LinkAnimator {
             swordAcquisitionAnimationState = animationState;
         }
         link.linkStateMachine.romInteractiveMotionBlocked = true;
-        link.direction = Link.javaDirectionForRomDirection(absoluteRomDirection);
+        link.direction = Direction.fromRom(absoluteRomDirection).javaIndex();
         link.movingThisFrame = false;
     }
 

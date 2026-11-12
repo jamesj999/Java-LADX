@@ -3,11 +3,14 @@ package linksawakening.entity;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
 
+import linksawakening.state.Direction;
+import linksawakening.state.GroundStatus;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
 final class LinkStateMachine {
     private final Link link;
-    int motionState = Link.LINK_MOTION_DEFAULT;
+    LinkMotionState motionState = LinkMotionState.DEFAULT;
     int physicsModifier;
     int recoverCountdown;
     boolean recoveringInWater;
@@ -24,7 +27,7 @@ final class LinkStateMachine {
     }
 
     void update() {
-        if (motionState == Link.LINK_MOTION_PASS_OUT) {
+        if (motionState == LinkMotionState.PASS_OUT) {
             link.movingThisFrame = false;
             return;
         }
@@ -73,7 +76,7 @@ final class LinkStateMachine {
             link.linkAirborne.zSubPixels = 0;
             link.linkAirborne.zVelocity = 0;
             link.linkAirborne.fallingIntoPit = false;
-            link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+            link.linkAirborne.groundStatus = GroundStatus.NORMAL;
         }
 
         if (debugNoClip) {
@@ -81,7 +84,7 @@ final class LinkStateMachine {
             return;
         }
 
-        if (motionState == Link.LINK_MOTION_RECOVER) {
+        if (motionState == LinkMotionState.RECOVER) {
             link.linkSwimming.updateRecover();
             return;
         }
@@ -126,12 +129,12 @@ final class LinkStateMachine {
             return;
         }
 
-        if (motionState == 0x05) {
+        if (motionState == LinkMotionState.REVOLVING_DOOR) {
             tickRevolvingDoor();
             return;
         }
 
-        if (motionState == Link.LINK_MOTION_SWIMMING) {
+        if (motionState == LinkMotionState.SWIMMING) {
             link.linkSwimming.updateSwimming();
             return;
         }
@@ -156,13 +159,13 @@ final class LinkStateMachine {
             link.direction = newDirection;
         }
         updatePegasusBootsUse();
-        if (!link.linkAirborne.airborne && link.linkAirborne.groundStatus != Link.GROUND_STATUS_PIT) {
+        if (!link.linkAirborne.airborne && link.linkAirborne.groundStatus != GroundStatus.PIT) {
             link.linkAirborne.refreshGroundStatus();
             link.linkAirborne.updateLastSafePositionIfPossible();
         }
 
         if (link.linkAirborne.fallingIntoPit) return;
-        if (link.linkAirborne.groundStatus == Link.GROUND_STATUS_PIT) {
+        if (link.linkAirborne.groundStatus == GroundStatus.PIT) {
             link.movingThisFrame = false;
             link.walkTickCounter = 0;
             link.walkFrame = 0;
@@ -290,7 +293,7 @@ final class LinkStateMachine {
             link.linkAnimator.romAnimationStateOverride = 0x04;
         }
         if (revolvingDoorFrame == 0x48) {
-            motionState = Link.LINK_MOTION_DEFAULT;
+            motionState = LinkMotionState.DEFAULT;
             revolvingDoorPaletteVariant = -1;
             revolvingDoorTransitionPending = true;
         }
@@ -343,9 +346,9 @@ final class LinkStateMachine {
                 || romInteractiveMotionBlocked
                 || link.linkAirborne.airborne
                 || link.zPixels() != 0
-                || link.linkAirborne.groundStatus == Link.GROUND_STATUS_PIT
+                || link.linkAirborne.groundStatus == GroundStatus.PIT
                 || link.isCarryingLiftedObject()
-                || motionState == Link.LINK_MOTION_SWIMMING) {
+                || motionState == LinkMotionState.SWIMMING) {
             return;
         }
 
@@ -400,7 +403,7 @@ final class LinkStateMachine {
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = LinkRomConstants.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
 
-        int romDirection = Link.romDirectionForJavaDirection(link.direction);
+        int romDirection = Direction.fromJava(link.direction).romIndex();
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
         pegasusBootsCollisionPosX = (link.linkMotion.romEntityX() + xOffsets[romDirection]) & 0xFF;
@@ -429,7 +432,7 @@ final class LinkStateMachine {
     void setDebugNoClip(boolean enabled) {
         debugNoClip = enabled;
         if (enabled) {
-            link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+            link.linkAirborne.groundStatus = GroundStatus.NORMAL;
             link.linkAirborne.fallingIntoPit = false;
             link.linkAirborne.airborne = false;
             link.linkAirborne.zSubPixels = 0;
@@ -466,8 +469,8 @@ final class LinkStateMachine {
         link.topDownFeatherStarted = false;
         link.linkEntityEffects.roosterCarryActive = false;
         link.linkAirborne.airborne = false;
-        link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
-        motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkAirborne.groundStatus = GroundStatus.NORMAL;
+        motionState = LinkMotionState.DEFAULT;
         revolvingDoorFrame = 0;
         revolvingDoorTransitionPending = false;
         revolvingDoorPaletteVariant = -1;
@@ -520,7 +523,7 @@ final class LinkStateMachine {
             // This transition fallback does not play the ledge jingle.
             link.linkMotion.subX = (link.linkMotion.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
             link.linkMotion.subY -= 8 << Link.SUB_PIXEL_SHIFT;
-            motionState = 0x02;
+            motionState = LinkMotionState.UNSTUCKING;
             physicsModifier = 0;
             link.linkAirborne.overworldLedgeFallActive = true;
             link.linkMotion.beginOverworldLedgeUnstuckingMotion();

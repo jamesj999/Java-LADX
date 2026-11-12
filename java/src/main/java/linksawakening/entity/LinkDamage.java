@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
 /** ROM-faithful damage collaborator for Link. */
@@ -19,7 +20,7 @@ final class LinkDamage {
         if (link.collision == null
                 || link.debugNoClip()
                 || link.linkAirborne.zSubPixels != 0
-                || link.linkStateMachine.motionState == 2) return;
+                || link.linkStateMachine.motionState == LinkMotionState.UNSTUCKING) return;
         int x = link.pixelX() + 8;
         int y = link.pixelY() + 12;
         int object = link.collision.objectIdAtPoint(x, y);

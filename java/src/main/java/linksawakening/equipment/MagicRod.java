@@ -2,13 +2,13 @@ package linksawakening.equipment;
 
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
-import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.entity.LinkTunicPalette;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 
 /** Port of {@code UseMagicRod} and {@code label_002_5310}. */
 public final class MagicRod implements EquipmentItem {
@@ -192,13 +192,7 @@ public final class MagicRod implements EquipmentItem {
     }
 
     private static int toRomDirection(int javaDirection) {
-        return switch (javaDirection) {
-            case Link.DIRECTION_RIGHT -> 0;
-            case Link.DIRECTION_LEFT -> 1;
-            case Link.DIRECTION_UP -> 2;
-            case Link.DIRECTION_DOWN -> 3;
-            default -> throw new IllegalArgumentException("Link direction out of range: " + javaDirection);
-        };
+        return Direction.fromJava(javaDirection).romIndex();
     }
 
     private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY, int attributes, int[] palette) {
