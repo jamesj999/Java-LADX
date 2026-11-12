@@ -2,6 +2,7 @@ package linksawakening.save;
 
 import java.util.Arrays;
 import java.util.Objects;
+import linksawakening.save.SaveSlotComponents.*;
 
 /**
  * Immutable view of the currently modeled fields in one raw SRAM slot.
@@ -10,48 +11,21 @@ import java.util.Objects;
 public record SaveSlotState(
         int slot,
         int[] nameBytes,
-        int health,
-        int maxHearts,
-        int heartPieces,
-        int rupees,
-        int itemA,
-        int itemB,
-        int[] subscreen,
-        int seashells,
-        int hasFlippers,
-        int hasMedicine,
-        int tradeSequenceItem,
-        int medicineCount,
-        int tailKeyCount,
-        int anglerKeyCount,
-        int faceKeyCount,
-        int birdKeyCount,
-        int goldenLeavesCount,
-        int powerBraceletLevel,
-        int shieldLevel,
-        int swordLevel,
-        int arrowCount,
-        int maxArrows,
-        int bombCount,
-        int maxBombs,
-        int magicPowderCount,
-        int maxMagicPowder,
-        int ocarinaSongFlags,
-        int selectedSongIndex,
-        int hasToadstool,
-        int tunicType,
-        int spawnIsIndoor,
-        int spawnMapId,
-        int spawnMapRoom,
-        int spawnPositionX,
-        int spawnPositionY,
-        int spawnIndoorRoom,
+        Resources resources,
+        Inventory inventory,
+        Ammunition ammunition,
+        Progression progression,
+        Spawn spawn,
         byte[] rawSlot) {
 
     public SaveSlotState {
         SaveRamLayout.checkSlot(slot);
         nameBytes = copyExact(nameBytes, SaveRamLayout.NAME_LENGTH, "nameBytes");
-        subscreen = copyExact(subscreen, SaveRamLayout.SUBSCREEN_SLOT_COUNT, "subscreen");
+        Objects.requireNonNull(resources, "resources");
+        Objects.requireNonNull(inventory, "inventory");
+        Objects.requireNonNull(ammunition, "ammunition");
+        Objects.requireNonNull(progression, "progression");
+        Objects.requireNonNull(spawn, "spawn");
         rawSlot = copyExact(rawSlot, SaveRamLayout.SLOT_SIZE, "rawSlot");
     }
 
@@ -60,14 +34,158 @@ public record SaveSlotState(
         return nameBytes.clone();
     }
 
-    @Override
     public int[] subscreen() {
-        return subscreen.clone();
+        return inventory.subscreen();
     }
 
     @Override
     public byte[] rawSlot() {
         return rawSlot.clone();
+    }
+
+    /** Begins construction from the slot identity and complete original SRAM bytes. */
+    public static SaveSlotStateBuilder builder(int slot, int[] nameBytes, byte[] rawSlot) {
+        return new SaveSlotStateBuilder(slot, nameBytes, rawSlot);
+    }
+
+    public int health() {
+        return resources.health();
+    }
+
+    public int maxHearts() {
+        return resources.maxHearts();
+    }
+
+    public int heartPieces() {
+        return resources.heartPieces();
+    }
+
+    public int rupees() {
+        return resources.rupees();
+    }
+
+    public int seashells() {
+        return resources.seashells();
+    }
+
+    public int itemA() {
+        return inventory.itemA();
+    }
+
+    public int itemB() {
+        return inventory.itemB();
+    }
+
+    public int powerBraceletLevel() {
+        return inventory.powerBraceletLevel();
+    }
+
+    public int shieldLevel() {
+        return inventory.shieldLevel();
+    }
+
+    public int swordLevel() {
+        return inventory.swordLevel();
+    }
+
+    public int arrowCount() {
+        return ammunition.arrowCount();
+    }
+
+    public int maxArrows() {
+        return ammunition.maxArrows();
+    }
+
+    public int bombCount() {
+        return ammunition.bombCount();
+    }
+
+    public int maxBombs() {
+        return ammunition.maxBombs();
+    }
+
+    public int magicPowderCount() {
+        return ammunition.magicPowderCount();
+    }
+
+    public int maxMagicPowder() {
+        return ammunition.maxMagicPowder();
+    }
+
+    public int hasFlippers() {
+        return progression.quest().hasFlippers();
+    }
+
+    public int hasMedicine() {
+        return progression.quest().hasMedicine();
+    }
+
+    public int tradeSequenceItem() {
+        return progression.quest().tradeSequenceItem();
+    }
+
+    public int medicineCount() {
+        return progression.quest().medicineCount();
+    }
+
+    public int hasToadstool() {
+        return progression.quest().hasToadstool();
+    }
+
+    public int tunicType() {
+        return progression.quest().tunicType();
+    }
+
+    public int tailKeyCount() {
+        return progression.keys().tailKeyCount();
+    }
+
+    public int anglerKeyCount() {
+        return progression.keys().anglerKeyCount();
+    }
+
+    public int faceKeyCount() {
+        return progression.keys().faceKeyCount();
+    }
+
+    public int birdKeyCount() {
+        return progression.keys().birdKeyCount();
+    }
+
+    public int goldenLeavesCount() {
+        return progression.keys().goldenLeavesCount();
+    }
+
+    public int ocarinaSongFlags() {
+        return progression.songs().ocarinaSongFlags();
+    }
+
+    public int selectedSongIndex() {
+        return progression.songs().selectedSongIndex();
+    }
+
+    public int spawnIsIndoor() {
+        return spawn.spawnIsIndoor();
+    }
+
+    public int spawnMapId() {
+        return spawn.spawnMapId();
+    }
+
+    public int spawnMapRoom() {
+        return spawn.spawnMapRoom();
+    }
+
+    public int spawnPositionX() {
+        return spawn.spawnPositionX();
+    }
+
+    public int spawnPositionY() {
+        return spawn.spawnPositionY();
+    }
+
+    public int spawnIndoorRoom() {
+        return spawn.spawnIndoorRoom();
     }
 
     /** Packed BCD, low byte first in the original SRAM. */
@@ -130,7 +248,7 @@ public record SaveSlotState(
         return Arrays.copyOfRange(rawSlot, offset, offset + length);
     }
 
-    private static int[] copyExact(int[] values, int expectedLength, String label) {
+    static int[] copyExact(int[] values, int expectedLength, String label) {
         Objects.requireNonNull(values, label);
         if (values.length != expectedLength) {
             throw new IllegalArgumentException(

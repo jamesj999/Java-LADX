@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -14,8 +15,8 @@ final class GameplayMusicControllerTest {
     void thirdContactHitRestoresDefaultUnlessBossOrOwl() {
         for (int scenario = 0; scenario < 3; scenario++) {
             var controller = new GameplayMusicController(
-                    AreaMusicResolver.fromRom(loadRom()),
-                    MusicCatalog.fromRom(loadRom()),
+                    AreaMusicResolver.fromRom(Rom.of(loadRom())),
+                    MusicCatalog.fromRom(Rom.of(loadRom())),
                     new RecordingMusicTrackPlayer());
             controller.playDirect(0x49);
             var player = new linksawakening.state.PlayerState();
@@ -52,10 +53,10 @@ final class GameplayMusicControllerTest {
 
     @Test
     void startsResolvedTrackAfterRoomLoad() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
         GameplayMusicController controller =
-                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
+                new GameplayMusicController(AreaMusicResolver.fromRom(Rom.of(loadRom())), catalog, player);
 
         controller.selectAfterTransition(RoomMusicContext.overworld(0x92, 1));
 
@@ -64,10 +65,10 @@ final class GameplayMusicControllerTest {
 
     @Test
     void doesNotRestartWhenResolvedTrackIsAlreadyCurrent() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
         GameplayMusicController controller =
-                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
+                new GameplayMusicController(AreaMusicResolver.fromRom(Rom.of(loadRom())), catalog, player);
 
         controller.selectAfterTransition(RoomMusicContext.overworld(0x92, 1));
         controller.selectAfterTransition(RoomMusicContext.overworld(0x93, 1));
@@ -77,10 +78,10 @@ final class GameplayMusicControllerTest {
 
     @Test
     void continueMusicAfterWarpSkipsOneSelectionAndThenClearsFlag() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
         GameplayMusicController controller =
-                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
+                new GameplayMusicController(AreaMusicResolver.fromRom(Rom.of(loadRom())), catalog, player);
 
         controller.continueMusicAfterNextWarp();
         controller.selectAfterTransition(RoomMusicContext.indoor(0x10, 0x00, 1));
@@ -91,10 +92,10 @@ final class GameplayMusicControllerTest {
 
     @Test
     void canResolveSilenceWithoutOpeningUnknownCatalogTrack() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
         GameplayMusicController controller =
-                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
+                new GameplayMusicController(AreaMusicResolver.fromRom(Rom.of(loadRom())), catalog, player);
 
         controller.selectAfterTransition(RoomMusicContext.indoor(0x17, 0x00, 1));
 
@@ -104,10 +105,10 @@ final class GameplayMusicControllerTest {
 
     @Test
     void directScreenMusicStartsRequestedTrackAndDoesNotRestartIt() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
         GameplayMusicController controller =
-                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
+                new GameplayMusicController(AreaMusicResolver.fromRom(Rom.of(loadRom())), catalog, player);
 
         controller.playDirect(MusicTrackIds.MUSIC_TITLE_CUTSCENE);
         controller.playDirect(MusicTrackIds.MUSIC_TITLE_CUTSCENE);
@@ -120,10 +121,10 @@ final class GameplayMusicControllerTest {
 
     @Test
     void directSilenceStopsMusic() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
         GameplayMusicController controller =
-                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
+                new GameplayMusicController(AreaMusicResolver.fromRom(Rom.of(loadRom())), catalog, player);
 
         controller.playDirect(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO);
         controller.playDirect(MusicTrackIds.MUSIC_NONE);
@@ -135,10 +136,10 @@ final class GameplayMusicControllerTest {
 
     @Test
     void sourceFadeTimerStopsTheCurrentTrackWhenItsCountdownExpires() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
         RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
         GameplayMusicController controller =
-                new GameplayMusicController(AreaMusicResolver.fromRom(loadRom()), catalog, player);
+                new GameplayMusicController(AreaMusicResolver.fromRom(Rom.of(loadRom())), catalog, player);
         controller.playDirect(MusicTrackIds.MUSIC_INSIDE_BUILDING);
 
         controller.requestFadeOut(0x30);
@@ -231,7 +232,8 @@ final class GameplayMusicControllerTest {
 
     private static GameplayMusicController controller(RecordingMusicTrackPlayer player) {
         var rom = loadRom();
-        return new GameplayMusicController(AreaMusicResolver.fromRom(rom), MusicCatalog.fromRom(rom), player);
+        return new GameplayMusicController(
+                AreaMusicResolver.fromRom(Rom.of(rom)), MusicCatalog.fromRom(Rom.of(rom)), player);
     }
 
     private static byte[] loadRom() {

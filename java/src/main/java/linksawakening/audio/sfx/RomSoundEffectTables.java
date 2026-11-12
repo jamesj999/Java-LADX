@@ -54,9 +54,4 @@ public final class RomSoundEffectTables {
                     + Integer.toHexString(offset).toUpperCase());
         }
     }
-
-    @Deprecated(forRemoval = true)
-    public RomSoundEffectTables(byte[] romData) {
-        this(new Rom(romData));
-    }
 }

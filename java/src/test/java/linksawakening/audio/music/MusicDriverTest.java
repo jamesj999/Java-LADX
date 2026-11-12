@@ -1,10 +1,12 @@
 package linksawakening.audio.music;
 
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +16,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80, (byte) 0xA2, 0x4A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -29,7 +31,7 @@ final class MusicDriverTest {
     void loopOpcodeRepeatsChannelDefinitions() {
         byte[] rom = syntheticRomWithOneChannel(new byte[] {(byte) 0xA1, (byte) 0x9B, 0x02, 0x4A, (byte) 0x9C, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -46,7 +48,7 @@ final class MusicDriverTest {
             rom[waveformOffset + i] = (byte) i;
         }
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -64,7 +66,7 @@ final class MusicDriverTest {
             rom[waveformOffset + i] = (byte) i;
         }
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -89,7 +91,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithChannel4(
                 new byte[] {(byte) 0x9D, (byte) 0xF2, 0x00, (byte) 0x80, (byte) 0xA1, 0x1A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -103,7 +105,7 @@ final class MusicDriverTest {
     void bank1eChannel4NoiseNotesUseBank1eFrequencyTable() {
         byte[] rom = syntheticRomWithChannel4InBank(0x1E, new byte[] {(byte) 0xA0, 0x38, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x21, "TEST", 0x1E, 0x407F, 0x5000, RomBank.romOffset(0x1E, 0x5000)));
         driver.tick60Hz();
@@ -119,7 +121,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80, (byte) 0xA0, 0x4A, 0x01, 0x4A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -138,7 +140,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0x70, (byte) 0x81, (byte) 0x80, (byte) 0xA7, 0x4A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -158,7 +160,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithChannel2(
                 new byte[] {(byte) 0x9D, (byte) 0x90, 0x26, (byte) 0x40, (byte) 0xA7, 0x4A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -177,7 +179,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannelInBank(
                 0x1E, new byte[] {(byte) 0x9D, (byte) 0x70, (byte) 0x85, (byte) 0x80, (byte) 0xA7, 0x4A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1E, 0x4077, 0x5000, RomBank.romOffset(0x1E, 0x5000)));
         driver.tick60Hz();
@@ -194,7 +196,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithChannel3(
                 new byte[] {(byte) 0x9D, 0x00, 0x56, 0x20, (byte) 0xA0, 0x4A, 0x01, 0x4A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -213,7 +215,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80, (byte) 0xA0, 0x02, 0x04, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -231,7 +233,7 @@ final class MusicDriverTest {
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80, (byte) 0xA0, 0x01, (byte) 0x84, 0x00},
                 new byte[] {(byte) 0x9F, (byte) 0xD0, (byte) 0xA0, 0x01, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -246,7 +248,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80, (byte) 0xA0, 0x03, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
 
@@ -257,7 +259,7 @@ final class MusicDriverTest {
     void channel4NoiseNoteWithoutSetupUsesNoiseTableAndProducesPcm() {
         byte[] rom = syntheticRomWithChannel4(new byte[] {(byte) 0xA0, 0x1A, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -265,14 +267,14 @@ final class MusicDriverTest {
         assertTrue(apu.readRegister(GameBoyApu.NR42) != 0);
         assertTrue(apu.readRegister(GameBoyApu.NR43) != 0);
         assertTrue((apu.readRegister(GameBoyApu.NR44) & 0x80) != 0);
-        assertTrue(hasNonZeroSample(apu.render(512)));
+        assertTrue(hasNonZeroSample(renderPcm(apu, 512)));
     }
 
     @Test
     void channel4NoiseFfAdvancesToFollowUpNoiseRegistersAfterCountdown() {
         byte[] rom = syntheticRomWithChannel4(new byte[] {(byte) 0xA5, (byte) 0xFF, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -295,7 +297,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80, (byte) 0xA1, 0x4A, 0x01, 0x00});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -312,7 +314,7 @@ final class MusicDriverTest {
             (byte) 0x9D, (byte) 0x70, (byte) 0x81, (byte) 0x80, (byte) 0xA0, 0x4A, (byte) 0xA3, 0x01, 0x00
         });
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
 
         driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
@@ -330,7 +332,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(new byte[] {0});
         writeWord(rom, RomBank.romOffset(0x1B, 0x5202), 0xFFFF);
         writeWord(rom, RomBank.romOffset(0x1B, 0x5204), 0x5200);
-        MusicDriver driver = new MusicDriver(rom, new GameBoyApu(48_000));
+        MusicDriver driver = new MusicDriver(Rom.of(rom), new GameBoyApu(48_000));
         driver.start(new MusicTrack(1, "EMPTY_LOOP", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         IllegalStateException error = assertThrows(IllegalStateException.class, driver::tick60Hz);
         assertTrue(error.getMessage().contains("consumed no time"));
@@ -341,7 +343,7 @@ final class MusicDriverTest {
     void finiteControlOnlyLoopCanStillReachANote() {
         byte[] rom =
                 syntheticRomWithOneChannel(new byte[] {(byte) 0x9B, (byte) 0xFF, (byte) 0x94, (byte) 0x9C, 0x4A, 0});
-        MusicDriver driver = new MusicDriver(rom, new GameBoyApu(48_000));
+        MusicDriver driver = new MusicDriver(Rom.of(rom), new GameBoyApu(48_000));
         driver.start(new MusicTrack(1, "FINITE_LOOP", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
         assertTrue(driver.isChannelActive(1));
@@ -352,15 +354,15 @@ final class MusicDriverTest {
         byte[] rom =
                 syntheticRomWithOneChannel(new byte[] {(byte) 0x9D, (byte) 0xF0, 0, (byte) 0x80, (byte) 0xA0, 0x4A, 0});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
         driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
         assertTrue(apu.isChannelActive(1));
         for (int i = 0; i < 32 && driver.isPlaying(); i++) driver.tick60Hz();
         org.junit.jupiter.api.Assertions.assertFalse(driver.isPlaying());
         assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
-        apu.render(800); // Hardware keeps the DAC enabled; capacitor transient settles.
-        org.junit.jupiter.api.Assertions.assertArrayEquals(new short[1600], apu.render(800));
+        renderPcm(apu, 800); // Hardware keeps the DAC enabled; capacitor transient settles.
+        org.junit.jupiter.api.Assertions.assertArrayEquals(new short[1600], renderPcm(apu, 800));
     }
 
     @Test
@@ -368,11 +370,11 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x11, (byte) 0x80, (byte) 0xA0, 0x4A, 0});
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
         driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.setSoundEffectState(channel -> channel == 1, () -> false);
         java.util.List<Integer> writes = new java.util.ArrayList<>();
-        apu.setRegisterObserver((register, value) -> writes.add(register));
+        apu.setPrimitiveRegisterObserver((register, value) -> writes.add(register));
         for (int i = 0; i < 32 && driver.isPlaying(); i++) driver.tick60Hz();
         org.junit.jupiter.api.Assertions.assertFalse(driver.isPlaying());
         assertTrue(writes.isEmpty(), writes.toString());
@@ -383,7 +385,7 @@ final class MusicDriverTest {
         byte[] rom = syntheticRomWithChannel3(new byte[] {(byte) 0x9D, 0, 0x56, 0x20, (byte) 0xA0, 0x4A, 0x4C, 0});
         for (int i = 0; i < 16; i++) rom[RomBank.romOffset(0x1B, 0x5600) + i] = (byte) (i + 32);
         GameBoyApu apu = new GameBoyApu(48_000);
-        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
         driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
         java.util.concurrent.atomic.AtomicBoolean owned = new java.util.concurrent.atomic.AtomicBoolean(true);

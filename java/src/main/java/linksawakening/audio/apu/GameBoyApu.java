@@ -2,7 +2,6 @@ package linksawakening.audio.apu;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 /** Deterministic register-driven Game Boy stereo synthesizer. */
 public final class GameBoyApu {
@@ -73,12 +72,6 @@ public final class GameBoyApu {
 
     private RegisterObserver registerObserver;
 
-    /** Optional diagnostic tap; observes writes without changing synthesis. */
-    public void setRegisterObserver(BiConsumer<Integer, Integer> observer) {
-        Objects.requireNonNull(observer);
-        registerObserver = observer::accept;
-    }
-
     /** Primitive diagnostic tap; null disables observation. */
     public void setPrimitiveRegisterObserver(RegisterObserver observer) {
         registerObserver = observer;
@@ -147,15 +140,6 @@ public final class GameBoyApu {
 
     public int readWaveRam(int index) {
         return channel3.readWaveRam(index);
-    }
-
-    public short[] render(int frames) {
-        if (frames < 0) {
-            throw new IllegalArgumentException("frames must be non-negative");
-        }
-        short[] pcm = new short[frames * 2];
-        renderInto(pcm, 0, frames);
-        return pcm;
     }
 
     /** Renders interleaved stereo into caller-owned storage without allocation. */

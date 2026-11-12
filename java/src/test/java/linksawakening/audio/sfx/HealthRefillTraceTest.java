@@ -66,7 +66,7 @@ class HealthRefillTraceTest {
         put(data, 0x5200, 0, 0x53, 0xFF, 0xFF, 0, 0x52);
         put(data, 0x5300, 0x9D, 0, 0x54, 0x20, 0xA0, 0x4A, 1, 0);
         var trace = new SfxRegisterTrace(data);
-        var music = new MusicDriver(data, trace.apu);
+        var music = new MusicDriver(Rom.of(data), trace.apu);
         music.setSoundEffectState(trace.player::ownsChannel, trace.player::takeWaveRestoreRequest);
         music.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         music.tick60Hz();

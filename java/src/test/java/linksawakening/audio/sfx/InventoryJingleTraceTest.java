@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -66,7 +67,7 @@ class InventoryJingleTraceTest {
         }
         var isolated = new SfxRegisterTrace(data);
         var mixed = new SfxRegisterTrace(data);
-        var music = new MusicDriver(data, mixed.apu);
+        var music = new MusicDriver(Rom.of(data), mixed.apu);
         music.setSoundEffectState(mixed.player::ownsChannel, mixed.player::takeWaveRestoreRequest);
         music.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         music.tick60Hz();

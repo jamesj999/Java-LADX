@@ -7,13 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class SoundEffectCatalogTest {
     @Test
     void fromRomCatalogIncludesAllNamedEffects() throws IOException {
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(loadRom());
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(loadRom()));
         List<SoundEffect> effects = catalog.effects();
 
         assertEquals(164, effects.size());
@@ -31,7 +32,7 @@ final class SoundEffectCatalogTest {
 
     @Test
     void fromRomCatalogCoversAllSfxIds() throws IOException {
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(loadRom());
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(loadRom()));
 
         assertEquals(
                 65,
@@ -62,7 +63,7 @@ final class SoundEffectCatalogTest {
     @Test
     void fromRomBuildsSourceFromRomPointerAddresses() throws IOException {
         byte[] romData = loadRom();
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(romData));
 
         // JINGLE 0x15 = id 21, index 20: begin ptr 1F:4128, continue ptr 1F:41AA
         SoundEffect dialogBreak =
