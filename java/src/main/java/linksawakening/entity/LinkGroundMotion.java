@@ -5,7 +5,7 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.state.LinkMotionState;
 
-/** LinkGroundMotion owns its Link state and operations. */
+/** Link ground motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkGroundMotion {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkDamage> linkDamage;

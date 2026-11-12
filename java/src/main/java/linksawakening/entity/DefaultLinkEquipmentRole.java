@@ -4,7 +4,7 @@ import static linksawakening.entity.Link.*;
 
 import java.util.function.BooleanSupplier;
 
-/** Delegates equipment operations to their state-owning ROM implementations. */
+/** Delegates equipment operations to state owners used by ROM {@code CheckItemsToUse}. */
 final class DefaultLinkEquipmentRole implements LinkEquipmentRole {
     private final LinkEquipment linkEquipment;
     private final LinkItemState linkItemState;

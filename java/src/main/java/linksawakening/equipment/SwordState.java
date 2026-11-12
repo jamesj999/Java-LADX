@@ -11,7 +11,7 @@ import linksawakening.rom.SwordTables;
 import linksawakening.state.Direction;
 import linksawakening.world.entity.RomRandomByteSource;
 
-/** Shared state and dependency ownership for Sword. */
+/** Sword attack, charge and presentation state used by ROM {@code CheckItemsToUse}. */
 abstract class SwordState implements EquipmentItem {
 
     protected static final int DRAW_FRAMES = 4;

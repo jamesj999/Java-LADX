@@ -2,7 +2,7 @@ package linksawakening.cutscene;
 
 import java.util.Arrays;
 
-/** Title reveal behavior and state. */
+/** Title reveal presentation associated with IntroHandler. */
 public final class TitleReveal {
 
     public static final int ROW_COUNT = 7;

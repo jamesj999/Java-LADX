@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.rom.Rom;
 
-/** EntitySpriteDynamicComposites behavior on the shared EntitySpriteHandlerCatalog state. */
+/** Entity display-list decoding and presentation used by ROM {@code RenderActiveEntitySpritesPair}. */
 abstract class EntitySpriteDynamicComposites extends EntitySpriteBossComposites {
     protected EntitySpriteDynamicComposites(Rom romData) {
         super(romData);

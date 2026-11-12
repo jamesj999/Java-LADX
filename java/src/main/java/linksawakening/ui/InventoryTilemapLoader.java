@@ -7,7 +7,7 @@ import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomUtil;
 
-/** Inventory tilemap loader behavior and state. */
+/** Loads InventoryTilemap and InventoryAttrmap draw commands and their palette tables. */
 public final class InventoryTilemapLoader {
 
     public static final int WIDTH = 20;

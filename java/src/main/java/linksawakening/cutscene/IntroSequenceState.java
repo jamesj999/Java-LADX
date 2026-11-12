@@ -18,7 +18,7 @@ import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.world.entity.RomRandomByteSource;
 
-/** Shared state and dependency ownership for IntroSequence. */
+/** Intro sequencing, presentation or ROM data used by ROM {@code IntroHandler}. */
 abstract class IntroSequenceState {
     protected final IntroFrameSnapshot.Builder snapshotBuilder = new IntroFrameSnapshot.Builder();
     protected final List<IntroSprite> renderSpriteScratch = new ArrayList<>();

@@ -108,12 +108,6 @@ abstract class LinkMovementView extends LinkStateView {
         return legacyRoles().animation().romConsecutiveStepsCount();
     }
 
-    /** @deprecated Use motion().clearGroundEffects instead. */
-    @Deprecated(forRemoval = true)
-    public void clearGroundEffects() {
-        legacyRoles().motion().clearGroundEffects();
-    }
-
     /** @deprecated Use animation().tickAnimation instead. */
     @Deprecated(forRemoval = true)
     public void tickAnimation() {
@@ -126,52 +120,16 @@ abstract class LinkMovementView extends LinkStateView {
         return legacyRoles().motion().consumeRevolvingDoorTransition();
     }
 
-    /** @deprecated Use motion().shouldApplyGroundMotion instead. */
-    @Deprecated(forRemoval = true)
-    public boolean shouldApplyGroundMotion() {
-        return legacyRoles().motion().shouldApplyGroundMotion();
-    }
-
-    /** @deprecated Use controls().buttonWasPressed instead. */
-    @Deprecated(forRemoval = true)
-    public boolean buttonWasPressed(int key) {
-        return legacyRoles().controls().buttonWasPressed(key);
-    }
-
-    /** @deprecated Use controls().playerHasFlippers instead. */
-    @Deprecated(forRemoval = true)
-    public boolean playerHasFlippers() {
-        return legacyRoles().controls().playerHasFlippers();
-    }
-
-    /** @deprecated Use controls().buildJoypadMask instead. */
-    @Deprecated(forRemoval = true)
-    public int buildJoypadMask() {
-        return legacyRoles().controls().buildJoypadMask();
-    }
-
     /** @deprecated Use controls().romPressedButtonsMask instead. */
     @Deprecated(forRemoval = true)
     public int romPressedButtonsMask() {
         return legacyRoles().controls().romPressedButtonsMask();
     }
 
-    /** @deprecated Use airborne().zPixels instead. */
-    @Deprecated(forRemoval = true)
-    public int zPixels() {
-        return legacyRoles().airborne().zPixels();
-    }
-
     /** @deprecated Use animation().romAnimationState instead. */
     @Deprecated(forRemoval = true)
     public int romAnimationState() {
         return legacyRoles().animation().romAnimationState();
-    }
-
-    /** @deprecated Use actions().isLiftTransitionBlockingMotion instead. */
-    @Deprecated(forRemoval = true)
-    public boolean isLiftTransitionBlockingMotion() {
-        return legacyRoles().actions().isLiftTransitionBlockingMotion();
     }
 
     /** @deprecated Use position().setPixelPosition instead. */

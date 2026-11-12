@@ -8,7 +8,7 @@ import linksawakening.state.Direction;
 import linksawakening.state.GroundStatus;
 import linksawakening.state.LinkMotionState;
 
-/** LinkFrameMotion behavior on the shared LinkStateMachine state. */
+/** Link frame motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkFrameMotion extends LinkMotionLifecycle {
     protected LinkFrameMotion(Dependencies dependencies) {
         super(dependencies);
@@ -220,7 +220,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
         // this byte, including steps suppressed by slow ground or a wall.
         if (linkAirborne.get().airborne) linkAnimationState.get().romConsecutiveStepsCount = 0xFF;
         else if (linkServices.get().playerState != null
-                && linkServices.get().playerState.runningWithPegasusBoots())
+                && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())
             linkAnimationState.get().romConsecutiveStepsCount =
                     (linkAnimationState.get().romConsecutiveStepsCount + 2) & 0xFF;
         else if (frame.mask != 0)
@@ -235,7 +235,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
             frame.speedX = 0x0C;
             frame.speedY = 0;
         } else if (linkServices.get().playerState != null
-                && linkServices.get().playerState.runningWithPegasusBoots()) {
+                && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()) {
             frame.speedX = pegasusRunningSpeedX();
             frame.speedY = pegasusRunningSpeedY();
         } else if (linkMotion.get().forcedSpeedPending) {

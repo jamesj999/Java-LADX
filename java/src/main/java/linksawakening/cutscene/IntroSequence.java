@@ -5,7 +5,7 @@ import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
 /**
- * Domain-specific runtime for the shipped opening sequence.
+ * Runtime for the ROM {@code IntroHandler} opening sequence.
  *
  * <p>This follows the intro handlers' state and timer boundaries without
  * pretending to execute the Game Boy CPU. ROM tables provide all entity

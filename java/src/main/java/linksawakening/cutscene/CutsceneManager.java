@@ -9,7 +9,7 @@ import linksawakening.dialog.DialogController;
 import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
-/** Cutscene manager behavior and state. */
+/** Owns the active IntroHandler presentation and its sound sink. */
 public final class CutsceneManager implements CutsceneContext {
 
     private final DialogController dialogController;

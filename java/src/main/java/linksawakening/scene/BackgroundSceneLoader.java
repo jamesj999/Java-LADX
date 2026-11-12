@@ -4,7 +4,7 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 
-/** Background scene loader behavior and state. */
+/** Decodes ROM background draw-command streams used by IntroHandler and FileSelectionHandler. */
 public final class BackgroundSceneLoader {
 
     public static final int SCREEN_TILE_WIDTH = 20;

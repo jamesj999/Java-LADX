@@ -7,7 +7,7 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 
-/** SwordChargeMotion behavior on the shared Sword state. */
+/** Sword attack, charge and presentation state used by ROM {@code CheckItemsToUse}. */
 abstract class SwordChargeMotion extends SwordAttackMotion {
     protected SwordChargeMotion(RomTables romTables, SwordSpriteSheet spriteSheet) {
         super(romTables, spriteSheet);

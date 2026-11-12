@@ -2,7 +2,7 @@ package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
 
-/** Delegates status operations to their state-owning ROM implementations. */
+/** Delegates status operations to state owners used by ROM {@code ApplyLinkMotionState}. */
 final class DefaultLinkStatusRole implements LinkStatusRole {
     private final LinkDamage linkDamage;
     private final LinkRecovery linkRecovery;

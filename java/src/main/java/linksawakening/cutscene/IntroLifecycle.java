@@ -9,7 +9,7 @@ import java.util.function.IntConsumer;
 import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
-/** IntroLifecycle behavior on the shared IntroSequence state. */
+/** Intro sequencing, presentation or ROM data used by ROM {@code IntroHandler}. */
 abstract class IntroLifecycle extends IntroSequenceState {
     protected IntroLifecycle() {
         super();

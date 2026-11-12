@@ -8,7 +8,7 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 
-/** EntitySpriteDecodeGeometry behavior on the shared EntitySpriteHandlerCatalog state. */
+/** Entity display-list decoding and presentation used by ROM {@code RenderActiveEntitySpritesPair}. */
 abstract class EntitySpriteDecodeGeometry extends EntitySpriteRomDecoding {
     protected EntitySpriteDecodeGeometry(Rom romData) {
         super(romData);

@@ -2,6 +2,7 @@ package linksawakening.dialog;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +38,6 @@ class DialogAllocationTest {
         dialog.tick();
         dialog.tick();
         assertTrue(dialog.consumeSoundEvents().isEmpty());
-        assertEquals(java.util.List.of(DialogController.SoundEvent.TEXT_PRINT), retained);
+        assertEquals(List.of(DialogController.SoundEvent.TEXT_PRINT), retained);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityRoomLoader;
 
-/** EntitySpriteLookup behavior on the shared EntitySpriteHandlerCatalog state. */
+/** Entity display-list decoding and presentation used by ROM {@code RenderActiveEntitySpritesPair}. */
 abstract class EntitySpriteLookup extends EntitySpriteDecodeState {
     protected EntitySpriteLookup(Rom romData) {
         super(romData);
@@ -42,25 +42,37 @@ abstract class EntitySpriteLookup extends EntitySpriteDecodeState {
 
     public EntitySpriteDefinition forEntityType(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         EntitySpriteDefinition result;
-        result = EntitySpriteFloatingItemRegistrations.lookupFloatingItem(this, entityType, roomTable, mapId);
+        result = EntitySpriteContextualObjectRegistrations.lookupFloatingItem(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteSheetsRegistrations.lookupSheets(this, entityType, roomTable, mapId);
+        result = EntitySpriteRoomObjectRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteMusicalNoteRegistrations.lookupMusicalNote(this, entityType, roomTable, mapId);
+        result = EntitySpritePickupRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteWitchRatRegistrations.lookupWitchRat(this, entityType, roomTable, mapId);
+        result = EntitySpriteBossRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteKid71Registrations.lookupKid71(this, entityType, roomTable, mapId);
+        result = EntitySpritePlayerProjectileRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteMoblinRegistrations.lookupMoblin(this, entityType, roomTable, mapId);
+        result = EntitySpriteOverworldCreatureRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteMoldormRegistrations.lookupMoldorm(this, entityType, roomTable, mapId);
+        result = EntitySpriteCompanionRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteBlooperRegistrations.lookupBlooper(this, entityType, roomTable, mapId);
+        result = EntitySpritePlantRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpritePolsVoiceRegistrations.lookupPolsVoice(this, entityType, roomTable, mapId);
+        result = EntitySpriteAquaticRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
-        result = EntitySpriteSwordShieldPickupRegistrations.lookupSwordShieldPickup(this, entityType, roomTable, mapId);
+        result = EntitySpriteUndeadEnemyRegistrations.lookup(this, entityType, roomTable, mapId);
+        if (result != null) return result;
+        result = EntitySpriteVillageNpcRegistrations.lookup(this, entityType, roomTable, mapId);
+        if (result != null) return result;
+        result = EntitySpriteDungeonCreatureRegistrations.lookup(this, entityType, roomTable, mapId);
+        if (result != null) return result;
+        result = EntitySpriteSideViewRegistrations.lookup(this, entityType, roomTable, mapId);
+        if (result != null) return result;
+        result = EntitySpriteArmoredEnemyRegistrations.lookup(this, entityType, roomTable, mapId);
+        if (result != null) return result;
+        result = EntitySpriteHazardRegistrations.lookup(this, entityType, roomTable, mapId);
+        if (result != null) return result;
+        result = EntitySpriteSlimeEnemyRegistrations.lookup(this, entityType, roomTable, mapId);
         if (result != null) return result;
 
         return EntitySpriteDefinition.unsupported(entityType);

@@ -2,7 +2,7 @@ package linksawakening.ui;
 
 import linksawakening.state.PlayerState;
 
-/** Hud overlay behavior and state. */
+/** Applies InventoryItemTiles and live player quantities to the two HUD tile rows. */
 public final class HudOverlay {
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;

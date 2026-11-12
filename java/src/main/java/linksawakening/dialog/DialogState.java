@@ -5,7 +5,7 @@ import static linksawakening.dialog.DialogController.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Shared state and dependency ownership for DialogController. */
+/** Dialog text, timing and presentation used by ROM {@code DialogDrawNextCharacterHandler}. */
 abstract class DialogState {
 
     protected static final int LINK_Y_BOX_THRESHOLD = 0x48;

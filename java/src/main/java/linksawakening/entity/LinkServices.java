@@ -12,7 +12,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.LinkMotionTables;
 import linksawakening.rom.RomTables;
 import linksawakening.rom.SwordTables;
-import linksawakening.state.LinkPlayerState;
+import linksawakening.state.PlayerState;
 
 /** Construction-time services shared by Link components; nullable test collaborators stay explicit. */
 final class LinkServices {
@@ -23,7 +23,7 @@ final class LinkServices {
     final SwordTables swordTables;
     final OverworldCollision collision;
     final LinkSpriteSheet spriteSheet;
-    final LinkPlayerState playerState;
+    final PlayerState playerState;
     final ItemRegistry itemRegistry;
     final LinkTunicPalette tunicPalette;
     final GameplaySoundSink soundSink;

@@ -4,7 +4,7 @@ import static linksawakening.dialog.DialogController.*;
 
 import java.util.List;
 
-/** DialogPaging behavior on the shared DialogController state. */
+/** Dialog text, timing and presentation used by ROM {@code DialogDrawNextCharacterHandler}. */
 abstract class DialogPaging extends DialogLifecycle {
     private static final List<SoundEvent> TEXT_PRINT = List.of(SoundEvent.TEXT_PRINT);
     private static final List<SoundEvent> DIALOG_BREAK = List.of(SoundEvent.DIALOG_BREAK);

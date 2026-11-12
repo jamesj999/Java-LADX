@@ -10,7 +10,7 @@ import linksawakening.state.GroundStatus;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 
-/** LinkJumpMotion behavior on the shared LinkAirborne state. */
+/** Link jump motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkJumpMotion extends LinkAirborneState {
     protected LinkJumpMotion(Dependencies dependencies) {
         super(dependencies);
@@ -38,7 +38,7 @@ abstract class LinkJumpMotion extends LinkAirborneState {
                 && !linkEntityEffects.get().marinBedJumpMotionLocked
                 && !directionalLedgeJumpMotionLocked
                 && (linkServices.get().playerState == null
-                        || !linkServices.get().playerState.runningWithPegasusBoots())) {
+                        || !linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())) {
             int mask = linkControls.get().accessBuildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
                 int target = linkServices.get().linkMotionTables.airSpeedX(mask & 3);

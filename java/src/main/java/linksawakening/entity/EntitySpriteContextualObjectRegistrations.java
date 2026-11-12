@@ -2,12 +2,18 @@ package linksawakening.entity;
 
 import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
+import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 
-/** Source-ordered ROM sprite registrations beginning with FloatingItem. */
-final class EntitySpriteFloatingItemRegistrations {
-    private EntitySpriteFloatingItemRegistrations() {}
+/** Context-dependent FloatingItemEntityHandler and ColorShellBlueEntityHandler display lists; also validates lookup inputs. */
+final class EntitySpriteContextualObjectRegistrations {
+    /** LiftableStatueSpriteRect_BottleGrotto from azle.sym. */
+    private static final RomAddress LIFTABLE_STATUE_SPRITE_RECT_BOTTLE_GROTTO = new RomAddress(0x19, 0x4010);
+    /** LiftableStatueSpriteRect from azle.sym. */
+    private static final RomAddress LIFTABLE_STATUE_SPRITE_RECT = new RomAddress(0x19, 0x4000);
+
+    private EntitySpriteContextualObjectRegistrations() {}
 
     static EntitySpriteDefinition lookupFloatingItem(
             EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
@@ -33,7 +39,15 @@ final class EntitySpriteFloatingItemRegistrations {
         }
 
         if (entityType == 0x9D) {
-            return catalog.decodeRectangle(entityType, 0x19, mapId == 1 ? 0x4010 : 0x4000, 1, 4, 0);
+            return catalog.decodeRectangle(
+                    entityType,
+                    LIFTABLE_STATUE_SPRITE_RECT_BOTTLE_GROTTO.bank(),
+                    mapId == 1
+                            ? LIFTABLE_STATUE_SPRITE_RECT_BOTTLE_GROTTO.address()
+                            : LIFTABLE_STATUE_SPRITE_RECT.address(),
+                    1,
+                    4,
+                    0);
         }
         if (entityType == ENTITY_LIFTABLE_ROCK) {
             return catalog.decodeLiftableRock(roomTable);

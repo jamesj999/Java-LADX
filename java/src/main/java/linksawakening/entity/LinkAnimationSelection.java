@@ -9,8 +9,10 @@ import linksawakening.gpu.Tile;
 import linksawakening.state.Direction;
 import linksawakening.state.Tunic;
 
-/** LinkAnimationSelection behavior on the shared LinkAnimator state. */
+/** Link animation selection state and operations used by ROM {@code UpdateLinkAnimation}. */
 abstract class LinkAnimationSelection extends LinkSpriteRendering {
+    private static final int[] UNSHIELDED_WALK_BASE = {0x1A, 0x1C, 0x1E, 0x20};
+
     protected LinkAnimationSelection(Dependencies dependencies) {
         super(dependencies);
     }
@@ -35,7 +37,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
                                     Direction.fromJava(linkAnimationState.get().direction)
                                             .romIndex(),
                                     frame)
-                    : new int[] {0x1A, 0x1C, 0x1E, 0x20}[linkAnimationState.get().direction] + frame;
+                    : UNSHIELDED_WALK_BASE[linkAnimationState.get().direction] + frame;
         }
     }
 
@@ -165,7 +167,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         int renderY = renderY();
         int originY = renderY + offsetY;
         int[] palette = linkServices.get().playerState != null
-                        && (linkServices.get().playerState.invincibilityCounter() & 0x04) != 0
+                        && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
                 ? linkServices.get().tunicPalette.forObjectPalette(4)
@@ -175,7 +177,11 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
                         .forTunic(
                                 linkServices.get().playerState == null
                                         ? Tunic.GREEN.romValue()
-                                        : linkServices.get().playerState.tunicType());
+                                        : linkServices
+                                                .get()
+                                                .playerState
+                                                .equipmentLevels()
+                                                .tunicType());
 
         if (linkStateMachine.get().revolvingDoorPaletteVariant >= 0
                 && linkStateMachine.get().revolvingDoorFrame < 0x38) {

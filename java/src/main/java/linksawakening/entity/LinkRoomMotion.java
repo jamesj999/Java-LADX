@@ -9,7 +9,7 @@ import linksawakening.state.GroundStatus;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 
-/** LinkRoomMotion behavior on the shared LinkStateMachine state. */
+/** Link room motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkRoomMotion extends LinkFrameMotion {
     protected LinkRoomMotion(Dependencies dependencies) {
         super(dependencies);
@@ -41,7 +41,12 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
     protected int groundSpeedIndex(int mask) {
         return (mask & 0x0F)
                 | (linkServices.get().playerState != null
-                                && linkServices.get().playerState.activePowerUp() == 1
+                                && linkServices
+                                                .get()
+                                                .playerState
+                                                .equipmentLevels()
+                                                .activePowerUp()
+                                        == 1
                         ? 0x10
                         : 0);
     }
@@ -78,12 +83,12 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
                 || linkServices.get().inputConfig == null) {
             return;
         }
-        boolean aHeld = linkServices.get().playerState.itemA() == InventoryItem.PEGASUS_BOOTS.romValue()
+        boolean aHeld = linkServices.get().playerState.inventory().itemA() == InventoryItem.PEGASUS_BOOTS.romValue()
                 && linkServices
                         .get()
                         .inputState
                         .isDown(linkServices.get().inputConfig.aKey());
-        boolean bHeld = linkServices.get().playerState.itemB() == InventoryItem.PEGASUS_BOOTS.romValue()
+        boolean bHeld = linkServices.get().playerState.inventory().itemB() == InventoryItem.PEGASUS_BOOTS.romValue()
                 && linkServices
                         .get()
                         .inputState
@@ -92,7 +97,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
             pegasusBootsChargeMeter = 0;
             return;
         }
-        if (linkServices.get().playerState.runningWithPegasusBoots()
+        if (linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
                 || romInteractiveMotionBlocked
                 || linkAirborne.get().airborne
                 || linkAirborne.get().accessZPixels() != 0
@@ -109,7 +114,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
             }
             pegasusBootsChargeMeter++;
             if (pegasusBootsChargeMeter == LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
-                linkServices.get().playerState.setRunningWithPegasusBoots(true);
+                linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(true);
                 linkMotion.get().forcedSpeedPending = false;
                 linkMotion.get().forcedSpeedXOnly = false;
                 break;
@@ -136,7 +141,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
     /** Mirrors bank2.asm:74AD's dash collision response and func_020_49BA. */
     protected void handlePegasusBootsCollision() {
         if (linkServices.get().playerState == null
-                || !linkServices.get().playerState.runningWithPegasusBoots()
+                || !linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
                 || (linkMotion.get().romCollisionType & 0x0F) == 0) {
             return;
         }

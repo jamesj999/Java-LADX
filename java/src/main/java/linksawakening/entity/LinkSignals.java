@@ -3,7 +3,7 @@ package linksawakening.entity;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
 
-/** LinkSignals owns its Link state and operations. */
+/** Link signals state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkSignals {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;

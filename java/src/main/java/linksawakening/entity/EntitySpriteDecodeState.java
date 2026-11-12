@@ -8,7 +8,7 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
-/** Shared state and dependency ownership for EntitySpriteHandlerCatalog. */
+/** Entity display-list decoding and presentation used by ROM {@code RenderActiveEntitySpritesPair}. */
 abstract class EntitySpriteDecodeState {
 
     static final int ENTITY_ARROW = 0x00;

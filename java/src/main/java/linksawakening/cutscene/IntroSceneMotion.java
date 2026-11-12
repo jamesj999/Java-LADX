@@ -7,7 +7,7 @@ import java.util.function.Function;
 import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
-/** IntroSceneMotion behavior on the shared IntroSequence state. */
+/** Intro sequencing, presentation or ROM data used by ROM {@code IntroHandler}. */
 abstract class IntroSceneMotion extends IntroLifecycle {
 
     protected IntroSceneMotion() {

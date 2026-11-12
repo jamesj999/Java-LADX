@@ -1,5 +1,5 @@
 package linksawakening.cutscene;
-/** Intro cutscene script behavior and state. */
+/** Java scene-sequence description for the IntroHandler presentation adapter. */
 public final class IntroCutsceneScript {
 
     public static final String SCENE_SEA = "intro-sea";

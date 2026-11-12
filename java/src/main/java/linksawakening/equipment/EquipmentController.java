@@ -4,7 +4,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 
-/** Equipment controller behavior and state. */
+/** Dispatches held and edge input in CheckItemsToUse order. */
 public final class EquipmentController {
 
     private final InputState inputState;

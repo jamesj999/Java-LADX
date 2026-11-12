@@ -48,7 +48,7 @@ final class LinkWaterBehaviorTest extends LinkFixture {
             withoutFlippers.motion().update();
         assertEquals(0x20, withoutFlippers.position().pixelX());
         assertEquals(0x20, withoutFlippers.position().pixelY());
-        assertEquals(0x40, withoutFlippers.linkServices.playerState.invincibilityCounter());
+        assertEquals(0x40, withoutFlippers.linkServices.playerState.vitals().invincibilityCounter());
     }
 
     @Test

@@ -140,8 +140,8 @@ final class LinkSwimming {
         }
         if (linkServices.get().playerState != null) {
             if (linkStateMachine.get().physicsModifier == 6)
-                linkServices.get().playerState.addSubtractHealthBuffer(4);
-            linkServices.get().playerState.setInvincibilityCounter(0x40);
+                linkServices.get().playerState.vitals().addSubtractHealthBuffer(4);
+            linkServices.get().playerState.vitals().setInvincibilityCounter(0x40);
         }
         linkStateMachine.get().recoveringInWater = false;
         linkStateMachine.get().physicsModifier = 0;
