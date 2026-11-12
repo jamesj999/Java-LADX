@@ -9,6 +9,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -84,7 +85,7 @@ final class LinkSideViewMotionTest {
         link.motion().update();
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
         input.onKeyEvent(config.bKey(), GLFW_PRESS);
-        player.inventory().setItemB(PlayerState.INVENTORY_ROCS_FEATHER);
+        player.inventory().setItemB(InventoryItem.ROCS_FEATHER.romValue());
         link.airborne().useRocsFeather();
         assertEquals(80, link.position().romEntityX(), "Item dispatch precedes the movement phase in Main");
         link.motion().update();
@@ -98,7 +99,7 @@ final class LinkSideViewMotionTest {
 
     @Test
     void featherMovesScreenYAndReturnsToTheFloor() throws Exception {
-        player.inventory().setItemA(PlayerState.INVENTORY_ROCS_FEATHER);
+        player.inventory().setItemA(InventoryItem.ROCS_FEATHER.romValue());
         Link link = room(floor(), 80, 112);
         link.motion().update();
         link.motion().update();

@@ -2,6 +2,7 @@ package linksawakening.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +12,7 @@ final class InventoryItemNumbersTest {
         PlayerState player = new PlayerState();
         player.playerInitialization().initializeNewGame(60, 60, 40);
         player.playerRewards().applyToadstoolReward();
-        player.inventory().setItemB(PlayerState.INVENTORY_MAGIC_POWDER);
+        player.inventory().setItemB(InventoryItem.MAGIC_POWDER.romValue());
         player.inventory().setSubscreenItems(new int[] {12, 0, 0, 0, 0, 0, 0, 0, 0, 0});
         assertDisplay(player, 0x7F, 0x7F, 2, 3);
         player.inventory().setSubscreenItems(new int[10]);

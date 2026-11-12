@@ -11,6 +11,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -40,11 +41,12 @@ final class LinkWaterBehaviorTest extends LinkFixture {
             withFlippers.motion().update();
         }
 
-        assertEquals(Link.LINK_MOTION_RECOVER, withoutFlippers.airborne().romMotionState());
+        assertEquals(
+                LinkMotionState.RECOVER.romValue(), withoutFlippers.airborne().romMotionState());
         assertTrue(withoutFlippers.position().pixelX() > 0x24);
         assertTrue(withFlippers.motion().isSwimming());
         assertEquals(0x01, withFlippers.airborne().romMotionState());
-        while (withoutFlippers.airborne().romMotionState() == Link.LINK_MOTION_RECOVER)
+        while (withoutFlippers.airborne().romMotionState() == LinkMotionState.RECOVER.romValue())
             withoutFlippers.motion().update();
         assertEquals(0x20, withoutFlippers.position().pixelX());
         assertEquals(0x20, withoutFlippers.position().pixelY());
@@ -90,12 +92,12 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         link.position().setPixelPosition(0x20, 0x20);
         link.linkStateMachine.itemUsageContext = 0x80;
         assertFalse(link.linkSwimming.enterSwimmingIfNeeded());
-        assertEquals(Link.LINK_MOTION_DEFAULT, link.airborne().romMotionState());
+        assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
         link.linkStateMachine.itemUsageContext = 0;
         link.linkStateMachine.slowWalkingSpeed = 1;
         link.linkStateMachine.physicsRoomId = 0x3E;
         assertTrue(link.linkSwimming.enterSwimmingIfNeeded());
-        assertEquals(Link.LINK_MOTION_DEFAULT, link.airborne().romMotionState());
+        assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
         assertEquals(0xFA, link.position().romSpeedX());
         assertTrue(link.position().pixelX() < 0x20);
     }

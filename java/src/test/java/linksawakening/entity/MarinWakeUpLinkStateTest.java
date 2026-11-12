@@ -13,6 +13,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +67,7 @@ final class MarinWakeUpLinkStateTest {
         // Marin has already emitted bed OAM on the launch frame.
         assertTrue(link.animation().isMarinWakeUpBedVisible());
         assertEquals(3, link.animation().marinWakeUpBedVariant());
-        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
+        assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
         assertTrue(link.airborne().isAirborne());
         assertEquals(0x12, link.airborne().zVelocity());
         assertEquals(0x0C, link.position().romSpeedX());
@@ -102,7 +103,7 @@ final class MarinWakeUpLinkStateTest {
             link.motion().update();
             assertEquals(0x0C, link.position().romSpeedX());
             assertEquals(0, link.position().romSpeedY());
-            assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
+            assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
             airborneFrames++;
         } while (link.airborne().isAirborne() && airborneFrames < 100);
 
@@ -111,7 +112,7 @@ final class MarinWakeUpLinkStateTest {
         assertFalse(link.animation().isMarinWakeUpBedVisible());
         assertEquals(0x40 + 14, link.position().pixelX(), "No horizontal movement on the landing frame");
         link.motion().update();
-        assertEquals(Link.DIRECTION_LEFT, link.animation().direction());
+        assertEquals(Direction.LEFT.javaIndex(), link.animation().direction());
         assertEquals(0xF0, link.position().romSpeedX());
     }
 

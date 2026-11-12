@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -92,14 +93,14 @@ final class MagicPowderTest {
     @Test
     void consumingTheLastPowderClearsBothButtonSlotsThatStillHoldPowder() {
         PlayerState player = playerWithPowder(1);
-        player.inventory().setItemB(PlayerState.INVENTORY_MAGIC_POWDER);
+        player.inventory().setItemB(InventoryItem.MAGIC_POWDER.romValue());
         RecordingTarget target = new RecordingTarget();
 
         new MagicPowder(player, GameplaySoundSink.none(), target).onPress();
 
         assertEquals(0, player.ammunition().magicPowderCount());
-        assertEquals(PlayerState.INVENTORY_EMPTY, player.inventory().itemA());
-        assertEquals(PlayerState.INVENTORY_EMPTY, player.inventory().itemB());
+        assertEquals(InventoryItem.EMPTY.romValue(), player.inventory().itemA());
+        assertEquals(InventoryItem.EMPTY.romValue(), player.inventory().itemB());
     }
 
     @Test
@@ -131,7 +132,7 @@ final class MagicPowderTest {
         PlayerState player = new PlayerState();
         player.ammunition().setMaxMagicPowder(20);
         player.ammunition().setMagicPowderCount(count);
-        player.inventory().setItemA(PlayerState.INVENTORY_MAGIC_POWDER);
+        player.inventory().setItemA(InventoryItem.MAGIC_POWDER.romValue());
         return player;
     }
 

@@ -17,6 +17,7 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -38,11 +39,11 @@ final class BombTest {
         InputState input = new InputState();
         InputConfig inputConfig = inputConfig();
         PlayerState player = playerWithBombs(2);
-        player.inventory().setItemA(PlayerState.INVENTORY_BOMBS);
+        player.inventory().setItemA(InventoryItem.BOMBS.romValue());
         RecordingTarget target = new RecordingTarget();
         Bomb bomb = new Bomb(player, GameplaySoundSink.none(), target);
         ItemRegistry registry = new ItemRegistry();
-        registry.register(PlayerState.INVENTORY_BOMBS, bomb);
+        registry.register(InventoryItem.BOMBS.romValue(), bomb);
         EquipmentController controller = new EquipmentController(input, inputConfig, player, registry);
 
         input.onKeyEvent(GLFW_KEY_A, GLFW_PRESS);

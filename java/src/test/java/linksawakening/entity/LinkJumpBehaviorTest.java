@@ -14,6 +14,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -22,10 +23,10 @@ final class LinkJumpBehaviorTest extends LinkFixture {
 
     @Test
     void airborneJumpAnimationStartsByDirectionAndAdvancesEveryEightFrames() throws Exception {
-        assertJumpAnimation(Link.DIRECTION_RIGHT, 0x61, 0x62, 0x63);
-        assertJumpAnimation(Link.DIRECTION_LEFT, 0x5E, 0x5F, 0x60);
-        assertJumpAnimation(Link.DIRECTION_UP, 0x67, 0x68, 0x69);
-        assertJumpAnimation(Link.DIRECTION_DOWN, 0x64, 0x65, 0x66);
+        assertJumpAnimation(Direction.RIGHT.javaIndex(), 0x61, 0x62, 0x63);
+        assertJumpAnimation(Direction.LEFT.javaIndex(), 0x5E, 0x5F, 0x60);
+        assertJumpAnimation(Direction.UP.javaIndex(), 0x67, 0x68, 0x69);
+        assertJumpAnimation(Direction.DOWN.javaIndex(), 0x64, 0x65, 0x66);
     }
 
     @Test
@@ -123,7 +124,7 @@ final class LinkJumpBehaviorTest extends LinkFixture {
         assertEquals(0x0F, link.position().romSpeedX());
         assertEquals(0xFF, link.position().romSpeedY());
         assertEquals(
-                Link.DIRECTION_RIGHT,
+                Direction.RIGHT.javaIndex(),
                 link.animation().direction(),
                 "Airborne steering must preserve the takeoff facing direction");
         link.motion().update();

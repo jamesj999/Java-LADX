@@ -13,6 +13,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -24,13 +26,13 @@ final class EquipmentControllerTest {
         InputConfig inputConfig = new InputConfig(
                 GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
-        player.inventory().setItemA(PlayerState.INVENTORY_SWORD);
-        player.inventory().setItemB(PlayerState.INVENTORY_BOMBS);
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
+        player.inventory().setItemB(InventoryItem.BOMBS.romValue());
         ItemRegistry registry = new ItemRegistry();
         RecordingItem sword = new RecordingItem();
         RecordingItem bombs = new RecordingItem();
-        registry.register(PlayerState.INVENTORY_SWORD, sword);
-        registry.register(PlayerState.INVENTORY_BOMBS, bombs);
+        registry.register(InventoryItem.SWORD.romValue(), sword);
+        registry.register(InventoryItem.BOMBS.romValue(), bombs);
         EquipmentController controller = new EquipmentController(input, inputConfig, player, registry);
 
         input.onKeyEvent(GLFW_KEY_A, GLFW_PRESS);
@@ -58,10 +60,10 @@ final class EquipmentControllerTest {
         InputConfig inputConfig = new InputConfig(
                 GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
-        player.inventory().setItemA(PlayerState.INVENTORY_SWORD);
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
         ItemRegistry registry = new ItemRegistry();
         RecordingItem sword = new RecordingItem();
-        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        registry.register(InventoryItem.SWORD.romValue(), sword);
         EquipmentController controller = new EquipmentController(input, inputConfig, player, registry);
 
         controller.tickEquippedItems(0xA5);
@@ -72,16 +74,16 @@ final class EquipmentControllerTest {
     @Test
     void forcedAcquisitionSpinIsAvailableBeforeTheSwordIsEquipped() {
         PlayerState player = new PlayerState();
-        player.inventory().setItemA(PlayerState.INVENTORY_EMPTY);
-        player.inventory().setItemB(PlayerState.INVENTORY_SHIELD);
+        player.inventory().setItemA(InventoryItem.EMPTY.romValue());
+        player.inventory().setItemB(InventoryItem.SHIELD.romValue());
         player.equipmentLevels().setSwordLevel(0);
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
-        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        registry.register(InventoryItem.SWORD.romValue(), sword);
         EquipmentController controller =
                 new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
         assertNull(controller.activeSword());
-        sword.startSwordAcquisitionSpin(linksawakening.entity.Link.DIRECTION_DOWN);
+        sword.startSwordAcquisitionSpin(Direction.DOWN.javaIndex());
         assertSame(sword, controller.activeSword());
         sword.resetSpinAttack();
         assertNull(controller.activeSword());
@@ -90,10 +92,10 @@ final class EquipmentControllerTest {
     @Test
     void blockedItemInputLetsASwingFinishWithoutHoldingOrStartingASpin() {
         PlayerState player = new PlayerState();
-        player.inventory().setItemA(PlayerState.INVENTORY_SWORD);
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
-        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        registry.register(InventoryItem.SWORD.romValue(), sword);
         EquipmentController controller =
                 new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
         sword.onPress();

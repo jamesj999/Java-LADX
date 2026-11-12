@@ -16,6 +16,9 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -177,7 +180,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         assertFalse(link.equipment().canUseItems());
 
         HookshotTarget hookshotTarget = new HookshotTarget();
-        playerState.inventory().setItemA(PlayerState.INVENTORY_HOOKSHOT);
+        playerState.inventory().setItemA(InventoryItem.HOOKSHOT.romValue());
         itemRegistry.register(playerState.inventory().itemA(), new Hookshot(hookshotTarget));
         hookshotTarget.active = true;
         assertFalse(link.equipment().canUseItems());
@@ -205,7 +208,12 @@ final class LinkPitBehaviorTest extends LinkFixture {
         link.position().setRoomEntryPixelPosition(64, 64);
         link.linkStateMachine.frameCounter = 0;
         link.airborne().setPitWarpArrival(0x70);
-        int[] directions = {Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_UP};
+        int[] directions = {
+            Direction.RIGHT.javaIndex(),
+            Direction.DOWN.javaIndex(),
+            Direction.LEFT.javaIndex(),
+            Direction.UP.javaIndex()
+        };
         int frame = 0;
         while (link.airborne().isAirborne() && frame < 128) {
             frame++;
@@ -228,7 +236,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         assertEquals(64, link.position().pixelX());
         link.linkServices.inputState.onKeyEvent(link.linkServices.inputConfig.rightKey(), GLFW_PRESS);
         link.motion().update();
-        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
+        assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
         assertTrue(link.position().pixelX() > 64);
     }
 
@@ -429,7 +437,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
             link.motion().update();
             frame++;
         }
-        assertEquals(Link.LINK_MOTION_DEFAULT, link.airborne().romMotionState());
+        assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
         assertTrue(link.airborne().isAirborne(), "$02:49B6 writes 1 even on the landing frame");
         assertEquals(0x64, resolvedAnimationState(link));
         link.motion().update();

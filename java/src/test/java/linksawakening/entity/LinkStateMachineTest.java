@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import linksawakening.state.Direction;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
@@ -118,8 +119,8 @@ final class LinkStateMachineTest {
         assertEquals(5, link.airborne().romMotionState());
         assertFalse(link.motion().consumeRevolvingDoorTransition());
         link.linkStateMachine.tickRevolvingDoor();
-        assertEquals(Link.LINK_MOTION_DEFAULT, link.airborne().romMotionState());
-        assertEquals(Link.DIRECTION_UP, link.animation().direction());
+        assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
+        assertEquals(Direction.UP.javaIndex(), link.animation().direction());
         assertEquals(-5, link.position().romEntityY());
         assertTrue(link.motion().consumeRevolvingDoorTransition());
         assertFalse(link.motion().consumeRevolvingDoorTransition());

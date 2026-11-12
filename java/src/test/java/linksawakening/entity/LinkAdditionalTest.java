@@ -12,6 +12,7 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
@@ -31,9 +32,9 @@ final class LinkAdditionalTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        link.animation().setDirection(Link.DIRECTION_UP);
+        link.animation().setDirection(Direction.UP.javaIndex());
 
-        assertEquals(Link.DIRECTION_UP, link.animation().direction());
+        assertEquals(Direction.UP.javaIndex(), link.animation().direction());
         assertThrows(IllegalArgumentException.class, () -> link.animation().setDirection(4));
     }
 
@@ -54,11 +55,11 @@ final class LinkAdditionalTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
         link.position().setPixelPosition(64, 64);
-        link.animation().setDirection(Link.DIRECTION_UP);
+        link.animation().setDirection(Direction.UP.javaIndex());
         input.onKeyEvent(config.downKey(), GLFW_PRESS);
         link.actions().setGrabbingObject(true, false);
         link.motion().update();
-        assertEquals(Link.DIRECTION_UP, link.animation().direction());
+        assertEquals(Direction.UP.javaIndex(), link.animation().direction());
         assertEquals(64, link.position().pixelY());
         assertEquals(0x3A, resolvedAnimationState(link));
         link.actions().setGrabbingObject(true, true);
@@ -67,7 +68,7 @@ final class LinkAdditionalTest extends LinkFixture {
         assertEquals(64, link.position().pixelY());
         link.actions().setGrabbingObject(false, false);
         link.motion().update();
-        assertEquals(Link.DIRECTION_DOWN, link.animation().direction());
+        assertEquals(Direction.DOWN.javaIndex(), link.animation().direction());
     }
 
     @Test
@@ -111,7 +112,7 @@ final class LinkAdditionalTest extends LinkFixture {
         link.motion().update();
 
         assertEquals(0x37, resolvedAnimationState(link));
-        assertEquals(Link.DIRECTION_DOWN, link.animation().direction());
+        assertEquals(Direction.DOWN.javaIndex(), link.animation().direction());
     }
 
     @Test
@@ -176,12 +177,12 @@ final class LinkAdditionalTest extends LinkFixture {
 
         inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
         link.motion().update();
-        assertEquals(Link.DIRECTION_LEFT, link.animation().direction());
+        assertEquals(Direction.LEFT.javaIndex(), link.animation().direction());
 
         inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
         link.motion().update();
 
-        assertEquals(Link.DIRECTION_LEFT, link.animation().direction());
+        assertEquals(Direction.LEFT.javaIndex(), link.animation().direction());
     }
 
     @Test
@@ -248,9 +249,9 @@ final class LinkAdditionalTest extends LinkFixture {
         Link link = linkInRoom(
                 new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects, player, RomTables.PHYSICS_TABLE_INDOORS1);
         link.position().setRoomEntryPixelPosition(0x20, 0x20);
-        for (int i = 0; i < 32 && link.airborne().romMotionState() != Link.LINK_MOTION_RECOVER; i++)
+        for (int i = 0; i < 32 && link.airborne().romMotionState() != LinkMotionState.RECOVER.romValue(); i++)
             link.motion().update();
-        assertEquals(Link.LINK_MOTION_RECOVER, link.airborne().romMotionState());
+        assertEquals(LinkMotionState.RECOVER.romValue(), link.airborne().romMotionState());
         assertEquals(lava, link.linkStateMachine.physicsModifier);
         assertEquals(0x50, link.linkStateMachine.recoverCountdown);
         for (int i = 0; i < 80; i++) link.motion().update();
@@ -275,11 +276,11 @@ final class LinkAdditionalTest extends LinkFixture {
                 link.motion().update();
                 int remaining = 80 - frame;
                 assertEquals(remaining >= 64 ? 0x4C : remaining >= 48 ? 0x4E : 0xFF, resolvedAnimationState(link));
-                assertEquals(Link.LINK_MOTION_RECOVER, link.airborne().romMotionState());
+                assertEquals(LinkMotionState.RECOVER.romValue(), link.airborne().romMotionState());
                 assertEquals(64, link.position().pixelX());
             }
             link.motion().update();
-            assertEquals(Link.LINK_MOTION_DEFAULT, link.airborne().romMotionState());
+            assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
             assertEquals(16, link.position().pixelX());
             assertEquals(24, link.position().pixelY());
             assertEquals(0x40, player.vitals().invincibilityCounter());
@@ -293,10 +294,10 @@ final class LinkAdditionalTest extends LinkFixture {
         RomTables romTables = RomTables.loadFromRom(rom);
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         CollisionAttempt[] attempts = {
-            new CollisionAttempt(Link.DIRECTION_UP, 0x01, 0x20, 0x40, 3, 2, 0x26, 0x3F),
-            new CollisionAttempt(Link.DIRECTION_DOWN, 0x02, 0x20, 0x20, 3, 2, 0x26, 0x30),
-            new CollisionAttempt(Link.DIRECTION_LEFT, 0x04, 0x40, 0x20, 2, 3, 0x3F, 0x29),
-            new CollisionAttempt(Link.DIRECTION_RIGHT, 0x08, 0x20, 0x20, 2, 3, 0x30, 0x29),
+            new CollisionAttempt(Direction.UP.javaIndex(), 0x01, 0x20, 0x40, 3, 2, 0x26, 0x3F),
+            new CollisionAttempt(Direction.DOWN.javaIndex(), 0x02, 0x20, 0x20, 3, 2, 0x26, 0x30),
+            new CollisionAttempt(Direction.LEFT.javaIndex(), 0x04, 0x40, 0x20, 2, 3, 0x3F, 0x29),
+            new CollisionAttempt(Direction.RIGHT.javaIndex(), 0x08, 0x20, 0x20, 2, 3, 0x30, 0x29),
         };
 
         for (CollisionAttempt attempt : attempts) {
@@ -433,25 +434,25 @@ final class LinkAdditionalTest extends LinkFixture {
         RomTables tables = RomTables.loadFromRom(loadRom());
         // direction, start X/Y, expected X/Y. One solid tile at (32,32).
         int[][] cases = {
-            {Link.DIRECTION_DOWN, 25, 16, 24, 16},
-            {Link.DIRECTION_DOWN, 41, 16, 42, 16},
-            {Link.DIRECTION_UP, 25, 42, 24, 42},
-            {Link.DIRECTION_UP, 41, 42, 42, 42},
-            {Link.DIRECTION_RIGHT, 20, 20, 20, 19},
-            {Link.DIRECTION_RIGHT, 20, 38, 20, 39},
-            {Link.DIRECTION_LEFT, 44, 20, 44, 19},
-            {Link.DIRECTION_LEFT, 44, 38, 44, 39},
-            {Link.DIRECTION_DOWN, 32, 16, 32, 16}, // Both probes: no slide.
-            {Link.DIRECTION_RIGHT, 20, 32, 20, 32},
+            {Direction.DOWN.javaIndex(), 25, 16, 24, 16},
+            {Direction.DOWN.javaIndex(), 41, 16, 42, 16},
+            {Direction.UP.javaIndex(), 25, 42, 24, 42},
+            {Direction.UP.javaIndex(), 41, 42, 42, 42},
+            {Direction.RIGHT.javaIndex(), 20, 20, 20, 19},
+            {Direction.RIGHT.javaIndex(), 20, 38, 20, 39},
+            {Direction.LEFT.javaIndex(), 44, 20, 44, 19},
+            {Direction.LEFT.javaIndex(), 44, 38, 44, 39},
+            {Direction.DOWN.javaIndex(), 32, 16, 32, 16}, // Both probes: no slide.
+            {Direction.RIGHT.javaIndex(), 20, 32, 20, 32},
         };
         for (int[] c : cases) {
             InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
             InputState input = new InputState();
             int key =
-                    switch (c[0]) {
-                        case Link.DIRECTION_DOWN -> config.downKey();
-                        case Link.DIRECTION_UP -> config.upKey();
-                        case Link.DIRECTION_LEFT -> config.leftKey();
+                    switch (Direction.fromJavaOrUnknown(c[0])) {
+                        case DOWN -> config.downKey();
+                        case UP -> config.upKey();
+                        case LEFT -> config.leftKey();
                         default -> config.rightKey();
                     };
             input.onKeyEvent(key, GLFW_PRESS);

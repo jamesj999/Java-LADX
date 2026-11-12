@@ -2,7 +2,10 @@ package linksawakening.startup;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
+import linksawakening.state.PowerUp;
+import linksawakening.state.Tunic;
 import org.junit.jupiter.api.Test;
 
 final class NewGameStartProfileTest {
@@ -33,15 +36,15 @@ final class NewGameStartProfileTest {
         playerState.vitals().setHealth(1);
         playerState.equipmentLevels().setSwordLevel(2);
         playerState.equipmentLevels().setShieldLevel(2);
-        playerState.inventory().setItemA(PlayerState.INVENTORY_BOW);
-        playerState.inventory().setItemB(PlayerState.INVENTORY_HOOKSHOT);
+        playerState.inventory().setItemA(InventoryItem.BOW.romValue());
+        playerState.inventory().setItemB(InventoryItem.HOOKSHOT.romValue());
         playerState.ammunition().setMaxArrows(2);
         playerState.ammunition().setArrowCount(2);
         playerState.ammunition().setMaxBombs(2);
         playerState.ammunition().setBombCount(2);
         playerState.ammunition().setMaxMagicPowder(2);
         playerState.ammunition().setMagicPowderCount(2);
-        playerState.equipmentLevels().setTunicType(PlayerState.TUNIC_RED);
+        playerState.equipmentLevels().setTunicType(Tunic.RED.romValue());
         playerState.equipmentLevels().setRunningWithPegasusBoots(true);
         playerState.vitals().setInvincibilityCounter(0x40);
         playerState.vitals().applyRomEnemyDamage(8);
@@ -56,8 +59,8 @@ final class NewGameStartProfileTest {
         assertEquals(3 * PlayerState.HP_PER_HEART, playerState.vitals().health());
         assertEquals(0, playerState.equipmentLevels().swordLevel());
         assertEquals(0, playerState.equipmentLevels().shieldLevel());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().itemA());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().itemB());
+        assertEquals(InventoryItem.EMPTY.romValue(), playerState.inventory().itemA());
+        assertEquals(InventoryItem.EMPTY.romValue(), playerState.inventory().itemB());
         assertEquals(30, playerState.ammunition().maxArrows());
         assertEquals(0, playerState.ammunition().arrowCount());
         assertEquals(30, playerState.ammunition().maxBombs());
@@ -66,9 +69,8 @@ final class NewGameStartProfileTest {
         assertEquals(0, playerState.ammunition().magicPowderCount());
         assertEquals(0, playerState.progression().heartPieces());
         assertEquals(0, playerState.progression().seashells());
-        assertEquals(
-                PlayerState.ACTIVE_POWER_UP_NONE, playerState.equipmentLevels().activePowerUp());
-        assertEquals(PlayerState.TUNIC_GREEN, playerState.equipmentLevels().tunicType());
+        assertEquals(PowerUp.NONE.romValue(), playerState.equipmentLevels().activePowerUp());
+        assertEquals(Tunic.GREEN.romValue(), playerState.equipmentLevels().tunicType());
         assertEquals(0, playerState.vitals().invincibilityCounter());
         assertEquals(0, playerState.vitals().addHealthBuffer());
         assertEquals(0, playerState.vitals().subtractHealthBuffer());
@@ -76,7 +78,7 @@ final class NewGameStartProfileTest {
         assertEquals(0, playerState.equipmentLevels().powerUpHits());
         assertEquals(false, playerState.equipmentLevels().runningWithPegasusBoots());
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
-            assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().subscreenItem(slot));
+            assertEquals(InventoryItem.EMPTY.romValue(), playerState.inventory().subscreenItem(slot));
         }
     }
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -115,7 +116,7 @@ final class InventoryMenuSoundTest {
     void ocarinaAnimationSuppressesValidationSounds() throws Exception {
         var sink = new RecordingGameplaySoundSink();
         var player = new PlayerState();
-        player.inventory().setSubscreenItems(new int[] {0, PlayerState.INVENTORY_OCARINA, 0, 0, 0, 0, 0, 0, 0, 0});
+        player.inventory().setSubscreenItems(new int[] {0, InventoryItem.OCARINA.romValue(), 0, 0, 0, 0, 0, 0, 0, 0});
         player.progression().setOcarinaSongFlags(7);
         var menu = new InventoryMenu(loadTilemap(), player, sink);
         openMenu(menu);

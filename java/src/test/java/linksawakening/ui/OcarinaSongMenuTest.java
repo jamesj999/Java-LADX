@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.state.OcarinaSong;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ final class OcarinaSongMenuTest {
         PlayerState player = new PlayerState();
         player.progression()
                 .setOcarinaSongFlags(
-                        PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
+                        OcarinaSong.BALLAD_OF_THE_WIND_FISH.romValue() | OcarinaSong.FROGS_SONG_OF_THE_SOUL.romValue());
         RecordingSoundSink sounds = new RecordingSoundSink();
         OcarinaSongMenu menu = new OcarinaSongMenu(player, sounds);
 
@@ -45,7 +46,7 @@ final class OcarinaSongMenuTest {
     @Test
     void closingFinishesAfterSixteenFramesAndPreservesCloseRequest() {
         PlayerState player = new PlayerState();
-        player.progression().setOcarinaSongFlags(PlayerState.MANBO_MAMBO_FLAG);
+        player.progression().setOcarinaSongFlags(OcarinaSong.MANBO_MAMBO.romValue());
         OcarinaSongMenu menu = new OcarinaSongMenu(player, GameplaySoundSink.none());
 
         menu.requestOpen();

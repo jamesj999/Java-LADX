@@ -19,6 +19,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.state.PlayerStateTestBuilder;
 
@@ -135,17 +136,17 @@ abstract class LinkFixture {
         PlayerState playerState = new PlayerStateTestBuilder().build();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
-        switch (direction) {
-            case Link.DIRECTION_RIGHT:
+        switch (Direction.fromJavaOrUnknown(direction)) {
+            case RIGHT:
                 inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_LEFT:
+            case LEFT:
                 inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_UP:
+            case UP:
                 inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_DOWN:
+            case DOWN:
                 inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
                 break;
             default:
@@ -170,10 +171,10 @@ abstract class LinkFixture {
 
     protected static int javaDirectionForRomDirection(int romDirection) {
         return switch (romDirection) {
-            case 0 -> Link.DIRECTION_RIGHT;
-            case 1 -> Link.DIRECTION_LEFT;
-            case 2 -> Link.DIRECTION_UP;
-            case 3 -> Link.DIRECTION_DOWN;
+            case 0 -> Direction.RIGHT.javaIndex();
+            case 1 -> Direction.LEFT.javaIndex();
+            case 2 -> Direction.UP.javaIndex();
+            case 3 -> Direction.DOWN.javaIndex();
             default -> throw new AssertionError(romDirection);
         };
     }
@@ -195,17 +196,17 @@ abstract class LinkFixture {
     }
 
     protected static void pressDirection(InputState inputState, InputConfig inputConfig, int direction) {
-        switch (direction) {
-            case Link.DIRECTION_DOWN:
+        switch (Direction.fromJavaOrUnknown(direction)) {
+            case DOWN:
                 inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_UP:
+            case UP:
                 inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_LEFT:
+            case LEFT:
                 inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_RIGHT:
+            case RIGHT:
                 inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
                 break;
             default:

@@ -121,7 +121,7 @@ final class PlayerStateTest {
         state.playerRewards().applyToadstoolReward();
 
         assertTrue(state.ammunition().hasToadstool());
-        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, state.inventory().itemB());
+        assertEquals(InventoryItem.MAGIC_POWDER.romValue(), state.inventory().itemB());
         assertEquals(0, state.ammunition().magicPowderCount());
     }
 
@@ -130,28 +130,28 @@ final class PlayerStateTest {
         PlayerState state = new PlayerState();
         state.playerInitialization().initializeNewGame(30, 30, 20);
         state.playerRewards().applyToadstoolReward();
-        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, state.inventory().itemB());
+        assertEquals(InventoryItem.MAGIC_POWDER.romValue(), state.inventory().itemB());
 
         state.playerRewards().beginWitchToadstoolExchange(0);
-        assertEquals(PlayerState.INVENTORY_EMPTY, state.inventory().itemB());
+        assertEquals(InventoryItem.EMPTY.romValue(), state.inventory().itemB());
         assertFalse(state.ammunition().hasToadstool());
 
         state.playerRewards().applyWitchMagicPowderReward();
-        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, state.inventory().itemB());
+        assertEquals(InventoryItem.MAGIC_POWDER.romValue(), state.inventory().itemB());
         assertEquals(20, state.ammunition().magicPowderCount());
     }
 
     @Test
     void witchExchangeCanClearTheAButtonSlotWithoutChangingB() {
         PlayerState state = new PlayerState();
-        state.inventory().setItemB(PlayerState.INVENTORY_SWORD);
-        state.inventory().setItemA(PlayerState.INVENTORY_MAGIC_POWDER);
+        state.inventory().setItemB(InventoryItem.SWORD.romValue());
+        state.inventory().setItemA(InventoryItem.MAGIC_POWDER.romValue());
         state.ammunition().setHasToadstool(true);
 
         state.playerRewards().beginWitchToadstoolExchange(1);
 
-        assertEquals(PlayerState.INVENTORY_SWORD, state.inventory().itemB());
-        assertEquals(PlayerState.INVENTORY_EMPTY, state.inventory().itemA());
+        assertEquals(InventoryItem.SWORD.romValue(), state.inventory().itemB());
+        assertEquals(InventoryItem.EMPTY.romValue(), state.inventory().itemA());
         assertFalse(state.ammunition().hasToadstool());
     }
 
@@ -230,13 +230,13 @@ final class PlayerStateTest {
     void attackTunicAndPegasusBootsStateUseRomDefaultsAndValues() {
         PlayerState playerState = new PlayerState();
 
-        assertEquals(PlayerState.TUNIC_GREEN, playerState.equipmentLevels().tunicType());
+        assertEquals(Tunic.GREEN.romValue(), playerState.equipmentLevels().tunicType());
         assertFalse(playerState.equipmentLevels().runningWithPegasusBoots());
 
-        playerState.equipmentLevels().setTunicType(PlayerState.TUNIC_RED);
+        playerState.equipmentLevels().setTunicType(Tunic.RED.romValue());
         playerState.equipmentLevels().setRunningWithPegasusBoots(true);
 
-        assertEquals(PlayerState.TUNIC_RED, playerState.equipmentLevels().tunicType());
+        assertEquals(Tunic.RED.romValue(), playerState.equipmentLevels().tunicType());
         assertTrue(playerState.equipmentLevels().runningWithPegasusBoots());
     }
 
@@ -305,13 +305,13 @@ final class PlayerStateTest {
         playerState.playerRewards().applyBeachSwordReward();
 
         assertEquals(1, playerState.equipmentLevels().swordLevel());
-        assertEquals(PlayerState.INVENTORY_SWORD, playerState.inventory().itemB());
+        assertEquals(InventoryItem.SWORD.romValue(), playerState.inventory().itemB());
     }
 
     @Test
     void blueTunicHalvesNominalDamageIntoTheRomBuffer() {
         PlayerState playerState = new PlayerState();
-        playerState.equipmentLevels().setTunicType(PlayerState.TUNIC_BLUE);
+        playerState.equipmentLevels().setTunicType(Tunic.BLUE.romValue());
 
         assertEquals(4, playerState.vitals().applyRomEnemyDamage(8));
         assertEquals(4, playerState.vitals().subtractHealthBuffer());
@@ -321,7 +321,7 @@ final class PlayerStateTest {
     @Test
     void blueTunicUsesTheRomRawShiftForOnePointDamage() {
         PlayerState playerState = new PlayerState();
-        playerState.equipmentLevels().setTunicType(PlayerState.TUNIC_BLUE);
+        playerState.equipmentLevels().setTunicType(Tunic.BLUE.romValue());
 
         assertEquals(0, playerState.vitals().applyRomEnemyDamage(1));
         assertEquals(0, playerState.vitals().subtractHealthBuffer());
@@ -330,7 +330,7 @@ final class PlayerStateTest {
     @Test
     void guardianAcornNullifiesFourDamageButHalvesOtherDamage() {
         PlayerState playerState = new PlayerState();
-        playerState.equipmentLevels().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
+        playerState.equipmentLevels().setActivePowerUp(PowerUp.GUARDIAN_ACORN.romValue());
 
         assertEquals(0, playerState.vitals().applyRomEnemyDamage(4));
         assertEquals(0, playerState.vitals().subtractHealthBuffer());
@@ -388,23 +388,21 @@ final class PlayerStateTest {
     @Test
     void activePowerUpExpiresAfterTheThirdAcceptedHitAndPickupResetsCount() {
         PlayerState playerState = new PlayerState();
-        playerState.equipmentLevels().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+        playerState.equipmentLevels().setActivePowerUp(PowerUp.PIECE_OF_POWER.romValue());
 
         playerState.vitals().applyRomEnemyDamage(8);
         playerState.vitals().setInvincibilityCounter(0);
         playerState.vitals().applyRomEnemyDamage(8);
         assertEquals(2, playerState.equipmentLevels().powerUpHits());
         assertEquals(
-                PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
-                playerState.equipmentLevels().activePowerUp());
+                PowerUp.PIECE_OF_POWER.romValue(), playerState.equipmentLevels().activePowerUp());
 
         playerState.vitals().setInvincibilityCounter(0);
         playerState.vitals().applyRomEnemyDamage(8);
         assertEquals(3, playerState.equipmentLevels().powerUpHits());
-        assertEquals(
-                PlayerState.ACTIVE_POWER_UP_NONE, playerState.equipmentLevels().activePowerUp());
+        assertEquals(PowerUp.NONE.romValue(), playerState.equipmentLevels().activePowerUp());
 
-        playerState.equipmentLevels().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
+        playerState.equipmentLevels().setActivePowerUp(PowerUp.GUARDIAN_ACORN.romValue());
         assertEquals(0, playerState.equipmentLevels().powerUpHits());
     }
 
@@ -454,7 +452,8 @@ final class PlayerStateTest {
         assertEquals(10, playerState.wallet().addRupeeBuffer());
 
         playerState.playerRewards().applyFloatingItemPickup(0x86, 1);
-        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, playerState.inventory().itemB());
+        assertEquals(
+                InventoryItem.MAGIC_POWDER.romValue(), playerState.inventory().itemB());
         assertEquals(10, playerState.ammunition().magicPowderCount());
 
         playerState.playerRewards().applyFloatingItemPickup(0x86, 2);
@@ -537,8 +536,8 @@ final class PlayerStateTest {
     @Test
     void initializeNewGameClearsTheDebugInventoryAndUsesThreeFullHearts() {
         PlayerState playerState = new PlayerState();
-        playerState.inventory().setItemA(PlayerState.INVENTORY_BOW);
-        playerState.inventory().setItemB(PlayerState.INVENTORY_HOOKSHOT);
+        playerState.inventory().setItemA(InventoryItem.BOW.romValue());
+        playerState.inventory().setItemB(InventoryItem.HOOKSHOT.romValue());
         playerState.vitals().setMaxHearts(12);
         playerState.vitals().setHealth(1);
         playerState.wallet().setRupees(999);
@@ -550,13 +549,13 @@ final class PlayerStateTest {
         assertEquals(0, playerState.wallet().rupees());
         assertEquals(0, playerState.equipmentLevels().swordLevel());
         assertEquals(0, playerState.equipmentLevels().shieldLevel());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().itemA());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().itemB());
+        assertEquals(InventoryItem.EMPTY.romValue(), playerState.inventory().itemA());
+        assertEquals(InventoryItem.EMPTY.romValue(), playerState.inventory().itemB());
         assertEquals(0x30, playerState.ammunition().maxArrows());
         assertEquals(0x30, playerState.ammunition().maxBombs());
         assertEquals(0x20, playerState.ammunition().maxMagicPowder());
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
-            assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().subscreenItem(slot));
+            assertEquals(InventoryItem.EMPTY.romValue(), playerState.inventory().subscreenItem(slot));
         }
     }
 
@@ -571,10 +570,10 @@ final class PlayerStateTest {
                 PlayerState.MAX_HEARTS * PlayerState.HP_PER_HEART,
                 state.vitals().health());
         assertEquals(PlayerState.MAX_RUPEES, state.wallet().rupees());
-        assertEquals(PlayerState.INVENTORY_SWORD, state.inventory().itemA());
-        assertEquals(PlayerState.INVENTORY_BOOMERANG, state.inventory().itemB());
+        assertEquals(InventoryItem.SWORD.romValue(), state.inventory().itemA());
+        assertEquals(InventoryItem.BOOMERANG.romValue(), state.inventory().itemB());
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
-            assertTrue(PlayerState.INVENTORY_EMPTY != state.inventory().subscreenItem(slot));
+            assertTrue(InventoryItem.EMPTY.romValue() != state.inventory().subscreenItem(slot));
         }
         assertEquals(99, state.ammunition().arrowCount());
         assertEquals(99, state.ammunition().bombCount());
@@ -587,7 +586,7 @@ final class PlayerStateTest {
     @Test
     void applySavedGameReplacesPersistentFieldsAndClearsTransientRuntimeState() {
         PlayerState playerState = new PlayerState();
-        playerState.equipmentLevels().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+        playerState.equipmentLevels().setActivePowerUp(PowerUp.PIECE_OF_POWER.romValue());
         playerState.vitals().setInvincibilityCounter(0x40);
         playerState.equipmentLevels().setRunningWithPegasusBoots(true);
         playerState.playerRewards().applyEntityPickup(0x2D);
@@ -596,8 +595,8 @@ final class PlayerStateTest {
 
         byte[] bytes = SaveRamImage.empty().bytes();
         int main = SaveRamLayout.slotOffset(0) + SaveRamLayout.mainOffset();
-        bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) PlayerState.INVENTORY_BOW;
-        bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] = (byte) PlayerState.INVENTORY_HOOKSHOT;
+        bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) InventoryItem.BOW.romValue();
+        bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] = (byte) InventoryItem.HOOKSHOT.romValue();
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + slot] = (byte) (0x30 + slot);
         }
@@ -629,7 +628,7 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET] = 0x02;
         bytes[main + SaveRamLayout.MAIN_NAME_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_NAME_OFFSET + 1] = 2;
-        bytes[SaveRamLayout.slotOffset(0) + SaveRamLayout.dx3Offset()] = (byte) PlayerState.TUNIC_RED;
+        bytes[SaveRamLayout.slotOffset(0) + SaveRamLayout.dx3Offset()] = (byte) Tunic.RED.romValue();
 
         SaveSlotState saved = SaveRamImage.fromBytes(bytes).readSlot(0);
         playerState.playerSaveLoader().applySavedGame(saved);
@@ -649,8 +648,8 @@ final class PlayerStateTest {
         assertEquals(4, playerState.progression().birdKeyCount());
         assertEquals(5, playerState.progression().goldenLeavesCount());
         assertEquals(2, playerState.equipmentLevels().powerBraceletLevel());
-        assertEquals(PlayerState.INVENTORY_BOW, playerState.inventory().itemB());
-        assertEquals(PlayerState.INVENTORY_HOOKSHOT, playerState.inventory().itemA());
+        assertEquals(InventoryItem.BOW.romValue(), playerState.inventory().itemB());
+        assertEquals(InventoryItem.HOOKSHOT.romValue(), playerState.inventory().itemA());
         assertEquals(0x30, playerState.inventory().subscreenItem(0));
         assertEquals(2, playerState.equipmentLevels().shieldLevel());
         assertEquals(2, playerState.equipmentLevels().swordLevel());
@@ -662,10 +661,9 @@ final class PlayerStateTest {
         assertEquals(20, playerState.ammunition().maxMagicPowder());
         assertEquals(0x05, playerState.progression().ocarinaSongFlags());
         assertEquals(0x02, playerState.progression().selectedSongIndex());
-        assertEquals(PlayerState.TUNIC_RED, playerState.equipmentLevels().tunicType());
+        assertEquals(Tunic.RED.romValue(), playerState.equipmentLevels().tunicType());
         assertEquals(0, playerState.vitals().invincibilityCounter());
-        assertEquals(
-                PlayerState.ACTIVE_POWER_UP_NONE, playerState.equipmentLevels().activePowerUp());
+        assertEquals(PowerUp.NONE.romValue(), playerState.equipmentLevels().activePowerUp());
         assertFalse(playerState.equipmentLevels().runningWithPegasusBoots());
         assertEquals(0, playerState.vitals().addHealthBuffer());
         assertEquals(0, playerState.wallet().addRupeeBuffer());

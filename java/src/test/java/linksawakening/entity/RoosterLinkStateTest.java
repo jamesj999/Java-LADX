@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,7 @@ final class RoosterLinkStateTest {
         assertTrue(link.airborne().isAirborne());
         assertEquals(0x14, link.animation().romEntityZ());
         assertEquals(0x00, link.airborne().zVelocity());
-        assertEquals(Link.DIRECTION_UP, link.animation().direction());
+        assertEquals(Direction.UP.javaIndex(), link.animation().direction());
 
         link.actions().clearRoosterCarryState();
 

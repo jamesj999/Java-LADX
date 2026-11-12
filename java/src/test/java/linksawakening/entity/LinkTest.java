@@ -16,7 +16,10 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
+import linksawakening.state.Tunic;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -248,7 +251,7 @@ final class LinkTest extends LinkFixture {
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
         PlayerState playerState = new PlayerState();
-        playerState.inventory().setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
+        playerState.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
         RomTables romTables = RomTables.loadFromRom(loadRom());
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
@@ -283,7 +286,7 @@ final class LinkTest extends LinkFixture {
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         PlayerState playerState = new PlayerState();
-        playerState.inventory().setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
+        playerState.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
         RomTables romTables = RomTables.loadFromRom(loadRom());
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = 0x00;
@@ -366,13 +369,13 @@ final class LinkTest extends LinkFixture {
         byte[] green = new byte[linksawakening.gpu.Framebuffer.WIDTH * linksawakening.gpu.Framebuffer.HEIGHT * 4];
         link.animation().render(green, 0, 0);
 
-        playerState.equipmentLevels().setTunicType(PlayerState.TUNIC_RED);
+        playerState.equipmentLevels().setTunicType(Tunic.RED.romValue());
         byte[] red = new byte[green.length];
         link.animation().render(red, 0, 0);
 
         int changedPixels = 0;
-        int greenTunicColor = tunicPalette.forTunic(PlayerState.TUNIC_GREEN)[2];
-        int redTunicColor = tunicPalette.forTunic(PlayerState.TUNIC_RED)[2];
+        int greenTunicColor = tunicPalette.forTunic(Tunic.GREEN.romValue())[2];
+        int redTunicColor = tunicPalette.forTunic(Tunic.RED.romValue())[2];
         for (int i = 0; i < green.length; i += 4) {
             int greenColor = pixelColor(green, i);
             int redColor = pixelColor(red, i);
@@ -448,7 +451,7 @@ final class LinkTest extends LinkFixture {
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         link.motion().update();
 
-        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
+        assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
     }
 
     @Test
@@ -471,7 +474,7 @@ final class LinkTest extends LinkFixture {
 
         link.animation().faceRomDirectionPreservingWalkPhase(0);
 
-        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
+        assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
         assertEquals(0x0B, resolvedAnimationState(link));
         assertEquals(1, walkFrame.getInt(link.linkAnimationState));
         assertEquals(3, walkTickCounter.getInt(link.linkAnimationState));
@@ -727,7 +730,7 @@ final class LinkTest extends LinkFixture {
         link.sideView().applySideViewPlatformContact(0, 0x50, 0x02, true);
 
         link.motion().update();
-        playerState.inventory().setItemA(PlayerState.INVENTORY_EMPTY);
+        playerState.inventory().setItemA(InventoryItem.EMPTY.romValue());
         link.motion().update();
 
         assertEquals(0x40, link.position().pixelX());
