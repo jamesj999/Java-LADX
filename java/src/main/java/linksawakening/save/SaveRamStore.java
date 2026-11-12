@@ -3,17 +3,21 @@ package linksawakening.save;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import linksawakening.state.PlayerState;
 
 /** Host persistence adapter for the source-shaped SRAM image. */
 public final class SaveRamStore {
 
     private final Path path;
+    private Path corruptBackup;
     private final SaveRamImage image;
 
     private SaveRamStore(Path path, SaveRamImage image) {
@@ -24,14 +28,30 @@ public final class SaveRamStore {
     public static SaveRamStore open(Path path) throws IOException {
         Objects.requireNonNull(path, "path");
         SaveRamImage image;
+        Path backup = null;
         if (!Files.exists(path)) {
             image = SaveRamImage.empty();
         } else {
             byte[] bytes = Files.readAllBytes(path);
-            image = bytes.length == SaveRamLayout.IMAGE_SIZE ? SaveRamImage.fromBytes(bytes) : SaveRamImage.empty();
+            if (bytes.length == SaveRamLayout.IMAGE_SIZE) {
+                image = SaveRamImage.fromBytes(bytes);
+            } else {
+                String timestamp = Instant.now().toString().replace(':', '-');
+                backup = path.resolveSibling(path.getFileName() + ".corrupt-" + timestamp);
+                Files.copy(path, backup);
+                System.err.println("Wrong-sized save preserved at " + backup);
+                image = SaveRamImage.empty();
+            }
             image.initializeInvalidSlots();
         }
-        return new SaveRamStore(path, image);
+        SaveRamStore store = new SaveRamStore(path, image);
+        store.corruptBackup = backup;
+        return store;
+    }
+
+    /** Original wrong-sized image preserved during open, when present. */
+    public Optional<Path> corruptBackup() {
+        return Optional.ofNullable(corruptBackup);
     }
 
     public static SaveRamStore inMemory() {
@@ -141,7 +161,12 @@ public final class SaveRamStore {
                 }
                 channel.force(true);
             }
-            Files.move(temporary, absolutePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                Files.move(
+                        temporary, absolutePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException unsupported) {
+                Files.move(temporary, absolutePath, StandardCopyOption.REPLACE_EXISTING);
+            }
         } finally {
             Files.deleteIfExists(temporary);
         }

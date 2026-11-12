@@ -6,6 +6,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
+/** Resolves area music through ROM tables and source-shaped overrides. */
 public final class AreaMusicResolver {
     private static final int SELECT_MUSIC_BANK = RomSymbols.OverworldMusicTracks.bank();
     private static final int OVERWORLD_MUSIC_TRACKS_ADDR = RomSymbols.OverworldMusicTracks.address();

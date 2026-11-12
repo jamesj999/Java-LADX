@@ -53,13 +53,15 @@ Key types: OpeningStory.
 
 ### `audio`
 
-Audio implementation namespace containing sequencing, synthesis and output components.
-Key types: music, sfx, apu, openal, browser.
+ROM sequencing, deterministic synthesis, pure sample transport and host output.
+Only `audio.openal` may reference LWJGL. Browser models are headless.
+Key types: MusicDriver, MusicVoiceEmitter, GameBoyApu, FrameAudioMixer, OpenAlStream.
 
 ### `config`
 
-Application configuration and launch preferences.
-Key types: AppConfig.
+Application configuration and launch preferences through a strict JSON reader.
+Malformed JSON fails with a source position; no JSON dependency is required.
+Key types: AppConfig, MiniJson.
 
 ### `cutscene`
 
@@ -93,8 +95,9 @@ Key types: GPU, Vram, AnimatedTiles, RoomTileLoader.
 
 ### `input`
 
-Input bindings and current/edge state.
-Key types: InputConfig, InputState.
+Native-free bindings and held/edge state with stable numeric engine key codes.
+DesktopHost translates GLFW actions at the callback boundary; edge ordering is unchanged.
+Key types: InputConfig, InputState, KeyCodes.
 
 ### `physics`
 
@@ -113,8 +116,11 @@ Key types: Rom, RomAddress, RomSymbols, GbcBanks.
 
 ### `save`
 
-Save RAM layout, images, slots and persistence.
-Key types: SaveRamStore, SaveRamImage, SaveSlotState.
+Source-shaped SRAM layout, image operations, player-field codec and host persistence.
+Wrong-sized saves are copied to timestamped corrupt backups before initialization.
+Persistence writes a complete temporary image then replaces the destination atomically
+where supported, with a replacement-move fallback.
+Key types: SaveRamStore, SaveRamLayout, SaveRamImage, SaveSlotCodec, SaveSlotState.
 
 ### `scene`
 

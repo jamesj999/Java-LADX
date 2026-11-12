@@ -210,4 +210,17 @@ class OpenAlPcmSoundOutputTest {
             assertEquals(PcmAlDevice.PLAYING, device.state);
         }
     }
+
+    @Test
+    void recoveryDoesNotRetryBuffersAlreadyDeletedBeforeCleanupFailure() {
+        var device = new FakePcmAlDevice();
+        try (var output = new OpenAlPcmSoundOutput(device)) {
+            prefill(output);
+            device.failDeleteId = 2;
+            output.playReplacing(new short[160], 48000);
+            assertEquals(1, device.deleteAttempts.stream().filter(id -> id == 1).count());
+            assertEquals(2, device.deleteAttempts.stream().filter(id -> id == 2).count());
+            assertTrue(device.allocated.isEmpty());
+        }
+    }
 }

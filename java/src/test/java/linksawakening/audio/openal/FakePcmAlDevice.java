@@ -11,6 +11,8 @@ final class FakePcmAlDevice implements PcmAlDevice {
     boolean stopDuringQueue, connected = true, closed;
     String failOnce, failAlways;
     int processedQueries;
+    int failDeleteId;
+    final List<Integer> deleteAttempts = new ArrayList<>();
 
     private void fail(String operation) {
         if (operation.equals(failAlways) || operation.equals(failOnce)) {
@@ -70,6 +72,11 @@ final class FakePcmAlDevice implements PcmAlDevice {
 
     @Override
     public void deleteBuffer(int buffer) {
+        deleteAttempts.add(buffer);
+        if (buffer == failDeleteId) {
+            failDeleteId = 0;
+            throw new IllegalStateException("injected mid-cleanup deletion failure");
+        }
         fail("delete");
         if (buffers.contains(buffer)) throw new IllegalStateException("AL_INVALID_OPERATION: buffer still queued");
         if (allocated.remove(buffer)) deletes.merge(buffer, 1, Integer::sum);

@@ -18,10 +18,14 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
     private final PcmSoundOutput output;
     private final int sampleRate;
     private int remainder;
+    private final short[] wholeFramePcm;
+    private final short[] extraFramePcm;
 
     public FrameAudioPlayer(byte[] rom, int sampleRate, PcmSoundOutput output) {
         if (sampleRate < 60) throw new IllegalArgumentException("sampleRate must be at least 60");
         this.sampleRate = sampleRate;
+        wholeFramePcm = new short[(sampleRate / 60) * 2];
+        extraFramePcm = sampleRate % 60 == 0 ? wholeFramePcm : new short[(sampleRate / 60 + 1) * 2];
         this.output = Objects.requireNonNull(output, "output");
         apu = new GameBoyApu(sampleRate);
         music = new MusicDriver(rom, apu);
@@ -48,7 +52,13 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         remainder += sampleRate;
         int frames = remainder / 60;
         remainder %= 60;
-        output.playFrame(apu.render(frames), sampleRate);
+        if (output instanceof ReusableFramePcmOutput) {
+            short[] pcm = frames == sampleRate / 60 ? wholeFramePcm : extraFramePcm;
+            apu.renderInto(pcm, 0, frames);
+            output.playFrame(pcm, sampleRate);
+        } else {
+            output.playFrame(apu.render(frames), sampleRate);
+        }
     }
 
     @Override

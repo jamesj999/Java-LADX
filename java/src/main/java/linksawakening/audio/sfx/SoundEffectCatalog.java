@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/** Catalog of named ROM-backed effects grouped by namespace. */
 public final class SoundEffectCatalog {
     private static final String[] JINGLE_NAMES = {
         "JINGLE_TREASURE_FOUND", "JINGLE_PUZZLE_SOLVED", "JINGLE_ENEMY_HIT",

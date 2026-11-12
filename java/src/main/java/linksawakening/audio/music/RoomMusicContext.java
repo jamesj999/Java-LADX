@@ -4,6 +4,7 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.transition.Warp;
 
+/** Room and player inputs used for ROM music selection. */
 public record RoomMusicContext(
         int roomId,
         int mapId,

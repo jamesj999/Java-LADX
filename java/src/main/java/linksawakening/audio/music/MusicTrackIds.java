@@ -1,5 +1,6 @@
 package linksawakening.audio.music;
 
+/** Stable public track identifiers used by gameplay music routing. */
 public final class MusicTrackIds {
     public static final int MUSIC_NONE = 0x00;
     public static final int MUSIC_TITLE_SCREEN = 0x01;

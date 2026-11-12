@@ -69,7 +69,9 @@ The audio implementation lives under `java/src/main/java/linksawakening/audio`.
 - `MusicCatalog`: builds the selectable music track list from ROM pointer tables.
 - `MusicTrack`: immutable metadata for one track.
 - `MusicOpcode`: opcode classification helpers.
-- `MusicDriver`: interprets music streams at 60 Hz and writes APU registers.
+- `MusicDriver`: sequences ROM music commands at 60 Hz.
+- `MusicVoiceEmitter`: emits channel registers, waveforms and timed articulation.
+- `FrameAudioMixer`: native-free browser PCM mixing and sample clock.
 - `MusicChannelState`: mutable per-channel driver state.
 
 `linksawakening.audio.apu`
@@ -81,19 +83,24 @@ The audio implementation lives under `java/src/main/java/linksawakening/audio`.
 
 `linksawakening.audio.openal`
 
-- `OpenAlMusicPlayer`: OpenAL device/context/source ownership and streaming buffers.
+- `OpenAlMusicPlayer`: browser transport controls.
+- `OpenAlStream`: native device/context/source, reusable streaming storage and buffer pool.
 
 `linksawakening.audio.sfx`
 
 - `SoundEffectCatalog`: selectable SFX metadata and public ids.
 - `SoundEffectPlayer`: 60 Hz SFX playback facade.
 - `RomSoundEffectTables`: reads SFX handler pointers from ROM bank `0x1F`.
-- `RomSoundEffectEngine`: executes the ROM SFX handlers that write APU registers.
+- `RomSoundEffectEngine`: ROM memory/register bus, requests and channel ownership.
+- `SfxCpu`: decodes ROM SFX instructions.
+- `SfxCpuState`: reusable registers, stack, flags and arithmetic.
 
 `linksawakening.audio.browser`
 
 - `AudioBrowserMain`: standalone entry point.
-- `AudioBrowserFrame`: Swing browser UI and transport state.
+- `AudioBrowserFrame` / `BrowserPanels`: Swing view and panel assembly.
+- `MusicBrowserModel` / `BrowserTransportState`: headless search and transport state.
+  The frame retains its nested model names as source-compatible aliases.
 
 Gradle wiring:
 
@@ -116,7 +123,7 @@ When the user presses Play:
 2. `OpenAlMusicPlayer` stops any current playback, starts the `MusicDriver`, and pre-fills OpenAL buffers.
 3. `MusicDriver.start(track)` reads the track header and channel definition pointers.
 4. `MusicDriver.tick60Hz()` interprets stream commands and writes Game Boy sound registers to `GameBoyApu`.
-5. `OpenAlMusicPlayer.renderBufferPcm()` renders PCM from `GameBoyApu`.
+5. `FrameAudioMixer.renderBufferPcm()` renders PCM from `GameBoyApu`.
 6. The player advances the driver at exactly 60 Hz based on rendered sample frames, not wall-clock time.
 7. PCM is queued into OpenAL as stereo 16-bit buffers.
 
@@ -200,7 +207,7 @@ Keep the APU independent from ROM parsing and OpenAL. It should know only regist
 
 ## OpenAL Player
 
-`OpenAlMusicPlayer` owns native audio resources:
+`OpenAlStream`, owned by `OpenAlMusicPlayer`, owns native audio resources:
 
 - ALC device
 - ALC context
@@ -336,3 +343,32 @@ frame (60 Hz); sample remainders preserve exact long-term sample counts.
 The session closes the output. The audio browser retains `OpenAlMusicPlayer`
 for its independent sample-driven audition controls. Legacy one-shot sinks
 remain available to standalone clients, but are no longer session wiring.
+
+## Allocation and compatibility contracts
+
+`GameBoyApu.renderInto(samples, offset, frames)` writes stereo samples into
+caller-owned storage, including clearing silent spans. `render(frames)` retains
+its allocating, owned-array API. `setPrimitiveRegisterObserver` observes integer
+register/value pairs without boxing; the original `setRegisterObserver(BiConsumer)`
+is retained as a diagnostic compatibility adapter. No observer is installed by default.
+
+Browser streaming reuses PCM and direct upload storage and keeps native buffer
+ids in a primitive ring. The SFX interpreter reuses its CPU and stack, resetting
+all execution registers for each invocation. Music cycle detection stores exact
+parse-position tuples in reusable primitive storage and retains zero-time-loop errors.
+Validated hot ROM byte reads avoid constructing temporary address wrappers.
+
+`ReusableFramePcmOutput` explicitly promises synchronous consumption without
+retaining caller storage. Desktop output implements it, allowing `FrameAudioPlayer`
+to reuse its whole/fractional frame buffers. Other outputs retain the original
+fresh-array ownership behavior. One-shot audition returns owned storage and uses
+a single working buffer across its emulated ticks.
+
+`AudioGoldenTest` pins SHA-256 register streams and little-endian stereo PCM for
+three tracks and three SFX, each over 240 frames at 48 kHz. These hashes were
+captured before the refactor. `AudioAllocationTest` measures warmed-up synthetic
+music plus APU rendering with ThreadMXBean; its guard is below 256 bytes/tick.
+`FrameAudioMixerTest` checks original chunk/tick ordering at 48,000, 48,001 and
+30 Hz sample rates without native audio. Boundary tests reject LWJGL references
+outside `audio.openal` and anywhere in `input`; source checks also catch inlined
+GLFW constant imports. All these tests are headless.

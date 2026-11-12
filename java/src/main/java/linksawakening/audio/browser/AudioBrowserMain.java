@@ -10,6 +10,7 @@ import linksawakening.audio.openal.OpenAlMusicPlayer;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 
+/** Standalone entry point for the Swing audio audition tool. */
 public final class AudioBrowserMain {
     private static final int SAMPLE_RATE = 48_000;
     private static final String ROM_RESOURCE = "rom/azle.gbc";

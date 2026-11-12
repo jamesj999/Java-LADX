@@ -1,7 +1,8 @@
 package linksawakening.input;
 
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static linksawakening.input.KeyCodes.*;
+
+import java.util.Arrays;
 
 /**
  * Polled held-key state, separate from GLFW's one-shot press/release events.
@@ -25,10 +26,10 @@ public final class InputState {
         if (key < 0 || key >= MAX_KEYS) {
             return;
         }
-        if (action == GLFW_PRESS && !down[key]) {
+        if (action == PRESS && !down[key]) {
             down[key] = true;
             pressed[key] = true;
-        } else if (action == GLFW_RELEASE && down[key]) {
+        } else if (action == RELEASE && down[key]) {
             down[key] = false;
             released[key] = true;
         }
@@ -57,13 +58,13 @@ public final class InputState {
 
     /** Discard held keys and edges when entering/leaving a modal debug UI. */
     public void clear() {
-        java.util.Arrays.fill(down, false);
+        Arrays.fill(down, false);
         tickEdges();
     }
 
     /** Clear consumed edges while retaining held state for the next frame. */
     public void tickEdges() {
-        java.util.Arrays.fill(pressed, false);
-        java.util.Arrays.fill(released, false);
+        Arrays.fill(pressed, false);
+        Arrays.fill(released, false);
     }
 }
