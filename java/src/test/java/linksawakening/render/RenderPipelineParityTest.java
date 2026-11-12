@@ -27,7 +27,7 @@ final class RenderPipelineParityTest {
                         byte[] legacy = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
                         byte[] hardware = legacy.clone();
                         LegacySceneReference.render(scene, legacy, gpu);
-                        scene.drawTo(hardware, gpu, RenderPipeline.HARDWARE);
+                        scene.hardwareFrame(gpu).compose(hardware);
                         assertArrayEquals(legacy, hardware, "x=" + x + " height=" + height + " flip=" + fx + "," + fy);
                     }
     }
@@ -52,7 +52,7 @@ final class RenderPipelineParityTest {
                 byte[] legacy = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
                 byte[] hardware = legacy.clone();
                 LegacySceneReference.render(scene, legacy, gpu);
-                scene.drawTo(hardware, gpu, RenderPipeline.HARDWARE);
+                scene.hardwareFrame(gpu).compose(hardware);
                 assertArrayEquals(legacy, hardware, "scroll=" + x + "," + y);
             }
     }
@@ -61,7 +61,8 @@ final class RenderPipelineParityTest {
     void unmigratedLayerIsRejectedBeforeDrawing() {
         byte[] output = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         FrameScene scene = FrameScene.of(List.of(context -> fail("must not draw")));
-        assertThrows(IllegalStateException.class, () -> scene.drawTo(output, new GPU(), RenderPipeline.HARDWARE));
+        assertThrows(IllegalStateException.class, () -> scene.hardwareFrame(new GPU())
+                .compose(output));
         assertArrayEquals(new byte[output.length], output);
     }
 }

@@ -28,8 +28,8 @@ final class ComposeAllocationTest {
         byte[] output = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         ThreadMXBean bean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
         bean.setThreadAllocatedMemoryEnabled(true);
-        var observer = FrameScene.DRAW_OBSERVER.get();
-        FrameScene.DRAW_OBSERVER.remove();
+        var observer = TestDrawObservers.CURRENT.get();
+        TestDrawObservers.CURRENT.remove();
         try {
             for (int i = 0; i < 1000; i++) scene.drawTo(output, gpu);
             long thread = Thread.currentThread().threadId();
@@ -39,7 +39,7 @@ final class ComposeAllocationTest {
             System.out.println("Compose allocation: " + bytes + " bytes/frame");
             assertTrue(bytes >= 0);
         } finally {
-            if (observer != null) FrameScene.DRAW_OBSERVER.set(observer);
+            if (observer != null) TestDrawObservers.CURRENT.set(observer);
         }
     }
 }

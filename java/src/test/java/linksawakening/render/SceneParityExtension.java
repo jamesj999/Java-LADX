@@ -27,9 +27,13 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
         var expectedSources = new java.util.TreeMap<String, Group>();
         context.getStore(KEY).put("expectedSources", expectedSources);
         boolean probe = Boolean.getBoolean("sceneParity.probe");
-        FrameScene.DRAW_OBSERVER.set((scene, rgba, gpu, pipeline) -> {
+        TestDrawObservers.CURRENT.set((scene, rgba, gpu) -> {
             String id = Integer.toString(rows.size());
-            var blocked = scene.unmigratedLayers();
+            var blocked = scene.layersForComparison().stream()
+                    .filter(layer -> !(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
+                    .map(layer -> layer.getClass().getName())
+                    .distinct()
+                    .toList();
             if (!blocked.isEmpty()) {
                 rows.add(id + "\tBLOCKED\t" + String.join(",", blocked));
                 return;
@@ -93,7 +97,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-        FrameScene.DRAW_OBSERVER.remove();
+        TestDrawObservers.CURRENT.remove();
         @SuppressWarnings("unchecked")
         var rows = (ArrayList<String>) context.getStore(KEY).remove("rows");
         if (rows == null || rows.size() == 1) return;

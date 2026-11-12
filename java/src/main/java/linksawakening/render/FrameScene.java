@@ -1,6 +1,7 @@
 package linksawakening.render;
 
 import java.util.List;
+import java.util.ServiceLoader;
 import linksawakening.gpu.GPU;
 
 public final class FrameScene {
@@ -10,20 +11,8 @@ public final class FrameScene {
     private HardwareFrame reusableFrame;
     private final boolean hardwareSupported;
 
-    @FunctionalInterface
-    interface DrawObserver {
-        void drawn(FrameScene scene, byte[] rgba, GPU gpu, RenderPipeline pipeline);
-    }
-
-    static final ThreadLocal<DrawObserver> DRAW_OBSERVER = new ThreadLocal<>();
-
-    List<String> unmigratedLayers() {
-        return layers.stream()
-                .filter(layer -> !(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
-                .map(layer -> layer.getClass().getName())
-                .distinct()
-                .toList();
-    }
+    private static final FrameDrawObserver.Provider OBSERVERS =
+            ServiceLoader.load(FrameDrawObserver.Provider.class).findFirst().orElse(null);
 
     private FrameScene(List<RenderLayer> layers) {
         this.layers = List.copyOf(layers);
@@ -45,25 +34,18 @@ public final class FrameScene {
     }
 
     public void drawTo(byte[] buffer, GPU gpu) {
+        drawTo(buffer, gpu, OBSERVERS == null ? null : OBSERVERS.current());
+    }
+
+    public void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
         if (!hardwareSupported) {
             // Preserve the original functional RenderLayer callback API outside production scenes.
             RgbaCallbackCompatibility.drawCallbacks(layers, buffer, gpu);
-            notifyDraw(buffer, gpu);
+            if (observer != null) observer.drawn(this, buffer, gpu);
             return;
         }
-        drawTo(buffer, gpu, RenderPipeline.HARDWARE);
-    }
-
-    public void drawTo(byte[] buffer, GPU gpu, RenderPipeline pipeline) {
-        java.util.Objects.requireNonNull(pipeline, "pipeline");
-        HardwareFrame frame = hardwareFrame(gpu);
-        frame.compose(buffer);
-        notifyDraw(buffer, gpu);
-    }
-
-    private void notifyDraw(byte[] buffer, GPU gpu) {
-        DrawObserver observer = DRAW_OBSERVER.get();
-        if (observer != null) observer.drawn(this, buffer, gpu, RenderPipeline.HARDWARE);
+        hardwareFrame(gpu).compose(buffer);
+        if (observer != null) observer.drawn(this, buffer, gpu);
     }
 
     List<RenderLayer> layersForComparison() {
