@@ -1,6 +1,8 @@
 package linksawakening.render;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.IntUnaryOperator;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 
@@ -14,10 +16,12 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     final int[] objects = new int[WIDTH * HEIGHT];
     final int[] objectOrder = new int[WIDTH * HEIGHT];
     final boolean[] objectBehind = new boolean[WIDTH * HEIGHT];
-    private java.util.function.IntUnaryOperator paletteTransform = color -> color;
-    private final java.util.function.IntUnaryOperator[] bgTransforms =
-            new java.util.function.IntUnaryOperator[WIDTH * HEIGHT];
-    private java.util.function.IntUnaryOperator objectPaletteTransform = color -> color;
+    private static final IntUnaryOperator IDENTITY = color -> color;
+    private int paletteTransform;
+    private final int[] bgTransforms = new int[WIDTH * HEIGHT];
+    private final ArrayList<IntUnaryOperator> transforms = new ArrayList<>();
+    private int[] copiedTransforms = new int[16];
+    private IntUnaryOperator objectPaletteTransform = IDENTITY;
     private String submittingLayer = "unknown";
     int closedWindowY = Integer.MAX_VALUE;
     final boolean backgroundPriorityEnabled;
@@ -32,7 +36,28 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         this.diagnostics = diagnostics;
         if (diagnostics != null) diagnostics.attach(this);
         this.backgroundPriorityEnabled = backgroundPriorityEnabled;
+        transforms.add(IDENTITY);
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
+    }
+
+    /** Clears submitted planes and entries while retaining all scratch storage. */
+    public void reset() {
+        Arrays.fill(backgroundPalettes, null);
+        Arrays.fill(backgroundIndex, (byte) 0);
+        Arrays.fill(backgroundPriority, false);
+        Arrays.fill(bgTransforms, 0);
+        Arrays.fill(objectOrder, Integer.MAX_VALUE);
+        Arrays.fill(objectBehind, false);
+        Arrays.fill(objects, 0);
+        transforms.clear();
+        transforms.add(IDENTITY);
+        paletteTransform = 0;
+        objectPaletteTransform = IDENTITY;
+        submittingLayer = "unknown";
+        closedWindowY = Integer.MAX_VALUE;
+        inventoryCutoffY = -1;
+        oam.clear();
+        nextEntry = 0;
     }
 
     HardwareFrameDiagnostics diagnostics() {
@@ -45,14 +70,11 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     /** Call BG first, then window tiles in screen coordinates. */
     public void backgroundTile(Tile tile, int x, int y, boolean flipX, boolean flipY, int[] palette, boolean priority) {
-        stamp(tile, x, y, flipX, flipY, (pixel, index) -> {
-            if (diagnostics != null) diagnostics.approvedHudEvidence[pixel] = false;
-            if (diagnostics != null) diagnostics.bgSources[pixel] = submittingLayer;
-            backgroundPalettes[pixel] = palette;
-            bgTransforms[pixel] = paletteTransform;
-            backgroundIndex[pixel] = (byte) index;
-            backgroundPriority[pixel] = priority;
-        });
+        if (tile == null) return;
+        for (int ty = 0; ty < 8; ty++)
+            for (int tx = 0; tx < 8; tx++)
+                backgroundPixel(
+                        x + tx, y + ty, tile.getPixel(flipX ? 7 - tx : tx, flipY ? 7 - ty : ty), palette, priority);
     }
 
     public void backgroundPixel(int x, int y, int index, int[] palette, boolean priority) {
@@ -111,7 +133,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     int backgroundRgb(int pixel) {
         if (backgroundPalettes[pixel] == null) return 0;
-        return bgTransforms[pixel].applyAsInt(backgroundPalettes[pixel][backgroundIndex[pixel]]);
+        return transforms.get(bgTransforms[pixel]).applyAsInt(backgroundPalettes[pixel][backgroundIndex[pixel]]);
     }
 
     public void withLayerSource(String name, Runnable submission) {
@@ -124,17 +146,15 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         }
     }
 
-    public void withPaletteTransform(java.util.function.IntUnaryOperator transform, Runnable submission) {
+    public void withPaletteTransform(IntUnaryOperator transform, Runnable submission) {
         withPaletteTransforms(transform, transform, submission);
     }
 
-    public void withPaletteTransforms(
-            java.util.function.IntUnaryOperator background,
-            java.util.function.IntUnaryOperator object,
-            Runnable submission) {
+    public void withPaletteTransforms(IntUnaryOperator background, IntUnaryOperator object, Runnable submission) {
         var previousBg = paletteTransform;
         var previousObj = objectPaletteTransform;
-        paletteTransform = background.andThen(previousBg);
+        paletteTransform = transforms.size();
+        transforms.add(background.andThen(transforms.get(previousBg)));
         objectPaletteTransform = object.andThen(previousObj);
         try {
             submission.run();
@@ -146,6 +166,11 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     public void copyBackgroundRows(HardwareFrame source, int rows) {
         if (rows < 0 || rows > HEIGHT) throw new IllegalArgumentException("Background row count");
+        if (copiedTransforms.length < source.transforms.size()) copiedTransforms = new int[source.transforms.size()];
+        for (int i = 0; i < source.transforms.size(); i++) {
+            copiedTransforms[i] = transforms.size();
+            transforms.add(source.transforms.get(i).andThen(transforms.get(paletteTransform)));
+        }
         for (int pixel = 0; pixel < rows * WIDTH; pixel++) {
             backgroundPalettes[pixel] = source.backgroundPalettes[pixel];
             backgroundIndex[pixel] = source.backgroundIndex[pixel];
@@ -157,48 +182,104 @@ public final class HardwareFrame implements RenderLayer, OamSink {
                         source.diagnostics == null ? 0 : source.diagnostics.hudAttributes[pixel];
             if (diagnostics != null) diagnostics.bgSources[pixel] = submittingLayer;
             if (diagnostics != null) diagnostics.approvedHudEvidence[pixel] = false;
-            bgTransforms[pixel] = source.bgTransforms[pixel] == null
-                    ? paletteTransform
-                    : source.bgTransforms[pixel].andThen(paletteTransform);
+            bgTransforms[pixel] = copiedTransforms[source.bgTransforms[pixel]];
         }
     }
 
-    record ObjectTile(
-            Tile tile,
-            int x,
-            int y,
-            boolean flipX,
-            boolean flipY,
-            int[] palette,
-            int order,
-            boolean behind,
-            String source,
-            int entryY,
-            java.util.function.IntUnaryOperator transform) {}
+    static final class ObjectTile {
+        Tile tile;
 
-    private final java.util.List<ObjectTile> oam = new java.util.ArrayList<>();
+        Tile tile() {
+            return tile;
+        }
+
+        int x;
+
+        int x() {
+            return x;
+        }
+
+        int y;
+
+        int y() {
+            return y;
+        }
+
+        boolean flipX;
+
+        boolean flipX() {
+            return flipX;
+        }
+
+        boolean flipY;
+
+        boolean flipY() {
+            return flipY;
+        }
+
+        int[] palette;
+
+        int[] palette() {
+            return palette;
+        }
+
+        int order;
+
+        int order() {
+            return order;
+        }
+
+        boolean behind;
+
+        boolean behind() {
+            return behind;
+        }
+
+        String source;
+
+        String source() {
+            return source;
+        }
+
+        int entryY;
+
+        int entryY() {
+            return entryY;
+        }
+
+        IntUnaryOperator transform;
+
+        IntUnaryOperator transform() {
+            return transform;
+        }
+    }
+
+    private final ArrayList<ObjectTile> oam = new ArrayList<>();
+    private final ArrayList<ObjectTile> entryPool = new ArrayList<>();
+    private int nextEntry;
 
     @Override
     public void append(Tile tile, int x, int y, boolean flipX, boolean flipY, int[] palette, boolean behindBackground) {
-        oam.add(new ObjectTile(
-                tile,
-                x,
-                y,
-                flipX,
-                flipY,
-                palette,
-                oam.size(),
-                behindBackground,
-                submittingLayer,
-                y,
-                objectPaletteTransform));
+        appendFromEntry(y, tile, x, y, flipX, flipY, palette, behindBackground);
     }
 
     @Override
     public void appendFromEntry(
             int entryY, Tile tile, int x, int y, boolean fx, boolean fy, int[] palette, boolean behind) {
-        oam.add(new ObjectTile(
-                tile, x, y, fx, fy, palette, oam.size(), behind, submittingLayer, entryY, objectPaletteTransform));
+        if (nextEntry == entryPool.size()) entryPool.add(new ObjectTile());
+        ObjectTile entry = entryPool.get(nextEntry++);
+        entry.tile = tile;
+        entry.x = x;
+        entry.y = y;
+        entry.flipX = fx;
+        entry.flipY = fy;
+        entry.palette = palette;
+        entry.order = oam.size();
+        entry.behind = behind;
+        entry.source = submittingLayer;
+        entry.entryY = entryY;
+        entry.transform = objectPaletteTransform;
+        oam.add(entry);
     }
 
     /** bank1.asm $5F6A-$5FB2: skip reserved Link/prompt entries 0-8, hide whole other entries. */
@@ -236,18 +317,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private void compose(byte[] buffer, boolean overlay) {
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
         if (diagnostics != null) Arrays.fill(diagnostics.objSources, null);
-        for (ObjectTile entry : oam) {
-            stamp(entry.tile(), entry.x(), entry.y(), entry.flipX(), entry.flipY(), (pixel, index) -> {
-                if (index == 0) return;
-                objects[pixel] = entry.transform().applyAsInt(entry.palette()[index]);
-                if (diagnostics != null) diagnostics.objSources[pixel] = entry.source();
-                if (diagnostics != null)
-                    diagnostics.objFlags[pixel] =
-                            (entry.flipX() ? 32 : 0) | (entry.flipY() ? 64 : 0) | (entry.behind() ? 128 : 0);
-                objectOrder[pixel] = entry.order();
-                objectBehind[pixel] = entry.behind();
-            });
-        }
+        for (int i = 0; i < oam.size(); i++) rasterizeObject(oam.get(i));
         int pixels = overlay ? Math.min(backgroundIndex.length, buffer.length / 4) : backgroundIndex.length;
         for (int pixel = 0; pixel < pixels; pixel++) {
             if (overlay && backgroundPalettes[pixel] == null && objectOrder[pixel] == Integer.MAX_VALUE) continue;
@@ -261,6 +331,26 @@ public final class HardwareFrame implements RenderLayer, OamSink {
             buffer[offset + 2] = (byte) rgb;
             buffer[offset + 3] = (byte) 255;
         }
+    }
+
+    private void rasterizeObject(ObjectTile entry) {
+        if (entry.tile == null) return;
+        for (int ty = 0; ty < 8; ty++)
+            for (int tx = 0; tx < 8; tx++) {
+                int x = entry.x + tx, y = entry.y + ty;
+                if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) continue;
+                int index = entry.tile.getPixel(entry.flipX ? 7 - tx : tx, entry.flipY ? 7 - ty : ty);
+                if (index == 0) continue;
+                int pixel = y * WIDTH + x;
+                objects[pixel] = entry.transform.applyAsInt(entry.palette[index]);
+                objectOrder[pixel] = entry.order;
+                objectBehind[pixel] = entry.behind;
+                if (diagnostics != null) {
+                    diagnostics.objSources[pixel] = entry.source;
+                    diagnostics.objFlags[pixel] =
+                            (entry.flipX ? 32 : 0) | (entry.flipY ? 64 : 0) | (entry.behind ? 128 : 0);
+                }
+            }
     }
 
     interface PixelWriter {

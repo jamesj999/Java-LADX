@@ -7,6 +7,8 @@ public final class FrameScene {
     private static final FrameScene EMPTY = new FrameScene(List.of());
 
     private final List<RenderLayer> layers;
+    private HardwareFrame reusableFrame;
+    private final boolean hardwareSupported;
 
     @FunctionalInterface
     interface DrawObserver {
@@ -25,6 +27,10 @@ public final class FrameScene {
 
     private FrameScene(List<RenderLayer> layers) {
         this.layers = List.copyOf(layers);
+        boolean supported = true;
+        for (RenderLayer layer : layers)
+            if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware()) supported = false;
+        hardwareSupported = supported;
     }
 
     public static FrameScene empty() {
@@ -39,7 +45,7 @@ public final class FrameScene {
     }
 
     public void drawTo(byte[] buffer, GPU gpu) {
-        if (!unmigratedLayers().isEmpty()) {
+        if (!hardwareSupported) {
             // Preserve the original functional RenderLayer callback API outside production scenes.
             RgbaCallbackCompatibility.drawCallbacks(layers, buffer, gpu);
             notifyDraw(buffer, gpu);
@@ -74,12 +80,24 @@ public final class FrameScene {
                 throw new IllegalStateException(
                         "Layer not migrated: " + layer.getClass().getName());
         }
-        HardwareFrame frame = new HardwareFrame(true, diagnostics);
+        HardwareFrame frame;
+        if (diagnostics != null) frame = new HardwareFrame(true, diagnostics);
+        else {
+            if (reusableFrame == null) reusableFrame = new HardwareFrame(true);
+            frame = reusableFrame;
+            frame.reset();
+        }
         for (RenderLayer layer : layers) {
             frame.submittingLayer(layer.getClass().getSimpleName());
             ((HardwareRenderLayer) layer).submit(frame, gpu);
         }
         return frame;
+    }
+
+    static FrameScene of(List<RenderLayer> layers, HardwareFrame frame) {
+        FrameScene scene = new FrameScene(layers);
+        scene.reusableFrame = frame;
+        return scene;
     }
 
     public int layerCount() {
