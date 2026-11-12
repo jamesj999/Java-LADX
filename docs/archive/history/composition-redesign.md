@@ -514,3 +514,49 @@ LinkPosition becomes a final coordinate/speed owner, including room-entry and fi
 | `hasRoomEntryPosition` | `markRoomEntryPosition`, `roomEntryPixelX`, `roomEntryPixelY` |
 
 Result: depth 2 → 0; LinkMotion 389 lines, LinkPosition 347, LinkCollisionState 38. Coordinate and collision fields are private. Two independent position tests check signed-byte integration, fractional final-position shadows and validation before mutation. Full suite: 2,893 tests, zero failures/errors, one skipped.
+
+## Sword swing and spin
+
+Original chain: Sword → SwordChargeMotion → SwordAttackMotion → SwordState.
+
+Sword owns ordinary swing/charge, movement/facing gates and the public equipment API, using the existing SwordRenderer and SwordPalette. SwordSpin owns the queued-start delay, remaining spin frames, sector clock and base direction plus their ROM/fallback lookups; it returns animation values to the swing orchestrator without receiving Sword or its state.
+
+| State/constant | Referencing methods |
+| --- | --- |
+| `DRAW_FRAMES` | `onPress` |
+| `SWING_START_FRAMES` | `tick` |
+| `SWING_MIDDLE_FRAMES` | `tick` |
+| `SPIN_ATTACK_FRAMES` | `tick`, `startSwordAcquisitionSpin` |
+| `SPIN_ANIMATION_STATE_BY_BASE_DIRECTION` | `spinAnimationState` |
+| `SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION` | `effectiveDirection` |
+| `swordTables` | `SwordState`, `overrideAnimationState`, `staticCollisionMapIndex`, `enemyCollisionBox`, `effectiveDirection`, `spinAnimationState` |
+| `renderer` | `SwordState`, `render`, `submitOam` |
+| `soundSink` | `SwordState`, `SwordState`, `SwordState`, `SwordAttackMotion`, `SwordAttackMotion`, `SwordAttackMotion`, `onPress`, `onRelease`, `tick`, `SwordChargeMotion`, `SwordChargeMotion`, `SwordChargeMotion`, `Sword`, `Sword`, `Sword` |
+| `randomByteSupplier` | `SwordState`, `SwordState`, `SwordState`, `SwordAttackMotion`, `SwordAttackMotion`, `SwordAttackMotion`, `onPress`, `SwordChargeMotion`, `SwordChargeMotion`, `SwordChargeMotion`, `Sword`, `Sword`, `Sword` |
+| `swordPalette` | `SwordState`, `SwordState`, `SwordAttackMotion`, `SwordAttackMotion`, `render`, `SwordChargeMotion`, `SwordChargeMotion`, `submitOam`, `Sword`, `Sword` |
+| `beamTarget` | `SwordState`, `SwordAttackMotion`, `onPress`, `SwordChargeMotion`, `Sword` |
+| `state` | `state`, `staticCollisionActive`, `onPress`, `onRelease`, `releaseHoldWithoutSpin`, `tick`, `blocksMotion`, `suppressesJumpAnimation`, `locksFacing`, `overrideAnimationState`, `render`, `submitOam`, `startSwordAcquisitionSpin`, `resetAfterGameOver`, `resetSpinAttack`, `enemyCollisionBox`, `chargedFlashActive`, `effectiveLinkAnimationState`, `effectiveBladeRenderState`, `advanceSpinAttackAnimation`, `endSpinAttack` |
+| `timer` | `onPress`, `tick`, `resetAfterGameOver` |
+| `animationMotionBlocked` | `tick`, `resetAfterGameOver` |
+| `motionBlockedBeforeAnimation` | `tick`, `blocksTopDownMotion`, `resetAfterGameOver` |
+| `facingLockCountdown` | `tick`, `resetAfterGameOver` |
+| `facingLockedBeforeAnimation` | `tick`, `locksTopDownFacing`, `resetAfterGameOver` |
+| `suppressesJumpAnimation` | `tick`, `suppressesJumpAnimation`, `resetAfterGameOver` |
+| `charge` | `charge`, `onPress`, `onRelease`, `releaseHoldWithoutSpin`, `tick`, `startSwordAcquisitionSpin`, `resetSpinAttack`, `chargedFlashActive` |
+| `frameCounter` | `tick`, `tick`, `chargedFlashActive` |
+| `spinFramesRemaining` | `tick`, `spinAttackActive`, `startSwordAcquisitionSpin`, `resetSpinAttack`, `advanceSpinAttackAnimation`, `endSpinAttack` |
+| `spinFrameCounter` | `tick`, `startSwordAcquisitionSpin`, `resetSpinAttack`, `advanceSpinAttackAnimation`, `endSpinAttack` |
+| `spinSector` | `startSwordAcquisitionSpin`, `resetSpinAttack`, `effectiveDirection`, `spinAnimationState`, `spinSector`, `advanceSpinAttackAnimation`, `endSpinAttack` |
+| `spinBaseDirection` | `onRelease`, `startSwordAcquisitionSpin`, `effectiveDirection`, `spinAnimationState` |
+| `lastKnownDirection` | `onRelease`, `overrideAnimationState`, `render`, `attackDirection`, `staticCollisionMapIndex`, `enemyCollisionBox` |
+| `spinAttackQueued` | `onRelease`, `tick`, `locksTopDownFacing`, `locksFacing`, `startSwordAcquisitionSpin`, `resetSpinAttack` |
+| `queuedSpinDelayFrames` | `onRelease`, `tick`, `startSwordAcquisitionSpin`, `resetSpinAttack` |
+| `STATE_NONE` | `staticCollisionActive`, `onPress`, `onRelease`, `releaseHoldWithoutSpin`, `tick`, `blocksMotion`, `locksFacing`, `overrideAnimationState`, `render`, `submitOam`, `startSwordAcquisitionSpin`, `resetAfterGameOver`, `resetSpinAttack`, `endSpinAttack` |
+| `STATE_DRAW` | `onPress`, `tick` |
+| `STATE_SWING_START` | `tick` |
+| `STATE_SWING_MIDDLE` | `tick` |
+| `STATE_SWING_END` | `tick`, `effectiveLinkAnimationState` |
+| `STATE_HOLDING` | `staticCollisionActive`, `onRelease`, `releaseHoldWithoutSpin`, `tick`, `blocksMotion`, `enemyCollisionBox`, `chargedFlashActive`, `effectiveLinkAnimationState` |
+| `MAX_CHARGE` | `onRelease`, `tick`, `chargedFlashActive` |
+
+Result: depth 3 → 0; four chain files (740 lines) → Sword (398) and SwordSpin (159), retaining the existing renderer/palette collaborators. Spin queue/delay/sector/frame/base-direction state is private and independent of Sword. Two independent tests cover release delay, 25 visible frames, invalid-input atomicity and unknown inactive directions. Full suite: 2,895 tests, zero failures/errors, one skipped.
