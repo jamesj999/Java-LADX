@@ -5,9 +5,11 @@ import linksawakening.world.transition.Warp;
 
 final class RoomProgressView implements RoomProgress {
     private final Dependencies dependencies;
+    private final RoomSession session;
 
-    RoomProgressView(Dependencies dependencies) {
+    RoomProgressView(Dependencies dependencies, RoomSession session) {
         this.dependencies = dependencies;
+        this.session = session;
     }
 
     public void onMapBoundaryWarp(Runnable callback) {
@@ -30,7 +32,7 @@ final class RoomProgressView implements RoomProgress {
     public void clearGameOverPowerCounter() {
         dependencies.entityFrame().enemyDropCounters = new EnemyDropResolver.CounterState(
                 dependencies.entityFrame().enemyDropCounters.guardianAcornCounter(), 0);
-        dependencies.roomLoadCoordinator().configureEnemyDropRuntime();
+        session.configureEnemyDropRuntime();
     }
 
     public void resetGameOverSwitchBlocks() {

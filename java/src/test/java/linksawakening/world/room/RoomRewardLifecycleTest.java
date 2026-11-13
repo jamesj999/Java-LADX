@@ -316,7 +316,7 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x03, 0x65, Warp.CATEGORY_INDOOR);
 
-        session.components.roomStoryState().markHeartContainerCollected();
+        session.components.roomStoryState().markHeartContainerCollected(session.loadedRoomOrNull());
 
         assertEquals(0x20, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x03, 0x65) & 0x20);
         assertEquals(0x20, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x03, 0x66) & 0x20);
@@ -327,7 +327,7 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x06, 0x2F, Warp.CATEGORY_INDOOR);
 
-        session.components.roomStoryState().markHeartContainerCollected();
+        session.components.roomStoryState().markHeartContainerCollected(session.loadedRoomOrNull());
 
         assertEquals(0x20, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x06, 0x2F) & 0x20);
         assertEquals(0x20, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x06, 0x2E) & 0x20);

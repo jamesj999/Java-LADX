@@ -21,11 +21,13 @@ record RoomRoleViews(
                         components.roomLoadCoordinator(), components.roomSessionViews())),
                 new RoomDungeonView(
                         new RoomDungeonView.Dependencies(components.roomSessionViews(), components.roomState())),
-                new RoomProgressView(new RoomProgressView.Dependencies(
-                        components.entityFrame(),
-                        components.location(),
-                        components.roomLoadCoordinator(),
-                        components.terrain())),
+                new RoomProgressView(
+                        new RoomProgressView.Dependencies(
+                                components.entityFrame(),
+                                components.location(),
+                                components.roomLoadCoordinator(),
+                                components.terrain()),
+                        session),
                 new RoomTerrainView(new RoomTerrainView.Dependencies(components.roomObjectMutations())));
     }
 }

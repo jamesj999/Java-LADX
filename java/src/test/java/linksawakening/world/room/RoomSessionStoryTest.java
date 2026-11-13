@@ -133,7 +133,7 @@ final class RoomSessionStoryTest {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x80);
         session.story().setChestPlayerLevels(0, 1, 0);
-        session.components.entityBridge().setEnemyDropPlayerState(3, 3, true);
+        session.setEnemyDropPlayerState(3, 3, true);
 
         int frame = 0;
         boolean restoredPowerMusic = false;

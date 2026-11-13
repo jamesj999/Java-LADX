@@ -86,8 +86,8 @@ final class RoomFrameInputApplier {
     }
 
     private void setEnemyDropPlayerState(int maxHearts, int health, boolean power, boolean low) {
-        bridge.setEnemyDropPlayerState(maxHearts, health, power);
+        session.setEnemyDropPlayerState(maxHearts, health, power);
         frame.enemyDropLowHealth = low;
-        loads.configureEnemyDropRuntime();
+        session.configureEnemyDropRuntime();
     }
 }

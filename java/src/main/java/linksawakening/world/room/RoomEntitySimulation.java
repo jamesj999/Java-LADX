@@ -187,7 +187,7 @@ final class RoomEntitySimulation {
     }
 
     private void configureItems(RoomRuntime loaded) {
-        setup.roomStoryState().updateWitchEnvironment();
+        setup.roomStoryState().updateWitchEnvironment(loaded);
         loaded.entities
                 .configuration()
                 .setOcarinaPlayback(

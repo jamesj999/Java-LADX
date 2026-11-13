@@ -42,16 +42,17 @@ final class RoomEntitySessionState {
     boolean worldLinkMotionBlockPending;
     GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
 
-    void configureEnemyDropRuntime(linksawakening.world.entity.EnemyDropResolver resolver, RoomEntityInputs inputs) {
-        if (runtime == null) {
-            return;
-        }
-        runtime.configuration().setDialogActive(inputs.entityDialogActive);
-        runtime.configuration().setEnemyDropResolver(resolver);
-        runtime.configuration().setEnemyDropCounters(enemyDropCounters);
-        runtime.configuration().setEnemyDropPlayerState(enemyDropMaxHearts, enemyDropHealth, enemyDropActivePowerUp);
+    void configureEnemyDropRuntime(
+            RoomRuntime loaded, linksawakening.world.entity.EnemyDropResolver resolver, RoomEntityInputs inputs) {
+        loaded.entities.configuration().setDialogActive(inputs.entityDialogActive);
+        loaded.entities.configuration().setEnemyDropResolver(resolver);
+        loaded.entities.configuration().setEnemyDropCounters(enemyDropCounters);
+        loaded.entities
+                .configuration()
+                .setEnemyDropPlayerState(enemyDropMaxHearts, enemyDropHealth, enemyDropActivePowerUp);
         if (enemyDropLowHealth != null) {
-            runtime.configuration()
+            loaded.entities
+                    .configuration()
                     .setEnemyDropPlayerState(
                             enemyDropMaxHearts, enemyDropHealth,
                             enemyDropActivePowerUp, enemyDropLowHealth);

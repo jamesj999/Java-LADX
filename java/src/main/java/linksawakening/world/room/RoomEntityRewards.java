@@ -50,7 +50,7 @@ final class RoomEntityRewards {
         if (rewards.isEmpty()) {
             return;
         }
-        dependencies.roomStoryState().markHeartContainerCollected();
+        dependencies.roomStoryState().markHeartContainerCollected(loaded);
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingHeartContainerRewards, rewards);
     }
 

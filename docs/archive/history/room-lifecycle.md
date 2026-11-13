@@ -109,3 +109,13 @@ the current runtime through a supplier. Diagnostic probes use the same explicit
 argument. A marked adapter for the still-unmigrated boundary coordinator uses a
 transitional generation alias; it must disappear with that caller, not remain
 as another lifecycle source. No per-frame callback allocation is introduced.
+
+## Story and follower generations
+
+Story setters store/validate persistent state before the facade optionally
+applies runtime effects. Chest levels retain house-state configuration before
+chest-state publication; default music still updates the witch environment in
+source order. A follower rebuild takes the installed generation, publishes its
+replacement, and configures that replacement. Drop setup receives a generation;
+the frame's default and explicit-low-health configuration writes stay in order.
+No room/runtime absence checks remain in story or follower collaborators.

@@ -55,7 +55,7 @@ final class RoomLoadCoordinator {
                         dependencies.roomState().overworldRoomStatus);
         dependencies.gpu().loadAnimatedTilesGroup(dependencies.romData(), room.animatedTilesGroup());
         this.setActiveRoom(room);
-        dependencies.roomStoryState().updateWitchEnvironment();
+        dependencies.roomStoryState().updateWitchEnvironment(dependencies.entityRuntimeState().loaded);
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -141,7 +141,7 @@ final class RoomLoadCoordinator {
                         dependencies.location().activeRoom.palettes(),
                         dependencies.roomObjectMutations().countUnlitTorches());
         dependencies.roomObjectMutations().copyIndoorTorchPalettesToActiveRoom();
-        dependencies.roomStoryState().updateWitchEnvironment();
+        dependencies.roomStoryState().updateWitchEnvironment(dependencies.entityRuntimeState().loaded);
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -185,7 +185,7 @@ final class RoomLoadCoordinator {
             configureRuntimeProgress();
         }
         dependencies.followers().followingNpcRoomNeedsSync = true;
-        dependencies.roomStoryState().synchronizeFollowingNpcEntitiesIfNeeded();
+        dependencies.roomStoryState().synchronizeFollowingNpcEntitiesIfNeeded(dependencies.entityRuntimeState().loaded);
         if (dependencies.roomLoadListener() != null) {
             dependencies.roomLoadListener().roomLoaded(dependencies.location().activeRoom);
         }
@@ -217,10 +217,10 @@ final class RoomLoadCoordinator {
         dependencies.overworldCollision().setSwitchBlocksState(dependencies.terrain().switchBlocksState);
     }
 
-    void configureEnemyDropRuntime() {
+    void configureEnemyDropRuntime(RoomRuntime loaded) {
         dependencies
                 .entityFrame()
-                .configureEnemyDropRuntime(dependencies.enemyDropResolver(), dependencies.entityInputs());
+                .configureEnemyDropRuntime(loaded, dependencies.enemyDropResolver(), dependencies.entityInputs());
     }
 
     boolean roomHasBossBattle() {
@@ -413,6 +413,6 @@ final class RoomLoadCoordinator {
                         dependencies.entityInputs().secretSeashellPegasusCollisionActive,
                 dependencies.entityInputs().secretSeashellPegasusCollisionX,
                         dependencies.entityInputs().secretSeashellPegasusCollisionY);
-        this.configureEnemyDropRuntime();
+        this.configureEnemyDropRuntime(dependencies.entityRuntimeState().loaded);
     }
 }

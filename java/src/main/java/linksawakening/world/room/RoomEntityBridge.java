@@ -50,7 +50,6 @@ final class RoomEntityBridge {
         dependencies.entityFrame().enemyDropHealth = health;
         dependencies.entityFrame().enemyDropLowHealth = null;
         dependencies.entityFrame().enemyDropActivePowerUp = activePowerUp;
-        dependencies.roomLoadCoordinator().configureEnemyDropRuntime();
     }
 
     void advanceBoomerangSoundClock(boolean worldGameplay) {
