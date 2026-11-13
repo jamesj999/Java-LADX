@@ -45,7 +45,7 @@ public final class LinkOutputs {
     }
 
     public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
-        return dependencies.entityBridge().consumeWarpLinkStateRequests();
+        return session.consumeWarpLinkStateRequests();
     }
 
     public boolean consumeWorldLinkMotionBlockRequest() {

@@ -5,12 +5,6 @@ final class RoomPuzzleState {
     int switchButtonPressed;
     int dungeonTitleMessageCountdown;
     int tailCaveResumeMusicTrack = 5;
-    // Preparation alias only; installed generations own the actual state object.
-    PerRoom current = new PerRoom();
-
-    void beginRoom() {
-        current = new PerRoom();
-    }
 
     static final class PerRoom {
         int roomTriggerCount;

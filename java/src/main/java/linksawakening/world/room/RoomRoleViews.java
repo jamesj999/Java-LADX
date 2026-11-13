@@ -12,14 +12,11 @@ record RoomRoleViews(
                 new RoomEntitiesView(new RoomEntitiesView.Dependencies(session)),
                 new RoomEntityStateView(new RoomEntityStateView.Dependencies(
                         components.entityBridge(),
-                        components.entityFrame(),
                         components.entityInputs(),
                         components.followers(),
                         components.roomSessionViews(),
                         session)),
-                new RoomRoomsView(
-                        new RoomRoomsView.Dependencies(components.roomLoadCoordinator(), components.roomSessionViews()),
-                        session),
+                new RoomRoomsView(new RoomRoomsView.Dependencies(components.roomLoadCoordinator()), session),
                 new RoomDungeonView(
                         new RoomDungeonView.Dependencies(components.roomSessionViews(), components.roomState()),
                         session),

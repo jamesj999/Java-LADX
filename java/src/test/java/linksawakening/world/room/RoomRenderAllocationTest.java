@@ -46,7 +46,7 @@ class RoomRenderAllocationTest {
                 new OverworldCollision(RomTables.load(rom)),
                 new RoomSessionConfig.Presentation(null, null, room -> {}),
                 new RomRandomByteSource()));
-        session.components.location().activeRoom = ActiveRoom.from(new LoadedRoom(new LoadedRoomSpec(
+        var active = ActiveRoom.from(new LoadedRoom(new LoadedRoomSpec(
                 new LoadedRoomSpec.Identity(1, 1, 0, 0),
                 new LoadedRoomSpec.Objects(new int[256], null, null),
                 new LoadedRoomSpec.Graphics(
@@ -56,7 +56,9 @@ class RoomRenderAllocationTest {
                 new LoadedRoomSpec.Exits(List.of(), false, 0, -1),
                 runtime.inspection().view())));
         session.installRoom(new RoomRuntime(
-                session.components.location().activeRoom, runtime, session.components.roomRuntimeServices()));
+                new RoomContents(active, new RoomPuzzleState.PerRoom(), new RoomTerrainState.Overrides()),
+                runtime,
+                session.components.roomRuntimeServices()));
         return session;
     }
 

@@ -6,20 +6,7 @@ import linksawakening.world.entity.EnemyProjectileCollision;
 
 /** Retained room-entity runtime, output queues, drop counters and per-frame gates. */
 final class RoomEntitySessionState {
-    // Transitional alias for the unmigrated boundary coordinator and load configuration.
-    RoomRuntime loaded;
-    /** Absent until LoadRoomEntities installs the current room runtime. */
-    linksawakening.world.entity.RoomEntityRuntime runtime;
-
     final RoomEntityOutbox outbox = new RoomEntityOutbox();
-
-    boolean hookshotActive() {
-        return runtime != null && runtime.inspection().hookshotActive();
-    }
-
-    linksawakening.world.entity.RoomEntityRuntime runtime() {
-        return runtime;
-    }
 
     void advanceBoomerangSoundClock(boolean worldGameplay) {
         if (worldGameplay)

@@ -200,8 +200,7 @@ final class RoomNavigationFixture {
         }
         // These Main streams are not emitted by the authored A5/D6 route;
         // fail loudly rather than silently dropping a new request type.
-        assertTrue(
-                session.components.entityBridge().consumeWarpLinkStateRequests().isEmpty());
+        assertTrue(session.consumeWarpLinkStateRequests().isEmpty());
         assertFalse(session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
         assertTrue(session.consumeLinkFallenPoseRequests().isEmpty());
         assertTrue(session.consumeLinkFacingRequests().isEmpty());

@@ -26,23 +26,19 @@ final class RoomRuntime {
             RoomCollisionQueries queries,
             RoomObjectMutations objects,
             RoomEntitySessionState frame,
-            linksawakening.vfx.TransientVfxSystem vfx,
-            RoomPuzzleState puzzles,
-            RoomTerrainState terrain) {
+            linksawakening.vfx.TransientVfxSystem vfx) {
         Services {
             Objects.requireNonNull(queries);
             Objects.requireNonNull(objects);
             Objects.requireNonNull(frame);
-            Objects.requireNonNull(puzzles);
-            Objects.requireNonNull(terrain);
         }
     }
 
-    RoomRuntime(ActiveRoom room, RoomEntityRuntime entities, Services services) {
-        this.room = Objects.requireNonNull(room, "room");
+    RoomRuntime(RoomContents contents, RoomEntityRuntime entities, Services services) {
+        this.contents = Objects.requireNonNull(contents, "contents");
+        this.room = contents.room;
         this.entities = Objects.requireNonNull(entities, "entities");
         renderView = RoomRenderLiveView.live(room, entities);
-        contents = new RoomContents(room, services.puzzles().current, services.terrain().overrides);
         backgroundCollision = (entity, direction, x, y) ->
                 services.queries().entityBackgroundCollision(this, entity, direction, x, y);
         objectCollision = entity -> services.queries().pairoddProjectileObjectCollision(this, entity);
@@ -62,5 +58,18 @@ final class RoomRuntime {
         final RoomEntityObjectSample[] objectSamples = new RoomEntityObjectSample[RoomEntity.SLOT_COUNT];
         final RoomEntityGroundInteraction.Result[] groundResults =
                 new RoomEntityGroundInteraction.Result[RoomEntity.SLOT_COUNT];
+    }
+
+    RoomRenderSnapshot renderSnapshot() {
+
+        RoomRenderSnapshot snapshot = room.renderSnapshot();
+        return new RoomRenderSnapshot(
+                snapshot.tileIds(),
+                snapshot.tileAttrs(),
+                snapshot.palettes(),
+                snapshot.entities(),
+                entities.inspection().instrumentWarpVisual(),
+                entities.inspection().heartPieceVisual(),
+                snapshot.linkGrassPalette());
     }
 }

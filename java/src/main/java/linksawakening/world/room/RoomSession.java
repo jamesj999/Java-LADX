@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.entity.Link;
 import linksawakening.state.Direction;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.FollowingNpcState;
@@ -25,10 +26,11 @@ import linksawakening.world.entity.event.RoosterLinkStateRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.transition.Warp;
 
 /** Public room API delegating to room-scoped collaborators. */
-public final class RoomSession implements RoomEntityOutputSource {
+public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOperations {
 
     /** Applies the live frame inputs in source order before ticking slots. */
     public List<EntityProjectileEvent> tickEntities(EntityFrameInputs inputs) {
@@ -64,13 +66,6 @@ public final class RoomSession implements RoomEntityOutputSource {
 
     void installRoom(RoomRuntime room) {
         java.util.Objects.requireNonNull(room, "room");
-        // Transitional aliases retained only while collaborators migrate to explicit arguments.
-        components.location().activeRoom = room.room;
-        components.location().contents = room.contents;
-        components.entityFrame().runtime = room.entities;
-        components.entityFrame().loaded = room;
-        components.puzzles().current = room.contents.puzzles;
-        components.terrain().overrides = room.contents.overrides;
         loadedRoom = room;
         dungeonView.setRoomMap(room.room.mapId());
     }
@@ -87,17 +82,21 @@ public final class RoomSession implements RoomEntityOutputSource {
     private final RoomTransitions transitions;
     private final RoomPlayerItems playerItems;
     private final RoomStory story;
+    private final RoomLoadListener roomLoadListener;
     private final RoomDungeonLiveView dungeonView;
 
     static long nextRoomSessionId;
 
     public RoomSession(RoomSessionConfig config) {
-        components = RoomSessionContext.create(config, this::installRoom);
+        roomLoadListener = config.presentation().roomLoadListener() == null
+                ? room -> {}
+                : config.presentation().roomLoadListener();
+        components = RoomSessionContext.create(config, this::installRoom, this::roomLoaded);
 
         dungeonView = new RoomDungeonLiveView(components.roomState(), -1);
         roles = RoomRoleViews.create(components, this);
         doors = new RoomDoorsView(this);
-        transitions = new RoomTransitionsView(components.roomTransitionController());
+        transitions = new RoomTransitionsView(components.roomTransitionController(), this);
         playerItems = new RoomPlayerItemsView(this);
         story = new RoomStoryView(components.roomStoryState(), this);
         frameInputs = new RoomFrameInputApplier(
@@ -169,28 +168,28 @@ public final class RoomSession implements RoomEntityOutputSource {
     }
 
     boolean inBossBattle() {
-        return loadedRoom != null && loadedRoom.entities.inspection().inBossBattle();
+        return hasRoom() && loadedRoom.entities.inspection().inBossBattle();
     }
 
     java.util.List<linksawakening.world.entity.event.EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
         java.util.Objects.requireNonNull(inputs.sword(), "sword");
-        return loadedRoom == null
+        return !hasRoom()
                 ? java.util.List.of()
                 : components.entityCombatBridge().resolveEntityCombat(loadedRoom, inputs);
     }
 
     boolean deferContactRecoil(int slot, int x, int y) {
-        return loadedRoom != null && components.entityCombatBridge().deferContactRecoil(loadedRoom, slot, x, y);
+        return hasRoom() && components.entityCombatBridge().deferContactRecoil(loadedRoom, slot, x, y);
     }
 
     int clearEntity(int slot) {
-        return loadedRoom == null ? 0 : components.entityCombatBridge().clearEntity(loadedRoom, slot);
+        return !hasRoom() ? 0 : components.entityCombatBridge().clearEntity(loadedRoom, slot);
     }
 
     linksawakening.world.entity.EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
         java.util.Objects.requireNonNull(inputs.link(), "link");
         java.util.Objects.requireNonNull(inputs.sword(), "sword");
-        return loadedRoom == null ? null : components.entityCombatBridge().collectEntityIfNeeded(loadedRoom, inputs);
+        return !hasRoom() ? null : components.entityCombatBridge().collectEntityIfNeeded(loadedRoom, inputs);
     }
 
     linksawakening.world.entity.EntityPickupEvent collectEntityIfNeeded(
@@ -796,7 +795,6 @@ public final class RoomSession implements RoomEntityOutputSource {
             int level,
             boolean anyPowerUp) {
         if (!hasRoom()) {
-            components.puzzles().current.indoorPotPullFrames = 0;
             return false;
         }
         return components
@@ -806,7 +804,6 @@ public final class RoomSession implements RoomEntityOutputSource {
 
     boolean tryLiftObject(int x, int y, Direction direction, boolean held, int buttons, boolean power, int level) {
         if (!hasRoom()) {
-            components.puzzles().current.indoorPotPullFrames = 0;
             return false;
         }
         return components
@@ -821,7 +818,6 @@ public final class RoomSession implements RoomEntityOutputSource {
             boolean braceletButtonHeld,
             int pressedButtonsMask) {
         if (!hasRoom()) {
-            components.puzzles().current.indoorPotPullFrames = 0;
             return false;
         }
         return components
@@ -838,7 +834,6 @@ public final class RoomSession implements RoomEntityOutputSource {
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
         if (!hasRoom()) {
-            components.puzzles().current.indoorPotPullFrames = 0;
             return false;
         }
         return components
@@ -895,7 +890,6 @@ public final class RoomSession implements RoomEntityOutputSource {
 
     int tickTailCaveKeyholeSequence() {
         if (!hasRoom()) {
-            components.puzzles().current.tailCaveFinalMotionBlockPending = false;
             return 0;
         }
         return components.roomDoorInteractions().tickTailCaveKeyholeSequence(loadedRoom.contents);
@@ -903,8 +897,7 @@ public final class RoomSession implements RoomEntityOutputSource {
 
     boolean tailCaveKeyholeSequenceActive() {
         if (!hasRoom()) {
-            return components.puzzles().current.tailCaveKeyholeCountdown != 0
-                    || components.puzzles().current.tailCaveFinalMotionBlockPending;
+            return false;
         }
         return components.roomDoorInteractions().tailCaveKeyholeSequenceActive(loadedRoom.contents);
     }
@@ -974,16 +967,7 @@ public final class RoomSession implements RoomEntityOutputSource {
     }
 
     RoomRenderSnapshot renderSnapshot() {
-        if (!hasRoom()) return null;
-        RoomRenderSnapshot snapshot = activeRoom().renderSnapshot();
-        return new RoomRenderSnapshot(
-                snapshot.tileIds(),
-                snapshot.tileAttrs(),
-                snapshot.palettes(),
-                snapshot.entities(),
-                !hasRoom() ? null : loadedRoom.entities.inspection().instrumentWarpVisual(),
-                !hasRoom() ? null : loadedRoom.entities.inspection().heartPieceVisual(),
-                snapshot.linkGrassPalette());
+        return hasRoom() ? loadedRoom.renderSnapshot() : null;
     }
 
     LiftedEntityState liftedEntityState() {
@@ -1025,9 +1009,143 @@ public final class RoomSession implements RoomEntityOutputSource {
     /** Explicit lifecycle reset; no room-only collaborator accepts an absent generation. */
     void clearRoom() {
         loadedRoom = null;
-        components.location().activeRoom = null;
-        components.entityFrame().runtime = null;
-        components.entityFrame().loaded = null;
         dungeonView.setRoomMap(-1);
+    }
+
+    RoomRuntime roomLoaded(RoomRuntime room) {
+        roomLoadListener.roomLoaded(room.room);
+        // A listener may synchronously replace the room. Continue against that published generation.
+        return java.util.Objects.requireNonNull(loadedRoom);
+    }
+
+    RoomLoadCoordinator.PreviousPalettes previousPalettes() {
+        if (!hasRoom()) return RoomLoadCoordinator.PreviousPalettes.NONE;
+        return RoomLoadCoordinator.PreviousPalettes.from(loadedRoom);
+    }
+
+    void loadInitialOverworld(int room) {
+        components.roomLoadCoordinator().loadInitialOverworld(room);
+    }
+
+    void loadOverworld(int room) {
+        components.roomLoadCoordinator().loadOverworld(room);
+    }
+
+    void loadIndoor(int map, int room) {
+        components.roomLoadCoordinator().loadIndoor(previousPalettes(), map, room);
+    }
+
+    void loadIndoor(int map, int room, int category) {
+        components.roomLoadCoordinator().loadIndoor(previousPalettes(), map, room, category);
+    }
+
+    void loadIndoorFromSavedPosition(int map, int room, int position) {
+        components.roomLoadCoordinator().loadIndoorFromSavedPosition(previousPalettes(), map, room, position);
+    }
+
+    int tickDungeonTitleMessage(
+            boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) {
+        if (components.puzzles().dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
+        if (--components.puzzles().dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement) return -1;
+        return 0x56 + java.util.Objects.requireNonNull(loadedRoom).room.mapId();
+    }
+
+    RoomRuntime loadWarpDestination(Warp warp) {
+        return components
+                .roomTransitionController()
+                .loadWarpDestination(
+                        warp,
+                        hasRoom() && loadedRoom.room.mapCategory() != Warp.CATEGORY_OVERWORLD,
+                        indoorRoomPositionForSave(),
+                        previousPalettes());
+    }
+
+    void startAdjacentOverworldScroll(
+            linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
+        components
+                .roomTransitionController()
+                .startAdjacentOverworldScroll(java.util.Objects.requireNonNull(loadedRoom), scroll, direction, x, y);
+    }
+
+    void startAdjacentIndoorScroll(
+            linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
+        components
+                .roomTransitionController()
+                .startAdjacentIndoorScroll(java.util.Objects.requireNonNull(loadedRoom), scroll, direction, x, y);
+    }
+
+    boolean startOcarina(int countdown, int flags, int song) {
+        RoomTransitionController.validateOcarina(countdown, flags, song);
+        return hasRoom() && components.roomTransitionController().startOcarina(countdown, flags, song);
+    }
+
+    Warp consumeManboPondTransitionRequest() {
+        return hasRoom() ? components.roomTransitionController().consumeManboPondTransitionRequest(loadedRoom) : null;
+    }
+
+    Warp consumeInstrumentTransitionRequest() {
+        return hasRoom() ? components.roomTransitionController().consumeInstrumentTransitionRequest(loadedRoom) : null;
+    }
+
+    Warp pollStaircaseWarp(int x, int y, int z, boolean carrying) {
+        return hasRoom()
+                ? components.roomTransitionController().pollStaircaseWarp(loadedRoom, x, y, z, carrying)
+                : null;
+    }
+
+    @Override
+    public void handleWarpAndIndoorBoundaries(RoomTransitionCoordinator coordinator, Link link) {
+        if (hasRoom()) coordinator.handleWarpAndIndoorBoundaries(loadedRoom, link);
+    }
+
+    @Override
+    public void handleOverworldBoundary(RoomTransitionCoordinator coordinator, Link link) {
+        if (hasRoom()) coordinator.handleOverworldBoundary(loadedRoom, link);
+    }
+
+    @Override
+    public boolean handlePendingManboTransition(RoomTransitionCoordinator coordinator, Link link) {
+        return hasRoom() && coordinator.handlePendingManboTransition(loadedRoom, link);
+    }
+
+    @Override
+    public boolean handlePendingInstrumentTransition(RoomTransitionCoordinator coordinator, Link link) {
+        return hasRoom() && coordinator.handlePendingInstrumentTransition(loadedRoom, link);
+    }
+
+    @Override
+    public void applyWarp(Warp warp, Link link) {
+        var destination = loadWarpDestination(warp).room;
+        link.motion()
+                .setRoomPhysicsForRoom(
+                        components.roomSessionViews().roomLoadToken(),
+                        destination.mapId(),
+                        destination.roomId(),
+                        destination.mapCategory());
+        link.position().setRoomEntryPixelPosition(warp.javaPixelX(), warp.javaPixelY());
+    }
+
+    @Override
+    public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
+        List<WarpLinkStateRequest> requests =
+                !hasRoom() ? List.of() : loadedRoom.entities.consumePendingWarpLinkStateRequests();
+        if (!requests.isEmpty()) {
+            components.items().ocarinaPlaybackCountdown = 0;
+            components.items().ocarinaAnimationCounter = 0;
+            components.items().ocarinaAnimationPhase = 0;
+            components.entityInputs().entityDialogActive = false;
+            components.entityInputs().entityDialogCooldown = 0;
+            components.entityInputs().entityInventoryAppearing = false;
+        }
+        return requests;
+    }
+
+    void setLiftStrengthBoost(boolean redTunic, boolean power) {
+        if (hasRoom()) loadedRoom.entities.configuration().setLiftStrengthBoost(redTunic, power);
+    }
+
+    void initializeNewGameWorldState() {
+        components.roomStoryState().initializeNewGameWorldState();
+        if (hasRoom()) components.roomTransientState().clearRoomContents(loadedRoom.contents);
     }
 }

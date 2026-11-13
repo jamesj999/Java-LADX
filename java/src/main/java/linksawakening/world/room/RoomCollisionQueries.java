@@ -247,11 +247,4 @@ final class RoomCollisionQueries {
     }
 
     /** Transitional boundary adapter; caller has already checked the facade's loaded state. */
-    RoomBoundaryState boundaryState(int x, int y, boolean airborne) {
-        return boundaryState(dependencies.entityFrame().loaded, x, y, airborne);
-    }
-
-    RoomBoundaryState boundaryState(int x, int y, boolean airborne, int modifier) {
-        return boundaryState(dependencies.entityFrame().loaded, x, y, airborne, modifier);
-    }
 }

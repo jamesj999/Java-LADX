@@ -36,7 +36,7 @@ final class WellHeartEmulatorTrajectoryTest {
                 .slot();
         // Replace only this bush, just as the emulator experiment does. Keep
         // the adjacent bushes/house walls in the actual ROM room buffer.
-        session.components.location().activeRoom.roomObjectsArea()[0x35] = 0x04;
+        session.rooms().activeRoom().roomObjectsArea()[0x35] = 0x04;
         session.entities().tickEntities(0, 56, 32); // Entity init.
         session.entities().tickEntities(1, 56, 32); // Reveal return; no movement yet.
         var reveal = session.rooms().activeRoom().entities().slots().get(slot);

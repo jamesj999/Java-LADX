@@ -24,9 +24,10 @@ class RoomFacadeCompatibilityTest {
         assertEquals(
                 RoomSessionConfig.class, RoomSession.class.getConstructors()[0].getParameterTypes()[0]);
         assertEquals(Object.class, RoomSession.class.getSuperclass());
-        // This operation port carries drains, never legacy API or a current-runtime getter.
+        // These operation ports carry drains/boundary dispatch, never legacy API or a current-runtime getter.
         org.junit.jupiter.api.Assertions.assertArrayEquals(
-                new Class<?>[] {RoomEntityOutputSource.class}, RoomSession.class.getInterfaces());
+                new Class<?>[] {RoomEntityOutputSource.class, RoomBoundaryOperations.class},
+                RoomSession.class.getInterfaces());
         var bridges = Arrays.stream(RoomSession.class.getDeclaredMethods())
                 .filter(m -> m.isAnnotationPresent(Deprecated.class))
                 .toList();

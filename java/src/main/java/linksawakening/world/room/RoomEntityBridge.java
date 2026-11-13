@@ -4,9 +4,7 @@ import java.util.List;
 import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.object.SwitchBlockAnimation;
 
 /** Owns room-level entity output queues and their consumption boundary. */
@@ -35,10 +33,6 @@ final class RoomEntityBridge {
                 dependencies.entityEffects());
     }
 
-    RoomEntityRuntime runtime() {
-        return dependencies.entityFrame().runtime;
-    }
-
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
         if (maxHearts < 0 || maxHearts > 0xFF) {
             throw new IllegalArgumentException("Maximum hearts must be an unsigned byte: " + maxHearts);
@@ -64,21 +58,6 @@ final class RoomEntityBridge {
 
     List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickInputs inputs) {
         return roomEntitySimulation.tickEntities(loaded, inputs);
-    }
-
-    List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
-        List<WarpLinkStateRequest> requests = dependencies.entityRuntimeState().runtime == null
-                ? List.of()
-                : dependencies.entityRuntimeState().runtime.consumePendingWarpLinkStateRequests();
-        if (!requests.isEmpty()) {
-            dependencies.items().ocarinaPlaybackCountdown = 0;
-            dependencies.items().ocarinaAnimationCounter = 0;
-            dependencies.items().ocarinaAnimationPhase = 0;
-            dependencies.entityInputs().entityDialogActive = false;
-            dependencies.entityInputs().entityDialogCooldown = 0;
-            dependencies.entityInputs().entityInventoryAppearing = false;
-        }
-        return requests;
     }
 
     boolean consumeWorldLinkMotionBlockRequest() {
@@ -117,10 +96,8 @@ final class RoomEntityBridge {
             RoomLocationState location,
             RoomTerrainState terrain,
             RoomEntitySimulation.EffectsDependencies entityEffects,
-            RoomEntitySessionState entityRuntimeState,
             RoomEntityCombatBridge entityCombatBridge,
             RoomEntitySimulation.SetupDependencies entityConfiguration,
-            RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             GPU gpu,
             Rom romData,
@@ -132,10 +109,8 @@ final class RoomEntityBridge {
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityEffects, "entityEffects");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityCombatBridge, "entityCombatBridge");
             java.util.Objects.requireNonNull(entityConfiguration, "entityConfiguration");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(gpu, "gpu");
             java.util.Objects.requireNonNull(romData, "romData");

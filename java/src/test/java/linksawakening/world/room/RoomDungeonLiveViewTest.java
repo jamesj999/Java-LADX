@@ -48,7 +48,12 @@ class RoomDungeonLiveViewTest {
                 new LoadedRoomSpec.Graphics(new int[320], new int[320], new int[8][4]),
                 new LoadedRoomSpec.Exits(List.of(), false, 0, -1),
                 current.entityView())));
-        session.installRoom(
-                new RoomRuntime(room, session.loadedRoomOrNull().entities, session.components.roomRuntimeServices()));
+        session.installRoom(new RoomRuntime(
+                new RoomContents(
+                        room,
+                        session.loadedRoomOrNull().contents.puzzles,
+                        session.loadedRoomOrNull().contents.overrides),
+                session.loadedRoomOrNull().entities,
+                session.components.roomRuntimeServices()));
     }
 }

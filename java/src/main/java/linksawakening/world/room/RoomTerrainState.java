@@ -15,12 +15,6 @@ final class RoomTerrainState {
     int linkGroundObjectPhysics;
     int switchBlocksState;
     int switchableObjectAnimationStage;
-    // Preparation alias only; installed generations own the actual override maps.
-    Overrides overrides = new Overrides();
-
-    void beginRoom() {
-        overrides = new Overrides();
-    }
 
     static final class Overrides {
         final Map<Integer, HookshotBridgeUpdate> hookshotBridgeTileOverrides = new HashMap<>();

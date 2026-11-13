@@ -174,3 +174,26 @@ buildReusable -> rooms().renderViewOrNull(); build -> rooms().renderSnapshotOrNu
 its activeRoom presence guard can use roomSession.hasRoom().
 World null occurrences: 180 -> 158. Gate: 2966 tests, zero failures/errors, one skip,
 986 identical scenes. Room/runtime aliases remain only for loading/transitions.
+
+## Complete lifecycle publication
+
+RoomSession now owns the only optional current RoomRuntime. RoomLocationState
+and RoomEntitySessionState no longer contain room/runtime aliases; no room/runtime
+supplier or presence comparison remains in a room-only collaborator. Loader
+locals own prepared room parts before the runtime exists; RoomContents is then
+owned by the generation, including follower replacement. Session queues and ROM
+registers with across-room lifetimes remain separate. New-game reset explicitly
+clears the installed room contents in addition to session queues.
+
+Boundary coordinator callbacks use a narrow operation port and receive an explicit
+loaded generation. Runtime-backed requests/defaults are decided by the facade.
+Post-load listener notification returns the generation published after any nested
+load; a regression verifies publication before notification and the resulting
+room/runtime metadata and collision map. No current-runtime getter is injected.
+
+Additional unloaded contracts: boundary handlers are no-op/false; staircase and
+pending Ocarina warp polls return null; Ocarina byte validation runs before a
+false no-room result; title-message tick returns -1 with the ordinary zero clock;
+adjacent-scroll operations retain NullPointerException; warp destination loads
+remain supported before the first room. World null expressions: 158 -> 129.
+Gate: 2967 tests, zero failures/errors, one existing skip; 986 identical scenes.

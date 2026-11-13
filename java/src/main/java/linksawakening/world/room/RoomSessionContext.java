@@ -14,11 +14,16 @@ final class RoomSessionContext {
     private final RoomSessionComponents.Builder values = new RoomSessionComponents.Builder();
 
     static RoomSessionComponents create(
-            RoomSessionConfig config, java.util.function.Consumer<RoomRuntime> installRoom) {
-        return new RoomSessionContext(config, installRoom).values.build();
+            RoomSessionConfig config,
+            java.util.function.Consumer<RoomRuntime> installRoom,
+            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
+        return new RoomSessionContext(config, installRoom, roomLoaded).values.build();
     }
 
-    private RoomSessionContext(RoomSessionConfig config, java.util.function.Consumer<RoomRuntime> installRoom) {
+    private RoomSessionContext(
+            RoomSessionConfig config,
+            java.util.function.Consumer<RoomRuntime> installRoom,
+            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
 
         var romData = config.romData();
         var gpu = config.gpu();
@@ -59,13 +64,11 @@ final class RoomSessionContext {
                 values.romTables.collisionTables(), values.romTables.entityPropertyTables());
         values.overworldBushInteraction = new OverworldBushInteraction(romData, values.romTables);
         values.roomSessionViews = new RoomSessionViews(new RoomSessionViews.Dependencies(
-                values.entityFrame, values.location, values.entityFrame, values.roomState, values.scrollNavigation));
+                values.entityFrame, values.location, values.roomState, values.scrollNavigation));
         values.roomTransientState = new RoomTransientState(new RoomTransientState.Dependencies(
                 values.entityFrame,
                 values.items,
                 values.location,
-                values.puzzles,
-                values.terrain,
                 values.droppableRupeeSystem,
                 values.entityFrame,
                 values.transientVfxSystem));
@@ -93,12 +96,7 @@ final class RoomSessionContext {
                 values.roomTilemapBuilder));
         values.entityInputs = new RoomEntityInputs();
         values.roomRuntimeServices = new RoomRuntime.Services(
-                values.roomCollisionQueries,
-                values.roomObjectMutations,
-                values.entityFrame,
-                transientVfxSystem,
-                values.puzzles,
-                values.terrain);
+                values.roomCollisionQueries, values.roomObjectMutations, values.entityFrame, transientVfxSystem);
         values.roomPlayerItemActions = new RoomPlayerItemActions(new RoomPlayerItemActions.Dependencies(
                 values.followers,
                 values.items,
@@ -164,13 +162,11 @@ final class RoomSessionContext {
                 values.entityFrame,
                 values.followers,
                 values.location,
-                values.puzzles,
                 values.terrain,
                 values.chestContentsTable,
                 values.dungeonRoomEventTable,
                 values.enemyCombatTables,
                 values.enemyDropResolver,
-                values.entityFrame,
                 values.entityInputs,
                 values.entityRandomByteSource,
                 values.entitySpriteHandlerCatalog,
@@ -181,7 +177,7 @@ final class RoomSessionContext {
                 values.owlEventDialogResolver,
                 values.romData,
                 values.romTables,
-                values.roomLoadListener,
+                roomLoaded,
                 values.roomLoader,
                 values.roomObjectMutations,
                 values.roomPaletteLoader,
@@ -211,7 +207,6 @@ final class RoomSessionContext {
                 values.manboWarpResolver,
                 values.romData,
                 values.roomLoadCoordinator,
-                values.roomSessionViews,
                 values.roomState,
                 values.scrollNavigation));
         values.entityEffects = new RoomEntitySimulation.EffectsDependencies(
@@ -253,10 +248,8 @@ final class RoomSessionContext {
                 values.location,
                 values.terrain,
                 values.entityEffects,
-                values.entityFrame,
                 values.entityCombatBridge,
                 values.entityConfiguration,
-                values.entityInputs,
                 values.entityRandomByteSource,
                 values.gpu,
                 values.romData,

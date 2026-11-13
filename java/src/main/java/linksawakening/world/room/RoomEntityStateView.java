@@ -118,14 +118,12 @@ final class RoomEntityStateView implements RoomEntityState {
 
     record Dependencies(
             RoomEntityBridge entityBridge,
-            RoomEntitySessionState entityFrame,
             RoomEntityInputs entityInputs,
             RoomFollowerState followers,
             RoomSessionViews roomSessionViews,
             RoomSession session) {
         Dependencies {
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");

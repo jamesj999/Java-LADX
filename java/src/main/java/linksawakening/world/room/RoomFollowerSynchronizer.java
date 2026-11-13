@@ -50,7 +50,7 @@ final class RoomFollowerSynchronizer {
                 .romTables(dependencies.romTables())
                 .rom(dependencies.romData())
                 .build();
-        loaded = new RoomRuntime(loaded.room, replacementRuntime, dependencies.roomRuntimeServices());
+        loaded = new RoomRuntime(loaded.contents, replacementRuntime, dependencies.roomRuntimeServices());
         dependencies.installRoom().accept(loaded);
         configureFollowerWorld(loaded);
         configureFollowerCollision(loaded);
@@ -152,7 +152,7 @@ final class RoomFollowerSynchronizer {
         var configuration = loaded.entities.configuration();
 
         configuration.setLiftedLinkC13B(dependencies.followers().followingEntityYOffset);
-        configuration.setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
+        configuration.setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags(loaded.room));
         configuration.setDungeonMinibossReady(loaded.room.mapId() >= 0
                 && loaded.room.mapId() < dependencies.roomState().dungeonProgressFlags.length
                 && (dependencies.roomState().dungeonProgressFlags[loaded.room.mapId()] & 0x01) != 0);

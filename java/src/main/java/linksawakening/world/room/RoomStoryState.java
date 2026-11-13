@@ -271,7 +271,7 @@ final class RoomStoryState {
             byte[] colorDungeonStatus) {
         loaded.entities
                 .configuration()
-                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
+                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags(loaded.room));
         loaded.entities.configuration().setTailKeyOwned(dependencies.followers().hasTailKey);
     }
 

@@ -102,10 +102,9 @@ public final class RewardOutputs {
         dependencies.entityRuntimeState().outbox.drainWitchRewardEvents(target);
     }
 
-    record Dependencies(RoomEntitySessionState entityRuntimeState, RoomSessionViews roomSessionViews) {
+    record Dependencies(RoomEntitySessionState entityRuntimeState) {
         Dependencies {
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
         }
     }
 }

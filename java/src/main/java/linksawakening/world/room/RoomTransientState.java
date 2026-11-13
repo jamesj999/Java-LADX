@@ -13,22 +13,13 @@ final class RoomTransientState {
     }
 
     void clearTransientRoomState() {
-        dependencies.puzzles().current.pendingShutterCloseMask =
-                dependencies.puzzles().current.closedShutterMask = dependencies.puzzles().current.shutterCloseTicks = 0;
-        dependencies.puzzles().current.shutterCloseDirection = dependencies.puzzles().current.shutterCloseLocation = -1;
-        dependencies.puzzles().current.shutterCloseStarted = false;
-        dependencies.puzzles().current.shutterTileOverrides.clear();
+
         if (dependencies.transientVfxSystem() != null) {
             dependencies.transientVfxSystem().clear();
         }
         if (dependencies.droppableRupeeSystem() != null) {
             dependencies.droppableRupeeSystem().clear();
         }
-        dependencies.terrain().overrides.hookshotBridgeTileOverrides.clear();
-        dependencies.terrain().overrides.bombedWallTileOverrides.clear();
-        dependencies.terrain().overrides.bombedBlockTileOverrides.clear();
-        dependencies.terrain().overrides.bombedCaveDoorTileOverrides.clear();
-        dependencies.terrain().overrides.retainedTorchTiles.clear();
         dependencies.entityRuntimeState().outbox.pendingBombExplosionEvents.clear();
         dependencies.location().pendingDungeonWarp = null;
         dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents.clear();
@@ -51,43 +42,54 @@ final class RoomTransientState {
         dependencies.items().pendingInstrumentTransition = false;
         dependencies.items().pendingShovelDrop = null;
         dependencies.items().shovelUseState = 0;
-        dependencies.puzzles().current.roomTriggerCount = 0;
-        dependencies.puzzles().current.activeRoomEvent = 0;
-        dependencies.puzzles().current.roomEventEffectExecuted = false;
-        dependencies.puzzles().current.thrownAtDoorTriggerResolved = false;
-        dependencies.puzzles().current.roomEventChestRevealCountdown = 0;
-        dependencies.puzzles().current.roomEventStairRevealCountdown = 0;
-        dependencies.puzzles().current.staircaseState = STAIRCASE_NONE;
-        dependencies.puzzles().current.staircaseX = 0;
-        dependencies.puzzles().current.staircaseY = 0;
-        dependencies.puzzles().current.switchButtonPressCounter = 0;
-        dependencies.puzzles().current.indoorKeyDoorAnimationCountdown = 0;
-        dependencies.puzzles().current.indoorKeyDoorDirection = -1;
-        dependencies.puzzles().current.indoorKeyDoorLocation = -1;
-        dependencies.puzzles().current.indoorBossDoorOpening = false;
         // ResetRoomVariables ($20:4CA3-4CE3) does not clear wC1C9 or
         // hLinkRoomPosition/hLinkFinalRoomPosition; transitions retain them.
-        dependencies.puzzles().current.pushBlockContactTicks = 0;
-        dependencies.puzzles().current.indoorPotPullFrames = 0;
-        dependencies.puzzles().current.pushedBlockMotionFrames = 0;
-        dependencies.puzzles().current.pushedBlockSourceLocation = -1;
-        dependencies.puzzles().current.pushedBlockDestinationLocation = -1;
-        dependencies.puzzles().current.pushedBlockDirection = -1;
-        dependencies.puzzles().current.pushedBlockEntitySlot = -1;
-        dependencies.puzzles().current.pushedBlocksTriggerEffectPending = false;
         dependencies.entityFrame().worldLinkMotionBlockPending = false;
-        dependencies.puzzles().current.tailCaveKeyholeCountdown = 0;
-        dependencies.puzzles().current.tailCaveFinalMotionBlockPending = false;
-        dependencies.puzzles().current.nextWorldMusicTrackCountdown = 0;
         dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack = -1;
+    }
+
+    void clearRoomContents(RoomContents contents) {
+        contents.puzzles.pendingShutterCloseMask =
+                contents.puzzles.closedShutterMask = contents.puzzles.shutterCloseTicks = 0;
+        contents.puzzles.shutterCloseDirection = contents.puzzles.shutterCloseLocation = -1;
+        contents.puzzles.shutterCloseStarted = false;
+        contents.puzzles.shutterTileOverrides.clear();
+        contents.overrides.hookshotBridgeTileOverrides.clear();
+        contents.overrides.bombedWallTileOverrides.clear();
+        contents.overrides.bombedBlockTileOverrides.clear();
+        contents.overrides.bombedCaveDoorTileOverrides.clear();
+        contents.overrides.retainedTorchTiles.clear();
+        contents.puzzles.roomTriggerCount = 0;
+        contents.puzzles.activeRoomEvent = 0;
+        contents.puzzles.roomEventEffectExecuted = false;
+        contents.puzzles.thrownAtDoorTriggerResolved = false;
+        contents.puzzles.roomEventChestRevealCountdown = 0;
+        contents.puzzles.roomEventStairRevealCountdown = 0;
+        contents.puzzles.staircaseState = STAIRCASE_NONE;
+        contents.puzzles.staircaseX = 0;
+        contents.puzzles.staircaseY = 0;
+        contents.puzzles.switchButtonPressCounter = 0;
+        contents.puzzles.indoorKeyDoorAnimationCountdown = 0;
+        contents.puzzles.indoorKeyDoorDirection = -1;
+        contents.puzzles.indoorKeyDoorLocation = -1;
+        contents.puzzles.indoorBossDoorOpening = false;
+        contents.puzzles.pushBlockContactTicks = 0;
+        contents.puzzles.indoorPotPullFrames = 0;
+        contents.puzzles.pushedBlockMotionFrames = 0;
+        contents.puzzles.pushedBlockSourceLocation = -1;
+        contents.puzzles.pushedBlockDestinationLocation = -1;
+        contents.puzzles.pushedBlockDirection = -1;
+        contents.puzzles.pushedBlockEntitySlot = -1;
+        contents.puzzles.pushedBlocksTriggerEffectPending = false;
+        contents.puzzles.tailCaveKeyholeCountdown = 0;
+        contents.puzzles.tailCaveFinalMotionBlockPending = false;
+        contents.puzzles.nextWorldMusicTrackCountdown = 0;
     }
 
     record Dependencies(
             RoomEntitySessionState entityFrame,
             RoomItemUseState items,
             RoomLocationState location,
-            RoomPuzzleState puzzles,
-            RoomTerrainState terrain,
             DroppableRupeeSystem droppableRupeeSystem,
             RoomEntitySessionState entityRuntimeState,
             TransientVfxSystem transientVfxSystem) {
@@ -95,8 +97,6 @@ final class RoomTransientState {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
         }
     }

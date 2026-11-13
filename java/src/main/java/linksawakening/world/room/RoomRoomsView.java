@@ -12,7 +12,7 @@ final class RoomRoomsView implements RoomRooms {
     }
 
     public void loadInitialOverworld(int roomId) {
-        dependencies.roomLoadCoordinator().loadInitialOverworld(roomId);
+        session.loadInitialOverworld(roomId);
     }
 
     public boolean musicSelectionIsScroll() {
@@ -20,19 +20,19 @@ final class RoomRoomsView implements RoomRooms {
     }
 
     public void loadOverworld(int roomId) {
-        dependencies.roomLoadCoordinator().loadOverworld(roomId);
+        session.loadOverworld(roomId);
     }
 
     public void loadIndoor(int mapId, int roomId) {
-        dependencies.roomLoadCoordinator().loadIndoor(mapId, roomId);
+        session.loadIndoor(mapId, roomId);
     }
 
     public void loadIndoorFromSavedPosition(int mapId, int roomId, int savedIndoorMapPosition) {
-        dependencies.roomLoadCoordinator().loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
+        session.loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
     }
 
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
-        dependencies.roomLoadCoordinator().loadIndoor(mapId, roomId, mapCategory);
+        session.loadIndoor(mapId, roomId, mapCategory);
     }
 
     public ActiveRoom activeRoom() {
@@ -95,10 +95,9 @@ final class RoomRoomsView implements RoomRooms {
         return session.liftedEntityState();
     }
 
-    record Dependencies(RoomLoadCoordinator roomLoadCoordinator, RoomSessionViews roomSessionViews) {
+    record Dependencies(RoomLoadCoordinator roomLoadCoordinator) {
         Dependencies {
             java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
         }
     }
 }

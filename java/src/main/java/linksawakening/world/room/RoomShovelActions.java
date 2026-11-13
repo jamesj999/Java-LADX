@@ -100,7 +100,7 @@ final class RoomShovelActions {
         }
 
         int location = objectTop | cellX;
-        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(location);
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, location);
         int physicsTable = loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? RomTables.PHYSICS_TABLE_OVERWORLD
                 : loaded.room.mapId() == 0xFF ? RomTables.PHYSICS_TABLE_INDOORS2 : RomTables.PHYSICS_TABLE_INDOORS1;

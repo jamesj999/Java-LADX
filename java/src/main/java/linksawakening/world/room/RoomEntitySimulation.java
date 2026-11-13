@@ -281,7 +281,7 @@ final class RoomEntitySimulation {
         if (effects.items().ocarinaPlaybackCountdown > 0) {
             effects.items().ocarinaPlaybackCountdown--;
             if (effects.items().ocarinaPlaybackCountdown == 0) {
-                effects.roomTransitionController().finishOcarinaPlayback();
+                effects.roomTransitionController().finishOcarinaPlayback(loaded);
             }
         }
     }

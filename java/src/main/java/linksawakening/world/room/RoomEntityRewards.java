@@ -83,7 +83,7 @@ final class RoomEntityRewards {
         }
         loaded.entities
                 .configuration()
-                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
+                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags(loaded.room));
     }
 
     void harvestInstrumentCompletions(RoomRuntime loaded) {

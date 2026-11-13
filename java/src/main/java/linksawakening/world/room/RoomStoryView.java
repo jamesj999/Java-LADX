@@ -35,7 +35,7 @@ final class RoomStoryView implements RoomStory {
 
     @Override
     public void initializeNewGameWorldState() {
-        delegate.initializeNewGameWorldState();
+        session.initializeNewGameWorldState();
     }
 
     @Override
