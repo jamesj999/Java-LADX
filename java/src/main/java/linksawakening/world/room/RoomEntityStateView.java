@@ -77,7 +77,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return dependencies.entityBridge().combat.deferContactRecoil(slot, linkX, linkY);
+        return dependencies.session().deferContactRecoil(slot, linkX, linkY);
     }
 
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
@@ -109,7 +109,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public int clearEntity(int slot) {
-        return dependencies.entityBridge().combat.clearEntity(slot);
+        return dependencies.session().clearEntity(slot);
     }
 
     public int entityDefaultMusicTrack() {
@@ -129,7 +129,8 @@ final class RoomEntityStateView implements RoomEntityState {
             RoomEntitySessionState entityFrame,
             RoomEntityInputs entityInputs,
             RoomFollowerState followers,
-            RoomSessionViews roomSessionViews) {
+            RoomSessionViews roomSessionViews,
+            RoomSession session) {
         Dependencies {
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");

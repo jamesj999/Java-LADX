@@ -16,7 +16,7 @@ final class RoomEntityCombatBridge {
         this.dependencies = dependencies;
     }
 
-    List<EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
+    List<EntityCombatEvent> resolveEntityCombat(RoomRuntime loaded, EntityCombatInputs inputs) {
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
@@ -30,89 +30,26 @@ final class RoomEntityCombatBridge {
         int swordHeight = inputs.sword().height();
         EnemyAttackContext attackContext = inputs.attackContext();
 
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().runtime() == null) {
-            return List.of();
-        }
-        List<EntityCombatEvent> events = dependencies.entityBridge().runtime().resolveCombat(inputs);
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(
-                        dependencies.entityBridge().runtime().inspection().view());
+        List<EntityCombatEvent> events = loaded.entities.resolveCombat(inputs);
+        loaded.room.replaceEntities(loaded.entities.inspection().view());
         return events;
     }
 
-    boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return dependencies.entityBridge().runtime() != null
-                && dependencies.entityBridge().runtime().deferContactRecoil(slot, linkX, linkY);
+    boolean deferContactRecoil(RoomRuntime loaded, int slot, int linkX, int linkY) {
+        return loaded.entities.deferContactRecoil(slot, linkX, linkY);
     }
 
-    int clearEntity(int slot) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().runtime() == null) {
-            return 0;
-        }
-        int mask = dependencies.entityBridge().runtime().clearEntity(slot);
+    int clearEntity(RoomRuntime loaded, int slot) {
+
+        int mask = loaded.entities.clearEntity(slot);
         if (mask != 0) {
-            dependencies
-                    .entityFrame()
-                    .recentRoomEntityClears
-                    .addMask(dependencies.location().activeRoom.roomId(), mask);
+            dependencies.entityFrame().recentRoomEntityClears.addMask(loaded.room.roomId(), mask);
         }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(
-                        dependencies.entityBridge().runtime().inspection().view());
+        loaded.room.replaceEntities(loaded.entities.inspection().view());
         return mask;
     }
 
-    EntityPickupEvent collectEntityIfNeeded(
-            int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
-        return this.collectEntityIfNeeded(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                dependencies.followers().followingLinkDirection,
-                dependencies.followers().followingLinkZ);
-    }
-
-    EntityPickupEvent collectEntityIfNeeded(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            int linkDirection) {
-        return this.collectEntityIfNeeded(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                linkDirection,
-                dependencies.followers().followingLinkZ);
-    }
-
-    EntityPickupEvent collectEntityIfNeeded(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            int linkDirection,
-            int linkZ) {
-        return collectEntityIfNeeded(new EntityPickupInputs(
-                frameCounter,
-                new EntityPickupInputs.Link(
-                        linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
-                new SwordBox(false, 0, 0, 0, 0)));
-    }
-
-    EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
+    EntityPickupEvent collectEntityIfNeeded(RoomRuntime loaded, EntityPickupInputs inputs) {
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.link().x();
         int linkEntityY = inputs.link().y();
@@ -126,13 +63,9 @@ final class RoomEntityCombatBridge {
         int swordY = inputs.sword().y();
         int swordHeight = inputs.sword().height();
 
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().runtime() == null) {
-            return null;
-        }
         dependencies.followers().followingLinkZ = linkZ & 0xFF;
         dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
-        EntityPickupEvent event = dependencies.entityBridge().runtime().collectIfNeeded(inputs);
+        EntityPickupEvent event = loaded.entities.collectIfNeeded(inputs);
         if (event == null) {
             return null;
         }
@@ -140,11 +73,11 @@ final class RoomEntityCombatBridge {
             dependencies
                     .entityFrame()
                     .recentRoomEntityClears
-                    .addMask(dependencies.location().activeRoom.roomId(), event.persistentClearMask());
+                    .addMask(loaded.room.roomId(), event.persistentClearMask());
         }
         if (event.type() == 0x30
-                && dependencies.location().activeRoom.roomId() == 0x7C
-                && dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+                && loaded.room.roomId() == 0x7C
+                && loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             // PickDroppableKey sets the Angler's Tunnel source room flag before
             // it starts the held-item transition.
             dependencies.roomState().indoorARoomStatus[0x69] |= 0x10;
@@ -152,7 +85,7 @@ final class RoomEntityCombatBridge {
         if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after
             // the shared pickup collision has cleared the source entity.
-            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
+            dependencies.roomState().markCompleted(loaded.room);
             dependencies.entityBridge().outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
             dependencies
                     .entityBridge()
@@ -162,11 +95,7 @@ final class RoomEntityCombatBridge {
                             event.slot(), event.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x01));
         }
         dependencies.roomEntityRewards().harvestKeyRewardEvents();
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(
-                        dependencies.entityBridge().runtime().inspection().view());
+        loaded.room.replaceEntities(loaded.entities.inspection().view());
         return event;
     }
 

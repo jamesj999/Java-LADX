@@ -47,7 +47,8 @@ final class RoomStoryState {
                 dependencies.roomSessionViews(),
                 dependencies.roomState(),
                 this,
-                dependencies.dropResolver()));
+                dependencies.dropResolver(),
+                dependencies.installRoom()));
     }
 
     boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
@@ -298,7 +299,8 @@ final class RoomStoryState {
             linksawakening.world.entity.EnemyDropResolver dropResolver,
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            RoomTransientState roomTransientState) {
+            RoomTransientState roomTransientState,
+            java.util.function.Consumer<RoomRuntime> installRoom) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");

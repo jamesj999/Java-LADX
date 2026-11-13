@@ -55,6 +55,9 @@ final class RoomFollowerSynchronizer {
                 .romTables(dependencies.romTables())
                 .rom(dependencies.romData())
                 .build();
+        dependencies
+                .installRoom()
+                .accept(new RoomRuntime(dependencies.location().activeRoom, dependencies.entityRuntimeState().runtime));
         configureFollowerWorld();
         configureFollowerCollision();
         configureFollowerInputs();
@@ -103,7 +106,8 @@ final class RoomFollowerSynchronizer {
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
             RoomStoryState owner,
-            linksawakening.world.entity.EnemyDropResolver dropResolver) {
+            linksawakening.world.entity.EnemyDropResolver dropResolver,
+            java.util.function.Consumer<RoomRuntime> installRoom) {
         Dependencies {
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
             java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");

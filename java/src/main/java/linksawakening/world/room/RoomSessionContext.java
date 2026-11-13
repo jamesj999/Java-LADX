@@ -13,11 +13,12 @@ import linksawakening.world.object.OverworldBushInteraction;
 final class RoomSessionContext {
     private final RoomSessionComponents.Builder values = new RoomSessionComponents.Builder();
 
-    static RoomSessionComponents create(RoomSessionConfig config) {
-        return new RoomSessionContext(config).values.build();
+    static RoomSessionComponents create(
+            RoomSessionConfig config, java.util.function.Consumer<RoomRuntime> installRoom) {
+        return new RoomSessionContext(config, installRoom).values.build();
     }
 
-    private RoomSessionContext(RoomSessionConfig config) {
+    private RoomSessionContext(RoomSessionConfig config, java.util.function.Consumer<RoomRuntime> installRoom) {
 
         var romData = config.romData();
         var gpu = config.gpu();
@@ -146,7 +147,8 @@ final class RoomSessionContext {
                 values.enemyDropResolver,
                 values.roomSessionViews,
                 values.roomState,
-                values.roomTransientState));
+                values.roomTransientState,
+                installRoom));
         values.roomDoorInteractions = new RoomDoorInteractions(new RoomDoorInteractions.Dependencies(
                 values.entityFrame,
                 values.followers,
@@ -193,7 +195,8 @@ final class RoomSessionContext {
                 values.roomSessionViews,
                 values.roomState,
                 values.roomStoryState,
-                values.roomTransientState));
+                values.roomTransientState,
+                installRoom));
         values.roomEntityRewards = new RoomEntityRewards(new RoomEntityRewards.Dependencies(
                 values.followers,
                 values.items,

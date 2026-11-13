@@ -176,6 +176,10 @@ final class RoomLoadCoordinator {
                         .rom(dependencies.romData())
                         .build();
         if (dependencies.entityRuntimeState().runtime != null) {
+            dependencies
+                    .installRoom()
+                    .accept(new RoomRuntime(
+                            dependencies.location().activeRoom, dependencies.entityRuntimeState().runtime));
             configureRuntimeWorld();
             configureRuntimeInputs();
             configureRuntimeProgress();
@@ -265,7 +269,8 @@ final class RoomLoadCoordinator {
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
             RoomStoryState roomStoryState,
-            RoomTransientState roomTransientState) {
+            RoomTransientState roomTransientState,
+            java.util.function.Consumer<RoomRuntime> installRoom) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");

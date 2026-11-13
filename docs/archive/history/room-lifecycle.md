@@ -52,3 +52,14 @@ Baseline after merging develop: world comparison occurrences 328 (306 matching
 lines); app 94 occurrences / 91 lines, gameplay 22 occurrences / 20 lines.
 The final inventory will report both definitions to keep the coordinator
 line-count baseline and expression-level classification comparable.
+
+## Combat migration
+
+The facade now publishes RoomRuntime on load and follower runtime replacement.
+Combat, recoil, clear and pickup operations make their no-room decision at the
+facade; RoomEntityCombatBridge receives a non-null generation and contains no
+active-room/runtime absence checks. Pickup event absence remains a distinct
+optional domain result. Stable role objects survive replacement. Test fixtures
+that replace a runtime install a generation instead of bypassing publication.
+Legacy internal room/runtime fields are transitional aliases until the remaining
+collaborators migrate; they are not the final model.

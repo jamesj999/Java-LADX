@@ -7,15 +7,16 @@ record RoomRoleViews(
         RoomDungeon dungeon,
         RoomProgress progress,
         RoomTerrain terrain) {
-    static RoomRoleViews create(RoomSessionComponents components) {
+    static RoomRoleViews create(RoomSessionComponents components, RoomSession session) {
         return new RoomRoleViews(
-                new RoomEntitiesView(new RoomEntitiesView.Dependencies(components.entityBridge())),
+                new RoomEntitiesView(new RoomEntitiesView.Dependencies(components.entityBridge(), session)),
                 new RoomEntityStateView(new RoomEntityStateView.Dependencies(
                         components.entityBridge(),
                         components.entityFrame(),
                         components.entityInputs(),
                         components.followers(),
-                        components.roomSessionViews())),
+                        components.roomSessionViews(),
+                        session)),
                 new RoomRoomsView(new RoomRoomsView.Dependencies(
                         components.roomLoadCoordinator(), components.roomSessionViews())),
                 new RoomDungeonView(
