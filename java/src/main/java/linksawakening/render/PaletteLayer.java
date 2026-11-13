@@ -4,8 +4,8 @@ import java.util.function.IntUnaryOperator;
 import linksawakening.gpu.GPU;
 import linksawakening.ui.InventoryTransition;
 
-/** Owns synchronous submission callbacks and nested pass-out/inventory palette scopes. */
-final class ReusablePaletteLayer implements HardwareRenderLayer {
+/** Owns synchronous submission callbacks and nested pass-out/inventory palette scopes.  Hardware analogue: BG/window and OBJ palette scopes. */
+final class PaletteLayer implements HardwareRenderLayer {
     private HardwareRenderLayer child;
     private InventoryTransition inventory;
     private int passOutFrames;
@@ -18,15 +18,15 @@ final class ReusablePaletteLayer implements HardwareRenderLayer {
             object = rgb -> inventory.color(rgb, true);
     private final Runnable draw = this::drawChild, inner = this::drawInner, sourced = this::drawSourced;
 
-    void configure(RenderLayer layer, GameFrameInputs state) {
+    void configure(RenderLayer layer, GameFrameState state) {
         child = (HardwareRenderLayer) layer;
         passOut = state.screen() == RenderScreen.OVERWORLD
-                && state.link() != null
+                && state.overworld.hasLink()
                 && state.link().status().isPassingOut()
                 && !(layer instanceof LinkRenderLayer);
         passOutFrames = passOut ? state.link().status().passOutPaletteFrames() : 0;
         inventory = state.screen() == RenderScreen.OVERWORLD
-                        && state.inventoryController() != null
+                        && state.overworld.hasInventoryController()
                         && state.inventoryController().transition().blocksWorld()
                 ? state.inventoryController().transition()
                 : null;

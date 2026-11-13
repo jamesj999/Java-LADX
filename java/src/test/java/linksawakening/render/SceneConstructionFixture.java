@@ -36,7 +36,7 @@ final class SceneConstructionFixture {
     final GPU gpu = new GPU();
     final byte[] output = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
     final GameFrameState state;
-    private final ReusableGameFrameState template;
+    private final GameFrameState template;
 
     SceneConstructionFixture() {
         this(false);
@@ -122,10 +122,10 @@ final class SceneConstructionFixture {
                 .withDialogController(dialog)
                 .withTransientVfx(
                         vfx, new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(rom)), palettes[0]);
-        template = new ReusableGameFrameState().copyFrom(state);
+        template = new GameFrameState().copyFrom(state);
     }
 
-    ReusableGameFrameState refill(ReusableGameFrameState target, int frame) {
+    GameFrameState refill(GameFrameState target, int frame) {
         var room = template.roomInputs;
         return target.reset()
                 .withScreen(RenderScreen.OVERWORLD)

@@ -17,7 +17,7 @@ final class SceneConstructionAllocationTest {
         var fixture = new SceneConstructionFixture(highEntityTypes);
         var builder = new GameFrameSceneBuilder();
         fixture.configure(builder);
-        var state = new ReusableGameFrameState().copyFrom(fixture.state);
+        var state = new GameFrameState().copyFrom(fixture.state);
         assertTrue(fixture.state.dialogController().isActive());
         assertEquals(10, fixture.state.room().entities().loadedEntities().size());
         assertEquals(3, fixture.state.transientVfxSystem().activeCount());
@@ -38,7 +38,7 @@ final class SceneConstructionAllocationTest {
     @Test
     void constructionAloneReusesTheSceneAndLayerStorage() {
         var fixture = new SceneConstructionFixture();
-        var state = new ReusableGameFrameState().copyFrom(fixture.state);
+        var state = new GameFrameState().copyFrom(fixture.state);
         var builder = new GameFrameSceneBuilder();
         fixture.configure(builder);
         FrameScene scene = builder.build(state);

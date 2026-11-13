@@ -17,7 +17,7 @@ final class ReusableSceneParityTest {
         var ownedBuilder = new GameFrameSceneBuilder();
         fixture.configure(liveBuilder);
         fixture.configure(ownedBuilder);
-        var state = new ReusableGameFrameState().copyFrom(fixture.state);
+        var state = new GameFrameState().copyFrom(fixture.state);
         byte[] expected = new byte[fixture.output.length];
         FrameScene reused = null;
         for (int frame = 0; frame < 96; frame++) {
@@ -26,7 +26,7 @@ final class ReusableSceneParityTest {
             state.roomInputs.tiles[0] = frame & 3;
             state.roomInputs.attributes[1] = (frame & 7) | ((frame & 3) << 5);
             if (frame == 32) state.withDialogController(null);
-            ownedBuilder.build(state.snapshot()).drawTo(expected, fixture.gpu);
+            ownedBuilder.build(FrameSnapshots.copy(state)).drawTo(expected, fixture.gpu);
             FrameScene scene = liveBuilder.build(state);
             if (reused != null) assertSame(reused, scene);
             reused = scene;
@@ -38,26 +38,26 @@ final class ReusableSceneParityTest {
     @Test
     void resetRestoresAllEmptyInputs() {
         var fixture = new SceneConstructionFixture();
-        var state = new ReusableGameFrameState().copyFrom(fixture.state);
+        var state = new GameFrameState().copyFrom(fixture.state);
         assertSame(state, state.reset());
-        assertEquals(GameFrameState.empty(), state.snapshot());
+        assertEquals(GameFrameState.empty(), FrameSnapshots.copy(state));
         fixture.refill(state, 0x107);
         assertEquals(7, state.frameCounter());
-        assertNotNull(state.snapshot().room());
+        assertNotNull(FrameSnapshots.copy(state).room());
     }
 
     @Test
     void clearingOrRebindingBorrowedRoomInputsCannotLeaveStalePlanes() {
         var fixture = new SceneConstructionFixture();
-        var state = new ReusableGameFrameState().copyFrom(fixture.state);
+        var state = new GameFrameState().copyFrom(fixture.state);
         int[] tiles = state.roomInputs.tiles, attrs = state.roomInputs.attributes;
         int[][] palettes = state.roomInputs.palettes;
         state.withRoomData(tiles, attrs, palettes, state.roomInputs.entities, null, null, 0);
         state.withRoom(null, fixture.state.scrollController(), fixture.state.transitionController());
-        assertNull(state.snapshot().room());
+        assertNull(FrameSnapshots.copy(state).room());
         state.withRoom(fixture.state.room(), fixture.state.scrollController(), fixture.state.transitionController());
-        assertNotNull(state.snapshot().room());
-        var snapshot = state.snapshot();
+        assertNotNull(FrameSnapshots.copy(state).room());
+        var snapshot = FrameSnapshots.copy(state);
         state.roomInputs.tiles[0] = 3;
         assertNotEquals(3, snapshot.room().tileIds()[0]);
     }

@@ -8,10 +8,10 @@ import linksawakening.world.room.RoomRenderView;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** Submits current and previous room backgrounds with scrolling and fade offsets. */
+/** Submits current and previous room backgrounds with scrolling and fade offsets.  Hardware analogue: scrolling BG tilemap planes. */
 final class RoomRenderLayer implements HardwareRenderLayer {
     private RoomRenderView currentSnapshot;
-    private final ReusableRoomInputs currentInputs = new ReusableRoomInputs();
+    private final RoomInputs currentInputs = new RoomInputs();
     private int[] tileIds, tileAttrs;
     private int[][] roomPalettes;
     private ScrollController scrollController;

@@ -23,11 +23,11 @@ class RenderStateAllocationTest {
             var builder = new GameFrameSceneBuilder();
             double assembly = AllocationProbe.bytesPerIteration(600, 120, () -> {
                 session.frameClock().advance();
-                snapshot = assembler.currentReusableGameFrameState();
+                snapshot = assembler.currentGameFrameState();
             });
             double scene = AllocationProbe.bytesPerIteration(600, 120, () -> {
                 session.frameClock().advance();
-                observed = builder.build(assembler.currentReusableGameFrameState());
+                observed = builder.build(assembler.currentGameFrameState());
             });
             System.out.println("Reusable assembly / assembly+scene bytes: " + assembly + " / " + scene);
             assertEquals(0.0, assembly);

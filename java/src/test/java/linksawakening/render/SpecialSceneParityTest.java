@@ -31,7 +31,7 @@ final class SpecialSceneParityTest {
             })
     void reusableScenesMatchOwnedPresentation(String kind) {
         var fixture = new SceneConstructionFixture();
-        var state = new ReusableGameFrameState().copyFrom(fixture.state);
+        var state = new GameFrameState().copyFrom(fixture.state);
         switch (kind) {
             case "INTRO" -> state.copyFrom(SpecialSceneAllocationTest.intro());
             case "MENU" -> {
@@ -105,7 +105,7 @@ final class SpecialSceneParityTest {
             if (kind.equals("PASSOUT")) state.link().status().presentPassOut(192 - frame, 0, 0);
             if (kind.equals("MARIN")) state.link().animation().showMarinWakeUpBed(frame % 5);
             if (kind.equals("SCROLL")) state.scrollController().tick(2);
-            owned.build(state.snapshot()).drawTo(expected, fixture.gpu);
+            owned.build(FrameSnapshots.copy(state)).drawTo(expected, fixture.gpu);
             FrameScene next = live.build(state);
             if (scene != null) assertSame(scene, next);
             scene = next;

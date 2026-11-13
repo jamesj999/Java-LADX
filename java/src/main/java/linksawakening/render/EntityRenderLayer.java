@@ -10,7 +10,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.ScrollController;
 
-/** Renders the ROM-backed OAM display lists for the room's loaded entities. */
+/** Renders the ROM-backed OAM display lists for the room's loaded entities.  Hardware analogue: OBJ entity display lists. */
 final class EntityRenderLayer implements HardwareRenderLayer {
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_WINGED_OCTOROK = 0xAE;
@@ -30,6 +30,10 @@ final class EntityRenderLayer implements HardwareRenderLayer {
     private EntitySelectionSprites currentSprites, previousSprites;
     private EntitySelectionSprites activeSprites;
     private final Offset currentOffset = new Offset(0, 0), previousOffset = new Offset(0, 0);
+
+    EntityRenderLayer() {
+        painter = new EntitySpritePainter(null);
+    }
 
     public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes, ScrollController scrollController) {
         this(snapshot, objectPalettes, scrollController, 0);

@@ -2,22 +2,79 @@ package linksawakening.render;
 
 import linksawakening.entity.Link;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
+import linksawakening.gpu.GPU;
+import linksawakening.world.entity.event.HeartPieceVisual;
 import linksawakening.world.transition.ScrollController;
 
-/** ROM story poses submitted without per-pose layer adapters. */
-final class StorySprites {
-    private StorySprites() {}
+/** Retains one story-pose role and immutable heart-piece OAM metadata across frames.  Hardware analogue: OBJ story poses, ground effects and heart meter. */
+final class StoryLayer implements HardwareRenderLayer {
+    enum Kind {
+        SHADOW,
+        GRASS,
+        MARIN,
+        TARIN,
+        GOT_ITEM,
+        HEART
+    }
+
+    private final Kind kind;
+    private GameFrameState state;
+    private HeartPieceVisual heart;
+    private int[] heartPairs;
+
+    StoryLayer(Kind kind) {
+        this.kind = kind;
+    }
+
+    void configure(GameFrameState state) {
+        this.state = state;
+        if (kind == Kind.HEART && state.roomInputs.heart != heart) {
+            heart = state.roomInputs.heart;
+            heartPairs = heart.spritePairs();
+        }
+    }
+
+    @Override
+    public void submit(HardwareFrame frame, GPU gpu) {
+        var data = state.roomInputs;
+        switch (kind) {
+            case SHADOW -> submitLinkShadow(
+                    state.link(), data.objectPalettes[0], state.scrollController(), state.frameCounter(), frame, gpu);
+            case GRASS -> submitLinkGrass(
+                    state.link(), data.objectPalettes, state.scrollController(), data.grassPalette, frame, gpu);
+            case MARIN -> submitMarinBed(
+                    state.link(),
+                    data.entities.spriteTiles(),
+                    data.objectPalettes,
+                    state.scrollController(),
+                    frame,
+                    gpu);
+            case TARIN -> submitTarinShield(state.link(), state.scrollController(), frame, gpu);
+            case GOT_ITEM -> submitGotItem(state.link(), data.objectPalettes, state.scrollController(), frame, gpu);
+            case HEART -> {
+                int offset = Math.min(4, heart.pieces()) * 4;
+                int y = state.dialogController().boxPosition()
+                                == linksawakening.dialog.DialogController.BoxPosition.BOTTOM
+                        ? 0x6B - 16
+                        : 0x23 - 16;
+                for (int half = 0; half < 2; half++) {
+                    int attr = heartPairs[offset + half * 2 + 1];
+                    OamDrawing.draw8x16(
+                            RenderContext.indexed(gpu, frame),
+                            gpu,
+                            heartPairs[offset + half * 2],
+                            0x8E - 8 + half * 8,
+                            y,
+                            (attr & 32) != 0,
+                            (attr & 64) != 0,
+                            data.objectPalettes[Math.min(attr & 7, data.objectPalettes.length - 1)]);
+                }
+            }
+        }
+    }
 
     private static final int[][] PAIR_TILES = {{0x40, 0x42}, {0x42, 0x40}, {0x44, 0x46}, {0x48, 0x4A}, {0x48, 0x4C}};
     private static final int SHIELD_TILE = 0x86;
-
-    static HardwareRenderLayer marinBed(
-            Link link, EntitySpriteTileSnapshot tiles, int[][] palettes, ScrollController scrollController) {
-        if (link == null || tiles == null || palettes == null || palettes.length < 8 || scrollController == null) {
-            throw new IllegalArgumentException("Marin wake-up render inputs are incomplete");
-        }
-        return (frame, gpu) -> submitMarinBed(link, tiles, palettes, scrollController, frame, gpu);
-    }
 
     static void submitMarinBed(
             Link link,
@@ -40,12 +97,6 @@ final class StorySprites {
         OamDrawing.draw8x16(context, tiles, pair[0], x, y, flip, false, palette);
     }
 
-    static HardwareRenderLayer tarinShield(Link link, ScrollController scrollController) {
-        if (link == null || link.animation().tarinShieldPalette() == null || scrollController == null)
-            throw new IllegalArgumentException("Tarin shield render inputs are incomplete");
-        return (frame, gpu) -> submitTarinShield(link, scrollController, frame, gpu);
-    }
-
     static void submitTarinShield(Link link, ScrollController scroll, HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         frame.submittingLayer("TarinShieldRenderLayer");
         // RenderActiveEntitySprite ($3CA4) centers the single column by four pixels.
@@ -60,11 +111,6 @@ final class StorySprites {
                 link.animation().tarinShieldPalette());
     }
 
-    /** HandleGotItemB $02:51F1-5243: one OAM entry, tile $8E, attributes $14. */
-    static HardwareRenderLayer dialogGotItem(Link link, int[][] palettes, ScrollController scroll) {
-        return (frame, gpu) -> submitGotItem(link, palettes, scroll, frame, gpu);
-    }
-
     static void submitGotItem(
             Link link, int[][] palettes, ScrollController scroll, HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (link.animation().presentedDialogGotItem() != 2) return;
@@ -77,14 +123,6 @@ final class StorySprites {
                 false,
                 false,
                 palettes[4]);
-    }
-
-    static HardwareRenderLayer linkGrass(Link link, int[][] palettes, ScrollController scroll, int paletteIndex) {
-        return (frame, gpu) -> submitLinkGrass(link, palettes, scroll, paletteIndex, frame, gpu);
-    }
-
-    static HardwareRenderLayer linkShadow(Link link, int[] palette, ScrollController scroll, int frameNumber) {
-        return (frame, gpu) -> submitLinkShadow(link, palette, scroll, frameNumber, frame, gpu);
     }
 
     static void submitLinkShadow(
