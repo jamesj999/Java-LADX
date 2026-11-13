@@ -116,15 +116,12 @@ public final class EntityRoomInspection {
     }
 
     int initialHealth(int type) {
-        return this.enemyCombatTables == null
-                ? RoomEntityCombatRules.initialHealth(type)
-                : this.enemyCombatTables.initialHealth(type);
+        return this.enemyCombatTables.initialHealth(type);
     }
 
     int contactDamage(int slot) {
-        return this.enemyCombatTables == null
-                ? RoomEntityCombatRules.contactDamage(this.slots[slot].type())
-                : this.enemyCombatTables.contactDamageForGroup(this.combatTables.readEnemyHealthGroup(slot));
+        return this.enemyCombatTables.contactDamage(
+                this.slots[slot].type(), this.combatTables.readEnemyHealthGroup(slot));
     }
 
     public int activeProjectileCount() {
@@ -429,9 +426,7 @@ public final class EntityRoomInspection {
     }
 
     int enemyDropHealthGroup(int slot) {
-        if (this.enemyCombatTables == null) {
-            throw new IllegalStateException("ROM enemy combat tables are required for enemy drop resolution");
-        }
+        this.enemyCombatTables.requireDropTables();
         return this.combatTables.readEnemyHealthGroup(slot);
     }
 

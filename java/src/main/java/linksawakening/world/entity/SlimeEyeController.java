@@ -612,9 +612,8 @@ public final class SlimeEyeController {
                     && !(isHalf && owner.encounter.dropping[s] != 0)
                     && RoomEntityCombatRules.collisionCadenceMatches(frame, s)
                     && owner.overlaps(e, isHalf ? 24 : owner.encounter.stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
-                int damage = owner.enemyCombatTables == null
-                        ? 4
-                        : owner.enemyCombatTables.contactDamageForGroup(owner.combatTables.readEnemyHealthGroup(s));
+                int damage = owner.enemyCombatTables.contactDamage(
+                        EntityRomConstants.ENTITY_SLIME_EYE, owner.combatTables.readEnemyHealthGroup(s));
                 var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(e.x(), e.y(), e.z(), lx, ly, 0x14);
                 events.add(linksawakening.world.entity.event.EntityCombatEvent.builder(
                                 s, EntityRomConstants.ENTITY_SLIME_EYE)
@@ -653,13 +652,9 @@ public final class SlimeEyeController {
                             attack.romDirection(),
                             attack.linkZ())
                     : attack;
-            var damage = owner.enemyCombatTables == null
-                    ? null
-                    : owner.enemyCombatTables.resolveSwordDamage(
-                            EntityRomConstants.ENTITY_SLIME_EYE,
-                            owner.combatTables.readEnemyHealthGroup(s),
-                            damageAttack);
-            int amount = damage == null ? 1 : damage.numericDamage();
+            var damage = owner.enemyCombatTables.resolveSwordDamage(
+                    EntityRomConstants.ENTITY_SLIME_EYE, owner.combatTables.readEnemyHealthGroup(s), damageAttack);
+            int amount = damage.numericDamage();
             if (amount == 0) return false;
             owner.encounter.swordHitFrame[s] = (frame & 255) + 1;
             owner.combatTables.writeEnemyHealth(s, Math.max(0, owner.combatTables.readEnemyHealth(s) - amount));

@@ -160,7 +160,8 @@ public final class RoomEntityRuntime {
 
         RoomEntitySnapshot initial = builder.initial();
         boolean indoorRoom = builder.indoorRoom();
-        IntSupplier defaultRandomByteSupplier = builder.randomByteSupplier();
+        this.frameRandom = new EntityFrameRandom(builder.randomByteSupplier());
+        IntSupplier defaultRandomByteSupplier = frameRandom.spawnSource();
         EntitySpriteHandlerCatalog spriteHandlers = builder.spriteHandlers();
         RomEnemyCombatTables enemyCombatTables = builder.enemyCombatTables();
         ChestContentsTable chestContentsTable = builder.chestContentsTable();
@@ -184,7 +185,6 @@ public final class RoomEntityRuntime {
         this.effects = new EntityEffectConsumption(
                 entityState.events, entityState.presentationState, entityState.roomVariables);
         this.flyingEnemyInspection = new EntityFlyingEnemyInspection(entityState.motions, entityState.physicsTables);
-        this.frameRandom = new EntityFrameRandom(defaultRandomByteSupplier);
         this.pickupInspection =
                 new EntityPickupInspection(bombInteractionsState, entityState.motions, entityState.physicsTables);
         this.roomInspection = new EntityRoomInspection(

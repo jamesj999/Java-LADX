@@ -31,6 +31,8 @@ public record EntityFrameContext(
         boolean handlerLinkCollisionEnabled) {
 
     public EntityFrameContext {
+        randomByteSupplier =
+                java.util.Objects.requireNonNullElse(randomByteSupplier, EntityFrameRandom.REQUIRED_SOURCE);
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         objectCollision = RoomEntityObjectCollision.orNone(objectCollision);
     }

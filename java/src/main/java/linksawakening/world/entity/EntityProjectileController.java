@@ -1299,13 +1299,9 @@ public final class EntityProjectileController {
                     .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                     .configureFromSpeed(targetSlot, speedX, speedY);
 
-            damageResult = owner.enemyCombatTables == null
-                    ? null
-                    : owner.enemyCombatTables.resolveAttackDamage(
-                            target.type(), owner.combatTables.readEnemyHealthGroup(target.slot()), damageType);
-            rawDamage = damageResult == null
-                    ? RoomEntityCombatRules.basicSwordDamage(target.type())
-                    : damageResult.rawValue();
+            damageResult = owner.enemyCombatTables.resolveAttackDamage(
+                    target.type(), owner.combatTables.readEnemyHealthGroup(target.slot()), damageType);
+            rawDamage = damageResult.rawValue();
             if (rawDamage == 0) {
                 return false;
             }

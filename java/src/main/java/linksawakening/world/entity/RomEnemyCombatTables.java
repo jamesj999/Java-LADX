@@ -7,6 +7,32 @@ import linksawakening.rom.RomSymbols;
 
 /** Immutable decoder for the ROM's shared entity combat and Bow-Wow tables. */
 public final class RomEnemyCombatTables {
+    /** ROM-free rules previously selected when combat tables were absent. */
+    public static final RomEnemyCombatTables DEFAULTS = new RomEnemyCombatTables();
+
+    private final boolean romBacked;
+
+    private RomEnemyCombatTables() {
+        romBacked = false;
+        healthGroupByEntity = damageTypeMatrix =
+                damageValues = initialHealthByGroup = contactDamageByGroup = bowWowEatableByEntity = new int[0];
+    }
+
+    void requireDropTables() {
+        if (!romBacked)
+            throw new IllegalStateException("ROM enemy combat tables are required for enemy drop resolution");
+    }
+
+    /** Type-sensitive fallback is intentional: absent tables never supplied a health group. */
+    int contactDamage(int entityType, int group) {
+        if (romBacked) return contactDamageForGroup(group);
+        return switch (entityType & 0xFF) {
+            case EntityRomConstants.ENTITY_BOMB -> 8;
+            case EntityRomConstants.ENTITY_SLIME_EYE -> 4;
+            default -> RoomEntityCombatRules.contactDamage(entityType);
+        };
+    }
+
     private static final int BOW_WOW_EATABLE_COUNT = 0x100;
     private static final int HEALTH_GROUP_COUNT = 0xFB;
     private static final int HEALTH_GROUP_COUNT_FOR_DAMAGE = 0x35;
@@ -22,6 +48,7 @@ public final class RomEnemyCombatTables {
 
     public RomEnemyCombatTables(Rom romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
+        romBacked = true;
         healthGroupByEntity = loadUnsigned(romData, RomSymbols.HealthGroupForEntity, HEALTH_GROUP_COUNT);
         damageTypeMatrix =
                 loadUnsigned(romData, RomSymbols.Data_003_43EC, HEALTH_GROUP_COUNT_FOR_DAMAGE * ATTACK_TYPE_COUNT);
@@ -37,11 +64,13 @@ public final class RomEnemyCombatTables {
     }
 
     public int initialHealth(int entityType) {
-        return initialHealthByGroup[healthGroup(entityType)];
+        return romBacked
+                ? initialHealthByGroup[healthGroup(entityType)]
+                : RoomEntityCombatRules.initialHealth(entityType);
     }
 
     public int contactDamage(int entityType) {
-        return contactDamageByGroup[healthGroup(entityType)];
+        return contactDamage(entityType, healthGroup(entityType));
     }
 
     public int contactDamageForGroup(int healthGroup) {
@@ -51,7 +80,7 @@ public final class RomEnemyCombatTables {
 
     /** Mirrors bank-$14's CanBowWowEatEntity lookup. */
     public boolean canBowWowEatEntity(int entityType) {
-        return bowWowEatableByEntity[entityType & 0xFF] != 0;
+        return romBacked && bowWowEatableByEntity[entityType & 0xFF] != 0;
     }
 
     /** Entry selected by the health-group/attack-type matrix. */
@@ -79,6 +108,7 @@ public final class RomEnemyCombatTables {
 
     public SwordDamageResult resolveSwordDamage(int entityType, int healthGroup, EnemyAttackContext attackContext) {
         Objects.requireNonNull(attackContext, "Attack context cannot be null");
+        if (!romBacked) return defaultDamage(entityType, healthGroup);
         int attackType = attackContext.effectiveDamageType();
         if (attackType < 0) {
             return new SwordDamageResult(entityType & 0xFF, healthGroup, -1, 0, 0);
@@ -92,9 +122,17 @@ public final class RomEnemyCombatTables {
     }
 
     public SwordDamageResult resolveAttackDamage(int entityType, int healthGroup, int attackType) {
+        if (!romBacked) return defaultDamage(entityType, healthGroup);
         int entry = damageTypeEntry(healthGroup, attackType);
         int rawValue = damageValue(attackType, entry);
         return new SwordDamageResult(entityType & 0xFF, healthGroup, attackType, entry, rawValue);
+    }
+
+    private static SwordDamageResult defaultDamage(int entityType, int healthGroup) {
+        int amount = (entityType & 0xFF) == EntityRomConstants.ENTITY_SLIME_EYE
+                ? 1
+                : RoomEntityCombatRules.basicSwordDamage(entityType);
+        return new SwordDamageResult(entityType & 0xFF, healthGroup, -1, 0, amount);
     }
 
     public record SwordDamageResult(

@@ -227,10 +227,8 @@ public final class EntityBombInteractions {
         }
 
         boolean collisionProtected = projectileLinkState.invincibilityCounter() != 0;
-        int linkDamage = runtime.enemyCombatTables == null
-                ? 0x08
-                : runtime.enemyCombatTables.contactDamageForGroup(
-                        runtime.combatTables.readEnemyHealthGroup(bomb.slot()));
+        int linkDamage = runtime.enemyCombatTables.contactDamage(
+                EntityRomConstants.ENTITY_BOMB, runtime.combatTables.readEnemyHealthGroup(bomb.slot()));
         EnemyRecoilMotion.Vector linkResponse = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 bomb.x(), bomb.y(), bomb.z(), linkEntityX, linkEntityY, 0x14);
         projectileEvents.add(new EntityProjectileEvent(
@@ -253,14 +251,11 @@ public final class EntityBombInteractions {
     void applyBombDamage(RoomEntity bomb, RoomEntity target) {
         var runtime = this;
         int targetSlot = target.slot();
-        RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables == null
-                ? null
-                : runtime.enemyCombatTables.resolveAttackDamage(
-                        target.type(),
-                        runtime.combatTables.readEnemyHealthGroup(target.slot()),
-                        EntityRomConstants.DAMAGE_TYPE_BOMB);
-        int rawDamage =
-                damageResult == null ? RoomEntityCombatRules.basicSwordDamage(target.type()) : damageResult.rawValue();
+        RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables.resolveAttackDamage(
+                target.type(),
+                runtime.combatTables.readEnemyHealthGroup(target.slot()),
+                EntityRomConstants.DAMAGE_TYPE_BOMB);
+        int rawDamage = damageResult.rawValue();
 
         if (rawDamage != 0) {
             int enemyDamage = rawDamage < 0xF0 ? rawDamage : 0;

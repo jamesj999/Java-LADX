@@ -547,20 +547,16 @@ final class EntityCombatResolver {
         var runtime = slot.runtime;
         var frame = slot.inputs;
 
-        slot.swordResult = runtime.enemyCombatTables == null
-                ? null
-                : runtime.enemyCombatTables.resolveSwordDamage(
-                        slot.entity.type(),
-                        runtime.combatTables.readEnemyHealthGroup(slot.entity.slot()),
-                        frame.attackContext());
-        slot.swordDamage = slot.swordResult == null
-                ? RoomEntityCombatRules.basicSwordDamage(slot.entity.type())
-                : slot.swordResult.numericDamage();
+        slot.swordResult = runtime.enemyCombatTables.resolveSwordDamage(
+                slot.entity.type(),
+                runtime.combatTables.readEnemyHealthGroup(slot.entity.slot()),
+                frame.attackContext());
+        slot.swordDamage = slot.swordResult.numericDamage();
         slot.enemyDamage = slot.swordDamage;
-        if (slot.swordResult != null) {
+        {
             slot.enemySpecialAction = slot.swordResult.specialAction();
         }
-        slot.swordResultApplied = slot.swordResult == null ? slot.swordDamage > 0 : !slot.swordResult.ignored();
+        slot.swordResultApplied = !slot.swordResult.ignored();
         if (usesSharedRecoil(slot.entity.type()) || slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // EnemyCollidedWithSword applies the default `$30` recoil
             // before ApplySwordDamagesToEnemy changes health.

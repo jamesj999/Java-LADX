@@ -913,9 +913,7 @@ final class EntitySlotPipeline {
                                 frameInput.randomByteSupplier(),
                                 frameInput.backgroundCollision(),
                                 Arrays.asList(state.runtime().slots),
-                                state.runtime().enemyCombatTables == null
-                                        ? type -> false
-                                        : state.runtime().enemyCombatTables::canBowWowEatEntity,
+                                state.runtime().enemyCombatTables::canBowWowEatEntity,
                                 state.motion(BowWowMotion.class, BowWowMotion::new)
                                         .readBowWowState()));
                 slotState.updated(bowWowUpdate.entity());

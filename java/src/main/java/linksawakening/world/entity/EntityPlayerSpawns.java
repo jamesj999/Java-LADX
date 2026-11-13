@@ -74,7 +74,8 @@ public final class EntityPlayerSpawns {
                     chestContentsTable,
             EntityPlayerCommands playerCommands) {
         this.indoorRoom = indoorRoom;
-        this.defaultRandomByteSupplier = defaultRandomByteSupplier;
+        this.defaultRandomByteSupplier =
+                java.util.Objects.requireNonNull(defaultRandomByteSupplier, "randomByteSupplier");
         this.spriteHandlers = spriteHandlers;
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -693,9 +694,6 @@ public final class EntityPlayerSpawns {
     }
 
     int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY, boolean allowDrop) {
-        if (this.defaultRandomByteSupplier == null) {
-            throw new IllegalStateException("Shovel drops require a ROM random-byte supplier");
-        }
         if ((this.defaultRandomByteSupplier.getAsInt() & 0x07) != 0 || !allowDrop) {
             return -1;
         }

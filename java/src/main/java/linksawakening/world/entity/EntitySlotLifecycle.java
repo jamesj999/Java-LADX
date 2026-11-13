@@ -196,8 +196,7 @@ public final class EntitySlotLifecycle {
                     this.slots[slot],
                     entityProperties == null ? 0 : entityProperties.entityOptions1(this.slots[slot].type()));
         }
-        this.combatTables.writeEnemyHealthGroup(
-                slot, this.enemyCombatTables == null ? 0 : this.enemyCombatTables.healthGroup(this.slots[slot].type()));
+        this.combatTables.writeEnemyHealthGroup(slot, this.enemyCombatTables.healthGroup(this.slots[slot].type()));
     }
 
     public int transitionSequenceCounter() {
@@ -253,8 +252,7 @@ public final class EntitySlotLifecycle {
         this.physicsTables.writeEnemyTransitionCountdown(slot, 0);
         this.combatTables.writeEnemyStunnedCountdown(slot, 0);
         this.combatTables.writeEnemyHealthGroup(
-                slot,
-                this.enemyCombatTables == null ? 0 : this.enemyCombatTables.healthGroup(EntityRomConstants.ENTITY_GEL));
+                slot, this.enemyCombatTables.healthGroup(EntityRomConstants.ENTITY_GEL));
         this.combatTables.writeEnemyHealth(slot, this.inspection.initialHealth(EntityRomConstants.ENTITY_GEL));
         this.combatTables.writeEnemyFlashCountdown(slot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);

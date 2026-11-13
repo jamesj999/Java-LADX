@@ -66,7 +66,7 @@ public final class RoomEntityRuntimeBuilder {
     }
 
     RomEnemyCombatTables enemyCombatTables() {
-        return enemyCombatTables;
+        return java.util.Objects.requireNonNullElse(enemyCombatTables, RomEnemyCombatTables.DEFAULTS);
     }
 
     public RoomEntityRuntimeBuilder enemyCombatTables(
