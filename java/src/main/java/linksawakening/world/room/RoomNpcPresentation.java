@@ -78,7 +78,7 @@ final class RoomNpcPresentation {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityRuntimeState, RoomFollowerState followers, RoomLocationState location) {
+            RoomEntitySessionState entityRuntimeState, RoomFollowerState followers, RoomLocationState location) {
         Dependencies {
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(followers, "followers");

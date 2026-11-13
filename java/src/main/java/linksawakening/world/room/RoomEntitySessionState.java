@@ -4,7 +4,8 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EnemyProjectileCollision;
 
-final class RoomEntityFrameState {
+/** Retained room-entity runtime, output queues, drop counters and per-frame gates. */
+final class RoomEntitySessionState {
     /** Absent until LoadRoomEntities installs the current room runtime. */
     linksawakening.world.entity.RoomEntityRuntime runtime;
 

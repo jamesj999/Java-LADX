@@ -202,9 +202,9 @@ final class RoomSessionViews {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomLocationState location,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomWorldState roomState,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {

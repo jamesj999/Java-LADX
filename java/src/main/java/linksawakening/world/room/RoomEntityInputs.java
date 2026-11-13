@@ -2,7 +2,7 @@ package linksawakening.world.room;
 
 /** Cached player inputs and gates supplied to each room entity runtime. */
 final class RoomEntityInputs {
-    private final RoomEntityFrameState state;
+    private final RoomEntitySessionState state;
 
     int entityGoldenLeavesCount;
     boolean actionButtonsHeld;
@@ -24,7 +24,7 @@ final class RoomEntityInputs {
     int secretSeashellPegasusCollisionX;
     int secretSeashellPegasusCollisionY;
 
-    RoomEntityInputs(RoomEntityFrameState state) {
+    RoomEntityInputs(RoomEntitySessionState state) {
         this.state = java.util.Objects.requireNonNull(state);
     }
 

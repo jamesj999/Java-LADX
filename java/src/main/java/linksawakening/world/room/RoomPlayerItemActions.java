@@ -227,7 +227,7 @@ final class RoomPlayerItemActions {
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             RomTables romTables,

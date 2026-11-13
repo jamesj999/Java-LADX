@@ -447,10 +447,10 @@ final class RoomPuzzleController {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomLocationState location,
             RoomPuzzleState puzzles,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             GPU gpu,
             OverworldCollision overworldCollision,

@@ -288,12 +288,12 @@ final class RoomTransitionController {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
             RoomPuzzleState puzzles,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             GPU gpu,
             ManboWarpResolver manboWarpResolver,
             Rom romData,

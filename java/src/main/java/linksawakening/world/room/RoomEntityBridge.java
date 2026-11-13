@@ -189,13 +189,13 @@ final class RoomEntityBridge {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
             RoomTerrainState terrain,
             RoomEntitySimulation.EffectsDependencies entityEffects,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomEntityCombatBridge entityCombatBridge,
             RoomEntitySimulation.SetupDependencies entityConfiguration,
             RoomEntityInputs entityInputs,

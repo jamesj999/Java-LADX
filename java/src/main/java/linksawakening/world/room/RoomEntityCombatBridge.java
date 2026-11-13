@@ -171,10 +171,10 @@ final class RoomEntityCombatBridge {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomLocationState location,
-            RoomEntityFrameState entityBridge,
+            RoomEntitySessionState entityBridge,
             RoomEntityRewards roomEntityRewards,
             RoomWorldState roomState) {
         Dependencies {

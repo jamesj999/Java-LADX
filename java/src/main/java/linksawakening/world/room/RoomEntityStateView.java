@@ -126,7 +126,7 @@ final class RoomEntityStateView implements RoomEntityState {
 
     record Dependencies(
             RoomEntityBridge entityBridge,
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomEntityInputs entityInputs,
             RoomFollowerState followers,
             RoomSessionViews roomSessionViews) {

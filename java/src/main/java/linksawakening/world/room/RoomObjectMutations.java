@@ -701,11 +701,11 @@ final class RoomObjectMutations {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             IndoorTorchPaletteEffect indoorTorchPaletteEffect,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,

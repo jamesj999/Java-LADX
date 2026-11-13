@@ -7,7 +7,7 @@ import linksawakening.world.entity.event.EntityProjectileEvent;
 final class RoomFrameInputApplier {
     private final RoomEntityInputs entityInputs;
     private final RoomEntityBridge bridge;
-    private final RoomEntityFrameState frame;
+    private final RoomEntitySessionState frame;
     private final RoomSessionViews views;
     private final RoomEntityState entityState;
     private final RoomStory story;
@@ -16,7 +16,7 @@ final class RoomFrameInputApplier {
     RoomFrameInputApplier(
             RoomEntityInputs entityInputs,
             RoomEntityBridge bridge,
-            RoomEntityFrameState frame,
+            RoomEntitySessionState frame,
             RoomSessionViews views,
             RoomEntityState entityState,
             RoomStory story,

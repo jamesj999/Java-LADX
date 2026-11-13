@@ -83,13 +83,13 @@ final class RoomTransientState {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomItemUseState items,
             RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             DroppableRupeeSystem droppableRupeeSystem,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             TransientVfxSystem transientVfxSystem) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");

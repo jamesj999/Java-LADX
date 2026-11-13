@@ -21,7 +21,7 @@ record RoomSessionComponents(
         RoomLocationState location,
         RoomTerrainState terrain,
         RoomFollowerState followers,
-        RoomEntityFrameState entityFrame,
+        RoomEntitySessionState entityFrame,
         RoomItemUseState items,
         RoomPuzzleState puzzles,
         Rom romData,
@@ -121,7 +121,7 @@ record RoomSessionComponents(
         final RoomLocationState location = new RoomLocationState();
         final RoomTerrainState terrain = new RoomTerrainState();
         final RoomFollowerState followers = new RoomFollowerState();
-        final RoomEntityFrameState entityFrame = new RoomEntityFrameState();
+        final RoomEntitySessionState entityFrame = new RoomEntitySessionState();
         final RoomItemUseState items = new RoomItemUseState();
         final RoomPuzzleState puzzles = new RoomPuzzleState();
 

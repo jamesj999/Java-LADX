@@ -276,7 +276,7 @@ final class RoomStoryState {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomLocationState location,
             RoomPuzzleState puzzles,
@@ -285,7 +285,7 @@ final class RoomStoryState {
             ColorShellWorld colorShellWorld,
             RomEnemyCombatTables enemyCombatTables,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,

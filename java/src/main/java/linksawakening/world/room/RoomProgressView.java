@@ -40,7 +40,7 @@ final class RoomProgressView implements RoomProgress {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomLocationState location,
             RoomLoadCoordinator roomLoadCoordinator,
             RoomTerrainState terrain) {

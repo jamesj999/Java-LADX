@@ -32,7 +32,7 @@ final class RoomEntityWorldAdapters {
     }
 
     static ColorShellWorld colorShell(
-            RoomObjectMutations objects, RoomEntityFrameState entityFrame, TransientVfxSystem transientVfxSystem) {
+            RoomObjectMutations objects, RoomEntitySessionState entityFrame, TransientVfxSystem transientVfxSystem) {
         return new ColorShellWorld() {
             @Override
             public int objectAt(RoomEntity entity, int relativeOffset) {

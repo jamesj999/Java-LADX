@@ -40,7 +40,7 @@ public final class PresentationOutputs {
         return dependencies.entityRuntimeState().outbox.consumeFirstEntityDialogRequest();
     }
 
-    record Dependencies(RoomEntityFrameState entityRuntimeState) {
+    record Dependencies(RoomEntitySessionState entityRuntimeState) {
         Dependencies {
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
         }

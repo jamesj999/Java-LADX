@@ -107,7 +107,7 @@ final class RoomEntitySimulation {
 
     record Dependencies(
             RoomEntityBridge entityBridge,
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RomRandomByteSource entityRandomByteSource,
             RoomFollowerState followers,
             RoomItemUseState items,
@@ -258,13 +258,13 @@ final class RoomEntitySimulation {
     }
 
     record SetupDependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
-            RoomEntityFrameState entityBridge,
+            RoomEntitySessionState entityBridge,
             RoomEntityInputs entityInputs,
             IndoorTorchPaletteEffect indoorTorchPaletteEffect,
             OwlStatueDialogResolver owlStatueDialogResolver,
@@ -445,12 +445,12 @@ final class RoomEntitySimulation {
     }
 
     record EffectsDependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
             RoomTerrainState terrain,
-            RoomEntityFrameState entityBridge,
+            RoomEntitySessionState entityBridge,
             RoomEntityRewards roomEntityRewards,
             RoomObjectMutations roomObjectMutations,
             RoomPuzzleController roomPuzzleController,

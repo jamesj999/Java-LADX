@@ -194,7 +194,7 @@ final class RoomEntityRewards {
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,

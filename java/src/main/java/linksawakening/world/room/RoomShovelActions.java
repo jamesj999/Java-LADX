@@ -152,7 +152,7 @@ final class RoomShovelActions {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,

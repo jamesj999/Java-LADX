@@ -491,12 +491,12 @@ final class RoomDoorInteractions {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomLocationState location,
             RoomPuzzleState puzzles,
             ChestContentsTable chestContentsTable,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             Rom romData,

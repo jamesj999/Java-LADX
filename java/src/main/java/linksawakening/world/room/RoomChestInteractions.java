@@ -85,7 +85,7 @@ final class RoomChestInteractions {
 
     record Dependencies(
             ChestContentsTable chestContentsTable,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomLocationState location,
             OverworldCollision overworldCollision,
             Rom romData,

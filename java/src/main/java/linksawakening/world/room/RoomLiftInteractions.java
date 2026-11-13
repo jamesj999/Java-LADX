@@ -114,7 +114,7 @@ final class RoomLiftInteractions {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomFollowerState followers,
             RoomLocationState location,
             OverworldBushInteraction overworldBushInteraction,

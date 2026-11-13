@@ -242,12 +242,12 @@ final class RoomCollisionQueries {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             EntityBackgroundCollisionResolver entityBackgroundCollisionResolver,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             EntityCollisionPointProbe entityCollisionPointProbe,
             OverworldCollision overworldCollision,
             RomTables romTables) {

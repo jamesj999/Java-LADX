@@ -234,7 +234,7 @@ final class RoomLoadCoordinator {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomLocationState location,
             RoomPuzzleState puzzles,
@@ -245,7 +245,7 @@ final class RoomLoadCoordinator {
             RomEnemyCombatTables enemyCombatTables,
             EnemyDropResolver enemyDropResolver,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
-            RoomEntityFrameState entityRuntimeState,
+            RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
