@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class RoomFrameEnumTest {
     @Test
     void knownFacingCarriesItsEnumAndExactEngineIndex() {
-        var p = new LinkPosition(10, 20, 3, Direction.RIGHT, 4);
+        var p = new LinkPosition(10, 20, 3, (Direction.RIGHT).javaIndex(), 4);
         assertEquals(Direction.RIGHT, p.direction());
         assertEquals(3, p.rawDirection());
         assertEquals(10, p.x());
@@ -17,20 +17,20 @@ class RoomFrameEnumTest {
 
     @Test
     void unknownLegacyFacingBytesAreRetainedWithoutInventingAFacing() {
-        var p = new LinkPosition(1, 2, 3, Direction.UNKNOWN, 4, 0xFF);
+        var p = new LinkPosition(1, 2, 3, 0xFF, 4);
         assertEquals(Direction.UNKNOWN, p.direction());
         assertEquals(0xFF, p.rawDirection());
-        var pickup = new EntityPickupInputs.Link(1, 2, false, true, Direction.UNKNOWN, 3, 99);
+        var pickup = new EntityPickupInputs.Link(1, 2, false, true, 99, 3);
         assertEquals(99, pickup.rawDirection());
         assertEquals(Direction.UNKNOWN, pickup.direction());
     }
 
     @Test
     void motionStateEnumsDoNotNarrowRawRomGates() {
-        var known = new LinkMotion(false, LinkMotionState.FALLING_DOWN, false, 0, 1, 2);
+        var known = new LinkMotion(false, (LinkMotionState.FALLING_DOWN).romValue(), false, 0, 1, 2);
         assertEquals(6, known.rawState());
         assertEquals(LinkMotionState.FALLING_DOWN, known.state());
-        var unknown = new LinkMotion(false, null, false, 0, 1, 2, 0xFF);
+        var unknown = new LinkMotion(false, 0xFF, false, 0, 1, 2);
         assertNull(unknown.state());
         assertEquals(0xFF, unknown.rawState());
     }

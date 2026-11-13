@@ -344,13 +344,8 @@ final class GameplayRouteStage4 {
             route.session.tickEntities(new EntityTickInputs(
                     route.frame++,
                     new LinkPosition(
-                            route.kidnappedBowWow.x(),
-                            route.kidnappedBowWow.y(),
-                            0,
-                            Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()),
-                            1,
-                            Direction.RIGHT.javaIndex()),
-                    new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
+                            route.kidnappedBowWow.x(), route.kidnappedBowWow.y(), 0, Direction.RIGHT.javaIndex(), 1),
+                    new LinkMotion(false, 0, false, 0, 0, 0),
                     1,
                     new SwordBox(false, 0, 0, 0, 0)));
         }

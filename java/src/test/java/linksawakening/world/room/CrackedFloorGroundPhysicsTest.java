@@ -34,17 +34,7 @@ class CrackedFloorGroundPhysicsTest {
 
     private static LinkGroundFrame frame(
             int x, int y, boolean airborne, boolean blocked, boolean dialog, boolean transition) {
-        return new LinkGroundFrame(
-                x,
-                y,
-                airborne,
-                blocked,
-                dialog,
-                transition,
-                linksawakening.world.room.LinkMotion.stateForRomByte(0),
-                0,
-                0,
-                0);
+        return new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
     }
 
     private static LinkGroundFrame standing() {

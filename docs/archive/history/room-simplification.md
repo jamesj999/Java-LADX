@@ -29,3 +29,29 @@ NPC presentation (sprite overrides); item actions (distinct lift/chest/shovel
 state machines); transitions/scrolling (timed state); dungeon/progress/story
 state (different persistence); public role views (consumer capabilities); boundary
 values (immutable ownership). No class inheritance was introduced.
+
+## Single-representation boundaries
+
+LinkPosition, LinkMotion, LinkGroundFrame and EntityPickupInputs.Link now store
+only raw direction/dispatch integers. All four admit arbitrary ROM probe bytes;
+normalizing unknown values would change numeric gates. Direction classification
+is derived (including Direction.UNKNOWN); motion offers Optional knownState()
+for explicit absence outside the ROM table. Legacy nullable classification
+accessors remain derived for source compatibility. No stored enum can disagree
+with the raw byte. All previous enum and enum+raw constructors remain deprecated
+thin delegates; the historical raw-wins behavior is unchanged.
+
+App hand-off (files deliberately untouched):
+
+- app/gameplay/entity/EntityInputCache.java:linkPosition ->
+  `new LinkPosition(x, y, z, direction, collisionType)`.
+- app/gameplay/entity/EntityInputCache.java:linkMotion ->
+  `new LinkMotion(airborne, state, shield, invincibility, speedX, speedY)`.
+- app/gameplay/FrameInputCache.java:pickup ->
+  `new EntityPickupInputs.Link(x, y, airborne, interactive, direction, z)`.
+- app/gameplay/FrameInputCache.java:ground ->
+  `new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, motion, slow, usage)`.
+
+Other non-owned clients of enum constructors remain source-compatible; these
+constructors can be removed once their owners migrate. Owned callers use raw
+constructors. Tests check unknown bytes and the absence of duplicate stored enums.

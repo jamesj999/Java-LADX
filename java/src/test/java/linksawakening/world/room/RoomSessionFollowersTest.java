@@ -128,8 +128,8 @@ final class RoomSessionFollowersTest {
 
         session.tickEntities(new EntityTickInputs(
                 0,
-                new LinkPosition(0, 0, 0, Direction.fromJavaOrUnknown(0), 0, 0),
-                new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
+                new LinkPosition(0, 0, 0, 0, 0),
+                new LinkMotion(false, 0, false, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
         session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
@@ -142,8 +142,8 @@ final class RoomSessionFollowersTest {
                     .orElseThrow();
             session.tickEntities(new EntityTickInputs(
                     frame++,
-                    new LinkPosition(npc.x(), npc.y(), npc.z(), Direction.fromJavaOrUnknown(0), 0, 0),
-                    new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
+                    new LinkPosition(npc.x(), npc.y(), npc.z(), 0, 0),
+                    new LinkMotion(false, 0, false, 0, 0, 0),
                     1,
                     new SwordBox(false, 0, 0, 0, 0)));
 
@@ -228,14 +228,8 @@ final class RoomSessionFollowersTest {
                 .orElseThrow();
         session.tickEntities(new EntityTickInputs(
                 1,
-                new LinkPosition(
-                        0x80,
-                        0x40,
-                        0,
-                        Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()),
-                        1,
-                        Direction.RIGHT.javaIndex()),
-                new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
+                new LinkPosition(0x80, 0x40, 0, Direction.RIGHT.javaIndex(), 1),
+                new LinkMotion(false, 0, false, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
         assertEquals(1, session.story().bowWowState());
