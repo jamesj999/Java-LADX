@@ -46,44 +46,43 @@ final class RoomDebugFixture {
     }
 
     int bombDirectionForTest(int slot) {
-        return session.components.entityFrame().runtime == null
+        return !session.hasRoom()
                 ? 0xFF
-                : session.components.entityFrame().runtime.inspection().bombDirection(slot);
+                : session.loadedRoomOrNull().entities.inspection().bombDirection(slot);
     }
 
     void setColorShellStateForTest(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        if (session.components.entityFrame().runtime != null) {
-            session.components
-                    .entityBridge()
-                    .runtime()
+        if (session.hasRoom()) {
+            session.loadedRoomOrNull()
+                    .entities
                     .debug()
                     .setColorShellState(slot, state, transitionCountdown, direction, speedX, speedY);
         }
     }
 
     int entityGroundStatusForTest(int slot) {
-        if (session.components.entityFrame().runtime == null) {
+        if (!session.hasRoom()) {
             return 0;
         }
-        return session.components.entityFrame().runtime.inspection().groundStatus(slot);
+        return session.loadedRoomOrNull().entities.inspection().groundStatus(slot);
     }
 
     void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
-        if (session.components.entityFrame().runtime != null) {
-            session.components.entityFrame().runtime.debug().setEnemyIgnoreHitsCountdown(slot, value);
+        if (session.hasRoom()) {
+            session.loadedRoomOrNull().entities.debug().setEnemyIgnoreHitsCountdown(slot, value);
         }
     }
 
     void setEntityThrownDirectionForTest(int slot, int value) {
-        if (session.components.entityFrame().runtime != null) {
-            session.components.entityFrame().runtime.configuration().setThrownDirection(slot, value);
+        if (session.hasRoom()) {
+            session.loadedRoomOrNull().entities.configuration().setThrownDirection(slot, value);
         }
     }
 
     void setEntityLedgeTimerForTest(int slot, int value) {
-        if (session.components.entityFrame().runtime != null) {
-            session.components.entityFrame().runtime.configuration().setLedgeTransitionTimer(slot, value);
+        if (session.hasRoom()) {
+            session.loadedRoomOrNull().entities.configuration().setLedgeTransitionTimer(slot, value);
         }
     }
 
@@ -115,35 +114,35 @@ final class RoomDebugFixture {
     }
 
     int entityLedgeTimerForTest(int slot) {
-        return session.components.entityFrame().runtime == null
+        return !session.hasRoom()
                 ? 0
-                : session.components.entityFrame().runtime.enemies().ledgeTransitionTimer(slot);
+                : session.loadedRoomOrNull().entities.enemies().ledgeTransitionTimer(slot);
     }
 
     int entityFallingTargetXForTest(int slot) {
-        return session.components.entityFrame().runtime == null
+        return !session.hasRoom()
                 ? 0
-                : session.components.entityFrame().runtime.enemies().fallingTargetX(slot);
+                : session.loadedRoomOrNull().entities.enemies().fallingTargetX(slot);
     }
 
     int entityTransitionCountdownForTest(int slot) {
-        if (session.components.entityFrame().runtime == null) {
+        if (!session.hasRoom()) {
             return 0;
         }
-        RoomEntity entity = session.components.location().activeRoom == null
+        RoomEntity entity = session.rooms().activeRoom() == null
                 ? null
-                : session.components.location().activeRoom.entityView().slots().get(slot);
+                : session.rooms().activeRoom().entityView().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
-                ? session.components.entityFrame().runtime.inspection().warpTransitionCountdown(slot)
-                : session.components.entityFrame().runtime.enemies().transitionCountdown(slot);
+                ? session.loadedRoomOrNull().entities.inspection().warpTransitionCountdown(slot)
+                : session.loadedRoomOrNull().entities.enemies().transitionCountdown(slot);
     }
 
     int roomTriggerCountForTest() {
-        return session.components.puzzles().roomTriggerCount & 0xFF;
+        return session.loadedRoomOrNull().contents.puzzles.roomTriggerCount & 0xFF;
     }
 
     int activeRoomEventForTest() {
-        return session.components.puzzles().activeRoomEvent & 0xFF;
+        return session.loadedRoomOrNull().contents.puzzles.activeRoomEvent & 0xFF;
     }
 
     boolean hasDungeonInstrumentForTest(int mapId) {
@@ -164,28 +163,29 @@ final class RoomDebugFixture {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException("Room trigger count must be an unsigned byte");
         }
-        session.components.puzzles().roomTriggerCount = value;
+        session.loadedRoomOrNull().contents.puzzles.roomTriggerCount = value;
     }
 
     int entityDropSpeedXForTest(int slot) {
-        return session.components.entityFrame().runtime == null
+        return !session.hasRoom()
                 ? 0
-                : session.components.entityFrame().runtime.inspection().dropSpeedX(slot);
+                : session.loadedRoomOrNull().entities.inspection().dropSpeedX(slot);
     }
 
     int entityDropSpeedZForTest(int slot) {
-        return session.components.entityFrame().runtime == null
+        return !session.hasRoom()
                 ? 0
-                : session.components.entityFrame().runtime.inspection().dropSpeedZ(slot);
+                : session.loadedRoomOrNull().entities.inspection().dropSpeedZ(slot);
     }
 
     void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
-        session.components.entityFrame().runtime = runtime;
+        session.installRoom(new RoomRuntime(
+                session.loadedRoomOrNull().contents, runtime, session.components.roomRuntimeServices()));
     }
 
     int entityPhysicsFlagsForTest(int slot) {
-        return session.components.entityFrame().runtime == null
+        return !session.hasRoom()
                 ? 0
-                : session.components.entityFrame().runtime.enemies().physicsFlags(slot);
+                : session.loadedRoomOrNull().entities.enemies().physicsFlags(slot);
     }
 }

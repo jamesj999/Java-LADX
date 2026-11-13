@@ -48,7 +48,9 @@ public final class TransitionController {
 
     private State state = State.IDLE;
     private int frameInPhase;
+    /** Optional midpoint action; a fade without a room load deliberately supplies no callback. */
     private Runnable pendingLoad;
+    /** Optional decoded ROM data; ROM-free fades have no Manbo scanline wave table. */
     private ManboTransitionWave manboTransitionWave;
 
     public TransitionController() {}

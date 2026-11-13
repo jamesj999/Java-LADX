@@ -2,16 +2,15 @@ package linksawakening.world.room;
 
 final class RoomDungeonView implements RoomDungeon {
     private final Dependencies dependencies;
-    private final RoomDungeon.View view;
+    private final RoomSession session;
 
-    RoomDungeonView(Dependencies dependencies) {
+    RoomDungeonView(Dependencies dependencies, RoomSession session) {
         this.dependencies = dependencies;
-        view = new RoomDungeonLiveView(
-                dependencies.roomState(), () -> dependencies.roomSessionViews().activeRoom());
+        this.session = java.util.Objects.requireNonNull(session);
     }
 
     public RoomDungeon.View view() {
-        return view;
+        return session.dungeonView();
     }
 
     public void setDungeonItemForDebug(int mapId, int index, int value) {
@@ -19,7 +18,7 @@ final class RoomDungeonView implements RoomDungeon {
     }
 
     public byte[] dungeonMinimapRoomStatusSnapshot() {
-        return dependencies.roomSessionViews().dungeonMinimapRoomStatusSnapshot();
+        return session.dungeonMinimapRoomStatusSnapshot();
     }
 
     public byte[] overworldRoomStatusSnapshot() {

@@ -2,30 +2,14 @@ package linksawakening.world.room;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
-import linksawakening.world.entity.event.HinoxLinkEffectRequest;
 import linksawakening.world.entity.event.KeyRewardEvent;
-import linksawakening.world.entity.event.LikeLikeEvent;
-import linksawakening.world.entity.event.LinkAttackClearRequest;
-import linksawakening.world.entity.event.LinkAttackStepRequest;
-import linksawakening.world.entity.event.LinkFacingRequest;
-import linksawakening.world.entity.event.LinkFallenPoseRequest;
-import linksawakening.world.entity.event.LinkFinalPositionRequest;
-import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
-import linksawakening.world.entity.event.LinkMotionBlockRequest;
-import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
-import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
 import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
 import linksawakening.world.entity.event.RichardProgressEvent;
-import linksawakening.world.entity.event.RoosterLinkStateRequest;
-import linksawakening.world.entity.event.ScreenShakeRequest;
-import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
-import linksawakening.world.entity.event.SideViewPotLinkRequest;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
 import linksawakening.world.entity.event.ToadstoolRewardEvent;
@@ -34,25 +18,9 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 
 /** Bridges ExecuteEntities requests and room rewards; each consumer owns its drain timing. */
 final class RoomEntityOutbox {
-    private final java.util.function.Supplier<RoomEntityRuntime> runtime;
     private final RoomRequestDrain<linksawakening.world.entity.event.EntityRequest> rewardDrain =
             new RoomRequestDrain<>();
-    private final RoomRequestDrain<EntityCombatEvent> combatDrain = new RoomRequestDrain<>();
-
-    void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
-        var events = runtime.get() == null
-                ? List.<EntityCombatEvent>of()
-                : runtime.get().consumePendingEntityEvents();
-        combatDrain.drain(events, pendingRoomEntityEvents, target);
-    }
-
-    DialogRequest consumeFirstEntityDialogRequest() {
-        DialogRequest first = pendingRoomDialogRequests.isEmpty() ? null : pendingRoomDialogRequests.getFirst();
-        pendingRoomDialogRequests.clear();
-        var events =
-                runtime.get() == null ? List.<DialogRequest>of() : runtime.get().consumePendingDialogRequests();
-        return first != null || events.isEmpty() ? first : events.getFirst();
-    }
+    final RoomRequestDrain<EntityCombatEvent> combatDrain = new RoomRequestDrain<>();
 
     /** Empty List.copyOf/addAll implementations can still allocate an array; avoid that boundary. */
     static <T> void append(List<T> target, List<? extends T> source) {
@@ -65,10 +33,6 @@ final class RoomEntityOutbox {
         List<T> result = List.copyOf(pending);
         pending.clear();
         return result;
-    }
-
-    RoomEntityOutbox(java.util.function.Supplier<RoomEntityRuntime> runtime) {
-        this.runtime = runtime;
     }
 
     final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
@@ -85,90 +49,6 @@ final class RoomEntityOutbox {
     final List<WitchRewardEvent> pendingWitchRewardEvents = new ArrayList<>();
     final List<DialogRequest> pendingRoomDialogRequests = new ArrayList<>();
     int pendingRoomMusicTrack = -1;
-
-    List<EntityCombatEvent> consumeEntityEvents() {
-        var entityEvents = runtime.get() == null
-                ? List.<EntityCombatEvent>of()
-                : runtime.get().consumePendingEntityEvents();
-        if (pendingRoomEntityEvents.isEmpty()) return entityEvents;
-        List<EntityCombatEvent> events = new ArrayList<>(entityEvents.size() + pendingRoomEntityEvents.size());
-        events.addAll(entityEvents);
-        events.addAll(pendingRoomEntityEvents);
-        pendingRoomEntityEvents.clear();
-        return List.copyOf(events);
-    }
-
-    List<LinkFinalPositionRequest> consumeLinkFinalPositionRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkFinalPositionRequests();
-    }
-
-    List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingRoosterLinkStateRequests();
-    }
-
-    List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkMotionBlockRequests();
-    }
-
-    List<SideViewPlatformLinkRequest> consumeSideViewPlatformLinkRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingSideViewPlatformLinkRequests();
-    }
-
-    List<SideViewPotLinkRequest> consumeSideViewPotLinkRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingSideViewPotLinkRequests();
-    }
-
-    List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingHinoxLinkEffectRequests();
-    }
-
-    List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkFallenPoseRequests();
-    }
-
-    void setFreeMovementMode(boolean enabled) {
-        if (runtime.get() != null) runtime.get().setFreeMovementMode(enabled);
-    }
-
-    List<LinkFacingRequest> consumeLinkFacingRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkFacingRequests();
-    }
-
-    List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkAttackClearRequests();
-    }
-
-    List<LinkAttackStepRequest> consumeLinkAttackStepRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkAttackStepRequests();
-    }
-
-    List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkHeldItemPoseRequests();
-    }
-
-    boolean gotItemPresentationActive() {
-        return runtime.get() != null && runtime.get().inspection().witchGotItemPresentationActive();
-    }
-
-    boolean powerUpPickupSequenceActive() {
-        return runtime.get() != null && runtime.get().inspection().powerUpPickupSequenceActive();
-    }
-
-    boolean swordPickupSequenceActive() {
-        return runtime.get() != null && runtime.get().inspection().swordPickupSequenceActive();
-    }
-
-    List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkSwordSpinPoseRequests();
-    }
-
-    List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingLinkSwordFinalPoseRequests();
-    }
-
-    List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return runtime.get() == null ? List.of() : runtime.get().consumePendingScreenShakeRequests();
-    }
 
     List<ChestRewardEvent> consumeChestRewardEvents() {
         return take(pendingChestRewardEvents);
@@ -208,37 +88,6 @@ final class RoomEntityOutbox {
 
     List<WitchRewardEvent> consumeWitchRewardEvents() {
         return take(pendingWitchRewardEvents);
-    }
-
-    int consumePendingMusicTrack() {
-        if (pendingRoomMusicTrack >= 0) {
-            int pending = pendingRoomMusicTrack;
-            pendingRoomMusicTrack = -1;
-            return pending;
-        }
-        return runtime.get() == null ? -1 : runtime.get().consumePendingMusicTrack();
-    }
-
-    int consumePendingMusicFadeOutCountdown() {
-        return runtime.get() == null ? 0 : runtime.get().consumePendingMusicFadeOutCountdown();
-    }
-
-    List<LikeLikeEvent> consumeLikeLikeEvents() {
-        if (runtime.get() == null) {
-            return List.of();
-        }
-        return runtime.get().consumePendingLikeLikeEvents();
-    }
-
-    List<DialogRequest> consumeEntityDialogRequests() {
-        if (pendingRoomDialogRequests.isEmpty())
-            return runtime.get() == null ? List.of() : runtime.get().consumePendingDialogRequests();
-        List<DialogRequest> requests = new ArrayList<>(pendingRoomDialogRequests);
-        pendingRoomDialogRequests.clear();
-        if (runtime.get() != null) {
-            requests.addAll(runtime.get().consumePendingDialogRequests());
-        }
-        return List.copyOf(requests);
     }
 
     List<BombExplosionEvent> consumeBombExplosionEvents() {

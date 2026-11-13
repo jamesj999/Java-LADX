@@ -4,13 +4,15 @@ import linksawakening.world.entity.event.LiftedEntityState;
 
 final class RoomRoomsView implements RoomRooms {
     private final Dependencies dependencies;
+    private final RoomSession session;
 
-    RoomRoomsView(Dependencies dependencies) {
+    RoomRoomsView(Dependencies dependencies, RoomSession session) {
         this.dependencies = dependencies;
+        this.session = java.util.Objects.requireNonNull(session);
     }
 
     public void loadInitialOverworld(int roomId) {
-        dependencies.roomLoadCoordinator().loadInitialOverworld(roomId);
+        session.loadInitialOverworld(roomId);
     }
 
     public boolean musicSelectionIsScroll() {
@@ -18,77 +20,96 @@ final class RoomRoomsView implements RoomRooms {
     }
 
     public void loadOverworld(int roomId) {
-        dependencies.roomLoadCoordinator().loadOverworld(roomId);
+        session.loadOverworld(roomId);
     }
 
     public void loadIndoor(int mapId, int roomId) {
-        dependencies.roomLoadCoordinator().loadIndoor(mapId, roomId);
+        session.loadIndoor(mapId, roomId);
     }
 
     public void loadIndoorFromSavedPosition(int mapId, int roomId, int savedIndoorMapPosition) {
-        dependencies.roomLoadCoordinator().loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
+        session.loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
     }
 
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
-        dependencies.roomLoadCoordinator().loadIndoor(mapId, roomId, mapCategory);
+        session.loadIndoor(mapId, roomId, mapCategory);
     }
 
     public ActiveRoom activeRoom() {
-        return dependencies.roomSessionViews().activeRoom();
+        return activeRoomOrNull();
+    }
+
+    public ActiveRoom activeRoomOrNull() {
+        return session.activeRoom();
+    }
+
+    public ActiveRoom requireActiveRoom() {
+        return session.requireActiveRoom();
+    }
+
+    public int[][] palettesOrNull() {
+        return session.palettes();
     }
 
     public boolean hasActiveRoom() {
-        return dependencies.roomSessionViews().hasActiveRoom();
+        return session.hasActiveRoom();
     }
 
     public int currentRoomId() {
-        return dependencies.roomSessionViews().currentRoomId();
+        return session.currentRoomId();
     }
 
     public int mapCategory() {
-        return dependencies.roomSessionViews().mapCategory();
+        return session.mapCategory();
     }
 
     public int mapId() {
-        return dependencies.roomSessionViews().mapId();
+        return session.mapId();
     }
 
     public int indoorRoomPositionForSave() {
-        return dependencies.roomSessionViews().indoorRoomPositionForSave();
+        return session.indoorRoomPositionForSave();
     }
 
     public int[][] palettes() {
-        return dependencies.roomSessionViews().palettes();
+        return session.palettes();
     }
 
     public boolean heartPiecePickupActive() {
-        return dependencies.roomSessionViews().heartPiecePickupActive();
+        return session.heartPiecePickupActive();
     }
 
     public String instrumentTrace() {
-        return dependencies.roomSessionViews().instrumentTrace();
+        return session.instrumentTrace();
     }
 
     public String moblinKingTrace() {
-        return dependencies.roomSessionViews().moblinKingTrace();
+        return session.moblinKingTrace();
+    }
+
+    public RoomRenderSnapshot.View renderViewOrNull() {
+        return session.renderView();
+    }
+
+    public RoomRenderSnapshot renderSnapshotOrNull() {
+        return session.renderSnapshot();
     }
 
     public RoomRenderSnapshot.View renderView() {
-        return dependencies.roomSessionViews().renderView();
+        return session.renderView();
     }
 
     public RoomRenderSnapshot renderSnapshot() {
-        return dependencies.roomSessionViews().renderSnapshot();
+        return session.renderSnapshot();
     }
 
     public LiftedEntityState liftedEntityState() {
-        return dependencies.roomSessionViews().liftedEntityState();
+        return session.liftedEntityState();
     }
 
-    record Dependencies(RoomLoadCoordinator roomLoadCoordinator, RoomSessionViews roomSessionViews) {
+    record Dependencies(RoomLoadCoordinator roomLoadCoordinator) {
         Dependencies {
             java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
         }
     }
 }

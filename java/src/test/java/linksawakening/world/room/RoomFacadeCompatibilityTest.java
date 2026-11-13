@@ -9,12 +9,25 @@ import org.junit.jupiter.api.Test;
 
 class RoomFacadeCompatibilityTest {
     @Test
+    void outputPortExposesOnlyDrainsWithoutLoadedRoomAccess() {
+        for (var method : RoomEntityOutputSource.class.getDeclaredMethods()) {
+            assertTrue(
+                    method.getName().startsWith("consume") || method.getName().startsWith("drain"));
+            assertFalse(method.getReturnType().equals(RoomRuntime.class));
+            assertFalse(method.getReturnType().equals(linksawakening.world.entity.RoomEntityRuntime.class));
+        }
+    }
+
+    @Test
     void facadeHasNoDeprecatedMembersOrCompatibilityInheritance() {
         assertEquals(1, RoomSession.class.getConstructors().length);
         assertEquals(
                 RoomSessionConfig.class, RoomSession.class.getConstructors()[0].getParameterTypes()[0]);
         assertEquals(Object.class, RoomSession.class.getSuperclass());
-        assertEquals(0, RoomSession.class.getInterfaces().length);
+        // These operation ports carry drains/boundary dispatch, never legacy API or a current-runtime getter.
+        org.junit.jupiter.api.Assertions.assertArrayEquals(
+                new Class<?>[] {RoomEntityOutputSource.class, RoomBoundaryOperations.class},
+                RoomSession.class.getInterfaces());
         var bridges = Arrays.stream(RoomSession.class.getDeclaredMethods())
                 .filter(m -> m.isAnnotationPresent(Deprecated.class))
                 .toList();

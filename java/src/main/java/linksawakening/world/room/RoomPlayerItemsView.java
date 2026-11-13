@@ -1,9 +1,9 @@
 package linksawakening.world.room;
 
 final class RoomPlayerItemsView implements RoomPlayerItems {
-    private final RoomPlayerItemActions delegate;
+    private final RoomSession delegate;
 
-    RoomPlayerItemsView(RoomPlayerItemActions delegate) {
+    RoomPlayerItemsView(RoomSession delegate) {
         this.delegate = delegate;
     }
 

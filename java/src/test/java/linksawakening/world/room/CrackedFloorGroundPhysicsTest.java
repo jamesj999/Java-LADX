@@ -65,7 +65,11 @@ class CrackedFloorGroundPhysicsTest {
         session.rooms().loadIndoor(0, 0x19, Warp.CATEGORY_SIDESCROLL);
         seedCrack(session, 39);
         assertTrue(session.terrain().tickCrackedFloor(standing(), false));
-        assertEquals(0xAE, session.components.roomSessionViews().objectAtRoomLocation(0x33));
+        assertEquals(
+                0xAE,
+                session.components
+                        .roomSessionViews()
+                        .objectAtRoomLocation(session.rooms().activeRoom(), 0x33));
     }
 
     @Test
@@ -77,7 +81,11 @@ class CrackedFloorGroundPhysicsTest {
         count(session, 50);
         assertEquals(0x01, session.components.terrain().linkGroundObjectPhysics); // ROM overworld $DF = SOLID
         assertEquals(17, session.components.terrain().crackedFloorCounter); // wIsIndoor=0: $02:77F7-77FB
-        assertEquals(0xDF, session.components.roomSessionViews().objectAtRoomLocation(0x33));
+        assertEquals(
+                0xDF,
+                session.components
+                        .roomSessionViews()
+                        .objectAtRoomLocation(session.rooms().activeRoom(), 0x33));
     }
 
     @Test

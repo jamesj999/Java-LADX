@@ -3,10 +3,10 @@ package linksawakening.world.room;
 import linksawakening.state.Direction;
 
 final class RoomDoorsView implements RoomDoors {
-    private final RoomDoorInteractions delegate;
+    private final RoomSession delegate;
 
-    RoomDoorsView(RoomDoorInteractions delegate) {
-        this.delegate = delegate;
+    RoomDoorsView(RoomSession delegate) {
+        this.delegate = java.util.Objects.requireNonNull(delegate);
     }
 
     @Override

@@ -34,7 +34,7 @@ class RoomDungeonLiveViewTest {
         assertEquals(24, view.minimapStatus(0));
         byte[] snapshot = session.dungeon().dungeonMinimapRoomStatusSnapshot();
         for (int i = 0; i < snapshot.length; i++) assertEquals(Byte.toUnsignedInt(snapshot[i]), view.minimapStatus(i));
-        session.components.location().activeRoom = null;
+        session.clearRoom();
         assertEquals(0, view.minimapStatus(0));
         assertThrows(IndexOutOfBoundsException.class, () -> view.minimapStatus(64));
         assertThrows(IndexOutOfBoundsException.class, () -> view.progressFlag(8));
@@ -42,11 +42,18 @@ class RoomDungeonLiveViewTest {
 
     private void roomMap(RoomSession session, int map) {
         var current = session.rooms().activeRoom();
-        session.components.location().activeRoom = ActiveRoom.from(new LoadedRoom(new LoadedRoomSpec(
+        var room = ActiveRoom.from(new LoadedRoom(new LoadedRoomSpec(
                 new LoadedRoomSpec.Identity(1, 1, map, 0),
                 new LoadedRoomSpec.Objects(new int[256], null, null),
                 new LoadedRoomSpec.Graphics(new int[320], new int[320], new int[8][4]),
                 new LoadedRoomSpec.Exits(List.of(), false, 0, -1),
                 current.entityView())));
+        session.installRoom(new RoomRuntime(
+                new RoomContents(
+                        room,
+                        session.loadedRoomOrNull().contents.puzzles,
+                        session.loadedRoomOrNull().contents.overrides),
+                session.loadedRoomOrNull().entities,
+                session.components.roomRuntimeServices()));
     }
 }

@@ -25,6 +25,8 @@ class RoomBoundaryValueTest {
         for (var type : new Class<?>[] {
             LinkPosition.class, LinkMotion.class, LinkGroundFrame.class, EntityPickupInputs.Link.class
         }) {
+            assertEquals(1, type.getConstructors().length);
+            assertFalse(Arrays.stream(type.getConstructors()).anyMatch(c -> c.isAnnotationPresent(Deprecated.class)));
             assertEquals(
                     1,
                     Arrays.stream(type.getRecordComponents())

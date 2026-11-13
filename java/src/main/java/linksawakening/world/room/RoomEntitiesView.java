@@ -13,15 +13,13 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     public boolean inBossBattle() {
-        return dependencies.entityBridge().runtime() != null
-                && dependencies.entityBridge().runtime().inspection().inBossBattle();
+        return dependencies.session().inBossBattle();
     }
 
     public EntityPickupEvent collectEntityIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
         return dependencies
-                .entityBridge()
-                .combat
+                .session()
                 .collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
     }
 
@@ -33,8 +31,7 @@ final class RoomEntitiesView implements RoomEntities {
             boolean linkInteractive,
             int linkDirection) {
         return dependencies
-                .entityBridge()
-                .combat
+                .session()
                 .collectEntityIfNeeded(
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
     }
@@ -48,14 +45,13 @@ final class RoomEntitiesView implements RoomEntities {
             int linkDirection,
             int linkZ) {
         return dependencies
-                .entityBridge()
-                .combat
+                .session()
                 .collectEntityIfNeeded(
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
     public EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
-        return dependencies.entityBridge().combat.collectEntityIfNeeded(inputs);
+        return dependencies.session().collectEntityIfNeeded(inputs);
     }
 
     public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -67,7 +63,7 @@ final class RoomEntitiesView implements RoomEntities {
             int linkDirection,
             boolean usingShield) {
         return dependencies
-                .entityBridge()
+                .session()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -88,7 +84,7 @@ final class RoomEntitiesView implements RoomEntities {
             int linkDirection,
             boolean usingShield) {
         return dependencies
-                .entityBridge()
+                .session()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -101,19 +97,19 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     public List<EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
-        return dependencies.entityBridge().combat.resolveEntityCombat(inputs);
+        return dependencies.session().resolveEntityCombat(inputs);
     }
 
     public void tickEntities(int frameCounter) {
-        dependencies.entityBridge().tickEntities(frameCounter);
+        dependencies.session().tickEntities(frameCounter);
     }
 
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
-        dependencies.entityBridge().tickEntities(frameCounter, linkEntityX, linkEntityY);
+        dependencies.session().tickEntities(frameCounter, linkEntityX, linkEntityY);
     }
 
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
-        dependencies.entityBridge().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
+        dependencies.session().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
     }
 
     public void tickEntities(
@@ -124,17 +120,15 @@ final class RoomEntitiesView implements RoomEntities {
             boolean linkAirborne,
             int linkDirection) {
         dependencies
-                .entityBridge()
+                .session()
                 .tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkDirection);
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
-        return dependencies.entityBridge().tickEntities(inputs);
+        return dependencies.session().tickEntities(inputs);
     }
 
-    record Dependencies(RoomEntityBridge entityBridge) {
-        Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-        }
+    record Dependencies(RoomSession session) {
+        Dependencies {}
     }
 }

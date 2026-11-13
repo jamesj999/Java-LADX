@@ -3,11 +3,8 @@ package linksawakening.world.room;
 import java.util.List;
 import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;
-import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.object.SwitchBlockAnimation;
 
 /** Owns room-level entity output queues and their consumption boundary. */
@@ -31,14 +28,9 @@ final class RoomEntityBridge {
                         dependencies.entityRandomByteSource(),
                         dependencies.followers(),
                         dependencies.items(),
-                        dependencies.location(),
-                        dependencies.roomCollisionQueries()),
+                        dependencies.location()),
                 dependencies.entityConfiguration(),
                 dependencies.entityEffects());
-    }
-
-    RoomEntityRuntime runtime() {
-        return dependencies.entityFrame().runtime;
     }
 
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
@@ -52,7 +44,6 @@ final class RoomEntityBridge {
         dependencies.entityFrame().enemyDropHealth = health;
         dependencies.entityFrame().enemyDropLowHealth = null;
         dependencies.entityFrame().enemyDropActivePowerUp = activePowerUp;
-        dependencies.roomLoadCoordinator().configureEnemyDropRuntime();
     }
 
     void advanceBoomerangSoundClock(boolean worldGameplay) {
@@ -65,98 +56,8 @@ final class RoomEntityBridge {
         dependencies.entityFrame().boomerangSoundClockProvided = true;
     }
 
-    void tickEntities(int frameCounter) {
-        this.tickEntities(frameCounter, 0, 0);
-    }
-
-    void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
-        this.tickEntities(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                dependencies.followers().followingLinkZ,
-                dependencies.followers().followingLinkDirection);
-    }
-
-    void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
-        this.tickEntitiesWithProjectileEvents(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkEntityZ,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-                linkDirection,
-                false);
-    }
-
-    void tickEntities(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            boolean linkAirborne,
-            int linkDirection) {
-        this.tickEntitiesWithProjectileEvents(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkEntityZ,
-                linkAirborne,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-                linkDirection,
-                false);
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkMotionState,
-            int linkDirection,
-            boolean usingShield) {
-        return this.tickEntities(new EntityTickInputs(
-                frameCounter,
-                new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
-                new LinkMotion(false, linkMotionState, usingShield, 0, 0, 0),
-                1,
-                new SwordBox(false, 0, 0, 0, 0)));
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            boolean linkAirborne,
-            int linkMotionState,
-            int linkDirection,
-            boolean usingShield) {
-        return this.tickEntities(new EntityTickInputs(
-                frameCounter,
-                new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
-                new LinkMotion(linkAirborne, linkMotionState, usingShield, 0, 0, 0),
-                1,
-                new SwordBox(false, 0, 0, 0, 0)));
-    }
-
-    List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
-        return roomEntitySimulation.tickEntities(inputs);
-    }
-
-    List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
-        List<WarpLinkStateRequest> requests = dependencies.entityRuntimeState().runtime == null
-                ? List.of()
-                : dependencies.entityRuntimeState().runtime.consumePendingWarpLinkStateRequests();
-        if (!requests.isEmpty()) {
-            dependencies.items().ocarinaPlaybackCountdown = 0;
-            dependencies.items().ocarinaAnimationCounter = 0;
-            dependencies.items().ocarinaAnimationPhase = 0;
-            dependencies.entityInputs().entityDialogActive = false;
-            dependencies.entityInputs().entityDialogCooldown = 0;
-            dependencies.entityInputs().entityInventoryAppearing = false;
-        }
-        return requests;
+    List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickInputs inputs) {
+        return roomEntitySimulation.tickEntities(loaded, inputs);
     }
 
     boolean consumeWorldLinkMotionBlockRequest() {
@@ -195,14 +96,11 @@ final class RoomEntityBridge {
             RoomLocationState location,
             RoomTerrainState terrain,
             RoomEntitySimulation.EffectsDependencies entityEffects,
-            RoomEntitySessionState entityRuntimeState,
             RoomEntityCombatBridge entityCombatBridge,
             RoomEntitySimulation.SetupDependencies entityConfiguration,
-            RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             GPU gpu,
             Rom romData,
-            RoomCollisionQueries roomCollisionQueries,
             RoomLoadCoordinator roomLoadCoordinator) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
@@ -211,14 +109,11 @@ final class RoomEntityBridge {
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityEffects, "entityEffects");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityCombatBridge, "entityCombatBridge");
             java.util.Objects.requireNonNull(entityConfiguration, "entityConfiguration");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(gpu, "gpu");
             java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
             java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
         }
     }

@@ -106,13 +106,13 @@ final class RoomStoryPersistenceTest {
 
         assertEquals(0x41, session.rooms().currentRoomId());
         assertEquals(0x40, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x41) & 0x40);
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
 
         session.rooms().loadInitialOverworld(0x51);
         session.transitions().startAdjacentOverworldScroll(new ScrollController(), ScrollController.UP, 0x50, 0x20);
-        assertFalse(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertFalse(session.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
     }
@@ -304,7 +304,7 @@ final class RoomStoryPersistenceTest {
             }
             assertEquals(
                     0x04, objects[RoomConstants.ROOM_OBJECTS_BASE + 0x55], "Powder at " + Arrays.toString(position));
-            assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+            assertTrue(session.consumeEntityEvents().stream()
                     .anyMatch(event -> event.type() == 8 && event.soundId() == 0x2F));
         }
     }
@@ -536,8 +536,7 @@ final class RoomStoryPersistenceTest {
 
         assertNotNull(clone);
         assertEquals(0x4E8E, clone.spriteDefinition().address());
-        List<EntityCombatEvent> events =
-                session.components.entityBridge().outbox.consumeEntityEvents();
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.NOISE, events.getFirst().soundChannel());
         assertEquals(0x0A, events.getFirst().soundId());
@@ -619,9 +618,7 @@ final class RoomStoryPersistenceTest {
             assertEquals(EntityStatus.ACTIVE, current.status());
             assertEquals(0x02, RoomDebugFixture.of(session).entityGroundStatusForTest(peaHat.slot()));
         }
-        assertEquals(
-                0,
-                session.components.entityBridge().outbox.consumeEntityEvents().size());
+        assertEquals(0, session.consumeEntityEvents().size());
     }
 
     @Test
@@ -750,8 +747,7 @@ final class RoomStoryPersistenceTest {
         assertEquals(0, RoomDebugFixture.of(session).entityGroundStatusForTest(initial.slot()));
         assertEquals(1, vfx.activeCount());
         assertEquals(TransientVfxType.WATER_SPLASH, vfx.activeSlots().getFirst().type());
-        List<EntityCombatEvent> events =
-                session.components.entityBridge().outbox.consumeEntityEvents();
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x0E, events.getFirst().soundId());

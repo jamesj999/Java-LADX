@@ -850,47 +850,88 @@ within the entity boundary.
 
 ## Rooms and world
 
-`world.room.RoomSession` is the public room API. It delegates to room-scoped
-collaborators instead of exposing entity handlers to application code.
-The `doors()`, `transitions()`, `playerItems()`, `story()`, `entities()`,
-`entityState()`, `rooms()`, `dungeon()`, `progress()` and `terrain()` views expose
-focused, cached role interfaces. `RoomSession` has no superclass or compatibility
-interfaces; roles and frame adapters are composed. Boundary records, including
-`LinkGroundFrame`, `ShovelStartResult`, `ArrowShotResult` and `ChestOpenResult`,
-are top-level types. Construction takes `RoomSessionConfig`.
+`world.room.RoomSession` owns the loaded-room lifecycle. Its one optional
+`RoomRuntime` field is absent before the first room load; that absence is never
+represented by a fake room or empty entity runtime. The facade decides each
+operation's no-room policy: cached/persistent writes still run, loaded effects
+may be skipped, queries keep their original default or required-room exception.
+The [operation matrix](archive/history/room-lifecycle.md#final-no-room-operation-matrix)
+and [null audit](archive/history/room-null-audit.md) record those contracts.
 
-All 26 former entity-test bridges, the legacy constructor and the private
-reflection alias have been deleted. `RoomSession` has no deprecated members.
-Tests use role views and test-side `RoomDebugFixture` / `RoomFrameTestAccess`
-for internal setup and queries. The four Link probe records retain deprecated
-constructor adapters for app clients awaiting migration; their raw values are
-authoritative. The facade itself retains no deprecated bridges. Room wiring accepts `Rom` directly; no
-`unsafeBytes()` accessor or call remains. Bounded `RomSlice` reads let audio
-retain shared read-only storage without exposing the backing array or allocating
-an address per byte. Unaligned synthetic/legacy input uses the supported unchecked
-factory; validation, bounds and backing storage are preserved.
-View implementations receive only their specific collaborators and state.
-`RoomSessionContext` is private construction-time wiring. Runtime collaborators
-receive their own dependency records and typed state: location, terrain,
-followers, retained RoomEntitySessionState, item use and puzzles. No runtime
-collaborator reads through the composition root. Runtime-only consumers receive
-retained entity state directly, and self-lookups are removed. Completion,
-staircase and drop configuration operations live with their state owners; map mutation and redraw share one owner. RoomSessionContext wires all
-services eagerly in dependency order, with no lazy collaborator suppliers.
-Only live projections/outboxes borrow changing active-room/runtime values.
-See the [room simplification report](archive/history/room-simplification.md).
-`RoomWorldState`, `RoomTransientState` and `RoomStoryState` separate persistent
-world concerns, transient state and story progression.
-`ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.
-Immediate room integration uses `EntityRoomInspection.view()` and the live
-`ActiveRoom.entityView()`. Per-frame rendering uses `RoomRenderView` and the
-cached room/dungeon views, with indexed read-only access. They are valid only
-until the next simulation tick, room change or world mutation on the same thread;
-never retain them as history or share them across threads. `renderView()` returns
-null before the first room is loaded; it does not invent an empty room.
-Public `ActiveRoom.entities()` and render snapshots
-retain owned immutable entity state; a bounded eight-presentation cache avoids
-copying recurring unchanged poses while preserving historical snapshots.
+`RoomRuntime` means one live generation, distinct from the existing `LoadedRoom`
+owned decoded-ROM value. A generation has final non-null active room data,
+entity runtime, collision scratch and callbacks bound to that generation.
+Its `RoomContents` owns mutable room data, per-room puzzle counters/flags and
+tile overrides. Loading prepares these contents before creating the entity
+runtime, preserving door/shutter initialization order. Follower synchronization
+can replace the entity runtime while retaining the same room contents. Room
+installation publishes the generation; listener notification follows the
+original configuration order. If a listener synchronously loads another room,
+the outer load continues against the generation it published. Warp palette
+history is sampled after map-boundary callbacks, as in the source sequence.
+The facade dispatches the ordered transient reset at the original load phase,
+including when subsequent room acquisition fails; the previous generation's
+transient flags/overrides still clear before that error.
+
+Room-only collaborators receive the generation or its specific parts as an
+operation argument. They do not query nullable active-room/runtime fields or
+current-value suppliers. `RoomLocationState` and `RoomEntitySessionState` contain
+no loaded-room aliases. Registers that survive room replacement, including the
+Link ground registers, switch-block state, title/music clocks, progression,
+follower inputs and session output queues, retain their distinct session/world
+lifetimes. `RoomWorldState`, `RoomTransientState` and `RoomStoryState` own
+persistent world data, reset sequences and story progression respectively.
+A structural test prevents room/runtime aliases and current-value suppliers
+from returning to session bags, outboxes or live projections.
+
+The `doors()`, `transitions()`, `playerItems()`, `story()`, `entities()`,
+`entityState()`, `rooms()`, `dungeon()`, `progress()` and `terrain()` accessors
+return cached, focused role views that remain usable across room replacement.
+`RoomSession` has no project superclass or compatibility inheritance. The roles
+and frame adapters are composed; internal drain and boundary-operation ports
+route lifecycle decisions to the facade without exposing a current-runtime
+lookup. `RoomEntityOutbox` owns session queues and drain staging, rather than a
+runtime supplier. Boundary records, including `LinkGroundFrame`,
+`ShovelStartResult`, `ArrowShotResult` and `ChestOpenResult`, are top-level types.
+The former entity-test bridges, reflection alias and all deprecated probe
+constructors have been removed. App input caches use the canonical raw-value
+constructors directly.
+
+Construction takes `RoomSessionConfig`, which validates required long-lived
+collaborators once. Optional presentation outputs are normalized eagerly to a
+zero-slot VFX system, zero-slot drop system or no-op load listener. A retained
+feature flag preserves the original skip of entity VFX request-list production
+when that output is disabled. No per-frame room holder or bound callback is
+created. `RoomSessionContext` is private construction-time wiring, eager in
+dependency order; runtime collaborators do not read through the composition root.
+Map mutation and immediate redraw share an owner. See the earlier
+[room simplification report](archive/history/room-simplification.md).
+
+`rooms().activeRoomOrNull()`, `palettesOrNull()`, `renderViewOrNull()` and
+`renderSnapshotOrNull()` explicitly expose absence before load. For required
+room reads, use `hasRoom()` plus `rooms().requireActiveRoom()`; the latter retains
+a required-room exception. Older names remain source compatible for render
+callers awaiting migration. `app/presentation/RenderStateAssembler` can switch
+its presence guard to `hasRoom()` and its render reads to the explicit nullable
+names without a signature change. That hand-off is listed in the operation
+matrix; render/presentation files are not part of this lifecycle change.
+
+Immediate entity reads use `EntityRoomInspection.view()` and the live
+`ActiveRoom.entityView()`. Per-frame rendering uses `RoomRenderSnapshot.View`
+and indexed room/dungeon projections. They are same-thread borrowed views,
+valid until the next tick, room change or world mutation; never use them as
+history or share them across threads. Render projections bind directly to their
+generation. The cached dungeon projection remains stable and receives map
+identity at publication, preserving retained-view updates without a supplier.
+Public `ActiveRoom.entities()` and owned render snapshots retain immutable
+history; a bounded eight-presentation cache avoids copying recurring poses.
+Scroll transitions keep an owned previous-room snapshot.
+
+Room wiring accepts `Rom` directly; no `unsafeBytes()` accessor or call remains.
+Bounded `RomSlice` reads let audio retain shared read-only storage without
+exposing the backing array or allocating an address per byte. Unaligned
+synthetic/legacy input uses the supported unchecked factory; validation,
+bounds and backing storage are preserved.
 
 `EntityFrameInputs` composes Link, player, UI, button and sword values. Link
 position, motion, ground and pickup probes each store only the raw integer

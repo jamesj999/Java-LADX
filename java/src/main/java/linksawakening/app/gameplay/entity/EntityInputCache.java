@@ -15,6 +15,7 @@ import linksawakening.world.room.UiInputs;
 /** Session-local reuse of unchanged immutable input values; previously returned frames remain snapshots. */
 // Direction and motion values remain raw snapshot inputs; preserve unknown ROM values alongside world classifications.
 final class EntityInputCache {
+    // Absent until first use; these are cached immutable values, not session collaborators.
     private LinkPosition linkPosition;
     private LinkMotion linkMotion;
     private LinkInputs linkInputs;
@@ -34,8 +35,7 @@ final class EntityInputCache {
                 || linkPosition.z() != z
                 || linkPosition.rawDirection() != direction
                 || linkPosition.collisionType() != collisionType) {
-            linkPosition = new LinkPosition(
-                    x, y, z, linksawakening.state.Direction.fromJavaOrUnknown(direction), collisionType, direction);
+            linkPosition = new LinkPosition(x, y, z, direction, collisionType);
         }
         return linkPosition;
     }
@@ -48,14 +48,7 @@ final class EntityInputCache {
                 || linkMotion.invincibility() != invincibility
                 || linkMotion.speedX() != speedX
                 || linkMotion.speedY() != speedY) {
-            linkMotion = new LinkMotion(
-                    airborne,
-                    linksawakening.world.room.LinkMotion.stateForRomByte(state),
-                    shield,
-                    invincibility,
-                    speedX,
-                    speedY,
-                    state);
+            linkMotion = new LinkMotion(airborne, state, shield, invincibility, speedX, speedY);
         }
         return linkMotion;
     }

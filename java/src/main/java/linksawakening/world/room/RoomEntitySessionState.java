@@ -4,20 +4,9 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EnemyProjectileCollision;
 
-/** Retained room-entity runtime, output queues, drop counters and per-frame gates. */
+/** Session-level entity output queues, drop registers and per-frame gates; no loaded-room alias. */
 final class RoomEntitySessionState {
-    /** Absent until LoadRoomEntities installs the current room runtime. */
-    linksawakening.world.entity.RoomEntityRuntime runtime;
-
-    final RoomEntityOutbox outbox = new RoomEntityOutbox(() -> runtime);
-
-    boolean hookshotActive() {
-        return runtime != null && runtime.inspection().hookshotActive();
-    }
-
-    linksawakening.world.entity.RoomEntityRuntime runtime() {
-        return runtime;
-    }
+    final RoomEntityOutbox outbox = new RoomEntityOutbox();
 
     void advanceBoomerangSoundClock(boolean worldGameplay) {
         if (worldGameplay)
@@ -40,16 +29,17 @@ final class RoomEntitySessionState {
     boolean worldLinkMotionBlockPending;
     GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
 
-    void configureEnemyDropRuntime(linksawakening.world.entity.EnemyDropResolver resolver, RoomEntityInputs inputs) {
-        if (runtime == null) {
-            return;
-        }
-        runtime.configuration().setDialogActive(inputs.entityDialogActive);
-        runtime.configuration().setEnemyDropResolver(resolver);
-        runtime.configuration().setEnemyDropCounters(enemyDropCounters);
-        runtime.configuration().setEnemyDropPlayerState(enemyDropMaxHearts, enemyDropHealth, enemyDropActivePowerUp);
+    void configureEnemyDropRuntime(
+            RoomRuntime loaded, linksawakening.world.entity.EnemyDropResolver resolver, RoomEntityInputs inputs) {
+        loaded.entities.configuration().setDialogActive(inputs.entityDialogActive);
+        loaded.entities.configuration().setEnemyDropResolver(resolver);
+        loaded.entities.configuration().setEnemyDropCounters(enemyDropCounters);
+        loaded.entities
+                .configuration()
+                .setEnemyDropPlayerState(enemyDropMaxHearts, enemyDropHealth, enemyDropActivePowerUp);
         if (enemyDropLowHealth != null) {
-            runtime.configuration()
+            loaded.entities
+                    .configuration()
                     .setEnemyDropPlayerState(
                             enemyDropMaxHearts, enemyDropHealth,
                             enemyDropActivePowerUp, enemyDropLowHealth);

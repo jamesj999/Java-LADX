@@ -2,7 +2,6 @@ package linksawakening.world.room;
 
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
@@ -15,42 +14,35 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void resetGuardianAcornCounterOnHurt() {
-        var runtime = dependencies.entityBridge().runtime();
-        var counters = runtime == null
-                ? dependencies.entityFrame().enemyDropCounters
-                : runtime.inspection().enemyDropCounters();
-        dependencies.entityFrame().enemyDropCounters = EnemyDropResolver.resetGuardianAcornCounter(counters);
-        if (runtime != null) runtime.configuration().setEnemyDropCounters(dependencies.entityFrame().enemyDropCounters);
+        dependencies.session().resetGuardianAcornCounterOnHurt();
     }
 
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
-        dependencies.entityInputs().setEntityActionButtonsHeld(actionButtonsHeld);
+        dependencies.session().setEntityActionButtonsHeld(actionButtonsHeld);
     }
 
     public boolean gelClingingToLink() {
-        return dependencies.entityBridge().runtime() != null
-                && dependencies.entityBridge().runtime().gelClingingToLink();
+        return dependencies.session().gelClingingToLink();
     }
 
     public void setEntityDialogActive(boolean active) {
-        dependencies.entityInputs().setEntityDialogActive(active);
+        dependencies.session().setEntityDialogActive(active);
     }
 
     public void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        dependencies.entityInputs().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
+        dependencies.session().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
     }
 
     public void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        dependencies.entityInputs().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        dependencies.session().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
     }
 
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        dependencies.entityInputs().setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        dependencies.session().setToadstoolPlayerState(hasToadstool, magicPowderCount);
     }
 
     public void setEntityScreenShakeCountdown(int countdown) {
-        if (dependencies.entityBridge().runtime() != null)
-            dependencies.entityBridge().runtime().configuration().setScreenShakeCountdown(countdown);
+        dependencies.session().setEntityScreenShakeCountdown(countdown);
     }
 
     public void setSecretSeashellPegasusCollisionState(
@@ -61,15 +53,15 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
-        dependencies.entityInputs().setEntityPowerBraceletButtonHeld(buttonHeld);
+        dependencies.session().setEntityPowerBraceletButtonHeld(buttonHeld);
     }
 
     public void setEntityBombButtonHeld(boolean buttonHeld) {
-        dependencies.entityInputs().setEntityBombButtonHeld(buttonHeld);
+        dependencies.session().setEntityBombButtonHeld(buttonHeld);
     }
 
     public void setEntityAttackStepAnimationCountdown(int countdown) {
-        dependencies.entityInputs().setEntityAttackStepAnimationCountdown(countdown);
+        dependencies.session().setEntityAttackStepAnimationCountdown(countdown);
     }
 
     public void advanceBoomerangSoundClock(boolean worldGameplay) {
@@ -77,23 +69,23 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return dependencies.entityBridge().combat.deferContactRecoil(slot, linkX, linkY);
+        return dependencies.session().deferContactRecoil(slot, linkX, linkY);
     }
 
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return dependencies.entityBridge().outbox.consumeLinkAttackClearRequests();
+        return dependencies.session().consumeLinkAttackClearRequests();
     }
 
     public boolean gotItemPresentationActive() {
-        return dependencies.entityBridge().outbox.gotItemPresentationActive();
+        return dependencies.session().gotItemPresentationActive();
     }
 
     public boolean powerUpPickupSequenceActive() {
-        return dependencies.entityBridge().outbox.powerUpPickupSequenceActive();
+        return dependencies.session().powerUpPickupSequenceActive();
     }
 
     public boolean swordPickupSequenceActive() {
-        return dependencies.entityBridge().outbox.swordPickupSequenceActive();
+        return dependencies.session().swordPickupSequenceActive();
     }
 
     public List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
@@ -101,7 +93,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public List<DialogRequest> consumeEntityDialogRequests() {
-        return dependencies.entityBridge().outbox.consumeEntityDialogRequests();
+        return dependencies.session().consumeEntityDialogRequests();
     }
 
     public void tickGameplayVBlank() {
@@ -109,7 +101,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public int clearEntity(int slot) {
-        return dependencies.entityBridge().combat.clearEntity(slot);
+        return dependencies.session().clearEntity(slot);
     }
 
     public int entityDefaultMusicTrack() {
@@ -117,7 +109,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public int entityHealth(int slot) {
-        return dependencies.roomSessionViews().entityHealth(slot);
+        return dependencies.session().entityHealth(slot);
     }
 
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
@@ -126,13 +118,12 @@ final class RoomEntityStateView implements RoomEntityState {
 
     record Dependencies(
             RoomEntityBridge entityBridge,
-            RoomEntitySessionState entityFrame,
             RoomEntityInputs entityInputs,
             RoomFollowerState followers,
-            RoomSessionViews roomSessionViews) {
+            RoomSessionViews roomSessionViews,
+            RoomSession session) {
         Dependencies {
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");

@@ -133,7 +133,7 @@ final class RoomSessionFollowersTest {
                 new LinkMotion(false, 0, false, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
-        session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
+        session.consumeLinkFinalPositionRequests();
 
         int frame = 1;
         for (int type : new int[] {0x3E, 0x3F}) {
@@ -149,7 +149,7 @@ final class RoomSessionFollowersTest {
                     new SwordBox(false, 0, 0, 0, 0)));
 
             assertTrue(
-                    session.components.entityBridge().outbox.consumeLinkFinalPositionRequests().stream()
+                    session.consumeLinkFinalPositionRequests().stream()
                             .anyMatch(request -> request.sourceSlot() == npc.slot()),
                     "type=" + Integer.toHexString(type));
         }
@@ -203,7 +203,7 @@ final class RoomSessionFollowersTest {
 
         session.entities().tickEntities(0, 0x10, 0x10);
         session.entities().tickEntities(1, 0x10, 0x10);
-        assertEquals(0x0E, session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x0E, session.consumePendingMusicTrack());
         session.entities().tickEntities(2, kid71.x(), kid71.y());
 
         assertEquals(

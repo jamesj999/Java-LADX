@@ -6,8 +6,6 @@ import linksawakening.world.transition.Warp;
 
 final class RoomLocationState {
     final long roomSessionId = ++RoomSession.nextRoomSessionId;
-    /** Absent before the first room load; public room projections then return null. */
-    ActiveRoom activeRoom;
     /** Increments on every ROM room load, including a reload of the same room. */
     long roomLoadSerial;
     /** ROM wIndoorRoom: the current position in the active map's 8x8 layout. */
