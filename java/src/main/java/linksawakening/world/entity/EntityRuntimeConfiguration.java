@@ -15,7 +15,7 @@ import linksawakening.world.entity.motion.SecretSeashellMotion;
 /** Room entity configuration preserving source-shaped handler inputs. */
 public final class EntityRuntimeConfiguration {
     // Absent for ROM-free runtimes; sword pickup presentation then retains its supplied definition.
-    private final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     private final EntityBossState bossRewards;
     private final EntityLiftState liftThrow;
     private final EntityLinkState linkState;
@@ -31,8 +31,8 @@ public final class EntityRuntimeConfiguration {
     private final EntitySpriteViews spriteViews;
 
     EntityRuntimeConfiguration(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBossState bossRewards,
             EntityLiftState liftThrow,
@@ -47,7 +47,7 @@ public final class EntityRuntimeConfiguration {
             RoomEntity[] slots,
             SlimeEyeController slimeEye,
             EntitySpriteViews spriteViews) {
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
         this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
@@ -303,7 +303,7 @@ public final class EntityRuntimeConfiguration {
         this.pickups.writeChestSwordLevel(swordLevel);
         this.pickups.writeChestPowerBraceletLevel(powerBraceletLevel);
         this.pickups.writeChestPlayerLevelsKnown(true);
-        if (this.spriteHandlers != null) {
+        if (this.spriteHandlers.supportsPresentation()) {
             EntitySpriteDefinition pickupDefinition = this.spriteViews.forSwordShieldPickup(swordLevel == 0);
             for (int index = 0; index < this.slots.length; index++) {
                 if (this.slots[index].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {

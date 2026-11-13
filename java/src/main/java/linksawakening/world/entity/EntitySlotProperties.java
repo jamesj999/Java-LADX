@@ -32,7 +32,7 @@ public final class EntitySlotProperties {
     final EntitySlotPresentation state;
     final boolean indoorRoom;
     // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -51,8 +51,8 @@ public final class EntitySlotProperties {
     EntitySlotProperties(
             EntitySlotPresentation state,
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
@@ -70,7 +70,7 @@ public final class EntitySlotProperties {
             EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -304,22 +304,16 @@ public final class EntitySlotProperties {
         if (itemType == ChestContentsTable.CHEST_ZOL) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        if (this.spriteHandlers == null) {
+        if (!this.spriteHandlers.supportsPresentation()) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        int roomId = this.presentationState.readSpriteSelection() == null
-                ? -1
-                : this.presentationState.readSpriteSelection().roomId();
+        int roomId = this.presentationState.readSpriteSelection().roomId();
         if (this.roomVariables.readEntityMapId() >= 0 && roomId >= 0) {
             return this.spriteHandlers.forChestState(this.roomVariables.readEntityMapId(), roomId, itemType);
         }
         return this.spriteHandlers.forEntityType(
                 EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                this.presentationState.readSpriteSelection() == null
-                        ? (this.indoorRoom
-                                ? EntityRoomLoader.RoomTable.INDOORS_A
-                                : EntityRoomLoader.RoomTable.OVERWORLD)
-                        : this.presentationState.readSpriteSelection().roomTable(),
+                this.presentationState.readSpriteSelection().roomTable(),
                 this.roomVariables.readEntityMapId());
     }
 

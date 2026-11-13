@@ -3,7 +3,6 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_ARROW;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_KING;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -137,18 +136,22 @@ final class MoblinKingHandler {
             } else {
                 state.slot().andPhysicsFlags(slotState.entity().slot(), ~ENTITY_PHYSICS_HARMLESS);
             }
-            if (state.sprites() != null) {
-                slotState.updated(withDefinition(
-                        slotState.updated(),
-                        state.spriteViews()
-                                .forMoblinKingState(
-                                        state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                                                .bodyVariant(slotState.entity().slot()),
-                                        state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                                                .weaponVariant(
-                                                        slotState.entity().slot()),
-                                        slotState.updated().z() != 0),
-                        0));
+            {
+                slotState.updated(state.sprites()
+                        .present(
+                                slotState.updated(),
+                                state.spriteViews()
+                                        .forMoblinKingState(
+                                                state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
+                                                        .bodyVariant(slotState
+                                                                .entity()
+                                                                .slot()),
+                                                state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
+                                                        .weaponVariant(slotState
+                                                                .entity()
+                                                                .slot()),
+                                                slotState.updated().z() != 0),
+                                0));
             }
             presentationFlags.preserveMoblinKingPresentation(true);
         }

@@ -34,7 +34,7 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 public final class EntityProjectileController {
     final boolean indoorRoom;
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombState bombInteractions;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -52,8 +52,8 @@ public final class EntityProjectileController {
 
     EntityProjectileController(
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBombState bombInteractions,
             EntityCombatTables combatTables,
@@ -70,7 +70,7 @@ public final class EntityProjectileController {
             RoomEntity[] slots,
             EntityProjectileState state) {
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -1031,7 +1031,7 @@ public final class EntityProjectileController {
                 owner.physicsTables.writeSlowTimerInitialized(slot, true);
                 owner.physicsTables.writeEnemyTransitionCountdown(slot, 0);
                 RoomEntity torch = withPositionAndVariant(entity, objectLeft, objectTop, 0);
-                EntitySpriteDefinition torchDefinition = owner.spriteHandlers == null
+                EntitySpriteDefinition torchDefinition = !owner.spriteHandlers.supportsPresentation()
                         ? entity.spriteDefinition()
                         : owner.slotProperties.spriteViews().forMagicPowderTorchState(true);
                 owner.slots[index] = withDefinition(torch, torchDefinition, 0);
@@ -1158,7 +1158,7 @@ public final class EntityProjectileController {
                     owner.lifecycle.clearEntity(slot);
                     return false;
                 }
-                EntitySpriteDefinition fireDefinition = owner.spriteHandlers == null
+                EntitySpriteDefinition fireDefinition = !owner.spriteHandlers.supportsPresentation()
                         ? entity.spriteDefinition()
                         : owner.slotProperties.spriteViews().forMagicRodFireState();
                 owner.slots[index] = withDefinition(entity, fireDefinition, variant);
@@ -1353,8 +1353,8 @@ public final class EntityProjectileController {
                     owner.slots[targetSlot] = withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false);
                 } else if (isZolGelType(target.type())) {
                     owner.motions.get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(targetSlot);
-                    if (target.type() == EntityRomConstants.ENTITY_ZOL && owner.spriteHandlers != null) {
-                        owner.slots[targetSlot] = withDefinition(
+                    if (target.type() == EntityRomConstants.ENTITY_ZOL) {
+                        owner.slots[targetSlot] = owner.spriteHandlers.present(
                                 target, owner.slotProperties.spriteViews().forZolSlimeEye(), target.spriteVariant());
                     }
                 }

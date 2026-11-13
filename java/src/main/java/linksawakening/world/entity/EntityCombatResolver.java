@@ -2,7 +2,6 @@ package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.byteValue;
 import static linksawakening.world.entity.EntitySnapshots.withDeathPresentation;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
@@ -43,7 +42,7 @@ import linksawakening.world.entity.motion.ZombieMotion;
 /** DefaultEnemyDamageCollisionHandler and ApplySwordDamagesToEnemy, in ROM collision order. */
 final class EntityCombatResolver {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBombInteractions bombInteractions;
     final EntityBossRewards bossRewards;
@@ -66,8 +65,8 @@ final class EntityCombatResolver {
     final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
 
     EntityCombatResolver(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBombInteractions bombInteractions,
@@ -84,7 +83,7 @@ final class EntityCombatResolver {
             RoomEntity[] slots,
             SlimeEyeController slimeEye,
             EntityFrameRandom frameRandom) {
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -832,8 +831,8 @@ final class EntityCombatResolver {
         if (isZolGelType(slot.entity.type())) {
             runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(slot.entity.slot());
         }
-        if (slot.entity.type() == EntityRomConstants.ENTITY_ZOL && runtime.spriteHandlers != null) {
-            slot.entity = withDefinition(
+        if (slot.entity.type() == EntityRomConstants.ENTITY_ZOL) {
+            slot.entity = runtime.spriteHandlers.present(
                     slot.entity, runtime.slotProperties.spriteViews().forZolSlimeEye(), slot.entity.spriteVariant());
             runtime.slots[slot.entity.slot()] = slot.entity;
         }

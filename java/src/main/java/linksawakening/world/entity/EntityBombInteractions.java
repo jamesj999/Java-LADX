@@ -24,7 +24,7 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 public final class EntityBombInteractions {
     final EntityBombState state;
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -40,8 +40,8 @@ public final class EntityBombInteractions {
 
     EntityBombInteractions(
             EntityBombState state,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityCombatTables combatTables,
@@ -56,7 +56,7 @@ public final class EntityBombInteractions {
             RoomEntity[] slots,
             EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -89,8 +89,8 @@ public final class EntityBombInteractions {
     void markArrowAsBombArrow(int slot) {
         state.writePlayerArrowBombArrow(slot, true);
         RoomEntity arrow = this.slots[slot];
-        if (this.spriteHandlers != null && arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
-            this.slots[slot] = withDefinition(
+        if (arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
+            this.slots[slot] = this.spriteHandlers.present(
                     arrow,
                     this.slotProperties.spriteViews().forBombArrow(),
                     this.motions
@@ -134,12 +134,8 @@ public final class EntityBombInteractions {
         EntitySpriteDefinition definition =
                 switch (decision.phase()) {
                     case NORMAL -> this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB);
-                    case WARNING -> this.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : this.slotProperties.spriteViews().forBombRightBeforeExploding();
-                    case EXPLOSION -> this.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : this.slotProperties.spriteViews().forBombExplosion();
+                    case WARNING -> this.slotProperties.spriteViews().forBombRightBeforeExploding();
+                    case EXPLOSION -> this.slotProperties.spriteViews().forBombExplosion();
                 };
         int variant = decision.explosionVariant().orElse(0);
         RoomEntity updated = withDefinition(entity, definition, variant);

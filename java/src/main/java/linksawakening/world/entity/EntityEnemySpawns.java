@@ -26,7 +26,7 @@ import linksawakening.world.entity.motion.ZoraMotion;
 /** SpawnNewEntity / SpawnNewEntityInRange and each enemy handler’s child initialization path. */
 public final class EntityEnemySpawns {
     // Optional ROM catalog for ROM-free entity fixtures.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombState bombInteractions;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
@@ -40,8 +40,8 @@ public final class EntityEnemySpawns {
     final EntitySlotLifecycle lifecycle;
 
     EntityEnemySpawns(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
@@ -54,7 +54,7 @@ public final class EntityEnemySpawns {
             EntitySlotProperties slotProperties,
             RoomEntity[] slots,
             EntitySlotLifecycle lifecycle) {
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
@@ -441,7 +441,7 @@ public final class EntityEnemySpawns {
     public void spawnWingedOctorokRock(RoomEntity source, int direction) {
         // SpawnNewEntity returns with carry when no room slot is available.
         // The ROM handler simply abandons the launch in that case.
-        if (this.spriteHandlers == null) {
+        if (!this.spriteHandlers.supportsPresentation()) {
             return;
         }
         int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
@@ -722,7 +722,7 @@ public final class EntityEnemySpawns {
         // Dynamic projectiles must carry the ROM-decoded display definition;
         // a behavior-only runtime without a catalog can still expose the
         // launch request, but must not insert an unrenderable placeholder.
-        if (runtime.spriteHandlers == null) {
+        if (!runtime.spriteHandlers.supportsPresentation()) {
             return;
         }
         int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);

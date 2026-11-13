@@ -54,8 +54,8 @@ public final class RoomEntityRuntimeBuilder {
         return this;
     }
 
-    EntitySpriteHandlerCatalog spriteHandlers() {
-        return spriteHandlers;
+    EntitySpriteViews spriteHandlers() {
+        return new EntitySpriteViews(spriteHandlers);
     }
 
     public RoomEntityRuntimeBuilder spriteHandlers(

@@ -1,7 +1,6 @@
 package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_URCHIN;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -68,13 +67,14 @@ final class UrchinHandler {
                         EntityCombatEvent.SoundChannel.JINGLE,
                         urchinUpdate.jingleId()));
             }
-            if (state.sprites() != null) {
+            {
                 EntitySpriteDefinition urchinDefinition =
                         state.spriteViews().forUrchinState(frameInput.creditsGameplay());
-                slotState.updated(withDefinition(
-                        slotState.updated(),
-                        urchinDefinition,
-                        slotState.updated().spriteVariant()));
+                slotState.updated(state.sprites()
+                        .present(
+                                slotState.updated(),
+                                urchinDefinition,
+                                slotState.updated().spriteVariant()));
             }
             presentationFlags.preserveUrchinPresentation(true);
         }

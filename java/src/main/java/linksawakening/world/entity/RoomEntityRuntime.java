@@ -5,7 +5,6 @@ import static linksawakening.world.entity.EntitySlotValidation.validateEntitySlo
 
 import java.util.List;
 import java.util.function.IntSupplier;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.rom.EntityPropertyTables;
 import linksawakening.rom.Rom;
@@ -112,7 +111,7 @@ public final class RoomEntityRuntime {
     final IntSupplier defaultRandomByteSupplier;
     private final EntityFrameRandom frameRandom;
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
-    final EntitySpriteHandlerCatalog spriteHandlers;
+    final EntitySpriteViews spriteHandlers;
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final RomEnemyCombatTables enemyCombatTables;
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
@@ -162,7 +161,7 @@ public final class RoomEntityRuntime {
         boolean indoorRoom = builder.indoorRoom();
         this.frameRandom = new EntityFrameRandom(builder.randomByteSupplier());
         IntSupplier defaultRandomByteSupplier = frameRandom.spawnSource();
-        EntitySpriteHandlerCatalog spriteHandlers = builder.spriteHandlers();
+        EntitySpriteViews spriteHandlers = builder.spriteHandlers();
         RomEnemyCombatTables enemyCombatTables = builder.enemyCombatTables();
         ChestContentsTable chestContentsTable = builder.chestContentsTable();
         RomTables romTables = builder.romTables();
@@ -170,17 +169,17 @@ public final class RoomEntityRuntime {
 
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.slotEntities = java.util.Arrays.asList(slots);
-        this.entityState.presentationState.writeSpriteSelection(initial.spriteSelection());
+        this.entityState.presentationState.initializeSelection(initial.spriteSelection(), indoorRoom);
         this.spriteTiles = initial.spriteTiles();
         this.entityState.physicsTables.writeGroundInteractionSideScrolling(initial.sideScrolling());
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
 
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.entityProperties = romTables == null ? null : romTables.entityPropertyTables();
-        this.slotPropertiesState = new EntitySlotPresentation(new EntitySpriteViews(spriteHandlers));
+        this.slotPropertiesState = new EntitySlotPresentation(spriteHandlers);
         this.entityDebugConfiguration = new EntityDebugConfiguration(entityState.combatTables, entityState.motions);
         this.effects = new EntityEffectConsumption(
                 entityState.events, entityState.presentationState, entityState.roomVariables);

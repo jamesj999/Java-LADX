@@ -74,7 +74,7 @@ public final class EntityFrameExecution {
         return runtime.slotProperties.spriteViews();
     }
 
-    public linksawakening.entity.EntitySpriteHandlerCatalog sprites() {
+    public EntitySpriteViews sprites() {
         return runtime.spriteHandlers;
     }
 

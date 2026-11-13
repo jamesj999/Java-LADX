@@ -1,6 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntitySnapshots.withFlipAttribute;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
@@ -38,7 +37,7 @@ public final class EntityBossRewards {
 
     final EntityBossState state;
     // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -55,8 +54,8 @@ public final class EntityBossRewards {
 
     EntityBossRewards(
             EntityBossState state,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityCombatTables combatTables,
@@ -73,7 +72,7 @@ public final class EntityBossRewards {
         this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
 
         this.state = java.util.Objects.requireNonNull(state, "state");
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -222,9 +221,10 @@ public final class EntityBossRewards {
                 == frame + 1;
         runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new).setLethalHitFrame(slot, 0);
         if (hitThisFrame) return;
-        if (runtime.spriteHandlers != null)
-            source = withDefinition(
+        {
+            source = runtime.spriteHandlers.present(
                     source, runtime.slotProperties.spriteViews().forMoblinKingState(12, -1, source.z() != 0), 0);
+        }
         runtime.slots[slot] = withFlipAttribute(
                 source,
                 runtime.physicsTables.readBaseEntityFlipAttribute(slot)
@@ -261,8 +261,8 @@ public final class EntityBossRewards {
         int slot = source.slot();
         int tailState =
                 runtime.motions.get(MoldormMotion.class, MoldormMotion::new).destructionTailState(slot);
-        if (runtime.spriteHandlers != null) {
-            RoomEntity rendered = withDefinition(
+        {
+            RoomEntity rendered = runtime.spriteHandlers.present(
                     source,
                     runtime.spriteHandlers.forMoldormState(
                             runtime.motions

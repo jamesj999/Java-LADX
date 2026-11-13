@@ -304,7 +304,7 @@ public final class RoomEntitySnapshot {
     }
 
     public EntitySpriteSelection spriteSelection() {
-        return liveSource == null ? spriteSelection : liveSource.presentationState.readSpriteSelection();
+        return liveSource == null ? spriteSelection : liveSource.presentationState.snapshotSelection();
     }
 
     public EntitySpriteTileSnapshot spriteTiles() {

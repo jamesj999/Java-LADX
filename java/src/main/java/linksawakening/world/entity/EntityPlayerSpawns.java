@@ -1,6 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import linksawakening.entity.EntitySpriteDefinition;
@@ -24,7 +23,7 @@ public final class EntityPlayerSpawns {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final java.util.function.IntSupplier defaultRandomByteSupplier;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombInteractions bombInteractions;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
@@ -50,8 +49,8 @@ public final class EntityPlayerSpawns {
             /* Optional RNG override; null selects the room-owned ROM-compatible source. */ java.util.function
                             .IntSupplier
                     defaultRandomByteSupplier,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBombInteractions bombInteractions,
             EntityBossState bossRewards,
@@ -76,7 +75,7 @@ public final class EntityPlayerSpawns {
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier =
                 java.util.Objects.requireNonNull(defaultRandomByteSupplier, "randomByteSupplier");
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
@@ -820,7 +819,6 @@ public final class EntityPlayerSpawns {
         EntitySpriteDefinition definition =
                 runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
         boolean swampLeaves = !runtime.indoorRoom
-                && runtime.presentationState.readSpriteSelection() != null
                 && runtime.presentationState.readSpriteSelection().roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
                 && runtime.presentationState.readSpriteSelection().roomId() == 0x32;
         int variant = definition.supported()
@@ -935,8 +933,8 @@ public final class EntityPlayerSpawns {
             }
             runtime.bombInteractions.state.writeLatestDroppedBombEntityIndex(-1);
             runtime.bombInteractions.state.writePlayerArrowBombArrow(freeSlot, true);
-            if (runtime.spriteHandlers != null) {
-                runtime.slots[freeSlot] = withDefinition(
+            {
+                runtime.slots[freeSlot] = runtime.spriteHandlers.present(
                         runtime.slots[freeSlot],
                         runtime.slotProperties.spriteViews().forBombArrow(),
                         romDirection);

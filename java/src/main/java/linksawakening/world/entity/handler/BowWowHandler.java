@@ -35,7 +35,7 @@ final class BowWowHandler {
             // $05:4054 selects the following tiles for every nonzero
             // quest state, including kidnapped ($80), before any gates.
             int spriteAddress = state.story().bowWowState() != 0 ? 0x401C : 0x4000;
-            if (state.sprites() != null
+            if (state.sprites().supportsPresentation()
                     && (slotState.entity().spriteDefinition().bank() != 0x05
                             || slotState.entity().spriteDefinition().address() != spriteAddress)) {
                 slotState.entity(withDefinition(
@@ -75,11 +75,12 @@ final class BowWowHandler {
             // BowWowEntityHandler's kidnapped branch checks the handler's
             // collision byte only after Link enters the $88/$40 pen.
             state.story().markBowWowRescued();
-            if (state.sprites() != null) {
-                slotState.entity(withDefinition(
-                        slotState.entity(),
-                        state.spriteViews().forFollowerEntityType(ENTITY_BOW_WOW),
-                        slotState.entity().spriteVariant()));
+            {
+                slotState.entity(state.sprites()
+                        .present(
+                                slotState.entity(),
+                                state.spriteViews().forFollowerEntityType(ENTITY_BOW_WOW),
+                                slotState.entity().spriteVariant()));
                 state.replaceEntity(slotState.entity());
             }
             state.story().enableBowWowFollowing();

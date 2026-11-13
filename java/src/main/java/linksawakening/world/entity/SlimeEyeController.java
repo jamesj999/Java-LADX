@@ -31,7 +31,7 @@ public final class SlimeEyeController {
 
     final java.util.List<RoomEntity> slotEntities;
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBossRewards bossRewards;
     final EntityCombatTables combatTables;
@@ -52,8 +52,8 @@ public final class SlimeEyeController {
     SlimeEyeController(
             State encounter,
             java.util.List<RoomEntity> slotEntities,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossRewards bossRewards,
@@ -71,7 +71,7 @@ public final class SlimeEyeController {
         this.rom = rom;
         this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
         this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
@@ -356,7 +356,7 @@ public final class SlimeEyeController {
         int s = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
         if (s < 0) return -1;
         this.lifecycle.disableEntityWithoutPersistence(s);
-        var definition = type == 0x1B && this.spriteHandlers != null
+        var definition = type == 0x1B && this.spriteHandlers.supportsPresentation()
                 ? this.slotProperties.spriteViews().forZolSlimeEye()
                 : this.slotProperties.spriteDefinitionFor(type);
         this.slots[s] = new RoomEntity(
@@ -438,7 +438,7 @@ public final class SlimeEyeController {
 
     void render(int s) {
         RoomEntity e = this.slots[s];
-        if (this.spriteHandlers == null) return;
+        if (!this.spriteHandlers.supportsPresentation()) return;
         if (encounter.half[s] == 0 && encounter.state[s] == 0) {
             this.slots[s] = withVariant(e, -1);
             return;

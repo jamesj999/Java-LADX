@@ -1,7 +1,6 @@
 package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -23,11 +22,12 @@ final class SwordShieldPickupHandler {
         var frameInput = state.inputs();
 
         if (slotState.status() == EntityStatus.ACTIVE) {
-            if (state.roomInspection().chestSwordLevel() == 0 && state.sprites() != null) {
-                slotState.entity(withDefinition(
-                        slotState.entity(),
-                        state.spriteViews().forSwordShieldPickup(true),
-                        slotState.entity().spriteVariant()));
+            if (state.roomInspection().chestSwordLevel() == 0) {
+                slotState.entity(state.sprites()
+                        .present(
+                                slotState.entity(),
+                                state.spriteViews().forSwordShieldPickup(true),
+                                slotState.entity().spriteVariant()));
                 state.replaceEntity(slotState.entity());
             }
             if (state.rewards().swordPickupSequenceActive(slotState.entity().slot())) {

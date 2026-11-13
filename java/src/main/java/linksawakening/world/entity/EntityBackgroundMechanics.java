@@ -2,7 +2,6 @@ package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.FallingVector;
 import static linksawakening.world.entity.EntityMotionMath.vectorTowardsTarget;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 import static linksawakening.world.entity.EntityTypeRules.isEnemyProjectileType;
 import static linksawakening.world.entity.EntityTypeRules.isRoamingEnemyType;
@@ -39,7 +38,7 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 /** ROM background collision, falling, recoil and Link push glue. */
 public final class EntityBackgroundMechanics {
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEnemyInspection enemyInspection;
@@ -53,8 +52,8 @@ public final class EntityBackgroundMechanics {
     final EntitySlotLifecycle lifecycle;
 
     EntityBackgroundMechanics(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
@@ -67,7 +66,7 @@ public final class EntityBackgroundMechanics {
             RoomEntity[] slots,
             EntitySpriteViews spriteViews,
             EntitySlotLifecycle lifecycle) {
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
@@ -248,8 +247,8 @@ public final class EntityBackgroundMechanics {
         runtime.physicsTables.writeFallingSpeedY(slot, vector.y());
         int x = runtime.physicsTables.advanceFallingX(entity.x(), runtime.physicsTables.readFallingSpeedX(slot), slot);
         int y = runtime.physicsTables.advanceFallingY(entity.y(), runtime.physicsTables.readFallingSpeedY(slot), slot);
-        if (runtime.spriteHandlers != null) {
-            entity = withDefinition(entity, runtime.spriteViews.forFallingEntity(), phase);
+        {
+            entity = runtime.spriteHandlers.present(entity, runtime.spriteViews.forFallingEntity(), phase);
         }
         return withPositionAndVariant(entity, x, y, phase);
     }

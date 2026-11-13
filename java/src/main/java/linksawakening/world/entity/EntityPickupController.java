@@ -322,9 +322,7 @@ public final class EntityPickupController {
             }
         }
         if (inertia == 0x26 && this.chestContentsTable != null) {
-            int roomId = this.presentationState.readSpriteSelection() == null
-                    ? -1
-                    : this.presentationState.readSpriteSelection().roomId();
+            int roomId = this.presentationState.readSpriteSelection().roomId();
             int dialogLow = this.chestContentsTable.dialogLowIdFor(
                     itemType,
                     this.state.readChestShieldLevel(),

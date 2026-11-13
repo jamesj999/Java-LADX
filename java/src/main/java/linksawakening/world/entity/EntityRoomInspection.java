@@ -22,7 +22,7 @@ public final class EntityRoomInspection {
     final EntityWarpController warpState;
     final boolean indoorRoom;
     // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     // Optional ROM data, absent in ROM-free runtimes.
     final linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles;
     final EntityBombState bombInteractions;
@@ -49,8 +49,8 @@ public final class EntityRoomInspection {
     EntityRoomInspection(
             EntityWarpController warpState,
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .entity.EntitySpriteViews
                     spriteHandlers,
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.gpu
                             .EntitySpriteTileSnapshot
@@ -75,7 +75,7 @@ public final class EntityRoomInspection {
             RoomEntity[] slots) {
         this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.spriteTiles = spriteTiles;
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -418,11 +418,9 @@ public final class EntityRoomInspection {
     }
 
     RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
-        if (this.spriteHandlers == null) {
-            return entity;
-        }
         boolean flying = ((frameCounter >>> 2) & 0x02) != 0;
-        return withDefinition(entity, this.slotProperties.spriteViews().forOwlEvent(flying), 0);
+        return this.spriteHandlers.present(
+                entity, this.slotProperties.spriteViews().forOwlEvent(flying), 0);
     }
 
     int enemyDropHealthGroup(int slot) {
@@ -431,52 +429,37 @@ public final class EntityRoomInspection {
     }
 
     EntitySpriteDefinition spriteDefinitionFor(int entityType) {
-        if (this.spriteHandlers == null) {
-            return this.slotProperties
-                    .spriteViews()
-                    .forEntityType(entityType, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        }
-        EntityRoomLoader.RoomTable table = this.presentationState.readSpriteSelection() == null
-                ? (this.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
-                : this.presentationState.readSpriteSelection().roomTable();
-        int mapId = this.presentationState.readSpriteSelection() == null
-                ? -1
-                : this.presentationState.readSpriteSelection().roomId();
+
+        EntityRoomLoader.RoomTable table =
+                this.presentationState.readSpriteSelection().roomTable();
+        int mapId = this.presentationState.readSpriteSelection().roomId();
         return this.slotProperties.spriteViews().forEntityType(entityType, table, mapId);
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int disguiseState) {
-        return this.spriteHandlers == null
-                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : this.slotProperties.spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
+        return this.slotProperties.spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
-        return this.spriteHandlers == null
-                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_POKEY)
-                : this.slotProperties.spriteViews().forPokeySegment();
+        return this.slotProperties.spriteViews().forPokeySegment();
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int crawlState) {
-        return this.spriteHandlers == null
-                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : this.slotProperties.spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
+        return this.slotProperties.spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
     }
 
     EntityRoomLoader.RoomTable spriteRoomTable() {
-        return this.presentationState.readSpriteSelection() == null
-                ? (this.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
-                : this.presentationState.readSpriteSelection().roomTable();
+        return this.presentationState.readSpriteSelection().roomTable();
     }
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int evadeState) {
-        return this.spriteHandlers == null
+        return !this.spriteHandlers.supportsPresentation()
                 ? fallback
                 : this.slotProperties.spriteViews().forStalfosEvasiveState(evadeState);
     }
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
-        if (!ColorShellMotion.isColorShellType(entity.type()) || this.spriteHandlers == null) {
+        if (!ColorShellMotion.isColorShellType(entity.type()) || !this.spriteHandlers.supportsPresentation()) {
             return entity;
         }
         EntitySpriteDefinition definition = this.slotProperties
@@ -597,7 +580,7 @@ public final class EntityRoomInspection {
             presentedSlots.add(entityRoomQueriesPresentedEntity(runtime, slot));
         return new RoomEntitySnapshot(
                 presentedSlots,
-                runtime.presentationState.readSpriteSelection(),
+                runtime.presentationState.snapshotSelection(),
                 runtime.spriteTiles,
                 runtime.physicsTables.readGroundInteractionSideScrolling(),
                 runtime.slotProperties.readHookshotChainOam(),
