@@ -3,6 +3,7 @@
 This is an expression-level audit of main sources, using the same explicit null
 comparison spelling as the coordinator's tally. `Objects.requireNonNull` public
 boundary validation is intentionally separate from lifecycle comparison counts.
+The world aggregate covers room/transition/object only; world/entity is off-limits and untouched.
 Tests/fixtures are not part of these main-source metrics. Each remaining
 comparison has a documented data or public-boundary meaning; leftover checks: 0.
 The one legacy render presence guard in off-limits `app/presentation` is retained

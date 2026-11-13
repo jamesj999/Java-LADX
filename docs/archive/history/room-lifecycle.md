@@ -314,10 +314,10 @@ Gradle init script; no JVM/build option was committed.
 | Guard | EA on, B/frame or tick | EA off, B/frame or tick | Existing budget |
 | --- | --- | --- | --- |
 | Whole frame: opening-dialog idle | 0 | 0 | 0 |
-| Whole frame: walking with entities | 532.3 | 581.1 | 747 |
+| Whole frame: walking with entities | 556.8 | 580.3 | 747 |
 | Whole frame: inventory open | 0 | 0 | 0 |
 | Simulation: idle | 0 | 0 | 0 |
-| Simulation: active | 433 | 433 | 542 |
+| Simulation: active | 422 | 433 | 542 |
 | Room render/inventory live views | 0 | 0 | less than 256 |
 | Empty room/entity outbox drains and ordered merges | 0 | 0 | 0 |
 | Entity mixed tick (unchanged off-limits implementation) | about 835 | about 835 | unchanged entity guard |
@@ -338,3 +338,13 @@ transients and advanced load serial after an invalid room-id error. The nested
 load regression uses a distinct callback-time map mutation to verify collision
 continuation against the replacement. Gate: 2970 tests, zero failures/errors,
 one existing skip, 986 identical scenes. Null metrics remain unchanged.
+
+## Completion
+
+Lifecycle steps 1-6 are complete. Required wiring is validated before frames; no
+per-room collaborator asks whether a runtime/active room exists. All four app
+constructor hand-offs are applied and all eight obsolete constructors are gone.
+Only the explicitly listed render/presentation naming hand-off remains external;
+legacy forms retain their behavior. The final full gate reports 2970 tests, zero
+failures/errors, one existing skip and 986 identical scenes. EA-on/off guards
+pass unchanged budgets. Off-limits source/test packages and fixtures are untouched.
