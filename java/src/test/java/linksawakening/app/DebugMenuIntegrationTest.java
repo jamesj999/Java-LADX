@@ -2,7 +2,6 @@ package linksawakening.app;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
@@ -113,7 +112,7 @@ class DebugMenuIntegrationTest {
         game.initializeHeadlessNewGame();
         game.state().options().replace(AppConfig.parse("{\"debugEnabled\":false}"));
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
-        assertNull(menu(game));
+        assertFalse(menu(game).isOpen(), "The prewired debug menu must remain closed");
     }
 
     @Test
@@ -124,11 +123,11 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         game.diagnostics().transitionController().startFadeOut(() -> {});
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
-        assertNull(menu(game));
+        assertFalse(menu(game).isOpen(), "The prewired debug menu must remain closed");
         for (int i = 0; i < 32; i++) game.diagnostics().transitionController().tick();
         game.diagnostics().dialogController().open("Test dialog");
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
-        assertNull(menu(game));
+        assertFalse(menu(game).isOpen(), "The prewired debug menu must remain closed");
     }
 
     private void teleport(GameSession game, DebugMenu menu, int category, int map, int room) {
@@ -141,6 +140,6 @@ class DebugMenuIntegrationTest {
     }
 
     private DebugMenu menu(GameSession game) throws Exception {
-        return game.state().debug().debugMenu;
+        return game.context.runtime().debug().menu();
     }
 }

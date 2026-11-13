@@ -41,11 +41,8 @@ public final class FileMenuScreen implements Screen {
 
     @Override
     public void tick() {
-        if (dependencies.screens().fileMenuController == null) {
-            throw new IllegalStateException("File menu controller is not initialized");
-        }
         FileMenuAction action =
-                dependencies.screens().fileMenuController.tick(dependencies.inputState(), dependencies.inputConfig());
+                dependencies.screens().fileMenu.tick(dependencies.inputState(), dependencies.inputConfig());
         if (action.type() == FileMenuAction.Type.CREATE_FILE) {
             // $01:4B26 -> label_001_4555: creation returns to file selection.
             // Only selecting a stored nonzero name can start gameplay.
@@ -86,7 +83,7 @@ public final class FileMenuScreen implements Screen {
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        var controller = dependencies.screens().fileMenuController;
-        return state.withFileMenuFrame(controller == null ? null : controller.snapshot());
+        var frame = dependencies.screens().fileMenu.snapshotOrNull();
+        return state.withFileMenuFrame(frame);
     }
 }

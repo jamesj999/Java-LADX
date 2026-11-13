@@ -86,7 +86,12 @@ final class SaveRoundTripTest {
             assertEquals(0, reopened.saveFilesMask());
             assertArrayEquals(new int[5], reopened.savedNames()[0]);
             press(game, "a");
-            assertTrue(game.state().screens().fileMenuController.snapshot().creation());
+            assertTrue(game.state()
+                    .screens()
+                    .fileMenu
+                    .activeController()
+                    .snapshot()
+                    .creation());
         } finally {
             game.close();
         }

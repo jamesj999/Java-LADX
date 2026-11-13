@@ -69,7 +69,8 @@ class FileMenuBehaviorTest {
             assertEquals(
                     RenderScreen.FILE_MENU, s.c.state().screens().currentScreen.renderScreen());
             assertEquals(1, SaveRamStore.open(path).saveFilesMask());
-            assertFalse(s.c.state().screens().fileMenuController.snapshot().creation());
+            assertFalse(
+                    s.c.state().screens().fileMenu.activeController().snapshot().creation());
             s.press("a");
             assertEquals(
                     RenderScreen.OVERWORLD, s.c.state().screens().currentScreen.renderScreen());
@@ -228,14 +229,17 @@ class FileMenuBehaviorTest {
             s.store(store);
             s.c.runtime().flows().router().startFileSelection();
             assertArrayEquals(
-                    name, s.c.state().screens().fileMenuController.snapshot().nameBytes());
+                    name,
+                    s.c.state().screens().fileMenu.activeController().snapshot().nameBytes());
             s.press("a");
             assertEquals(
                     RenderScreen.OVERWORLD, s.c.state().screens().currentScreen.renderScreen());
             s.c.runtime().flows().router().startFileSelection();
             s.press("down");
             s.press("a");
-            assertTrue(s.c.state().screens().fileMenuController.snapshot().creation(), "Second slot remains empty");
+            assertTrue(
+                    s.c.state().screens().fileMenu.activeController().snapshot().creation(),
+                    "Second slot remains empty");
         }
     }
 
@@ -247,14 +251,14 @@ class FileMenuBehaviorTest {
             store.createNewGame(0, new int[] {1, 2, 0, 0, 0});
             s.store(store);
             s.c.runtime().flows().router().startFileSelection();
-            var original = s.c.state().screens().fileMenuController;
+            var original = s.c.state().screens().fileMenu.activeController();
             s.c.runtime().flows().saves().persistFileMenuMutation(() -> store.copySlot(0, 1));
             assertEquals(3, SaveRamStore.open(path).saveFilesMask());
-            assertNotSame(original, s.c.state().screens().fileMenuController);
-            original = s.c.state().screens().fileMenuController;
+            assertNotSame(original, s.c.state().screens().fileMenu.activeController());
+            original = s.c.state().screens().fileMenu.activeController();
             s.c.runtime().flows().saves().persistFileMenuMutation(() -> store.eraseSlot(0));
             assertEquals(2, SaveRamStore.open(path).saveFilesMask());
-            assertNotSame(original, s.c.state().screens().fileMenuController);
+            assertNotSame(original, s.c.state().screens().fileMenu.activeController());
             assertEquals(
                     RenderScreen.FILE_MENU, s.c.state().screens().currentScreen.renderScreen());
         }

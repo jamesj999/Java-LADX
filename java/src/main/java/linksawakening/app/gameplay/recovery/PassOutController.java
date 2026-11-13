@@ -12,8 +12,26 @@ import linksawakening.ui.FileMenuFrameSnapshot;
 public final class PassOutController {
     // Optional identity/sequence state: no death presentation exists before the death trigger.
     private Link owner;
-    private LinkPassOutAnimation animation;
-    private GameOverPresentation gameOver;
+    private Sequence sequence = Inactive.INSTANCE;
+
+    private sealed interface Sequence permits Inactive, Dying, GameOver {}
+
+    private enum Inactive implements Sequence {
+        INSTANCE
+    }
+
+    private record Dying(LinkPassOutAnimation animation) implements Sequence {
+        Dying {
+            java.util.Objects.requireNonNull(animation);
+        }
+    }
+
+    private record GameOver(GameOverPresentation menu) implements Sequence {
+        GameOver {
+            java.util.Objects.requireNonNull(menu);
+        }
+    }
+
     private boolean handledFrame;
 
     public boolean handledFrame() {
@@ -22,12 +40,11 @@ public final class PassOutController {
 
     public void clear() {
         owner = null;
-        animation = null;
-        gameOver = null;
+        sequence = Inactive.INSTANCE;
     }
 
     public FileMenuFrameSnapshot snapshot() {
-        return gameOver == null ? null : gameOver.snapshot();
+        return sequence instanceof GameOver over ? over.menu().snapshot() : null;
     }
 
     public boolean tick(GameplaySimulation context, boolean dialog) {
@@ -35,11 +52,10 @@ public final class PassOutController {
         handledFrame = link.status().isPassingOut();
         if (owner != link) {
             owner = link;
-            animation = null;
-            gameOver = null;
+            sequence = Inactive.INSTANCE;
         }
-        if (gameOver != null) {
-            gameOver.tick(context);
+        if (sequence instanceof GameOver over) {
+            over.menu().tick(context);
             return true;
         }
         boolean transition = context.scrollController().isActive()
@@ -56,18 +72,19 @@ public final class PassOutController {
                 transition,
                 link.status().isPassingOut())) {
             handledFrame = true;
-            animation = new LinkPassOutAnimation(context.romData());
+            sequence = new Dying(new LinkPassOutAnimation(context.romData()));
             link.status().beginPassOut();
             context.musicDirector().playDirectMusic(0);
             context.gameplaySoundSink().play(GameplaySoundEvent.LINK_DIES);
-        } else if (link.status().isPassingOut() && animation != null && !dialog && !transition) {
-            animation.advanceFrame();
+        } else if (link.status().isPassingOut() && sequence instanceof Dying dying && !dialog && !transition) {
+            dying.animation().advanceFrame();
         }
-        if (!link.status().isPassingOut() || animation == null) return false;
+        if (!link.status().isPassingOut() || !(sequence instanceof Dying dying)) return false;
+        var animation = dying.animation();
         context.scrollController().setScriptedScreenShakeHorizontal(false, 0);
         link.status().presentPassOut(animation.countdown(), animation.animationState(), animation.paletteEffect());
         link.motion().update();
-        if (animation.finished()) gameOver = new GameOverPresentation(context);
+        if (animation.finished()) sequence = new GameOver(new GameOverPresentation(context));
         return true;
     }
 }

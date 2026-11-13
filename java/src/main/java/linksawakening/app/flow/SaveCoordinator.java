@@ -55,18 +55,18 @@ public final class SaveCoordinator implements SaveActions {
     }
 
     private void enterGameplay() {
-        state.screens().fileMenuController = null;
-        state.screens().fileSaveController = null;
+        state.screens().fileMenu.clear();
+        state.screens().fileSave.clear();
         navigator.show(ScreenKind.GAMEPLAY);
     }
 
     private void enterFileSave() {
         navigator.show(ScreenKind.FILE_SAVE);
-        state.screens().fileMenuController = null;
+        state.screens().fileMenu.clear();
     }
 
     private void setFileSaveController(FileSaveController controller) {
-        state.screens().fileSaveController = controller;
+        state.screens().fileSave.open(controller);
     }
 
     public void startNewGame() {
