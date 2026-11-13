@@ -169,4 +169,12 @@ final class RoomWorldState {
         Arrays.fill(colorDungeonRoomStatus, (byte) 0);
         System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0, COLOR_DUNGEON_SAVE_STATUS_SIZE);
     }
+
+    void markCompleted(ActiveRoom room) {
+        if (room == null) return;
+        byte[] status = room.mapCategory() == linksawakening.world.transition.Warp.CATEGORY_OVERWORLD
+                ? overworldRoomStatus
+                : indoorStatusTableForMap(room.mapId());
+        status[room.roomId()] |= (byte) RoomSessionRules.ROOM_STATUS_EVENT_1;
+    }
 }

@@ -55,7 +55,7 @@ class RoomRenderAllocationTest {
                         new int[8][4]),
                 new LoadedRoomSpec.Exits(List.of(), false, 0, -1),
                 runtime.inspection().view())));
-        session.components.entityBridge().entityRuntime = runtime;
+        session.components.entityFrame().runtime = runtime;
         return session;
     }
 

@@ -27,7 +27,6 @@ class RoomDependencyInjectionTest {
                 RoomSessionViews.class,
                 RoomPuzzleController.class,
                 PresentationOutputs.class,
-                RoomTileRedraw.class,
                 RoomDoorInteractions.class,
                 RoomObjectMutations.class)) {
             for (var field : type.getDeclaredFields()) {

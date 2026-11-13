@@ -10,6 +10,10 @@ final class RoomEntityFrameState {
 
     final RoomEntityOutbox outbox = new RoomEntityOutbox(() -> runtime);
 
+    boolean hookshotActive() {
+        return runtime != null && runtime.inspection().hookshotActive();
+    }
+
     linksawakening.world.entity.RoomEntityRuntime runtime() {
         return runtime;
     }
@@ -34,4 +38,20 @@ final class RoomEntityFrameState {
     int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     boolean worldLinkMotionBlockPending;
     GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
+
+    void configureEnemyDropRuntime(linksawakening.world.entity.EnemyDropResolver resolver, RoomEntityInputs inputs) {
+        if (runtime == null) {
+            return;
+        }
+        runtime.configuration().setDialogActive(inputs.entityDialogActive);
+        runtime.configuration().setEnemyDropResolver(resolver);
+        runtime.configuration().setEnemyDropCounters(enemyDropCounters);
+        runtime.configuration().setEnemyDropPlayerState(enemyDropMaxHearts, enemyDropHealth, enemyDropActivePowerUp);
+        if (enemyDropLowHealth != null) {
+            runtime.configuration()
+                    .setEnemyDropPlayerState(
+                            enemyDropMaxHearts, enemyDropHealth,
+                            enemyDropActivePowerUp, enemyDropLowHealth);
+        }
+    }
 }

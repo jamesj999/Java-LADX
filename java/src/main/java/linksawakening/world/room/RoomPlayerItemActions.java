@@ -20,7 +20,7 @@ final class RoomPlayerItemActions {
                 dependencies.overworldCollision(),
                 dependencies.romTables(),
                 dependencies.roomObjectMutations(),
-                () -> this,
+                this,
                 dependencies.roomSessionViews(),
                 dependencies.roomTileRedraw()));
     }
@@ -207,8 +207,7 @@ final class RoomPlayerItemActions {
     }
 
     boolean hookshotActive() {
-        return dependencies.entityRuntimeState().runtime != null
-                && dependencies.entityRuntimeState().runtime.inspection().hookshotActive();
+        return dependencies.entityRuntimeState().hookshotActive();
     }
 
     boolean boomerangActive() {
@@ -232,9 +231,9 @@ final class RoomPlayerItemActions {
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             RomTables romTables,
-            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
+            RoomObjectMutations roomObjectMutations,
+            RoomSessionViews roomSessionViews,
+            RoomObjectMutations roomTileRedraw) {
         Dependencies {
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(items, "items");

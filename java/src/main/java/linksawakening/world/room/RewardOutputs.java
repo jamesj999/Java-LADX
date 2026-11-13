@@ -32,7 +32,7 @@ public final class RewardOutputs {
     }
 
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
-        return dependencies.roomSessionViews().get().consumeHeartPieceUpdates();
+        return dependencies.roomSessionViews().consumeHeartPieceUpdates();
     }
 
     public List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
@@ -100,8 +100,7 @@ public final class RewardOutputs {
         dependencies.entityRuntimeState().outbox.drainWitchRewardEvents(target);
     }
 
-    record Dependencies(
-            RoomEntityFrameState entityRuntimeState, java.util.function.Supplier<RoomSessionViews> roomSessionViews) {
+    record Dependencies(RoomEntityFrameState entityRuntimeState, RoomSessionViews roomSessionViews) {
         Dependencies {
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");

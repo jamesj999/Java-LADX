@@ -1,6 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
 import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_2;
 import static linksawakening.world.room.RoomSessionRules.W_TILESET_NO_UPDATE;
 
@@ -17,7 +16,6 @@ import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.transition.Warp;
 
 /** LoadRoomEntities story flags and restoration; follower and NPC presentation have distinct owners. */
 final class RoomStoryState {
@@ -45,10 +43,11 @@ final class RoomStoryState {
                 dependencies.romData(),
                 dependencies.romTables(),
                 dependencies.roomCollisionQueries(),
-                dependencies.roomLoadCoordinator(),
+                dependencies.entityFrame(),
                 dependencies.roomSessionViews(),
                 dependencies.roomState(),
-                this));
+                this,
+                dependencies.dropResolver()));
     }
 
     boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
@@ -91,7 +90,7 @@ final class RoomStoryState {
         dependencies.followers().playerSwordLevel = 0;
         dependencies.followers().playerBraceletLevel = 0;
         dependencies.followers().houseNpcTradeItem = 0;
-        dependencies.entityInputs().get().entityGoldenLeavesCount = 0;
+        dependencies.entityInputs().entityGoldenLeavesCount = 0;
         dependencies.entityFrame().enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
         dependencies.entityFrame().boomerangSoundCounter = 0;
         dependencies.entityFrame().boomerangSoundClockProvided = false;
@@ -100,7 +99,7 @@ final class RoomStoryState {
         dependencies.terrain().switchableObjectAnimationStage = 0;
         dependencies.puzzles().switchButtonPressed = 0;
         dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-        dependencies.roomTransientState().get().clearTransientRoomState();
+        dependencies.roomTransientState().clearTransientRoomState();
     }
 
     void restoreRoomStatuses(
@@ -111,7 +110,7 @@ final class RoomStoryState {
                     .entityRuntimeState()
                     .runtime
                     .configuration()
-                    .setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
+                    .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
             dependencies
                     .entityRuntimeState()
                     .runtime
@@ -263,7 +262,6 @@ final class RoomStoryState {
         }
         byte[] activeStatus = dependencies
                 .roomSessionViews()
-                .get()
                 .indoorStatusTableForMap(dependencies.location().activeRoom.mapId());
         activeStatus[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
         if (dependencies.location().activeRoom.mapId() == 0x06) {
@@ -274,17 +272,7 @@ final class RoomStoryState {
     }
 
     void markActiveRoomCompleted() {
-        if (dependencies.location().activeRoom == null) {
-            return;
-        }
-        byte[] status = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-                ? dependencies.roomState().overworldRoomStatus
-                : dependencies
-                        .roomSessionViews()
-                        .get()
-                        .indoorStatusTableForMap(
-                                dependencies.location().activeRoom.mapId());
-        status[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_1;
+        dependencies.roomState().markCompleted(dependencies.location().activeRoom);
     }
 
     record Dependencies(
@@ -298,7 +286,7 @@ final class RoomStoryState {
             RomEnemyCombatTables enemyCombatTables,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
             RoomEntityFrameState entityRuntimeState,
-            java.util.function.Supplier<RoomEntityInputs> entityInputs,
+            RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
             FollowingNpcEntitySpawner followingNpcEntitySpawner,
@@ -306,11 +294,11 @@ final class RoomStoryState {
             OwlEventDialogResolver owlEventDialogResolver,
             Rom romData,
             RomTables romTables,
-            java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
-            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomCollisionQueries roomCollisionQueries,
+            linksawakening.world.entity.EnemyDropResolver dropResolver,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTransientState> roomTransientState) {
+            RoomTransientState roomTransientState) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");
@@ -331,7 +319,7 @@ final class RoomStoryState {
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");
             java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
-            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            java.util.Objects.requireNonNull(dropResolver, "dropResolver");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
             java.util.Objects.requireNonNull(roomTransientState, "roomTransientState");

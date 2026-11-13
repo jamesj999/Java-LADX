@@ -91,7 +91,7 @@ final class RoomPuzzleController {
         // opening a chest sets bit $10 too, but must not cancel the shutters.
         if (effect != EVENT_EFFECT_OPEN_LOCKED_DOORS
                 && effect != EVENT_EFFECT_CLEAR_MIDBOSS
-                && (dependencies.roomSessionViews().get().activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) != 0) {
+                && (dependencies.roomSessionViews().activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) != 0) {
             return;
         }
         int trigger = dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK;
@@ -143,9 +143,9 @@ final class RoomPuzzleController {
         if (dependencies.puzzles().pushedBlockMotionFrames == 0 || dependencies.location().activeRoom == null) {
             return;
         }
-        if (dependencies.entityInputs().get().entityDialogActive
-                || dependencies.entityInputs().get().entityInventoryAppearing
-                || dependencies.entityInputs().get().entityDialogCooldown != 0) {
+        if (dependencies.entityInputs().entityDialogActive
+                || dependencies.entityInputs().entityInventoryAppearing
+                || dependencies.entityInputs().entityDialogCooldown != 0) {
             return;
         }
         dependencies.puzzles().pushedBlockMotionFrames--;
@@ -208,7 +208,7 @@ final class RoomPuzzleController {
         if (neighborLocation < 0) {
             return false;
         }
-        int neighbor = dependencies.roomSessionViews().get().objectAtRoomLocation(neighborLocation);
+        int neighbor = dependencies.roomSessionViews().objectAtRoomLocation(neighborLocation);
         return neighbor == OBJECT_SETTLED_PUSHED_BLOCK || neighbor == OBJECT_PUSHABLE_BLOCK;
     }
 
@@ -235,12 +235,11 @@ final class RoomPuzzleController {
         dependencies.puzzles().indoorKeyDoorLocation = -1;
         byte[] status = dependencies
                 .roomSessionViews()
-                .get()
                 .indoorStatusTableForMap(dependencies.location().activeRoom.mapId());
         status[dependencies.location().activeRoom.roomId()] |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
-        int adjacentRoom = dependencies.roomSessionViews().get().adjacentIndoorRoomIdForBombWall(direction);
+        int adjacentRoom = dependencies.roomSessionViews().adjacentIndoorRoomIdForBombWall(direction);
         status[adjacentRoom] |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -323,8 +322,8 @@ final class RoomPuzzleController {
             return;
         }
         int location = RoomInteractionGeometry.roomEventChestTop(linkEntityX, linkEntityY) | 0x08;
-        dependencies.roomObjectMutations().get().writeBombPuzzleObject(location, 0xA0);
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        dependencies.roomObjectMutations().writeBombPuzzleObject(location, 0xA0);
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -340,8 +339,8 @@ final class RoomPuzzleController {
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + EVENT_STAIRWAY_LOCATION;
         dependencies.location().activeRoom.roomObjectsArea()[areaIndex] = OBJECT_STAIRS_DOWN;
-        dependencies.roomTransitionController().get().configureStaircase(EVENT_STAIRWAY_LOCATION);
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        dependencies.puzzles().configureStaircase(EVENT_STAIRWAY_LOCATION);
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -395,7 +394,7 @@ final class RoomPuzzleController {
                 : dependencies.roomState().indoorARoomStatus;
         status[dependencies.location().activeRoom.roomId()] &= (byte) ~KEY_DOOR_CURRENT_STATUS[direction];
         dependencies.puzzles().shutterCloseDirection = dependencies.puzzles().shutterCloseLocation = -1;
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -429,18 +428,16 @@ final class RoomPuzzleController {
                     if (persistDirectionalStatus) {
                         byte[] status = dependencies
                                 .roomSessionViews()
-                                .get()
                                 .indoorStatusTableForMap(
                                         dependencies.location().activeRoom.mapId());
                         status[dependencies.location().activeRoom.roomId()] |=
                                 (byte) KEY_DOOR_CURRENT_STATUS[direction];
-                        int adjacentRoom =
-                                dependencies.roomSessionViews().get().adjacentIndoorRoomIdForBombWall(direction);
+                        int adjacentRoom = dependencies.roomSessionViews().adjacentIndoorRoomIdForBombWall(direction);
                         status[adjacentRoom] |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
                     }
                 }
             }
-            dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap();
             dependencies
                     .overworldCollision()
                     .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -454,17 +451,15 @@ final class RoomPuzzleController {
             RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomEntityFrameState entityRuntimeState,
-            java.util.function.Supplier<RoomEntityInputs> entityInputs,
+            RoomEntityInputs entityInputs,
             GPU gpu,
             OverworldCollision overworldCollision,
             Rom romData,
             RomTables romTables,
-            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomObjectMutations roomObjectMutations,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> roomStoryState,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
-            java.util.function.Supplier<RoomTransitionController> roomTransitionController,
+            RoomObjectMutations roomTileRedraw,
             TransientVfxSystem transientVfxSystem) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
@@ -479,9 +474,7 @@ final class RoomPuzzleController {
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
             java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
-            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
         }
     }
 
@@ -515,7 +508,7 @@ final class RoomPuzzleController {
             }
             dependencies.puzzles().activeRoomEvent = 0;
         } else if (effect == EVENT_EFFECT_REVEAL_STAIRWAY) {
-            dependencies.roomStoryState().get().markActiveRoomCompleted();
+            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
             dependencies.puzzles().activeRoomEvent = 0;
             dependencies.puzzles().roomEventStairRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
             if (dependencies.transientVfxSystem() != null) {
@@ -529,9 +522,7 @@ final class RoomPuzzleController {
                             < dependencies.roomState().dungeonProgressFlags.length) {
                 dependencies.roomState()
                         .dungeonProgressFlags[dependencies.location().activeRoom.mapId()] |= 0x01;
-                dependencies
-                        .roomSessionViews()
-                        .get()
+                dependencies.roomSessionViews()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |= 0x20;
@@ -564,7 +555,7 @@ final class RoomPuzzleController {
                             .view());
         }
         dependencies.puzzles().pushedBlockEntitySlot = -1;
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());

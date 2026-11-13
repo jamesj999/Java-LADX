@@ -44,4 +44,15 @@ final class RoomPuzzleState {
     boolean tailCaveFinalMotionBlockPending;
     int nextWorldMusicTrackCountdown;
     int tailCaveResumeMusicTrack = 5;
+
+    void configureStaircase(int location) {
+        if (location < 0) {
+            staircaseState = RoomSessionRules.STAIRCASE_NONE;
+            staircaseX = staircaseY = 0;
+            return;
+        }
+        staircaseState = RoomSessionRules.STAIRCASE_INACTIVE;
+        staircaseY = (location & 0xF0) + 0x10;
+        staircaseX = ((location & 0x0F) << 4) + 0x08;
+    }
 }

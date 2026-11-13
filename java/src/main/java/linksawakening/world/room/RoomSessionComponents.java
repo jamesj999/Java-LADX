@@ -56,7 +56,6 @@ record RoomSessionComponents(
         RoomSessionViews roomSessionViews,
         RoomTransientState roomTransientState,
         RoomEntityRewards roomEntityRewards,
-        RoomTileRedraw roomTileRedraw,
         RoomCollisionQueries roomCollisionQueries,
         RoomPlayerItemActions roomPlayerItemActions,
         RoomPuzzleController roomPuzzleController,
@@ -106,7 +105,6 @@ record RoomSessionComponents(
         RoomSessionViews roomSessionViews;
         RoomTransientState roomTransientState;
         RoomEntityRewards roomEntityRewards;
-        RoomTileRedraw roomTileRedraw;
         RoomCollisionQueries roomCollisionQueries;
         RoomPlayerItemActions roomPlayerItemActions;
         RoomPuzzleController roomPuzzleController;
@@ -167,7 +165,6 @@ record RoomSessionComponents(
                     roomSessionViews,
                     roomTransientState,
                     roomEntityRewards,
-                    roomTileRedraw,
                     roomCollisionQueries,
                     roomPlayerItemActions,
                     roomPuzzleController,
@@ -181,8 +178,8 @@ record RoomSessionComponents(
                     entityEffects,
                     entityConfiguration,
                     entityCombatBridge,
-                    new LinkOutputs.Dependencies(() -> entityBridge),
-                    new RewardOutputs.Dependencies(entityFrame, () -> roomSessionViews),
+                    new LinkOutputs.Dependencies(entityBridge),
+                    new RewardOutputs.Dependencies(entityFrame, roomSessionViews),
                     new PresentationOutputs.Dependencies(entityFrame));
         }
     }

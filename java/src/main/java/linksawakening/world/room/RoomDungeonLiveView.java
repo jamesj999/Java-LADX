@@ -14,8 +14,8 @@ final class RoomDungeonLiveView implements RoomDungeon.View {
     private byte[] statuses;
 
     RoomDungeonLiveView(RoomWorldState world, Supplier<ActiveRoom> room) {
-        this.world = world;
-        this.room = room;
+        this.world = java.util.Objects.requireNonNull(world);
+        this.room = java.util.Objects.requireNonNull(room);
     }
 
     public int progressFlagCount() {

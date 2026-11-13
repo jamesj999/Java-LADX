@@ -35,7 +35,7 @@ final class RoomTransitionController {
         // Scrolling between adjacent rooms does not take this path.
         if (warp.category() != Warp.CATEGORY_SIDESCROLL) {
             Warp spawn = warp;
-            int indoorRoom = dependencies.roomSessionViews().get().indoorRoomPositionForSave();
+            int indoorRoom = dependencies.roomSessionViews().indoorRoomPositionForSave();
             if (indoorRoom < 0) indoorRoom = dependencies.location().respawnIndoorRoom;
             if (warp.category() == Warp.CATEGORY_INDOOR && (warp.destMap() < 0x0A || warp.destMap() == 0xFF)) {
                 var rom = dependencies.romData();
@@ -68,10 +68,10 @@ final class RoomTransitionController {
                 dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
                 dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
             }
-            dependencies.roomLoadCoordinator().get().loadOverworld(warp.destRoom());
-            dependencies.roomLoadCoordinator().get().loadRoomSpecificTilesIfNeeded(warp.destRoom());
+            dependencies.roomLoadCoordinator().loadOverworld(warp.destRoom());
+            dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(warp.destRoom());
         } else {
-            dependencies.roomLoadCoordinator().get().loadIndoor(warp.destMap(), warp.destRoom(), warp.category());
+            dependencies.roomLoadCoordinator().loadIndoor(warp.destMap(), warp.destRoom(), warp.category());
             // $00:194C-1965: old wIsIndoor is hFreeWarpDataAddress.
             if (!wasIndoor && warp.destMap() < 0x0A) dependencies.puzzles().dungeonTitleMessageCountdown = 0x30;
         }
@@ -87,7 +87,7 @@ final class RoomTransitionController {
 
     void startAdjacentOverworldScroll(
             ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
+        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().renderSnapshot();
         int nextRoomId = this.adjacentOverworldRoomId(direction);
         boolean discoveredTailKeyRoom = nextRoomId == ROOM_OW_TAIL_KEY_CHEST
                 && direction == ScrollController.UP
@@ -95,8 +95,8 @@ final class RoomTransitionController {
         if (discoveredTailKeyRoom) {
             dependencies.roomState().overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
         }
-        dependencies.roomLoadCoordinator().get().loadRoomSpecificTilesIfNeeded(nextRoomId);
-        dependencies.roomLoadCoordinator().get().loadOverworld(nextRoomId, true);
+        dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(nextRoomId);
+        dependencies.roomLoadCoordinator().loadOverworld(nextRoomId, true);
         if (discoveredTailKeyRoom) {
             dependencies
                     .entityRuntimeState()
@@ -110,9 +110,9 @@ final class RoomTransitionController {
     }
 
     void startMysteriousWoodsLostScroll(ScrollController scrollController, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
-        dependencies.roomLoadCoordinator().get().loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
-        dependencies.roomLoadCoordinator().get().loadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
+        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().renderSnapshot();
+        dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
+        dependencies.roomLoadCoordinator().loadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
         scrollController.start(
                 ScrollController.UP,
                 linkScreenX,
@@ -127,11 +127,10 @@ final class RoomTransitionController {
     }
 
     void startAdjacentIndoorScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
+        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().renderSnapshot();
         RoomScrollNavigation.IndoorRoomDestination destination = this.adjacentIndoorRoom(direction);
         dependencies
                 .roomLoadCoordinator()
-                .get()
                 .loadIndoor(
                         dependencies.location().activeRoom.mapId(),
                         destination.roomId(),
@@ -274,15 +273,7 @@ final class RoomTransitionController {
     }
 
     void configureStaircase(int location) {
-        if (location < 0) {
-            dependencies.puzzles().staircaseState = STAIRCASE_NONE;
-            dependencies.puzzles().staircaseX = 0;
-            dependencies.puzzles().staircaseY = 0;
-            return;
-        }
-        dependencies.puzzles().staircaseState = STAIRCASE_INACTIVE;
-        dependencies.puzzles().staircaseY = (location & 0xF0) + 0x10;
-        dependencies.puzzles().staircaseX = ((location & 0x0F) << 4) + 0x08;
+        dependencies.puzzles().configureStaircase(location);
     }
 
     int adjacentOverworldRoomId(int direction) {
@@ -306,8 +297,8 @@ final class RoomTransitionController {
             GPU gpu,
             ManboWarpResolver manboWarpResolver,
             Rom romData,
-            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomLoadCoordinator roomLoadCoordinator,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {

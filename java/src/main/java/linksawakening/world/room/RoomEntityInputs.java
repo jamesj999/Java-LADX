@@ -1,11 +1,8 @@
 package linksawakening.world.room;
 
-import java.util.function.Supplier;
-import linksawakening.world.entity.RoomEntityRuntime;
-
 /** Cached player inputs and gates supplied to each room entity runtime. */
 final class RoomEntityInputs {
-    private final Supplier<RoomEntityRuntime> runtime;
+    private final RoomEntityFrameState state;
 
     int entityGoldenLeavesCount;
     boolean actionButtonsHeld;
@@ -27,8 +24,8 @@ final class RoomEntityInputs {
     int secretSeashellPegasusCollisionX;
     int secretSeashellPegasusCollisionY;
 
-    RoomEntityInputs(Supplier<RoomEntityRuntime> runtime) {
-        this.runtime = runtime;
+    RoomEntityInputs(RoomEntityFrameState state) {
+        this.state = java.util.Objects.requireNonNull(state);
     }
 
     void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
@@ -41,8 +38,8 @@ final class RoomEntityInputs {
 
     void setEntityDialogActive(boolean active) {
         entityDialogActive = active;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setDialogActive(active);
+        if (state.runtime != null) {
+            state.runtime.configuration().setDialogActive(active);
         }
     }
 
@@ -53,8 +50,8 @@ final class RoomEntityInputs {
         entityInventoryAppearing = inventoryAppearing;
         entityDialogCooldown = dialogCooldown;
         entityWindowY = windowY;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setTalkState(inventoryAppearing, dialogCooldown, windowY);
+        if (state.runtime != null) {
+            state.runtime.configuration().setTalkState(inventoryAppearing, dialogCooldown, windowY);
         }
     }
 
@@ -63,15 +60,15 @@ final class RoomEntityInputs {
             throw new IllegalArgumentException("Dialog selection must be 0 or 1");
         }
         entityDialogAskSelectionIndex = selectionIndex;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setDialogAskSelectionIndex(selectionIndex);
+        if (state.runtime != null) {
+            state.runtime.configuration().setDialogAskSelectionIndex(selectionIndex);
         }
     }
 
     void setEntityMusicActive(boolean active) {
         entityMusicActive = active;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setActiveMusic(active);
+        if (state.runtime != null) {
+            state.runtime.configuration().setActiveMusic(active);
         }
     }
 
@@ -79,15 +76,15 @@ final class RoomEntityInputs {
         this.actionButtonAHeld = actionButtonAHeld;
         this.actionButtonBHeld = actionButtonBHeld;
         this.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        if (state.runtime != null) {
+            state.runtime.configuration().setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         }
     }
 
     void setEntityJoypadHeld(boolean joypadHeld) {
         this.joypadHeld = joypadHeld;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setJoypadHeld(joypadHeld);
+        if (state.runtime != null) {
+            state.runtime.configuration().setJoypadHeld(joypadHeld);
         }
     }
 
@@ -97,8 +94,8 @@ final class RoomEntityInputs {
                     "Entity pressed-buttons mask must be an unsigned byte: " + pressedButtonsMask);
         }
         entityPressedButtonsMask = pressedButtonsMask;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setPressedButtonsMask(pressedButtonsMask);
+        if (state.runtime != null) {
+            state.runtime.configuration().setPressedButtonsMask(pressedButtonsMask);
         }
     }
 
@@ -106,14 +103,14 @@ final class RoomEntityInputs {
         if ((itemA & ~0xFF) != 0 || (itemB & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity inventory slots must be unsigned bytes");
         }
-        if (runtime.get() != null) {
-            runtime.get().configuration().setLikeLikeLinkInventory(itemA, itemB);
+        if (state.runtime != null) {
+            state.runtime.configuration().setLikeLikeLinkInventory(itemA, itemB);
         }
     }
 
     void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        if (runtime.get() != null) {
-            runtime.get().configuration().setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        if (state.runtime != null) {
+            state.runtime.configuration().setToadstoolPlayerState(hasToadstool, magicPowderCount);
         }
     }
 
@@ -122,8 +119,8 @@ final class RoomEntityInputs {
             throw new IllegalArgumentException("Golden leaves count must be an unsigned byte: " + goldenLeavesCount);
         }
         entityGoldenLeavesCount = goldenLeavesCount;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setGoldenLeavesCount(goldenLeavesCount);
+        if (state.runtime != null) {
+            state.runtime.configuration().setGoldenLeavesCount(goldenLeavesCount);
         }
     }
 
@@ -136,8 +133,8 @@ final class RoomEntityInputs {
         secretSeashellPegasusCollisionActive = collisionActive;
         secretSeashellPegasusCollisionX = collisionX;
         secretSeashellPegasusCollisionY = collisionY;
-        if (runtime.get() != null) {
-            runtime.get()
+        if (state.runtime != null) {
+            state.runtime
                     .configuration()
                     .setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY);
         }
@@ -145,15 +142,15 @@ final class RoomEntityInputs {
 
     void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
         this.powerBraceletButtonHeld = buttonHeld;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setPowerBraceletButtonHeld(buttonHeld);
+        if (state.runtime != null) {
+            state.runtime.configuration().setPowerBraceletButtonHeld(buttonHeld);
         }
     }
 
     void setEntityBombButtonHeld(boolean buttonHeld) {
         this.bombButtonHeld = buttonHeld;
-        if (runtime.get() != null) {
-            runtime.get().configuration().setBombButtonHeld(buttonHeld);
+        if (state.runtime != null) {
+            state.runtime.configuration().setBombButtonHeld(buttonHeld);
         }
     }
 
@@ -162,8 +159,8 @@ final class RoomEntityInputs {
             throw new IllegalArgumentException(
                     "Link attack-step animation countdown must be an unsigned byte: " + countdown);
         }
-        if (runtime.get() != null) {
-            runtime.get().configuration().setLinkAttackStepAnimationCountdown(countdown);
+        if (state.runtime != null) {
+            state.runtime.configuration().setLinkAttackStepAnimationCountdown(countdown);
         }
     }
 
@@ -171,8 +168,8 @@ final class RoomEntityInputs {
         if ((positionX & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity final Link X must be an unsigned byte: " + positionX);
         }
-        if (runtime.get() != null) {
-            runtime.get().configuration().setLinkFinalPositionX(positionX);
+        if (state.runtime != null) {
+            state.runtime.configuration().setLinkFinalPositionX(positionX);
         }
     }
 }

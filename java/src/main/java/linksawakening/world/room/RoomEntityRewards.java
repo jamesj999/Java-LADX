@@ -46,7 +46,7 @@ final class RoomEntityRewards {
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
-            dependencies.roomStoryState().get().markActiveRoomCompleted();
+            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
         }
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingKeyRewardEvents, rewards);
     }
@@ -60,7 +60,7 @@ final class RoomEntityRewards {
         if (rewards.isEmpty()) {
             return;
         }
-        dependencies.roomStoryState().get().markHeartContainerCollected();
+        dependencies.roomStoryState().markHeartContainerCollected();
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingHeartContainerRewards, rewards);
     }
 
@@ -73,7 +73,7 @@ final class RoomEntityRewards {
         if (rewards.isEmpty()) {
             return;
         }
-        dependencies.roomStoryState().get().markActiveRoomCompleted();
+        dependencies.roomState().markCompleted(dependencies.location().activeRoom);
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingSwordPickupRewards, rewards);
     }
 
@@ -96,9 +96,7 @@ final class RoomEntityRewards {
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
-        dependencies
-                        .roomSessionViews()
-                        .get()
+        dependencies.roomSessionViews()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
@@ -112,7 +110,7 @@ final class RoomEntityRewards {
                 .entityRuntimeState()
                 .runtime
                 .configuration()
-                .setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
+                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
     }
 
     void harvestInstrumentCompletions() {
@@ -145,7 +143,7 @@ final class RoomEntityRewards {
                 dependencies.roomState().indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
                 dependencies.followers().richardSpokenFlag = Math.max(dependencies.followers().richardSpokenFlag, 0x02);
             } else {
-                dependencies.entityInputs().get().entityGoldenLeavesCount = event.goldenLeavesCount();
+                dependencies.entityInputs().entityGoldenLeavesCount = event.goldenLeavesCount();
             }
         }
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingRichardProgressEvents, events);
@@ -186,8 +184,8 @@ final class RoomEntityRewards {
         for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
             SlimeKeyRewardEvent reward = rewards.get(rewardIndex);
 
-            dependencies.entityInputs().get().entityGoldenLeavesCount = reward.goldenLeavesCount();
-            dependencies.roomStoryState().get().markActiveRoomCompleted();
+            dependencies.entityInputs().entityGoldenLeavesCount = reward.goldenLeavesCount();
+            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
         }
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingSlimeKeyRewardEvents, rewards);
     }
@@ -197,10 +195,10 @@ final class RoomEntityRewards {
             RoomItemUseState items,
             RoomLocationState location,
             RoomEntityFrameState entityRuntimeState,
-            java.util.function.Supplier<RoomEntityInputs> entityInputs,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomEntityInputs entityInputs,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> roomStoryState) {
+            RoomStoryState roomStoryState) {
         Dependencies {
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(items, "items");

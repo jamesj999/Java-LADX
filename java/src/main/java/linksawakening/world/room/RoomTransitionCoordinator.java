@@ -55,10 +55,10 @@ final class RoomTransitionCoordinator {
      * see Link past the bottom boundary before any fallback clamp can run.
      */
     public void handleWarpAndIndoorBoundaries(Link link) {
-        if (!dependencies.roomSessionViews().get().hasActiveRoom() || transitionController.isActive()) {
+        if (!dependencies.roomSessionViews().hasActiveRoom() || transitionController.isActive()) {
             return;
         }
-        ActiveRoom room = dependencies.roomSessionViews().get().activeRoom();
+        ActiveRoom room = dependencies.roomSessionViews().activeRoom();
 
         // $02:5136-5167 uses wWarp0, independent of the door warp positions.
         if (link.status().pitWarpPending() && room.hasWarps()) {
@@ -88,7 +88,6 @@ final class RoomTransitionCoordinator {
 
         Warp staircaseWarp = dependencies
                 .roomTransitionController()
-                .get()
                 .pollStaircaseWarp(
                         link.position().romEntityX(),
                         link.position().romEntityY(),
@@ -123,7 +122,7 @@ final class RoomTransitionCoordinator {
     }
 
     public void handleOverworldBoundary(Link link) {
-        if (!dependencies.roomSessionViews().get().hasActiveRoom()) {
+        if (!dependencies.roomSessionViews().hasActiveRoom()) {
             return;
         }
 
@@ -131,20 +130,17 @@ final class RoomTransitionCoordinator {
         int previousY = link.position().pixelY();
         RoomBoundaryDecision boundary = boundaryController.decide(dependencies
                 .roomCollisionQueries()
-                .get()
                 .boundaryState(previousX, previousY, link.airborne().isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
             link.position().setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             if (boundary.direction() == ScrollController.UP
-                    && dependencies.roomStoryState().get().shouldGetLostInMysteriousWoods()) {
+                    && dependencies.roomStoryState().shouldGetLostInMysteriousWoods()) {
                 dependencies
                         .roomTransitionController()
-                        .get()
                         .startMysteriousWoodsLostScroll(scrollController, previousX, previousY);
             } else {
                 dependencies
                         .roomTransitionController()
-                        .get()
                         .startAdjacentOverworldScroll(scrollController, boundary.direction(), previousX, previousY);
             }
             scrollController.onCompletion(
@@ -156,10 +152,10 @@ final class RoomTransitionCoordinator {
 
     /** Starts a pending Ocarina Mambo transition after entity playback ends. */
     public boolean handlePendingManboTransition(Link link) {
-        if (link == null || !dependencies.roomSessionViews().get().hasActiveRoom() || transitionController.isActive()) {
+        if (link == null || !dependencies.roomSessionViews().hasActiveRoom() || transitionController.isActive()) {
             return false;
         }
-        Warp target = dependencies.roomTransitionController().get().consumeManboPondTransitionRequest();
+        Warp target = dependencies.roomTransitionController().consumeManboPondTransitionRequest();
         if (target == null) {
             return false;
         }
@@ -169,10 +165,10 @@ final class RoomTransitionCoordinator {
 
     /** Starts disableMovementInTransition after the Sirens Instrument effect. */
     public boolean handlePendingInstrumentTransition(Link link) {
-        if (link == null || !dependencies.roomSessionViews().get().hasActiveRoom() || transitionController.isActive()) {
+        if (link == null || !dependencies.roomSessionViews().hasActiveRoom() || transitionController.isActive()) {
             return false;
         }
-        Warp target = dependencies.roomTransitionController().get().consumeInstrumentTransitionRequest();
+        Warp target = dependencies.roomTransitionController().consumeInstrumentTransitionRequest();
         if (target == null) {
             return false;
         }
@@ -188,11 +184,11 @@ final class RoomTransitionCoordinator {
     }
 
     private void applyWarp(Warp warp, Link link) {
-        dependencies.roomTransitionController().get().loadWarpDestination(warp);
-        ActiveRoom destination = dependencies.roomSessionViews().get().activeRoom();
+        dependencies.roomTransitionController().loadWarpDestination(warp);
+        ActiveRoom destination = dependencies.roomSessionViews().activeRoom();
         link.motion()
                 .setRoomPhysicsForRoom(
-                        dependencies.roomSessionViews().get().roomLoadToken(),
+                        dependencies.roomSessionViews().roomLoadToken(),
                         destination.mapId(),
                         destination.roomId(),
                         destination.mapCategory());
@@ -202,10 +198,10 @@ final class RoomTransitionCoordinator {
     }
 
     record Dependencies(
-            java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
-            java.util.function.Supplier<RoomStoryState> roomStoryState,
-            java.util.function.Supplier<RoomTransitionController> roomTransitionController) {
+            RoomCollisionQueries roomCollisionQueries,
+            RoomSessionViews roomSessionViews,
+            RoomStoryState roomStoryState,
+            RoomTransitionController roomTransitionController) {
         Dependencies {
             java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
@@ -216,21 +212,21 @@ final class RoomTransitionCoordinator {
 
     private static Dependencies dependencies(RoomSession roomSession) {
         return new Dependencies(
-                () -> roomSession.components.roomCollisionQueries(),
-                () -> roomSession.components.roomSessionViews(),
-                () -> roomSession.components.roomStoryState(),
-                () -> roomSession.components.roomTransitionController());
+                roomSession.components.roomCollisionQueries(),
+                roomSession.components.roomSessionViews(),
+                roomSession.components.roomStoryState(),
+                roomSession.components.roomTransitionController());
     }
 
     private boolean handleIndoorBoundary(Link link, ActiveRoom room) {
 
         link.motion()
                 .initializeRoomPhysicsForRoom(
-                        dependencies.roomSessionViews().get().roomLoadToken(),
+                        dependencies.roomSessionViews().roomLoadToken(),
                         room.mapId(),
                         room.roomId(),
                         room.mapCategory());
-        Warp dungeonWarp = dependencies.roomTransitionController().get().consumeClearedDungeonWarp();
+        Warp dungeonWarp = dependencies.roomTransitionController().consumeClearedDungeonWarp();
         if (dungeonWarp != null) {
             transitionController.startFadeOut(() -> applyWarp(dungeonWarp, link));
             return true;
@@ -243,14 +239,12 @@ final class RoomTransitionCoordinator {
             link.position().setRoomEntryPixelPosition(previousX, previousY + 116);
             dependencies
                     .roomTransitionController()
-                    .get()
                     .startAdjacentIndoorScroll(scrollController, ScrollController.UP, previousX, previousY);
             scrollController.onCompletion(() -> link.motion().finishRoomScroll(false));
             return true;
         }
         RoomBoundaryDecision boundary = boundaryController.decide(dependencies
                 .roomCollisionQueries()
-                .get()
                 .boundaryState(
                         link.position().pixelX(),
                         link.position().pixelY(),
@@ -276,7 +270,6 @@ final class RoomTransitionCoordinator {
             link.position().setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             dependencies
                     .roomTransitionController()
-                    .get()
                     .startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
             scrollController.onCompletion(
                     () -> link.motion().finishRoomScroll(boundary.direction() == ScrollController.DOWN));

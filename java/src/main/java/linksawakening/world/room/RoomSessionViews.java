@@ -122,7 +122,7 @@ final class RoomSessionViews {
         var updates = dependencies.entityRuntimeState().runtime.consumeHeartPieceUpdates();
         for (int i = 0; i < updates.size(); i++) {
             if (updates.get(i).complete()) {
-                dependencies.roomStoryState().get().markActiveRoomCompleted();
+                dependencies.roomState().markCompleted(dependencies.location().activeRoom);
                 break;
             }
         }
@@ -206,14 +206,12 @@ final class RoomSessionViews {
             RoomLocationState location,
             RoomEntityFrameState entityRuntimeState,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> roomStoryState,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
             java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");
         }
     }

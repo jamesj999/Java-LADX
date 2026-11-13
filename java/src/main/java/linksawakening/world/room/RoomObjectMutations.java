@@ -16,6 +16,8 @@ import static linksawakening.world.room.RoomSessionRules.OW_ROOM_STATUS_OPENED;
 import java.util.List;
 import java.util.Map;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
@@ -23,9 +25,11 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.MagicPowderObjectAction;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
 import linksawakening.world.object.BombObjectInteraction;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
@@ -47,7 +51,7 @@ final class RoomObjectMutations {
     boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
 
         if (dependencies.location().activeRoom == null) return false;
-        if (dependencies.roomPlayerItemActions().get().hookshotActive()) {
+        if (dependencies.entityRuntimeState().hookshotActive()) {
             // $02:7549-754D takes func_002_755B: sample, but no $7589 copy
             // and no ApplyLinkGroundPhysics call.
             sampleLinkGround(frame.pixelX(), frame.pixelY());
@@ -109,7 +113,7 @@ final class RoomObjectMutations {
         dependencies.location()
                 .activeRoom
                 .roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + dependencies.terrain().linkGroundRoomPosition] = 0xAE;
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        this.refreshActiveRoomTilemap();
         dependencies
                 .entityFrame()
                 .colorShellSoundSink
@@ -122,7 +126,7 @@ final class RoomObjectMutations {
         int location = RoomObjectMutations.linkGroundLocation(pixelX, pixelY);
         dependencies.terrain().linkGroundRoomPosition = location;
         dependencies.terrain().linkGroundObjectUnderEntity =
-                dependencies.roomSessionViews().get().objectAtRoomLocation(location);
+                dependencies.roomSessionViews().objectAtRoomLocation(location);
     }
 
     static int linkGroundLocation(int pixelX, int pixelY) {
@@ -155,9 +159,9 @@ final class RoomObjectMutations {
                 || location < 0
                 || (location & 15) >= 10
                 || (location >> 4) >= 8
-                || dependencies.roomSessionViews().get().objectAtRoomLocation(location) != 0xDD) return false;
+                || dependencies.roomSessionViews().objectAtRoomLocation(location) != 0xDD) return false;
         dependencies.location().activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0x0D;
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        this.refreshActiveRoomTilemap();
         if (dependencies.entityRuntimeState().runtime != null) {
             // Variant zero uses LiftableRockStartSmashingAnimation ($03:53E4):
             // fifteen frames of rock debris and NOISE_SFX_POT_SMASHED ($09).
@@ -312,7 +316,7 @@ final class RoomObjectMutations {
                                 dependencies.location().activeRoom.tileAttrs());
                 changed = result.changed();
             } else if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-                    && dependencies.roomSessionViews().get().objectAtRoomLocation(request.location()) == 0x8A) {
+                    && dependencies.roomSessionViews().objectAtRoomLocation(request.location()) == 0x8A) {
                 int areaIndex =
                         RoomConstants.ROOM_OBJECTS_BASE + (request.location() & 0xF0) + (request.location() & 0x0F);
                 int[] objects = dependencies.location().activeRoom.roomObjectsArea();
@@ -322,7 +326,7 @@ final class RoomObjectMutations {
                             && areaIndex < dependencies.location().activeRoom.renderValues().length) {
                         dependencies.location().activeRoom.renderValues()[areaIndex] = 0x04;
                     }
-                    dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+                    this.refreshActiveRoomTilemap();
                     dependencies
                             .overworldCollision()
                             .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -387,8 +391,7 @@ final class RoomObjectMutations {
 
     boolean writeMagicPowderTorchObject(int location, int expectedObject, int replacementObject, boolean redraw) {
         // Expiration writes $AB through the saved object pointer unconditionally.
-        if (expectedObject >= 0
-                && dependencies.roomSessionViews().get().objectAtRoomLocation(location) != expectedObject) {
+        if (expectedObject >= 0 && dependencies.roomSessionViews().objectAtRoomLocation(location) != expectedObject) {
             return false;
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
@@ -408,7 +411,7 @@ final class RoomObjectMutations {
             dependencies.location().activeRoom.renderValues()[areaIndex] = replacementObject & 0xFF;
         }
         if (redraw) {
-            dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+            this.refreshActiveRoomTilemap();
         }
         return true;
     }
@@ -486,7 +489,7 @@ final class RoomObjectMutations {
         if (candidate == null) {
             return;
         }
-        int objectId = dependencies.roomSessionViews().get().objectAtRoomLocation(candidate.location());
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(candidate.location());
         if (objectId < OBJECT_GIANT_SKULL_TOP_LEFT || objectId > OBJECT_GIANT_SKULL_BOTTOM_RIGHT) {
             this.applyOutdoorBombableCaveDoorCandidate(candidate, sourceSlot);
             return;
@@ -520,7 +523,7 @@ final class RoomObjectMutations {
     }
 
     void applyOutdoorBombableCaveDoorCandidate(BombObjectInteraction.Candidate candidate, int sourceSlot) {
-        int objectId = dependencies.roomSessionViews().get().objectAtRoomLocation(candidate.location());
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(candidate.location());
         int doorIndex =
                 dependencies.romTables().physicsTables().objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
                         - BOMBABLE_WALL_PHYSICS_BASE;
@@ -541,7 +544,7 @@ final class RoomObjectMutations {
         dependencies.roomState()
                 .overworldRoomStatus[dependencies.location().activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
         this.queuePuzzleSolvedJingle(sourceSlot);
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        this.refreshActiveRoomTilemap();
         this.refreshOverworldCollisionAfterObjectMutation();
     }
 
@@ -581,7 +584,7 @@ final class RoomObjectMutations {
             return;
         }
         int location = candidate.location();
-        int objectId = dependencies.roomSessionViews().get().objectAtRoomLocation(location);
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(location);
         int physicsTable = dependencies.location().activeRoom.mapId() == 0xFF
                 ? RomTables.PHYSICS_TABLE_INDOORS2
                 : RomTables.PHYSICS_TABLE_INDOORS1;
@@ -600,7 +603,6 @@ final class RoomObjectMutations {
 
         byte[] status = dependencies
                 .roomSessionViews()
-                .get()
                 .indoorStatusTableForMap(dependencies.location().activeRoom.mapId());
         int currentStatus =
                 switch (wallIndex) {
@@ -618,13 +620,13 @@ final class RoomObjectMutations {
                     case 3 -> 0x02;
                     default -> throw new AssertionError(wallIndex);
                 };
-        int adjacentRoom = dependencies.roomSessionViews().get().adjacentIndoorRoomIdForBombWall(wallIndex);
+        int adjacentRoom = dependencies.roomSessionViews().adjacentIndoorRoomIdForBombWall(wallIndex);
         status[dependencies.location().activeRoom.roomId()] |= (byte) currentStatus;
         status[adjacentRoom] |= (byte) adjacentStatus;
         dependencies.terrain().bombedWallTileOverrides.put(areaIndex, wallIndex < 2 ? 0 : 1);
         this.queuePuzzleSolvedJingle(sourceSlot);
 
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        this.refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -644,7 +646,7 @@ final class RoomObjectMutations {
             return false;
         }
         int location = candidate.location();
-        if (dependencies.roomSessionViews().get().objectAtRoomLocation(location) != OBJECT_BOMBABLE_BLOCK) {
+        if (dependencies.roomSessionViews().objectAtRoomLocation(location) != OBJECT_BOMBABLE_BLOCK) {
             return false;
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
@@ -654,9 +656,7 @@ final class RoomObjectMutations {
         }
 
         objects[areaIndex] = OBJECT_FLOOR_OD;
-        dependencies
-                        .roomSessionViews()
-                        .get()
+        dependencies.roomSessionViews()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
@@ -670,7 +670,7 @@ final class RoomObjectMutations {
                     .spawnLiftableRockSmash(candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
         }
 
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        this.refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -697,7 +697,7 @@ final class RoomObjectMutations {
             return;
         }
         objects[index] = objectId & 0xFF;
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        this.refreshActiveRoomTilemap();
     }
 
     record Dependencies(
@@ -710,11 +710,11 @@ final class RoomObjectMutations {
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             RomTables romTables,
-            java.util.function.Supplier<RoomPlayerItemActions> roomPlayerItemActions,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
-            TransientVfxSystem transientVfxSystem) {
+            TransientVfxSystem transientVfxSystem,
+            linksawakening.rom.Rom romData,
+            RoomTilemapBuilder roomTilemapBuilder) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(location, "location");
@@ -725,10 +725,8 @@ final class RoomObjectMutations {
             java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomPlayerItemActions, "roomPlayerItemActions");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }
     }
 
@@ -756,5 +754,172 @@ final class RoomObjectMutations {
                             && (dependencies.indoorTorchPaletteEffect().targetAddress() >= 0x0C
                                     || dependencies.entityFrame().currentLinkMotionState != 0x05));
         };
+    }
+
+    void refreshActiveRoomTilemap() {
+        RoomTilemap tilemap = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                ? dependencies
+                        .roomTilemapBuilder()
+                        .buildOverworld(
+                                dependencies.location().activeRoom.roomId(),
+                                dependencies.location().activeRoom.roomObjectsArea())
+                : dependencies
+                        .roomTilemapBuilder()
+                        .buildIndoor(
+                                dependencies.location().activeRoom.mapId(),
+                                dependencies.location().activeRoom.roomId(),
+                                dependencies.location().activeRoom.roomObjectsArea());
+        dependencies.location().activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
+        this.applyHookshotBridgeTileOverrides();
+        this.applyBombedWallTileOverrides();
+        this.applyBombedBlockTileOverrides();
+        this.applyBombedCaveDoorTileOverrides();
+        this.applyRetainedTorchTiles();
+        dependencies
+                .puzzles()
+                .shutterTileOverrides
+                .forEach((index, tile) -> dependencies.location().activeRoom.tileIds()[index] = tile);
+    }
+
+    void applyHookshotBridgeUpdates(List<HookshotBridgeUpdate> updates) {
+        if (dependencies.location().activeRoom == null || updates == null || updates.isEmpty()) {
+            return;
+        }
+        int[] objects = dependencies.location().activeRoom.roomObjectsArea();
+        boolean changed = false;
+        for (HookshotBridgeUpdate update : updates) {
+            int areaIndex = RoomInteractionGeometry.hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
+            if (areaIndex < 0 || areaIndex >= objects.length) {
+                continue;
+            }
+            HookshotBridgeUpdate previous =
+                    dependencies.terrain().hookshotBridgeTileOverrides.put(areaIndex, update);
+            if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
+                objects[areaIndex] = 0x9D;
+                changed = true;
+            }
+        }
+        if (changed) {
+            this.refreshActiveRoomTilemap();
+        }
+    }
+
+    void applyHookshotBridgeTileOverrides() {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().hookshotBridgeTileOverrides.isEmpty()) {
+            return;
+        }
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (HookshotBridgeUpdate update :
+                dependencies.terrain().hookshotBridgeTileOverrides.values()) {
+            int tileX = (update.objectLeft() & 0xFF) >>> 3;
+            int tileY = (update.objectTop() & 0xFF) >>> 3;
+            if (tileX < 0
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY < 0
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                continue;
+            }
+            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+            int bottomLeft = topLeft + RoomConstants.ROOM_TILE_WIDTH;
+            if (update.direction() == HookshotBridgeMotion.PULL_DOWN_DIRECTION) {
+                tileIds[topLeft] = 0x04;
+                tileIds[topLeft + 1] = 0x05;
+                tileIds[bottomLeft] = update.active() ? 0x08 : 0x04;
+                tileIds[bottomLeft + 1] = update.active() ? 0x09 : 0x05;
+            } else {
+                tileIds[topLeft] = update.active() ? 0x0A : 0x04;
+                tileIds[topLeft + 1] = update.active() ? 0x0B : 0x05;
+                tileIds[bottomLeft] = 0x04;
+                tileIds[bottomLeft + 1] = 0x05;
+            }
+        }
+    }
+
+    void applyBombedWallTileOverrides() {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().bombedWallTileOverrides.isEmpty()) {
+            return;
+        }
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (Map.Entry<Integer, Integer> entry :
+                dependencies.terrain().bombedWallTileOverrides.entrySet()) {
+            int areaOffset = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
+            int objectRow = (areaOffset >>> 4) & 0x0F;
+            int objectColumn = areaOffset & 0x0F;
+            int tileX = objectColumn * 2;
+            int tileY = objectRow * 2;
+            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
+                    || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                continue;
+            }
+
+            int[] replacement =
+                    entry.getValue() == 0 ? new int[] {0x72, 0x72, 0x73, 0x73} : new int[] {0x69, 0x79, 0x69, 0x79};
+            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+            tileIds[topLeft] = replacement[0];
+            tileIds[topLeft + 1] = replacement[1];
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = replacement[2];
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = replacement[3];
+        }
+    }
+
+    void applyBombedBlockTileOverrides() {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().bombedBlockTileOverrides.isEmpty()) {
+            return;
+        }
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (int areaIndex : dependencies.terrain().bombedBlockTileOverrides) {
+            int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
+            int objectRow = (areaOffset >>> 4) & 0x0F;
+            int objectColumn = areaOffset & 0x0F;
+            int tileX = objectColumn * 2;
+            int tileY = objectRow * 2;
+            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
+                    || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                continue;
+            }
+
+            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+            tileIds[topLeft] = 0x10;
+            tileIds[topLeft + 1] = 0x12;
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = 0x11;
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = 0x13;
+        }
+    }
+
+    void applyBombedCaveDoorTileOverrides() {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().bombedCaveDoorTileOverrides.isEmpty()) {
+            return;
+        }
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (int areaIndex : dependencies.terrain().bombedCaveDoorTileOverrides) {
+            int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
+            int objectRow = (areaOffset >>> 4) & 0x0F;
+            int objectColumn = areaOffset & 0x0F;
+            int tileX = objectColumn * 2;
+            int tileY = objectRow * 2;
+            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
+                    || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                    || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                    || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                continue;
+            }
+
+            RomAddress tileTable = RomSymbols.BombedCaveDoorTilesIndexesGBC;
+            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+            tileIds[topLeft] = dependencies.romData().u8(tileTable);
+            tileIds[topLeft + 1] = dependencies.romData().u8(tileTable.plus(1));
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] =
+                    dependencies.romData().u8(tileTable.plus(2));
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] =
+                    dependencies.romData().u8(tileTable.plus(3));
+        }
     }
 }

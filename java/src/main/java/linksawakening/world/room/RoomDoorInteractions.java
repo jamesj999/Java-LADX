@@ -60,11 +60,11 @@ final class RoomDoorInteractions {
                 dependencies.overworldBushInteraction(),
                 dependencies.overworldCollision(),
                 dependencies.puzzles(),
-                () -> this,
+                this,
                 dependencies.roomObjectMutations(),
                 dependencies.roomSessionViews(),
                 dependencies.roomTileRedraw(),
-                () -> this));
+                this));
     }
 
     ChestOpenResult tryOpenChest(
@@ -99,7 +99,7 @@ final class RoomDoorInteractions {
         if (touchedLocation < 0) {
             return false;
         }
-        int touchedObject = dependencies.roomSessionViews().get().objectAtRoomLocation(touchedLocation);
+        int touchedObject = dependencies.roomSessionViews().objectAtRoomLocation(touchedLocation);
         if (bossDoor) {
             int objectOffset = touchedObject - BOSS_DOOR_LEFT_OBJECT;
             if (objectOffset < 0
@@ -128,9 +128,7 @@ final class RoomDoorInteractions {
         int doorLocation = touchedLocation - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
         if (!RoomInteractionGeometry.alignedWithIndoorKeyDoor(doorLocation, doorDirection, linkPixelX, linkPixelY)
                 || !dependencies.roomState().dungeonItemState.consumeSmallKey()) return false;
-        dependencies
-                        .roomSessionViews()
-                        .get()
+        dependencies.roomSessionViews()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
@@ -200,7 +198,7 @@ final class RoomDoorInteractions {
         dependencies.puzzles().pushedBlockDirection = direction;
         dependencies.puzzles().pushedBlockMotionFrames = PUSHED_BLOCK_MOTION_FRAMES;
         dependencies.puzzles().pushedBlockEntitySlot = spawnedSlot;
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -301,7 +299,7 @@ final class RoomDoorInteractions {
             int column = Math.floorDiv(point[0], 0x10);
             int row = Math.floorDiv(point[1], 0x10);
             int location = (row << 4) | column;
-            if (dependencies.roomSessionViews().get().objectAtRoomLocation(location) == OBJECT_KEYHOLE_BLOCK) {
+            if (dependencies.roomSessionViews().objectAtRoomLocation(location) == OBJECT_KEYHOLE_BLOCK) {
                 touchedLocation = location;
                 break;
             }
@@ -322,16 +320,14 @@ final class RoomDoorInteractions {
         dependencies.puzzles().pushBlockContactTicks = 0;
         dependencies.roomState().dungeonItemState.consumeSmallKey();
 
-        dependencies.roomObjectMutations().get().writeBombPuzzleObject(touchedLocation, OBJECT_FLOOR_OD);
-        dependencies
-                        .roomSessionViews()
-                        .get()
+        dependencies.roomObjectMutations().writeBombPuzzleObject(touchedLocation, OBJECT_FLOOR_OD);
+        dependencies.roomSessionViews()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
                 (byte) INDOOR_ROOM_STATUS_EVENT_3;
         dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-        dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -434,7 +430,7 @@ final class RoomDoorInteractions {
                 dependencies.location().activeRoom.gbcOverlay()[overlayIndex] = OBJECT_CAVE_DOOR;
                 dependencies.location().activeRoom.renderValues()[gateIndex] = OBJECT_CAVE_DOOR;
                 // The source's draw command changes tile IDs only; keep attrs.
-                dependencies.roomObjectMutations().get().refreshOverworldCollisionAfterObjectMutation();
+                dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation();
             }
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
         }
@@ -504,10 +500,10 @@ final class RoomDoorInteractions {
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             Rom romData,
-            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomObjectMutations roomObjectMutations,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
+            RoomObjectMutations roomTileRedraw) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");
@@ -536,7 +532,7 @@ final class RoomDoorInteractions {
             int column = Math.floorDiv(point[0], 0x10);
             int row = Math.floorDiv(point[1], 0x10);
             int location = (row << 4) | column;
-            int object = dependencies.roomSessionViews().get().objectAtRoomLocation(location);
+            int object = dependencies.roomSessionViews().objectAtRoomLocation(location);
             if (object == OBJECT_PUSHABLE_BLOCK) {
                 touchedLocation = location;
                 break;

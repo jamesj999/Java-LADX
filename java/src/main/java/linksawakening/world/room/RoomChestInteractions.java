@@ -38,7 +38,7 @@ final class RoomChestInteractions {
             return new ChestOpenResult(false, -1, -1, -1);
         }
         int location = (row << 4) | column;
-        if (dependencies.roomSessionViews().get().objectAtRoomLocation(location) != 0xA0) {
+        if (dependencies.roomSessionViews().objectAtRoomLocation(location) != 0xA0) {
             return new ChestOpenResult(false, -1, -1, location);
         }
         int itemType = dependencies
@@ -53,19 +53,18 @@ final class RoomChestInteractions {
             return new ChestOpenResult(false, -1, -1, location);
         }
 
-        dependencies.roomObjectMutations().get().writeBombPuzzleObject(location, 0xA1);
+        dependencies.roomObjectMutations().writeBombPuzzleObject(location, 0xA1);
         byte[] status = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? dependencies.roomState().overworldRoomStatus
                 : dependencies
                         .roomSessionViews()
-                        .get()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId());
         status[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
         // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
         // from the ROM overlay would discard other live mutations (cut bushes).
         if (dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         }
         dependencies
                 .overworldCollision()
@@ -90,10 +89,10 @@ final class RoomChestInteractions {
             RoomLocationState location,
             OverworldCollision overworldCollision,
             Rom romData,
-            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomObjectMutations roomObjectMutations,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
+            RoomObjectMutations roomTileRedraw) {
         Dependencies {
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");

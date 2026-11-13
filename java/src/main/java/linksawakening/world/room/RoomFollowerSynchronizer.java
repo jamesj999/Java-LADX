@@ -80,7 +80,7 @@ final class RoomFollowerSynchronizer {
                             .inspection()
                             .view());
         }
-        dependencies.roomLoadCoordinator().get().configureEnemyDropRuntime();
+        dependencies.dropState().configureEnemyDropRuntime(dependencies.dropResolver(), dependencies.entityInputs());
     }
 
     record Dependencies(
@@ -89,7 +89,7 @@ final class RoomFollowerSynchronizer {
             RomEnemyCombatTables enemyCombatTables,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
             RoomEntityFrameState entityRuntimeState,
-            java.util.function.Supplier<RoomEntityInputs> entityInputs,
+            RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
             RoomFollowerState followers,
@@ -98,11 +98,12 @@ final class RoomFollowerSynchronizer {
             OwlEventDialogResolver owlEventDialogResolver,
             Rom romData,
             RomTables romTables,
-            java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
-            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomCollisionQueries roomCollisionQueries,
+            RoomEntityFrameState dropState,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            RoomStoryState owner) {
+            RoomStoryState owner,
+            linksawakening.world.entity.EnemyDropResolver dropResolver) {
         Dependencies {
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
             java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
@@ -119,7 +120,7 @@ final class RoomFollowerSynchronizer {
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");
             java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
-            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            java.util.Objects.requireNonNull(dropState, "dropState");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
             java.util.Objects.requireNonNull(owner, "owner");
@@ -146,11 +147,10 @@ final class RoomFollowerSynchronizer {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setOwlDefaultMusicResolver(dependencies.owlEventDialogResolver()::defaultMusicTrack);
-        configuration.setGroundInteraction(dependencies.roomCollisionQueries().get()::entityGroundInteraction);
+        configuration.setGroundInteraction(dependencies.roomCollisionQueries()::entityGroundInteraction);
         configuration.setBackgroundInteraction(dependencies.entityBackgroundInteraction());
-        configuration.setObjectQuery(dependencies.roomCollisionQueries().get()::entityObjectSample);
-        configuration.setObjectIntersectionQuery(
-                dependencies.roomCollisionQueries().get()::entityObjectIntersectionSample);
+        configuration.setObjectQuery(dependencies.roomCollisionQueries()::entityObjectSample);
+        configuration.setObjectIntersectionQuery(dependencies.roomCollisionQueries()::entityObjectIntersectionSample);
         configuration.setGroundInteractionSideScrolling(
                 dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
     }
@@ -159,23 +159,22 @@ final class RoomFollowerSynchronizer {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setActionButtonsHeld(
-                dependencies.entityInputs().get().actionButtonAHeld,
-                dependencies.entityInputs().get().actionButtonBHeld);
+                dependencies.entityInputs().actionButtonAHeld, dependencies.entityInputs().actionButtonBHeld);
         configuration.setTalkState(
-                dependencies.entityInputs().get().entityInventoryAppearing,
-                dependencies.entityInputs().get().entityDialogCooldown,
-                dependencies.entityInputs().get().entityWindowY);
-        configuration.setJoypadHeld(dependencies.entityInputs().get().joypadHeld);
-        configuration.setPressedButtonsMask(dependencies.entityInputs().get().entityPressedButtonsMask);
-        configuration.setPowerBraceletButtonHeld(dependencies.entityInputs().get().powerBraceletButtonHeld);
-        configuration.setBombButtonHeld(dependencies.entityInputs().get().bombButtonHeld);
+                dependencies.entityInputs().entityInventoryAppearing,
+                dependencies.entityInputs().entityDialogCooldown,
+                dependencies.entityInputs().entityWindowY);
+        configuration.setJoypadHeld(dependencies.entityInputs().joypadHeld);
+        configuration.setPressedButtonsMask(dependencies.entityInputs().entityPressedButtonsMask);
+        configuration.setPowerBraceletButtonHeld(dependencies.entityInputs().powerBraceletButtonHeld);
+        configuration.setBombButtonHeld(dependencies.entityInputs().bombButtonHeld);
     }
 
     private void configureFollowerProgress() {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setLiftedLinkC13B(dependencies.followers().followingEntityYOffset);
-        configuration.setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
+        configuration.setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
         configuration.setDungeonMinibossReady(dependencies.location().activeRoom.mapId() >= 0
                 && dependencies.location().activeRoom.mapId() < dependencies.roomState().dungeonProgressFlags.length
                 && (dependencies.roomState()
@@ -185,9 +184,9 @@ final class RoomFollowerSynchronizer {
                         != 0);
         configuration.setTailKeyOwned(dependencies.followers().hasTailKey);
         configuration.setSecretSeashellPegasusCollisionState(
-                dependencies.entityInputs().get().secretSeashellScreenShakeActive,
-                        dependencies.entityInputs().get().secretSeashellPegasusCollisionActive,
-                dependencies.entityInputs().get().secretSeashellPegasusCollisionX,
-                        dependencies.entityInputs().get().secretSeashellPegasusCollisionY);
+                dependencies.entityInputs().secretSeashellScreenShakeActive,
+                        dependencies.entityInputs().secretSeashellPegasusCollisionActive,
+                dependencies.entityInputs().secretSeashellPegasusCollisionX,
+                        dependencies.entityInputs().secretSeashellPegasusCollisionY);
     }
 }
