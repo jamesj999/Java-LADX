@@ -115,13 +115,15 @@ public final class WizrobeMotion {
     public record Update(
             RoomEntity entity, int transitionCountdown, int physicsFlags, ProjectileSpawn projectileSpawn) {}
 
-    final WizrobeFrameStep wizrobeFrameStep = new WizrobeFrameStep();
+    final WizrobeFrameStep wizrobeFrameStep = new WizrobeFrameStep(this);
 
     static final class WizrobeFrameStep {
-        private WizrobeMotion owner;
+        private final WizrobeMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
         private int transitionCountdown;
         private int currentPhysicsFlags;
@@ -130,10 +132,14 @@ public final class WizrobeMotion {
         private int nextVariant;
         private int countdown;
         private int physicsFlags;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WizrobeMotion.ProjectileSpawn projectileSpawn;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        WizrobeFrameStep() {}
+        WizrobeFrameStep(WizrobeMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.WizrobeMotion.Update run() {
             if ((entity.type() & 0xFF) != WizrobeMotion.ENTITY_WIZROBE) {
@@ -197,6 +203,7 @@ public final class WizrobeMotion {
             return new WizrobeMotion.Update(updated, countdown, physicsFlags, projectileSpawn);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WizrobeMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -267,7 +274,7 @@ public final class WizrobeMotion {
                 int transitionCountdown,
                 int currentPhysicsFlags) {
             if (inUse) {
-                return new WizrobeFrameStep()
+                return new WizrobeFrameStep(owner)
                         .run(
                                 owner,
                                 entity,
@@ -286,7 +293,7 @@ public final class WizrobeMotion {
             projectileSpawn = null;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.linkEntityX = linkEntityX;
             this.linkEntityY = linkEntityY;
@@ -297,7 +304,7 @@ public final class WizrobeMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.randomByteSupplier = null;
                 this.projectileSpawn = null;

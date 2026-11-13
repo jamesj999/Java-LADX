@@ -12,15 +12,19 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
  */
 public final class RoomEntitySnapshot {
 
+    // Optional live source; null selects the independently owned snapshot representation.
     private final EntityRoomInspection liveSource;
     private final List<RoomEntity> slots;
     private final List<RoomEntity> loadedEntities;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private final EntitySpriteSelection spriteSelection;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean sideScrolling;
     private final List<HookshotChainOam.Entry> hookshotChainOam;
     private final List<PincerBodyOam.Entry> pincerBodyOam;
     private final List<WingedOctorokOam.Entry> wingedOctorokOam;
+    // Absent in live views, which read offsets directly from their room source.
     private final int[] visualYOffsetBySlot;
     private final List<BowWowChain.Entry> bowWowChainOam;
 
@@ -76,27 +80,38 @@ public final class RoomEntitySnapshot {
         this(slots, null, null);
     }
 
-    public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection) {
+    public RoomEntitySnapshot(
+            List<RoomEntity>
+                    slots, /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */
+            EntitySpriteSelection spriteSelection) {
         this(slots, spriteSelection, null);
     }
 
     public RoomEntitySnapshot(
-            List<RoomEntity> slots, EntitySpriteSelection spriteSelection, EntitySpriteTileSnapshot spriteTiles) {
+            List<RoomEntity>
+                    slots, /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */
+            EntitySpriteSelection
+                    spriteSelection, /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */
+            EntitySpriteTileSnapshot spriteTiles) {
         this(slots, spriteSelection, spriteTiles, false);
     }
 
     public RoomEntitySnapshot(
             List<RoomEntity> slots,
-            EntitySpriteSelection spriteSelection,
-            EntitySpriteTileSnapshot spriteTiles,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    spriteSelection,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteTileSnapshot
+                    spriteTiles,
             boolean sideScrolling) {
         this(slots, spriteSelection, spriteTiles, sideScrolling, List.of());
     }
 
     public RoomEntitySnapshot(
             List<RoomEntity> slots,
-            EntitySpriteSelection spriteSelection,
-            EntitySpriteTileSnapshot spriteTiles,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    spriteSelection,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteTileSnapshot
+                    spriteTiles,
             boolean sideScrolling,
             List<HookshotChainOam.Entry> hookshotChainOam) {
         this(
@@ -112,8 +127,10 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot(
             List<RoomEntity> slots,
-            EntitySpriteSelection spriteSelection,
-            EntitySpriteTileSnapshot spriteTiles,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    spriteSelection,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteTileSnapshot
+                    spriteTiles,
             boolean sideScrolling,
             List<HookshotChainOam.Entry> hookshotChainOam,
             int[] visualYOffsetBySlot) {
@@ -130,8 +147,10 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot(
             List<RoomEntity> slots,
-            EntitySpriteSelection spriteSelection,
-            EntitySpriteTileSnapshot spriteTiles,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    spriteSelection,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteTileSnapshot
+                    spriteTiles,
             boolean sideScrolling,
             List<HookshotChainOam.Entry> hookshotChainOam,
             List<PincerBodyOam.Entry> pincerBodyOam,
@@ -149,8 +168,10 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot(
             List<RoomEntity> slots,
-            EntitySpriteSelection spriteSelection,
-            EntitySpriteTileSnapshot spriteTiles,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    spriteSelection,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteTileSnapshot
+                    spriteTiles,
             boolean sideScrolling,
             List<HookshotChainOam.Entry> hookshotChainOam,
             List<PincerBodyOam.Entry> pincerBodyOam,
@@ -170,8 +191,10 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot(
             List<RoomEntity> slots,
-            EntitySpriteSelection spriteSelection,
-            EntitySpriteTileSnapshot spriteTiles,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    spriteSelection,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteTileSnapshot
+                    spriteTiles,
             boolean sideScrolling,
             List<HookshotChainOam.Entry> hookshotChainOam,
             List<PincerBodyOam.Entry> pincerBodyOam,
@@ -218,7 +241,9 @@ public final class RoomEntitySnapshot {
         this.loadedEntities = List.copyOf(loaded);
     }
 
-    public RoomEntitySnapshot withSpriteSelection(EntitySpriteSelection selection) {
+    public RoomEntitySnapshot withSpriteSelection(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    selection) {
         if (liveSource != null)
             return EntityRoomInspection.entityRoomQueriesSnapshot(liveSource).withSpriteSelection(selection);
         return new RoomEntitySnapshot(
@@ -233,7 +258,9 @@ public final class RoomEntitySnapshot {
                 bowWowChainOam);
     }
 
-    public RoomEntitySnapshot withSpriteTiles(EntitySpriteTileSnapshot tiles) {
+    public RoomEntitySnapshot withSpriteTiles(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteTileSnapshot
+                    tiles) {
         if (liveSource != null)
             return EntityRoomInspection.entityRoomQueriesSnapshot(liveSource).withSpriteTiles(tiles);
         return new RoomEntitySnapshot(

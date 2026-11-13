@@ -175,7 +175,7 @@ public final class BombiteMotion {
 
     record Vector(int x, int y) {}
 
-    final BombiteStep bombiteStep = new BombiteStep();
+    final BombiteStep bombiteStep = new BombiteStep(this);
 
     public record BombiteFrame(
             RoomEntity entity,
@@ -188,11 +188,14 @@ public final class BombiteMotion {
             int enemyIgnoreHitsCountdown,
             boolean runningWithPegasusBoots,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision) {}
 
     static final class BombiteStep {
-        private BombiteMotion owner;
+        private final BombiteMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BombiteMotion.BombiteFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
@@ -202,7 +205,9 @@ public final class BombiteMotion {
         private int privateCountdown1;
         private int enemyIgnoreHitsCountdown;
         private boolean runningWithPegasusBoots;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int nextTransition;
@@ -215,9 +220,12 @@ public final class BombiteMotion {
         private int y;
         private boolean blockedX;
         private boolean blockedY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
 
-        BombiteStep() {}
+        BombiteStep(BombiteMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.BombiteMotion.Update run() {
             if (!prepareFrame()) return completedResult;
@@ -233,6 +241,7 @@ public final class BombiteMotion {
                     bumpJingle);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BombiteMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -397,7 +406,7 @@ public final class BombiteMotion {
         linksawakening.world.entity.motion.BombiteMotion.Update run(
                 BombiteMotion owner, linksawakening.world.entity.motion.BombiteMotion.BombiteFrame inputs) {
             if (inUse) {
-                return new BombiteStep().run(owner, inputs);
+                return new BombiteStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -424,13 +433,13 @@ public final class BombiteMotion {
             blockedY = false;
             moved = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

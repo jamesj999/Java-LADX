@@ -107,7 +107,11 @@ public final class BushCrawlerMotion {
         return (linkItemA & 0xFF) == ENTITY_POWER_BRACELET && actionButtonAHeld;
     }
 
-    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -170,7 +174,7 @@ public final class BushCrawlerMotion {
 
     record Position(int x, int y, boolean collided) {}
 
-    final BushCrawlerStep bushCrawlerStep = new BushCrawlerStep();
+    final BushCrawlerStep bushCrawlerStep = new BushCrawlerStep(this);
 
     public record BushCrawlerFrame(
             RoomEntity entity,
@@ -178,6 +182,7 @@ public final class BushCrawlerMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             boolean linkCollision,
@@ -187,13 +192,17 @@ public final class BushCrawlerMotion {
             int linkItemB) {}
 
     static final class BushCrawlerStep {
-        private BushCrawlerMotion owner;
+        private final BushCrawlerMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BushCrawlerMotion.BushCrawlerFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private boolean linkCollision;
@@ -210,9 +219,12 @@ public final class BushCrawlerMotion {
         private int x;
         private int y;
         private boolean liftRequested;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        BushCrawlerStep() {}
+        BushCrawlerStep(BushCrawlerMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.BushCrawlerMotion.Update run() {
             entity = inputs.entity();
@@ -293,6 +305,7 @@ public final class BushCrawlerMotion {
                     crawlOverlayRendered);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BushCrawlerMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -337,7 +350,7 @@ public final class BushCrawlerMotion {
         linksawakening.world.entity.motion.BushCrawlerMotion.Update run(
                 BushCrawlerMotion owner, linksawakening.world.entity.motion.BushCrawlerMotion.BushCrawlerFrame inputs) {
             if (inUse) {
-                return new BushCrawlerStep().run(owner, inputs);
+                return new BushCrawlerStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -363,13 +376,13 @@ public final class BushCrawlerMotion {
             liftRequested = false;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

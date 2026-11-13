@@ -155,7 +155,7 @@ public final class MoblinKingMotion {
 
     record Vector(int x, int y) {}
 
-    final MoblinKingStep moblinKingStep = new MoblinKingStep();
+    final MoblinKingStep moblinKingStep = new MoblinKingStep(this);
 
     public record MoblinKingFrame(
             RoomEntity entity,
@@ -165,19 +165,24 @@ public final class MoblinKingMotion {
             int slowTransitionCountdown,
             int frameCounter,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             boolean touchingLink) {}
 
     static final class MoblinKingStep {
-        private MoblinKingMotion owner;
+        private final MoblinKingMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private MoblinKingFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private RoomEntity entity;
         private int linkX;
         private int linkY;
         private int transitionCountdown;
         private int slowTransitionCountdown;
         private int frameCounter;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityBackgroundCollision backgroundCollision;
         private boolean touchingLink;
         private int slot;
@@ -186,6 +191,7 @@ public final class MoblinKingMotion {
         private int z;
         private boolean blocked;
         private boolean landed;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private MoblinKingMotion.ArrowRequest arrow;
         private boolean openDialog;
         private int jingle;
@@ -195,7 +201,9 @@ public final class MoblinKingMotion {
         private int ignoreLinkCollisions;
         private int variant;
 
-        MoblinKingStep() {}
+        MoblinKingStep(MoblinKingMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         private MoblinKingMotion.Update run() {
             if (!prepareMotion()) return completedResult;
@@ -214,6 +222,7 @@ public final class MoblinKingMotion {
                     ignoreLinkCollisions);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private MoblinKingMotion.Update completedResult;
 
         private boolean advanceInitialize() {
@@ -484,7 +493,7 @@ public final class MoblinKingMotion {
 
         MoblinKingMotion.Update run(MoblinKingMotion owner, MoblinKingFrame inputs) {
             if (inUse) {
-                return new MoblinKingStep().run(owner, inputs);
+                return new MoblinKingStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -511,13 +520,13 @@ public final class MoblinKingMotion {
             ignoreLinkCollisions = 0;
             variant = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

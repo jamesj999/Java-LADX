@@ -51,7 +51,9 @@ public final class EntitySlotProperties {
     EntitySlotProperties(
             EntitySlotPresentation state,
             boolean indoorRoom,
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -84,6 +86,7 @@ public final class EntitySlotProperties {
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
         this.puzzleCountdown = physicsTables::readEnemyTransitionCountdown;
+        this.puzzleEntities = java.util.Arrays.asList(slots);
     }
 
     public EntitySpriteViews spriteViews() {
@@ -196,10 +199,9 @@ public final class EntitySlotProperties {
     }
 
     final java.util.function.IntUnaryOperator puzzleCountdown;
-    private java.util.List<RoomEntity> puzzleEntities;
+    private final java.util.List<RoomEntity> puzzleEntities;
 
     java.util.List<RoomEntity> puzzleEntities() {
-        if (puzzleEntities == null) puzzleEntities = java.util.Arrays.asList(this.slots);
         return puzzleEntities;
     }
 

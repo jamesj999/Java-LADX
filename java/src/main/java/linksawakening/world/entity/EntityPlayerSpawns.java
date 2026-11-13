@@ -47,8 +47,12 @@ public final class EntityPlayerSpawns {
 
     EntityPlayerSpawns(
             boolean indoorRoom,
-            java.util.function.IntSupplier defaultRandomByteSupplier,
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional RNG override; null selects the room-owned ROM-compatible source. */ java.util.function
+                            .IntSupplier
+                    defaultRandomByteSupplier,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBombInteractions bombInteractions,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
@@ -65,7 +69,9 @@ public final class EntityPlayerSpawns {
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             RoomEntity[] slots,
-            linksawakening.world.room.ChestContentsTable chestContentsTable,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .room.ChestContentsTable
+                    chestContentsTable,
             EntityPlayerCommands playerCommands) {
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;

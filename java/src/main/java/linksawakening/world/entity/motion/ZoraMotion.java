@@ -47,7 +47,8 @@ public final class ZoraMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityObjectQuery objectQuery) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
+                    objectQuery) {
         checkType(entity);
         Objects.requireNonNull(randomByteSupplier, "Zora random-byte supplier");
         int slot = entity.slot();

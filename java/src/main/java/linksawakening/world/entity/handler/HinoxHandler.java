@@ -36,13 +36,20 @@ final class HinoxHandler {
     }
 
     private static final class HinoxHandlerFrameStep {
-        private linksawakening.world.entity.EntityFrameExecution state;
+        // Owning frame execution is stable for this cached scratch holder.
+        private final linksawakening.world.entity.EntityFrameExecution state;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
 
-        HinoxHandlerFrameStep() {}
+        HinoxHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
+            this.state = java.util.Objects.requireNonNull(state, "state");
+        }
 
         boolean run() {
             if (!advanceMotion()) return completedResult;
@@ -53,7 +60,9 @@ final class HinoxHandler {
         }
 
         private int slot;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BossIntroMotion.Update bossIntro;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.HinoxMotion.Update hinoxUpdate;
 
         private boolean completedResult;
@@ -194,7 +203,7 @@ final class HinoxHandler {
 
         boolean run(linksawakening.world.entity.EntityFrameExecution state) {
             if (inUse) {
-                return new HinoxHandlerFrameStep().run(state);
+                return new HinoxHandlerFrameStep(state).run(state);
             }
             inUse = true;
             slotState = null;
@@ -205,12 +214,12 @@ final class HinoxHandler {
             bossIntro = null;
             hinoxUpdate = null;
             completedResult = false;
-            this.state = state;
+
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.state = null;
+
                 this.slotState = null;
                 this.frameInput = null;
                 this.timerGates = null;

@@ -55,7 +55,9 @@ public final class EntityBossRewards {
 
     EntityBossRewards(
             EntityBossState state,
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -92,7 +94,6 @@ public final class EntityBossRewards {
         for (int slot = RoomEntity.SLOT_COUNT - 1; slot >= 0; slot--) {
             RoomEntity other = this.slots[slot];
             if (slot == killed.slot()
-                    || other == null
                     || (other.type() != 0x10 && other.type() != 0x11)
                     || this.motions.get(GhiniMotion.class, GhiniMotion::new).state(slot) != 0
                     || other.status() == EntityStatus.DISABLED) continue;
@@ -150,7 +151,7 @@ public final class EntityBossRewards {
         EntityBossRewards.bossKeyDropBehaviorAdvanceBossKeyDropProducer(this, source, randomByteSupplier);
     }
 
-    final BossKeyDropStep bossKeyDropStep = new BossKeyDropStep();
+    final BossKeyDropStep bossKeyDropStep = new BossKeyDropStep(this);
 
     void handleBowWowTargetContact(
             RoomEntity source, BowWowMotion.TargetContact contact, IntSupplier randomByteSupplier) {
@@ -486,19 +487,22 @@ public final class EntityBossRewards {
     }
 
     static final class BossKeyDropStep {
-        private linksawakening.world.entity.EntityBossRewards owner;
+        private final linksawakening.world.entity.EntityBossRewards owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity source;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        private linksawakening.world.entity.EntityBossRewards runtime;
         private int slot;
         private int state;
 
-        BossKeyDropStep() {}
+        BossKeyDropStep(linksawakening.world.entity.EntityBossRewards owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         void run() {
-            runtime = owner;
+
             slot = source.slot();
-            if (runtime.physicsTables.readEnemyTransitionCountdown(slot) != 0) {
+            if (owner.physicsTables.readEnemyTransitionCountdown(slot) != 0) {
                 return;
             }
 
@@ -550,23 +554,23 @@ public final class EntityBossRewards {
         private boolean advanceState0() {
             // func_006_5629: transition $60, then private state 2++.
             owner.state.writeBossDeathProducerState(slot, 1);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x60);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x60);
             return false;
         }
 
         private boolean advanceState1() {
             // func_006_563A: transition $CF, then private state 2++.
             owner.state.writeBossDeathProducerState(slot, 2);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xCF);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xCF);
             return false;
         }
 
         private boolean advanceDefault() {
             // func_006_564B: variant $02, z from hMultiPurpose3,
             // speedZ $10, and private countdown 1 $10.
-            runtime.pickups.spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
-            runtime.lifecycle.disableEntityWithoutPersistence(slot);
-            runtime.events.pendingEntityEvents.add(
+            owner.pickups.spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
+            owner.lifecycle.disableEntityWithoutPersistence(slot);
+            owner.events.pendingEntityEvents.add(
                     new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
 
             return true;
@@ -576,8 +580,8 @@ public final class EntityBossRewards {
             // ArmosKnightPrivateState0Handler: transition $A0 and
             // the first full flash countdown.
             owner.state.writeBossDeathProducerState(slot, 1);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
-            runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
+            owner.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
             return false;
         }
 
@@ -585,8 +589,8 @@ public final class EntityBossRewards {
             // ArmosKnightPrivateState1Handler: the second flash
             // begins only after the first countdown reaches zero.
             owner.state.writeBossDeathProducerState(slot, 2);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
-            runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
+            owner.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
             return false;
         }
 
@@ -598,20 +602,20 @@ public final class EntityBossRewards {
                 int killIndex = owner.state.readKillCount() & 0xFF;
                 owner.state.writeKillOrder(killIndex, source.sourceLoadOrder() & 0xFF);
                 owner.state.writeKillCount((owner.state.readKillCount() + 1) & 0xFF);
-                runtime.roomVariables.writePendingClearedEntityMask(
-                        runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(source)));
-                runtime.pickups.spawnEnemyDrop(source, EntityRomConstants.ENTITY_KEY_DROP_POINT);
-                runtime.lifecycle.disableEntityWithoutPersistence(slot);
+                owner.roomVariables.writePendingClearedEntityMask(
+                        owner.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(source)));
+                owner.pickups.spawnEnemyDrop(source, EntityRomConstants.ENTITY_KEY_DROP_POINT);
+                owner.lifecycle.disableEntityWithoutPersistence(slot);
             } else {
                 owner.handleTerminalEnemyDeath(source, randomByteSupplier);
                 // label_006_5355 -> label_006_6CC9 opens the Hinox
                 // room event except in Eagle's Tower and later maps.
-                if (runtime.roomVariables.readEntityMapId() >= 0 && runtime.roomVariables.readEntityMapId() < 0x06) {
-                    runtime.roomVariables.writePendingRoomStatusMask(
-                            runtime.roomVariables.readPendingRoomStatusMask() | (0x20));
+                if (owner.roomVariables.readEntityMapId() >= 0 && owner.roomVariables.readEntityMapId() < 0x06) {
+                    owner.roomVariables.writePendingRoomStatusMask(
+                            owner.roomVariables.readPendingRoomStatusMask() | (0x20));
                 }
             }
-            runtime.events.pendingEntityEvents.add(
+            owner.events.pendingEntityEvents.add(
                     new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A));
 
             return true;
@@ -620,7 +624,7 @@ public final class EntityBossRewards {
         private boolean advanceState03() {
             // func_007_7EB6: transition $A0, then private state 2++.
             owner.state.writeBossDeathProducerState(slot, 1);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
 
             return true;
         }
@@ -628,7 +632,7 @@ public final class EntityBossRewards {
         private boolean advanceState13() {
             // func_007_7EC7: transition $C0, then private state 2++.
             owner.state.writeBossDeathProducerState(slot, 2);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
 
             return true;
         }
@@ -636,9 +640,9 @@ public final class EntityBossRewards {
         private boolean advanceDefault3() {
             // func_007_7ED6: ConfigureNewEntity leaves z at zero;
             // the producer supplies speedZ $18 and countdown 1 $20.
-            runtime.pickups.spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
-            runtime.lifecycle.disableEntityWithoutPersistence(slot);
-            runtime.events.pendingEntityEvents.add(
+            owner.pickups.spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
+            owner.lifecycle.disableEntityWithoutPersistence(slot);
+            owner.events.pendingEntityEvents.add(
                     new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A));
 
             return true;
@@ -651,24 +655,23 @@ public final class EntityBossRewards {
                 linksawakening.world.entity.RoomEntity source,
                 java.util.function.IntSupplier randomByteSupplier) {
             if (inUse) {
-                new BossKeyDropStep().run(owner, source, randomByteSupplier);
+                new BossKeyDropStep(owner).run(owner, source, randomByteSupplier);
                 return;
             }
             inUse = true;
-            runtime = null;
+
             slot = 0;
             state = 0;
-            this.owner = owner;
+
             this.source = source;
             this.randomByteSupplier = randomByteSupplier;
             try {
                 run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.source = null;
                 this.randomByteSupplier = null;
-                this.runtime = null;
             }
         }
     }

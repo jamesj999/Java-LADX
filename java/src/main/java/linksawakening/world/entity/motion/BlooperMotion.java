@@ -35,7 +35,8 @@ public final class BlooperMotion {
     public Movement move(
             RoomEntity entity,
             int frameCounter,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {

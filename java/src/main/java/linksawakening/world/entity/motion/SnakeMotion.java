@@ -42,7 +42,8 @@ public final class SnakeMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int transitionCountdown) {
         return snakeFrameStep.run(
                 this,
@@ -104,7 +105,11 @@ public final class SnakeMotion {
         // the state-2 dash window.
     }
 
-    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -187,15 +192,18 @@ public final class SnakeMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown) {}
 
-    final SnakeFrameStep snakeFrameStep = new SnakeFrameStep();
+    final SnakeFrameStep snakeFrameStep = new SnakeFrameStep(this);
 
     static final class SnakeFrameStep {
-        private SnakeMotion owner;
+        private final SnakeMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int slot;
@@ -203,10 +211,14 @@ public final class SnakeMotion {
         private int x;
         private int y;
         private int renderedVariant;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.SnakeMotion.Position moved;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        SnakeFrameStep() {}
+        SnakeFrameStep(SnakeMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.SnakeMotion.Update run() {
             if ((entity.type() & 0xFF) != SnakeMotion.ENTITY_SNAKE) {
@@ -265,6 +277,7 @@ public final class SnakeMotion {
             return new SnakeMotion.Update(updated, countdown);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.SnakeMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -315,10 +328,12 @@ public final class SnakeMotion {
                 int linkEntityX,
                 int linkEntityY,
                 java.util.function.IntSupplier randomByteSupplier,
-                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision,
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundCollision
+                        backgroundCollision,
                 int transitionCountdown) {
             if (inUse) {
-                return new SnakeFrameStep()
+                return new SnakeFrameStep(owner)
                         .run(
                                 owner,
                                 entity,
@@ -338,7 +353,7 @@ public final class SnakeMotion {
             moved = null;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.frameCounter = frameCounter;
             this.linkEntityX = linkEntityX;
@@ -350,7 +365,7 @@ public final class SnakeMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.randomByteSupplier = null;
                 this.backgroundCollision = null;

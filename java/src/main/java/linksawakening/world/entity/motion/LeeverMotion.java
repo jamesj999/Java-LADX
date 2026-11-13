@@ -35,7 +35,8 @@ public final class LeeverMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return leeverFrameStep.run(
                 this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
@@ -124,22 +125,27 @@ public final class LeeverMotion {
 
     record Vector(int x, int y) {}
 
-    final LeeverFrameStep leeverFrameStep = new LeeverFrameStep();
+    final LeeverFrameStep leeverFrameStep = new LeeverFrameStep(this);
 
     static final class LeeverFrameStep {
-        private LeeverMotion owner;
+        private final LeeverMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
         private int y;
         private int variant;
 
-        LeeverFrameStep() {}
+        LeeverFrameStep(LeeverMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.RoomEntity run() {
             slot = entity.slot();
@@ -187,6 +193,7 @@ public final class LeeverMotion {
                     entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity completedResult;
 
         private boolean advanceState0() {
@@ -260,9 +267,11 @@ public final class LeeverMotion {
                 int linkEntityX,
                 int linkEntityY,
                 java.util.function.IntSupplier randomByteSupplier,
-                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundCollision
+                        backgroundCollision) {
             if (inUse) {
-                return new LeeverFrameStep()
+                return new LeeverFrameStep(owner)
                         .run(
                                 owner,
                                 entity,
@@ -278,7 +287,7 @@ public final class LeeverMotion {
             y = 0;
             variant = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.frameCounter = frameCounter;
             this.linkEntityX = linkEntityX;
@@ -289,7 +298,7 @@ public final class LeeverMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.randomByteSupplier = null;
                 this.backgroundCollision = null;

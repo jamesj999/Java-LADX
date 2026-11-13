@@ -47,7 +47,8 @@ public final class BomberMotion {
             int romLinkDirection,
             boolean swordAnimationActive,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return advance(new BomberFrame(
                 entity,
                 transitionCountdown,
@@ -171,7 +172,7 @@ public final class BomberMotion {
 
     record Vector(int x, int y) {}
 
-    final BomberFrameStep bomberFrameStep = new BomberFrameStep();
+    final BomberFrameStep bomberFrameStep = new BomberFrameStep(this);
 
     record BomberFrame(
             linksawakening.world.entity.RoomEntity entity,
@@ -181,30 +182,39 @@ public final class BomberMotion {
             int romLinkDirection,
             boolean swordAnimationActive,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {}
 
     static final class BomberFrameStep {
-        private BomberMotion owner;
+        private final BomberMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BomberMotion.BomberFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int transitionCountdown;
         private int linkEntityX;
         private int linkEntityY;
         private int romLinkDirection;
         private boolean swordAnimationActive;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
         private int y;
         private int z;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
         private int nextTransitionCountdown;
         private int oldInertia;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BomberMotion.BombSpawn bombSpawn;
         private boolean playJingle;
 
-        BomberFrameStep() {}
+        BomberFrameStep(BomberMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.BomberMotion.Update run() {
             entity = inputs.entity();
@@ -280,6 +290,7 @@ public final class BomberMotion {
             return new BomberMotion.Update(moved, nextTransitionCountdown, bombSpawn, playJingle);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BomberMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -326,7 +337,7 @@ public final class BomberMotion {
         linksawakening.world.entity.motion.BomberMotion.Update run(
                 BomberMotion owner, linksawakening.world.entity.motion.BomberMotion.BomberFrame inputs) {
             if (inUse) {
-                return new BomberFrameStep().run(owner, inputs);
+                return new BomberFrameStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -347,13 +358,13 @@ public final class BomberMotion {
             bombSpawn = null;
             playJingle = false;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

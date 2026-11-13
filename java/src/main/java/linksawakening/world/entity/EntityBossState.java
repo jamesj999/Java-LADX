@@ -15,10 +15,12 @@ final class EntityBossState {
     private final int[] droppablePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
+    // Optional configured drop tables; absence preserves the no-drop path.
     private EnemyDropResolver enemyDropResolver;
     private EnemyDropResolver.CounterState enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
     private int enemyDropMaxHearts = 3;
     private int enemyDropHealth = 6;
+    // Optional override; null retains the derived/default value.
     private Boolean enemyDropLowHealth;
     private boolean enemyDropActivePowerUp;
     private boolean inBossBattle;
@@ -123,7 +125,9 @@ final class EntityBossState {
         return enemyDropResolver;
     }
 
-    EnemyDropResolver writeEnemyDropResolver(EnemyDropResolver value) {
+    EnemyDropResolver writeEnemyDropResolver(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EnemyDropResolver
+                    value) {
         return enemyDropResolver = value;
     }
 

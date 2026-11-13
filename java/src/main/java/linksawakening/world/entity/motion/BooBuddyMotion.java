@@ -263,7 +263,7 @@ public final class BooBuddyMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown, boolean unloaded, int healthOverride) {}
 
-    final BooBuddyFrameStep booBuddyFrameStep = new BooBuddyFrameStep();
+    final BooBuddyFrameStep booBuddyFrameStep = new BooBuddyFrameStep(this);
 
     record BooBuddyFrame(
             linksawakening.world.entity.RoomEntity entity,
@@ -276,8 +276,10 @@ public final class BooBuddyMotion {
             java.util.function.IntSupplier randomByteSupplier) {}
 
     static final class BooBuddyFrameStep {
-        private BooBuddyMotion owner;
+        private final BooBuddyMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BooBuddyMotion.BooBuddyFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
@@ -285,6 +287,7 @@ public final class BooBuddyMotion {
         private int transitionCountdown;
         private int roomTriggerCount;
         private boolean swordMiddle;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
         private int slot;
         private int countdown;
@@ -295,7 +298,9 @@ public final class BooBuddyMotion {
         private boolean unloaded;
         private int healthOverride;
 
-        BooBuddyFrameStep() {}
+        BooBuddyFrameStep(BooBuddyMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.BooBuddyMotion.Update run() {
             entity = inputs.entity();
@@ -350,6 +355,7 @@ public final class BooBuddyMotion {
                     BooBuddyMotion.withPosition(entity, x, y, renderedVariant), countdown, false, healthOverride);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BooBuddyMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -415,7 +421,7 @@ public final class BooBuddyMotion {
         linksawakening.world.entity.motion.BooBuddyMotion.Update run(
                 BooBuddyMotion owner, linksawakening.world.entity.motion.BooBuddyMotion.BooBuddyFrame inputs) {
             if (inUse) {
-                return new BooBuddyFrameStep().run(owner, inputs);
+                return new BooBuddyFrameStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -435,13 +441,13 @@ public final class BooBuddyMotion {
             unloaded = false;
             healthOverride = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

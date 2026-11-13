@@ -10,7 +10,7 @@ final class EntityFrameRandom {
 
     EntityFrameRandom(IntSupplier configured) {
         this.configured = configured;
-        this.fallback = configured == null ? new RomRandomByteSource() : null;
+        this.fallback = new RomRandomByteSource();
     }
 
     IntSupplier forFrame(int frameCounter) {

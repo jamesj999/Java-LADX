@@ -99,16 +99,19 @@ public final class WitchMotion {
                 source, source.x(), y, variant, source.entityFlipAttribute(), source.z(), -1, false);
     }
 
-    final WitchStep witchStep = new WitchStep();
+    final WitchStep witchStep = new WitchStep(this);
 
     static final class WitchStep {
-        private WitchMotion owner;
+        private final WitchMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity source;
         private int transitionCountdown;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WitchMotion.Input input;
         private int slot;
         private int displayVariant;
         private int nextInertia;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int nextCountdown;
         private boolean blockLink;
@@ -116,11 +119,14 @@ public final class WitchMotion {
         private int dialog;
         private int music;
         private int jingle;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WitchMotion.InventorySlot clearedSlot;
         private boolean exchangeStarted;
         private boolean grantMagicPowder;
 
-        WitchStep() {}
+        WitchStep(WitchMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.WitchMotion.Update run() {
             if (source.type() != WitchMotion.ENTITY_TYPE) {
@@ -183,6 +189,7 @@ public final class WitchMotion {
                     motionBlockValue);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WitchMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -299,7 +306,7 @@ public final class WitchMotion {
                 int transitionCountdown,
                 linksawakening.world.entity.motion.WitchMotion.Input input) {
             if (inUse) {
-                return new WitchStep().run(owner, source, transitionCountdown, input);
+                return new WitchStep(owner).run(owner, source, transitionCountdown, input);
             }
             inUse = true;
             slot = 0;
@@ -316,7 +323,7 @@ public final class WitchMotion {
             exchangeStarted = false;
             grantMagicPowder = false;
             completedResult = null;
-            this.owner = owner;
+
             this.source = source;
             this.transitionCountdown = transitionCountdown;
             this.input = input;
@@ -324,7 +331,7 @@ public final class WitchMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.source = null;
                 this.input = null;
                 this.entity = null;

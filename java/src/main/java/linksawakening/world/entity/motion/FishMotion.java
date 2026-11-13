@@ -41,7 +41,8 @@ public final class FishMotion {
             RoomEntity entity,
             int transitionCountdown,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return fishFrameStep.run(this, entity, transitionCountdown, randomByteSupplier, backgroundCollision);
     }
 
@@ -104,13 +105,16 @@ public final class FishMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags, boolean waterSplash) {}
 
-    final FishFrameStep fishFrameStep = new FishFrameStep();
+    final FishFrameStep fishFrameStep = new FishFrameStep(this);
 
     static final class FishFrameStep {
-        private FishMotion owner;
+        private final FishMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int transitionCountdown;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int countdown;
@@ -119,9 +123,12 @@ public final class FishMotion {
         private int z;
         private int variant;
         private boolean waterSplash;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        FishFrameStep() {}
+        FishFrameStep(FishMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.FishMotion.Update run() {
             if ((entity.type() & 0xFF) != FishMotion.ENTITY_TYPE) {
@@ -176,6 +183,7 @@ public final class FishMotion {
             return new FishMotion.Update(updated, countdown, owner.physicsFlags[slot], waterSplash);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.FishMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -230,9 +238,11 @@ public final class FishMotion {
                 linksawakening.world.entity.RoomEntity entity,
                 int transitionCountdown,
                 java.util.function.IntSupplier randomByteSupplier,
-                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundCollision
+                        backgroundCollision) {
             if (inUse) {
-                return new FishFrameStep()
+                return new FishFrameStep(owner)
                         .run(owner, entity, transitionCountdown, randomByteSupplier, backgroundCollision);
             }
             inUse = true;
@@ -245,7 +255,7 @@ public final class FishMotion {
             waterSplash = false;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.transitionCountdown = transitionCountdown;
             this.randomByteSupplier = randomByteSupplier;
@@ -254,7 +264,7 @@ public final class FishMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.randomByteSupplier = null;
                 this.backgroundCollision = null;

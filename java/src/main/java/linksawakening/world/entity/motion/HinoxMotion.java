@@ -88,7 +88,12 @@ public final class HinoxMotion {
         return HinoxMotion.updateBody(this, inputs);
     }
 
-    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundInteraction background, int slot) {
+    Position move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction background,
+            int slot) {
         return HinoxMotion.moveBody(this, entity, x, y, background, slot);
     }
 
@@ -216,14 +221,19 @@ public final class HinoxMotion {
 
     record Position(int x, int y) {}
 
-    final HinoxStep hinoxStep = new HinoxStep();
+    final HinoxStep hinoxStep = new HinoxStep(this);
 
     static HinoxMotion.Update advanceBody(HinoxMotion owner, HinoxFrame inputs) {
         return owner.hinoxStep.run(owner, inputs);
     }
 
     static HinoxMotion.Position moveBody(
-            HinoxMotion owner, RoomEntity entity, int x, int y, RoomEntityBackgroundInteraction background, int slot) {
+            HinoxMotion owner,
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction background,
+            int slot) {
         owner.entityCollisionFlags[slot] = 0;
         int nextX = HinoxMotion.addSpeed(x, owner.speedX[slot], owner.speedXAccumulator, slot);
         if (nextX != x && background != null) {
@@ -255,13 +265,16 @@ public final class HinoxMotion {
             int linkZ,
             int linkMotionState,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int entityCollisionFlagsForFrame,
             int flashCountdown) {}
 
     static final class HinoxStep {
-        private HinoxMotion owner;
+        private final HinoxMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private HinoxFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int transitionCountdown;
         private int frameCounter;
@@ -269,7 +282,9 @@ public final class HinoxMotion {
         private int linkY;
         private int linkZ;
         private int linkMotionState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int entityCollisionFlagsForFrame;
         private int flashCountdown;
@@ -287,10 +302,13 @@ public final class HinoxMotion {
         private int jingle;
         private int wave;
         private boolean dust;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private HinoxMotion.BombSpawn bomb;
         private int spriteVariant;
 
-        HinoxStep() {}
+        HinoxStep(HinoxMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         private HinoxMotion.Update run() {
             if (!prepareFrame()) return completedResult;
@@ -300,6 +318,7 @@ public final class HinoxMotion {
             return result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, 0, false, false);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private HinoxMotion.Update completedResult;
 
         private boolean advanceInitial() {
@@ -568,7 +587,7 @@ public final class HinoxMotion {
 
         HinoxMotion.Update run(HinoxMotion owner, HinoxFrame inputs) {
             if (inUse) {
-                return new HinoxStep().run(owner, inputs);
+                return new HinoxStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -599,13 +618,13 @@ public final class HinoxMotion {
             bomb = null;
             spriteVariant = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

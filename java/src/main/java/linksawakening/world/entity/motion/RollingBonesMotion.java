@@ -89,12 +89,15 @@ public final class RollingBonesMotion {
             RoomEntity bar,
             int transitionCountdown,
             int health,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return rollingBonesFrameStep.run(this, entity, bar, transitionCountdown, health, backgroundCollision);
     }
 
     public BarUpdate advanceBar(
-            RoomEntity entity, int frameCounter, RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity,
+            int frameCounter, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (barTransitionCountdown[slot] > 0) {
             barTransitionCountdown[slot]--;
@@ -189,7 +192,8 @@ public final class RollingBonesMotion {
             int speed,
             int[] accumulators,
             int slot,
-            RoomEntityBackgroundCollision collision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    collision) {
         int next = addSpeed(x, speed, accumulators, slot);
         int direction = speed < 0 ? 1 : 0;
         return collision != null && collision.blocks(entity, direction, next, y)
@@ -204,7 +208,8 @@ public final class RollingBonesMotion {
             int speed,
             int[] accumulators,
             int slot,
-            RoomEntityBackgroundCollision collision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    collision) {
         int next = addSpeed(y, speed, accumulators, slot);
         int direction = speed < 0 ? 2 : 3;
         return collision != null && collision.blocks(entity, direction, x, next)
@@ -229,14 +234,17 @@ public final class RollingBonesMotion {
 
     record MoveResult(int position, boolean blocked) {}
 
-    final RollingBonesFrameStep rollingBonesFrameStep = new RollingBonesFrameStep();
+    final RollingBonesFrameStep rollingBonesFrameStep = new RollingBonesFrameStep(this);
 
     static final class RollingBonesFrameStep {
-        private RollingBonesMotion owner;
+        private final RollingBonesMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity bar;
         private int transitionCountdown;
         private int health;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
@@ -248,7 +256,9 @@ public final class RollingBonesMotion {
         private boolean landed;
         private int displayVariant;
 
-        RollingBonesFrameStep() {}
+        RollingBonesFrameStep(RollingBonesMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.RollingBonesMotion.BossUpdate run() {
             slot = entity.slot();
@@ -301,6 +311,7 @@ public final class RollingBonesMotion {
                     jingleId);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.RollingBonesMotion.BossUpdate completedResult;
 
         private boolean advanceApproachBar() {
@@ -387,9 +398,11 @@ public final class RollingBonesMotion {
                 linksawakening.world.entity.RoomEntity bar,
                 int transitionCountdown,
                 int health,
-                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundCollision
+                        backgroundCollision) {
             if (inUse) {
-                return new RollingBonesFrameStep()
+                return new RollingBonesFrameStep(owner)
                         .run(owner, entity, bar, transitionCountdown, health, backgroundCollision);
             }
             inUse = true;
@@ -403,7 +416,7 @@ public final class RollingBonesMotion {
             landed = false;
             displayVariant = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.bar = bar;
             this.transitionCountdown = transitionCountdown;
@@ -413,7 +426,7 @@ public final class RollingBonesMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.bar = null;
                 this.backgroundCollision = null;

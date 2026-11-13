@@ -149,7 +149,9 @@ public final class LaserMotion {
         return new SensorUpdate(withPosition(sensor, x, y), false, false);
     }
 
-    public BeamUpdate advanceBeam(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+    public BeamUpdate advanceBeam(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!isBeam(slot)) {
             initializeBeam(slot, 0, 0, 0);

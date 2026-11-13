@@ -70,7 +70,7 @@ public final class RoomEntityRuntime {
     final EntityProjectileState projectileState = new EntityProjectileState();
     final EntityWarpController warpState = new EntityWarpController();
     final EntityRuntimeState entityState = new EntityRuntimeState();
-    final EntityFrameExecution frameExecution = new EntityFrameExecution(this, null);
+    final EntityFrameExecution frameExecution = new EntityFrameExecution(this);
 
     private final EntityPlayerCommands playerCommands;
 
@@ -103,13 +103,19 @@ public final class RoomEntityRuntime {
     final RoomEntity[] slots;
     final java.util.List<RoomEntity> slotEntities;
 
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final EntitySpriteTileSnapshot spriteTiles;
     final boolean indoorRoom;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private final EntityPropertyTables entityProperties;
+    // Optional RNG override; null selects the room-owned ROM-compatible source.
     final IntSupplier defaultRandomByteSupplier;
     private final EntityFrameRandom frameRandom;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final EntitySpriteHandlerCatalog spriteHandlers;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final RomEnemyCombatTables enemyCombatTables;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final ChestContentsTable chestContentsTable;
 
     public boolean gelClingingToLink() {
@@ -393,7 +399,8 @@ public final class RoomEntityRuntime {
                 lifecycle,
                 slotProperties,
                 enemyCombatTables,
-                slots);
+                slots,
+                romData);
         this.entityPlayerSpawns = new EntityPlayerSpawns(
                 indoorRoom,
                 defaultRandomByteSupplier,
@@ -512,7 +519,6 @@ public final class RoomEntityRuntime {
                 lifecycle);
 
         this.entityHandlers = roomInitialization.createEntityHandlers();
-        slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
 

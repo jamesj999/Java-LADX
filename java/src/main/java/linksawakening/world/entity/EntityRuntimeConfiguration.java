@@ -31,7 +31,9 @@ public final class EntityRuntimeConfiguration {
     private final EntitySpriteViews spriteViews;
 
     EntityRuntimeConfiguration(
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBossState bossRewards,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
@@ -79,11 +81,15 @@ public final class EntityRuntimeConfiguration {
         this.linkState.currentLinkVelocityZ = velocity & 0xFF;
     }
 
-    public void setSpriteSelection(EntitySpriteSelection selection) {
+    public void setSpriteSelection(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    selection) {
         this.presentationState.writeSpriteSelection(selection);
     }
 
-    public void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) {
+    public void setGroundInteraction(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityGroundInteraction
+                    groundInteraction) {
         this.physicsTables.writeGroundInteraction(
                 groundInteraction == null
                         ? (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
@@ -91,15 +97,21 @@ public final class EntityRuntimeConfiguration {
                         : groundInteraction);
     }
 
-    public void setBackgroundInteraction(RoomEntityBackgroundInteraction backgroundInteraction) {
+    public void setBackgroundInteraction(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         this.physicsTables.writeBackgroundInteraction(backgroundInteraction);
     }
 
-    public void setObjectQuery(RoomEntityObjectQuery objectQuery) {
+    public void setObjectQuery(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
+                    objectQuery) {
         this.physicsTables.writeObjectQuery(objectQuery);
     }
 
-    public void setObjectIntersectionQuery(RoomEntityObjectQuery objectIntersectionQuery) {
+    public void setObjectIntersectionQuery(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
+                    objectIntersectionQuery) {
         this.physicsTables.writeObjectIntersectionQuery(objectIntersectionQuery);
     }
 
@@ -191,7 +203,9 @@ public final class EntityRuntimeConfiguration {
         this.physicsTables.writeGroundInteractionSideScrolling(sideScrolling);
     }
 
-    public void setEnemyDropResolver(EnemyDropResolver resolver) {
+    public void setEnemyDropResolver(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EnemyDropResolver
+                    resolver) {
         this.bossRewards.writeEnemyDropResolver(resolver);
     }
 
@@ -319,7 +333,9 @@ public final class EntityRuntimeConfiguration {
             this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(1);
     }
 
-    public void setColorShellWorld(ColorShellWorld world) {
+    public void setColorShellWorld(
+            /* Optional room geometry/history; null preserves the path without that room input. */ ColorShellWorld
+                    world) {
         this.motions
                 .get(ColorShellMotion.class, ColorShellMotion::new)
                 .writeColorShellWorld(world == null ? ColorShellWorld.none() : world);

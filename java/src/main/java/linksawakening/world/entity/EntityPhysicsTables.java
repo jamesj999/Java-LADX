@@ -5,6 +5,7 @@ final class EntityPhysicsTables {
     private RoomEntityGroundInteraction groundInteraction =
             (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
                     RoomEntityGroundInteraction.Result.unchanged(entity, 0);
+    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityBackgroundInteraction backgroundInteraction;
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -26,14 +27,18 @@ final class EntityPhysicsTables {
     private final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean groundInteractionSideScrolling;
+    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityObjectQuery objectQuery;
+    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityObjectQuery objectIntersectionQuery;
 
     RoomEntityGroundInteraction readGroundInteraction() {
         return groundInteraction;
     }
 
-    RoomEntityGroundInteraction writeGroundInteraction(RoomEntityGroundInteraction value) {
+    RoomEntityGroundInteraction writeGroundInteraction(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityGroundInteraction
+                    value) {
         return groundInteraction = value;
     }
 
@@ -41,7 +46,9 @@ final class EntityPhysicsTables {
         return backgroundInteraction;
     }
 
-    RoomEntityBackgroundInteraction writeBackgroundInteraction(RoomEntityBackgroundInteraction value) {
+    RoomEntityBackgroundInteraction writeBackgroundInteraction(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    value) {
         return backgroundInteraction = value;
     }
 
@@ -241,7 +248,9 @@ final class EntityPhysicsTables {
         return objectQuery;
     }
 
-    RoomEntityObjectQuery writeObjectQuery(RoomEntityObjectQuery value) {
+    RoomEntityObjectQuery writeObjectQuery(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
+                    value) {
         return objectQuery = value;
     }
 
@@ -249,7 +258,9 @@ final class EntityPhysicsTables {
         return objectIntersectionQuery;
     }
 
-    RoomEntityObjectQuery writeObjectIntersectionQuery(RoomEntityObjectQuery value) {
+    RoomEntityObjectQuery writeObjectIntersectionQuery(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
+                    value) {
         return objectIntersectionQuery = value;
     }
 }

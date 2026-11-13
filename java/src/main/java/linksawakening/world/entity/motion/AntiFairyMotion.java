@@ -29,7 +29,8 @@ public final class AntiFairyMotion {
     public RoomEntity advance(
             RoomEntity entity,
             int frameCounter,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (!initialized[slot]) {

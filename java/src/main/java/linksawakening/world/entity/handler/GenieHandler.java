@@ -57,12 +57,18 @@ final class GenieHandler {
     }
 
     private static final class GenieHandlerFrameStep {
-        private linksawakening.world.entity.EntityFrameExecution state;
+        // Owning frame execution is stable for this cached scratch holder.
+        private final linksawakening.world.entity.EntityFrameExecution state;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
 
-        GenieHandlerFrameStep() {}
+        GenieHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
+            this.state = java.util.Objects.requireNonNull(state, "state");
+        }
 
         boolean run() {
             if (!advanceIntroAndJar()) return completedResult;
@@ -71,6 +77,7 @@ final class GenieHandler {
             return true;
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BossIntroMotion.Update bossIntro;
         private boolean genieThresholdReached;
 
@@ -199,7 +206,7 @@ final class GenieHandler {
 
         boolean run(linksawakening.world.entity.EntityFrameExecution state) {
             if (inUse) {
-                return new GenieHandlerFrameStep().run(state);
+                return new GenieHandlerFrameStep(state).run(state);
             }
             inUse = true;
             slotState = null;
@@ -208,12 +215,12 @@ final class GenieHandler {
             bossIntro = null;
             genieThresholdReached = false;
             completedResult = false;
-            this.state = state;
+
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.state = null;
+
                 this.slotState = null;
                 this.frameInput = null;
                 this.timerGates = null;

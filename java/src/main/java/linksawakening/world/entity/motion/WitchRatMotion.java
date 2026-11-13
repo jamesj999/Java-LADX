@@ -50,7 +50,8 @@ public final class WitchRatMotion {
             int frameCounter,
             int transitionCountdown,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         return witchRatFrameStep.run(
                 this, entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
     }
@@ -86,7 +87,10 @@ public final class WitchRatMotion {
         initialized[slot] = false;
     }
 
-    PositionAndCollision moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
+    PositionAndCollision moveWithBackground(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction interaction,
+            int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
@@ -176,14 +180,16 @@ public final class WitchRatMotion {
 
     record PositionAndCollision(int x, int y, int collisionFlags) {}
 
-    final WitchRatFrameStep witchRatFrameStep = new WitchRatFrameStep();
+    final WitchRatFrameStep witchRatFrameStep = new WitchRatFrameStep(this);
 
     static final class WitchRatFrameStep {
-        private WitchRatMotion owner;
+        private final WitchRatMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int transitionCountdown;
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int countdown;
@@ -193,7 +199,9 @@ public final class WitchRatMotion {
         private int collisionFlags;
         private boolean appliesBackgroundInteraction;
 
-        WitchRatFrameStep() {}
+        WitchRatFrameStep(WitchRatMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.WitchRatMotion.Update run() {
             WitchRatMotion.checkType(entity);
@@ -244,6 +252,7 @@ public final class WitchRatMotion {
                     appliesBackgroundInteraction);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WitchRatMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -306,9 +315,11 @@ public final class WitchRatMotion {
                 int frameCounter,
                 int transitionCountdown,
                 java.util.function.IntSupplier randomByteSupplier,
-                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundInteraction
+                        backgroundInteraction) {
             if (inUse) {
-                return new WitchRatFrameStep()
+                return new WitchRatFrameStep(owner)
                         .run(
                                 owner,
                                 entity,
@@ -326,7 +337,7 @@ public final class WitchRatMotion {
             collisionFlags = 0;
             appliesBackgroundInteraction = false;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.frameCounter = frameCounter;
             this.transitionCountdown = transitionCountdown;
@@ -336,7 +347,7 @@ public final class WitchRatMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.randomByteSupplier = null;
                 this.backgroundInteraction = null;

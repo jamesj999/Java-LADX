@@ -60,7 +60,7 @@ public final class LikeLikeMotion {
         return walkMotion.speedY(slot);
     }
 
-    final LikeLikeFrameStep likeLikeFrameStep = new LikeLikeFrameStep();
+    final LikeLikeFrameStep likeLikeFrameStep = new LikeLikeFrameStep(this);
 
     public record LikeLikeFrame(
             RoomEntity entity,
@@ -75,11 +75,14 @@ public final class LikeLikeMotion {
             int shieldLevel,
             int slowTransitionCountdown,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision) {}
 
     static final class LikeLikeFrameStep {
-        private LikeLikeMotion owner;
+        private final LikeLikeMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.LikeLikeMotion.LikeLikeFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
@@ -91,14 +94,18 @@ public final class LikeLikeMotion {
         private int linkItemB;
         private int shieldLevel;
         private int slowTransitionCountdown;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int renderedVariant;
         private int stolenInventorySlot;
         private int stolenShieldLevel;
 
-        LikeLikeFrameStep() {}
+        LikeLikeFrameStep(LikeLikeMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.LikeLikeMotion.Update run() {
             if (!advanceFreeMotion()) return completedResult;
@@ -117,6 +124,7 @@ public final class LikeLikeMotion {
                     renderedVariant);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.LikeLikeMotion.Update completedResult;
 
         private boolean advanceFreeMotion() {
@@ -227,7 +235,7 @@ public final class LikeLikeMotion {
         linksawakening.world.entity.motion.LikeLikeMotion.Update run(
                 LikeLikeMotion owner, linksawakening.world.entity.motion.LikeLikeMotion.LikeLikeFrame inputs) {
             if (inUse) {
-                return new LikeLikeFrameStep().run(owner, inputs);
+                return new LikeLikeFrameStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -248,13 +256,13 @@ public final class LikeLikeMotion {
             stolenInventorySlot = 0;
             stolenShieldLevel = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

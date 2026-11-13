@@ -4,6 +4,13 @@ package linksawakening.world.entity;
 public final class EntityRuntimeFixture {
     private EntityRuntimeFixture() {}
 
+    static RoomEntityRuntime emptyRuntime() {
+        RoomEntity[] slots = new RoomEntity[RoomEntity.SLOT_COUNT];
+        java.util.Arrays.setAll(slots, RoomEntity::disabled);
+        return RoomEntityRuntime.builder(new RoomEntitySnapshot(java.util.Arrays.asList(slots)))
+                .build();
+    }
+
     static void disableWithoutPersistence(RoomEntityRuntime runtime, int slot) {
         runtime.lifecycle.disableEntityWithoutPersistence(slot);
     }

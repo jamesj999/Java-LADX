@@ -119,7 +119,8 @@ public final class MiniMoldormMotion {
             int transitionCountdown,
             int ignoreHitsCountdown,
             int flashCountdown,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             IntSupplier randomByteSupplier,
             int frameCounter) {
         return miniMoldormFrameStep.run(
@@ -203,15 +204,18 @@ public final class MiniMoldormMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    final MiniMoldormFrameStep miniMoldormFrameStep = new MiniMoldormFrameStep();
+    final MiniMoldormFrameStep miniMoldormFrameStep = new MiniMoldormFrameStep(this);
 
     static final class MiniMoldormFrameStep {
-        private MiniMoldormMotion owner;
+        private final MiniMoldormMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int transitionCountdown;
         private int ignoreHitsCountdown;
         private int flashCountdown;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
         private int frameCounter;
         private int slot;
@@ -222,9 +226,12 @@ public final class MiniMoldormMotion {
         private int key;
         private int segment1Index;
         private int segment2Index;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
 
-        MiniMoldormFrameStep() {}
+        MiniMoldormFrameStep(MiniMoldormMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.MiniMoldormMotion.Update run() {
             if (!prepareTimers()) return completedResult;
@@ -242,6 +249,7 @@ public final class MiniMoldormMotion {
                     owner.historyY[key][segment2Index]);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.MiniMoldormMotion.Update completedResult;
 
         private boolean prepareTimers() {
@@ -345,11 +353,13 @@ public final class MiniMoldormMotion {
                 int transitionCountdown,
                 int ignoreHitsCountdown,
                 int flashCountdown,
-                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundInteraction
+                        backgroundInteraction,
                 java.util.function.IntSupplier randomByteSupplier,
                 int frameCounter) {
             if (inUse) {
-                return new MiniMoldormFrameStep()
+                return new MiniMoldormFrameStep(owner)
                         .run(
                                 owner,
                                 entity,
@@ -371,7 +381,7 @@ public final class MiniMoldormMotion {
             segment2Index = 0;
             moved = null;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.transitionCountdown = transitionCountdown;
             this.ignoreHitsCountdown = ignoreHitsCountdown;
@@ -383,7 +393,7 @@ public final class MiniMoldormMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.backgroundInteraction = null;
                 this.randomByteSupplier = null;

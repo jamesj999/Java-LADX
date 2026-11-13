@@ -140,7 +140,10 @@ public final class TarinRaccoonMotion {
         return TarinRaccoonMotion.advanceBody(this, source, input);
     }
 
-    public Update advance(RoomEntity source, Input input, RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(
+            RoomEntity source,
+            Input input, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         return TarinRaccoonMotion.advanceBody(this, source, input, backgroundInteraction);
     }
 
@@ -154,7 +157,10 @@ public final class TarinRaccoonMotion {
         }
     }
 
-    Movement moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
+    Movement moveWithBackground(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction interaction,
+            int slot) {
         return TarinRaccoonMotion.moveWithBackgroundBody(this, entity, interaction, slot);
     }
 
@@ -251,7 +257,7 @@ public final class TarinRaccoonMotion {
 
     record Movement(int x, int y, int collisionFlags) {}
 
-    final TarinRaccoonStep tarinRaccoonStep = new TarinRaccoonStep();
+    final TarinRaccoonStep tarinRaccoonStep = new TarinRaccoonStep(this);
 
     static TarinRaccoonMotion.Update advanceBody(
             TarinRaccoonMotion owner, RoomEntity source, TarinRaccoonMotion.Input input) {
@@ -262,12 +268,16 @@ public final class TarinRaccoonMotion {
             TarinRaccoonMotion owner,
             RoomEntity source,
             TarinRaccoonMotion.Input input,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         return owner.tarinRaccoonStep.run(owner, source, input, backgroundInteraction);
     }
 
     static TarinRaccoonMotion.Movement moveWithBackgroundBody(
-            TarinRaccoonMotion owner, RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
+            TarinRaccoonMotion owner,
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction interaction,
+            int slot) {
         int x = TarinRaccoonMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.accumulatorX, slot);
         int y = TarinRaccoonMotion.addSpeedToPosition(entity.y(), owner.speedY[slot], owner.accumulatorY, slot);
         int flags = 0;
@@ -295,9 +305,12 @@ public final class TarinRaccoonMotion {
     }
 
     static final class TarinRaccoonStep {
-        private linksawakening.world.entity.motion.TarinRaccoonMotion owner;
+        private final linksawakening.world.entity.motion.TarinRaccoonMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity source;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.TarinRaccoonMotion.Input input;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int slowCountdown;
@@ -314,9 +327,12 @@ public final class TarinRaccoonMotion {
         private int soundId;
         private boolean spawnBomb;
         private int collisionFlags;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
 
-        TarinRaccoonStep() {}
+        TarinRaccoonStep(linksawakening.world.entity.motion.TarinRaccoonMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.TarinRaccoonMotion.Update run() {
             TarinRaccoonMotion.checkType(source);
@@ -377,6 +393,7 @@ public final class TarinRaccoonMotion {
                     owner.nearLinkLatch[slot]);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.TarinRaccoonMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -519,9 +536,11 @@ public final class TarinRaccoonMotion {
                 linksawakening.world.entity.motion.TarinRaccoonMotion owner,
                 linksawakening.world.entity.RoomEntity source,
                 linksawakening.world.entity.motion.TarinRaccoonMotion.Input input,
-                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundInteraction
+                        backgroundInteraction) {
             if (inUse) {
-                return new TarinRaccoonStep().run(owner, source, input, backgroundInteraction);
+                return new TarinRaccoonStep(owner).run(owner, source, input, backgroundInteraction);
             }
             inUse = true;
             slot = 0;
@@ -541,7 +560,7 @@ public final class TarinRaccoonMotion {
             collisionFlags = 0;
             entity = null;
             completedResult = null;
-            this.owner = owner;
+
             this.source = source;
             this.input = input;
             this.backgroundInteraction = backgroundInteraction;
@@ -549,7 +568,7 @@ public final class TarinRaccoonMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.source = null;
                 this.input = null;
                 this.backgroundInteraction = null;

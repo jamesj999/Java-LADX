@@ -58,6 +58,7 @@ public final class EntityFrameExecution {
         return runtime;
     }
 
+    // Absent between acquisitions; release deliberately drops the previous frame input.
     private EntityFrameContext context;
     private boolean inUse;
 
@@ -65,9 +66,8 @@ public final class EntityFrameExecution {
         return context;
     }
 
-    EntityFrameExecution(RoomEntityRuntime runtime, EntityFrameContext context) {
-        this.runtime = runtime;
-        this.context = context;
+    EntityFrameExecution(RoomEntityRuntime runtime) {
+        this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
     }
 
     public EntitySpriteViews spriteViews() {
@@ -287,7 +287,7 @@ public final class EntityFrameExecution {
     }
 
     EntityFrameExecution acquire(EntityFrameContext next) {
-        if (inUse) return new EntityFrameExecution(runtime, null).acquire(next);
+        if (inUse) return new EntityFrameExecution(runtime).acquire(next);
         inUse = true;
         context = next;
         inputs.reset();
@@ -304,8 +304,8 @@ public final class EntityFrameExecution {
 
     private final EntityMotionRegistry scratch = new EntityMotionRegistry();
 
-    public <T> T scratch(Class<T> type, java.util.function.Supplier<? extends T> factory) {
-        return scratch.get(type, factory);
+    public <T> T scratch(Class<T> type, java.util.function.Function<EntityFrameExecution, ? extends T> factory) {
+        return scratch.get(type, this, factory);
     }
 
     private final EntityFrameCollision collision = new EntityFrameCollision(this);
@@ -315,22 +315,30 @@ public final class EntityFrameExecution {
     }
 
     public static final class EntitySlotExecution {
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private RoomEntity lifted;
         private int liftedRomDirection;
         private boolean carryingEntity;
         private int index;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private RoomEntity entity;
         private boolean moldormIntroOpenedThisFrame;
         private boolean rollingBonesHitThisFrame;
         private boolean kanaletLeafProducer;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private RoomEntity originalEntity;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private EntityStatus initialStatus;
         private boolean wasInitializing;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private EntityStatus status;
         private boolean keyDropTransitionActive;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private RoomEntityGroundInteraction.Result preAppliedGroundResult;
         private boolean applyGenericGroundInteraction;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private RoomEntity updated;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private EntityLinkCollisionRules.LinkPushPolicy genericLinkPushPolicy;
         private int variant;
         private int renderFlipAttribute;
@@ -522,14 +530,19 @@ public final class EntityFrameExecution {
         private int linkEntityX;
         private int linkEntityY;
         private int collisionType;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityBackgroundCollision backgroundCollision;
+        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityObjectCollision objectCollision;
+        // Optional room geometry/history; null preserves the path without that room input.
         private LinkPositionHistory linkPositionHistory;
         private int linkZ;
         private boolean linkAirborne;
         private int linkDirection;
         private int entityYOffset;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private EnemyProjectileCollision.LinkState projectileLinkState;
         private boolean creditsGameplay;
         private boolean swordCollisionActive;
@@ -539,7 +552,9 @@ public final class EntityFrameExecution {
         private int swordHeight;
         private int frame;
         private int romCollisionType;
+        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityBackgroundInteraction hinoxBackgroundInteraction;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private List<EntityProjectileEvent> projectileEvents;
         private int romLinkDirection;
 
@@ -587,7 +602,9 @@ public final class EntityFrameExecution {
             return backgroundCollision;
         }
 
-        public RoomEntityBackgroundCollision backgroundCollision(RoomEntityBackgroundCollision value) {
+        public RoomEntityBackgroundCollision backgroundCollision(
+                /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                        value) {
             return backgroundCollision = value;
         }
 
@@ -595,7 +612,9 @@ public final class EntityFrameExecution {
             return objectCollision;
         }
 
-        public RoomEntityObjectCollision objectCollision(RoomEntityObjectCollision value) {
+        public RoomEntityObjectCollision objectCollision(
+                /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectCollision
+                        value) {
             return objectCollision = value;
         }
 
@@ -603,7 +622,9 @@ public final class EntityFrameExecution {
             return linkPositionHistory;
         }
 
-        public LinkPositionHistory linkPositionHistory(LinkPositionHistory value) {
+        public LinkPositionHistory linkPositionHistory(
+                /* Optional room geometry/history; null preserves the path without that room input. */ LinkPositionHistory
+                        value) {
             return linkPositionHistory = value;
         }
 
@@ -715,7 +736,9 @@ public final class EntityFrameExecution {
             return hinoxBackgroundInteraction;
         }
 
-        public RoomEntityBackgroundInteraction hinoxBackgroundInteraction(RoomEntityBackgroundInteraction value) {
+        public RoomEntityBackgroundInteraction hinoxBackgroundInteraction(
+                /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                        value) {
             return hinoxBackgroundInteraction = value;
         }
 

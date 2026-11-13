@@ -17,7 +17,9 @@ public final class ColorShellMotion {
         return colorShellWorld;
     }
 
-    public ColorShellWorld writeColorShellWorld(ColorShellWorld value) {
+    public ColorShellWorld writeColorShellWorld(
+            /* Optional room geometry/history; null preserves the path without that room input. */ ColorShellWorld
+                    value) {
         return colorShellWorld = value;
     }
 
@@ -57,7 +59,8 @@ public final class ColorShellMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return ColorShellMotion.advanceBody(
                 this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
@@ -68,7 +71,8 @@ public final class ColorShellMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int ignoreHitsCountdown) {
         return ColorShellMotion.advanceBody(
                 this,
@@ -178,7 +182,8 @@ public final class ColorShellMotion {
             int frame,
             int linkEntityX,
             int linkEntityY,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int slot,
             RoomEntity entity) {
         ColorShellMotion.advanceState1Body(this, frame, linkEntityX, linkEntityY, backgroundCollision, slot, entity);
@@ -199,7 +204,8 @@ public final class ColorShellMotion {
     void advanceState3(
             int frame,
             int ignoreHitsCountdown,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int slot,
             RoomEntity entity) {
         if (transitionCountdown[slot] == 0) {
@@ -253,7 +259,10 @@ public final class ColorShellMotion {
         }
     }
 
-    void advanceState8(RoomEntity entity, ColorShellWorld world, int slot) {
+    void advanceState8(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            ColorShellWorld world,
+            int slot) {
         int color = entity.type() - ENTITY_COLOR_SHELL_RED;
         if (world.objectAt(entity, -1) == PUZZLE_EXPECTED_OBJECTS[color]) {
             state[slot] = 0x0C;
@@ -271,11 +280,19 @@ public final class ColorShellMotion {
         state[slot] = 9;
     }
 
-    void advanceState9(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
+    void advanceState9(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
+            int slot,
+            RoomEntity entity) {
         ColorShellMotion.advanceState9Body(this, backgroundCollision, slot, entity);
     }
 
-    void advanceStateA(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
+    void advanceStateA(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
+            int slot,
+            RoomEntity entity) {
         ColorShellMotion.advanceStateABody(this, backgroundCollision, slot, entity);
     }
 
@@ -283,11 +300,18 @@ public final class ColorShellMotion {
         ColorShellMotion.advanceStateBBody(this, slot);
     }
 
-    void advanceStateC(RoomEntity entity, ColorShellWorld world, List<RoomEntity> allEntities, int slot) {
+    void advanceStateC(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            ColorShellWorld world,
+            List<RoomEntity> allEntities,
+            int slot) {
         ColorShellMotion.advanceStateCBody(this, entity, world, allEntities, slot);
     }
 
-    boolean advanceStateD(RoomEntity entity, ColorShellWorld world, int slot) {
+    boolean advanceStateD(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            ColorShellWorld world,
+            int slot) {
         return ColorShellMotion.advanceStateDBody(this, entity, world, slot);
     }
 
@@ -302,7 +326,10 @@ public final class ColorShellMotion {
     }
 
     void moveWithBackground(
-            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean clampPosition, int slot) {
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean clampPosition,
+            int slot) {
         int x = addSpeedToPosition(positionX[slot], speedX[slot], speedXAccumulator, slot);
         if (x != positionX[slot]
                 && backgroundCollision != null
@@ -389,7 +416,8 @@ public final class ColorShellMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return owner.advance(new ColorShellFrame(
                 entity,
                 frameCounter,
@@ -409,7 +437,8 @@ public final class ColorShellMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int ignoreHitsCountdown) {
         return owner.advance(new ColorShellFrame(
                 entity,
@@ -486,7 +515,8 @@ public final class ColorShellMotion {
             int frame,
             int linkEntityX,
             int linkEntityY,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int slot,
             RoomEntity entity) {
         int currentDirection = owner.direction[slot] & 0x03;
@@ -541,7 +571,11 @@ public final class ColorShellMotion {
     }
 
     static void advanceState9Body(
-            ColorShellMotion owner, RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
+            ColorShellMotion
+                    owner, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision,
+            int slot,
+            RoomEntity entity) {
         if (owner.transitionCountdown[slot] != 0) {
             return;
         }
@@ -560,7 +594,11 @@ public final class ColorShellMotion {
     }
 
     static void advanceStateABody(
-            ColorShellMotion owner, RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
+            ColorShellMotion
+                    owner, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision,
+            int slot,
+            RoomEntity entity) {
         owner.moveWithBackground(entity, backgroundCollision, false, slot);
         owner.speedZ[slot] = (owner.speedZ[slot] - 1) & 0xFF;
         owner.positionZ[slot] = ColorShellMotion.addSpeedToPosition(
@@ -583,7 +621,11 @@ public final class ColorShellMotion {
     }
 
     static void advanceStateCBody(
-            ColorShellMotion owner, RoomEntity entity, ColorShellWorld world, List<RoomEntity> allEntities, int slot) {
+            ColorShellMotion owner,
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            ColorShellWorld world,
+            List<RoomEntity> allEntities,
+            int slot) {
         for (RoomEntity other : allEntities) {
             if (other == null
                     || !ColorShellMotion.isColorShellType(other.type())
@@ -600,7 +642,11 @@ public final class ColorShellMotion {
         world.writeObject(entity, 0x67 + color);
     }
 
-    static boolean advanceStateDBody(ColorShellMotion owner, RoomEntity entity, ColorShellWorld world, int slot) {
+    static boolean advanceStateDBody(
+            ColorShellMotion owner,
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            ColorShellWorld world,
+            int slot) {
         if (owner.transitionCountdown[slot] != 0) {
             return false;
         }
@@ -616,8 +662,10 @@ public final class ColorShellMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             int ignoreHitsCountdown,
+            // Optional room geometry/history; null preserves the path without that room input.
             ColorShellWorld world,
             java.util.List<RoomEntity> allEntities) {}
 }

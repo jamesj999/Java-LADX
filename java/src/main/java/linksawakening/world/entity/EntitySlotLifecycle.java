@@ -134,10 +134,13 @@ public final class EntitySlotLifecycle {
             EntityRoomVariables roomVariables,
             EntityStoryState story,
             GenieEntityController.State genie,
-            RomEnemyCombatTables enemyCombatTables,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
+                    enemyCombatTables,
             RoomEntity[] slots,
             SlimeEyeController.State slimeEye,
-            linksawakening.rom.EntityPropertyTables entityProperties,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.rom
+                            .EntityPropertyTables
+                    entityProperties,
             EntityRoomInspection inspection,
             EntitySlotPresentation slotPresentation) {
         this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");

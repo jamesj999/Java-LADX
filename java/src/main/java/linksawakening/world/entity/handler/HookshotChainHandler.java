@@ -34,12 +34,18 @@ final class HookshotChainHandler {
     }
 
     private static final class HookshotChainHandlerFrameStep {
-        private linksawakening.world.entity.EntityFrameExecution state;
+        // Owning frame execution is stable for this cached scratch holder.
+        private final linksawakening.world.entity.EntityFrameExecution state;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
 
-        HookshotChainHandlerFrameStep() {}
+        HookshotChainHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
+            this.state = java.util.Objects.requireNonNull(state, "state");
+        }
 
         boolean run() {
             if (!prepareChain()) return completedResult;
@@ -51,10 +57,14 @@ final class HookshotChainHandler {
             return false;
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.HookshotChainMotion.State hookshotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.HookshotChainMotion.Position nextPosition;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.HookshotChainMotion.Step step;
         private boolean unmasked;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityBackgroundCollisionResult collisionResult;
         private boolean blocked;
 
@@ -299,7 +309,7 @@ final class HookshotChainHandler {
 
         boolean run(linksawakening.world.entity.EntityFrameExecution state) {
             if (inUse) {
-                return new HookshotChainHandlerFrameStep().run(state);
+                return new HookshotChainHandlerFrameStep(state).run(state);
             }
             inUse = true;
             slotState = null;
@@ -312,12 +322,12 @@ final class HookshotChainHandler {
             collisionResult = null;
             blocked = false;
             completedResult = false;
-            this.state = state;
+
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.state = null;
+
                 this.slotState = null;
                 this.frameInput = null;
                 this.timerGates = null;

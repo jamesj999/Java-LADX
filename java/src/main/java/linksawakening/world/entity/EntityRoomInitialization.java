@@ -99,7 +99,10 @@ final class EntityRoomInitialization {
         return registry;
     }
 
-    void initializeRomPresentation(linksawakening.rom.Rom romData) {
+    void initializeRomPresentation(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.rom
+                            .Rom
+                    romData) {
         EntityRoomInitialization.entityPresentationRomInitialize(this, romData);
     }
 
@@ -286,7 +289,10 @@ final class EntityRoomInitialization {
     private static final RomAddress ENTITYPRESENTATIONROM_HINT_ATTRIBUTES =
             new RomAddress(0x07, 0x64DB); // Data_007_64F6, unpatched ROM
 
-    static void entityPresentationRomInitialize(EntityRoomInitialization runtime, Rom romData) {
+    static void entityPresentationRomInitialize(
+            EntityRoomInitialization
+                    runtime, /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */
+            Rom romData) {
         if (romData != null) {
             for (int i = 0; i < runtime.pickups.storageHeartPieceMeterPairs().length; i++)
                 runtime.pickups.writeHeartPieceMeterPairs(

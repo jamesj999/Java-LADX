@@ -112,7 +112,10 @@ public final class ZombieMotion {
     }
 
     PositionAndCollision moveWithBackground(
-            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int ignoreHitsCountdown, int frameCounter) {
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction interaction,
+            int ignoreHitsCountdown,
+            int frameCounter) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -244,7 +247,7 @@ public final class ZombieMotion {
 
     record PositionAndCollision(int x, int y, int collisionMask) {}
 
-    final ZombieStep zombieStep = new ZombieStep();
+    final ZombieStep zombieStep = new ZombieStep(this);
 
     public record ZombieFrame(
             RoomEntity entity,
@@ -254,13 +257,17 @@ public final class ZombieMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityObjectQuery objectQuery,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {}
 
     static final class ZombieStep {
-        private ZombieMotion owner;
+        private final ZombieMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.ZombieMotion.ZombieFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int transitionCountdown;
@@ -268,7 +275,9 @@ public final class ZombieMotion {
         private int linkEntityX;
         private int linkEntityY;
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
         private int slot;
@@ -276,14 +285,18 @@ public final class ZombieMotion {
         private int nextPhysicsFlags;
         private int nextSpeedX;
         private int nextSpeedY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.ZombieMotion.SpawnRequest spawnRequest;
         private boolean unloadRequested;
         private boolean appliesBackgroundInteraction;
         private int renderedVariant;
         private int variant;
 
-        ZombieStep() {}
+        ZombieStep(ZombieMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.ZombieMotion.Update run() {
             if (!prepareFrame()) return completedResult;
@@ -300,6 +313,7 @@ public final class ZombieMotion {
                     appliesBackgroundInteraction);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.ZombieMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -461,7 +475,7 @@ public final class ZombieMotion {
         linksawakening.world.entity.motion.ZombieMotion.Update run(
                 ZombieMotion owner, linksawakening.world.entity.motion.ZombieMotion.ZombieFrame inputs) {
             if (inUse) {
-                return new ZombieStep().run(owner, inputs);
+                return new ZombieStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -486,13 +500,13 @@ public final class ZombieMotion {
             renderedVariant = 0;
             variant = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

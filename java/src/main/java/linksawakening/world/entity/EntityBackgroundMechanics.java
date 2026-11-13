@@ -53,7 +53,9 @@ public final class EntityBackgroundMechanics {
     final EntitySlotLifecycle lifecycle;
 
     EntityBackgroundMechanics(
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
@@ -174,7 +176,8 @@ public final class EntityBackgroundMechanics {
     }
 
     public EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
-            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         return EntityBackgroundMechanics.entityMotionCollisionsApplyEnemyRecoilIfNeeded(
                 this, entity, backgroundCollision);
     }
@@ -334,7 +337,9 @@ public final class EntityBackgroundMechanics {
     }
 
     static EnemyRecoilMotion.Update entityMotionCollisionsApplyEnemyRecoilIfNeeded(
-            EntityBackgroundMechanics owner, RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+            EntityBackgroundMechanics owner,
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         var runtime = owner;
         int slot = entity.slot();
         if (!runtime.motions

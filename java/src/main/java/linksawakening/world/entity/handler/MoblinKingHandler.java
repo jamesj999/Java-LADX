@@ -42,13 +42,20 @@ final class MoblinKingHandler {
     }
 
     private static final class MoblinKingHandlerFrameStep {
-        private linksawakening.world.entity.EntityFrameExecution state;
+        // Owning frame execution is stable for this cached scratch holder.
+        private final linksawakening.world.entity.EntityFrameExecution state;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
 
-        MoblinKingHandlerFrameStep() {}
+        MoblinKingHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
+            this.state = java.util.Objects.requireNonNull(state, "state");
+        }
 
         boolean run() {
             slotState = state.slotFrame();
@@ -181,19 +188,19 @@ final class MoblinKingHandler {
 
         boolean run(linksawakening.world.entity.EntityFrameExecution state) {
             if (inUse) {
-                return new MoblinKingHandlerFrameStep().run(state);
+                return new MoblinKingHandlerFrameStep(state).run(state);
             }
             inUse = true;
             slotState = null;
             frameInput = null;
             timerGates = null;
             presentationFlags = null;
-            this.state = state;
+
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.state = null;
+
                 this.slotState = null;
                 this.frameInput = null;
                 this.timerGates = null;

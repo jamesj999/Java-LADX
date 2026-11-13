@@ -37,13 +37,16 @@ public final class SlimeEyeController {
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final State encounter;
-    private Rom rom;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
+    private final Rom rom;
     int screenShakeCountdown;
 
     SlimeEyeController(
             State encounter,
             java.util.List<RoomEntity> slotEntities,
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossRewards bossRewards,
             EntityCombatTables combatTables,
@@ -53,8 +56,11 @@ public final class SlimeEyeController {
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
-            RomEnemyCombatTables enemyCombatTables,
-            RoomEntity[] slots) {
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
+                    enemyCombatTables,
+            RoomEntity[] slots,
+            /* Optional encounter tables; absent in ROM-free runtimes. */ Rom rom) {
+        this.rom = rom;
         this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
         this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
         this.spriteHandlers = spriteHandlers;
@@ -69,10 +75,6 @@ public final class SlimeEyeController {
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
         this.enemyCombatTables = enemyCombatTables;
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
-    }
-
-    void loadRom(Rom source) {
-        if (source != null) rom = source;
     }
 
     public void setScreenShakeCountdown(int value) {
@@ -184,7 +186,9 @@ public final class SlimeEyeController {
         return withZ(e, (e.z() + (value >> 4)) & 255);
     }
 
-    RoomEntity integrateXY(RoomEntity e, RoomEntityBackgroundCollision collision) {
+    RoomEntity integrateXY(
+            RoomEntity e, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision collision) {
         int s = e.slot(),
                 x = encounter.accX[s] + (byte) encounter.speedX[s],
                 y = encounter.accY[s] + (byte) encounter.speedY[s];
@@ -265,8 +269,8 @@ public final class SlimeEyeController {
         return dx < read(RomSymbols.Data_004_4B12, box + 1) + w && dy < read(RomSymbols.Data_004_4B12, box + 3) + h;
     }
 
-    final SlimeEyeHalfStep slimeEyeHalfStep = new SlimeEyeHalfStep();
-    final SlimeEyeCombatStep slimeEyeCombatStep = new SlimeEyeCombatStep();
+    final SlimeEyeHalfStep slimeEyeHalfStep = new SlimeEyeHalfStep(this);
+    final SlimeEyeCombatStep slimeEyeCombatStep = new SlimeEyeCombatStep(this);
     /** Encounter slot state shared with slot clearing, independent of behavior dispatch. */
     static final class State {
         final int[] state = new int[16],
@@ -547,13 +551,15 @@ public final class SlimeEyeController {
             int sw,
             int sy,
             int sh,
+            // Optional attack details; null selects the existing default attack context.
             EnemyAttackContext attack,
             java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events) {}
 
     static final class SlimeEyeCombatStep {
-        private linksawakening.world.entity.SlimeEyeController owner;
+        private final linksawakening.world.entity.SlimeEyeController owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.SlimeEyeController.SlimeEyeCombatFrame inputs;
-        private linksawakening.world.entity.SlimeEyeController runtime;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity e;
         private int frame;
         private int lx;
@@ -565,6 +571,7 @@ public final class SlimeEyeController {
         private int sw;
         private int sy;
         private int sh;
+        // Optional attack details; null selects the existing default attack context.
         private linksawakening.world.entity.EnemyAttackContext attack;
         private java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
         private int s;
@@ -572,7 +579,9 @@ public final class SlimeEyeController {
         private int hitbox;
         private boolean hit;
 
-        SlimeEyeCombatStep() {}
+        SlimeEyeCombatStep(linksawakening.world.entity.SlimeEyeController owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         void run() {
             if (!prepareCollision()) return;
@@ -581,7 +590,6 @@ public final class SlimeEyeController {
 
         private boolean prepareCollision() {
 
-            runtime = owner;
             e = inputs.e();
             frame = inputs.frame();
             lx = inputs.lx();
@@ -598,17 +606,17 @@ public final class SlimeEyeController {
             s = e.slot();
             if (!interactive
                     || e.status() != EntityStatus.ACTIVE
-                    || runtime.combatTables.readEnemyIgnoreHitsCountdown(s) != 0) return false;
+                    || owner.combatTables.readEnemyIgnoreHitsCountdown(s) != 0) return false;
             isHalf = owner.encounter.half[s] != 0;
             if ((!isHalf && owner.encounter.state[s] != 3)
                     || (isHalf
                             && (owner.encounter.state[s] >= 2
                                     || (owner.encounter.state[s] == 1
-                                            && runtime.physicsTables.readEnemyTransitionCountdown(s) != 0))))
+                                            && owner.physicsTables.readEnemyTransitionCountdown(s) != 0))))
                 return false;
             if (owner.encounter.splitting[s] != 0
-                    || runtime.combatTables.readEnemyFlashCountdown(s) > 0
-                            && runtime.combatTables.readEnemyFlashCountdown(s) < 0x18) return false;
+                    || owner.combatTables.readEnemyFlashCountdown(s) > 0
+                            && owner.combatTables.readEnemyFlashCountdown(s) < 0x18) return false;
             hitbox = isHalf ? 24 : 20;
             hit = sword && owner.overlaps(e, hitbox, sx, sw, sy, sh);
             return true;
@@ -622,9 +630,9 @@ public final class SlimeEyeController {
                     && !(isHalf && owner.encounter.dropping[s] != 0)
                     && RoomEntityCombatRules.collisionCadenceMatches(frame, s)
                     && owner.overlaps(e, isHalf ? 24 : owner.encounter.stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
-                int damage = runtime.enemyCombatTables == null
+                int damage = owner.enemyCombatTables == null
                         ? 4
-                        : runtime.enemyCombatTables.contactDamageForGroup(runtime.combatTables.readEnemyHealthGroup(s));
+                        : owner.enemyCombatTables.contactDamageForGroup(owner.combatTables.readEnemyHealthGroup(s));
                 var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(e.x(), e.y(), e.z(), lx, ly, 0x14);
                 events.add(linksawakening.world.entity.event.EntityCombatEvent.builder(s, 0x5B)
                         .linkDamage(damage)
@@ -662,23 +670,23 @@ public final class SlimeEyeController {
                             attack.romDirection(),
                             attack.linkZ())
                     : attack;
-            var damage = runtime.enemyCombatTables == null
+            var damage = owner.enemyCombatTables == null
                     ? null
-                    : runtime.enemyCombatTables.resolveSwordDamage(
-                            0x5B, runtime.combatTables.readEnemyHealthGroup(s), damageAttack);
+                    : owner.enemyCombatTables.resolveSwordDamage(
+                            0x5B, owner.combatTables.readEnemyHealthGroup(s), damageAttack);
             int amount = damage == null ? 1 : damage.numericDamage();
             if (amount == 0) return false;
             owner.encounter.swordHitFrame[s] = (frame & 255) + 1;
-            runtime.combatTables.writeEnemyHealth(s, Math.max(0, runtime.combatTables.readEnemyHealth(s) - amount));
-            runtime.combatTables.writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
-            runtime.combatTables.writeEnemyFlashCountdown(s, 0x18);
+            owner.combatTables.writeEnemyHealth(s, Math.max(0, owner.combatTables.readEnemyHealth(s) - amount));
+            owner.combatTables.writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
+            owner.combatTables.writeEnemyFlashCountdown(s, 0x18);
             if (isHalf)
-                runtime.motions
+                owner.motions
                         .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                         .configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
-            if (isHalf && runtime.combatTables.readEnemyHealth(s) == 0) {
+            if (isHalf && owner.combatTables.readEnemyHealth(s) == 0) {
                 owner.encounter.state[s] = 0;
-                runtime.slots[s] = withStatus(e, EntityStatus.DYING);
+                owner.slots[s] = withStatus(e, EntityStatus.DYING);
             }
             // Bank 03:7081–70B6 applies the Slime Eye sword response to both halves
             // as well as the unsplit body. Pegasus hits call 6DDF (reset boots,
@@ -714,11 +722,11 @@ public final class SlimeEyeController {
                 linksawakening.world.entity.SlimeEyeController owner,
                 linksawakening.world.entity.SlimeEyeController.SlimeEyeCombatFrame inputs) {
             if (inUse) {
-                new SlimeEyeCombatStep().run(owner, inputs);
+                new SlimeEyeCombatStep(owner).run(owner, inputs);
                 return;
             }
             inUse = true;
-            runtime = null;
+
             e = null;
             frame = 0;
             lx = 0;
@@ -736,15 +744,15 @@ public final class SlimeEyeController {
             isHalf = false;
             hitbox = 0;
             hit = false;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
-                this.runtime = null;
+
                 this.e = null;
                 this.attack = null;
                 this.events = null;
@@ -753,19 +761,22 @@ public final class SlimeEyeController {
     }
 
     static final class SlimeEyeHalfStep {
-        private linksawakening.world.entity.SlimeEyeController owner;
+        private final linksawakening.world.entity.SlimeEyeController owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution f;
-        private linksawakening.world.entity.SlimeEyeController runtime;
         private int s;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity e;
 
-        SlimeEyeHalfStep() {}
+        SlimeEyeHalfStep(linksawakening.world.entity.SlimeEyeController owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         void run() {
-            runtime = owner;
+
             s = f.slotFrame().entity().slot();
-            e = runtime.slots[s];
-            if (runtime.combatTables.readEnemyIgnoreHitsCountdown(s) == 2) {
+            e = owner.slots[s];
+            if (owner.combatTables.readEnemyIgnoreHitsCountdown(s) == 2) {
                 if (owner.encounter.angry[s] == 0) owner.encounter.angry[s] = 1;
                 else {
                     owner.encounter.state[s] = 2;
@@ -773,16 +784,16 @@ public final class SlimeEyeController {
                     owner.sound(s, 0x24);
                 }
             }
-            if (runtime.combatTables.readEnemyIgnoreHitsCountdown(s) != 0
+            if (owner.combatTables.readEnemyIgnoreHitsCountdown(s) != 0
                     && !owner.hitThisFrame(s, f.inputs().frame())) {
-                if (runtime.motions
+                if (owner.motions
                         .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                         .isActive(s)) {
-                    e = runtime.backgroundMechanics
+                    e = owner.backgroundMechanics
                             .applyEnemyRecoilIfNeeded(e, f.inputs().backgroundCollision())
                             .entity();
-                    runtime.slots[s] = e;
-                } else runtime.combatTables.postEnemyIgnoreHitsCountdown(s, -1);
+                    owner.slots[s] = e;
+                } else owner.combatTables.postEnemyIgnoreHitsCountdown(s, -1);
                 // ApplyRecoilIfNeeded_04 discards the caller return address.
                 // The half's state machine, including Z, does not run this frame.
                 return;
@@ -805,7 +816,7 @@ public final class SlimeEyeController {
         }
 
         private boolean advanceState0() {
-            if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) {
+            if (owner.physicsTables.readEnemyTransitionCountdown(s) == 0) {
                 int index = f.inputs().randomByteSupplier().getAsInt() & 7;
                 owner.encounter.speedX[s] = owner.read(RomSymbols.Data_004_4E94, index);
                 owner.encounter.speedY[s] = owner.read(RomSymbols.Data_004_4E9C, index);
@@ -824,7 +835,7 @@ public final class SlimeEyeController {
         }
 
         private boolean advanceState1() {
-            if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) {
+            if (owner.physicsTables.readEnemyTransitionCountdown(s) == 0) {
                 e = owner.integrateXY(e, f.inputs().backgroundCollision());
                 e = owner.integrateZ(e);
                 owner.encounter.speedZ[s] = (owner.encounter.speedZ[s] - 2) & 255;
@@ -838,9 +849,9 @@ public final class SlimeEyeController {
                     } else if (owner.encounter.speedZ[s] < 0xF2) owner.sound(s, 0x20);
                     owner.encounter.speedZ[s] = 0;
                     owner.encounter.state[s] = 0;
-                    runtime.physicsTables.writeEnemyTransitionCountdown(s, 0x20);
+                    owner.physicsTables.writeEnemyTransitionCountdown(s, 0x20);
                 }
-                runtime.slots[s] = e;
+                owner.slots[s] = e;
             }
             owner.encounter.variant[s] = 1;
 
@@ -850,23 +861,23 @@ public final class SlimeEyeController {
         private boolean advanceState2() {
             owner.encounter.speedZ[s] = 0x60;
             e = owner.integrateZ(e);
-            runtime.slots[s] = e;
+            owner.slots[s] = e;
             SlimeEyeHalfMotion.Update result = SlimeEyeHalfMotion.rise(
                     e.z(),
-                    runtime.physicsTables.readEnemyTransitionCountdown(s),
+                    owner.physicsTables.readEnemyTransitionCountdown(s),
                     owner.encounter.variant[s],
                     owner.encounter.dropping[s],
                     e.x(),
                     e.y());
             owner.encounter.state[s] = result.state();
-            runtime.physicsTables.writeEnemyTransitionCountdown(s, result.countdown());
+            owner.physicsTables.writeEnemyTransitionCountdown(s, result.countdown());
 
             return true;
         }
 
         private boolean advanceState3() {
             SlimeEyeHalfMotion.Update result = SlimeEyeHalfMotion.waitAbove(
-                    runtime.physicsTables.readEnemyTransitionCountdown(s),
+                    owner.physicsTables.readEnemyTransitionCountdown(s),
                     owner.encounter.speedZ[s],
                     owner.encounter.dropping[s],
                     e.x(),
@@ -877,8 +888,8 @@ public final class SlimeEyeController {
             owner.encounter.speedZ[s] = result.speedZ();
             owner.encounter.variant[s] = result.spriteVariant();
             owner.encounter.dropping[s] = result.privateState4();
-            runtime.physicsTables.writeEnemyTransitionCountdown(s, result.countdown());
-            runtime.slots[s] = withPositionAndVariant(e, result.x(), result.y(), e.spriteVariant());
+            owner.physicsTables.writeEnemyTransitionCountdown(s, result.countdown());
+            owner.slots[s] = withPositionAndVariant(e, result.x(), result.y(), e.spriteVariant());
             if (result.jingle() >= 0) owner.sound(s, result.jingle());
 
             return true;
@@ -890,22 +901,22 @@ public final class SlimeEyeController {
                 linksawakening.world.entity.SlimeEyeController owner,
                 linksawakening.world.entity.EntityFrameExecution f) {
             if (inUse) {
-                new SlimeEyeHalfStep().run(owner, f);
+                new SlimeEyeHalfStep(owner).run(owner, f);
                 return;
             }
             inUse = true;
-            runtime = null;
+
             s = 0;
             e = null;
-            this.owner = owner;
+
             this.f = f;
             try {
                 run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.f = null;
-                this.runtime = null;
+
                 this.e = null;
             }
         }

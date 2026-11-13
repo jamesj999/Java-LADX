@@ -13,9 +13,11 @@ public final class RomRandomByteSource implements IntSupplier {
     /** Read-only observation of one actual consumption; no source value is overridden. */
     public record Draw(int frameCounter, int scanline, int previousSeed, int value) {}
 
+    // Optional draw observer; null disables tracing without changing the random stream.
     private java.util.function.Consumer<Draw> observer;
 
-    public void setObserver(java.util.function.Consumer<Draw> observer) {
+    public void setObserver(
+            /* Optional observer; null disables tracing. */ java.util.function.Consumer<Draw> observer) {
         this.observer = observer;
     }
 

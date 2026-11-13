@@ -45,7 +45,8 @@ public final class HidingZolMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         RoomEntityBackgroundInteraction backgroundInteraction =
                 backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
         return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, 0);
@@ -56,7 +57,8 @@ public final class HidingZolMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int frameCounter) {
         return hidingZolStep.run(
                 this, entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, frameCounter);
@@ -125,7 +127,8 @@ public final class HidingZolMotion {
             RoomEntity entity,
             int x,
             int y,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int frameCounter,
             int slot) {
         int movedX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
@@ -205,14 +208,17 @@ public final class HidingZolMotion {
 
     record Vector(int x, int y) {}
 
-    final HidingZolStep hidingZolStep = new HidingZolStep();
+    final HidingZolStep hidingZolStep = new HidingZolStep(this);
 
     static final class HidingZolStep {
-        private HidingZolMotion owner;
+        private final HidingZolMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int frameCounter;
         private int slot;
@@ -224,9 +230,12 @@ public final class HidingZolMotion {
         private boolean clearsIgnoreHitsCountdown;
         private boolean jumpJingle;
         private int physicsFlags;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        HidingZolStep() {}
+        HidingZolStep(HidingZolMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.HidingZolMotion.Update run() {
             slot = entity.slot();
@@ -286,6 +295,7 @@ public final class HidingZolMotion {
             return new HidingZolMotion.Update(updated, hitGround, clearsIgnoreHitsCountdown, jumpJingle, physicsFlags);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.HidingZolMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -411,10 +421,12 @@ public final class HidingZolMotion {
                 int linkEntityX,
                 int linkEntityY,
                 java.util.function.IntSupplier randomByteSupplier,
-                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
+                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
+                                .world.entity.RoomEntityBackgroundInteraction
+                        backgroundInteraction,
                 int frameCounter) {
             if (inUse) {
-                return new HidingZolStep()
+                return new HidingZolStep(owner)
                         .run(
                                 owner,
                                 entity,
@@ -436,7 +448,7 @@ public final class HidingZolMotion {
             physicsFlags = 0;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.linkEntityX = linkEntityX;
             this.linkEntityY = linkEntityY;
@@ -447,7 +459,7 @@ public final class HidingZolMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.randomByteSupplier = null;
                 this.backgroundInteraction = null;

@@ -5,7 +5,7 @@ public final class EntityLinkView {
     private final EntityLinkState state;
 
     EntityLinkView(EntityLinkState state) {
-        this.state = state;
+        this.state = java.util.Objects.requireNonNull(state, "state");
     }
 
     public boolean actionButtonAHeld() {

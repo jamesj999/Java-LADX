@@ -49,7 +49,8 @@ public final class SpikedBeetleMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown) {
         return advance(new SpikedBeetleFrame(
@@ -144,7 +145,11 @@ public final class SpikedBeetleMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -217,7 +222,7 @@ public final class SpikedBeetleMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown, int options1, int hitboxFlags) {}
 
-    final SpikedBeetleFrameStep spikedBeetleFrameStep = new SpikedBeetleFrameStep();
+    final SpikedBeetleFrameStep spikedBeetleFrameStep = new SpikedBeetleFrameStep(this);
 
     record SpikedBeetleFrame(
             linksawakening.world.entity.RoomEntity entity,
@@ -225,18 +230,23 @@ public final class SpikedBeetleMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown) {}
 
     static final class SpikedBeetleFrameStep {
-        private SpikedBeetleMotion owner;
+        private final SpikedBeetleMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.SpikedBeetleMotion.SpikedBeetleFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int ignoreHitsCountdown;
@@ -247,15 +257,19 @@ public final class SpikedBeetleMotion {
         private int z;
         private boolean landed;
         private int renderedVariant;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.SpikedBeetleMotion.Position moved;
         private boolean collided;
         private boolean flippedHandler;
         private boolean walkAnimationRequested;
         private boolean flippedAnimationRequested;
         private int nextVariant;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        SpikedBeetleFrameStep() {}
+        SpikedBeetleFrameStep(SpikedBeetleMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.SpikedBeetleMotion.Update run() {
             if (!prepareFrame()) return completedResult;
@@ -268,6 +282,7 @@ public final class SpikedBeetleMotion {
                     flippedHandler ? SpikedBeetleMotion.FLIPPED_HITBOX_FLAGS : SpikedBeetleMotion.NORMAL_HITBOX_FLAGS);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.SpikedBeetleMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -433,7 +448,7 @@ public final class SpikedBeetleMotion {
                 SpikedBeetleMotion owner,
                 linksawakening.world.entity.motion.SpikedBeetleMotion.SpikedBeetleFrame inputs) {
             if (inUse) {
-                return new SpikedBeetleFrameStep().run(owner, inputs);
+                return new SpikedBeetleFrameStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -459,13 +474,13 @@ public final class SpikedBeetleMotion {
             nextVariant = 0;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

@@ -28,6 +28,7 @@ public final class FollowingNpcEntitySpawner {
     static final int ROOM_SECTION_OW_GHOST_TRIGGER = 0x40;
     static final int ROOM_INDOOR_B_MRS_MEOW_MEOW = 0xA7;
 
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final EntitySpriteHandlerCatalog spriteHandlers;
 
     public FollowingNpcEntitySpawner(EntitySpriteHandlerCatalog spriteHandlers) {
@@ -82,7 +83,9 @@ public final class FollowingNpcEntitySpawner {
     }
 
     static EntitySpriteSelection withOverrides(
-            EntitySpriteSelection selection, Map<Integer, EntitySpriteDefinition> overrides) {
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    selection,
+            Map<Integer, EntitySpriteDefinition> overrides) {
         return selection == null ? null : selection.withSpriteOverrides(overrides);
     }
 
@@ -117,27 +120,38 @@ public final class FollowingNpcEntitySpawner {
     record SpawnResult(RoomEntity entity, boolean changed) {}
 
     final FollowingNpcEntitySpawnerFrameStep followingNpcEntitySpawnerFrameStep =
-            new FollowingNpcEntitySpawnerFrameStep();
+            new FollowingNpcEntitySpawnerFrameStep(this);
 
     static final class FollowingNpcEntitySpawnerFrameStep {
-        private FollowingNpcEntitySpawner owner;
+        private final FollowingNpcEntitySpawner owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.FollowingNpcSpawn inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntitySnapshot initial;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.FollowingNpcRoomContext room;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.FollowingNpcState requestedState;
         private int linkX;
         private int linkY;
         private int linkZ;
         private int entityYOffset;
         private int linkDirection;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.LinkPositionHistory history;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.List<linksawakening.world.entity.RoomEntity> slots;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.Map<java.lang.Integer, linksawakening.entity.EntitySpriteDefinition> overrides;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.FollowingNpcState state;
         private boolean changed;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntitySnapshot snapshot;
 
-        FollowingNpcEntitySpawnerFrameStep() {}
+        FollowingNpcEntitySpawnerFrameStep(FollowingNpcEntitySpawner owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.FollowingNpcEntitySpawner.Result run() {
             if (!prepareRoomAndRooster()) return completedResult;
@@ -147,6 +161,7 @@ public final class FollowingNpcEntitySpawner {
             return new FollowingNpcEntitySpawner.Result(snapshot, state, changed);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.FollowingNpcEntitySpawner.Result completedResult;
 
         private boolean prepareRoomAndRooster() {
@@ -273,7 +288,7 @@ public final class FollowingNpcEntitySpawner {
         linksawakening.world.entity.FollowingNpcEntitySpawner.Result run(
                 FollowingNpcEntitySpawner owner, linksawakening.world.entity.FollowingNpcSpawn inputs) {
             if (inUse) {
-                return new FollowingNpcEntitySpawnerFrameStep().run(owner, inputs);
+                return new FollowingNpcEntitySpawnerFrameStep(owner).run(owner, inputs);
             }
             inUse = true;
             initial = null;
@@ -290,13 +305,13 @@ public final class FollowingNpcEntitySpawner {
             changed = false;
             snapshot = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.initial = null;
                 this.room = null;

@@ -19,7 +19,7 @@ class EntityInfrastructureTest {
     @Test
     void dispatchSiteKeepsRepeatedVisitsAndStopsAtTheFirstEarlyReturn() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
-        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().frameExecution;
         frame.slotFrame().entity(RoomEntity.disabled(15));
         var visited = new java.util.ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE;
@@ -46,7 +46,7 @@ class EntityInfrastructureTest {
     @Test
     void dispatchSiteRereadsEntityTypeBetweenVisits() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
-        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().frameExecution;
         frame.slotFrame().entity(RoomEntity.disabled(15));
         var visited = new java.util.ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
@@ -143,7 +143,7 @@ class EntityInfrastructureTest {
     @Test
     void registryKeepsStageRoutingWhenAdvanceIsAddedLater() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
-        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().frameExecution;
         frame.slotFrame().entity(RoomEntity.disabled(15));
         var stage = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
         registry.registerTick(255, stage, actual -> {

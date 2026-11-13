@@ -63,7 +63,8 @@ public final class StalfosEvasiveMotion {
     Update advanceAirborne(
             RoomEntity entity,
             int transitionCountdown,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             CloneRequest cloneRequest) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
@@ -91,7 +92,8 @@ public final class StalfosEvasiveMotion {
             int frame,
             int transitionCountdown,
             int ignoreHitsCountdown,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -168,7 +170,10 @@ public final class StalfosEvasiveMotion {
     }
 
     static MoveResult applyBackground(
-            RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         boolean xBlocked = false;
         boolean yBlocked = false;
         if (backgroundCollision != null) {
@@ -257,7 +262,7 @@ public final class StalfosEvasiveMotion {
 
     record Vector(int x, int y) {}
 
-    final StalfosEvasiveFrameStep stalfosEvasiveFrameStep = new StalfosEvasiveFrameStep();
+    final StalfosEvasiveFrameStep stalfosEvasiveFrameStep = new StalfosEvasiveFrameStep(this);
 
     public record StalfosEvasiveFrame(
             RoomEntity entity,
@@ -268,12 +273,15 @@ public final class StalfosEvasiveMotion {
             int transitionCountdown,
             int ignoreHitsCountdown,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             int mapId) {}
 
     static final class StalfosEvasiveFrameStep {
-        private StalfosEvasiveMotion owner;
+        private final StalfosEvasiveMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.StalfosEvasiveMotion.StalfosEvasiveFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
@@ -281,21 +289,27 @@ public final class StalfosEvasiveMotion {
         private boolean actionButtonsHeld;
         private int transitionCountdown;
         private int ignoreHitsCountdown;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int mapId;
         private int slot;
         private boolean cloneBranchReady;
         private int frame;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.StalfosEvasiveMotion.CloneRequest cloneRequest;
         private int x;
         private int y;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.StalfosEvasiveMotion.MoveResult movement;
         private int distanceX;
         private int distanceY;
         private int variant;
 
-        StalfosEvasiveFrameStep() {}
+        StalfosEvasiveFrameStep(StalfosEvasiveMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run() {
             if (!prepareCloneBranch()) return completedResult;
@@ -309,6 +323,7 @@ public final class StalfosEvasiveMotion {
                     cloneRequest);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.StalfosEvasiveMotion.Update completedResult;
 
         private boolean prepareCloneBranch() {
@@ -430,7 +445,7 @@ public final class StalfosEvasiveMotion {
                 StalfosEvasiveMotion owner,
                 linksawakening.world.entity.motion.StalfosEvasiveMotion.StalfosEvasiveFrame inputs) {
             if (inUse) {
-                return new StalfosEvasiveFrameStep().run(owner, inputs);
+                return new StalfosEvasiveFrameStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -454,13 +469,13 @@ public final class StalfosEvasiveMotion {
             distanceY = 0;
             variant = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

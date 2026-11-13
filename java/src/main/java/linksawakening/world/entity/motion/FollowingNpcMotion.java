@@ -30,7 +30,9 @@ public final class FollowingNpcMotion {
         return followingLinkPositionHistory;
     }
 
-    public LinkPositionHistory writeFollowingLinkPositionHistory(LinkPositionHistory value) {
+    public LinkPositionHistory writeFollowingLinkPositionHistory(
+            /* Optional room geometry/history; null preserves the path without that room input. */ LinkPositionHistory
+                    value) {
         return followingLinkPositionHistory = value;
     }
 
@@ -65,7 +67,8 @@ public final class FollowingNpcMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return advance(new FollowingNpcFrame(
                 entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision));
     }
@@ -114,7 +117,8 @@ public final class FollowingNpcMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         // GhostEntityHandler writes the current bob height before aiming ($19:5E56).
         int z = GHOST_Z[(frameCounter >>> 3) & 0x07];
         int variant = ghostVariant(entity.x(), entity.y(), linkEntityX, linkEntityY, frameCounter);
@@ -142,7 +146,8 @@ public final class FollowingNpcMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         int direction = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
         int variant = direction * 2 + ((frameCounter >>> 3) & 0x01);
         boolean outsideFollowWindow = !withinRoosterWindow(entity.x(), entity.y(), linkEntityX, linkEntityY);
@@ -176,7 +181,8 @@ public final class FollowingNpcMotion {
             int linkEntityZ,
             int linkDirection,
             int entityYOffset,
-            LinkPositionHistory history) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ LinkPositionHistory
+                    history) {
         int slot = entity.slot();
         int currentPositionIndex = marinInertia[slot] & 0x0F;
         int currentZIndex = marinPrivateState1[slot] & 0x0F;
@@ -214,7 +220,11 @@ public final class FollowingNpcMotion {
         return withPositionAndVariant(entity, x, y, z, variant);
     }
 
-    private int[] move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    private int[] move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         if (backgroundCollision != null && nextX != x) {
@@ -339,6 +349,8 @@ public final class FollowingNpcMotion {
             int linkEntityZ,
             int linkDirection,
             int entityYOffset,
+            // Optional room geometry/history; null preserves the path without that room input.
             LinkPositionHistory linkPositionHistory,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision) {}
 }

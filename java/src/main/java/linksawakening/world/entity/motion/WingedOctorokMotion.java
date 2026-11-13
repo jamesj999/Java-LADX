@@ -148,7 +148,11 @@ public final class WingedOctorokMotion {
         return (linkItemA & 0xFF) == ENTITY_SWORD && actionButtonAHeld;
     }
 
-    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -232,7 +236,7 @@ public final class WingedOctorokMotion {
 
     record Vector(int y, int x) {}
 
-    final WingedOctorokStep wingedOctorokStep = new WingedOctorokStep();
+    final WingedOctorokStep wingedOctorokStep = new WingedOctorokStep(this);
 
     record WingedOctorokFrame(
             RoomEntity entity,
@@ -240,6 +244,7 @@ public final class WingedOctorokMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown,
@@ -253,6 +258,7 @@ public final class WingedOctorokMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown,
@@ -262,13 +268,17 @@ public final class WingedOctorokMotion {
             int linkItemB) {}
 
     static final class WingedOctorokStep {
-        private WingedOctorokMotion owner;
+        private final WingedOctorokMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WingedOctorokMotion.WingedOctorokInteractionFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int ignoreHitsCountdown;
@@ -282,15 +292,20 @@ public final class WingedOctorokMotion {
         private int countdown;
         private int x;
         private int y;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WingedOctorokMotion.Position moved;
         private int z;
         private boolean landed;
         private boolean stateTwoHandler;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WingedOctorokMotion.RockSpawn rockSpawn;
         private boolean jumped;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        WingedOctorokStep() {}
+        WingedOctorokStep(WingedOctorokMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.WingedOctorokMotion.Update run() {
             if (!prepareMotion()) return completedResult;
@@ -300,6 +315,7 @@ public final class WingedOctorokMotion {
                     updated, owner.state[slot], countdown, rockSpawn, jumped, stateTwoHandler || jumped);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.WingedOctorokMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -455,7 +471,7 @@ public final class WingedOctorokMotion {
                 WingedOctorokMotion owner,
                 linksawakening.world.entity.motion.WingedOctorokMotion.WingedOctorokInteractionFrame inputs) {
             if (inUse) {
-                return new WingedOctorokStep().run(owner, inputs);
+                return new WingedOctorokStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -484,13 +500,13 @@ public final class WingedOctorokMotion {
             jumped = false;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

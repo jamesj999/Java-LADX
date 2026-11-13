@@ -87,7 +87,10 @@ public final class DogMotion {
         return direction[slot] == 0 ? animation + 2 : animation;
     }
 
-    PositionAndCollision moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
+    PositionAndCollision moveWithBackground(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction interaction,
+            int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
@@ -268,7 +271,7 @@ public final class DogMotion {
 
     record Vector(int x, int y) {}
 
-    final DogStep dogStep = new DogStep();
+    final DogStep dogStep = new DogStep(this);
 
     public record DogFrame(
             RoomEntity entity,
@@ -281,11 +284,14 @@ public final class DogMotion {
             boolean actionButtonAHeld,
             boolean dialogActive,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction) {}
 
     static final class DogStep {
-        private DogMotion owner;
+        private final DogMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.DogMotion.DogFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int transitionCountdown;
@@ -296,6 +302,7 @@ public final class DogMotion {
         private boolean actionButtonAHeld;
         private boolean dialogActive;
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int countdown;
@@ -306,9 +313,12 @@ public final class DogMotion {
         private boolean dialogRequested;
         private int dialogLowId;
         private int movementCollisionFlags;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        DogStep() {}
+        DogStep(DogMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.DogMotion.Update run() {
             if (!prepareFrame()) return completedResult;
@@ -329,6 +339,7 @@ public final class DogMotion {
                     dialogLowId);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.DogMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -483,7 +494,7 @@ public final class DogMotion {
         linksawakening.world.entity.motion.DogMotion.Update run(
                 DogMotion owner, linksawakening.world.entity.motion.DogMotion.DogFrame inputs) {
             if (inUse) {
-                return new DogStep().run(owner, inputs);
+                return new DogStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -508,13 +519,13 @@ public final class DogMotion {
             movementCollisionFlags = 0;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

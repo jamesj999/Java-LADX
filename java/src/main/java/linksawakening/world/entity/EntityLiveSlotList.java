@@ -8,11 +8,13 @@ import java.util.RandomAccess;
 final class EntityLiveSlotList extends AbstractList<RoomEntity> implements RandomAccess {
     private final EntityRoomInspection runtime;
     private final boolean loadedOnly;
+    // Unread slots have no cached source or projection yet.
     private final RoomEntity[] sources = new RoomEntity[RoomEntity.SLOT_COUNT];
+    // Unread slots have no cached presentation yet.
     private final RoomEntity[] presentations = new RoomEntity[RoomEntity.SLOT_COUNT];
 
     EntityLiveSlotList(EntityRoomInspection runtime, boolean loadedOnly) {
-        this.runtime = runtime;
+        this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
         this.loadedOnly = loadedOnly;
     }
 

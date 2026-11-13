@@ -65,7 +65,8 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return advanceWithTargetScan(new BowWowTargetFrame(
                         entity,
                         frameCounter,
@@ -225,7 +226,12 @@ public final class BowWowMotion {
         return true;
     }
 
-    int[] move(RoomEntity entity, int x, int y, int slot, RoomEntityBackgroundCollision backgroundCollision) {
+    int[] move(
+            RoomEntity entity,
+            int x,
+            int y,
+            int slot, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         // ApplyEntityInteractionWithBackground returns before the generic wall
@@ -361,7 +367,7 @@ public final class BowWowMotion {
 
     record Vector(int x, int y) {}
 
-    final BowWowStep bowWowStep = new BowWowStep();
+    final BowWowStep bowWowStep = new BowWowStep(this);
 
     static BowWowMotion.Update advanceWithTargetScanBody(BowWowMotion owner, BowWowTargetFrame inputs) {
         RoomEntity entity = inputs.entity();
@@ -448,6 +454,7 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             java.util.List<RoomEntity> entities,
             java.util.function.IntPredicate canEatEntity,
@@ -460,21 +467,28 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             java.util.List<RoomEntity> entities,
             java.util.function.IntPredicate canEatEntity) {}
 
     static final class BowWowStep {
-        private linksawakening.world.entity.motion.BowWowMotion owner;
+        private final linksawakening.world.entity.motion.BowWowMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BowWowMotion.BowWowCollisionFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
         private int linkEntityZ;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.List<linksawakening.world.entity.RoomEntity> entities;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntPredicate canEatEntity;
         private int bowWowState;
         private int slot;
@@ -483,9 +497,12 @@ public final class BowWowMotion {
         private int x;
         private int y;
         private int z;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BowWowMotion.TargetContact targetContact;
 
-        BowWowStep() {}
+        BowWowStep(linksawakening.world.entity.motion.BowWowMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.BowWowMotion.Update run() {
             entity = inputs.entity();
@@ -548,6 +565,7 @@ public final class BowWowMotion {
                     targetContact);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.BowWowMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -655,7 +673,7 @@ public final class BowWowMotion {
                 linksawakening.world.entity.motion.BowWowMotion owner,
                 linksawakening.world.entity.motion.BowWowMotion.BowWowCollisionFrame inputs) {
             if (inUse) {
-                return new BowWowStep().run(owner, inputs);
+                return new BowWowStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -676,13 +694,13 @@ public final class BowWowMotion {
             z = 0;
             targetContact = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;
@@ -702,6 +720,7 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             java.util.List<RoomEntity> entities,
             java.util.function.IntPredicate canEatEntity) {}

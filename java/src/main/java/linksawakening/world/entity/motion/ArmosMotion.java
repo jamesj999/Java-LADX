@@ -49,7 +49,8 @@ public final class ArmosMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown) {
         return advance(
                 entity,
@@ -69,7 +70,8 @@ public final class ArmosMotion {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             boolean linkCollisionAllowed,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {

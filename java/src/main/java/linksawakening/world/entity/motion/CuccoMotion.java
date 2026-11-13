@@ -125,7 +125,11 @@ public final class CuccoMotion {
         return speedZ[slot] & 0xFF;
     }
 
-    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -233,7 +237,7 @@ public final class CuccoMotion {
 
     record Vector(int x, int y) {}
 
-    final CuccoStep cuccoStep = new CuccoStep();
+    final CuccoStep cuccoStep = new CuccoStep(this);
 
     static CuccoMotion.Update advanceBody(CuccoMotion owner, CuccoFrame inputs) {
         RoomEntity entity = inputs.entity();
@@ -286,6 +290,7 @@ public final class CuccoMotion {
             boolean powerBraceletHeld,
             boolean linkAttackStepActive,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             boolean indoorRoom,
             boolean marinFollowing,
@@ -303,6 +308,7 @@ public final class CuccoMotion {
             boolean powerBraceletHeld,
             boolean linkAttackStepActive,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             boolean indoorRoom,
             boolean marinFollowing,
@@ -310,8 +316,10 @@ public final class CuccoMotion {
             boolean angrySpawnSlotAvailable) {}
 
     static final class CuccoStep {
-        private linksawakening.world.entity.motion.CuccoMotion owner;
+        private final linksawakening.world.entity.motion.CuccoMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.CuccoMotion.CuccoInteractionFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int transitionCountdown;
@@ -322,7 +330,9 @@ public final class CuccoMotion {
         private boolean linkInteractive;
         private boolean powerBraceletHeld;
         private boolean linkAttackStepActive;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private boolean indoorRoom;
         private boolean marinFollowing;
@@ -342,13 +352,18 @@ public final class CuccoMotion {
         private int waveSoundId;
         private int dialogTableId;
         private int dialogLowId;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.CuccoMotion.SpawnRequest spawnRequest;
         private boolean landed;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity collisionEntity;
         private boolean linkCollision;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        CuccoStep() {}
+        CuccoStep(linksawakening.world.entity.motion.CuccoMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.CuccoMotion.Update run() {
             if (!prepareFrame()) return completedResult;
@@ -368,6 +383,7 @@ public final class CuccoMotion {
                     spawnRequest);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.CuccoMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -589,7 +605,7 @@ public final class CuccoMotion {
                 linksawakening.world.entity.motion.CuccoMotion owner,
                 linksawakening.world.entity.motion.CuccoMotion.CuccoInteractionFrame inputs) {
             if (inUse) {
-                return new CuccoStep().run(owner, inputs);
+                return new CuccoStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -628,13 +644,13 @@ public final class CuccoMotion {
             linkCollision = false;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

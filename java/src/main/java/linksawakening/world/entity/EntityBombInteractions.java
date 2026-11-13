@@ -40,7 +40,9 @@ public final class EntityBombInteractions {
 
     EntityBombInteractions(
             EntityBombState state,
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -49,7 +51,8 @@ public final class EntityBombInteractions {
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntitySlotProperties slotProperties,
-            RomEnemyCombatTables enemyCombatTables,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
+                    enemyCombatTables,
             RoomEntity[] slots,
             EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
@@ -141,7 +144,9 @@ public final class EntityBombInteractions {
     }
 
     public RoomEntity applyBombStunnedPostActiveWork(
-            RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
+            RoomEntity stunned, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision,
+            int frame) {
         return EntityBombInteractions.bombCollisionBehaviorApplyBombStunnedPostActiveWork(
                 this, stunned, backgroundCollision, frame);
     }
@@ -384,7 +389,8 @@ public final class EntityBombInteractions {
     static RoomEntity bombCollisionBehaviorApplyBombStunnedPostActiveWork(
             EntityBombInteractions owner,
             RoomEntity stunned,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int frame) {
         var runtime = owner;
         int slot = stunned.slot();

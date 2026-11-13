@@ -150,10 +150,11 @@ public final class PincerMotion {
 
     record Position(int x, int y) {}
 
-    final PincerStep pincerStep = new PincerStep();
+    final PincerStep pincerStep = new PincerStep(this);
 
     static final class PincerStep {
-        private PincerMotion owner;
+        private final PincerMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int transitionCountdown;
         private int physicsFlags;
@@ -165,9 +166,12 @@ public final class PincerMotion {
         private int variant;
         private int nextCountdown;
         private int nextPhysicsFlags;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        PincerStep() {}
+        PincerStep(PincerMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.PincerMotion.Update run() {
             slot = entity.slot();
@@ -221,6 +225,7 @@ public final class PincerMotion {
             return new PincerMotion.Update(updated, owner.state[slot], nextCountdown, nextPhysicsFlags);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.PincerMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -328,7 +333,7 @@ public final class PincerMotion {
                 int linkX,
                 int linkY) {
             if (inUse) {
-                return new PincerStep().run(owner, entity, transitionCountdown, physicsFlags, linkX, linkY);
+                return new PincerStep(owner).run(owner, entity, transitionCountdown, physicsFlags, linkX, linkY);
             }
             inUse = true;
             slot = 0;
@@ -339,7 +344,7 @@ public final class PincerMotion {
             nextPhysicsFlags = 0;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.transitionCountdown = transitionCountdown;
             this.physicsFlags = physicsFlags;
@@ -349,7 +354,7 @@ public final class PincerMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.updated = null;
                 this.completedResult = null;

@@ -58,7 +58,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision, false)
                 .entity();
     }
@@ -68,7 +69,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             boolean creditsGameplay) {
         RoomEntityBackgroundInteraction interaction =
                 backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
@@ -81,7 +83,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             boolean creditsGameplay) {
         return advanceWithInteraction(
                 entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, 0, creditsGameplay);
@@ -92,7 +95,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             boolean creditsGameplay) {
         return advanceWithInteraction(
@@ -111,7 +115,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
@@ -131,7 +136,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
@@ -287,25 +293,30 @@ public final class RoamingEnemyMotion {
     public record LaunchRequest(int sourceSlot, int sourceType, int projectileType)
             implements linksawakening.world.entity.event.EntityRequestBridge {}
 
-    final RoamingEnemyFrameStep roamingEnemyFrameStep = new RoamingEnemyFrameStep();
+    final RoamingEnemyFrameStep roamingEnemyFrameStep = new RoamingEnemyFrameStep(this);
 
     record RoamingEnemyFrame(
             linksawakening.world.entity.RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
             linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {}
 
     static final class RoamingEnemyFrameStep {
-        private RoamingEnemyMotion owner;
+        private final RoamingEnemyMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.RoamingEnemyMotion.RoamingEnemyFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
         private int frameCounter;
@@ -315,7 +326,9 @@ public final class RoamingEnemyMotion {
         private int y;
         private int variant;
 
-        RoamingEnemyFrameStep() {}
+        RoamingEnemyFrameStep(RoamingEnemyMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.RoamingEnemyMotion.Update run() {
             if (!prepareTimersAndMotion()) return completedResult;
@@ -325,6 +338,7 @@ public final class RoamingEnemyMotion {
                     RoamingEnemyMotion.withPositionAndVariant(entity, x, y, variant), null);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.RoamingEnemyMotion.Update completedResult;
 
         private boolean prepareTimersAndMotion() {
@@ -434,7 +448,7 @@ public final class RoamingEnemyMotion {
                 RoamingEnemyMotion owner,
                 linksawakening.world.entity.motion.RoamingEnemyMotion.RoamingEnemyFrame inputs) {
             if (inUse) {
-                return new RoamingEnemyFrameStep().run(owner, inputs);
+                return new RoamingEnemyFrameStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -450,13 +464,13 @@ public final class RoamingEnemyMotion {
             y = 0;
             variant = 0;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.randomByteSupplier = null;

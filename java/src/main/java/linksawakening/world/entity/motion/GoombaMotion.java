@@ -38,7 +38,8 @@ public final class GoombaMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int transitionCountdown,
             boolean sideScrolling) {
         if ((entity.type() & 0xFF) != ENTITY_GOOMBA) {
@@ -141,7 +142,8 @@ public final class GoombaMotion {
             int linkEntityX,
             int x,
             int y,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         int slot = entity.slot();
         if (state[slot] == 0) {
             direction[slot] = linkEntityX - x < 0 ? 1 : 0;
@@ -160,7 +162,11 @@ public final class GoombaMotion {
         return new SideUpdate(x, y, 2);
     }
 
-    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         int nextX = addSpeedToPosition(x, speedX[entity.slot()], speedXAccumulator, entity.slot());
         int nextY = addSpeedToPosition(y, speedY[entity.slot()], speedYAccumulator, entity.slot());
         // UpdateEntityPosWithSpeed_07 runs before the handler's two INC [HL]

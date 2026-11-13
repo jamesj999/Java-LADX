@@ -70,7 +70,8 @@ public final class MoblinSwordMotion {
             RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter) {
         return advance(entity, linkEntityX, linkEntityY, backgroundInteraction, ignoreHitsCountdown, 0, frameCounter);
@@ -80,7 +81,8 @@ public final class MoblinSwordMotion {
             RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int alertingSoundCounter,
             int frameCounter) {
@@ -252,7 +254,8 @@ public final class MoblinSwordMotion {
 
     private RoomEntity moveAndRender(
             RoomEntity entity,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean renderVariant) {
@@ -394,6 +397,7 @@ public final class MoblinSwordMotion {
             RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
+            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int alertingSoundCounter,

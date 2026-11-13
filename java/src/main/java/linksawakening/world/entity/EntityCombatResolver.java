@@ -66,7 +66,9 @@ final class EntityCombatResolver {
     final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
 
     EntityCombatResolver(
-            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBombInteractions bombInteractions,
             EntityBossRewards bossRewards,
@@ -77,7 +79,8 @@ final class EntityCombatResolver {
             EntityPhysicsTables physicsTables,
             EntityRoomInspection roomInspection,
             EntitySlotProperties slotProperties,
-            RomEnemyCombatTables enemyCombatTables,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
+                    enemyCombatTables,
             RoomEntity[] slots,
             SlimeEyeController slimeEye,
             EntityFrameRandom frameRandom) {
@@ -851,8 +854,10 @@ final class EntityCombatResolver {
 
     static final class EntityCombatSlot {
         final EntityCombatResolver runtime;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         EnemyCombatInputs inputs;
         java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         linksawakening.world.entity.RoomEntity entity;
         boolean booBuddyAllowsLinkCollision;
         boolean booBuddyAllowsSwordCollision;
@@ -864,12 +869,15 @@ final class EntityCombatResolver {
         boolean linkCollision;
         boolean swordHit;
         boolean moldormTailSwordHit;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         linksawakening.world.entity.event.EntityCombatEvent.SoundChannel soundChannel;
         int soundId;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         linksawakening.world.entity.event.EntityCombatEvent.SoundChannel secondarySoundChannel;
         int secondarySoundId;
         int enemyDamage;
         int enemySpecialAction;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         linksawakening.world.entity.event.EntityCombatEvent.SwordPokeVfx swordPokeVfx;
         boolean peaHatSwordClink;
         boolean spikedBeetleSwordClink;
@@ -877,14 +885,16 @@ final class EntityCombatResolver {
         boolean rollingBonesBarSwordClink;
         boolean moblinKingSwordClink;
         int linkDamage;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         linksawakening.world.entity.event.EntityCombatEvent.LinkCollisionResponse linkCollisionResponse;
         boolean bodyRecoilBeforeSword;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         linksawakening.world.entity.RomEnemyCombatTables.SwordDamageResult swordResult;
         int swordDamage;
         boolean swordResultApplied;
 
         EntityCombatSlot(EntityCombatResolver runtime) {
-            this.runtime = runtime;
+            this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
         }
 
         void reset(

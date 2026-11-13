@@ -17,7 +17,7 @@ public final class EntityHandlerRegistry {
         private final EnumMap<EntityTickStage, List<Predicate<EntityFrameExecution>>> stages =
                 new EnumMap<>(EntityTickStage.class);
 
-        private Binding(EntityHandler initializer) {
+        private Binding(/* Optional hook for a type registered only at dispatch sites. */ EntityHandler initializer) {
             this.initializer = initializer;
         }
 
@@ -45,7 +45,7 @@ public final class EntityHandlerRegistry {
     }
 
     EntityHandlerRegistry(EntityMotionRegistry motions) {
-        this.motions = motions;
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
     }
 
     public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {
@@ -60,6 +60,7 @@ public final class EntityHandlerRegistry {
         binding.initializer = initializer::accept;
     }
 
+    // Unregistered type entries are absent; supports() distinguishes them from registered no-op hooks.
     private final Binding[] handlers = new Binding[256];
 
     void register(int type, EntityHandler handler) {

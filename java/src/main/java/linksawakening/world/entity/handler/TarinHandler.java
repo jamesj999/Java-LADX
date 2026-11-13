@@ -41,12 +41,18 @@ final class TarinHandler {
     }
 
     private static final class TarinHandlerFrameStep {
-        private linksawakening.world.entity.EntityFrameExecution state;
+        // Owning frame execution is stable for this cached scratch holder.
+        private final linksawakening.world.entity.EntityFrameExecution state;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
 
-        TarinHandlerFrameStep() {}
+        TarinHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
+            this.state = java.util.Objects.requireNonNull(state, "state");
+        }
 
         boolean run() {
             if (!advanceMotion()) return completedResult;
@@ -55,7 +61,9 @@ final class TarinHandler {
             return true;
         }
 
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction tarinBackgroundInteraction;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.TarinRaccoonMotion.Update tarinUpdate;
 
         private boolean completedResult;
@@ -157,7 +165,7 @@ final class TarinHandler {
 
         boolean run(linksawakening.world.entity.EntityFrameExecution state) {
             if (inUse) {
-                return new TarinHandlerFrameStep().run(state);
+                return new TarinHandlerFrameStep(state).run(state);
             }
             inUse = true;
             slotState = null;
@@ -166,12 +174,12 @@ final class TarinHandler {
             tarinBackgroundInteraction = null;
             tarinUpdate = null;
             completedResult = false;
-            this.state = state;
+
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.state = null;
+
                 this.slotState = null;
                 this.frameInput = null;
                 this.presentationFlags = null;

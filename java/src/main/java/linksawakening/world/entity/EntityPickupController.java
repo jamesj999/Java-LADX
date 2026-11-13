@@ -72,7 +72,9 @@ public final class EntityPickupController {
             EntitySlotProperties slotProperties,
             EntityStoryState story,
             RoomEntity[] slots,
-            linksawakening.world.room.ChestContentsTable chestContentsTable) {
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
+                            .room.ChestContentsTable
+                    chestContentsTable) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -189,7 +191,7 @@ public final class EntityPickupController {
         return state.readHeartPiecePickup(slot) != null;
     }
 
-    final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep();
+    final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep(this);
 
     static void chestPickupBehaviorInitializeChestEntity(EntityPickupController owner, RoomEntity entity) {
         var runtime = owner;
@@ -565,21 +567,24 @@ public final class EntityPickupController {
     }
 
     static final class DroppablePickupFrameStep {
-        private linksawakening.world.entity.EntityPickupController owner;
+        private final linksawakening.world.entity.EntityPickupController owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample objectUnderEntity;
-        private linksawakening.world.entity.EntityPickupController runtime;
         private int slot;
         private int hiddenState;
 
-        DroppablePickupFrameStep() {}
+        DroppablePickupFrameStep(linksawakening.world.entity.EntityPickupController owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate run() {
-            runtime = owner;
+
             slot = entity.slot();
-            hiddenState = runtime.bossRewards.readDroppablePrivateState3(slot);
+            hiddenState = owner.bossRewards.readDroppablePrivateState3(slot);
             if (hiddenState != 0) {
                 boolean reveal = false;
                 if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_BURIED) {
@@ -587,42 +592,42 @@ public final class EntityPickupController {
                     // buried drops invisible indoors. Outdoors, hearts reveal on
                     // short grass or a shovel hole; the remaining shared drops
                     // require the shovel-hole path and set privateState4 first.
-                    if (!runtime.indoorRoom) {
+                    if (!owner.indoorRoom) {
                         int objectId = objectUnderEntity == null ? 0xFF : objectUnderEntity.objectId() & 0xFF;
                         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_HEART) {
                             reveal = objectId == EntityRomConstants.DROPPABLE_OBJECT_SHORT_GRASS
                                     || objectId == EntityRomConstants.DROPPABLE_OBJECT_SHOVEL_HOLE;
                         } else {
-                            runtime.bossRewards.writeDroppablePrivateState4(slot, 1);
+                            owner.bossRewards.writeDroppablePrivateState4(slot, 1);
                             reveal = objectId == EntityRomConstants.DROPPABLE_OBJECT_SHOVEL_HOLE;
                         }
                     }
                 } else if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS) {
-                    reveal = runtime.motions
+                    reveal = owner.motions
                                     .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                     .readSecretSeashellScreenShakeActive()
-                            && runtime.motions
+                            && owner.motions
                                     .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                     .readSecretSeashellPegasusCollisionActive()
-                            && (!runtime.motions
+                            && (!owner.motions
                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                             .readSecretSeashellPegasusCollisionCoordinatesKnown()
                                     || withinUnsignedWindow(
                                                     entity.x() + 0x08,
-                                                    runtime.motions
+                                                    owner.motions
                                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                                             .readSecretSeashellPegasusCollisionX(),
                                                     0x10)
                                             && withinUnsignedWindow(
                                                     entity.y() + 0x08,
-                                                    runtime.motions
+                                                    owner.motions
                                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                                             .readSecretSeashellPegasusCollisionY(),
                                                     0x10));
                 }
 
                 if (!reveal) {
-                    runtime.physicsTables.writeEntityOptions1Override(
+                    owner.physicsTables.writeEntityOptions1Override(
                             slot,
                             entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
                                     ? EntityRomConstants.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
@@ -636,17 +641,17 @@ public final class EntityPickupController {
                 return owner.commonUpdate(withVariant(entity, -1), true);
             }
 
-            runtime.physicsTables.writeEntityOptions1Override(
+            owner.physicsTables.writeEntityOptions1Override(
                     slot,
                     hiddenState == 0
-                            ? runtime.physicsTables.readEntityOptions1Override(slot)
+                            ? owner.physicsTables.readEntityOptions1Override(slot)
                             : EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
             if (entity.type() != EntityRomConstants.ENTITY_DROPPABLE_FAIRY
-                    && !runtime.bossRewards.readEnemyDropActive(slot)) {
-                runtime.motions
+                    && !owner.bossRewards.readEnemyDropActive(slot)) {
+                owner.motions
                         .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                        .initialize(slot, runtime.physicsTables.readGroundInteractionSideScrolling());
-                runtime.bossRewards.writeEnemyDropActive(slot, true);
+                        .initialize(slot, owner.physicsTables.readGroundInteractionSideScrolling());
+                owner.bossRewards.writeEnemyDropActive(slot, true);
             }
             return owner.commonUpdate(
                     withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
@@ -661,13 +666,14 @@ public final class EntityPickupController {
                 int linkEntityY,
                 linksawakening.world.entity.RoomEntityObjectSample objectUnderEntity) {
             if (inUse) {
-                return new DroppablePickupFrameStep().run(owner, entity, linkEntityX, linkEntityY, objectUnderEntity);
+                return new DroppablePickupFrameStep(owner)
+                        .run(owner, entity, linkEntityX, linkEntityY, objectUnderEntity);
             }
             inUse = true;
-            runtime = null;
+
             slot = 0;
             hiddenState = 0;
-            this.owner = owner;
+
             this.entity = entity;
             this.linkEntityX = linkEntityX;
             this.linkEntityY = linkEntityY;
@@ -676,10 +682,9 @@ public final class EntityPickupController {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.objectUnderEntity = null;
-                this.runtime = null;
             }
         }
     }

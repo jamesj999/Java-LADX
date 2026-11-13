@@ -95,13 +95,20 @@ final class MoldormHandler {
     }
 
     private static final class MoldormHandlerFrameStep {
-        private linksawakening.world.entity.EntityFrameExecution state;
+        // Owning frame execution is stable for this cached scratch holder.
+        private final linksawakening.world.entity.EntityFrameExecution state;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
 
-        MoldormHandlerFrameStep() {}
+        MoldormHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
+            this.state = java.util.Objects.requireNonNull(state, "state");
+        }
 
         boolean run() {
             if (!prepareMotion()) return completedResult;
@@ -111,8 +118,10 @@ final class MoldormHandler {
         }
 
         private int slot;
+        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction moldormBackgroundInteraction;
         private int transitionForMotion;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.MoldormMotion.Update moldormUpdate;
 
         private boolean completedResult;
@@ -215,7 +224,7 @@ final class MoldormHandler {
 
         boolean run(linksawakening.world.entity.EntityFrameExecution state) {
             if (inUse) {
-                return new MoldormHandlerFrameStep().run(state);
+                return new MoldormHandlerFrameStep(state).run(state);
             }
             inUse = true;
             slotState = null;
@@ -227,12 +236,12 @@ final class MoldormHandler {
             transitionForMotion = 0;
             moldormUpdate = null;
             completedResult = false;
-            this.state = state;
+
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.state = null;
+
                 this.slotState = null;
                 this.frameInput = null;
                 this.timerGates = null;

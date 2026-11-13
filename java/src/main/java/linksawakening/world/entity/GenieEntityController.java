@@ -260,8 +260,8 @@ public final class GenieEntityController {
         java.util.Arrays.fill(encounter.genieImpactRegisteredThisFrame, false);
     }
 
-    final GenieJarStep genieJarStep = new GenieJarStep();
-    final GenieBodyStep genieBodyStep = new GenieBodyStep();
+    final GenieJarStep genieJarStep = new GenieJarStep(this);
+    final GenieBodyStep genieBodyStep = new GenieBodyStep(this);
     /** Encounter slot state shared with slot clearing, independent of behavior dispatch. */
     static final class State {
         final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -633,19 +633,23 @@ public final class GenieEntityController {
     }
 
     static final class GenieBodyStep {
-        private linksawakening.world.entity.GenieEntityController owner;
+        private final linksawakening.world.entity.GenieEntityController owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity body;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        private linksawakening.world.entity.GenieEntityController runtime;
         private int slot;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
         private int direction;
         private int boundary;
 
-        GenieBodyStep() {}
+        GenieBodyStep(linksawakening.world.entity.GenieEntityController owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         void run() {
             if (!prepareBody()) return;
@@ -658,33 +662,32 @@ public final class GenieEntityController {
 
         private boolean prepareBody() {
 
-            runtime = owner;
             slot = body.slot();
             if (owner.encounter.genieActiveState[slot] == 0) {
-                if (runtime.physicsTables.readEnemyTransitionCountdown(slot) != 0) {
+                if (owner.physicsTables.readEnemyTransitionCountdown(slot) != 0) {
                     return false;
                 }
                 owner.encounter.genieActiveState[slot] = 1;
                 owner.encounter.geniePrivateCountdown1[slot] = 0xFF;
                 boolean jarExists = owner.encounter.genieControllerSlot >= 0
-                        && owner.encounter.genieControllerSlot < runtime.slots.length
-                        && runtime.slots[owner.encounter.genieControllerSlot].loaded()
-                        && runtime.slots[owner.encounter.genieControllerSlot].type() == EntityRomConstants.ENTITY_GENIE;
+                        && owner.encounter.genieControllerSlot < owner.slots.length
+                        && owner.slots[owner.encounter.genieControllerSlot].loaded()
+                        && owner.slots[owner.encounter.genieControllerSlot].type() == EntityRomConstants.ENTITY_GENIE;
                 if (jarExists) {
-                    runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x52));
+                    owner.events.pendingDialogRequests.add(new DialogRequest(0, 0x52));
                     return false;
                 }
                 owner.encounter.genieActiveState[slot] = 4;
-                runtime.combatTables.writeEnemyHealth(slot, 0x08);
-                runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x53));
+                owner.combatTables.writeEnemyHealth(slot, 0x08);
+                owner.events.pendingDialogRequests.add(new DialogRequest(0, 0x53));
                 return false;
             }
             if (owner.encounter.genieActiveState[slot] == 4) {
-                runtime.combatTables.writeEnemyHitboxFlags(slot, 0x0C);
-                runtime.physicsTables.writeEntityOptions1Override(slot, 0x81);
-                if (runtime.combatTables.readEnemyFlashCountdown(slot) == 0x02) {
+                owner.combatTables.writeEnemyHitboxFlags(slot, 0x0C);
+                owner.physicsTables.writeEntityOptions1Override(slot, 0x81);
+                if (owner.combatTables.readEnemyFlashCountdown(slot) == 0x02) {
                     owner.encounter.genieActiveState[slot] = 5;
-                    runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x80);
+                    owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x80);
                     return false;
                 }
                 int x = addFallingSpeedToPosition(
@@ -692,7 +695,7 @@ public final class GenieEntityController {
                 int y = addFallingSpeedToPosition(
                         body.y(), owner.encounter.genieSpeedY[slot], owner.encounter.genieSpeedYAccumulator, slot);
                 RoomEntity moved = withPositionAndVariant(body, x, y, 2 + ((frameCounter >>> 4) & 1));
-                runtime.slots[slot] = moved;
+                owner.slots[slot] = moved;
                 if ((frameCounter & 0x03) == 0) {
                     EnemyRecoilMotion.Vector desired = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                             moved.x(), moved.y(), moved.z(), linkEntityX, linkEntityY, 0x10);
@@ -709,10 +712,10 @@ public final class GenieEntityController {
         private boolean advanceDeathState() {
 
             if (owner.encounter.genieActiveState[slot] == 5) {
-                runtime.physicsTables.writeEnemyPhysicsFlags(slot, 0x41);
-                if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+                owner.physicsTables.writeEnemyPhysicsFlags(slot, 0x41);
+                if (owner.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
                     owner.encounter.genieActiveState[slot] = 4;
-                    runtime.physicsTables.writeEnemyPhysicsFlags(slot, 0x01);
+                    owner.physicsTables.writeEnemyPhysicsFlags(slot, 0x01);
                     RoomEntity resetBody = body;
                     if ((randomByteSupplier.getAsInt() & 1) == 0) {
                         resetBody = withPositionAndVariant(
@@ -720,11 +723,11 @@ public final class GenieEntityController {
                                 owner.encounter.geniePrivateState4[slot],
                                 owner.encounter.geniePrivateState3[slot],
                                 body.spriteVariant());
-                        runtime.slots[slot] = resetBody;
+                        owner.slots[slot] = resetBody;
                     }
                     owner.encounter.genieSpeedX[slot] = 0;
                     owner.encounter.genieSpeedY[slot] = 0;
-                    runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
+                    owner.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
                     owner.spawnGenieAimedFireball(resetBody, slot, linkEntityX, linkEntityY);
                     return false;
                 }
@@ -739,7 +742,7 @@ public final class GenieEntityController {
                 int y = addFallingSpeedToPosition(
                         body.y(), owner.encounter.genieSpeedY[slot], owner.encounter.genieSpeedYAccumulator, slot);
                 RoomEntity moved = withPositionAndVariant(body, x, y, 2 + ((frameCounter >>> 4) & 1));
-                runtime.slots[slot] = moved;
+                owner.slots[slot] = moved;
                 owner.encounter.geniePrivateState3[slot] = (0x90 - moved.y()) & 0xFF;
                 owner.encounter.geniePrivateState4[slot] = (0xA0 - moved.x()) & 0xFF;
                 return false;
@@ -751,11 +754,11 @@ public final class GenieEntityController {
 
             if (owner.encounter.genieActiveState[slot] == 2) {
                 if (owner.encounter.genieControllerSlot < 0
-                        || owner.encounter.genieControllerSlot >= runtime.slots.length
-                        || !runtime.slots[owner.encounter.genieControllerSlot].loaded()) {
+                        || owner.encounter.genieControllerSlot >= owner.slots.length
+                        || !owner.slots[owner.encounter.genieControllerSlot].loaded()) {
                     return false;
                 }
-                RoomEntity jar = runtime.slots[owner.encounter.genieControllerSlot];
+                RoomEntity jar = owner.slots[owner.encounter.genieControllerSlot];
                 int targetY = (jar.y() - 0x20) & 0xFF;
                 EnemyRecoilMotion.Vector towardJar = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                         body.x(), body.y(), body.z(), jar.x(), targetY, 0x10);
@@ -766,10 +769,10 @@ public final class GenieEntityController {
                 int y = addFallingSpeedToPosition(
                         body.y(), owner.encounter.genieSpeedY[slot], owner.encounter.genieSpeedYAccumulator, slot);
                 RoomEntity moved = withPositionAndVariant(body, x, y, body.spriteVariant());
-                runtime.slots[slot] = moved;
+                owner.slots[slot] = moved;
                 int visualY = (moved.y() - moved.z()) & 0xFF;
                 if ((((moved.x() - jar.x() + 3) & 0xFF) < 6) && (((visualY - targetY + 3) & 0xFF) < 6)) {
-                    runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
+                    owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
                     owner.encounter.genieActiveState[slot] = 3;
                 }
                 return false;
@@ -780,9 +783,9 @@ public final class GenieEntityController {
         private boolean advanceBodyAnimation() {
 
             if (owner.encounter.genieActiveState[slot] == 3) {
-                int countdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
+                int countdown = owner.physicsTables.readEnemyTransitionCountdown(slot);
                 if (countdown == 0) {
-                    runtime.lifecycle.disableEntityWithoutPersistence(slot);
+                    owner.lifecycle.disableEntityWithoutPersistence(slot);
                     return false;
                 }
                 if (countdown == 0x04) {
@@ -794,7 +797,7 @@ public final class GenieEntityController {
                             GenieMotion.INITIAL_HEALTH,
                             GenieMotion.INITIAL_PHYSICS_FLAGS,
                             GenieMotion.INITIAL_HITBOX_FLAGS);
-                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    owner.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot,
                             EntityRomConstants.ENTITY_GENIE,
                             0,
@@ -814,7 +817,7 @@ public final class GenieEntityController {
                     addFallingSpeedToPosition(
                             body.y(), owner.encounter.genieSpeedY[slot], owner.encounter.genieSpeedYAccumulator, slot),
                     (frameCounter >>> 4) & 1);
-            runtime.slots[slot] = moved;
+            owner.slots[slot] = moved;
 
             direction = owner.encounter.genieDirection[slot] & 1;
             if ((frameCounter & 0x07) == 0) {
@@ -843,15 +846,15 @@ public final class GenieEntityController {
                 }
             }
 
-            if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
-                int inertia = runtime.physicsTables.readEntityInertia(slot) & 0xFF;
+            if (owner.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+                int inertia = owner.physicsTables.readEntityInertia(slot) & 0xFF;
                 if (inertia >= 0x08) {
                     owner.encounter.genieActiveState[slot] = 2;
-                    runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x30);
+                    owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x30);
                     return false;
                 }
                 int[] delays = {0x10, 0x14, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40};
-                runtime.physicsTables.writeEnemyTransitionCountdown(slot, delays[inertia]);
+                owner.physicsTables.writeEnemyTransitionCountdown(slot, delays[inertia]);
                 int projectileSlot = owner.spawnGenieEntity(
                         moved.x() - 0x0C,
                         moved.y() - 0x14,
@@ -872,7 +875,7 @@ public final class GenieEntityController {
 
             if (owner.encounter.geniePrivateCountdown1[slot] == 0) {
                 owner.encounter.geniePrivateCountdown1[slot] = 0x30;
-                int xOffset = (runtime.physicsTables.readEntityInertia(slot) & 1) == 0 ? -0x0C : 0x0C;
+                int xOffset = (owner.physicsTables.readEntityInertia(slot) & 1) == 0 ? -0x0C : 0x0C;
                 int fireballSlot = owner.spawnGenieEntity(
                         moved.x() + xOffset,
                         moved.y(),
@@ -882,15 +885,15 @@ public final class GenieEntityController {
                         0x12,
                         GenieMotion.INITIAL_HITBOX_FLAGS);
                 if (fireballSlot >= 0) {
-                    runtime.physicsTables.writeEntityInertia(
-                            slot, (runtime.physicsTables.readEntityInertia(slot) + 1) & 0xFF);
+                    owner.physicsTables.writeEntityInertia(
+                            slot, (owner.physicsTables.readEntityInertia(slot) + 1) & 0xFF);
                     owner.encounter.genieSpeedZ[fireballSlot] = 0x24;
                     EnemyRecoilMotion.Vector towardLink = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                             moved.x() + xOffset, moved.y(), 0, linkEntityX, linkEntityY, 0x1F);
                     owner.encounter.genieSpeedX[fireballSlot] = towardLink.x() & 0xFF;
                     owner.encounter.genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
                     owner.encounter.geniePrivateCountdown2[slot] = 0x10;
-                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    owner.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot,
                             EntityRomConstants.ENTITY_GENIE,
                             0,
@@ -900,11 +903,11 @@ public final class GenieEntityController {
                 }
             }
             if (owner.encounter.geniePrivateCountdown2[slot] != 0) {
-                runtime.slots[slot] = withPositionAndVariant(
-                        runtime.slots[slot],
-                        runtime.slots[slot].x(),
-                        runtime.slots[slot].y(),
-                        2 + (runtime.physicsTables.readEntityInertia(slot) & 1));
+                owner.slots[slot] = withPositionAndVariant(
+                        owner.slots[slot],
+                        owner.slots[slot].x(),
+                        owner.slots[slot].y(),
+                        2 + (owner.physicsTables.readEntityInertia(slot) & 1));
             }
             return true;
         }
@@ -919,16 +922,16 @@ public final class GenieEntityController {
                 int linkEntityY,
                 java.util.function.IntSupplier randomByteSupplier) {
             if (inUse) {
-                new GenieBodyStep().run(owner, body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier);
+                new GenieBodyStep(owner).run(owner, body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier);
                 return;
             }
             inUse = true;
-            runtime = null;
+
             slot = 0;
             moved = null;
             direction = 0;
             boundary = 0;
-            this.owner = owner;
+
             this.body = body;
             this.frameCounter = frameCounter;
             this.linkEntityX = linkEntityX;
@@ -938,32 +941,37 @@ public final class GenieEntityController {
                 run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.body = null;
                 this.randomByteSupplier = null;
-                this.runtime = null;
+
                 this.moved = null;
             }
         }
     }
 
     static final class GenieJarStep {
-        private linksawakening.world.entity.GenieEntityController owner;
+        private final linksawakening.world.entity.GenieEntityController owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity jarEntity;
         private int linkEntityY;
-        private linksawakening.world.entity.GenieEntityController runtime;
         private int slot;
         private int freeSlots;
         private boolean bodySpawnSucceeded;
         private boolean rockSpawnSucceeded;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.GenieMotion.Update update;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.GenieMotion.JarState jar;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity fallingJar;
         private int z;
         private boolean landed;
         private boolean activatedThisTick;
 
-        GenieJarStep() {}
+        GenieJarStep(linksawakening.world.entity.GenieEntityController owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         void run() {
             if (!advanceJarPhysics()) return;
@@ -973,17 +981,16 @@ public final class GenieEntityController {
 
         private boolean advanceJarPhysics() {
 
-            runtime = owner;
             slot = jarEntity.slot();
             freeSlots = 0;
-            for (RoomEntity candidate : runtime.slots) {
+            for (RoomEntity candidate : owner.slots) {
                 if (!candidate.loaded()) {
                     freeSlots++;
                 }
             }
             bodySpawnSucceeded = freeSlots >= 1;
             rockSpawnSucceeded = freeSlots >= 2;
-            update = runtime.motions
+            update = owner.motions
                     .get(GenieMotion.class, GenieMotion::new)
                     .advanceState0(
                             slot,
@@ -995,11 +1002,11 @@ public final class GenieEntityController {
                             rockSpawnSucceeded);
             jar = update.jar();
             owner.encounter.geniePrivateState1[slot] = jar.privateState1();
-            runtime.combatTables.writeEnemyHealth(slot, jar.health());
-            runtime.physicsTables.writeEnemyPhysicsFlags(slot, jar.physicsFlags());
-            runtime.combatTables.writeEnemyHitboxFlags(slot, jar.hitboxFlags());
+            owner.combatTables.writeEnemyHealth(slot, jar.health());
+            owner.physicsTables.writeEnemyPhysicsFlags(slot, jar.physicsFlags());
+            owner.combatTables.writeEnemyHitboxFlags(slot, jar.hitboxFlags());
 
-            fallingJar = runtime.slots[slot];
+            fallingJar = owner.slots[slot];
             z = addFallingSpeedToPosition(
                     fallingJar.z(), owner.encounter.genieSpeedZ[slot], owner.encounter.genieSpeedZAccumulator, slot);
             owner.encounter.genieSpeedZ[slot] = (owner.encounter.genieSpeedZ[slot] - 2) & 0xFF;
@@ -1008,7 +1015,7 @@ public final class GenieEntityController {
                 z = 0;
                 owner.encounter.genieSpeedZ[slot] = 0;
             }
-            runtime.slots[slot] = withZ(fallingJar, z);
+            owner.slots[slot] = withZ(fallingJar, z);
 
             activatedThisTick = false;
             if (update.bodySpawn() == null
@@ -1016,7 +1023,7 @@ public final class GenieEntityController {
                     && owner.encounter.genieActiveState[slot] == 0
                     && (linkEntityY & 0xFF) < 0x70) {
                 owner.encounter.genieActiveState[slot] = 1;
-                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
+                owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
                 activatedThisTick = true;
             }
             return true;
@@ -1030,7 +1037,7 @@ public final class GenieEntityController {
                     && !activatedThisTick) {
                 if (landed && owner.encounter.geniePrivateState3[slot] == 0) {
                     owner.encounter.genieSpeedZ[slot] = 0x10;
-                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    owner.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot,
                             EntityRomConstants.ENTITY_GENIE,
                             0,
@@ -1038,9 +1045,9 @@ public final class GenieEntityController {
                             EntityCombatEvent.SoundChannel.JINGLE,
                             0x20));
                 }
-                RoomEntity movedJar = owner.advanceGenieJarAttract(runtime.slots[slot]);
-                runtime.slots[slot] = movedJar;
-                if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 1) {
+                RoomEntity movedJar = owner.advanceGenieJarAttract(owner.slots[slot]);
+                owner.slots[slot] = movedJar;
+                if (owner.physicsTables.readEnemyTransitionCountdown(slot) == 1) {
                     owner.spawnGenieEntity(
                             movedJar.x(),
                             movedJar.y() - 0x26,
@@ -1049,7 +1056,7 @@ public final class GenieEntityController {
                             GenieMotion.INITIAL_HEALTH,
                             GenieMotion.INITIAL_PHYSICS_FLAGS,
                             GenieMotion.INITIAL_HITBOX_FLAGS);
-                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    owner.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot,
                             EntityRomConstants.ENTITY_GENIE,
                             0,
@@ -1069,11 +1076,11 @@ public final class GenieEntityController {
 
             if (update.rockSpawn() != null && update.rockSpawnSucceeded()) {
                 GenieMotion.RockSpawnRequest rock = update.rockSpawn();
-                runtime.entityPlayerSpawns.spawnLiftableRockAnimation(
+                owner.entityPlayerSpawns.spawnLiftableRockAnimation(
                         rock.x(), rock.y(), rock.spriteVariant(), rock.privateCountdown1(), rock.physicsFlags(), -1);
             }
             if (update.noiseSfx() >= 0) {
-                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                owner.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot,
                         EntityRomConstants.ENTITY_GENIE,
                         0,
@@ -1082,7 +1089,7 @@ public final class GenieEntityController {
                         update.noiseSfx()));
             }
             if (update.sourceUnloaded()) {
-                runtime.lifecycle.disableEntityWithoutPersistence(slot);
+                owner.lifecycle.disableEntityWithoutPersistence(slot);
             }
             return true;
         }
@@ -1094,11 +1101,11 @@ public final class GenieEntityController {
                 linksawakening.world.entity.RoomEntity jarEntity,
                 int linkEntityY) {
             if (inUse) {
-                new GenieJarStep().run(owner, jarEntity, linkEntityY);
+                new GenieJarStep(owner).run(owner, jarEntity, linkEntityY);
                 return;
             }
             inUse = true;
-            runtime = null;
+
             slot = 0;
             freeSlots = 0;
             bodySpawnSucceeded = false;
@@ -1109,16 +1116,16 @@ public final class GenieEntityController {
             z = 0;
             landed = false;
             activatedThisTick = false;
-            this.owner = owner;
+
             this.jarEntity = jarEntity;
             this.linkEntityY = linkEntityY;
             try {
                 run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.jarEntity = null;
-                this.runtime = null;
+
                 this.update = null;
                 this.jar = null;
                 this.fallingJar = null;

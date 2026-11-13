@@ -138,7 +138,8 @@ public final class MoldormMotion {
             int flashCountdown,
             int health,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(entity);
@@ -237,7 +238,8 @@ public final class MoldormMotion {
             int ignoreHitsCountdown,
             int flashCountdown,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         int slot = entity.slot();
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
@@ -320,7 +322,8 @@ public final class MoldormMotion {
             int y,
             int ignoreHitsCountdown,
             int frameCounter,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         if (backgroundInteraction == null) {
             return 0;
         }

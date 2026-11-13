@@ -149,7 +149,7 @@ public final class ArmosKnightMotion {
 
     record Vector(int x, int y) {}
 
-    final ArmosKnightStep armosKnightStep = new ArmosKnightStep();
+    final ArmosKnightStep armosKnightStep = new ArmosKnightStep(this);
 
     public record ArmosKnightFrame(
             RoomEntity entity,
@@ -163,8 +163,10 @@ public final class ArmosKnightMotion {
             int health) {}
 
     static final class ArmosKnightStep {
-        private ArmosKnightMotion owner;
+        private final ArmosKnightMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.ArmosKnightMotion.ArmosKnightFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int linkEntityX;
         private int linkEntityY;
@@ -181,12 +183,17 @@ public final class ArmosKnightMotion {
         private int z;
         private boolean landed;
         private int variant;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.ArmosKnightMotion.RubbleRequest rubbleRequest;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.ArmosKnightMotion.ScreenShakeRequest screenShakeRequest;
         private int jingleId;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        ArmosKnightStep() {}
+        ArmosKnightStep(ArmosKnightMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.ArmosKnightMotion.Update run() {
             if (!prepareFrame()) return completedResult;
@@ -204,6 +211,7 @@ public final class ArmosKnightMotion {
                     rubbleRequest);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.ArmosKnightMotion.Update completedResult;
 
         private boolean advanceWake() {
@@ -419,7 +427,7 @@ public final class ArmosKnightMotion {
         linksawakening.world.entity.motion.ArmosKnightMotion.Update run(
                 ArmosKnightMotion owner, linksawakening.world.entity.motion.ArmosKnightMotion.ArmosKnightFrame inputs) {
             if (inUse) {
-                return new ArmosKnightStep().run(owner, inputs);
+                return new ArmosKnightStep(owner).run(owner, inputs);
             }
             inUse = true;
             entity = null;
@@ -443,13 +451,13 @@ public final class ArmosKnightMotion {
             jingleId = 0;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.inputs = inputs;
             try {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.inputs = null;
                 this.entity = null;
                 this.rubbleRequest = null;

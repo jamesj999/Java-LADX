@@ -185,10 +185,11 @@ public final class CrowMotion {
     public record Update(
             RoomEntity entity, int transitionCountdown, int physicsFlags, boolean unloaded, boolean boomerangSound) {}
 
-    final CrowStep crowStep = new CrowStep();
+    final CrowStep crowStep = new CrowStep(this);
 
     static final class CrowStep {
-        private CrowMotion owner;
+        private final CrowMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private int transitionCountdown;
         private int frameCounter;
@@ -204,9 +205,12 @@ public final class CrowMotion {
         private int variant;
         private boolean boomerangSound;
         private boolean unloaded;
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 
-        CrowStep() {}
+        CrowStep(CrowMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
         linksawakening.world.entity.motion.CrowMotion.Update run() {
             if (entity == null || (entity.type() & 0xFF) != CrowMotion.ENTITY_TYPE) {
@@ -260,6 +264,7 @@ public final class CrowMotion {
             return new CrowMotion.Update(updated, countdown, owner.physicsFlags[slot], unloaded, boomerangSound);
         }
 
+        // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.CrowMotion.Update completedResult;
 
         private boolean advanceState0() {
@@ -352,7 +357,7 @@ public final class CrowMotion {
                 boolean allowLinkProximityTrigger,
                 boolean externalTakeoffTrigger) {
             if (inUse) {
-                return new CrowStep()
+                return new CrowStep(owner)
                         .run(
                                 owner,
                                 entity,
@@ -374,7 +379,7 @@ public final class CrowMotion {
             unloaded = false;
             updated = null;
             completedResult = null;
-            this.owner = owner;
+
             this.entity = entity;
             this.transitionCountdown = transitionCountdown;
             this.frameCounter = frameCounter;
@@ -386,7 +391,7 @@ public final class CrowMotion {
                 return run();
             } finally {
                 inUse = false;
-                this.owner = null;
+
                 this.entity = null;
                 this.updated = null;
                 this.completedResult = null;
