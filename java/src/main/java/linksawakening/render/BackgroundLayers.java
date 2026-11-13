@@ -24,15 +24,17 @@ final class BackgroundLayers {
     private int[] revealTiles;
     private static final int[][] REVEAL_MASKS = revealMasks();
 
-    void fill(List<RenderLayer> layers, GameFrameInputs state) {
+    void fill(List<RenderLayer> layers, GameFrameState state) {
         var menu = state.fileMenuFrame();
         var intro = state.introFrameSnapshot();
-        if (menu == null
-                && (intro == null
-                        && (state.tilemap() == null || state.attrmap() == null || state.bgPalettes() == null))) return;
+        if (!state.background.hasFileMenuFrame()
+                && (!state.background.hasIntroFrameSnapshot()
+                        && (!state.background.hasTilemap()
+                                || !state.background.hasAttrmap()
+                                || !state.background.hasBgPalettes()))) return;
         uploadBytes = null;
         lineY = null;
-        if (menu != null) {
+        if (state.background.hasFileMenuFrame()) {
             capture(menu);
             tiles = menuTiles;
             attrs = menuAttrs;
@@ -41,7 +43,7 @@ final class BackgroundLayers {
             scrollX = scrollY = 0;
             lineX = null;
             sprites = menu.sprites();
-        } else if (intro != null) {
+        } else if (state.background.hasIntroFrameSnapshot()) {
             capture(intro);
             tiles = introTiles;
             attrs = introAttrs;
@@ -60,15 +62,19 @@ final class BackgroundLayers {
             bg = state.bgPalettes();
             obj = state.objPalettes();
             var cutscene = state.cutsceneManager();
-            scrollX = cutscene == null ? 0 : cutscene.scrollX();
-            scrollY = cutscene == null ? 0 : cutscene.scrollY();
-            lineX = cutscene == null ? null : cutscene.lineScrollX(Framebuffer.HEIGHT);
-            sprites = cutscene == null ? null : cutscene.sprites();
-            if (cutscene != null && cutscene.isShowingTitleScene()) maskTitle(cutscene.titleRevealRows());
+            scrollX = !state.background.hasCutsceneManager() ? 0 : cutscene.scrollX();
+            scrollY = !state.background.hasCutsceneManager() ? 0 : cutscene.scrollY();
+            lineX = !state.background.hasCutsceneManager() ? null : cutscene.lineScrollX(Framebuffer.HEIGHT);
+            sprites = !state.background.hasCutsceneManager() ? null : cutscene.sprites();
+            if (state.background.hasCutsceneManager() && cutscene.isShowingTitleScene())
+                maskTitle(cutscene.titleRevealRows());
         }
         if (uploadBytes != null) layers.add(upload);
         layers.add(background);
-        if (obj != null && (menu != null || intro != null || state.cutsceneManager() != null)) layers.add(objects);
+        if (obj != null
+                && (state.background.hasFileMenuFrame()
+                        || state.background.hasIntroFrameSnapshot()
+                        || state.background.hasCutsceneManager())) layers.add(objects);
     }
 
     private void capture(FileMenuFrameSnapshot value) {

@@ -31,6 +31,10 @@ final class EntityRenderLayer implements HardwareRenderLayer {
     private EntitySelectionSprites activeSprites;
     private final Offset currentOffset = new Offset(0, 0), previousOffset = new Offset(0, 0);
 
+    EntityRenderLayer() {
+        painter = new EntitySpritePainter(null);
+    }
+
     public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes, ScrollController scrollController) {
         this(snapshot, objectPalettes, scrollController, 0);
     }

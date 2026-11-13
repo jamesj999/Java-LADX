@@ -18,15 +18,15 @@ final class PaletteLayer implements HardwareRenderLayer {
             object = rgb -> inventory.color(rgb, true);
     private final Runnable draw = this::drawChild, inner = this::drawInner, sourced = this::drawSourced;
 
-    void configure(RenderLayer layer, GameFrameInputs state) {
+    void configure(RenderLayer layer, GameFrameState state) {
         child = (HardwareRenderLayer) layer;
         passOut = state.screen() == RenderScreen.OVERWORLD
-                && state.link() != null
+                && state.overworld.hasLink()
                 && state.link().status().isPassingOut()
                 && !(layer instanceof LinkRenderLayer);
         passOutFrames = passOut ? state.link().status().passOutPaletteFrames() : 0;
         inventory = state.screen() == RenderScreen.OVERWORLD
-                        && state.inventoryController() != null
+                        && state.overworld.hasInventoryController()
                         && state.inventoryController().transition().blocksWorld()
                 ? state.inventoryController().transition()
                 : null;

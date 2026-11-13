@@ -1,5 +1,6 @@
 package linksawakening.render;
 
+import java.util.Objects;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.dialog.DialogController;
@@ -41,47 +42,136 @@ public final class GameFrameState implements GameFrameInputs {
             int frameCounter,
             IntroFrameSnapshot introFrameSnapshot,
             FileMenuFrameSnapshot fileMenuFrame) {
-        this.screen = screen;
-        this.tilemap = tilemap;
-        this.attrmap = attrmap;
-        this.bgPalettes = bgPalettes;
-        this.objPalettes = objPalettes;
-        this.cutsceneManager = cutsceneManager;
-        this.room = room;
-        this.scrollController = scrollController;
-        this.transitionController = transitionController;
-        this.link = link;
-        this.transientVfxSystem = transientVfxSystem;
-        this.cutLeavesEffectRenderer = cutLeavesEffectRenderer;
-        this.transientVfxPalette = transientVfxPalette;
-        this.droppableRupeeSystem = droppableRupeeSystem;
-        this.inventoryController = inventoryController;
-        this.dialogController = dialogController;
-        this.frameCounter = frameCounter;
-        this.introFrameSnapshot = introFrameSnapshot;
-        this.fileMenuFrame = fileMenuFrame;
-        roomInputs.capture(room);
+        withScreen(screen)
+                .withBackground(tilemap, attrmap, bgPalettes, objPalettes)
+                .withCutsceneManager(cutsceneManager)
+                .withRoom(room, scrollController, transitionController)
+                .withLink(link)
+                .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette)
+                .withDroppableRupees(droppableRupeeSystem)
+                .withInventoryController(inventoryController)
+                .withDialogController(dialogController)
+                .withFrameCounter(frameCounter)
+                .withIntroFrameSnapshot(introFrameSnapshot)
+                .withFileMenuFrame(fileMenuFrame);
+    }
+
+    public final OverworldInputs overworld = new OverworldInputs();
+    /** Always-present overworld section; presence denotes intentionally omitted presentation components. */
+    public static final class OverworldInputs {
+        private RoomRenderView room;
+        private ScrollController scrollController;
+        private TransitionController transitionController;
+        private Link link;
+        private TransientVfxSystem transientVfxSystem;
+        private CutLeavesEffectRenderer cutLeavesEffectRenderer;
+        private int[] transientVfxPalette;
+        private DroppableRupeeSystem droppableRupeeSystem;
+        private InventoryController inventoryController;
+        private DialogController dialogController;
+        private boolean roomPresent;
+        private boolean scrollControllerPresent;
+        private boolean transitionControllerPresent;
+        private boolean linkPresent;
+        private boolean transientVfxSystemPresent;
+        private boolean cutLeavesEffectRendererPresent;
+        private boolean transientVfxPalettePresent;
+        private boolean droppableRupeeSystemPresent;
+        private boolean inventoryControllerPresent;
+        private boolean dialogControllerPresent;
+
+        public boolean hasRoom() {
+            return roomPresent;
+        }
+
+        public boolean hasScrollController() {
+            return scrollControllerPresent;
+        }
+
+        public boolean hasTransitionController() {
+            return transitionControllerPresent;
+        }
+
+        public boolean hasLink() {
+            return linkPresent;
+        }
+
+        public boolean hasTransientVfxSystem() {
+            return transientVfxSystemPresent;
+        }
+
+        public boolean hasCutLeavesEffectRenderer() {
+            return cutLeavesEffectRendererPresent;
+        }
+
+        public boolean hasTransientVfxPalette() {
+            return transientVfxPalettePresent;
+        }
+
+        public boolean hasDroppableRupeeSystem() {
+            return droppableRupeeSystemPresent;
+        }
+
+        public boolean hasInventoryController() {
+            return inventoryControllerPresent;
+        }
+
+        public boolean hasDialogController() {
+            return dialogControllerPresent;
+        }
+    }
+
+    public final BackgroundInputs background = new BackgroundInputs();
+    /** Always-present background section; presence denotes intentionally omitted presentation components. */
+    public static final class BackgroundInputs {
+        private int[] tilemap;
+        private int[] attrmap;
+        private int[][] bgPalettes;
+        private int[][] objPalettes;
+        private CutsceneManager cutsceneManager;
+        private IntroFrameSnapshot introFrameSnapshot;
+        private FileMenuFrameSnapshot fileMenuFrame;
+        private boolean tilemapPresent;
+        private boolean attrmapPresent;
+        private boolean bgPalettesPresent;
+        private boolean objPalettesPresent;
+        private boolean cutsceneManagerPresent;
+        private boolean introFrameSnapshotPresent;
+        private boolean fileMenuFramePresent;
+
+        public boolean hasTilemap() {
+            return tilemapPresent;
+        }
+
+        public boolean hasAttrmap() {
+            return attrmapPresent;
+        }
+
+        public boolean hasBgPalettes() {
+            return bgPalettesPresent;
+        }
+
+        public boolean hasObjPalettes() {
+            return objPalettesPresent;
+        }
+
+        public boolean hasCutsceneManager() {
+            return cutsceneManagerPresent;
+        }
+
+        public boolean hasIntroFrameSnapshot() {
+            return introFrameSnapshotPresent;
+        }
+
+        public boolean hasFileMenuFrame() {
+            return fileMenuFramePresent;
+        }
     }
 
     private RenderScreen screen = RenderScreen.TITLE;
-    private int[] tilemap;
-    private int[] attrmap;
-    private int[][] bgPalettes;
-    private int[][] objPalettes;
-    private CutsceneManager cutsceneManager;
-    private RoomRenderView room;
-    private ScrollController scrollController;
-    private TransitionController transitionController;
-    private Link link;
-    private TransientVfxSystem transientVfxSystem;
-    private CutLeavesEffectRenderer cutLeavesEffectRenderer;
-    private int[] transientVfxPalette;
-    private DroppableRupeeSystem droppableRupeeSystem;
-    private InventoryController inventoryController;
-    private DialogController dialogController;
+
     private int frameCounter;
-    private IntroFrameSnapshot introFrameSnapshot;
-    private FileMenuFrameSnapshot fileMenuFrame;
+
     final RoomInputs roomInputs = new RoomInputs();
 
     @Override
@@ -91,77 +181,77 @@ public final class GameFrameState implements GameFrameInputs {
 
     @Override
     public int[] tilemap() {
-        return tilemap;
+        return background.tilemap;
     }
 
     @Override
     public int[] attrmap() {
-        return attrmap;
+        return background.attrmap;
     }
 
     @Override
     public int[][] bgPalettes() {
-        return bgPalettes;
+        return background.bgPalettes;
     }
 
     @Override
     public int[][] objPalettes() {
-        return objPalettes;
+        return background.objPalettes;
     }
 
     @Override
     public CutsceneManager cutsceneManager() {
-        return cutsceneManager;
+        return background.cutsceneManager;
     }
 
     @Override
     public RoomRenderView room() {
-        return room;
+        return overworld.room;
     }
 
     @Override
     public ScrollController scrollController() {
-        return scrollController;
+        return overworld.scrollController;
     }
 
     @Override
     public TransitionController transitionController() {
-        return transitionController;
+        return overworld.transitionController;
     }
 
     @Override
     public Link link() {
-        return link;
+        return overworld.link;
     }
 
     @Override
     public TransientVfxSystem transientVfxSystem() {
-        return transientVfxSystem;
+        return overworld.transientVfxSystem;
     }
 
     @Override
     public CutLeavesEffectRenderer cutLeavesEffectRenderer() {
-        return cutLeavesEffectRenderer;
+        return overworld.cutLeavesEffectRenderer;
     }
 
     @Override
     public int[] transientVfxPalette() {
-        return transientVfxPalette;
+        return overworld.transientVfxPalette;
     }
 
     @Override
     public DroppableRupeeSystem droppableRupeeSystem() {
-        return droppableRupeeSystem;
+        return overworld.droppableRupeeSystem;
     }
 
     @Override
     public InventoryController inventoryController() {
-        return inventoryController;
+        return overworld.inventoryController;
     }
 
     @Override
     public DialogController dialogController() {
-        return dialogController;
+        return overworld.dialogController;
     }
 
     @Override
@@ -171,12 +261,12 @@ public final class GameFrameState implements GameFrameInputs {
 
     @Override
     public IntroFrameSnapshot introFrameSnapshot() {
-        return introFrameSnapshot;
+        return background.introFrameSnapshot;
     }
 
     @Override
     public FileMenuFrameSnapshot fileMenuFrame() {
-        return fileMenuFrame;
+        return background.fileMenuFrame;
     }
 
     public GameFrameState withScreen(RenderScreen screen) {
@@ -185,29 +275,38 @@ public final class GameFrameState implements GameFrameInputs {
     }
 
     public GameFrameState withBackground(int[] tilemap, int[] attrmap, int[][] bgPalettes, int[][] objPalettes) {
-        this.tilemap = tilemap;
-        this.attrmap = attrmap;
-        this.bgPalettes = bgPalettes;
-        this.objPalettes = objPalettes;
+        this.background.tilemap = tilemap;
+        background.tilemapPresent = background.tilemap != null;
+        this.background.attrmap = attrmap;
+        background.attrmapPresent = background.attrmap != null;
+        this.background.bgPalettes = bgPalettes;
+        background.bgPalettesPresent = background.bgPalettes != null;
+        this.background.objPalettes = objPalettes;
+        background.objPalettesPresent = background.objPalettes != null;
         return this;
     }
 
     public GameFrameState withCutsceneManager(CutsceneManager cutsceneManager) {
-        this.cutsceneManager = cutsceneManager;
+        this.background.cutsceneManager = cutsceneManager;
+        background.cutsceneManagerPresent = background.cutsceneManager != null;
         return this;
     }
 
     public GameFrameState withRoom(
             RoomRenderView room, ScrollController scrollController, TransitionController transitionController) {
-        this.room = room;
-        this.scrollController = scrollController;
-        this.transitionController = transitionController;
-        roomInputs.capture(room);
+        this.overworld.room = room;
+        overworld.roomPresent = overworld.room != null;
+        this.overworld.scrollController = scrollController;
+        overworld.scrollControllerPresent = overworld.scrollController != null;
+        this.overworld.transitionController = transitionController;
+        overworld.transitionControllerPresent = overworld.transitionController != null;
+        roomInputs.capture(overworld.room);
         return this;
     }
 
     public GameFrameState withLink(Link link) {
-        this.link = link;
+        this.overworld.link = link;
+        overworld.linkPresent = overworld.link != null;
         return this;
     }
 
@@ -215,24 +314,30 @@ public final class GameFrameState implements GameFrameInputs {
             TransientVfxSystem transientVfxSystem,
             CutLeavesEffectRenderer cutLeavesEffectRenderer,
             int[] transientVfxPalette) {
-        this.transientVfxSystem = transientVfxSystem;
-        this.cutLeavesEffectRenderer = cutLeavesEffectRenderer;
-        this.transientVfxPalette = transientVfxPalette;
+        this.overworld.transientVfxSystem = transientVfxSystem;
+        overworld.transientVfxSystemPresent = overworld.transientVfxSystem != null;
+        this.overworld.cutLeavesEffectRenderer = cutLeavesEffectRenderer;
+        overworld.cutLeavesEffectRendererPresent = overworld.cutLeavesEffectRenderer != null;
+        this.overworld.transientVfxPalette = transientVfxPalette;
+        overworld.transientVfxPalettePresent = overworld.transientVfxPalette != null;
         return this;
     }
 
     public GameFrameState withDroppableRupees(DroppableRupeeSystem droppableRupeeSystem) {
-        this.droppableRupeeSystem = droppableRupeeSystem;
+        this.overworld.droppableRupeeSystem = droppableRupeeSystem;
+        overworld.droppableRupeeSystemPresent = overworld.droppableRupeeSystem != null;
         return this;
     }
 
     public GameFrameState withInventoryController(InventoryController inventoryController) {
-        this.inventoryController = inventoryController;
+        this.overworld.inventoryController = inventoryController;
+        overworld.inventoryControllerPresent = overworld.inventoryController != null;
         return this;
     }
 
     public GameFrameState withDialogController(DialogController dialogController) {
-        this.dialogController = dialogController;
+        this.overworld.dialogController = dialogController;
+        overworld.dialogControllerPresent = overworld.dialogController != null;
         return this;
     }
 
@@ -242,61 +347,73 @@ public final class GameFrameState implements GameFrameInputs {
     }
 
     public GameFrameState withIntroFrameSnapshot(IntroFrameSnapshot introFrameSnapshot) {
-        this.introFrameSnapshot = introFrameSnapshot;
+        this.background.introFrameSnapshot = introFrameSnapshot;
+        background.introFrameSnapshotPresent = background.introFrameSnapshot != null;
         return this;
     }
 
     public GameFrameState withFileMenuFrame(FileMenuFrameSnapshot fileMenuFrame) {
-        this.fileMenuFrame = fileMenuFrame;
+        this.background.fileMenuFrame = fileMenuFrame;
+        background.fileMenuFramePresent = background.fileMenuFrame != null;
         return this;
     }
 
     /** Restores empty-input defaults without allocation before a complete refill. */
     public GameFrameState reset() {
         screen = RenderScreen.TITLE;
-        tilemap = null;
-        attrmap = null;
-        bgPalettes = null;
-        objPalettes = null;
-        cutsceneManager = null;
-        room = null;
-        scrollController = null;
-        transitionController = null;
-        link = null;
-        transientVfxSystem = null;
-        cutLeavesEffectRenderer = null;
-        transientVfxPalette = null;
-        droppableRupeeSystem = null;
-        inventoryController = null;
-        dialogController = null;
+        background.tilemap = null;
+        background.tilemapPresent = false;
+        background.attrmap = null;
+        background.attrmapPresent = false;
+        background.bgPalettes = null;
+        background.bgPalettesPresent = false;
+        background.objPalettes = null;
+        background.objPalettesPresent = false;
+        background.cutsceneManager = null;
+        background.cutsceneManagerPresent = false;
+        overworld.room = null;
+        overworld.roomPresent = false;
+        overworld.scrollController = null;
+        overworld.scrollControllerPresent = false;
+        overworld.transitionController = null;
+        overworld.transitionControllerPresent = false;
+        overworld.link = null;
+        overworld.linkPresent = false;
+        overworld.transientVfxSystem = null;
+        overworld.transientVfxSystemPresent = false;
+        overworld.cutLeavesEffectRenderer = null;
+        overworld.cutLeavesEffectRendererPresent = false;
+        overworld.transientVfxPalette = null;
+        overworld.transientVfxPalettePresent = false;
+        overworld.droppableRupeeSystem = null;
+        overworld.droppableRupeeSystemPresent = false;
+        overworld.inventoryController = null;
+        overworld.inventoryControllerPresent = false;
+        overworld.dialogController = null;
+        overworld.dialogControllerPresent = false;
         frameCounter = 0;
-        introFrameSnapshot = null;
-        fileMenuFrame = null;
+        background.introFrameSnapshot = null;
+        background.introFrameSnapshotPresent = false;
+        background.fileMenuFrame = null;
+        background.fileMenuFramePresent = false;
         roomInputs.capture(null);
         return this;
     }
 
     public GameFrameState copyFrom(GameFrameState source) {
-        this.screen = source.screen();
-        this.tilemap = source.tilemap();
-        this.attrmap = source.attrmap();
-        this.bgPalettes = source.bgPalettes();
-        this.objPalettes = source.objPalettes();
-        this.cutsceneManager = source.cutsceneManager();
-        this.room = source.room();
-        this.scrollController = source.scrollController();
-        this.transitionController = source.transitionController();
-        this.link = source.link();
-        this.transientVfxSystem = source.transientVfxSystem();
-        this.cutLeavesEffectRenderer = source.cutLeavesEffectRenderer();
-        this.transientVfxPalette = source.transientVfxPalette();
-        this.droppableRupeeSystem = source.droppableRupeeSystem();
-        this.inventoryController = source.inventoryController();
-        this.dialogController = source.dialogController();
-        this.frameCounter = source.frameCounter();
-        this.introFrameSnapshot = source.introFrameSnapshot();
-        this.fileMenuFrame = source.fileMenuFrame();
-        roomInputs.capture(room);
+        withScreen(source.screen())
+                .withBackground(source.tilemap(), source.attrmap(), source.bgPalettes(), source.objPalettes())
+                .withCutsceneManager(source.cutsceneManager())
+                .withRoom(source.room(), source.scrollController(), source.transitionController())
+                .withLink(source.link())
+                .withTransientVfx(
+                        source.transientVfxSystem(), source.cutLeavesEffectRenderer(), source.transientVfxPalette())
+                .withDroppableRupees(source.droppableRupeeSystem())
+                .withInventoryController(source.inventoryController())
+                .withDialogController(source.dialogController())
+                .withFrameCounter(source.frameCounter())
+                .withIntroFrameSnapshot(source.introFrameSnapshot())
+                .withFileMenuFrame(source.fileMenuFrame());
         return this;
     }
     /** Borrows current room arrays/view without invoking defensive snapshot getters. The caller keeps these inputs valid until the scene has been drawn. */
@@ -308,39 +425,42 @@ public final class GameFrameState implements GameFrameInputs {
             linksawakening.world.entity.event.InstrumentWarpVisual warp,
             linksawakening.world.entity.event.HeartPieceVisual heart,
             int grassPalette) {
-        room = null;
+        overworld.room = null;
+        overworld.roomPresent = overworld.room != null;
         roomInputs.set(tiles, attributes, palettes, entities, warp, heart, grassPalette);
         return this;
     }
 
     public GameFrameState withRoomControllers(ScrollController scroll, TransitionController transition) {
-        scrollController = scroll;
-        transitionController = transition;
+        overworld.scrollController = scroll;
+        overworld.scrollControllerPresent = overworld.scrollController != null;
+        overworld.transitionController = transition;
+        overworld.transitionControllerPresent = overworld.transitionController != null;
         return this;
     }
 
     @Override
     public boolean equals(Object value) {
         if (!(value instanceof GameFrameState other)) return false;
-        return java.util.Objects.equals(screen, other.screen)
-                && java.util.Objects.equals(tilemap, other.tilemap)
-                && java.util.Objects.equals(attrmap, other.attrmap)
-                && java.util.Objects.equals(bgPalettes, other.bgPalettes)
-                && java.util.Objects.equals(objPalettes, other.objPalettes)
-                && java.util.Objects.equals(cutsceneManager, other.cutsceneManager)
-                && java.util.Objects.equals(room, other.room)
-                && java.util.Objects.equals(scrollController, other.scrollController)
-                && java.util.Objects.equals(transitionController, other.transitionController)
-                && java.util.Objects.equals(link, other.link)
-                && java.util.Objects.equals(transientVfxSystem, other.transientVfxSystem)
-                && java.util.Objects.equals(cutLeavesEffectRenderer, other.cutLeavesEffectRenderer)
-                && java.util.Objects.equals(transientVfxPalette, other.transientVfxPalette)
-                && java.util.Objects.equals(droppableRupeeSystem, other.droppableRupeeSystem)
-                && java.util.Objects.equals(inventoryController, other.inventoryController)
-                && java.util.Objects.equals(dialogController, other.dialogController)
+        return Objects.equals(screen, other.screen)
+                && Objects.equals(background.tilemap, other.background.tilemap)
+                && Objects.equals(background.attrmap, other.background.attrmap)
+                && Objects.equals(background.bgPalettes, other.background.bgPalettes)
+                && Objects.equals(background.objPalettes, other.background.objPalettes)
+                && Objects.equals(background.cutsceneManager, other.background.cutsceneManager)
+                && Objects.equals(overworld.room, other.overworld.room)
+                && Objects.equals(overworld.scrollController, other.overworld.scrollController)
+                && Objects.equals(overworld.transitionController, other.overworld.transitionController)
+                && Objects.equals(overworld.link, other.overworld.link)
+                && Objects.equals(overworld.transientVfxSystem, other.overworld.transientVfxSystem)
+                && Objects.equals(overworld.cutLeavesEffectRenderer, other.overworld.cutLeavesEffectRenderer)
+                && Objects.equals(overworld.transientVfxPalette, other.overworld.transientVfxPalette)
+                && Objects.equals(overworld.droppableRupeeSystem, other.overworld.droppableRupeeSystem)
+                && Objects.equals(overworld.inventoryController, other.overworld.inventoryController)
+                && Objects.equals(overworld.dialogController, other.overworld.dialogController)
                 && frameCounter == other.frameCounter
-                && java.util.Objects.equals(introFrameSnapshot, other.introFrameSnapshot)
-                && java.util.Objects.equals(fileMenuFrame, other.fileMenuFrame);
+                && Objects.equals(background.introFrameSnapshot, other.background.introFrameSnapshot)
+                && Objects.equals(background.fileMenuFrame, other.background.fileMenuFrame);
     }
 
     @Override

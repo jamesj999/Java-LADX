@@ -9,6 +9,7 @@ import linksawakening.world.room.RoomRenderView;
 
 /** Borrowed room planes and cached immutable metadata; no live world data is copied per build. */
 final class RoomInputs {
+    boolean present, entitiesPresent, entityTilesPresent, warpPresent, heartPresent;
     int[] tiles, attributes;
     int[][] palettes, objectPalettes;
     RoomEntitySnapshot entities;
@@ -77,6 +78,11 @@ final class RoomInputs {
             HeartPieceVisual heart,
             int grassPalette) {
         captured = null;
+        present = tiles != null;
+        entitiesPresent = entities != null && entities.spriteSelection() != null;
+        entityTilesPresent = entitiesPresent && entities.spriteTiles() != null;
+        warpPresent = warp != null;
+        heartPresent = heart != null;
         this.tiles = tiles;
         this.attributes = attributes;
         this.palettes = palettes;
