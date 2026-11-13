@@ -1,53 +1,69 @@
-# Simplification round baseline
+# Simplification round results
 
-Counts include nested packages; world is excluded. Null checks count explicit equality comparisons. ForTest counts identifier calls/declarations (audited separately before removal). Small files have fewer than 40 nonblank, noncomment code lines excluding package/import and standalone braces. FQNs include java.util/io/lang/nio/net/time/awt outside imports. These lexical metrics indicate review candidates, not design quality.
+Baseline: develop a932af57. Final source metrics follow steps 1–6; documentation
+changes in step 7 do not alter Java metrics. World is excluded throughout.
+Counts include nested packages, and main/test are separate. Each cell is
+**baseline → final** (a single number means unchanged).
 
-| Scope/package | Files | Lines | Null checks | Wildcards | Console | JDK FQNs | ForTest references | Small files |
+Lines include imports and comments. Null checks count explicit equality
+comparisons outside comments/string literals, not Objects.requireNonNull calls.
+FQNs count inline JDK names outside imports/comments/strings; property names such
+as java.io.tmpdir are not types. ForTest counts declared methods ending ForTest,
+not call sites. Small types count named classes/interfaces/enums/records,
+including nested declarations, with fewer than 40 nonblank, noncomment code
+lines excluding standalone braces. The initial baseline commit used lexical
+hook references and small-file counts; both columns below are recomputed from
+the same revisions using the refined declaration/type definitions.
+
+These are review indicators, not targets. Explicit imports and readable wrapping
+increase physical lines even when source ownership becomes simpler.
+
+| Scope/package | Files | Lines | Null checks | Wildcards | Console | JDK FQNs | ForTest members | Small types |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | main/(root) | 1 | 12 | 0 | 0 | 0 | 0 | 0 | 1 |
-| main/app | 125 | 9130 | 94 | 17 | 4 | 7 | 0 | 84 |
-| main/audio | 46 | 5243 | 42 | 4 | 5 | 0 | 0 | 23 |
-| main/config | 2 | 393 | 5 | 0 | 6 | 0 | 0 | 0 |
-| main/cutscene | 20 | 2552 | 33 | 9 | 0 | 0 | 0 | 9 |
-| main/dialog | 6 | 896 | 10 | 0 | 0 | 0 | 0 | 2 |
-| main/entity | 80 | 10596 | 147 | 83 | 0 | 0 | 0 | 33 |
-| main/equipment | 19 | 1821 | 18 | 2 | 0 | 0 | 3 | 10 |
-| main/gameplay | 20 | 1052 | 22 | 0 | 0 | 0 | 0 | 14 |
-| main/gpu | 11 | 1183 | 10 | 0 | 0 | 1 | 0 | 2 |
-| main/input | 3 | 246 | 1 | 2 | 2 | 1 | 0 | 2 |
-| main/physics | 2 | 445 | 10 | 0 | 0 | 0 | 0 | 0 |
-| main/recording | 3 | 333 | 5 | 0 | 1 | 2 | 0 | 1 |
-| main/render | 48 | 5140 | 216 | 0 | 0 | 0 | 0 | 22 |
+| main/app | 125 → 123 | 9130 → 9171 | 94 | 17 → 0 | 4 → 1 | 7 → 0 | 0 | 101 → 100 |
+| main/audio | 46 | 5243 → 5260 | 42 | 4 → 0 | 5 → 0 | 0 | 0 | 25 |
+| main/config | 2 | 393 → 394 | 5 | 0 | 6 → 0 | 0 | 0 | 4 |
+| main/cutscene | 20 | 2552 → 2573 | 33 | 9 → 0 | 0 | 0 | 0 | 21 |
+| main/dialog | 6 | 896 | 10 | 0 | 0 | 0 | 0 | 5 |
+| main/entity | 80 → 64 | 10596 → 10775 | 147 | 83 → 0 | 0 | 0 | 0 | 74 → 64 |
+| main/equipment | 19 | 1821 → 1814 | 18 | 2 → 0 | 0 | 0 | 3 → 0 | 25 → 26 |
+| main/gameplay | 20 | 1052 | 22 | 0 | 0 | 0 | 0 | 15 |
+| main/gpu | 11 | 1183 → 1184 | 10 | 0 | 0 | 1 → 0 | 0 | 2 |
+| main/input | 3 | 246 → 266 | 1 | 2 → 0 | 2 → 0 | 1 → 0 | 0 | 2 |
+| main/physics | 2 | 445 | 10 | 0 | 0 | 0 | 0 | 2 |
+| main/recording | 3 | 333 → 336 | 5 | 0 | 1 → 0 | 2 → 0 | 0 | 1 |
+| main/render | 48 | 5140 → 5169 | 216 → 208 | 0 | 0 | 0 | 0 | 31 |
 | main/rom | 15 | 1363 | 0 | 0 | 0 | 0 | 0 | 8 |
-| main/save | 7 | 1253 | 3 | 3 | 1 | 0 | 0 | 2 |
+| main/save | 7 | 1253 → 1269 | 3 | 3 → 0 | 1 → 0 | 0 | 0 | 11 |
 | main/scene | 4 | 186 | 0 | 0 | 0 | 0 | 0 | 3 |
-| main/startup | 4 | 447 | 0 | 0 | 0 | 0 | 0 | 1 |
-| main/state | 24 | 1578 | 1 | 22 | 0 | 0 | 0 | 14 |
-| main/ui | 21 | 2925 | 32 | 0 | 0 | 0 | 0 | 6 |
-| main/vfx | 4 | 531 | 7 | 1 | 0 | 0 | 0 | 1 |
-| test/(root) | 4 | 824 | 1 | 14 | 2 | 1 | 0 | 0 |
-| test/app | 42 | 3414 | 0 | 69 | 12 | 15 | 0 | 18 |
-| test/architecture | 5 | 579 | 2 | 3 | 0 | 5 | 0 | 1 |
-| test/audio | 42 | 4146 | 9 | 30 | 8 | 10 | 0 | 15 |
-| test/config | 3 | 272 | 0 | 2 | 0 | 0 | 0 | 1 |
-| test/cutscene | 8 | 827 | 3 | 1 | 0 | 2 | 0 | 3 |
-| test/dialog | 6 | 735 | 1 | 3 | 2 | 0 | 0 | 3 |
-| test/entity | 36 | 6791 | 5 | 16 | 1 | 5 | 0 | 10 |
-| test/equipment | 14 | 2048 | 3 | 2 | 0 | 1 | 6 | 5 |
-| test/gameplay | 8 | 1487 | 6 | 1 | 0 | 2 | 0 | 2 |
-| test/gpu | 13 | 703 | 4 | 1 | 1 | 0 | 0 | 11 |
-| test/input | 2 | 58 | 0 | 2 | 0 | 0 | 0 | 2 |
+| main/startup | 4 | 447 | 0 | 0 | 0 | 0 | 0 | 6 |
+| main/state | 24 | 1578 → 1579 | 1 | 22 → 0 | 0 | 0 | 0 | 14 |
+| main/ui | 21 | 2925 | 32 | 0 | 0 | 0 | 0 | 13 |
+| main/vfx | 4 | 531 → 532 | 7 | 1 → 0 | 0 | 0 | 0 | 6 |
+| test/(root) | 4 | 824 | 1 | 14 → 0 | 2 | 1 → 0 | 0 | 0 |
+| test/app | 42 | 3414 → 3547 | 0 | 69 → 0 | 12 | 15 → 0 | 0 | 26 |
+| test/architecture | 5 → 6 | 579 → 630 | 2 | 3 → 0 | 0 | 5 → 0 | 0 | 8 → 9 |
+| test/audio | 42 | 4146 → 4222 | 9 | 30 → 0 | 8 | 10 → 0 | 0 | 18 |
+| test/config | 3 | 272 → 276 | 0 | 2 → 0 | 0 | 0 | 0 | 1 |
+| test/cutscene | 8 | 827 → 831 | 3 | 1 → 0 | 0 | 2 → 0 | 0 | 5 |
+| test/dialog | 6 | 735 → 738 | 1 | 3 → 0 | 2 | 0 | 0 | 3 |
+| test/entity | 36 | 6791 → 6790 | 5 | 16 → 0 | 1 | 5 → 0 | 0 | 20 |
+| test/equipment | 14 → 15 | 2048 → 2090 | 3 | 2 → 0 | 0 | 1 → 0 | 0 | 25 → 26 |
+| test/gameplay | 8 | 1487 → 1489 | 6 | 1 → 0 | 0 | 2 → 0 | 0 | 8 |
+| test/gpu | 13 | 703 → 707 | 4 | 1 → 0 | 1 | 0 | 0 | 11 |
+| test/input | 2 | 58 → 62 | 0 | 2 → 0 | 0 | 0 | 0 | 2 |
 | test/physics | 1 | 280 | 0 | 0 | 0 | 0 | 0 | 0 |
-| test/recording | 2 | 214 | 0 | 2 | 0 | 1 | 0 | 1 |
-| test/render | 51 | 5154 | 25 | 36 | 4 | 7 | 0 | 20 |
-| test/rom | 11 | 611 | 0 | 9 | 0 | 0 | 0 | 7 |
-| test/save | 7 | 994 | 0 | 6 | 0 | 4 | 0 | 2 |
-| test/scene | 2 | 152 | 1 | 1 | 0 | 0 | 0 | 1 |
-| test/startup | 5 | 337 | 0 | 1 | 1 | 0 | 0 | 2 |
-| test/state | 12 | 1053 | 0 | 9 | 0 | 1 | 0 | 9 |
-| test/testing | 5 | 108 | 3 | 2 | 0 | 2 | 0 | 5 |
-| test/ui | 18 | 1622 | 0 | 11 | 1 | 3 | 0 | 7 |
-| test/vfx | 5 | 425 | 4 | 1 | 0 | 0 | 0 | 3 |
+| test/recording | 2 | 214 → 220 | 0 | 2 → 0 | 0 | 1 → 0 | 0 | 1 |
+| test/render | 51 | 5154 → 5239 | 25 | 36 → 0 | 4 | 6 → 0 | 0 | 24 |
+| test/rom | 11 | 611 → 627 | 0 | 9 → 0 | 0 | 0 | 0 | 7 |
+| test/save | 7 | 994 → 1010 | 0 | 6 → 0 | 0 | 4 → 0 | 0 | 2 |
+| test/scene | 2 | 152 → 153 | 1 | 1 → 0 | 0 | 0 | 0 | 1 |
+| test/startup | 5 | 337 → 338 | 0 | 1 → 0 | 1 | 0 | 0 | 2 |
+| test/state | 12 | 1053 → 1061 | 0 | 9 → 0 | 0 | 1 → 0 | 0 | 9 |
+| test/testing | 5 | 108 → 114 | 3 | 2 → 0 | 0 | 2 → 0 | 0 | 5 |
+| test/ui | 18 | 1622 → 1655 | 0 | 11 → 0 | 1 | 3 → 0 | 0 | 9 |
+| test/vfx | 5 | 425 → 427 | 4 | 1 → 0 | 0 | 0 | 0 | 3 |
 
 ## Responsibility review
 
@@ -137,3 +153,34 @@ absence of runtime ForTest APIs; existing tests and assertions remain intact.
 Long declarations, imports and ROM table/string literals are not grounds for
 splitting a responsibility. Early exits remain where they preserve ordering;
 no broad control-flow rewrite was justified in the timing-sensitive handlers.
+
+## Other retained boundaries
+
+Small message/value records retain protocol meaning; they are not file slices.
+App service bundles validate their dependencies and retain typed subsystem
+ownership. Navigation, save, input and screen flows have distinct lifecycle
+responsibilities. Audio channels own synthesis state; music/SFX interpreters own
+their respective clocks and registers. GPU tiles/VRAM, ROM table readers, SRAM
+codecs, configuration parsing and input edge state retain their own data/format
+boundaries. No further forwarding-only merge was justified in these families.
+
+## Recording and world integration
+
+RecordingHost construction and recorder factory setup could sit in app.wiring;
+toggle, begin/capture-frame ordering and close belong to GameSession's lifecycle.
+They were not moved. Recording changes are limited to imports and diagnostic
+routing. No world signature changes are requested or required; all existing
+world-facing APIs remain source-compatible.
+
+## Verification
+
+All seven steps use the required spotlessApply test command before committing.
+Test count: 2,954 → 2,956; zero failures/errors and one pre-existing skipped test.
+Scene parity: 986 identical, zero mismatches. No fixture edits or world edits.
+
+EA-off warmed whole-frame measurements: idle 0, walking 596.53, inventory 0
+B/frame, within existing budgets 0 / 747 / 0. Update-only: idle 0 and active 433
+B/frame (budgets 0 / 542). Link walking with sword, dialog printing and HUD/
+inventory submission each measure 0 B/frame. EA settings are temporary local
+JVM arguments; no build settings changed. Default-JVM results are recorded in
+the final commit message; JIT escape analysis can change the walking number.

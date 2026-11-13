@@ -30,18 +30,25 @@ uses, and has a responsibility that can be tested independently. Pass shared
 mutable data through small explicit state objects; do not share protected fields
 or give file-slice helpers the owner's complete state.
 
-Cohesion takes priority over line counts. A cohesive class of roughly 500 lines
-is acceptable. Merge artificial slices, and split only at a real responsibility
-boundary; moving methods into another file is not itself a design improvement.
+There is no file-length or parameter-count target. Cohesion takes priority:
+merge artificial slices and split only at a real responsibility boundary with
+independent state. Moving methods into another file is not a design improvement.
 Stateless algorithms and immutable table data are valid separate responsibilities
 when their inputs describe that work rather than an owning object.
 
 `architecture.NoImplementationInheritanceTest` checks superclass and sealed
 permits metadata in every main class file. Owned packages have no exceptions.
-Its temporary render/gpu/audio exceptions belong to the concurrent migration
-and must be removed as those classes are converted. The field inventories,
+Its temporary allow-list is empty repo-wide. The field inventories,
 responsibilities and measured before/after sizes are recorded in
 [composition-redesign.md](archive/history/composition-redesign.md).
+
+Use explicit imports in main and tests, and import JDK types instead of inline
+fully-qualified names. Required collaborators are non-null by construction;
+normalize optional observers/sinks at configuration. Document genuine domain
+absence (unloaded scenes, optional effects, unavailable ROM capabilities).
+Diagnostics use DebugLog; direct console output is reserved for CLI usage.
+Test-only inspection belongs in test fixtures. OwnedSourceHygieneTest protects
+explicit imports and the absence of runtime ForTest hooks.
 
 ## Package map
 
@@ -51,14 +58,14 @@ package placement does not imply that every pair is independent.
 
 ### `app`
 
-The root contains only `GameSession` and the public `HeadlessGameDriver` entry
-point. `GameSession` owns one desktop/headless frame loop and delegates to the
+The root contains `GameSession`, the public `HeadlessGameDriver` entry point,
+`LaunchOptions` and `FramePacer`. `GameSession` owns one desktop/headless frame loop and delegates to the
 objects built by `app.wiring.SessionWiring`.
 
 | Package | Top-level types | Responsibility |
 | --- | ---: | --- |
-| `app` | 2 | Session and replay entry points |
-| `app.wiring` | 14 | Composition root, subsystem factories and equipment target adapters |
+| `app` | 4 | Session and replay entry points |
+| `app.wiring` | 12 | Composition root, subsystem factories and equipment target adapters |
 | `app.services` | 8 | `SessionServices` and its seven subsystem bundles |
 | `app.state` | 11 | Mutable screen, scene, clock, story, input, debug, save and stop state |
 | `app.flow` | 9 | Navigation, persistence, shutdown and the completed session graph |
@@ -66,7 +73,7 @@ objects built by `app.wiring.SessionWiring`.
 | `app.audio` | 3 | Music selection and dialog-sound routing |
 | `app.presentation` | 2 | Frame-state assembly, composition and debug-overlay ordering |
 | `app.headless` | 4 | Diagnostic/checkpoint contracts and their owned snapshots |
-| `app.host` | 3 | Desktop/headless resources and native boundary |
+| `app.host` | 4 | Desktop/headless resources and native boundary |
 | `app.screen` | 13 | Five screens, their lifecycle ports and retained screen set |
 | `app.gameplay` | 14 | Ordered phases, transition/input gates and immutable input reuse |
 | `app.gameplay.entity` | 9 | Entity frame inputs, ordered result application and Link command adapters |
@@ -77,9 +84,9 @@ objects built by `app.wiring.SessionWiring`.
 
 `SessionWiring` runs once. `SubsystemWiring` builds ROM-backed services through
 `RomWiring`, `AudioWiring`, `UiWiring`, `WorldWiring` and `PlayerWiring` in dependency
-order. Equipment registration stays in its original order across
-`EquipmentWiring`, `CombatEquipment` and `ToolEquipment`; construction-only
-parameter records are nested in their factories. `GameplayWiring`, `FlowWiring`
+order. `EquipmentWiring` owns equipment construction and room target adapters
+in the original registration order; construction-only parameter records remain
+nested in their factories. `GameplayWiring`, `FlowWiring`
 and `ScreenWiring` connect the retained application controllers and screens.
 
 `SessionServices` contains `RomServices`, `AudioServices`, `InputServices`,
@@ -189,6 +196,7 @@ through `MusicRequests`. `OpeningActions` names its dependencies;
 ROM sequencing, deterministic synthesis, pure sample transport and host output.
 Only `audio.openal` may reference LWJGL. Browser models are headless.
 Key types: MusicDriver, MusicVoiceEmitter, GameBoyApu, FrameAudioMixer, OpenAlStream.
+The APU diagnostic tap normalizes absence to a no-op observer.
 
 ### `config`
 
@@ -210,7 +218,7 @@ builder. IntroPhaseState, IntroClock and IntroVideoMemory are small explicit
 state objects for shared stage, time and hardware-map/scroll data. Palette
 arithmetic and default-ROM construction have separate, stateless responsibilities.
 
-Entry points accept Rom with deprecated byte-array compatibility delegates.
+Entry points accept Rom; unused byte-array compatibility delegates are removed.
 IntroRomData preserves its defensive copy and format bounds. Pre-update snapshot
 timing, frame counters and immutable published copies retain their original
 semantics; no collaborator receives the IntroSequence owner.
@@ -228,6 +236,7 @@ Input edges, reveal timing, scrolling, selection and sound order are preserved.
 Font/layout readers use typed Rom values. Sound consumption reuses immutable
 single-event lists and copies multiple-event lists to preserve retention.
 ROM-free allocation guards exercise printing ticks and sound consumption.
+Glyph bytes and visible-page layout are cached; unchanged visible text is reused.
 
 ### `entity`
 
@@ -261,9 +270,9 @@ Java/ROM conversions are explicit. Raw snapshots and permissive equipment
 boundaries retain their integer representation and documented fallback behavior.
 
 EntitySpriteHandlerCatalog composes immutable registration recipes, their
-context-sensitive lookup and bounded ROM decoding. Sixteen family builders
-produce EntitySpriteRecipe values; EntitySpriteRegistrationData indexes them
-once. EntitySpriteDecoder owns ROM access. BossSpriteComposer, EntitySpriteStates
+context-sensitive lookup and bounded ROM decoding. EntitySpriteRegistrationData
+owns the family recipe selectors and indexes EntitySpriteRecipe values once;
+there are no stateless per-family forwarding files. EntitySpriteDecoder owns ROM access. BossSpriteComposer, EntitySpriteStates
 and EntityEffectSprites own boss geometry, state-dependent selection and transient
 effect composition; EntitySpriteGeometry supplies pure OAM coordinate algorithms.
 First-match priority, map-byte selectors, bank bounds and palette/tile-source
@@ -284,8 +293,8 @@ The existing renderer and palette objects handle blade presentation. Themed
 SwordTables and EquipmentTables retain ROM lookup boundaries. Primitive frame
 counters, held/input-edge priority and sound/RNG ordering are preserved.
 Owned player and Link callers use composed APIs. Sprite/palette loaders accept
-Rom; deprecated byte-array delegates retain external source and partial-buffer
-compatibility.
+Rom; unused byte-array delegates are removed. Timing inspection fixtures live
+in tests rather than ForTest members in runtime classes.
 
 ### `gameplay`
 
@@ -332,13 +341,19 @@ Key types: OverworldCollision and PhysicsFlags.
 
 OverworldCollision retains themed PhysicsTables and CollisionTables from its
 existing injection boundary. Object-grid ownership, bounds, sub-pixel arithmetic
-and source collision ordering are unchanged. Physics remains input-free,
+and source collision ordering are unchanged. Immutable ground samples are reused
+per cell and replaced when object or physics values change. Physics remains input-free,
 enforced by StateDependencyTest.
 
 ### `render`
 
 Frame scenes, indexed planes, OAM submission, hardware composition and GL presentation.
 Key types: FrameScene, HardwareFrame, OamSink, OpenGlFramePresenter.
+HardwareFrame normalizes absent diagnostics to a no-op observer; inspection
+compatibility access still reports absence. Dialog layers normalize an omitted
+painter to the ROM-backed implementation. GameFrameInputs documents which
+screen-specific components may be absent. Layers retain their mutable frame
+configuration and scratch; publication snapshots retain ownership.
 
 ### `rom`
 
@@ -368,8 +383,8 @@ Key types: BackgroundSceneLoader, BackgroundSceneSpec and BackgroundSceneCatalog
 BackgroundSceneLoader retains Rom and uses typed draw-command and palette
 readers. Scene-specification address conversion retains the legacy file-offset
 semantics, including CPU-window aliases. Partial attrmap writes preserve selection-screen state for file copy
-and erase scenes. The legacy byte-array constructor remains a deprecated
-compatibility delegate. Intro and menu controllers own presentation state.
+and erase scenes. The unused byte-array constructor is removed. Intro and menu
+controllers own presentation state.
 
 ### `startup`
 
@@ -377,7 +392,8 @@ New-game profiles and wake-up/shield motion state machines.
 Key types: StartupCoordinator, NewGameStartProfile, MarinWakeUpMotion and TarinShieldMotion.
 
 Startup calls PlayerState components and Link roles while preserving the
-opening-motion timers and presentation order. NewGameStartProfile supplies a
+opening-motion timers and presentation order. Marin and Tarin reuse immutable
+pose values so retained results cannot change on subsequent ticks. NewGameStartProfile supplies a
 named builder alongside its deprecated canonical constructor.
 
 ### `state`
@@ -410,7 +426,8 @@ FileNameEntry and TilemapRenderer.
 Inventory rendering and synchronous HardwareFrame submission reuse tile and
 attribute scratch buffers. Numeric and palette pairs use primitive values;
 region/row arguments are retained. Published closed-window snapshots still own
-independent arrays. ROM-free guards cover the fully open HUD/inventory update
+independent arrays. Inventory context is copied only when contents change.
+ROM-free guards cover the fully open HUD/inventory update
 and submission path, including snapshot retention checks.
 
 UI ROM readers accept Rom. FileMenuRomData preserves its defensive copy,
@@ -425,8 +442,9 @@ use retained builders. OcarinaSong supplies typed flag and selection conversions
 Transient effects, source-shaped lifecycles and ROM-backed effect sprites.
 Key types: TransientVfxSystem and TransientVfxSpriteSheet.
 
-Effect iteration retains source order. Sprite loading accepts Rom with a
-deprecated byte-array delegate for external callers. Published placement lists
+Effect iteration retains source order. Sprite loading accepts Rom. A live read-only
+slot view supports immediate consumption; activeSlots retains owned snapshot
+semantics for captures. Published placement lists
 retain independent ownership; mutable scratch storage is used only where
 consumed synchronously.
 
