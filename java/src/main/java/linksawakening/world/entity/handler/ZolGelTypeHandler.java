@@ -8,8 +8,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ZolGelFrame;
 import linksawakening.world.entity.motion.ZolGelMotion;
+import linksawakening.world.entity.motion.ZolGelMotion.ZolGelFrame;
 
 /** ROM handler stages for ZolGelType. */
 final class ZolGelTypeHandler {

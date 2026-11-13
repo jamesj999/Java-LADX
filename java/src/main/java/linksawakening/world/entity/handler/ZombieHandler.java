@@ -12,8 +12,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ZombieFrame;
 import linksawakening.world.entity.motion.ZombieMotion;
+import linksawakening.world.entity.motion.ZombieMotion.ZombieFrame;
 
 /** ROM handler stages for Zombie. */
 final class ZombieHandler {
