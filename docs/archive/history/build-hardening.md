@@ -232,4 +232,27 @@ Each row is one warned array component. Call-site review found no array-bearing 
 
 ## Final results
 
-Pending implementation and strict compilation. The final warning/suppression and allocation totals will be recorded here after the gate.
+After B3 the only emitted diagnostics were the audited 64 main / 3 test array components. B4 disables that heuristic and enables `-Werror` for every JavaCompile task, with Error Prone errors no longer downgraded. Final enabled warning counts: **0 main / 0 test**, for every check in the baseline table. `check` includes formatting, both linted compilations and the full suite. `SuppressionReasonTest` enforces an adjacent reason for every source suppression.
+
+Suppression counts below count annotated declarations per check (an annotation with two check names contributes once to each). These are explicit intent exceptions, not global disabling.
+
+| Check | Main | Test |
+|---|---:|---:|
+| ArrayToString | 1 | 0 |
+| CompareToZero | 1 | 0 |
+| EnumOrdinal | 8 | 0 |
+| ImmutableEnumChecker | 1 | 0 |
+| ObjectToString | 2 | 0 |
+| ReferenceEquality | 17 | 0 |
+| RethrowReflectiveOperationExceptionAsLinkageError | 0 | 1 |
+| ReturnValueIgnored | 1 | 0 |
+| SelfAssignment | 1 | 0 |
+| ShortCircuitBoolean | 1 | 0 |
+| StringCaseLocaleUsage | 1 | 0 |
+| StringSplitter | 1 | 15 |
+| UnnecessaryLambda | 8 | 0 |
+| UnusedNestedClass | 0 | 2 |
+| UnusedVariable | 0 | 1 |
+| try | 0 | 2 |
+| unchecked | 3 | 5 |
+

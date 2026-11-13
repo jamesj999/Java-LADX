@@ -46,6 +46,7 @@ public final class IntroAudioCapture {
                             trace.printf("{\"frame\":%d,\"register\":%d,\"value\":%d}%n", frame[0], register, value));
             // Decorate the already installed production sink rather than replacing audio routing.
             CutsceneManager cutscene = (CutsceneManager) field(session, "cutsceneManager");
+            // This typed test-store/reflection key is populated with the same concrete collection type before reading.
             @SuppressWarnings("unchecked")
             IntConsumer original = (IntConsumer) field(cutscene, "noiseSound");
             cutscene.setIntroNoiseSound(id -> {

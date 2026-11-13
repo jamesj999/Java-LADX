@@ -34,10 +34,13 @@ tasks.withType(JavaCompile).configureEach {
     // Serialization is not a persistence API here; no Java annotation processors
     // are used (Error Prone is a javac plugin, not an annotation processor).
     options.compilerArgs += ['-Xlint:all,-serial,-processing', '-Xmaxwarns', '10000',
-                             '-XDaddTypeAnnotationsToSymbol=true']
+                             '-XDaddTypeAnnotationsToSymbol=true', '-Werror', '-Xmaxerrs', '10000']
     options.forkOptions.memoryMaximumSize = '3g'
-    // Baseline/triage only; step 4 promotes every enabled diagnostic to an error.
-    options.errorprone.allErrorsAsWarnings = true
+    // Array payloads carry ROM/graphics ownership; no content-key use was found.
+    // See docs/archive/history/build-hardening.md for the per-component audit.
+    options.errorprone.disable("ArrayRecordComponent")
+    options.errorprone.allErrorsAsWarnings = false
+    // javac -Werror also promotes every Error Prone warning to a build failure.
 }
 
 dependencies {
@@ -221,3 +224,6 @@ tasks.named('captureOpeningRoute', JavaExec).configure {
     dependsOn tasks.named('testRomResources')
     classpath += files(layout.buildDirectory.dir('test-rom'))
 }
+
+// The Java lifecycle already includes both linted compilations and test.
+tasks.named('check') { dependsOn 'spotlessCheck' }

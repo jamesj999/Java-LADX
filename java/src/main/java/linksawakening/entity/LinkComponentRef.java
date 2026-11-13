@@ -12,6 +12,7 @@ final class LinkComponentRef<T> {
         binding = Objects.requireNonNull(value, "value");
     }
 
+    // Only bind(T) publishes a value; the unbound sentinel is rejected before this cast.
     @SuppressWarnings("unchecked")
     T get() {
         if (binding == UNBOUND) throw new IllegalStateException("Component has not been bound");
