@@ -2,8 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
 import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
-import static linksawakening.world.room.RoomTransitionTestSupport.*;
-import static linksawakening.world.room.RoomTransitionTestSupport2.*;
+import static linksawakening.world.room.RoomNavigationFixture.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

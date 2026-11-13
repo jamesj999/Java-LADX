@@ -1,7 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomTransitionTestSupport.*;
-import static linksawakening.world.room.RoomTransitionTestSupport2.*;
+import static linksawakening.world.room.RoomNavigationFixture.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,17 +10,17 @@ final class GameplayRouteTest {
     @Test
     void completeGameplayRouteUsesPhysicalTraversalAndRealRoomMechanics() throws Exception {
         var route = new GameplayRouteState();
-        GameplayRouteStage1.run(route);
-        GameplayRouteStage2.run(route);
-        GameplayRouteStage3.run(route);
-        GameplayRouteStage4.run(route);
-        GameplayRouteStage5.run(route);
-        GameplayRouteStage6.run(route);
-        GameplayRouteStage7.run(route);
-        GameplayRouteStage8.run(route);
-        GameplayRouteStage9.run(route);
-        GameplayRouteStage10.run(route);
-        GameplayRouteStage11.run(route);
-        GameplayRouteStage12.run(route);
+        GameplayRouteScenario.initializeBeachAndForest(route);
+        GameplayRouteScenario.unlockTailCave(route);
+        GameplayRouteScenario.completeTailCavePuzzles(route);
+        GameplayRouteScenario.performInstrumentWarp(route);
+        GameplayRouteScenario.enterBottleGrotto(route);
+        GameplayRouteScenario.collectBottleGrottoKeys(route);
+        GameplayRouteScenario.clearBottleGrottoEnemies(route);
+        GameplayRouteScenario.solveBottleGrottoSwitches(route);
+        GameplayRouteScenario.fightHinox(route);
+        GameplayRouteScenario.clearBooBuddies(route);
+        GameplayRouteScenario.completeKillOrderChest(route);
+        GameplayRouteScenario.rideMovingPlatform(route);
     }
 }

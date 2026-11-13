@@ -55,3 +55,13 @@ App hand-off (files deliberately untouched):
 Other non-owned clients of enum constructors remain source-compatible; these
 constructors can be removed once their owners migrate. Owned callers use raw
 constructors. Tests check unknown bytes and the absence of duplicate stored enums.
+
+## Tests
+
+Numbered doors/rewards/state classes are regrouped as
+RoomDoorAndObjectInteractionTest, RoomRewardLifecycleTest and
+RoomStoryPersistenceTest. The dungeon route is KeyCavernEntranceRouteTest.
+Navigation support is one RoomNavigationFixture. All twelve route fragments
+are methods of GameplayRouteScenario, named for their gameplay phase and called
+in their original sequence using the same GameplayRouteState. No assertions or
+tests were removed. Test files 82 -> 66; lines 18300 -> 17970; numbered names 8 -> 0.

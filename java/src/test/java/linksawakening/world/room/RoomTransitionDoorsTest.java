@@ -1,8 +1,7 @@
 package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomTransitionTestSupport.*;
-import static linksawakening.world.room.RoomTransitionTestSupport2.*;
+import static linksawakening.world.room.RoomNavigationFixture.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

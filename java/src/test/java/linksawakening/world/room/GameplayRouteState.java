@@ -1,7 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomTransitionTestSupport.*;
-import static linksawakening.world.room.RoomTransitionTestSupport2.*;
+import static linksawakening.world.room.RoomNavigationFixture.*;
 
 import java.util.List;
 import linksawakening.entity.Link;
