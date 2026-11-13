@@ -13,8 +13,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.BombiteFrame;
 import linksawakening.world.entity.motion.BombiteMotion;
+import linksawakening.world.entity.motion.BombiteMotion.BombiteFrame;
 
 /** ROM handler stages for BombiteType. */
 final class BombiteTypeHandler {

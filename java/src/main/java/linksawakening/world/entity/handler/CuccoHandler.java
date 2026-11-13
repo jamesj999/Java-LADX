@@ -12,8 +12,8 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.CuccoInteractionFrame;
 import linksawakening.world.entity.motion.CuccoMotion;
+import linksawakening.world.entity.motion.CuccoMotion.CuccoInteractionFrame;
 
 /** ROM handler stages for Cucco. */
 final class CuccoHandler {

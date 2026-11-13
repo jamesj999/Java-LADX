@@ -11,6 +11,7 @@ import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.ColorShellMotion.ColorShellFrame;
 import org.junit.jupiter.api.Test;
 
 final class ColorShellMotionTest {

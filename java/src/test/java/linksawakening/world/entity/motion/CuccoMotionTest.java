@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.CuccoMotion.CuccoFrame;
+import linksawakening.world.entity.motion.CuccoMotion.CuccoInteractionFrame;
 import org.junit.jupiter.api.Test;
 
 final class CuccoMotionTest {

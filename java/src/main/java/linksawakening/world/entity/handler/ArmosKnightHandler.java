@@ -18,8 +18,8 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ArmosKnightFrame;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
+import linksawakening.world.entity.motion.ArmosKnightMotion.ArmosKnightFrame;
 import linksawakening.world.entity.motion.BossIntroMotion;
 
 /** ROM handler stages for ArmosKnight. */

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.ArmosKnightMotion.ArmosKnightFrame;
 import org.junit.jupiter.api.Test;
 
 final class ArmosKnightMotionTest {

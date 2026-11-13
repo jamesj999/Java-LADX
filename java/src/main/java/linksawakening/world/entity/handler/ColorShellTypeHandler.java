@@ -10,8 +10,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ColorShellFrame;
 import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.ColorShellMotion.ColorShellFrame;
 
 /** ROM handler stages for ColorShellType. */
 final class ColorShellTypeHandler {

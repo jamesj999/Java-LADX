@@ -5,6 +5,7 @@ import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -58,7 +59,7 @@ public final class ColorShellMotion {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return ColorShellBehavior.advance(
+        return ColorShellMotion.advanceBody(
                 this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
 
@@ -70,7 +71,7 @@ public final class ColorShellMotion {
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int ignoreHitsCountdown) {
-        return ColorShellBehavior.advance(
+        return ColorShellMotion.advanceBody(
                 this,
                 entity,
                 frameCounter,
@@ -82,7 +83,7 @@ public final class ColorShellMotion {
     }
 
     public Update advance(ColorShellFrame inputs) {
-        return ColorShellBehavior.advance(this, inputs);
+        return ColorShellMotion.advanceBody(this, inputs);
     }
 
     public void clear(int slot) {
@@ -181,7 +182,7 @@ public final class ColorShellMotion {
             RoomEntityBackgroundCollision backgroundCollision,
             int slot,
             RoomEntity entity) {
-        ColorShellBehavior.advanceState1(this, frame, linkEntityX, linkEntityY, backgroundCollision, slot, entity);
+        ColorShellMotion.advanceState1Body(this, frame, linkEntityX, linkEntityY, backgroundCollision, slot, entity);
     }
 
     void advanceState2(int frame, int ignoreHitsCountdown, int slot) {
@@ -272,23 +273,23 @@ public final class ColorShellMotion {
     }
 
     void advanceState9(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
-        ColorShellRecovery.advanceState9(this, backgroundCollision, slot, entity);
+        ColorShellMotion.advanceState9Body(this, backgroundCollision, slot, entity);
     }
 
     void advanceStateA(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
-        ColorShellRecovery.advanceStateA(this, backgroundCollision, slot, entity);
+        ColorShellMotion.advanceStateABody(this, backgroundCollision, slot, entity);
     }
 
     void advanceStateB(int slot) {
-        ColorShellRecovery.advanceStateB(this, slot);
+        ColorShellMotion.advanceStateBBody(this, slot);
     }
 
     void advanceStateC(RoomEntity entity, ColorShellWorld world, List<RoomEntity> allEntities, int slot) {
-        ColorShellRecovery.advanceStateC(this, entity, world, allEntities, slot);
+        ColorShellMotion.advanceStateCBody(this, entity, world, allEntities, slot);
     }
 
     boolean advanceStateD(RoomEntity entity, ColorShellWorld world, int slot) {
-        return ColorShellRecovery.advanceStateD(this, entity, world, slot);
+        return ColorShellMotion.advanceStateDBody(this, entity, world, slot);
     }
 
     private void animateJumpVariant(int frame, int slot) {
@@ -361,7 +362,7 @@ public final class ColorShellMotion {
     }
 
     static Vector vectorTowardsLink(int entityX, int entityY, int linkEntityX, int linkEntityY, int length) {
-        return ColorShellBehavior.vectorTowardsLink(entityX, entityY, linkEntityX, linkEntityY, length);
+        return ColorShellMotion.vectorTowardsLinkBody(entityX, entityY, linkEntityX, linkEntityY, length);
     }
 
     static int unsignedDistance(int first, int second) {
@@ -381,4 +382,243 @@ public final class ColorShellMotion {
     }
 
     record Vector(int x, int y) {}
+
+    static ColorShellMotion.Update advanceBody(
+            ColorShellMotion owner,
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        return owner.advance(new ColorShellFrame(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundCollision,
+                0,
+                ColorShellWorld.none(),
+                List.of(entity)));
+    }
+
+    static ColorShellMotion.Update advanceBody(
+            ColorShellMotion owner,
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int ignoreHitsCountdown) {
+        return owner.advance(new ColorShellFrame(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundCollision,
+                ignoreHitsCountdown,
+                ColorShellWorld.none(),
+                List.of(entity)));
+    }
+
+    static ColorShellMotion.Update advanceBody(ColorShellMotion owner, ColorShellFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        ColorShellWorld world = inputs.world();
+        java.util.List<RoomEntity> allEntities = inputs.allEntities();
+        if (entity == null || randomByteSupplier == null) {
+            throw new IllegalArgumentException("Color Shell motion inputs cannot be null");
+        }
+        int slot = entity.slot();
+        if (!owner.initialized[slot]) {
+            owner.initialize(slot);
+        }
+        owner.positionX[slot] = entity.x();
+        owner.positionY[slot] = entity.y();
+        owner.positionZ[slot] = entity.z();
+        owner.decrementTransitionCountdown(slot);
+
+        ColorShellWorld effects = world == null ? ColorShellWorld.none() : world;
+        List<RoomEntity> entities = allEntities == null ? List.of(entity) : allEntities;
+        int frame = frameCounter & 0xFF;
+        int dispatchedState = owner.state[slot];
+        int nextIgnoreHitsCountdown = ignoreHitsCountdown & 0xFF;
+        boolean unloadRequested = false;
+        switch (dispatchedState) {
+            case 0 -> owner.advanceState0(linkEntityX, linkEntityY, randomByteSupplier, slot);
+            case 1 -> owner.advanceState1(frame, linkEntityX, linkEntityY, backgroundCollision, slot, entity);
+            case 2 -> owner.advanceState2(frame, ignoreHitsCountdown, slot);
+            case 3 -> owner.advanceState3(frame, ignoreHitsCountdown, backgroundCollision, slot, entity);
+            case 4 -> nextIgnoreHitsCountdown = owner.advanceState4(slot);
+            case 5 -> nextIgnoreHitsCountdown = owner.advanceState5(entity, ignoreHitsCountdown, slot);
+            case 6 -> owner.advanceState6(slot);
+            case 7 -> owner.advanceState7(slot);
+            case 8 -> owner.advanceState8(entity, effects, slot);
+            case 9 -> owner.advanceState9(backgroundCollision, slot, entity);
+            case 0x0A -> owner.advanceStateA(backgroundCollision, slot, entity);
+            case 0x0B -> owner.advanceStateB(slot);
+            case 0x0C -> owner.advanceStateC(entity, effects, entities, slot);
+            case 0x0D -> unloadRequested = owner.advanceStateD(entity, effects, slot);
+            default -> throw new IllegalStateException("Invalid Color Shell state: " + owner.state[slot]);
+        }
+
+        RoomEntity updated = EntitySnapshots.withMotion(
+                entity,
+                owner.positionX[slot],
+                owner.positionY[slot],
+                owner.spriteVariant[slot],
+                entity.entityFlipAttribute(),
+                owner.positionZ[slot],
+                -1,
+                false);
+        return new ColorShellMotion.Update(updated, nextIgnoreHitsCountdown, unloadRequested);
+    }
+
+    static void advanceState1Body(
+            ColorShellMotion owner,
+            int frame,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int slot,
+            RoomEntity entity) {
+        int currentDirection = owner.direction[slot] & 0x03;
+        owner.speedX[slot] = SPEED_X_BY_DIRECTION[currentDirection];
+        owner.speedY[slot] = SPEED_Y_BY_DIRECTION[currentDirection];
+        owner.moveWithBackground(entity, backgroundCollision, true, slot);
+
+        if (owner.transitionCountdown[slot] == 0) {
+            owner.transitionCountdown[slot] = 0x10;
+            owner.state[slot] = 0;
+            if (ColorShellMotion.unsignedDistance(linkEntityX, owner.positionX[slot]) < 0x20
+                    && ColorShellMotion.unsignedDistance(linkEntityY, owner.positionY[slot]) < 0x20) {
+                ColorShellMotion.Vector vector = ColorShellMotion.vectorTowardsLink(
+                        owner.positionX[slot], owner.positionY[slot], linkEntityX, linkEntityY, 0x0E);
+                owner.speedX[slot] = vector.x();
+                owner.speedY[slot] = vector.y();
+                owner.transitionCountdown[slot] = 0x20;
+                owner.state[slot] = 2;
+            }
+        }
+        if ((frame & 0x07) == 0) {
+            owner.spriteVariant[slot] = (owner.spriteVariant[slot] + 1) & 0x01;
+        }
+    }
+
+    static ColorShellMotion.Vector vectorTowardsLinkBody(
+            int entityX, int entityY, int linkEntityX, int linkEntityY, int length) {
+        int distanceX = ColorShellMotion.signedByte((linkEntityX - entityX) & 0xFF);
+        int distanceY = ColorShellMotion.signedByte((linkEntityY - entityY) & 0xFF);
+        boolean yIsLargerAxis = Math.abs(distanceY) > Math.abs(distanceX);
+        int smallerDistance = Math.min(Math.abs(distanceX), Math.abs(distanceY));
+        int largerDistance = Math.max(Math.abs(distanceX), Math.abs(distanceY));
+        int result = 0;
+        int remainder = 0;
+        for (int count = 0; count < length; count++) {
+            int sum = remainder + smallerDistance;
+            if (largerDistance != 0 && sum >= largerDistance) {
+                sum -= largerDistance;
+                result++;
+            }
+            remainder = sum & 0xFF;
+        }
+        int x = yIsLargerAxis ? result : length;
+        int y = yIsLargerAxis ? length : result;
+        if (distanceX < 0) {
+            x = -x;
+        }
+        if (distanceY < 0) {
+            y = -y;
+        }
+        return new ColorShellMotion.Vector(x & 0xFF, y & 0xFF);
+    }
+
+    static void advanceState9Body(
+            ColorShellMotion owner, RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
+        if (owner.transitionCountdown[slot] != 0) {
+            return;
+        }
+        if (owner.speedX[slot] != 0) {
+            owner.moveWithBackground(entity, backgroundCollision, false, slot);
+        }
+        owner.speedZ[slot] = (owner.speedZ[slot] - 1) & 0xFF;
+        owner.positionZ[slot] = ColorShellMotion.addSpeedToPosition(
+                owner.positionZ[slot], owner.speedZ[slot], owner.speedZAccumulator, slot);
+        if ((owner.positionZ[slot] & 0x80) != 0) {
+            owner.positionZ[slot] = 0;
+            owner.speedZ[slot] = 0x08;
+            owner.speedX[slot] = ColorShellMotion.arithmeticShiftRight(owner.speedX[slot]);
+            owner.state[slot] = 0x0A;
+        }
+    }
+
+    static void advanceStateABody(
+            ColorShellMotion owner, RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
+        owner.moveWithBackground(entity, backgroundCollision, false, slot);
+        owner.speedZ[slot] = (owner.speedZ[slot] - 1) & 0xFF;
+        owner.positionZ[slot] = ColorShellMotion.addSpeedToPosition(
+                owner.positionZ[slot], owner.speedZ[slot], owner.speedZAccumulator, slot);
+        if ((owner.positionZ[slot] & 0x80) != 0) {
+            owner.transitionCountdown[slot] = 0x20;
+            owner.state[slot]++;
+        }
+    }
+
+    static void advanceStateBBody(ColorShellMotion owner, int slot) {
+        if (owner.transitionCountdown[slot] != 0) {
+            return;
+        }
+        owner.transitionCountdown[slot] = 0;
+        owner.speedZ[slot] = 0;
+        owner.speedX[slot] = 0;
+        owner.state[slot] = 1;
+        owner.physicsFlags[slot] &= 0x7F;
+    }
+
+    static void advanceStateCBody(
+            ColorShellMotion owner, RoomEntity entity, ColorShellWorld world, List<RoomEntity> allEntities, int slot) {
+        for (RoomEntity other : allEntities) {
+            if (other == null
+                    || !ColorShellMotion.isColorShellType(other.type())
+                    || !other.loaded()
+                    || other.status().value() == 0
+                    || owner.state[other.slot()] >= 0x0C) {
+                continue;
+            }
+            return;
+        }
+        int color = entity.type() - ColorShellMotion.ENTITY_COLOR_SHELL_RED;
+        owner.transitionCountdown[slot] = 0x18;
+        owner.state[slot] = 0x0D;
+        world.writeObject(entity, 0x67 + color);
+    }
+
+    static boolean advanceStateDBody(ColorShellMotion owner, RoomEntity entity, ColorShellWorld world, int slot) {
+        if (owner.transitionCountdown[slot] != 0) {
+            return false;
+        }
+        int color = entity.type() - ColorShellMotion.ENTITY_COLOR_SHELL_RED;
+        world.writeObject(entity, ColorShellMotion.PUZZLE_FINAL_OBJECTS[color]);
+        world.spawnPoof(owner.positionX[slot], (owner.positionY[slot] - owner.positionZ[slot]) & 0xFF);
+        return true;
+    }
+
+    public record ColorShellFrame(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision,
+            int ignoreHitsCountdown,
+            ColorShellWorld world,
+            java.util.List<RoomEntity> allEntities) {}
 }
