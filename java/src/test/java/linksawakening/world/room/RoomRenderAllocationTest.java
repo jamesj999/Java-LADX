@@ -55,7 +55,8 @@ class RoomRenderAllocationTest {
                         new int[8][4]),
                 new LoadedRoomSpec.Exits(List.of(), false, 0, -1),
                 runtime.inspection().view())));
-        session.installRoom(new RoomRuntime(session.components.location().activeRoom, runtime));
+        session.installRoom(new RoomRuntime(
+                session.components.location().activeRoom, runtime, session.components.roomRuntimeServices()));
         return session;
     }
 

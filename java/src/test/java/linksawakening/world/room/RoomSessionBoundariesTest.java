@@ -174,14 +174,22 @@ final class RoomSessionBoundariesTest {
         assertFalse(session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y())
+                        session.loadedRoomOrNull(),
+                        entity,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        entity.x(),
+                        entity.y())
                 .blocked());
 
         RoomDebugFixture.of(session).setEntityIgnoreHitsCountdownForTest(entity.slot(), 0);
         assertTrue(session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y())
+                        session.loadedRoomOrNull(),
+                        entity,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        entity.x(),
+                        entity.y())
                 .blocked());
     }
 

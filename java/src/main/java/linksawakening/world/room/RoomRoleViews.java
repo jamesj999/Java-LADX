@@ -9,7 +9,7 @@ record RoomRoleViews(
         RoomTerrain terrain) {
     static RoomRoleViews create(RoomSessionComponents components, RoomSession session) {
         return new RoomRoleViews(
-                new RoomEntitiesView(new RoomEntitiesView.Dependencies(components.entityBridge(), session)),
+                new RoomEntitiesView(new RoomEntitiesView.Dependencies(session)),
                 new RoomEntityStateView(new RoomEntityStateView.Dependencies(
                         components.entityBridge(),
                         components.entityFrame(),

@@ -6,6 +6,8 @@ import linksawakening.world.entity.EnemyProjectileCollision;
 
 /** Retained room-entity runtime, output queues, drop counters and per-frame gates. */
 final class RoomEntitySessionState {
+    // Transitional alias for the unmigrated boundary coordinator and load configuration.
+    RoomRuntime loaded;
     /** Absent until LoadRoomEntities installs the current room runtime. */
     linksawakening.world.entity.RoomEntityRuntime runtime;
 

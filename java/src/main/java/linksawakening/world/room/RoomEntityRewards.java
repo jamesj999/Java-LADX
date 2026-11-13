@@ -150,7 +150,6 @@ final class RoomEntityRewards {
     record Dependencies(
             RoomFollowerState followers,
             RoomItemUseState items,
-            RoomLocationState location,
             RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RoomSessionViews roomSessionViews,
@@ -159,7 +158,6 @@ final class RoomEntityRewards {
         Dependencies {
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");

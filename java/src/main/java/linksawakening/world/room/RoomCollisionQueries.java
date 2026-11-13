@@ -28,59 +28,49 @@ import linksawakening.world.transition.Warp;
 /** ApplyLinkMotionState ground probes and entity collision queries over current room state. */
 final class RoomCollisionQueries {
     private final Dependencies dependencies;
-    private linksawakening.world.transition.RoomBoundaryInputs.Room boundaryRoom;
-    private final RoomEntityObjectSample[] objectSamples = new RoomEntityObjectSample[RoomEntity.SLOT_COUNT];
-    private final RoomEntityGroundInteraction.Result[] groundResults =
-            new RoomEntityGroundInteraction.Result[RoomEntity.SLOT_COUNT];
 
     RoomCollisionQueries(Dependencies dependencies) {
         this.dependencies = dependencies;
     }
 
-    RoomBoundaryState boundaryState(int linkX, int linkY) {
-        return this.boundaryState(linkX, linkY, false);
+    RoomBoundaryState boundaryState(RoomRuntime loaded, int linkX, int linkY) {
+        return boundaryState(loaded, linkX, linkY, false);
     }
 
-    RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
-        return this.boundaryState(linkX, linkY, linkAirborne, 0);
+    RoomBoundaryState boundaryState(RoomRuntime loaded, int linkX, int linkY, boolean linkAirborne) {
+        return boundaryState(loaded, linkX, linkY, linkAirborne, 0);
     }
 
-    RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
-        boolean sideViewEntityActive = dependencies.location().activeRoom.entityView() != null
-                && !dependencies.location().activeRoom.entityView().slots().isEmpty()
-                && dependencies
-                                .location()
-                                .activeRoom
-                                .entityView()
-                                .slots()
-                                .get(0)
-                                .status()
-                        != EntityStatus.DISABLED;
-        var active = dependencies.location().activeRoom;
-        if (boundaryRoom == null
-                || boundaryRoom.mapCategory() != active.mapCategory()
-                || boundaryRoom.roomId() != active.roomId()
-                || boundaryRoom.indoorHasSouthEntrance() != active.indoorHasSouthEntrance()
-                || boundaryRoom.hasWarps() != active.hasWarps()
-                || boundaryRoom.shutterDoorMask() != dependencies.puzzles().closedShutterMask
-                || boundaryRoom.mapId() != active.mapId())
-            boundaryRoom = new linksawakening.world.transition.RoomBoundaryInputs.Room(
-                    dependencies.location().activeRoom.mapCategory(),
-                    dependencies.location().activeRoom.roomId(),
-                    dependencies.location().activeRoom.indoorHasSouthEntrance(),
-                    dependencies.location().activeRoom.hasWarps(),
+    RoomBoundaryState boundaryState(
+            RoomRuntime loaded, int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
+        boolean sideViewEntityActive = loaded.room.entityView() != null
+                && !loaded.room.entityView().slots().isEmpty()
+                && loaded.room.entityView().slots().get(0).status() != EntityStatus.DISABLED;
+        var active = loaded.room;
+        if (loaded.collisions.boundary == null
+                || loaded.collisions.boundary.mapCategory() != active.mapCategory()
+                || loaded.collisions.boundary.roomId() != active.roomId()
+                || loaded.collisions.boundary.indoorHasSouthEntrance() != active.indoorHasSouthEntrance()
+                || loaded.collisions.boundary.hasWarps() != active.hasWarps()
+                || loaded.collisions.boundary.shutterDoorMask() != dependencies.puzzles().closedShutterMask
+                || loaded.collisions.boundary.mapId() != active.mapId())
+            loaded.collisions.boundary = new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                    loaded.room.mapCategory(),
+                    loaded.room.roomId(),
+                    loaded.room.indoorHasSouthEntrance(),
+                    loaded.room.hasWarps(),
                     dependencies.puzzles().closedShutterMask,
-                    dependencies.location().activeRoom.mapId());
+                    loaded.room.mapId());
         return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
-                boundaryRoom,
+                loaded.collisions.boundary,
                 new linksawakening.world.transition.RoomBoundaryInputs.Link(
                         linkX, linkY, linkAirborne, linkPhysicsModifier, sideViewEntityActive)));
     }
 
-    RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
+    RoomEntityObjectSample entityObjectSample(RoomRuntime loaded, RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
                 dependencies.overworldCollision().groundInteractionSample(entity.x(), entity.y());
-        var previous = objectSamples[entity.slot()];
+        var previous = loaded.collisions.objectSamples[entity.slot()];
         if (previous == null
                 || previous.objectId() != sample.objectId()
                 || previous.physicsFlag() != sample.physicsFlag()
@@ -88,15 +78,15 @@ final class RoomCollisionQueries {
                 || previous.objectTop() != sample.objectTop()) {
             previous = new RoomEntityObjectSample(
                     sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
-            objectSamples[entity.slot()] = previous;
+            loaded.collisions.objectSamples[entity.slot()] = previous;
         }
         return previous;
     }
 
-    RoomEntityObjectSample entityObjectIntersectionSample(RoomEntity entity) {
+    RoomEntityObjectSample entityObjectIntersectionSample(RoomRuntime loaded, RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
                 dependencies.overworldCollision().entityInteractionSample(entity.x(), entity.y());
-        var previous = objectSamples[entity.slot()];
+        var previous = loaded.collisions.objectSamples[entity.slot()];
         if (previous == null
                 || previous.objectId() != sample.objectId()
                 || previous.physicsFlag() != sample.physicsFlag()
@@ -104,50 +94,49 @@ final class RoomCollisionQueries {
                 || previous.objectTop() != sample.objectTop()) {
             previous = new RoomEntityObjectSample(
                     sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
-            objectSamples[entity.slot()] = previous;
+            loaded.collisions.objectSamples[entity.slot()] = previous;
         }
         return previous;
     }
 
-    boolean entityBackgroundCollision(RoomEntity entity, int direction, int nextX, int nextY) {
-        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY)
+    boolean entityBackgroundCollision(RoomRuntime loaded, RoomEntity entity, int direction, int nextX, int nextY) {
+        return entityBackgroundCollisionResult(loaded, entity, direction, nextX, nextY)
                 .blocked();
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
-            RoomEntity entity, int direction, int nextX, int nextY) {
-        int ignoreHitsCountdown = dependencies.entityRuntimeState().runtime == null
-                ? 0
-                : dependencies.entityRuntimeState().runtime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+            RoomRuntime loaded, RoomEntity entity, int direction, int nextX, int nextY) {
+        int ignoreHitsCountdown = loaded.entities.enemies().enemyIgnoreHitsCountdown(entity.slot());
+        return entityBackgroundCollisionResult(loaded, entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
-            RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+            RoomRuntime loaded, RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
+        return entityBackgroundCollisionResult(loaded, entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
-            RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
+            RoomRuntime loaded,
+            RoomEntity entity,
+            int direction,
+            int nextX,
+            int nextY,
+            int ignoreHitsCountdown,
+            int frameCounter) {
         EntityCollisionPointProbe.Sample sample =
                 dependencies.entityCollisionPointProbe().sample(entity, direction, nextX, nextY);
         int pointX = sample.x();
         int pointY = sample.y();
         int objectId = dependencies.overworldCollision().objectIdAtPoint(pointX, pointY);
         int physicsFlag = dependencies.overworldCollision().objectPhysicsFlagAtPoint(pointX, pointY);
-        int ledgeTimer = dependencies.entityRuntimeState().runtime == null
-                ? 0
-                : dependencies.entityRuntimeState().runtime.enemies().ledgeTransitionTimer(entity.slot());
+        int ledgeTimer = loaded.entities.enemies().ledgeTransitionTimer(entity.slot());
         if ((entity.z() & 0x80) != 0) {
             ledgeTimer = 0;
         }
-        int thrownDirection = dependencies.entityRuntimeState().runtime == null
-                ? 0xFF
-                : dependencies.entityRuntimeState().runtime.thrownDirection(entity.slot());
+        int thrownDirection = loaded.entities.thrownDirection(entity.slot());
         EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
                 frameCounter,
-                dependencies.location().activeRoom != null
-                        && dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
+                loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD,
                 thrownDirection,
                 ledgeTimer,
                 dependencies.terrain().switchBlocksState,
@@ -155,31 +144,30 @@ final class RoomCollisionQueries {
         EntityBackgroundCollisionResolution resolution = dependencies
                 .entityBackgroundCollisionResolver()
                 .resolveWithState(entity, direction, sample, objectId, physicsFlag, ignoreHitsCountdown, state);
-        if (dependencies.entityRuntimeState().runtime != null) {
-            dependencies
-                    .entityRuntimeState()
-                    .runtime
-                    .configuration()
-                    .setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
-        }
+
+        loaded.entities.configuration().setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
         return resolution.result();
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
-            RoomEntity entity, int direction, int nextX, int nextY) {
-        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY);
+            RoomRuntime loaded, RoomEntity entity, int direction, int nextX, int nextY) {
+        return entityBackgroundCollisionResult(loaded, entity, direction, nextX, nextY);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
-            RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) {
-        int ignoreHitsCountdown = dependencies.entityRuntimeState().runtime == null
-                ? 0
-                : dependencies.entityRuntimeState().runtime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
+            RoomRuntime loaded, RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) {
+        int ignoreHitsCountdown = loaded.entities.enemies().enemyIgnoreHitsCountdown(entity.slot());
+        return entityBackgroundCollisionResult(
+                loaded, entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
     }
 
     RoomEntityGroundInteraction.Result entityGroundInteraction(
-            RoomEntity entity, int frameCounter, int previousGroundStatus, int speedZ, boolean sideScrolling) {
+            RoomRuntime loaded,
+            RoomEntity entity,
+            int frameCounter,
+            int previousGroundStatus,
+            int speedZ,
+            boolean sideScrolling) {
         int options = dependencies.romTables().entityPropertyTables().entityOptions1(entity.type());
         if ((options & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0) {
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0);
@@ -223,7 +211,7 @@ final class RoomCollisionQueries {
 
         RoomEntityGroundInteraction.PitTransition pit = RoomInteractionGeometry.pitTransitionFor(
                 entity, sample, dependencies.entityFrame().currentLinkMotionState);
-        var previous = groundResults[entity.slot()];
+        var previous = loaded.collisions.groundResults[entity.slot()];
         if (previous == null
                 || previous.entity() != updated
                 || previous.groundStatus() != groundStatus
@@ -231,36 +219,41 @@ final class RoomCollisionQueries {
                 || previous.unloaded()
                 || previous.waterSplash() != splash) {
             previous = new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
-            groundResults[entity.slot()] = previous;
+            loaded.collisions.groundResults[entity.slot()] = previous;
         }
         return previous;
     }
 
-    boolean pairoddProjectileObjectCollision(RoomEntity entity) {
+    boolean pairoddProjectileObjectCollision(RoomRuntime loaded, RoomEntity entity) {
         int physicsFlag = dependencies.overworldCollision().objectPhysicsFlagAtEntityPosition(entity.x(), entity.y());
         return PairoddProjectileObjectCollision.collidesWithPhysicsFlag(physicsFlag);
     }
 
     record Dependencies(
             RoomEntitySessionState entityFrame,
-            RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             EntityBackgroundCollisionResolver entityBackgroundCollisionResolver,
-            RoomEntitySessionState entityRuntimeState,
             EntityCollisionPointProbe entityCollisionPointProbe,
             OverworldCollision overworldCollision,
             RomTables romTables) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityBackgroundCollisionResolver, "entityBackgroundCollisionResolver");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityCollisionPointProbe, "entityCollisionPointProbe");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romTables, "romTables");
         }
+    }
+
+    /** Transitional boundary adapter; caller has already checked the facade's loaded state. */
+    RoomBoundaryState boundaryState(int x, int y, boolean airborne) {
+        return boundaryState(dependencies.entityFrame().loaded, x, y, airborne);
+    }
+
+    RoomBoundaryState boundaryState(int x, int y, boolean airborne, int modifier) {
+        return boundaryState(dependencies.entityFrame().loaded, x, y, airborne, modifier);
     }
 }

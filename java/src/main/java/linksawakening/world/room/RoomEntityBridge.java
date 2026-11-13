@@ -30,8 +30,7 @@ final class RoomEntityBridge {
                         dependencies.entityRandomByteSource(),
                         dependencies.followers(),
                         dependencies.items(),
-                        dependencies.location(),
-                        dependencies.roomCollisionQueries()),
+                        dependencies.location()),
                 dependencies.entityConfiguration(),
                 dependencies.entityEffects());
     }
@@ -126,7 +125,6 @@ final class RoomEntityBridge {
             RomRandomByteSource entityRandomByteSource,
             GPU gpu,
             Rom romData,
-            RoomCollisionQueries roomCollisionQueries,
             RoomLoadCoordinator roomLoadCoordinator) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
@@ -142,7 +140,6 @@ final class RoomEntityBridge {
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(gpu, "gpu");
             java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
             java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
         }
     }

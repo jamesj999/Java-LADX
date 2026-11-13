@@ -9,13 +9,11 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
-import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /** LoadRoomEntities story flags and restoration; follower and NPC presentation have distinct owners. */
 final class RoomStoryState {
@@ -28,9 +26,7 @@ final class RoomStoryState {
         roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(dependencies.followers()));
         roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
                 dependencies.chestContentsTable(),
-                dependencies.colorShellWorld(),
                 dependencies.enemyCombatTables(),
-                dependencies.entityBackgroundInteraction(),
                 dependencies.entityRuntimeState(),
                 dependencies.entityInputs(),
                 dependencies.entityRandomByteSource(),
@@ -41,13 +37,13 @@ final class RoomStoryState {
                 dependencies.owlEventDialogResolver(),
                 dependencies.romData(),
                 dependencies.romTables(),
-                dependencies.roomCollisionQueries(),
                 dependencies.entityFrame(),
                 dependencies.roomSessionViews(),
                 dependencies.roomState(),
                 this,
                 dependencies.dropResolver(),
-                dependencies.installRoom()));
+                dependencies.installRoom(),
+                dependencies.roomRuntimeServices()));
     }
 
     boolean applyMarinWakeUpPresentation(RoomRuntime loaded, int x, int y, int spriteVariant) {
@@ -282,9 +278,7 @@ final class RoomStoryState {
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             ChestContentsTable chestContentsTable,
-            ColorShellWorld colorShellWorld,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntityBackgroundInteraction entityBackgroundInteraction,
             RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
@@ -294,12 +288,12 @@ final class RoomStoryState {
             OwlEventDialogResolver owlEventDialogResolver,
             Rom romData,
             RomTables romTables,
-            RoomCollisionQueries roomCollisionQueries,
             linksawakening.world.entity.EnemyDropResolver dropResolver,
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
             RoomTransientState roomTransientState,
-            java.util.function.Consumer<RoomRuntime> installRoom) {
+            java.util.function.Consumer<RoomRuntime> installRoom,
+            RoomRuntime.Services roomRuntimeServices) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");
@@ -307,9 +301,7 @@ final class RoomStoryState {
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
-            java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
@@ -319,7 +311,6 @@ final class RoomStoryState {
             java.util.Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
             java.util.Objects.requireNonNull(dropResolver, "dropResolver");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");

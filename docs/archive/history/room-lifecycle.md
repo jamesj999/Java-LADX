@@ -99,3 +99,13 @@ Marin/Tarin presentation and sprite-override application receive RoomRuntime.
 The facade retains false/no-op defaults before first load. Missing sprite
 selection and optional override maps remain visual-domain absence, not runtime
 lifecycle checks. World null-comparison occurrences at this slice: 268.
+
+## Collision generation bindings
+
+Collision object/ground/boundary caches now live on RoomRuntime. Queries take
+that generation; entity object, ground, background and color-shell callbacks
+are allocated and bound once on generation creation. They no longer discover
+the current runtime through a supplier. Diagnostic probes use the same explicit
+argument. A marked adapter for the still-unmigrated boundary coordinator uses a
+transitional generation alias; it must disappear with that caller, not remain
+as another lifecycle source. No per-frame callback allocation is introduced.

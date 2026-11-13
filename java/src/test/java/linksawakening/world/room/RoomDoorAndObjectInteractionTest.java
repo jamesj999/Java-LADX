@@ -1155,7 +1155,11 @@ final class RoomDoorAndObjectInteractionTest {
         EntityBackgroundCollisionResult water = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        octorok, EntityBackgroundCollisionResult.RIGHT, octorok.x(), octorok.y());
+                        session.loadedRoomOrNull(),
+                        octorok,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        octorok.x(),
+                        octorok.y());
         assertFalse(water.blocked());
         assertEquals(0x0E, water.objectId());
         assertEquals(PhysicsFlags.DEEP_WATER, water.physicsFlag());
@@ -1164,7 +1168,11 @@ final class RoomDoorAndObjectInteractionTest {
         EntityBackgroundCollisionResult solid = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        octorok, EntityBackgroundCollisionResult.RIGHT, octorok.x(), octorok.y());
+                        session.loadedRoomOrNull(),
+                        octorok,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        octorok.x(),
+                        octorok.y());
         assertTrue(solid.blocked());
         assertEquals(0x00, solid.objectId());
         assertEquals(PhysicsFlags.SOLID, solid.physicsFlag());
@@ -1185,7 +1193,12 @@ final class RoomDoorAndObjectInteractionTest {
         EntityBackgroundCollisionResult indoorResult = indoor.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        indoorEntity, EntityBackgroundCollisionResult.RIGHT, indoorEntity.x(), indoorEntity.y(), 0x01);
+                        indoor.loadedRoomOrNull(),
+                        indoorEntity,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        indoorEntity.x(),
+                        indoorEntity.y(),
+                        0x01);
         assertFalse(indoorResult.blocked());
         assertEquals(0x01, RoomDebugFixture.of(indoor).entityLedgeTimerForTest(indoorEntity.slot()));
 
@@ -1202,6 +1215,7 @@ final class RoomDoorAndObjectInteractionTest {
         EntityBackgroundCollisionResult evenFrame = outdoor.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
+                        outdoor.loadedRoomOrNull(),
                         outdoorEntity,
                         EntityBackgroundCollisionResult.RIGHT,
                         outdoorEntity.x(),
@@ -1213,6 +1227,7 @@ final class RoomDoorAndObjectInteractionTest {
         EntityBackgroundCollisionResult oddFrame = outdoor.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
+                        outdoor.loadedRoomOrNull(),
                         outdoorEntity,
                         EntityBackgroundCollisionResult.RIGHT,
                         outdoorEntity.x(),

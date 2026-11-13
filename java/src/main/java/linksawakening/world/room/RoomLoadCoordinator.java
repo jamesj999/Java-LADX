@@ -11,12 +11,10 @@ import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
-import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.object.SwitchBlockAnimation;
@@ -179,7 +177,9 @@ final class RoomLoadCoordinator {
             dependencies
                     .installRoom()
                     .accept(new RoomRuntime(
-                            dependencies.location().activeRoom, dependencies.entityRuntimeState().runtime));
+                            dependencies.location().activeRoom,
+                            dependencies.entityRuntimeState().runtime,
+                            dependencies.roomRuntimeServices()));
             configureRuntimeWorld();
             configureRuntimeInputs();
             configureRuntimeProgress();
@@ -244,11 +244,9 @@ final class RoomLoadCoordinator {
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             ChestContentsTable chestContentsTable,
-            ColorShellWorld colorShellWorld,
             DungeonRoomEventTable dungeonRoomEventTable,
             RomEnemyCombatTables enemyCombatTables,
             EnemyDropResolver enemyDropResolver,
-            RoomEntityBackgroundInteraction entityBackgroundInteraction,
             RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
@@ -260,7 +258,6 @@ final class RoomLoadCoordinator {
             OwlEventDialogResolver owlEventDialogResolver,
             Rom romData,
             RomTables romTables,
-            RoomCollisionQueries roomCollisionQueries,
             RoomLoadListener roomLoadListener,
             RoomLoader roomLoader,
             RoomObjectMutations roomObjectMutations,
@@ -270,7 +267,8 @@ final class RoomLoadCoordinator {
             RoomWorldState roomState,
             RoomStoryState roomStoryState,
             RoomTransientState roomTransientState,
-            java.util.function.Consumer<RoomRuntime> installRoom) {
+            java.util.function.Consumer<RoomRuntime> installRoom,
+            RoomRuntime.Services roomRuntimeServices) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");
@@ -278,11 +276,9 @@ final class RoomLoadCoordinator {
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
             java.util.Objects.requireNonNull(dungeonRoomEventTable, "dungeonRoomEventTable");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
             java.util.Objects.requireNonNull(enemyDropResolver, "enemyDropResolver");
-            java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
@@ -294,7 +290,6 @@ final class RoomLoadCoordinator {
             java.util.Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
             java.util.Objects.requireNonNull(roomLoader, "roomLoader");
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
             java.util.Objects.requireNonNull(roomPaletteLoader, "roomPaletteLoader");
@@ -368,21 +363,21 @@ final class RoomLoadCoordinator {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setBooBuddyTriggerCount(dependencies.puzzles().roomTriggerCount);
-        configuration.setColorShellWorld(dependencies.colorShellWorld());
+        configuration.setColorShellWorld(dependencies.entityRuntimeState().loaded.colorShellWorld);
         configuration.setFollowingNpcState(dependencies.followers().followingNpcState);
         configuration.setEntityMapId(dependencies.location().activeRoom.mapId());
         configuration.setEntityRoomId(dependencies.location().activeRoom.roomId());
         configuration.setOwlDialogResolver(dependencies.owlEventDialogResolver()::globalDialogId);
         configuration.setOwlDefaultMusicResolver(dependencies.owlEventDialogResolver()::defaultMusicTrack);
-        configuration.setGroundInteraction(dependencies.roomCollisionQueries()::entityGroundInteraction);
-        configuration.setBackgroundInteraction(dependencies.entityBackgroundInteraction());
+        configuration.setGroundInteraction(dependencies.entityRuntimeState().loaded.groundInteraction);
+        configuration.setBackgroundInteraction(dependencies.entityRuntimeState().loaded.backgroundInteraction);
     }
 
     private void configureRuntimeInputs() {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
-        configuration.setObjectQuery(dependencies.roomCollisionQueries()::entityObjectSample);
-        configuration.setObjectIntersectionQuery(dependencies.roomCollisionQueries()::entityObjectIntersectionSample);
+        configuration.setObjectQuery(dependencies.entityRuntimeState().loaded.objectQuery);
+        configuration.setObjectIntersectionQuery(dependencies.entityRuntimeState().loaded.objectIntersectionQuery);
         configuration.setGroundInteractionSideScrolling(
                 dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         configuration.setActionButtonsHeld(

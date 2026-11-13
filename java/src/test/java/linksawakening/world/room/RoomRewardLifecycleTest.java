@@ -1039,7 +1039,11 @@ final class RoomRewardLifecycleTest {
         EntityBackgroundCollisionResult lower = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y());
+                        session.loadedRoomOrNull(),
+                        entity,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        entity.x(),
+                        entity.y());
         assertFalse(lower.blocked());
         assertEquals(0xDB, lower.objectId());
         assertEquals(0x04, lower.physicsFlag());
@@ -1048,14 +1052,22 @@ final class RoomRewardLifecycleTest {
         EntityBackgroundCollisionResult raisedStateZero = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y());
+                        session.loadedRoomOrNull(),
+                        entity,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        entity.x(),
+                        entity.y());
         assertTrue(raisedStateZero.blocked());
 
         RoomDebugFixture.of(session).setEntitySwitchBlocksStateForTest(0x02);
         EntityBackgroundCollisionResult raisedStateTwo = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
-                        entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y());
+                        session.loadedRoomOrNull(),
+                        entity,
+                        EntityBackgroundCollisionResult.RIGHT,
+                        entity.x(),
+                        entity.y());
         assertFalse(raisedStateTwo.blocked());
     }
 

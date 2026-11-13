@@ -21,16 +21,11 @@ final class RoomEntitySimulation {
     private final EffectsDependencies effects;
     private final linksawakening.world.entity.EntityFrameContextBuilder frameInputs =
             linksawakening.world.entity.EntityFrameContext.builder();
-    private final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
-    private final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
 
     RoomEntitySimulation(Dependencies dependencies, SetupDependencies setup, EffectsDependencies effects) {
         this.setup = setup;
         this.effects = effects;
         this.dependencies = dependencies;
-        backgroundCollision = (entity, direction, x, y) ->
-                dependencies.roomCollisionQueries().entityBackgroundCollision(entity, direction, x, y);
-        objectCollision = entity -> dependencies.roomCollisionQueries().pairoddProjectileObjectCollision(entity);
     }
 
     List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickInputs inputs) {
@@ -64,8 +59,8 @@ final class RoomEntitySimulation {
                 .linkEntityY(linkEntityY)
                 .collisionType(collisionType & 0xFF)
                 .randomByteSupplier(dependencies.entityRandomByteSource())
-                .backgroundCollision(backgroundCollision)
-                .objectCollision(objectCollision)
+                .backgroundCollision(loaded.backgroundCollision)
+                .objectCollision(loaded.objectCollision)
                 .linkPositionHistory(dependencies.followers().followingLinkPositionHistory)
                 .linkZ(dependencies.followers().followingLinkZ)
                 .linkAirborne(linkAirborne)
@@ -98,8 +93,7 @@ final class RoomEntitySimulation {
             RomRandomByteSource entityRandomByteSource,
             RoomFollowerState followers,
             RoomItemUseState items,
-            RoomLocationState location,
-            RoomCollisionQueries roomCollisionQueries) {
+            RoomLocationState location) {
         Dependencies {
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
@@ -107,7 +101,6 @@ final class RoomEntitySimulation {
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
         }
     }
 

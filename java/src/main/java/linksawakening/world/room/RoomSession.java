@@ -44,6 +44,7 @@ public final class RoomSession {
         // Transitional aliases retained only while collaborators migrate to explicit arguments.
         components.location().activeRoom = room.room;
         components.entityFrame().runtime = room.entities;
+        components.entityFrame().loaded = room;
         loadedRoom = room;
     }
 

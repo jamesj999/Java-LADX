@@ -13,8 +13,8 @@ class RoomRuntimeTest {
         var session = RoomRenderAllocationTest.room();
         var room = session.rooms().activeRoom();
         var entities = session.components.entityFrame().runtime;
-        var first = new RoomRuntime(room, entities);
-        var replacement = new RoomRuntime(room, entities);
+        var first = new RoomRuntime(room, entities, session.components.roomRuntimeServices());
+        var replacement = new RoomRuntime(room, entities, session.components.roomRuntimeServices());
         assertSame(room, first.room);
         assertSame(entities, first.entities);
         assertNotSame(first.collisions, replacement.collisions);
@@ -25,10 +25,13 @@ class RoomRuntimeTest {
     @Test
     void absenceCannotBePackagedAsALoadedGeneration() {
         var session = RoomRenderAllocationTest.room();
-        assertThrows(NullPointerException.class, () -> new RoomRuntime(null, session.components.entityFrame().runtime));
         assertThrows(
                 NullPointerException.class,
-                () -> new RoomRuntime(session.rooms().activeRoom(), null));
+                () -> new RoomRuntime(
+                        null, session.components.entityFrame().runtime, session.components.roomRuntimeServices()));
+        assertThrows(
+                NullPointerException.class,
+                () -> new RoomRuntime(session.rooms().activeRoom(), null, session.components.roomRuntimeServices()));
     }
 
     @Test
@@ -73,7 +76,7 @@ class RoomRuntimeTest {
         var session = RoomRenderAllocationTest.room();
         var role = session.entities();
         var first = session.loadedRoomOrNull();
-        var replacement = new RoomRuntime(first.room, first.entities);
+        var replacement = new RoomRuntime(first.room, first.entities, session.components.roomRuntimeServices());
         session.installRoom(replacement);
         assertSame(replacement, session.loadedRoomOrNull());
         assertSame(role, session.entities());

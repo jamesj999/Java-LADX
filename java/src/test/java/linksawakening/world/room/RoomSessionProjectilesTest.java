@@ -290,6 +290,7 @@ final class RoomSessionProjectilesTest {
         EntityBackgroundCollisionResult result = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
+                        session.loadedRoomOrNull(),
                         syntheticEntity(HookshotChainMotion.ENTITY_TYPE),
                         EntityBackgroundCollisionResult.RIGHT,
                         0x40,

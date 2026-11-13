@@ -3,12 +3,10 @@ package linksawakening.world.room;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
-import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
 import linksawakening.world.entity.FollowingNpcRoomContext;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.transition.Warp;
 
@@ -57,7 +55,10 @@ final class RoomFollowerSynchronizer {
                 .build();
         dependencies
                 .installRoom()
-                .accept(new RoomRuntime(dependencies.location().activeRoom, dependencies.entityRuntimeState().runtime));
+                .accept(new RoomRuntime(
+                        dependencies.location().activeRoom,
+                        dependencies.entityRuntimeState().runtime,
+                        dependencies.roomRuntimeServices()));
         configureFollowerWorld();
         configureFollowerCollision();
         configureFollowerInputs();
@@ -88,9 +89,7 @@ final class RoomFollowerSynchronizer {
 
     record Dependencies(
             ChestContentsTable chestContentsTable,
-            ColorShellWorld colorShellWorld,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntityBackgroundInteraction entityBackgroundInteraction,
             RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
@@ -101,18 +100,16 @@ final class RoomFollowerSynchronizer {
             OwlEventDialogResolver owlEventDialogResolver,
             Rom romData,
             RomTables romTables,
-            RoomCollisionQueries roomCollisionQueries,
             RoomEntitySessionState dropState,
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
             RoomStoryState owner,
             linksawakening.world.entity.EnemyDropResolver dropResolver,
-            java.util.function.Consumer<RoomRuntime> installRoom) {
+            java.util.function.Consumer<RoomRuntime> installRoom,
+            RoomRuntime.Services roomRuntimeServices) {
         Dependencies {
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
-            java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
@@ -123,7 +120,6 @@ final class RoomFollowerSynchronizer {
             java.util.Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
             java.util.Objects.requireNonNull(dropState, "dropState");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
@@ -133,7 +129,7 @@ final class RoomFollowerSynchronizer {
 
     private void configureFollowerWorld() {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
-        configuration.setColorShellWorld(dependencies.colorShellWorld());
+        configuration.setColorShellWorld(dependencies.entityRuntimeState().loaded.colorShellWorld);
         configuration.setFollowingNpcState(dependencies.followers().followingNpcState);
         configuration.setEntityMapId(dependencies.location().activeRoom.mapId());
         configuration.setEntityRoomId(dependencies.location().activeRoom.roomId());
@@ -151,10 +147,10 @@ final class RoomFollowerSynchronizer {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setOwlDefaultMusicResolver(dependencies.owlEventDialogResolver()::defaultMusicTrack);
-        configuration.setGroundInteraction(dependencies.roomCollisionQueries()::entityGroundInteraction);
-        configuration.setBackgroundInteraction(dependencies.entityBackgroundInteraction());
-        configuration.setObjectQuery(dependencies.roomCollisionQueries()::entityObjectSample);
-        configuration.setObjectIntersectionQuery(dependencies.roomCollisionQueries()::entityObjectIntersectionSample);
+        configuration.setGroundInteraction(dependencies.entityRuntimeState().loaded.groundInteraction);
+        configuration.setBackgroundInteraction(dependencies.entityRuntimeState().loaded.backgroundInteraction);
+        configuration.setObjectQuery(dependencies.entityRuntimeState().loaded.objectQuery);
+        configuration.setObjectIntersectionQuery(dependencies.entityRuntimeState().loaded.objectIntersectionQuery);
         configuration.setGroundInteractionSideScrolling(
                 dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
     }

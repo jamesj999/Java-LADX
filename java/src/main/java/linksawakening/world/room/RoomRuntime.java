@@ -12,10 +12,39 @@ final class RoomRuntime {
     final ActiveRoom room;
     final RoomEntityRuntime entities;
     final CollisionCache collisions = new CollisionCache();
+    final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
+    final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
+    final linksawakening.world.entity.RoomEntityGroundInteraction groundInteraction;
+    final linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
+    final linksawakening.world.entity.RoomEntityObjectQuery objectIntersectionQuery;
+    final linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
+    final linksawakening.world.entity.ColorShellWorld colorShellWorld;
 
-    RoomRuntime(ActiveRoom room, RoomEntityRuntime entities) {
+    record Services(
+            RoomCollisionQueries queries,
+            RoomObjectMutations objects,
+            RoomEntitySessionState frame,
+            linksawakening.vfx.TransientVfxSystem vfx) {
+        Services {
+            Objects.requireNonNull(queries);
+            Objects.requireNonNull(objects);
+            Objects.requireNonNull(frame);
+        }
+    }
+
+    RoomRuntime(ActiveRoom room, RoomEntityRuntime entities, Services services) {
         this.room = Objects.requireNonNull(room, "room");
         this.entities = Objects.requireNonNull(entities, "entities");
+        backgroundCollision = (entity, direction, x, y) ->
+                services.queries().entityBackgroundCollision(this, entity, direction, x, y);
+        objectCollision = entity -> services.queries().pairoddProjectileObjectCollision(this, entity);
+        groundInteraction = (entity, frame, status, speed, side) ->
+                services.queries().entityGroundInteraction(this, entity, frame, status, speed, side);
+        objectQuery = entity -> services.queries().entityObjectSample(this, entity);
+        objectIntersectionQuery = entity -> services.queries().entityObjectIntersectionSample(this, entity);
+        backgroundInteraction = RoomEntityWorldAdapters.background(services.queries(), this);
+        colorShellWorld =
+                RoomEntityWorldAdapters.colorShell(services.objects(), services.frame(), services.vfx(), this);
     }
 
     /** Scratch results belong to this room, never to the session or an unloaded-room sentinel. */

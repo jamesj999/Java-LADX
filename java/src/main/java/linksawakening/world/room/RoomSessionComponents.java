@@ -6,14 +6,12 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityBackgroundCollisionResolver;
 import linksawakening.world.entity.EntityCollisionPointProbe;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.object.OverworldBushInteraction;
 
 /** Wiring result consumed only by the facade and compatibility adapters. */
@@ -49,10 +47,8 @@ record RoomSessionComponents(
         EntityBackgroundCollisionResolver entityBackgroundCollisionResolver,
         OverworldBushInteraction overworldBushInteraction,
         IndoorTorchPaletteEffect indoorTorchPaletteEffect,
-        RoomEntityBackgroundInteraction entityBackgroundInteraction,
         RoomWorldState roomState,
         RoomScrollNavigation scrollNavigation,
-        ColorShellWorld colorShellWorld,
         RoomSessionViews roomSessionViews,
         RoomTransientState roomTransientState,
         RoomEntityRewards roomEntityRewards,
@@ -71,8 +67,10 @@ record RoomSessionComponents(
         RoomEntityCombatBridge entityCombatBridge,
         LinkOutputs.Dependencies linkOutputsDependencies,
         RewardOutputs.Dependencies rewardOutputsDependencies,
-        PresentationOutputs.Dependencies presentationOutputsDependencies) {
+        PresentationOutputs.Dependencies presentationOutputsDependencies,
+        RoomRuntime.Services roomRuntimeServices) {
     static final class Builder {
+        RoomRuntime.Services roomRuntimeServices;
         Rom romData;
         GPU gpu;
         RoomLoader roomLoader;
@@ -98,10 +96,8 @@ record RoomSessionComponents(
         EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
         OverworldBushInteraction overworldBushInteraction;
         IndoorTorchPaletteEffect indoorTorchPaletteEffect;
-        RoomEntityBackgroundInteraction entityBackgroundInteraction;
         RoomWorldState roomState;
         RoomScrollNavigation scrollNavigation;
-        ColorShellWorld colorShellWorld;
         RoomSessionViews roomSessionViews;
         RoomTransientState roomTransientState;
         RoomEntityRewards roomEntityRewards;
@@ -158,10 +154,8 @@ record RoomSessionComponents(
                     entityBackgroundCollisionResolver,
                     overworldBushInteraction,
                     indoorTorchPaletteEffect,
-                    entityBackgroundInteraction,
                     roomState,
                     scrollNavigation,
-                    colorShellWorld,
                     roomSessionViews,
                     roomTransientState,
                     roomEntityRewards,
@@ -180,7 +174,8 @@ record RoomSessionComponents(
                     entityCombatBridge,
                     new LinkOutputs.Dependencies(entityBridge),
                     new RewardOutputs.Dependencies(entityFrame, roomSessionViews),
-                    new PresentationOutputs.Dependencies(entityFrame));
+                    new PresentationOutputs.Dependencies(entityFrame),
+                    roomRuntimeServices);
         }
     }
 }

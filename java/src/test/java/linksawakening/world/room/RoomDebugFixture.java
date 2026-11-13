@@ -180,7 +180,8 @@ final class RoomDebugFixture {
     }
 
     void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
-        session.installRoom(new RoomRuntime(session.rooms().activeRoom(), runtime));
+        session.installRoom(
+                new RoomRuntime(session.rooms().activeRoom(), runtime, session.components.roomRuntimeServices()));
     }
 
     int entityPhysicsFlagsForTest(int slot) {

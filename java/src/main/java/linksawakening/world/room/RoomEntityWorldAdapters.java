@@ -9,39 +9,43 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 final class RoomEntityWorldAdapters {
-    static RoomEntityBackgroundInteraction background(RoomCollisionQueries collision) {
+    static RoomEntityBackgroundInteraction background(RoomCollisionQueries collision, RoomRuntime loaded) {
         return new RoomEntityBackgroundInteraction() {
             @Override
             public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
-                return collision.entityBackgroundCollisionResult(entity, direction, nextX, nextY, 0);
+                return collision.entityBackgroundCollisionResult(loaded, entity, direction, nextX, nextY, 0);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-                return collision.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown);
+                return collision.entityBackgroundCollisionResult(
+                        loaded, entity, direction, nextX, nextY, ignoreHitsCountdown);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
                 return collision.entityBackgroundCollisionResult(
-                        entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
+                        loaded, entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
             }
         };
     }
 
     static ColorShellWorld colorShell(
-            RoomObjectMutations objects, RoomEntitySessionState entityFrame, TransientVfxSystem transientVfxSystem) {
+            RoomObjectMutations objects,
+            RoomEntitySessionState entityFrame,
+            TransientVfxSystem transientVfxSystem,
+            RoomRuntime loaded) {
         return new ColorShellWorld() {
             @Override
             public int objectAt(RoomEntity entity, int relativeOffset) {
-                return objects.colorShellObjectAt(entity, relativeOffset);
+                return objects.colorShellObjectAt(loaded, entity, relativeOffset);
             }
 
             @Override
             public void writeObject(RoomEntity entity, int objectId) {
-                objects.writeColorShellObject(entity, objectId);
+                objects.writeColorShellObject(loaded, entity, objectId);
             }
 
             @Override

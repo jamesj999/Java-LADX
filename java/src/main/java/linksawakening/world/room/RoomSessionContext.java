@@ -71,11 +71,9 @@ final class RoomSessionContext {
                 values.transientVfxSystem));
         values.roomCollisionQueries = new RoomCollisionQueries(new RoomCollisionQueries.Dependencies(
                 values.entityFrame,
-                values.location,
                 values.puzzles,
                 values.terrain,
                 values.entityBackgroundCollisionResolver,
-                values.entityFrame,
                 values.entityCollisionPointProbe,
                 values.overworldCollision,
                 values.romTables));
@@ -95,9 +93,8 @@ final class RoomSessionContext {
                 values.romData,
                 values.roomTilemapBuilder));
         values.entityInputs = new RoomEntityInputs();
-        values.entityBackgroundInteraction = RoomEntityWorldAdapters.background(values.roomCollisionQueries);
-        values.colorShellWorld =
-                RoomEntityWorldAdapters.colorShell(values.roomObjectMutations, values.entityFrame, transientVfxSystem);
+        values.roomRuntimeServices = new RoomRuntime.Services(
+                values.roomCollisionQueries, values.roomObjectMutations, values.entityFrame, transientVfxSystem);
         values.roomPlayerItemActions = new RoomPlayerItemActions(new RoomPlayerItemActions.Dependencies(
                 values.followers,
                 values.items,
@@ -131,9 +128,7 @@ final class RoomSessionContext {
                 values.puzzles,
                 values.terrain,
                 values.chestContentsTable,
-                values.colorShellWorld,
                 values.enemyCombatTables,
-                values.entityBackgroundInteraction,
                 values.entityFrame,
                 values.entityInputs,
                 values.entityRandomByteSource,
@@ -143,12 +138,12 @@ final class RoomSessionContext {
                 values.owlEventDialogResolver,
                 values.romData,
                 values.romTables,
-                values.roomCollisionQueries,
                 values.enemyDropResolver,
                 values.roomSessionViews,
                 values.roomState,
                 values.roomTransientState,
-                installRoom));
+                installRoom,
+                values.roomRuntimeServices));
         values.roomDoorInteractions = new RoomDoorInteractions(new RoomDoorInteractions.Dependencies(
                 values.entityFrame,
                 values.followers,
@@ -170,11 +165,9 @@ final class RoomSessionContext {
                 values.puzzles,
                 values.terrain,
                 values.chestContentsTable,
-                values.colorShellWorld,
                 values.dungeonRoomEventTable,
                 values.enemyCombatTables,
                 values.enemyDropResolver,
-                values.entityBackgroundInteraction,
                 values.entityFrame,
                 values.entityInputs,
                 values.entityRandomByteSource,
@@ -186,7 +179,6 @@ final class RoomSessionContext {
                 values.owlEventDialogResolver,
                 values.romData,
                 values.romTables,
-                values.roomCollisionQueries,
                 values.roomLoadListener,
                 values.roomLoader,
                 values.roomObjectMutations,
@@ -196,11 +188,11 @@ final class RoomSessionContext {
                 values.roomState,
                 values.roomStoryState,
                 values.roomTransientState,
-                installRoom));
+                installRoom,
+                values.roomRuntimeServices));
         values.roomEntityRewards = new RoomEntityRewards(new RoomEntityRewards.Dependencies(
                 values.followers,
                 values.items,
-                values.location,
                 values.entityFrame,
                 values.entityInputs,
                 values.roomSessionViews,
@@ -251,12 +243,7 @@ final class RoomSessionContext {
                 values.roomStoryState,
                 values.roomTransitionController);
         values.entityCombatBridge = new RoomEntityCombatBridge(new RoomEntityCombatBridge.Dependencies(
-                values.entityFrame,
-                values.followers,
-                values.location,
-                values.entityFrame,
-                values.roomEntityRewards,
-                values.roomState));
+                values.entityFrame, values.followers, values.entityFrame, values.roomEntityRewards, values.roomState));
         values.entityBridge = new RoomEntityBridge(new RoomEntityBridge.Dependencies(
                 values.entityFrame,
                 values.followers,
@@ -271,7 +258,6 @@ final class RoomSessionContext {
                 values.entityRandomByteSource,
                 values.gpu,
                 values.romData,
-                values.roomCollisionQueries,
                 values.roomLoadCoordinator));
     }
 }

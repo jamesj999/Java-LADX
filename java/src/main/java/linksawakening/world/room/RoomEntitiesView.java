@@ -128,9 +128,7 @@ final class RoomEntitiesView implements RoomEntities {
         return dependencies.session().tickEntities(inputs);
     }
 
-    record Dependencies(RoomEntityBridge entityBridge, RoomSession session) {
-        Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-        }
+    record Dependencies(RoomSession session) {
+        Dependencies {}
     }
 }

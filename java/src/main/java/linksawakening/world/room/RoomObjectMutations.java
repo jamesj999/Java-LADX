@@ -678,21 +678,21 @@ final class RoomObjectMutations {
         return true;
     }
 
-    int colorShellObjectAt(RoomEntity entity, int relativeOffset) {
-        if (dependencies.location().activeRoom == null || entity == null) {
+    int colorShellObjectAt(RoomRuntime loaded, RoomEntity entity, int relativeOffset) {
+        if (entity == null) {
             return 0xFF;
         }
         int index = RoomInteractionGeometry.colorShellObjectIndex(entity) + relativeOffset;
-        int[] objects = dependencies.location().activeRoom.roomObjectsArea();
+        int[] objects = loaded.room.roomObjectsArea();
         return index >= 0 && index < objects.length ? objects[index] : 0xFF;
     }
 
-    void writeColorShellObject(RoomEntity entity, int objectId) {
-        if (dependencies.location().activeRoom == null || entity == null) {
+    void writeColorShellObject(RoomRuntime loaded, RoomEntity entity, int objectId) {
+        if (entity == null) {
             return;
         }
         int index = RoomInteractionGeometry.colorShellObjectIndex(entity);
-        int[] objects = dependencies.location().activeRoom.roomObjectsArea();
+        int[] objects = loaded.room.roomObjectsArea();
         if (index < 0 || index >= objects.length) {
             return;
         }
