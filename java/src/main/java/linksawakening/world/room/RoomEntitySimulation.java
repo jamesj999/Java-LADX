@@ -14,6 +14,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.object.SwitchBlockAnimation;
 import linksawakening.world.transition.Warp;
 
+/** LoadRoomEntities runtime: configure inputs, tick descending slots, then apply room effects in source order. */
 final class RoomEntitySimulation {
     private final Dependencies dependencies;
     private final SetupDependencies setup;
@@ -62,7 +63,7 @@ final class RoomEntitySimulation {
                 || dependencies.entityBridge().get().entityRuntime == null) {
             return List.of();
         }
-        configure();
+        configureRuntimeForFrame();
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         dependencies.entityRandomByteSource().beginFrame(frameCounter & 0xFF, 0);
@@ -101,7 +102,7 @@ final class RoomEntitySimulation {
                         .linkSpeedX(linkSpeedX)
                         .linkSpeedY(linkSpeedY)
                         .build());
-        complete(linkEntityX, linkEntityY);
+        applyFrameEffects(linkEntityX, linkEntityY);
         return events;
     }
 
@@ -143,7 +144,7 @@ final class RoomEntitySimulation {
         }
     }
 
-    void configure() {
+    void configureRuntimeForFrame() {
         configurePresentation();
         configureInteraction();
         configureItems();
@@ -336,7 +337,7 @@ final class RoomEntitySimulation {
         }
     }
 
-    void complete(int linkEntityX, int linkEntityY) {
+    void applyFrameEffects(int linkEntityX, int linkEntityY) {
         synchronizeQuestState();
         var bombs = harvestRewards();
         persistEffects();

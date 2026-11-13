@@ -4,7 +4,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.world.object.OverworldBushInteraction;
 
-/** Player item entry points (PlaceBomb/ShootArrow) and publication of their entity presentation. */
+/** ApplyLinkMotionState player-item dispatch; lift, chest and shovel routines retain their own action state. */
 final class RoomPlayerItemActions {
     private final Dependencies dependencies;
     private final RoomShovelActions roomShovelActions;

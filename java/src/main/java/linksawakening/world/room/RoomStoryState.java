@@ -19,7 +19,7 @@ import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.transition.Warp;
 
-/** RoomStoryState operations for the live room session. */
+/** LoadRoomEntities story flags and restoration; follower and NPC presentation have distinct owners. */
 final class RoomStoryState {
     private final Dependencies dependencies;
     private final RoomNpcPresentation roomNpcPresentation;

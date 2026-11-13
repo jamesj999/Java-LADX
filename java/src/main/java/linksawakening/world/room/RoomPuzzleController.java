@@ -47,7 +47,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.Warp;
 
-/** RoomPuzzleController operations for the live room session. */
+/** Bank $02 room-event, switch, block and shutter progression over retained puzzle state. */
 final class RoomPuzzleController {
     private final Dependencies dependencies;
 

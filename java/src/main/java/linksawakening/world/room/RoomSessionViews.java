@@ -6,7 +6,7 @@ import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.transition.Warp;
 
-/** Live room queries and owned save/render projections of hMapRoom and the room status tables. */
+/** Read-only room queries; borrowed projections follow room replacement and owned snapshots preserve history. */
 final class RoomSessionViews {
     private final Dependencies dependencies;
     private final RoomRenderSnapshot.View renderView;

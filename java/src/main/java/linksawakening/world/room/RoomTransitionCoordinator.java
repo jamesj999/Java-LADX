@@ -10,7 +10,9 @@ import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
 /** Orders ApplyCollisionWithDoor and LinkMotionMapFadeOutHandler before fallback edge clamping. */
-public final class RoomTransitionCoordinator {
+public
+/** LoadRoom and boundary/warp coordination; preserves scroll completion and input gates. */
+final class RoomTransitionCoordinator {
     private final Dependencies dependencies;
     private final RoomBoundaryController boundaryController;
     private final TransitionController transitionController;

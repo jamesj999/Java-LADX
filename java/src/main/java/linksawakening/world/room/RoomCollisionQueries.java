@@ -25,7 +25,7 @@ import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.transition.RoomBoundaryState;
 import linksawakening.world.transition.Warp;
 
-/** RoomCollisionQueries operations for the live room session. */
+/** ApplyLinkMotionState ground probes and entity collision queries over current room state. */
 final class RoomCollisionQueries {
     private final Dependencies dependencies;
     private linksawakening.world.transition.RoomBoundaryInputs.Room boundaryRoom;

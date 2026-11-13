@@ -30,7 +30,7 @@ import linksawakening.world.object.BombObjectInteraction;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
 
-/** RoomObjectMutations operations for the live room session. */
+/** ApplyLinkMotionState and bomb/projectile object writes, including their immediate tile redraws. */
 final class RoomObjectMutations {
     private final Dependencies dependencies;
 

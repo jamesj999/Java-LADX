@@ -35,8 +35,8 @@ final class RoomEntityBridge {
                         dependencies.location(),
                         dependencies.roomCollisionQueries(),
                         () -> this),
-                dependencies.entityFrameSetup().get(),
-                dependencies.entityAfterTick().get());
+                dependencies.entityConfiguration().get(),
+                dependencies.entityEffects().get());
     }
 
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
@@ -168,10 +168,10 @@ final class RoomEntityBridge {
             RoomItemUseState items,
             RoomLocationState location,
             RoomTerrainState terrain,
-            java.util.function.Supplier<RoomEntitySimulation.EffectsDependencies> entityAfterTick,
+            java.util.function.Supplier<RoomEntitySimulation.EffectsDependencies> entityEffects,
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             java.util.function.Supplier<RoomEntityCombatBridge> entityCombatBridge,
-            java.util.function.Supplier<RoomEntitySimulation.SetupDependencies> entityFrameSetup,
+            java.util.function.Supplier<RoomEntitySimulation.SetupDependencies> entityConfiguration,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             RomRandomByteSource entityRandomByteSource,
             GPU gpu,
@@ -184,10 +184,10 @@ final class RoomEntityBridge {
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityAfterTick, "entityAfterTick");
+            java.util.Objects.requireNonNull(entityEffects, "entityEffects");
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
             java.util.Objects.requireNonNull(entityCombatBridge, "entityCombatBridge");
-            java.util.Objects.requireNonNull(entityFrameSetup, "entityFrameSetup");
+            java.util.Objects.requireNonNull(entityConfiguration, "entityConfiguration");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(gpu, "gpu");

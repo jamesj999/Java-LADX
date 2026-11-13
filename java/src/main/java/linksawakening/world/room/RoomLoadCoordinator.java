@@ -13,7 +13,7 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.object.SwitchBlockAnimation;
 import linksawakening.world.transition.Warp;
 
-/** LoadRoom ($00:3162): load data, initialize the active room, then synchronize collision. */
+/** LoadRoom: coordinates ROM room acquisition, initialization and entity replacement. */
 final class RoomLoadCoordinator {
     private final Dependencies dependencies;
     private final RoomActiveRoomInitializer roomActiveRoomInitializer;

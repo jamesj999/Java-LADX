@@ -33,7 +33,7 @@ import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
 
-/** RoomDoorInteractions operations for the live room session. */
+/** ApplyLinkMotionState indoor key blocks and dungeon entrance interactions. */
 final class RoomDoorInteractions {
     private final Dependencies dependencies;
     private final RoomChestInteractions roomChestInteractions;

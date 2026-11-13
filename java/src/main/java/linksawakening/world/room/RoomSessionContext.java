@@ -71,7 +71,7 @@ final class RoomSessionContext {
     }
 
     private void wireEntityStages() {
-        values.entityAfterTick = new RoomEntitySimulation.EffectsDependencies(
+        values.entityEffects = new RoomEntitySimulation.EffectsDependencies(
                 values.entityFrame,
                 values.followers,
                 values.items,
@@ -86,7 +86,7 @@ final class RoomSessionContext {
                 () -> values.roomTileRedraw,
                 () -> values.roomTransitionController,
                 values.transientVfxSystem);
-        values.entityFrameSetup = new RoomEntitySimulation.SetupDependencies(
+        values.entityConfiguration = new RoomEntitySimulation.SetupDependencies(
                 values.entityFrame,
                 values.followers,
                 values.items,
@@ -311,10 +311,10 @@ final class RoomSessionContext {
                 values.items,
                 values.location,
                 values.terrain,
-                () -> values.entityAfterTick,
+                () -> values.entityEffects,
                 () -> values.entityBridge,
                 () -> values.entityCombatBridge,
-                () -> values.entityFrameSetup,
+                () -> values.entityConfiguration,
                 () -> values.entityInputs,
                 values.entityRandomByteSource,
                 values.gpu,

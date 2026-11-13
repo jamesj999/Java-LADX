@@ -9,7 +9,7 @@ import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.motion.HookshotBridgeMotion;
 import linksawakening.world.transition.Warp;
 
-/** RoomTileRedraw operations for the live room session. */
+/** LoadRoomTilemap and immediate object redraw commands over the active room. */
 final class RoomTileRedraw {
     private final Dependencies dependencies;
 
