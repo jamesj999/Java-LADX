@@ -94,7 +94,7 @@ final class RoomEntityCombatBridge {
                     .add(new EntityCombatEvent(
                             event.slot(), event.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x01));
         }
-        dependencies.roomEntityRewards().harvestKeyRewardEvents();
+        dependencies.roomEntityRewards().harvestKeyRewardEvents(loaded);
         loaded.room.replaceEntities(loaded.entities.inspection().view());
         return event;
     }

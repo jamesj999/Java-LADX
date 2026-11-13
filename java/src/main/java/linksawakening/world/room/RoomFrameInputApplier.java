@@ -73,7 +73,7 @@ final class RoomFrameInputApplier {
                 inputs.player().health().lowHealth());
         bridge.outbox.setFreeMovementMode(inputs.link().freeMovement());
         entityInputs.setEntityLinkVelocityZ(inputs.link().velocityZ());
-        return bridge.tickEntities(new EntityTickInputs(
+        return session.tickEntities(new EntityTickInputs(
                 inputs.frameCounter(),
                 inputs.link().position(),
                 inputs.link().motion(),

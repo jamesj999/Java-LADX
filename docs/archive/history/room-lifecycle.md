@@ -73,3 +73,13 @@ loaded generation. Frame-only channels use the same facade policy in the same
 setter order. Tests that formerly bypassed the facade now invoke that boundary;
 their source-order and reward assertions are unchanged. Null comparison
 occurrences in world/room+transition+object: 328 -> 311 at this slice.
+
+## Tick and rewards
+
+The facade performs the original immutable-input dereferences and Link register
+capture before deciding whether to tick. No-room calls still clear the woods
+flag and store byte-masked Link history, without beginning an entity RNG frame.
+Default positional tick entry points assemble inputs at that same boundary.
+RoomEntitySimulation and RoomEntityRewards receive RoomRuntime explicitly through
+configuration, ticking and ordered effects; neither asks whether a room/runtime
+exists. No new per-frame callback or holder is constructed by this migration.

@@ -94,4 +94,31 @@ class RoomRuntimeTest {
         org.junit.jupiter.api.Assertions.assertTrue(session.components.entityInputs().entityInventoryAppearing);
         org.junit.jupiter.api.Assertions.assertFalse(session.hasRoom());
     }
+
+    @Test
+    void noRoomTickStillCapturesLinkRegistersBeforeReturningNoEvents() {
+        var rom = linksawakening.testing.TestRoms.partial(new byte[0x100000]);
+        var session = new RoomSession(new RoomSessionConfig(
+                rom,
+                new linksawakening.gpu.GPU(),
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                new linksawakening.physics.OverworldCollision(linksawakening.rom.RomTables.load(rom)),
+                new RoomSessionConfig.Presentation(null, null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
+        session.components.location().shouldGetLostInMysteriousWoods = true;
+        var result = session.tickEntities(new EntityTickInputs(
+                3,
+                new LinkPosition(260, -1, 257, 5, 0),
+                new LinkMotion(false, 0xE1, false, 0, 0, 0),
+                0,
+                new SwordBox(false, 0, 0, 0, 0)));
+        org.junit.jupiter.api.Assertions.assertTrue(result.isEmpty());
+        assertEquals(4, session.components.followers().followingLinkX);
+        assertEquals(255, session.components.followers().followingLinkY);
+        assertEquals(1, session.components.followers().followingLinkZ);
+        assertEquals(5, session.components.followers().followingLinkDirection);
+        assertEquals(0xE1, session.components.entityFrame().currentLinkMotionState);
+        org.junit.jupiter.api.Assertions.assertFalse(session.components.location().shouldGetLostInMysteriousWoods);
+    }
 }

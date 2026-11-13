@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
 /** Public room API delegating to room-scoped collaborators. */
@@ -85,7 +86,33 @@ public final class RoomSession {
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
-        return components.entityBridge().tickEntities(inputs);
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.position().x();
+        int linkEntityY = inputs.position().y();
+        int linkEntityZ = inputs.position().z();
+        boolean linkAirborne = inputs.motion().airborne();
+        int linkMotionState = inputs.motion().rawState();
+        int linkDirection = inputs.position().rawDirection();
+        int collisionType = inputs.position().collisionType();
+        boolean usingShield = inputs.motion().shield();
+        int shieldLevel = inputs.shieldLevel();
+        int invincibilityCounter = inputs.motion().invincibility();
+        boolean swordCollisionActive = inputs.sword().active();
+        int swordX = inputs.sword().x();
+        int swordWidth = inputs.sword().width();
+        int swordY = inputs.sword().y();
+        int swordHeight = inputs.sword().height();
+        int linkSpeedX = inputs.motion().speedX();
+        int linkSpeedY = inputs.motion().speedY();
+
+        components.followers().followingLinkX = linkEntityX & 0xFF;
+        components.followers().followingLinkY = linkEntityY & 0xFF;
+        components.followers().followingLinkZ = linkEntityZ & 0xFF;
+        components.followers().followingLinkDirection = linkDirection & 0xFF;
+        components.entityFrame().currentLinkMotionState = linkMotionState & 0xFF;
+        components.location().shouldGetLostInMysteriousWoods = false;
+
+        return hasRoom() ? components.entityBridge().tickEntities(loadedRoom, inputs) : List.of();
     }
 
     public RoomEntities entities() {
@@ -249,5 +276,80 @@ public final class RoomSession {
 
     void setEntityActionButtonsHeld(boolean held) {
         setEntityActionButtonsHeld(held, held);
+    }
+
+    void tickEntities(int frameCounter) {
+        this.tickEntities(frameCounter, 0, 0);
+    }
+
+    void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
+        this.tickEntities(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                components.followers().followingLinkZ,
+                components.followers().followingLinkDirection);
+    }
+
+    void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
+        this.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
+                linkDirection,
+                false);
+    }
+
+    void tickEntities(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            boolean linkAirborne,
+            int linkDirection) {
+        this.tickEntitiesWithProjectileEvents(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                linkAirborne,
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
+                linkDirection,
+                false);
+    }
+
+    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int linkMotionState,
+            int linkDirection,
+            boolean usingShield) {
+        return this.tickEntities(new EntityTickInputs(
+                frameCounter,
+                new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
+                new LinkMotion(false, linkMotionState, usingShield, 0, 0, 0),
+                1,
+                new SwordBox(false, 0, 0, 0, 0)));
+    }
+
+    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            boolean linkAirborne,
+            int linkMotionState,
+            int linkDirection,
+            boolean usingShield) {
+        return this.tickEntities(new EntityTickInputs(
+                frameCounter,
+                new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
+                new LinkMotion(linkAirborne, linkMotionState, usingShield, 0, 0, 0),
+                1,
+                new SwordBox(false, 0, 0, 0, 0)));
     }
 }

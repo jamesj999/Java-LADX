@@ -3,7 +3,6 @@ package linksawakening.world.room;
 import java.util.List;
 import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;
-import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -65,83 +64,8 @@ final class RoomEntityBridge {
         dependencies.entityFrame().boomerangSoundClockProvided = true;
     }
 
-    void tickEntities(int frameCounter) {
-        this.tickEntities(frameCounter, 0, 0);
-    }
-
-    void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
-        this.tickEntities(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                dependencies.followers().followingLinkZ,
-                dependencies.followers().followingLinkDirection);
-    }
-
-    void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
-        this.tickEntitiesWithProjectileEvents(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkEntityZ,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-                linkDirection,
-                false);
-    }
-
-    void tickEntities(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            boolean linkAirborne,
-            int linkDirection) {
-        this.tickEntitiesWithProjectileEvents(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkEntityZ,
-                linkAirborne,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-                linkDirection,
-                false);
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkMotionState,
-            int linkDirection,
-            boolean usingShield) {
-        return this.tickEntities(new EntityTickInputs(
-                frameCounter,
-                new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
-                new LinkMotion(false, linkMotionState, usingShield, 0, 0, 0),
-                1,
-                new SwordBox(false, 0, 0, 0, 0)));
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            boolean linkAirborne,
-            int linkMotionState,
-            int linkDirection,
-            boolean usingShield) {
-        return this.tickEntities(new EntityTickInputs(
-                frameCounter,
-                new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
-                new LinkMotion(linkAirborne, linkMotionState, usingShield, 0, 0, 0),
-                1,
-                new SwordBox(false, 0, 0, 0, 0)));
-    }
-
-    List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
-        return roomEntitySimulation.tickEntities(inputs);
+    List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickInputs inputs) {
+        return roomEntitySimulation.tickEntities(loaded, inputs);
     }
 
     List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {

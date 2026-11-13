@@ -63,7 +63,7 @@ final class RoomEntitiesView implements RoomEntities {
             int linkDirection,
             boolean usingShield) {
         return dependencies
-                .entityBridge()
+                .session()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -84,7 +84,7 @@ final class RoomEntitiesView implements RoomEntities {
             int linkDirection,
             boolean usingShield) {
         return dependencies
-                .entityBridge()
+                .session()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -101,15 +101,15 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     public void tickEntities(int frameCounter) {
-        dependencies.entityBridge().tickEntities(frameCounter);
+        dependencies.session().tickEntities(frameCounter);
     }
 
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
-        dependencies.entityBridge().tickEntities(frameCounter, linkEntityX, linkEntityY);
+        dependencies.session().tickEntities(frameCounter, linkEntityX, linkEntityY);
     }
 
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
-        dependencies.entityBridge().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
+        dependencies.session().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
     }
 
     public void tickEntities(
@@ -120,12 +120,12 @@ final class RoomEntitiesView implements RoomEntities {
             boolean linkAirborne,
             int linkDirection) {
         dependencies
-                .entityBridge()
+                .session()
                 .tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkDirection);
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
-        return dependencies.entityBridge().tickEntities(inputs);
+        return dependencies.session().tickEntities(inputs);
     }
 
     record Dependencies(RoomEntityBridge entityBridge, RoomSession session) {

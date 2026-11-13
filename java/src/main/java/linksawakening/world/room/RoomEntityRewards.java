@@ -21,24 +21,17 @@ final class RoomEntityRewards {
         this.dependencies = dependencies;
     }
 
-    void harvestKeyQuicksandEvents() {
-        if (dependencies.entityRuntimeState().runtime == null
-                || dependencies
-                        .entityRuntimeState()
-                        .runtime
-                        .consumePendingKeyQuicksandEvents()
-                        .isEmpty()) {
+    void harvestKeyQuicksandEvents(RoomRuntime loaded) {
+        if (loaded.entities.consumePendingKeyQuicksandEvents().isEmpty()) {
             return;
         }
         dependencies.roomState().overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
         dependencies.roomState().indoorARoomStatus[0xF8] |= (byte) 0x20;
     }
 
-    void harvestKeyRewardEvents() {
-        if (dependencies.entityRuntimeState().runtime == null) {
-            return;
-        }
-        List<KeyRewardEvent> rewards = dependencies.entityRuntimeState().runtime.consumePendingKeyRewardEvents();
+    void harvestKeyRewardEvents(RoomRuntime loaded) {
+
+        List<KeyRewardEvent> rewards = loaded.entities.consumePendingKeyRewardEvents();
         for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
             KeyRewardEvent reward = rewards.get(rewardIndex);
 
@@ -46,17 +39,14 @@ final class RoomEntityRewards {
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
-            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
+            dependencies.roomState().markCompleted(loaded.room);
         }
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingKeyRewardEvents, rewards);
     }
 
-    void harvestHeartContainerRewards() {
-        if (dependencies.entityRuntimeState().runtime == null) {
-            return;
-        }
-        List<HeartContainerRewardEvent> rewards =
-                dependencies.entityRuntimeState().runtime.consumePendingHeartContainerRewards();
+    void harvestHeartContainerRewards(RoomRuntime loaded) {
+
+        List<HeartContainerRewardEvent> rewards = loaded.entities.consumePendingHeartContainerRewards();
         if (rewards.isEmpty()) {
             return;
         }
@@ -64,60 +54,41 @@ final class RoomEntityRewards {
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingHeartContainerRewards, rewards);
     }
 
-    void harvestSwordPickupRewards() {
-        if (dependencies.entityRuntimeState().runtime == null) {
-            return;
-        }
-        List<SwordPickupRewardEvent> rewards =
-                dependencies.entityRuntimeState().runtime.consumePendingSwordPickupRewards();
+    void harvestSwordPickupRewards(RoomRuntime loaded) {
+
+        List<SwordPickupRewardEvent> rewards = loaded.entities.consumePendingSwordPickupRewards();
         if (rewards.isEmpty()) {
             return;
         }
-        dependencies.roomState().markCompleted(dependencies.location().activeRoom);
+        dependencies.roomState().markCompleted(loaded.room);
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingSwordPickupRewards, rewards);
     }
 
-    void harvestToadstoolRewards() {
-        if (dependencies.entityRuntimeState().runtime != null) {
-            RoomEntityOutbox.append(
-                    dependencies.entityRuntimeState().outbox.pendingToadstoolRewards,
-                    dependencies.entityRuntimeState().runtime.consumePendingToadstoolRewards());
-        }
+    void harvestToadstoolRewards(RoomRuntime loaded) {
+
+        RoomEntityOutbox.append(
+                dependencies.entityRuntimeState().outbox.pendingToadstoolRewards,
+                loaded.entities.consumePendingToadstoolRewards());
     }
 
-    void harvestInstrumentRewards() {
-        if (dependencies.entityRuntimeState().runtime == null
-                || dependencies.location().activeRoom == null
-                || dependencies
-                        .entityRuntimeState()
-                        .runtime
-                        .consumePendingInstrumentRewards()
-                        .isEmpty()
-                || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+    void harvestInstrumentRewards(RoomRuntime loaded) {
+        if (loaded.entities.consumePendingInstrumentRewards().isEmpty()
+                || loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
-        dependencies.roomSessionViews()
-                        .indoorStatusTableForMap(
-                                dependencies.location().activeRoom.mapId())[
-                        dependencies.location().activeRoom.roomId()] |=
+        dependencies.roomSessionViews().indoorStatusTableForMap(loaded.room.mapId())[loaded.room.roomId()] |=
                 (byte) ROOM_STATUS_EVENT_1;
-        if (dependencies.location().activeRoom.mapId() >= 0
-                && dependencies.location().activeRoom.mapId() < dependencies.roomState().dungeonProgressFlags.length) {
-            dependencies.roomState()
-                    .dungeonProgressFlags[dependencies.location().activeRoom.mapId()] |= 0x02;
+        if (loaded.room.mapId() >= 0 && loaded.room.mapId() < dependencies.roomState().dungeonProgressFlags.length) {
+            dependencies.roomState().dungeonProgressFlags[loaded.room.mapId()] |= 0x02;
         }
-        dependencies
-                .entityRuntimeState()
-                .runtime
+        loaded.entities
                 .configuration()
                 .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
     }
 
-    void harvestInstrumentCompletions() {
-        if (dependencies.entityRuntimeState().runtime == null) {
-            return;
-        }
-        var instrumentCompletions = dependencies.entityRuntimeState().runtime.consumePendingInstrumentCompletions();
+    void harvestInstrumentCompletions(RoomRuntime loaded) {
+
+        var instrumentCompletions = loaded.entities.consumePendingInstrumentCompletions();
         for (int completionIndex = 0; completionIndex < instrumentCompletions.size(); completionIndex++) {
             InstrumentCompletionEvent completion = instrumentCompletions.get(completionIndex);
 
@@ -130,12 +101,9 @@ final class RoomEntityRewards {
         }
     }
 
-    void harvestRichardProgressEvents() {
-        if (dependencies.entityRuntimeState().runtime == null) {
-            return;
-        }
-        List<RichardProgressEvent> events =
-                dependencies.entityRuntimeState().runtime.consumePendingRichardProgressEvents();
+    void harvestRichardProgressEvents(RoomRuntime loaded) {
+
+        List<RichardProgressEvent> events = loaded.entities.consumePendingRichardProgressEvents();
         for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
             RichardProgressEvent event = events.get(eventIndex);
 
@@ -149,43 +117,32 @@ final class RoomEntityRewards {
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingRichardProgressEvents, events);
     }
 
-    void harvestWitchEvents() {
-        if (dependencies.entityRuntimeState().runtime != null) {
-            RoomEntityOutbox.append(
-                    dependencies.entityRuntimeState().outbox.pendingWitchExchangeEvents,
-                    dependencies.entityRuntimeState().runtime.consumePendingWitchExchangeEvents());
-            RoomEntityOutbox.append(
-                    dependencies.entityRuntimeState().outbox.pendingWitchRewardEvents,
-                    dependencies.entityRuntimeState().runtime.consumePendingWitchRewardEvents());
-        }
+    void harvestWitchEvents(RoomRuntime loaded) {
+
+        RoomEntityOutbox.append(
+                dependencies.entityRuntimeState().outbox.pendingWitchExchangeEvents,
+                loaded.entities.consumePendingWitchExchangeEvents());
+        RoomEntityOutbox.append(
+                dependencies.entityRuntimeState().outbox.pendingWitchRewardEvents,
+                loaded.entities.consumePendingWitchRewardEvents());
     }
 
-    void harvestOwlEventCompletions() {
-        if (dependencies.entityRuntimeState().runtime == null || dependencies.location().activeRoom == null) {
+    void harvestOwlEventCompletions(RoomRuntime loaded) {
+
+        if (loaded.entities.consumePendingOwlEventCompletions().isEmpty()) {
             return;
         }
-        if (dependencies
-                .entityRuntimeState()
-                .runtime
-                .consumePendingOwlEventCompletions()
-                .isEmpty()) {
-            return;
-        }
-        dependencies.roomState()
-                .overworldRoomStatus[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
+        dependencies.roomState().overworldRoomStatus[loaded.room.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
     }
 
-    void harvestSlimeKeyRewardEvents() {
-        if (dependencies.entityRuntimeState().runtime == null) {
-            return;
-        }
-        List<SlimeKeyRewardEvent> rewards =
-                dependencies.entityRuntimeState().runtime.consumePendingSlimeKeyRewardEvents();
+    void harvestSlimeKeyRewardEvents(RoomRuntime loaded) {
+
+        List<SlimeKeyRewardEvent> rewards = loaded.entities.consumePendingSlimeKeyRewardEvents();
         for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
             SlimeKeyRewardEvent reward = rewards.get(rewardIndex);
 
             dependencies.entityInputs().entityGoldenLeavesCount = reward.goldenLeavesCount();
-            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
+            dependencies.roomState().markCompleted(loaded.room);
         }
         RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingSlimeKeyRewardEvents, rewards);
     }
