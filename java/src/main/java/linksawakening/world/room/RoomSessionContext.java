@@ -73,7 +73,7 @@ final class RoomSessionContext {
     }
 
     private void wireEntityStages() {
-        values.entityAfterTick = new RoomEntityAfterTick(new RoomEntityAfterTick.Dependencies(
+        values.entityAfterTick = new RoomEntitySimulation.EffectsDependencies(
                 values.entityFrame,
                 values.followers,
                 values.items,
@@ -87,8 +87,8 @@ final class RoomSessionContext {
                 values.roomState,
                 () -> values.roomTileRedraw,
                 () -> values.roomTransitionController,
-                values.transientVfxSystem));
-        values.entityFrameSetup = new RoomEntityFrameSetup(new RoomEntityFrameSetup.Dependencies(
+                values.transientVfxSystem);
+        values.entityFrameSetup = new RoomEntitySimulation.SetupDependencies(
                 values.entityFrame,
                 values.followers,
                 values.items,
@@ -102,7 +102,7 @@ final class RoomSessionContext {
                 () -> values.roomObjectMutations,
                 values.roomState,
                 () -> values.roomStoryState,
-                () -> values.roomTransitionController));
+                () -> values.roomTransitionController);
         values.entityCombatBridge = new RoomEntityCombatBridge(new RoomEntityCombatBridge.Dependencies(
                 values.entityFrame,
                 values.followers,

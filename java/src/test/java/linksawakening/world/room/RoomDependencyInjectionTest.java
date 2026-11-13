@@ -19,7 +19,7 @@ class RoomDependencyInjectionTest {
                 RoomEntityRewards.class,
                 RewardOutputs.class,
                 RoomEntityBridge.class,
-                RoomEntityFrameSetup.class,
+                RoomEntitySimulation.class,
                 RoomPlayerItemActions.class,
                 RoomTransitionCoordinator.class,
                 RoomStoryState.class,
@@ -27,7 +27,6 @@ class RoomDependencyInjectionTest {
                 RoomPuzzleController.class,
                 PresentationOutputs.class,
                 RoomTileRedraw.class,
-                RoomEntityAfterTick.class,
                 RoomDoorInteractions.class,
                 RoomObjectMutations.class)) {
             for (var field : type.getDeclaredFields()) {

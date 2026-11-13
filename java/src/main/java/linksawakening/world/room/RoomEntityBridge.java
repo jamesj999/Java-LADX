@@ -16,28 +16,27 @@ final class RoomEntityBridge {
     RoomEntityRuntime entityRuntime;
     final RoomEntityOutbox outbox = new RoomEntityOutbox(() -> entityRuntime);
     final RoomEntityCombatBridge combat;
-    final RoomEntityFrameSetup frameSetup;
-    final RoomEntityAfterTick afterTick;
     private final Dependencies dependencies;
     private final RoomEntityTickDefaults roomEntityTickDefaults;
     private final RoomEntitySimulation roomEntitySimulation;
 
     RoomEntityBridge(Dependencies dependencies) {
         this.dependencies = dependencies;
-        afterTick = dependencies.entityAfterTick().get();
-        frameSetup = dependencies.entityFrameSetup().get();
         combat = dependencies.entityCombatBridge().get();
         roomEntityTickDefaults = new RoomEntityTickDefaults(
                 new RoomEntityTickDefaults.Dependencies(dependencies.entityBridge(), dependencies.followers()));
-        roomEntitySimulation = new RoomEntitySimulation(new RoomEntitySimulation.Dependencies(
-                dependencies.entityBridge(),
-                dependencies.entityFrame(),
-                dependencies.entityRandomByteSource(),
-                dependencies.followers(),
-                dependencies.items(),
-                dependencies.location(),
-                dependencies.roomCollisionQueries(),
-                () -> this));
+        roomEntitySimulation = new RoomEntitySimulation(
+                new RoomEntitySimulation.Dependencies(
+                        dependencies.entityBridge(),
+                        dependencies.entityFrame(),
+                        dependencies.entityRandomByteSource(),
+                        dependencies.followers(),
+                        dependencies.items(),
+                        dependencies.location(),
+                        dependencies.roomCollisionQueries(),
+                        () -> this),
+                dependencies.entityFrameSetup().get(),
+                dependencies.entityAfterTick().get());
     }
 
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
@@ -169,10 +168,10 @@ final class RoomEntityBridge {
             RoomItemUseState items,
             RoomLocationState location,
             RoomTerrainState terrain,
-            java.util.function.Supplier<RoomEntityAfterTick> entityAfterTick,
+            java.util.function.Supplier<RoomEntitySimulation.EffectsDependencies> entityAfterTick,
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             java.util.function.Supplier<RoomEntityCombatBridge> entityCombatBridge,
-            java.util.function.Supplier<RoomEntityFrameSetup> entityFrameSetup,
+            java.util.function.Supplier<RoomEntitySimulation.SetupDependencies> entityFrameSetup,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             RomRandomByteSource entityRandomByteSource,
             GPU gpu,
