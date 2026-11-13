@@ -207,9 +207,9 @@ final class SlimeEyeRuntimeTest {
     }
 
     private void set(RoomEntityRuntime r, String field, int value) throws Exception {
-        var reflected = SlimeEyeController.class.getDeclaredField(field);
+        var reflected = SlimeEyeController.State.class.getDeclaredField(field);
         reflected.setAccessible(true);
-        ((int[]) reflected.get(r.slimeEye))[0] = value;
+        ((int[]) reflected.get(r.slimeEye.encounter))[0] = value;
     }
 
     @Test

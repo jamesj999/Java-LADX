@@ -22,8 +22,8 @@ final class SlimeEyeBehavior {
         }
         if (entity.status() != EntityStatus.ACTIVE && entity.status() != EntityStatus.DYING) return;
         // UpdateEntityTimers precedes the handler's interactivity guards.
-        if (owner.private1[slot] > 0) owner.private1[slot]--;
-        if (owner.splitting[slot] > 0) owner.splitting[slot]--;
+        if (owner.encounter.private1[slot] > 0) owner.encounter.private1[slot]--;
+        if (owner.encounter.splitting[slot] > 0) owner.encounter.splitting[slot]--;
         if (!frame.roomInspection().roomTransitionActive()
                 && !frame.roomInspection().freeMovementMode()) {
             int dx = 0, dy = 0;
@@ -66,17 +66,17 @@ final class SlimeEyeBehavior {
             // The lethal collision occurs inside the active handler in ROM.
             // Its destruction handler starts on the following slot visit.
             if (owner.hitThisFrame(slot, frame.inputs().frame())) return;
-            if (!owner.dying[slot]) {
-                owner.state[slot] = 0;
-                owner.dying[slot] = true;
+            if (!owner.encounter.dying[slot]) {
+                owner.encounter.state[slot] = 0;
+                owner.encounter.dying[slot] = true;
             }
             owner.advanceDeath(frame);
             return;
         }
-        if (owner.half[slot] == 0) runtime.combatTables.writeEnemyHealth(slot, 0x50);
-        if ((owner.half[slot] != 0 || owner.state[slot] != 0)
+        if (owner.encounter.half[slot] == 0) runtime.combatTables.writeEnemyHealth(slot, 0x50);
+        if ((owner.encounter.half[slot] != 0 || owner.encounter.state[slot] != 0)
                 && (!frame.gates().handlerInteractive() || frame.gates().countdownBlocksInteraction())) return;
-        if (owner.half[slot] == 0) owner.advanceBody(frame);
+        if (owner.encounter.half[slot] == 0) owner.advanceBody(frame);
         else owner.advanceHalf(frame);
     }
 
@@ -85,10 +85,10 @@ final class SlimeEyeBehavior {
         int s = f.slotFrame().entity().slot();
         RoomEntity e = runtime.slots[s];
         runtime.combatTables.writeEnemyHealth(s, 0x50);
-        switch (owner.state[s]) {
+        switch (owner.encounter.state[s]) {
             case 0 -> {
                 if (owner.screenShakeCountdown == 5) {
-                    owner.state[s] = 1;
+                    owner.encounter.state[s] = 1;
                     owner.sound(s, 8);
                 }
                 if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) {
@@ -106,50 +106,51 @@ final class SlimeEyeBehavior {
             }
             case 1 -> {
                 e = owner.integrateZ(e);
-                if (owner.speedZ[s] != 0xA0) owner.speedZ[s] = (owner.speedZ[s] - 2) & 255;
+                if (owner.encounter.speedZ[s] != 0xA0)
+                    owner.encounter.speedZ[s] = (owner.encounter.speedZ[s] - 2) & 255;
                 if ((e.z() & 0x80) != 0) {
                     e = withZ(e, 0);
                     f.emit(new ScreenShakeRequest(s, 0x50, 4));
                     runtime.physicsTables.writeEnemyTransitionCountdown(s, 0x40);
                     owner.noise(s, 0x0C);
                     if (!f.inputs().linkAirborne()) owner.stunLink(s, 0x14);
-                    owner.state[s] = 2;
+                    owner.encounter.state[s] = 2;
                 }
                 runtime.slots[s] = e;
             }
             case 2 -> {
-                if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) owner.state[s] = 3;
+                if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) owner.encounter.state[s] = 3;
             }
             case 3 -> {
                 if (runtime.combatTables.readEnemyIgnoreHitsCountdown(s) > 0
                         && !owner.hitThisFrame(s, f.inputs().frame()))
                     runtime.combatTables.postEnemyIgnoreHitsCountdown(s, -1);
-                if (owner.splitting[s] != 0) {
-                    if (owner.splitting[s] == 1) {
+                if (owner.encounter.splitting[s] != 0) {
+                    if (owner.encounter.splitting[s] == 1) {
                         owner.split(e);
                         return;
                     }
                     f.emit(new LinkMotionBlockRequest(
-                            s, 0, (f.inputs().frame() & 1) == 0 ? -1 : 0, owner.splitting[s]));
-                    owner.variant[s] = 6;
+                            s, 0, (f.inputs().frame() & 1) == 0 ? -1 : 0, owner.encounter.splitting[s]));
+                    owner.encounter.variant[s] = 6;
                     return;
                 }
                 owner.wander(f);
-                owner.variant[s] = (f.inputs().frame() >> 4) & 1;
-                if (owner.stretch[s] != 0) {
-                    owner.variant[s] = owner.stretch[s] + 1;
-                    if (owner.private1[s] == 0) {
-                        owner.private1[s] = 0x28;
-                        owner.stretch[s]--;
+                owner.encounter.variant[s] = (f.inputs().frame() >> 4) & 1;
+                if (owner.encounter.stretch[s] != 0) {
+                    owner.encounter.variant[s] = owner.encounter.stretch[s] + 1;
+                    if (owner.encounter.private1[s] == 0) {
+                        owner.encounter.private1[s] = 0x28;
+                        owner.encounter.stretch[s]--;
                     }
                 }
                 if (runtime.combatTables.readEnemyFlashCountdown(s) != 0
                         && (f.inputs().frame() & 0x1F) == 0) {
-                    owner.private1[s] = 0x50;
-                    if (owner.stretch[s] != 4) owner.stretch[s]++;
+                    owner.encounter.private1[s] = 0x50;
+                    if (owner.encounter.stretch[s] != 4) owner.encounter.stretch[s]++;
                 }
             }
-            default -> throw new IllegalStateException("Slime Eye body state " + owner.state[s]);
+            default -> throw new IllegalStateException("Slime Eye body state " + owner.encounter.state[s]);
         }
     }
 

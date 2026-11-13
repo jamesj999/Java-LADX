@@ -26,6 +26,9 @@ public final class EntityRewardController {
     final EntitySpriteViews spriteViews;
     final EntityPlayerCommands playerCommands;
 
+    final EntityPickupState pickups;
+    final EntityBossState bossRewards;
+
     EntityRewardController(
             EntityRewardState state,
             EntityMotionRegistry motions,
@@ -40,7 +43,12 @@ public final class EntityRewardController {
             EntityStoryState story,
             RoomEntity[] slots,
             EntitySpriteViews spriteViews,
-            EntityPlayerCommands playerCommands) {
+            EntityPlayerCommands playerCommands,
+            EntityPickupState pickups,
+            EntityBossState bossRewards) {
+        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.motions = java.util.Objects.requireNonNull(motions, "motions");
         this.spriteHandlers = spriteHandlers;
@@ -179,4 +187,48 @@ public final class EntityRewardController {
 
     final ItemPickupFrameStep itemPickupFrameStep = new ItemPickupFrameStep();
     final InstrumentPickupStep instrumentPickupStep = new InstrumentPickupStep();
+
+    EntityPickupEvent collectIfNeeded(
+            int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, 0, 0);
+    }
+
+    EntityPickupEvent collectIfNeeded(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            boolean linkInteractive,
+            int linkDirection) {
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, 0);
+    }
+
+    EntityPickupEvent collectIfNeeded(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            boolean linkInteractive,
+            int linkDirection,
+            int linkZ) {
+        return collectIfNeeded(new EntityPickupFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkInteractive,
+                linkDirection,
+                linkZ,
+                false,
+                0,
+                0,
+                0,
+                0));
+    }
+
+    EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
+        return entitySlotLifecycleFrameStep.run(this, inputs);
+    }
+
+    final EntitySlotLifecycleFrameStep entitySlotLifecycleFrameStep = new EntitySlotLifecycleFrameStep();
 }

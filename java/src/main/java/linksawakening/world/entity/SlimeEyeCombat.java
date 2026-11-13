@@ -11,15 +11,15 @@ final class SlimeEyeCombat {
         var runtime = owner;
         int s = f.slotFrame().entity().slot();
         runtime.combatTables.writeEnemyFlashCountdown(s, f.inputs().frame() & 255);
-        switch (owner.state[s]) {
+        switch (owner.encounter.state[s]) {
             case 0 -> {
                 runtime.physicsTables.writeEnemyTransitionCountdown(s, 0x40);
-                owner.state[s] = 1;
+                owner.encounter.state[s] = 1;
             }
             case 1 -> {
                 if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) {
                     runtime.physicsTables.writeEnemyTransitionCountdown(s, 0xA0);
-                    owner.state[s] = 2;
+                    owner.encounter.state[s] = 2;
                 }
             }
             default -> {

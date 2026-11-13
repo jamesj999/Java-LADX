@@ -25,27 +25,12 @@ public final class SlimeEyeController {
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
-    final int[] state = new int[16],
-            half = new int[16],
-            stretch = new int[16],
-            moving = new int[16],
-            angry = new int[16],
-            dropping = new int[16],
-            private1 = new int[16],
-            splitting = new int[16],
-            variant = new int[16],
-            speedX = new int[16],
-            speedY = new int[16],
-            speedZ = new int[16],
-            accX = new int[16],
-            accY = new int[16],
-            accZ = new int[16],
-            swordHitFrame = new int[16];
-    final boolean[] dying = new boolean[16];
+    final State encounter;
     private Rom rom;
     int screenShakeCountdown;
 
     SlimeEyeController(
+            State encounter,
             java.util.List<RoomEntity> slotEntities,
             linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
@@ -59,6 +44,7 @@ public final class SlimeEyeController {
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots) {
+        this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
         this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
         this.spriteHandlers = spriteHandlers;
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
@@ -83,49 +69,49 @@ public final class SlimeEyeController {
     }
 
     int state(int slot) {
-        return state[slot];
+        return encounter.state[slot];
     }
 
     boolean half(int slot) {
-        return half[slot] != 0;
+        return encounter.half[slot] != 0;
     }
 
     int stretch(int slot) {
-        return stretch[slot];
+        return encounter.stretch[slot];
     }
 
     int variant(int slot) {
-        return variant[slot];
+        return encounter.variant[slot];
     }
 
     int dropping(int slot) {
-        return dropping[slot];
+        return encounter.dropping[slot];
     }
 
     int speedZ(int slot) {
-        return speedZ[slot];
+        return encounter.speedZ[slot];
     }
 
     void clear(int slot) {
         for (int[] table : new int[][] {
-            state,
-            half,
-            stretch,
-            moving,
-            angry,
-            dropping,
-            private1,
-            splitting,
-            variant,
-            speedX,
-            speedY,
-            speedZ,
-            accX,
-            accY,
-            accZ,
-            swordHitFrame
+            encounter.state,
+            encounter.half,
+            encounter.stretch,
+            encounter.moving,
+            encounter.angry,
+            encounter.dropping,
+            encounter.private1,
+            encounter.splitting,
+            encounter.variant,
+            encounter.speedX,
+            encounter.speedY,
+            encounter.speedZ,
+            encounter.accX,
+            encounter.accY,
+            encounter.accZ,
+            encounter.swordHitFrame
         }) table[slot] = 0;
-        dying[slot] = false;
+        encounter.dying[slot] = false;
     }
 
     int read(RomAddress table, int index) {
@@ -137,7 +123,7 @@ public final class SlimeEyeController {
         try {
             advanceHandler(frame);
         } finally {
-            swordHitFrame[frame.slotFrame().entity().slot()] = 0;
+            encounter.swordHitFrame[frame.slotFrame().entity().slot()] = 0;
         }
     }
 
@@ -152,18 +138,18 @@ public final class SlimeEyeController {
     void wander(EntityFrameExecution f) {
         int s = f.slotFrame().entity().slot(), countdown = this.physicsTables.readEnemyTransitionCountdown(s);
         RoomEntity e = this.slots[s];
-        if (moving[s] == 0) {
+        if (encounter.moving[s] == 0) {
             if (countdown != 0) return;
             this.physicsTables.writeEnemyTransitionCountdown(
                     s, (f.inputs().randomByteSupplier().getAsInt() & 0x1F) + 0x10);
-            moving[s] = 1;
+            encounter.moving[s] = 1;
             int quadrant = (e.x() >= 0x50 ? 1 : 0) | (((e.y() - e.z()) & 255) >= 0x48 ? 2 : 0);
             int index = quadrant * 4 | (f.inputs().randomByteSupplier().getAsInt() & 3);
-            speedX[s] = read(RomSymbols.Data_004_4B5C, index);
-            speedY[s] = read(RomSymbols.Data_004_4B6C, index);
+            encounter.speedX[s] = read(RomSymbols.Data_004_4B5C, index);
+            encounter.speedY[s] = read(RomSymbols.Data_004_4B6C, index);
         } else if (countdown == 0) {
             this.physicsTables.writeEnemyTransitionCountdown(s, 0x30);
-            moving[s] = 0;
+            encounter.moving[s] = 0;
         } else if ((countdown & 0x0E) == 0)
             this.slots[s] = integrateXY(e, f.inputs().backgroundCollision());
     }
@@ -173,7 +159,7 @@ public final class SlimeEyeController {
     }
 
     boolean hitThisFrame(int slot, int frame) {
-        return swordHitFrame[slot] == (frame & 255) + 1;
+        return encounter.swordHitFrame[slot] == (frame & 255) + 1;
     }
 
     void stunLink(int s, int countdown) {
@@ -182,24 +168,26 @@ public final class SlimeEyeController {
     }
 
     RoomEntity integrateZ(RoomEntity e) {
-        int s = e.slot(), value = accZ[s] + (byte) speedZ[s];
-        accZ[s] = value & 15;
+        int s = e.slot(), value = encounter.accZ[s] + (byte) encounter.speedZ[s];
+        encounter.accZ[s] = value & 15;
         return withZ(e, (e.z() + (value >> 4)) & 255);
     }
 
     RoomEntity integrateXY(RoomEntity e, RoomEntityBackgroundCollision collision) {
-        int s = e.slot(), x = accX[s] + (byte) speedX[s], y = accY[s] + (byte) speedY[s];
-        accX[s] = x & 15;
-        accY[s] = y & 15;
+        int s = e.slot(),
+                x = encounter.accX[s] + (byte) encounter.speedX[s],
+                y = encounter.accY[s] + (byte) encounter.speedY[s];
+        encounter.accX[s] = x & 15;
+        encounter.accY[s] = y & 15;
         int nx = (e.x() + (x >> 4)) & 255, ny = (e.y() + (y >> 4)) & 255;
         if (collision != null) {
-            if (collision.blocks(e, (byte) speedX[s] < 0 ? 1 : 0, nx, e.y())) {
+            if (collision.blocks(e, (byte) encounter.speedX[s] < 0 ? 1 : 0, nx, e.y())) {
                 nx = e.x();
-                speedX[s] = (-speedX[s]) & 255;
+                encounter.speedX[s] = (-encounter.speedX[s]) & 255;
             }
-            if (collision.blocks(e, (byte) speedY[s] < 0 ? 2 : 3, nx, ny)) {
+            if (collision.blocks(e, (byte) encounter.speedY[s] < 0 ? 2 : 3, nx, ny)) {
                 ny = e.y();
-                speedY[s] = (-speedY[s]) & 255;
+                encounter.speedY[s] = (-encounter.speedY[s]) & 255;
             }
         }
         return withPositionAndVariant(e, nx, ny, e.spriteVariant());
@@ -213,10 +201,10 @@ public final class SlimeEyeController {
         for (int i = 0; i < 2; i++) {
             int child = spawn(0x5B, e.x() + (byte) read(RomSymbols.Data_004_496B, i), e.y(), 0);
             if (child < 0) continue;
-            half[child] = 1;
-            state[child] = 1;
-            speedX[child] = read(RomSymbols.Data_004_496D, i);
-            speedZ[child] = 0x10;
+            encounter.half[child] = 1;
+            encounter.state[child] = 1;
+            encounter.speedX[child] = read(RomSymbols.Data_004_496D, i);
+            encounter.speedZ[child] = 0x10;
             this.combatTables.writeEnemyHealth(child, 5);
             render(child);
         }
@@ -230,15 +218,15 @@ public final class SlimeEyeController {
     void render(int s) {
         RoomEntity e = this.slots[s];
         if (this.spriteHandlers == null) return;
-        if (half[s] == 0 && state[s] == 0) {
+        if (encounter.half[s] == 0 && encounter.state[s] == 0) {
             this.slots[s] = withVariant(e, -1);
             return;
         }
-        if (variant[s] == 255) {
+        if (encounter.variant[s] == 255) {
             this.slots[s] = withVariant(e, -1);
             return;
         }
-        var definition = this.spriteHandlers.forSlimeEyeState(half[s] != 0, variant[s], e.z());
+        var definition = this.spriteHandlers.forSlimeEyeState(encounter.half[s] != 0, encounter.variant[s], e.z());
         this.slots[s] = withFlipAttribute(
                 withDefinition(e, definition, 0),
                 this.physicsTables.readBaseEntityFlipAttribute(s)
@@ -268,4 +256,46 @@ public final class SlimeEyeController {
 
     final SlimeEyeHalfStep slimeEyeHalfStep = new SlimeEyeHalfStep();
     final SlimeEyeCombatStep slimeEyeCombatStep = new SlimeEyeCombatStep();
+    /** Encounter slot state shared with slot clearing, independent of behavior dispatch. */
+    static final class State {
+        final int[] state = new int[16],
+                half = new int[16],
+                stretch = new int[16],
+                moving = new int[16],
+                angry = new int[16],
+                dropping = new int[16],
+                private1 = new int[16],
+                splitting = new int[16],
+                variant = new int[16],
+                speedX = new int[16],
+                speedY = new int[16],
+                speedZ = new int[16],
+                accX = new int[16],
+                accY = new int[16],
+                accZ = new int[16],
+                swordHitFrame = new int[16];
+        final boolean[] dying = new boolean[16];
+
+        void clear(int slot) {
+            for (int[] table : new int[][] {
+                state,
+                half,
+                stretch,
+                moving,
+                angry,
+                dropping,
+                private1,
+                splitting,
+                variant,
+                speedX,
+                speedY,
+                speedZ,
+                accX,
+                accY,
+                accZ,
+                swordHitFrame
+            }) table[slot] = 0;
+            dying[slot] = false;
+        }
+    }
 }

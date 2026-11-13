@@ -56,13 +56,13 @@ final class SlimeEyeCombatStep {
         if (!interactive
                 || e.status() != EntityStatus.ACTIVE
                 || runtime.combatTables.readEnemyIgnoreHitsCountdown(s) != 0) return false;
-        isHalf = owner.half[s] != 0;
-        if ((!isHalf && owner.state[s] != 3)
+        isHalf = owner.encounter.half[s] != 0;
+        if ((!isHalf && owner.encounter.state[s] != 3)
                 || (isHalf
-                        && (owner.state[s] >= 2
-                                || (owner.state[s] == 1
+                        && (owner.encounter.state[s] >= 2
+                                || (owner.encounter.state[s] == 1
                                         && runtime.physicsTables.readEnemyTransitionCountdown(s) != 0)))) return false;
-        if (owner.splitting[s] != 0
+        if (owner.encounter.splitting[s] != 0
                 || runtime.combatTables.readEnemyFlashCountdown(s) > 0
                         && runtime.combatTables.readEnemyFlashCountdown(s) < 0x18) return false;
         hitbox = isHalf ? 24 : 20;
@@ -75,9 +75,9 @@ final class SlimeEyeCombatStep {
         if (hit) {
             return applyDamage();
         } else if (!airborne
-                && !(isHalf && owner.dropping[s] != 0)
+                && !(isHalf && owner.encounter.dropping[s] != 0)
                 && RoomEntityCombatRules.collisionCadenceMatches(frame, s)
-                && owner.overlaps(e, isHalf ? 24 : owner.stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
+                && owner.overlaps(e, isHalf ? 24 : owner.encounter.stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
             int damage = runtime.enemyCombatTables == null
                     ? 4
                     : runtime.enemyCombatTables.contactDamageForGroup(runtime.combatTables.readEnemyHealthGroup(s));
@@ -100,8 +100,8 @@ final class SlimeEyeCombatStep {
     }
 
     private boolean applyDamage() {
-        if (!isHalf && owner.stretch[s] == 4 && attack.pegasusBoots()) {
-            owner.splitting[s] = 0x0C;
+        if (!isHalf && owner.encounter.stretch[s] == 4 && attack.pegasusBoots()) {
+            owner.encounter.splitting[s] = 0x0C;
             return false;
         }
         // 6DDF clears wIsRunningWithPegasusBoots before ApplySwordDamagesToEnemy
@@ -124,7 +124,7 @@ final class SlimeEyeCombatStep {
                         0x5B, runtime.combatTables.readEnemyHealthGroup(s), damageAttack);
         int amount = damage == null ? 1 : damage.numericDamage();
         if (amount == 0) return false;
-        owner.swordHitFrame[s] = (frame & 255) + 1;
+        owner.encounter.swordHitFrame[s] = (frame & 255) + 1;
         runtime.combatTables.writeEnemyHealth(s, Math.max(0, runtime.combatTables.readEnemyHealth(s) - amount));
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
         runtime.combatTables.writeEnemyFlashCountdown(s, 0x18);
@@ -133,7 +133,7 @@ final class SlimeEyeCombatStep {
                     .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                     .configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
         if (isHalf && runtime.combatTables.readEnemyHealth(s) == 0) {
-            owner.state[s] = 0;
+            owner.encounter.state[s] = 0;
             runtime.slots[s] = withStatus(e, EntityStatus.DYING);
         }
         // Bank 03:7081–70B6 applies the Slime Eye sword response to both halves
@@ -142,7 +142,7 @@ final class SlimeEyeCombatStep {
         // and ignore collisions for four frames. A fully stretched normal
         // strike takes the ordinary damage branch without this push.
         EntityCombatEvent.LinkCollisionResponse response = EntityCombatEvent.LinkCollisionResponse.NONE;
-        if (isHalf || owner.stretch[s] != 4) {
+        if (isHalf || owner.encounter.stretch[s] != 4) {
             var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                     e.x(), e.y(), e.z(), lx, ly, attack.pegasusBoots() ? 0x14 : 0x10);
             response = new EntityCombatEvent.LinkCollisionResponse(

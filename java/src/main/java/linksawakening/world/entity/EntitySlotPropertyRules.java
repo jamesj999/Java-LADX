@@ -24,14 +24,14 @@ import linksawakening.world.room.ChestContentsTable;
 /** Focused behavior using the state owned by EntitySlotProperties. */
 final class EntitySlotPropertyRules {
     static boolean kanaletCrowTakeoffTriggered(EntitySlotProperties owner, RoomEntity crow) {
-        var runtime = owner.runtime;
-        for (RoomEntity candidate : runtime.slots()) {
+        var runtime = owner;
+        for (RoomEntity candidate : runtime.slots) {
             if (!candidate.loaded()) {
                 continue;
             }
             if (candidate.type() == EntityRomConstants.ENTITY_LIFTABLE_ROCK
-                    && runtime.liftThrow().state.readLiftableRockSmashActive(candidate.slot())
-                    && runtime.liftThrow().state.readLiftableRockSmashSourceVariant(candidate.slot())
+                    && runtime.liftThrow.readLiftableRockSmashActive(candidate.slot())
+                    && runtime.liftThrow.readLiftableRockSmashSourceVariant(candidate.slot())
                             == EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK) {
                 int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
                 int distanceY = signedByte(((crow.y() - crow.z()) - candidate.y()) & 0xFF);
@@ -43,8 +43,8 @@ final class EntitySlotPropertyRules {
             if (candidate.type() != EntityRomConstants.ENTITY_BOMB) {
                 continue;
             }
-            int countdown = runtime.physicsTables().readEnemyTransitionCountdown(candidate.slot()) & 0xFF;
-            if (runtime.combatTables().readEnemyFlashCountdown(candidate.slot()) == 0 || countdown >= 0x22) {
+            int countdown = runtime.physicsTables.readEnemyTransitionCountdown(candidate.slot()) & 0xFF;
+            if (runtime.combatTables.readEnemyFlashCountdown(candidate.slot()) == 0 || countdown >= 0x22) {
                 continue;
             }
             int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
@@ -57,45 +57,41 @@ final class EntitySlotPropertyRules {
     }
 
     static EntitySpriteDefinition spriteDefinitionForChest(EntitySlotProperties owner, int itemType) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         if (itemType == ChestContentsTable.CHEST_ZOL) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        if (runtime.spriteHandlers() == null) {
+        if (runtime.spriteHandlers == null) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        int roomId = runtime.presentationState().readSpriteSelection() == null
+        int roomId = runtime.presentationState.readSpriteSelection() == null
                 ? -1
-                : runtime.presentationState().readSpriteSelection().roomId();
-        if (runtime.roomVariables().readEntityMapId() >= 0 && roomId >= 0) {
-            return runtime.spriteHandlers()
-                    .forChestState(runtime.roomVariables().readEntityMapId(), roomId, itemType);
+                : runtime.presentationState.readSpriteSelection().roomId();
+        if (runtime.roomVariables.readEntityMapId() >= 0 && roomId >= 0) {
+            return runtime.spriteHandlers.forChestState(runtime.roomVariables.readEntityMapId(), roomId, itemType);
         }
-        return runtime.spriteHandlers()
-                .forEntityType(
-                        EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                        runtime.presentationState().readSpriteSelection() == null
-                                ? (runtime.indoorRoom()
-                                        ? EntityRoomLoader.RoomTable.INDOORS_A
-                                        : EntityRoomLoader.RoomTable.OVERWORLD)
-                                : runtime.presentationState()
-                                        .readSpriteSelection()
-                                        .roomTable(),
-                        runtime.roomVariables().readEntityMapId());
+        return runtime.spriteHandlers.forEntityType(
+                EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
+                runtime.presentationState.readSpriteSelection() == null
+                        ? (runtime.indoorRoom
+                                ? EntityRoomLoader.RoomTable.INDOORS_A
+                                : EntityRoomLoader.RoomTable.OVERWORLD)
+                        : runtime.presentationState.readSpriteSelection().roomTable(),
+                runtime.roomVariables.readEntityMapId());
     }
 
     static int options1(EntitySlotProperties owner, int slot) {
-        var runtime = owner.runtime;
-        if (slot < 0 || slot >= runtime.slots().length) {
+        var runtime = owner;
+        if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
-        if (runtime.physicsTables().readEntityOptions1Override(slot) >= 0) {
-            return runtime.physicsTables().readEntityOptions1Override(slot);
+        if (runtime.physicsTables.readEntityOptions1Override(slot) >= 0) {
+            return runtime.physicsTables.readEntityOptions1Override(slot);
         }
-        if (isGhiniType(runtime.slots()[slot].type())) {
+        if (isGhiniType(runtime.slots[slot].type())) {
             return EntityRomConstants.GHINI_OPTIONS1;
         }
-        return switch (runtime.slots()[slot].type()) {
+        return switch (runtime.slots[slot].type()) {
             case EntityRomConstants.ENTITY_BOMB -> EntityRomConstants.BOMB_OPTIONS1;
             case EntityRomConstants.ENTITY_BOMBER -> EntityRomConstants.BOMBER_OPTIONS1;
             case EntityRomConstants.ENTITY_MAD_BOMBER -> EntityRomConstants.MAD_BOMBER_OPTIONS1;
@@ -129,7 +125,7 @@ final class EntitySlotPropertyRules {
             case EntityRomConstants.ENTITY_MINI_MOLDORM -> EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
             case EntityRomConstants.ENTITY_MOLDORM -> MoldormMotion.INITIAL_OPTIONS1;
             case EntityRomConstants.ENTITY_MIMIC -> EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
-            default -> fallbackOptions(runtime.slots()[slot].type());
+            default -> fallbackOptions(runtime.slots[slot].type());
         };
     }
 

@@ -53,31 +53,32 @@ final class GenieJarStep {
                         jarEntity.x(),
                         jarEntity.y(),
                         jarEntity.z(),
-                        owner.geniePrivateState4[slot],
+                        owner.encounter.geniePrivateState4[slot],
                         bodySpawnSucceeded,
                         rockSpawnSucceeded);
         jar = update.jar();
-        owner.geniePrivateState1[slot] = jar.privateState1();
+        owner.encounter.geniePrivateState1[slot] = jar.privateState1();
         runtime.combatTables.writeEnemyHealth(slot, jar.health());
         runtime.physicsTables.writeEnemyPhysicsFlags(slot, jar.physicsFlags());
         runtime.combatTables.writeEnemyHitboxFlags(slot, jar.hitboxFlags());
 
         fallingJar = runtime.slots[slot];
-        z = addFallingSpeedToPosition(fallingJar.z(), owner.genieSpeedZ[slot], owner.genieSpeedZAccumulator, slot);
-        owner.genieSpeedZ[slot] = (owner.genieSpeedZ[slot] - 2) & 0xFF;
+        z = addFallingSpeedToPosition(
+                fallingJar.z(), owner.encounter.genieSpeedZ[slot], owner.encounter.genieSpeedZAccumulator, slot);
+        owner.encounter.genieSpeedZ[slot] = (owner.encounter.genieSpeedZ[slot] - 2) & 0xFF;
         landed = (z & 0x80) != 0;
         if (landed) {
             z = 0;
-            owner.genieSpeedZ[slot] = 0;
+            owner.encounter.genieSpeedZ[slot] = 0;
         }
         runtime.slots[slot] = withZ(fallingJar, z);
 
         activatedThisTick = false;
         if (update.bodySpawn() == null
-                && owner.geniePrivateState4[slot] < GenieMotion.JAR_HEALTH_THRESHOLD
-                && owner.genieActiveState[slot] == 0
+                && owner.encounter.geniePrivateState4[slot] < GenieMotion.JAR_HEALTH_THRESHOLD
+                && owner.encounter.genieActiveState[slot] == 0
                 && (linkEntityY & 0xFF) < 0x70) {
-            owner.genieActiveState[slot] = 1;
+            owner.encounter.genieActiveState[slot] = 1;
             runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
             activatedThisTick = true;
         }
@@ -87,11 +88,11 @@ final class GenieJarStep {
     private boolean advanceJarAttract() {
 
         if (update.bodySpawn() == null
-                && owner.geniePrivateState4[slot] < GenieMotion.JAR_HEALTH_THRESHOLD
-                && owner.genieActiveState[slot] == 1
+                && owner.encounter.geniePrivateState4[slot] < GenieMotion.JAR_HEALTH_THRESHOLD
+                && owner.encounter.genieActiveState[slot] == 1
                 && !activatedThisTick) {
-            if (landed && owner.geniePrivateState3[slot] == 0) {
-                owner.genieSpeedZ[slot] = 0x10;
+            if (landed && owner.encounter.geniePrivateState3[slot] == 0) {
+                owner.encounter.genieSpeedZ[slot] = 0x10;
                 runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20));
             }

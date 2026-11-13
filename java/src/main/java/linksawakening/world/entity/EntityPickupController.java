@@ -11,7 +11,6 @@ import linksawakening.world.entity.motion.*;
 
 /** ROM pickup, reveal and drop mechanics, sharing the owning room slot table. */
 public final class EntityPickupController {
-    final EntityPickupState state;
     private final RoomEntityRuntime.CommonDroppableUpdate[] commonUpdates =
             new RoomEntityRuntime.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
 
@@ -24,11 +23,54 @@ public final class EntityPickupController {
         return previous;
     }
 
-    final EntityPickupControllerServices runtime;
+    final EntityPickupState state;
+    final boolean indoorRoom;
+    final EntityBossState bossRewards;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityLinkState linkState;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityPresentationState presentationState;
+    final EntityRoomVariables roomVariables;
+    final EntitySlotLifecycle lifecycle;
+    final EntitySlotProperties slotProperties;
+    final EntityStoryState story;
+    final RoomEntity[] slots;
+    // Optional ROM data, absent in ROM-free runtimes.
+    final linksawakening.world.room.ChestContentsTable chestContentsTable;
 
-    EntityPickupController(EntityPickupState state, EntityPickupControllerServices runtime) {
+    EntityPickupController(
+            EntityPickupState state,
+            boolean indoorRoom,
+            EntityBossState bossRewards,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityLinkState linkState,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityPresentationState presentationState,
+            EntityRoomVariables roomVariables,
+            EntitySlotLifecycle lifecycle,
+            EntitySlotProperties slotProperties,
+            EntityStoryState story,
+            RoomEntity[] slots,
+            linksawakening.world.room.ChestContentsTable chestContentsTable) {
         this.state = java.util.Objects.requireNonNull(state, "state");
-        this.runtime = runtime;
+        this.indoorRoom = indoorRoom;
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.story = java.util.Objects.requireNonNull(story, "story");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.chestContentsTable = chestContentsTable;
     }
 
     void initializeCommonDroppable(RoomEntity entity) {
@@ -52,49 +94,38 @@ public final class EntityPickupController {
 
     void initializeEntityTimers(RoomEntity entity) {
         int slot = entity.slot();
-        runtime.physicsTables().writeEnemyPhysicsFlags(slot, initialPhysicsFlags(entity.type()));
+        this.physicsTables.writeEnemyPhysicsFlags(slot, initialPhysicsFlags(entity.type()));
         if (isCommonDroppableType(entity.type())) {
             initializeCommonDroppable(entity);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            runtime.motions()
+            this.motions
                     .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                    .ensureInitialized(slot, runtime.roomVariables().readEntityRoomId());
-            runtime.physicsTables()
-                    .writeEntityOptions1Override(slot, EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1);
+                    .ensureInitialized(slot, this.roomVariables.readEntityRoomId());
+            this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1);
         }
-        if (runtime.indoorRoom() && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
-            runtime.physicsTables().writeSlowTransitionCountdown(slot, 0x80);
-            runtime.physicsTables().writeSlowTimerInitialized(slot, true);
+        if (this.indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
+            this.physicsTables.writeSlowTransitionCountdown(slot, 0x80);
+            this.physicsTables.writeSlowTimerInitialized(slot, true);
         }
     }
 
     void resetEnemyDropState(int slot) {
-        runtime.bossRewards().state.writeDroppedItemBySlot(slot, 0);
-        runtime.bossRewards().state.writeDropPrivateCountdown1(slot, 0);
-        runtime.bossRewards().state.writeDropPrivateCountdown3(slot, 0);
-        runtime.bossRewards().state.writeDroppablePrivateState3(slot, 0);
-        runtime.bossRewards().state.writeDroppablePrivateState4(slot, 0);
-        runtime.bossRewards().state.writeEnemyDropActive(slot, false);
-        runtime.motions().get(EnemyDropMotion.class, EnemyDropMotion::new).clear(slot);
-        runtime.motions().get(FairyMotion.class, FairyMotion::new).clear(slot);
-        runtime.motions()
-                .get(HookshotChainMotion.class, HookshotChainMotion::new)
-                .clear(slot);
+        bossRewards.resetEnemyDropState(slot, motions);
     }
 
     void decrementEnemyDropCountdowns(RoomEntity entity) {
         int slot = entity.slot();
-        if (runtime.bossRewards().state.readDropPrivateCountdown1(slot) > 0) {
-            runtime.bossRewards().state.postDropPrivateCountdown1(slot, -1);
+        if (this.bossRewards.readDropPrivateCountdown1(slot) > 0) {
+            this.bossRewards.postDropPrivateCountdown1(slot, -1);
         }
-        if (runtime.bossRewards().state.readDropPrivateCountdown3(slot) > 0) {
-            runtime.bossRewards().state.postDropPrivateCountdown3(slot, -1);
+        if (this.bossRewards.readDropPrivateCountdown3(slot) > 0) {
+            this.bossRewards.postDropPrivateCountdown3(slot, -1);
         }
     }
 
     public boolean checkForKeyDropQuicksandHole(RoomEntity entity) {
-        if (runtime.indoorRoom() || runtime.roomVariables().readEntityRoomId() != 0xCE || entity.z() != 0) {
+        if (this.indoorRoom || this.roomVariables.readEntityRoomId() != 0xCE || entity.z() != 0) {
             return false;
         }
         return withinUnsignedWindow(entity.y(), 0x48, 3) && withinUnsignedWindow(entity.x(), 0x50, 3);

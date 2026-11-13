@@ -40,7 +40,7 @@ final class EntitySlotPhase4 {
                                         .readBowWowState()));
                 slotState.updated(bowWowUpdate.entity());
                 if (bowWowUpdate.targetContact() != null) {
-                    state.lifecycle()
+                    state.bossRewards()
                             .handleBowWowTargetContact(
                                     slotState.entity(), bowWowUpdate.targetContact(), frameInput.randomByteSupplier());
                 }

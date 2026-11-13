@@ -13,12 +13,60 @@ import linksawakening.world.entity.motion.*;
 /** ROM per-slot options, sprite definitions and handler metadata. */
 public final class EntitySlotProperties {
     final EntitySlotPresentation state;
-    final EntitySlotPropertiesServices runtime;
+    final boolean indoorRoom;
+    // Optional ROM data, absent in ROM-free runtimes.
+    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final EntityBossState bossRewards;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityLiftState liftThrow;
+    final EntityLinkState linkState;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityPresentationState presentationState;
+    final EntityProjectileState projectiles;
+    final EntityRoomInspection inspection;
+    final EntityRoomInspection roomInspection;
+    final EntityRoomVariables roomVariables;
+    final RoomEntity[] slots;
+    final EntitySlotLifecycle lifecycle;
 
-    EntitySlotProperties(EntitySlotPresentation state, EntitySlotPropertiesServices runtime) {
+    EntitySlotProperties(
+            EntitySlotPresentation state,
+            boolean indoorRoom,
+            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            EntityBossState bossRewards,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityLiftState liftThrow,
+            EntityLinkState linkState,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityPresentationState presentationState,
+            EntityProjectileState projectiles,
+            EntityRoomInspection inspection,
+            EntityRoomInspection roomInspection,
+            EntityRoomVariables roomVariables,
+            RoomEntity[] slots,
+            EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
-        this.runtime = runtime;
-        this.puzzleCountdown = runtime.physicsTables()::readEnemyTransitionCountdown;
+        this.indoorRoom = indoorRoom;
+        this.spriteHandlers = spriteHandlers;
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
+        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
+        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.puzzleCountdown = physicsTables::readEnemyTransitionCountdown;
     }
 
     public EntitySpriteViews spriteViews() {
@@ -30,41 +78,39 @@ public final class EntitySlotProperties {
     }
 
     int initialHealth(int type) {
-        return runtime.roomInspection().initialHealth(type);
+        return this.roomInspection.initialHealth(type);
     }
 
     int contactDamage(int slot) {
-        return runtime.roomInspection().contactDamage(slot);
+        return this.roomInspection.contactDamage(slot);
     }
 
     public RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
         int slot = entity.slot();
-        int inertia = (runtime.projectiles().state.readMusicalNoteInertia(slot) - 1) & 0xFF;
-        runtime.projectiles().state.writeMusicalNoteInertia(slot, inertia);
+        int inertia = (this.projectiles.readMusicalNoteInertia(slot) - 1) & 0xFF;
+        this.projectiles.writeMusicalNoteInertia(slot, inertia);
         if (inertia == 0) {
-            runtime.clearEntity(slot);
+            this.lifecycle.clearEntity(slot);
             return null;
         }
 
         int speedXAdjustment = (inertia & 0x10) != 0 ? -1 : 1;
         if ((inertia & 0x01) == 0) {
-            runtime.projectiles()
-                    .state
-                    .writeMusicalNoteSpeedX(
-                            slot, (runtime.projectiles().state.readMusicalNoteSpeedX(slot) + speedXAdjustment) & 0xFF);
+            this.projectiles.writeMusicalNoteSpeedX(
+                    slot, (this.projectiles.readMusicalNoteSpeedX(slot) + speedXAdjustment) & 0xFF);
         }
-        int x = (entity.x() + signedByte(runtime.projectiles().state.readMusicalNoteSpeedX(slot))) & 0xFF;
-        int y = (entity.y() + signedByte(runtime.projectiles().state.readMusicalNoteSpeedY(slot))) & 0xFF;
+        int x = (entity.x() + signedByte(this.projectiles.readMusicalNoteSpeedX(slot))) & 0xFF;
+        int y = (entity.y() + signedByte(this.projectiles.readMusicalNoteSpeedY(slot))) & 0xFF;
         return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
     void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
-        int slot = runtime.inspection().hookshotSlot();
-        if (slot < 0 || !runtime.slots()[slot].loaded()) {
+        int slot = this.inspection.hookshotSlot();
+        if (slot < 0 || !this.slots[slot].loaded()) {
             state.writeHookshotChainOam(List.of());
             return;
         }
-        RoomEntity chain = runtime.slots()[slot];
+        RoomEntity chain = this.slots[slot];
         state.writeHookshotChainOam(
                 HookshotChainOam.entries(chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter));
     }
@@ -74,33 +120,19 @@ public final class EntitySlotProperties {
     }
 
     void updatePincerBodyOam() {
-        List<PincerBodyOam.Entry> entries = null;
-        for (RoomEntity entity : runtime.slots()) {
-            if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
-                continue;
-            }
-            if (entries == null) entries = new ArrayList<>();
-            entries.addAll(PincerBodyOam.entries(
-                    entity.slot(),
-                    runtime.motions().get(PincerMotion.class, PincerMotion::new).holeX(entity.slot()),
-                    runtime.motions().get(PincerMotion.class, PincerMotion::new).holeY(entity.slot()),
-                    entity.x(),
-                    entity.y(),
-                    runtime.motions().get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
-        }
-        state.writePincerBodyOam(entries == null ? List.of() : List.copyOf(entries));
+        state.updatePincerBodyOam(slots, motions);
     }
 
     void updateWingedOctorokOam() {
         List<WingedOctorokOam.Entry> entries = null;
-        for (RoomEntity entity : runtime.slots()) {
+        for (RoomEntity entity : this.slots) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
             if (entries == null) entries = new ArrayList<>();
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
-                    runtime.motions()
+                    this.motions
                             .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
                             .privateState2(entity.slot()),
                     entity.x(),
@@ -115,19 +147,19 @@ public final class EntitySlotProperties {
     }
 
     public EntitySpriteDefinition spriteDefinitionFor(int entityType) {
-        return runtime.roomInspection().spriteDefinitionFor(entityType);
+        return this.roomInspection.spriteDefinitionFor(entityType);
     }
 
     public EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
-        return runtime.roomInspection().spriteDefinitionForBushCrawlerState(privateState1);
+        return this.roomInspection.spriteDefinitionForBushCrawlerState(privateState1);
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
-        return runtime.roomInspection().spriteDefinitionForPokeySegment();
+        return this.roomInspection.spriteDefinitionForPokeySegment();
     }
 
     public EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
-        return runtime.roomInspection().spriteDefinitionForBushCrawlerCrawlState(privateState4);
+        return this.roomInspection.spriteDefinitionForBushCrawlerCrawlState(privateState4);
     }
 
     EntitySpriteDefinition spriteDefinitionForChest(int itemType) {
@@ -135,11 +167,11 @@ public final class EntitySlotProperties {
     }
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int privateState1) {
-        return runtime.roomInspection().spriteDefinitionForEvasiveState(fallback, privateState1);
+        return this.roomInspection.spriteDefinitionForEvasiveState(fallback, privateState1);
     }
 
     public RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
-        return runtime.roomInspection().refreshColorShellDisplay(entity, status);
+        return this.roomInspection.refreshColorShellDisplay(entity, status);
     }
 
     public int options1(int slot) {
@@ -150,7 +182,7 @@ public final class EntitySlotProperties {
     private java.util.List<RoomEntity> puzzleEntities;
 
     java.util.List<RoomEntity> puzzleEntities() {
-        if (puzzleEntities == null) puzzleEntities = java.util.Arrays.asList(runtime.slots());
+        if (puzzleEntities == null) puzzleEntities = java.util.Arrays.asList(this.slots);
         return puzzleEntities;
     }
 }

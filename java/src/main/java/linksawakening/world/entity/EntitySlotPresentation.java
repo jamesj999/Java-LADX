@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 import linksawakening.world.entity.motion.*;
 
@@ -76,5 +77,23 @@ final class EntitySlotPresentation {
 
     List<BowWowChain.Entry> writeBowWowChainOam(List<BowWowChain.Entry> value) {
         return bowWowChainOam = value;
+    }
+
+    void updatePincerBodyOam(RoomEntity[] slots, EntityMotionRegistry motions) {
+        List<PincerBodyOam.Entry> entries = null;
+        for (RoomEntity entity : slots) {
+            if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
+                continue;
+            }
+            if (entries == null) entries = new ArrayList<>();
+            entries.addAll(PincerBodyOam.entries(
+                    entity.slot(),
+                    motions.get(PincerMotion.class, PincerMotion::new).holeX(entity.slot()),
+                    motions.get(PincerMotion.class, PincerMotion::new).holeY(entity.slot()),
+                    entity.x(),
+                    entity.y(),
+                    motions.get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
+        }
+        writePincerBodyOam(entries == null ? List.of() : List.copyOf(entries));
     }
 }

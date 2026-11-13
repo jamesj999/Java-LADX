@@ -19,11 +19,12 @@ final class GenieBodyBehavior {
         int countdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
         if ((countdown & 0x80) != 0) {
             if ((countdown & 0x7F) == 0) {
-                if (owner.genieControllerSlot >= 0
-                        && owner.genieControllerSlot < runtime.slots.length
-                        && runtime.slots[owner.genieControllerSlot].loaded()
-                        && runtime.slots[owner.genieControllerSlot].type() == EntityRomConstants.ENTITY_GENIE) {
-                    owner.genieActiveState[owner.genieControllerSlot] = 3;
+                if (owner.encounter.genieControllerSlot >= 0
+                        && owner.encounter.genieControllerSlot < runtime.slots.length
+                        && runtime.slots[owner.encounter.genieControllerSlot].loaded()
+                        && runtime.slots[owner.encounter.genieControllerSlot].type()
+                                == EntityRomConstants.ENTITY_GENIE) {
+                    owner.encounter.genieActiveState[owner.encounter.genieControllerSlot] = 3;
                 }
                 runtime.lifecycle.disableEntityWithoutPersistence(slot);
             }
@@ -60,11 +61,11 @@ final class GenieBodyBehavior {
         }
         runtime.physicsTables.writeEntityInertia(
                 bodySlot, (runtime.physicsTables.readEntityInertia(bodySlot) + 1) & 0xFF);
-        owner.genieSpeedZ[fireballSlot] = 0x24;
+        owner.encounter.genieSpeedZ[fireballSlot] = 0x24;
         EnemyRecoilMotion.Vector towardLink = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 body.x() + xOffset, body.y(), 0, linkEntityX, linkEntityY, 0x1F);
-        owner.genieSpeedX[fireballSlot] = towardLink.x() & 0xFF;
-        owner.genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
+        owner.encounter.genieSpeedX[fireballSlot] = towardLink.x() & 0xFF;
+        owner.encounter.genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 bodySlot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x28));
         return fireballSlot;

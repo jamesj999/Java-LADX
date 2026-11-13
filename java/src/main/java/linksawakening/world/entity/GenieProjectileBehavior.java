@@ -19,22 +19,22 @@ final class GenieProjectileBehavior {
             GenieEntityController owner, RoomEntity genie, int frameCounter, IntSupplier randomByteSupplier) {
         var runtime = owner;
         int slot = genie.slot();
-        if (!owner.genieDeathInitialized[slot]) {
-            owner.genieDeathInitialized[slot] = true;
-            owner.genieActiveState[slot] = 0;
+        if (!owner.encounter.genieDeathInitialized[slot]) {
+            owner.encounter.genieDeathInitialized[slot] = true;
+            owner.encounter.genieActiveState[slot] = 0;
             runtime.bossRewards.state.writeBossAgonySfxCountdown(0x03);
             runtime.bossRewards.state.writeBossAgonySourceSlot(slot);
         }
         runtime.combatTables.writeEnemyFlashCountdown(slot, frameCounter & 0xFF);
-        switch (owner.genieActiveState[slot]) {
+        switch (owner.encounter.genieActiveState[slot]) {
             case 0 -> {
                 runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x40);
-                owner.genieActiveState[slot] = 1;
+                owner.encounter.genieActiveState[slot] = 1;
             }
             case 1 -> {
                 if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
                     runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
-                    owner.genieActiveState[slot] = 2;
+                    owner.encounter.genieActiveState[slot] = 2;
                 }
             }
             default -> {
@@ -70,19 +70,20 @@ final class GenieProjectileBehavior {
     static void advanceGenieSideProjectile(GenieEntityController owner, RoomEntity projectile, int frameCounter) {
         var runtime = owner;
         int slot = projectile.slot();
-        int combinedSpeedX = (owner.genieSpeedX[slot] + owner.genieSharedBodySpeedX) & 0xFF;
-        int combinedSpeedY = (owner.genieSpeedY[slot] + owner.genieSharedBodySpeedY) & 0xFF;
-        int x = addFallingSpeedToPosition(projectile.x(), combinedSpeedX, owner.genieSpeedXAccumulator, slot);
-        int y = addFallingSpeedToPosition(projectile.y(), combinedSpeedY, owner.genieSpeedYAccumulator, slot);
+        int combinedSpeedX = (owner.encounter.genieSpeedX[slot] + owner.encounter.genieSharedBodySpeedX) & 0xFF;
+        int combinedSpeedY = (owner.encounter.genieSpeedY[slot] + owner.encounter.genieSharedBodySpeedY) & 0xFF;
+        int x = addFallingSpeedToPosition(projectile.x(), combinedSpeedX, owner.encounter.genieSpeedXAccumulator, slot);
+        int y = addFallingSpeedToPosition(projectile.y(), combinedSpeedY, owner.encounter.genieSpeedYAccumulator, slot);
         RoomEntity moved = withPositionAndVariant(projectile, x, y, (frameCounter >>> 3) & 1);
-        if (owner.genieActiveState[slot] == 0) {
-            int z = addFallingSpeedToPosition(moved.z(), owner.genieSpeedZ[slot], owner.genieSpeedZAccumulator, slot);
-            owner.genieSpeedZ[slot] = (owner.genieSpeedZ[slot] - 2) & 0xFF;
+        if (owner.encounter.genieActiveState[slot] == 0) {
+            int z = addFallingSpeedToPosition(
+                    moved.z(), owner.encounter.genieSpeedZ[slot], owner.encounter.genieSpeedZAccumulator, slot);
+            owner.encounter.genieSpeedZ[slot] = (owner.encounter.genieSpeedZ[slot] - 2) & 0xFF;
             if ((z & 0x80) != 0) {
                 z = 0;
-                owner.genieActiveState[slot] = 1;
+                owner.encounter.genieActiveState[slot] = 1;
                 runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x08);
-                owner.genieSpeedX[slot] = 0xE0;
+                owner.encounter.genieSpeedX[slot] = 0xE0;
             }
             runtime.slots[slot] = withZ(moved, z);
             return;
@@ -124,21 +125,21 @@ final class GenieProjectileBehavior {
                 -1,
                 false);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
-        owner.genieActiveState[freeSlot] = 0;
-        owner.geniePrivateState1[freeSlot] = privateState1 & 0xFF;
-        owner.geniePrivateState2[freeSlot] = 0;
-        owner.geniePrivateState3[freeSlot] = 0;
-        owner.geniePrivateState4[freeSlot] = 0;
-        owner.geniePrivateCountdown1[freeSlot] = 0;
-        owner.geniePrivateCountdown2[freeSlot] = 0;
-        owner.genieDirection[freeSlot] = 0;
-        owner.genieDeathInitialized[freeSlot] = false;
-        owner.genieSpeedX[freeSlot] = 0;
-        owner.genieSpeedY[freeSlot] = 0;
-        owner.genieSpeedZ[freeSlot] = 0;
-        owner.genieSpeedXAccumulator[freeSlot] = 0;
-        owner.genieSpeedYAccumulator[freeSlot] = 0;
-        owner.genieSpeedZAccumulator[freeSlot] = 0;
+        owner.encounter.genieActiveState[freeSlot] = 0;
+        owner.encounter.geniePrivateState1[freeSlot] = privateState1 & 0xFF;
+        owner.encounter.geniePrivateState2[freeSlot] = 0;
+        owner.encounter.geniePrivateState3[freeSlot] = 0;
+        owner.encounter.geniePrivateState4[freeSlot] = 0;
+        owner.encounter.geniePrivateCountdown1[freeSlot] = 0;
+        owner.encounter.geniePrivateCountdown2[freeSlot] = 0;
+        owner.encounter.genieDirection[freeSlot] = 0;
+        owner.encounter.genieDeathInitialized[freeSlot] = false;
+        owner.encounter.genieSpeedX[freeSlot] = 0;
+        owner.encounter.genieSpeedY[freeSlot] = 0;
+        owner.encounter.genieSpeedZ[freeSlot] = 0;
+        owner.encounter.genieSpeedXAccumulator[freeSlot] = 0;
+        owner.encounter.genieSpeedYAccumulator[freeSlot] = 0;
+        owner.encounter.genieSpeedZAccumulator[freeSlot] = 0;
         runtime.motions.get(GenieMotion.class, GenieMotion::new).clear(freeSlot);
         runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, transitionCountdown & 0xFF);
         runtime.combatTables.writeEnemyHealth(freeSlot, health & 0xFF);

@@ -16,6 +16,8 @@ interface EntityRuntimeCombat {
 
     EntitySlotLifecycle entityLifecycle();
 
+    EntityRewardController entityRewards();
+
     /**
      * Runs the room-entity portion of PickableCollectIfNeeded. A non-null
      * event means the entity completed its pickup collision and its first-eight
@@ -23,7 +25,7 @@ interface EntityRuntimeCombat {
      */
     default EntityPickupEvent collectIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
-        return entityLifecycle().collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
+        return entityRewards().collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
     }
 
     /** Pickup collision with Link's Java direction available for held items. */
@@ -34,7 +36,7 @@ interface EntityRuntimeCombat {
             boolean linkAirborne,
             boolean linkInteractive,
             int linkDirection) {
-        return entityLifecycle()
+        return entityRewards()
                 .collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
     }
 
@@ -47,13 +49,13 @@ interface EntityRuntimeCombat {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return entityLifecycle()
+        return entityRewards()
                 .collectIfNeeded(
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
     default EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
-        return entityLifecycle().collectIfNeeded(inputs);
+        return entityRewards().collectIfNeeded(inputs);
     }
 
     /**
