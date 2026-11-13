@@ -18,7 +18,7 @@ import linksawakening.world.transition.Warp;
  * owning session.
  */
 public final class RenderStateAssembler {
-    private final GameFrameState reusableState = new GameFrameState();
+    private final GameFrameState inputs = new GameFrameState();
     private final byte[] dungeonProgress = new byte[8], dungeonItems = new byte[5], dungeonMinimap = new byte[64];
     private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private final int[] greenObjectsSpritePalette = {0, 0, 0x0010A840, 0x00F8B888};
@@ -64,29 +64,44 @@ public final class RenderStateAssembler {
 
     /** Borrowed inputs, valid only until this assembler's next refill and next simulation tick. */
     public GameFrameState currentGameFrameState() {
-        var intro = ui.cutsceneManager().frameSnapshot();
-        reusableState
-                .reset()
-                .withScreen(currentRenderScreen())
-                .withBackground(
+        RenderScreen screen = currentRenderScreen();
+        inputs.reset()
+                .withScreen(screen)
+                .withFrameCounter(state.clock().value())
+                .withDialogController(ui.dialogController());
+        switch (screen) {
+            case OVERWORLD -> fillOverworld();
+            case TITLE, CUTSCENE -> fillBackground();
+            case FILE_MENU, FILE_SAVE -> {
+                /* The screen publishes its menu frame below. */
+            }
+        }
+        if (screen != RenderScreen.OVERWORLD && ui.dialogController().isActive()) fillRoomView();
+        return state.screens().currentScreen.renderState(inputs);
+    }
+
+    private void fillRoomView() {
+        inputs.withRoom(
+                world.roomSession().rooms().renderView(), world.scrollController(), world.transitionController());
+    }
+
+    private void fillOverworld() {
+        fillRoomView();
+        inputs.withLink(player.link())
+                .withTransientVfx(
+                        visual.transientVfxSystem(), visual.cutLeavesEffectRenderer(), greenObjectsSpritePalette)
+                .withDroppableRupees(visual.droppableRupeeSystem())
+                .withInventoryController(ui.inventoryController());
+    }
+
+    private void fillBackground() {
+        inputs.withBackground(
                         state.scene().currentTilemap,
                         state.scene().currentAttrmap,
                         state.scene().bgPalettes,
                         state.scene().objPalettes)
                 .withCutsceneManager(ui.cutsceneManager())
-                .withRoom(
-                        world.roomSession().rooms().renderView(),
-                        world.scrollController(),
-                        world.transitionController())
-                .withLink(player.link())
-                .withTransientVfx(
-                        visual.transientVfxSystem(), visual.cutLeavesEffectRenderer(), greenObjectsSpritePalette)
-                .withDroppableRupees(visual.droppableRupeeSystem())
-                .withInventoryController(ui.inventoryController())
-                .withDialogController(ui.dialogController())
-                .withFrameCounter(state.clock().value())
-                .withIntroFrameSnapshot(intro);
-        return state.screens().currentScreen.renderState(reusableState);
+                .withIntroFrameSnapshot(ui.cutsceneManager().frameSnapshot());
     }
 
     public RenderScreen currentRenderScreen() {
