@@ -4,7 +4,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.world.entity.event.HeartPieceVisual;
 
 /** Retains one story-pose role and immutable heart-piece OAM metadata across frames. */
-final class ReusableStoryLayer implements HardwareRenderLayer {
+final class StoryLayer implements HardwareRenderLayer {
     enum Kind {
         SHADOW,
         GRASS,
@@ -15,15 +15,15 @@ final class ReusableStoryLayer implements HardwareRenderLayer {
     }
 
     private final Kind kind;
-    private ReusableGameFrameState state;
+    private GameFrameState state;
     private HeartPieceVisual heart;
     private int[] heartPairs;
 
-    ReusableStoryLayer(Kind kind) {
+    StoryLayer(Kind kind) {
         this.kind = kind;
     }
 
-    void configure(ReusableGameFrameState state) {
+    void configure(GameFrameState state) {
         this.state = state;
         if (kind == Kind.HEART && state.roomInputs.heart != heart) {
             heart = state.roomInputs.heart;

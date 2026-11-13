@@ -11,7 +11,6 @@ import linksawakening.app.state.SessionState;
 import linksawakening.render.GameFrameSceneBuilder;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
-import linksawakening.render.ReusableGameFrameState;
 import linksawakening.world.transition.Warp;
 
 /**
@@ -19,7 +18,7 @@ import linksawakening.world.transition.Warp;
  * owning session.
  */
 public final class RenderStateAssembler {
-    private final ReusableGameFrameState reusableState = new ReusableGameFrameState();
+    private final GameFrameState reusableState = new GameFrameState();
     private final byte[] dungeonProgress = new byte[8], dungeonItems = new byte[5], dungeonMinimap = new byte[64];
     private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private final int[] greenObjectsSpritePalette = {0, 0, 0x0010A840, 0x00F8B888};
@@ -60,11 +59,11 @@ public final class RenderStateAssembler {
                             world.roomSession().rooms().indoorRoomPositionForSave(),
                             state.clock().value());
         }
-        frameSceneBuilder.build(currentReusableGameFrameState()).drawTo(visual.indexedDisplayBuffer(), rom.gpu());
+        frameSceneBuilder.build(currentGameFrameState()).drawTo(visual.indexedDisplayBuffer(), rom.gpu());
     }
 
     /** Borrowed inputs, valid only until this assembler's next refill and next simulation tick. */
-    public ReusableGameFrameState currentReusableGameFrameState() {
+    public GameFrameState currentGameFrameState() {
         var intro = ui.cutsceneManager().frameSnapshot();
         reusableState
                 .reset()
@@ -88,32 +87,6 @@ public final class RenderStateAssembler {
                 .withFrameCounter(state.clock().value())
                 .withIntroFrameSnapshot(intro);
         return state.screens().currentScreen.renderState(reusableState);
-    }
-
-    public GameFrameState currentGameFrameState() {
-        var intro = ui.cutsceneManager().frameSnapshot();
-        return state.screens()
-                .currentScreen
-                .renderState(new GameFrameState(
-                        currentRenderScreen(),
-                        state.scene().currentTilemap,
-                        state.scene().currentAttrmap,
-                        state.scene().bgPalettes,
-                        state.scene().objPalettes,
-                        ui.cutsceneManager(),
-                        world.roomSession().rooms().renderSnapshot(),
-                        world.scrollController(),
-                        world.transitionController(),
-                        player.link(),
-                        visual.transientVfxSystem(),
-                        visual.cutLeavesEffectRenderer(),
-                        greenObjectsSpritePalette,
-                        visual.droppableRupeeSystem(),
-                        ui.inventoryController(),
-                        ui.dialogController(),
-                        state.clock().value(),
-                        intro,
-                        null));
     }
 
     public RenderScreen currentRenderScreen() {

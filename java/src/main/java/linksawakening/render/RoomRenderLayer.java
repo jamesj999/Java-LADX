@@ -11,7 +11,7 @@ import linksawakening.world.transition.TransitionController;
 /** Submits current and previous room backgrounds with scrolling and fade offsets. */
 final class RoomRenderLayer implements HardwareRenderLayer {
     private RoomRenderView currentSnapshot;
-    private final ReusableRoomInputs currentInputs = new ReusableRoomInputs();
+    private final RoomInputs currentInputs = new RoomInputs();
     private int[] tileIds, tileAttrs;
     private int[][] roomPalettes;
     private ScrollController scrollController;

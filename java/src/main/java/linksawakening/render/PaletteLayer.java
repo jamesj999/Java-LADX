@@ -5,7 +5,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.ui.InventoryTransition;
 
 /** Owns synchronous submission callbacks and nested pass-out/inventory palette scopes. */
-final class ReusablePaletteLayer implements HardwareRenderLayer {
+final class PaletteLayer implements HardwareRenderLayer {
     private HardwareRenderLayer child;
     private InventoryTransition inventory;
     private int passOutFrames;

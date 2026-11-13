@@ -63,7 +63,7 @@ final class SpecialSceneAllocationTest {
     }
 
     private void measure(GameFrameState input, SceneConstructionFixture fixture) {
-        var state = new ReusableGameFrameState().copyFrom(input);
+        var state = new GameFrameState().copyFrom(input);
         var builder = new GameFrameSceneBuilder();
         fixture.configure(builder);
         double bytes = AllocationProbe.bytesPerIteration(1000, 200, () -> {

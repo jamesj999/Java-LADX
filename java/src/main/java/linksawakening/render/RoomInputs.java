@@ -8,7 +8,7 @@ import linksawakening.world.room.RoomRenderSnapshot;
 import linksawakening.world.room.RoomRenderView;
 
 /** Borrowed room planes and cached immutable metadata; no live world data is copied per build. */
-final class ReusableRoomInputs {
+final class RoomInputs {
     int[] tiles, attributes;
     int[][] palettes, objectPalettes;
     RoomEntitySnapshot entities;

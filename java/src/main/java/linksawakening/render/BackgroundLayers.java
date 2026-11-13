@@ -9,7 +9,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** Owns retained intro/menu planes, snapshot extraction and direct immutable-sprite submission. */
-final class ReusableBackgroundLayers {
+final class BackgroundLayers {
     private final Node upload = new Node(0), background = new Node(1), objects = new Node(2);
     private IntroFrameSnapshot capturedIntro;
     private FileMenuFrameSnapshot capturedMenu;

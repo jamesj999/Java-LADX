@@ -8,13 +8,13 @@ import linksawakening.gpu.GPU;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 
 /** Owns instrument-warp snapshot extraction, sprite fade scope, swirl and fullscreen uploads. */
-final class ReusableWarpLayers {
+final class WarpLayers {
     final List<RenderLayer> sprites = new ArrayList<>(10);
     private InstrumentWarpVisual visual;
     private int[][] sourceBg, sourceObj;
     int[][] backgroundPalettes, objectPalettes;
     private int[] tiles, attributes, commands;
-    private ReusableGameFrameState state;
+    private GameFrameState state;
     private final Node fade = new Node(0), swirl = new Node(1), fullscreen = new Node(2);
     private HardwareFrame frame;
     private GPU gpu;
@@ -22,7 +22,7 @@ final class ReusableWarpLayers {
     private final IntUnaryOperator transform = this::fadeColor;
     private final Runnable draw = this::drawSprites, drawChild = this::drawChild;
 
-    void configure(ReusableGameFrameState state) {
+    void configure(GameFrameState state) {
         this.state = state;
         var room = state.roomInputs;
         if (visual != room.warp || sourceBg != room.palettes || sourceObj != room.objectPalettes) {

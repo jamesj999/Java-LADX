@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Session-local configurable layers and palette scopes for every screen. Lists and layers never escape ownership. */
-final class ReusableWorldLayers {
+final class WorldLayers {
     final List<RenderLayer> layers = new ArrayList<>(12);
     private final RoomRenderLayer room = new RoomRenderLayer();
     private EntityRenderLayer entities;
@@ -13,18 +13,18 @@ final class ReusableWorldLayers {
     private final DialogRenderLayer dialog = new DialogRenderLayer(null, null, null, 0);
     private final TransientVfxRenderLayer vfx = new TransientVfxRenderLayer(null, null, null, null);
     private final DroppableRupeeRenderLayer rupees = new DroppableRupeeRenderLayer(null, null);
-    private final ReusableStoryLayer shadow = new ReusableStoryLayer(ReusableStoryLayer.Kind.SHADOW),
-            grass = new ReusableStoryLayer(ReusableStoryLayer.Kind.GRASS),
-            marin = new ReusableStoryLayer(ReusableStoryLayer.Kind.MARIN),
-            tarin = new ReusableStoryLayer(ReusableStoryLayer.Kind.TARIN),
-            gotItem = new ReusableStoryLayer(ReusableStoryLayer.Kind.GOT_ITEM),
-            heart = new ReusableStoryLayer(ReusableStoryLayer.Kind.HEART);
-    private final ReusableWarpLayers warp = new ReusableWarpLayers();
+    private final StoryLayer shadow = new StoryLayer(StoryLayer.Kind.SHADOW),
+            grass = new StoryLayer(StoryLayer.Kind.GRASS),
+            marin = new StoryLayer(StoryLayer.Kind.MARIN),
+            tarin = new StoryLayer(StoryLayer.Kind.TARIN),
+            gotItem = new StoryLayer(StoryLayer.Kind.GOT_ITEM),
+            heart = new StoryLayer(StoryLayer.Kind.HEART);
+    private final WarpLayers warp = new WarpLayers();
 
-    private final ReusableBackgroundLayers background = new ReusableBackgroundLayers();
-    private final ArrayList<ReusablePaletteLayer> paletteLayers = new ArrayList<>();
+    private final BackgroundLayers background = new BackgroundLayers();
+    private final ArrayList<PaletteLayer> paletteLayers = new ArrayList<>();
 
-    void fill(ReusableGameFrameState state, DialogWindowPainter painter) {
+    void fill(GameFrameState state, DialogWindowPainter painter) {
         layers.clear();
         if (state.screen() == RenderScreen.OVERWORLD && state.roomInputs.tiles != null) fillWorld(state);
         else background.fill(layers, state);
@@ -34,7 +34,7 @@ final class ReusableWorldLayers {
                         || (state.inventoryController() != null
                                 && state.inventoryController().transition().blocksWorld()))) {
             for (int i = 0; i < layers.size(); i++) {
-                if (i == paletteLayers.size()) paletteLayers.add(new ReusablePaletteLayer());
+                if (i == paletteLayers.size()) paletteLayers.add(new PaletteLayer());
                 var wrapper = paletteLayers.get(i);
                 wrapper.configure(layers.get(i), state);
                 layers.set(i, wrapper);
@@ -42,7 +42,7 @@ final class ReusableWorldLayers {
         }
     }
 
-    private void fillWorld(ReusableGameFrameState state) {
+    private void fillWorld(GameFrameState state) {
         var data = state.roomInputs;
         data.refreshSelection();
         boolean warping = data.warp != null;
@@ -118,7 +118,7 @@ final class ReusableWorldLayers {
         if (warping) warp.addFinalPlanes(layers);
     }
 
-    private void addDialog(ReusableGameFrameState state, DialogWindowPainter painter) {
+    private void addDialog(GameFrameState state, DialogWindowPainter painter) {
         var data = state.roomInputs;
         if (state.dialogController() != null) {
             dialog.windowPainter(painter);

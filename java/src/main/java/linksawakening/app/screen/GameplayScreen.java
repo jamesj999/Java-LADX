@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
-import linksawakening.render.ReusableGameFrameState;
 
 /**
  * Owns queued key edges and gameplay dispatch for one session. One instance is retained for the owning
@@ -67,19 +66,11 @@ public final class GameplayScreen implements Screen {
     }
 
     @Override
-    public ReusableGameFrameState renderState(ReusableGameFrameState state) {
-        var snapshot = driver.gameOver();
-        return snapshot == null
-                ? state
-                : state.reset().withScreen(RenderScreen.FILE_SAVE).withFileMenuFrame(snapshot);
-    }
-
-    @Override
     public GameFrameState renderState(GameFrameState state) {
         var snapshot = driver.gameOver();
         return snapshot == null
                 ? state
-                : GameFrameState.empty().withScreen(RenderScreen.FILE_SAVE).withFileMenuFrame(snapshot);
+                : state.reset().withScreen(RenderScreen.FILE_SAVE).withFileMenuFrame(snapshot);
     }
 
     @Override
