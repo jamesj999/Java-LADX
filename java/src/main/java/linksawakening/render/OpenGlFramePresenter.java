@@ -19,6 +19,13 @@ import org.lwjgl.system.MemoryStack;
 
 /** Owns OpenGL resources that present the composed RGBA framebuffer. */
 public final class OpenGlFramePresenter {
+    // Each quad vertex stores two position floats followed by two texture-coordinate floats.
+    private static final int POSITION_ATTRIBUTE = 0;
+    private static final int TEXTURE_ATTRIBUTE = 1;
+    private static final int VECTOR_COMPONENTS = 2;
+    private static final int VERTEX_STRIDE_BYTES = 4 * Float.BYTES;
+    private static final int TEXTURE_OFFSET_BYTES = 2 * Float.BYTES;
+
     private final ResourceScope resources;
     private final long window;
     private final int vao;
@@ -62,10 +69,17 @@ public final class OpenGlFramePresenter {
             GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
             GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
 
-            GL20.glEnableVertexAttribArray(0);
-            GL20.glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 16, 0);
-            GL20.glEnableVertexAttribArray(1);
-            GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 16, 8);
+            GL20.glEnableVertexAttribArray(POSITION_ATTRIBUTE);
+            GL20.glVertexAttribPointer(
+                    POSITION_ATTRIBUTE, VECTOR_COMPONENTS, GL11.GL_FLOAT, false, VERTEX_STRIDE_BYTES, 0);
+            GL20.glEnableVertexAttribArray(TEXTURE_ATTRIBUTE);
+            GL20.glVertexAttribPointer(
+                    TEXTURE_ATTRIBUTE,
+                    VECTOR_COMPONENTS,
+                    GL11.GL_FLOAT,
+                    false,
+                    VERTEX_STRIDE_BYTES,
+                    TEXTURE_OFFSET_BYTES);
 
             GL30.glBindVertexArray(0);
 

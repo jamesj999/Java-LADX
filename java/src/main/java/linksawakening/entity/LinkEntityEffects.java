@@ -4,8 +4,10 @@ import linksawakening.state.Direction;
 import linksawakening.state.GroundStatus;
 import linksawakening.state.LinkMotionState;
 
-/** ROM-faithful entityeffects collaborator for Link. */
+/** Applies entity-owned Link poses and motion, including Like Like capture, Hinox grabs and WarpState3Handler. */
 final class LinkEntityEffects {
+    private static final int OAM_X_ORIGIN = 0x08;
+    private static final int OAM_Y_ORIGIN = 0x10;
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
     private final LinkComponentRef<LinkAnimator> linkAnimator;
@@ -69,8 +71,8 @@ final class LinkEntityEffects {
         if (!pinPosition) {
             return;
         }
-        likeLikeCaptureSubX = ((romEntityX - 0x08) & 0xFF) << Link.SUB_PIXEL_SHIFT;
-        likeLikeCaptureSubY = ((romEntityY - 0x10) & 0xFF) << Link.SUB_PIXEL_SHIFT;
+        likeLikeCaptureSubX = ((romEntityX - OAM_X_ORIGIN) & 0xFF) << Link.SUB_PIXEL_SHIFT;
+        likeLikeCaptureSubY = ((romEntityY - OAM_Y_ORIGIN) & 0xFF) << Link.SUB_PIXEL_SHIFT;
         linkMotion.get().position().subX(likeLikeCaptureSubX);
         linkMotion.get().position().subY(likeLikeCaptureSubY);
         linkAirborne.get().elevation().airborne(false);
@@ -176,7 +178,10 @@ final class LinkEntityEffects {
         Link.validateRomByte(speedY, "Hinox Link Y speed");
         Link.validateRomByte(velocityZ, "Hinox Link Z velocity");
         Link.validateRomByte(airborneState, "Hinox Link linkAirborne.get().airborne state");
-        linkMotion.get().position().setPixelPosition((romPositionX - 0x08) & 0xFF, (romPositionY - 0x10) & 0xFF);
+        linkMotion
+                .get()
+                .position()
+                .setPixelPosition((romPositionX - OAM_X_ORIGIN) & 0xFF, (romPositionY - OAM_Y_ORIGIN) & 0xFF);
         linkStateMachine.get().status().romInteractiveMotionBlocked(motionBlocked);
         if (applyHeldLinkPose) {
             linkAnimator.get().romAnimationStateOverride(0x6A);
@@ -197,7 +202,10 @@ final class LinkEntityEffects {
         Link.validateRomByte(romPositionX, "Warp Link X");
         Link.validateRomByte(visualRomPositionY, "Warp Link visual Y");
         Link.validateRomByte(immunityCountdown, "Warp Link immunity");
-        linkMotion.get().position().setPixelPosition((romPositionX - 0x08) & 0xFF, (visualRomPositionY - 0x10) & 0xFF);
+        linkMotion
+                .get()
+                .position()
+                .setPixelPosition((romPositionX - OAM_X_ORIGIN) & 0xFF, (visualRomPositionY - OAM_Y_ORIGIN) & 0xFF);
         linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         linkAnimator.get().romAnimationStateOverride(-1);
         linkItemState.get().romAttackStepAnimationCountdown = 0;

@@ -6,7 +6,7 @@ import static linksawakening.audio.sfx.RomSoundEffectEngine.hex8;
 import static linksawakening.audio.sfx.RomSoundEffectEngine.signed8;
 import static linksawakening.audio.sfx.RomSoundEffectEngine.unsigned16;
 
-/** Opcode decoding for the ROM-backed SFX interpreter. */
+/** LR35902 opcode decoding for the ROM-backed SFX interpreter; hex case labels are CPU opcodes. */
 final class SfxCpu {
     private final RomSoundEffectEngine bus;
 
@@ -49,13 +49,13 @@ final class SfxCpu {
             return;
         }
 
-        if (opcode < 0x20) low(opcode, opcodeAddress);
-        else if (opcode < 0x40) middle(opcode, opcodeAddress);
-        else if (opcode < 0xE0) control(opcode, opcodeAddress);
-        else high(opcode, opcodeAddress);
+        if (opcode < 0x20) executeLowOpcodes(opcode, opcodeAddress);
+        else if (opcode < 0x40) executeIncrementLoadOpcodes(opcode, opcodeAddress);
+        else if (opcode < 0xE0) executeControlOpcodes(opcode, opcodeAddress);
+        else executeHighOpcodes(opcode, opcodeAddress);
     }
 
-    private void low(int opcode, int opcodeAddress) {
+    private void executeLowOpcodes(int opcode, int opcodeAddress) {
         switch (opcode) {
             case 0x00 -> {}
             case 0x01 -> setBC(next16());
@@ -87,7 +87,7 @@ final class SfxCpu {
         }
     }
 
-    private void middle(int opcode, int opcodeAddress) {
+    private void executeIncrementLoadOpcodes(int opcode, int opcodeAddress) {
         switch (opcode) {
             case 0x20 -> jr(!flagZ);
             case 0x21 -> setHL(next16());
@@ -144,7 +144,7 @@ final class SfxCpu {
         }
     }
 
-    private void control(int opcode, int opcodeAddress) {
+    private void executeControlOpcodes(int opcode, int opcodeAddress) {
         switch (opcode) {
             case 0xC0 -> ret(!flagZ);
             case 0xC1 -> setBC(pop16());
@@ -171,7 +171,7 @@ final class SfxCpu {
         }
     }
 
-    private void high(int opcode, int opcodeAddress) {
+    private void executeHighOpcodes(int opcode, int opcodeAddress) {
         switch (opcode) {
             case 0xE0 -> bus.write8(0xFF00 | next8(), a);
             case 0xE1 -> setHL(pop16());

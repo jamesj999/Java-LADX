@@ -27,31 +27,33 @@ import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.ShovelStartResult;
 
 /**
- * Registers equipment in ROM order. Constructed only during session wiring. Stateless factory used during
- * session initialization.
+ * Constructs equipment and its room-command adapters in the session registration order.
+ * The adapters retain only EquipmentInputs, never the owning GameSession.
  */
 final class EquipmentWiring {
     private EquipmentWiring() {}
 
-    static void shield(EquipmentInputs c, ItemRegistry registry) {
+    static void shield(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.SHIELD.romValue(),
-                new Shield(c.gameplaySoundSink(), c.link().equipment()::canUseItems));
+                new Shield(inputs.gameplaySoundSink(), inputs.link().equipment()::canUseItems));
     }
 
-    static void feather(EquipmentInputs c, ItemRegistry registry) {
+    static void feather(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
-                InventoryItem.ROCS_FEATHER.romValue(), new RocsFeather(c.link().airborne()::useRocsFeather));
+                InventoryItem.ROCS_FEATHER.romValue(),
+                new RocsFeather(inputs.link().airborne()::useRocsFeather));
     }
 
-    static void bomb(EquipmentInputs c, ItemRegistry registry) {
+    static void bomb(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.BOMBS.romValue(),
                 new Bomb(
-                        c.playerState(),
-                        c.gameplaySoundSink(),
-                        new RoomBombPlacement(c.link(), c.roomSession().playerItems()),
-                        c.link().equipment()::canUseItems));
+                        inputs.playerState(),
+                        inputs.gameplaySoundSink(),
+                        new RoomBombPlacement(
+                                inputs.link(), inputs.roomSession().playerItems()),
+                        inputs.link().equipment()::canUseItems));
     }
 
     /** Dependencies shared by equipment target adapters; no session reference is retained. */
@@ -74,65 +76,65 @@ final class EquipmentWiring {
         }
     }
 
-    static void sword(EquipmentInputs c, ItemRegistry registry) {
+    static void sword(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.SWORD.romValue(),
                 new Sword(
-                        c.romTables(),
-                        c.graphics().swordSpriteSheet(),
-                        c.gameplaySoundSink(),
-                        c.random(),
-                        c.graphics().swordPalette(),
+                        inputs.romTables(),
+                        inputs.graphics().swordSpriteSheet(),
+                        inputs.gameplaySoundSink(),
+                        inputs.random(),
+                        inputs.graphics().swordPalette(),
                         new Sword.BeamTarget() {
                             @Override
                             public boolean fireSwordBeam() {
-                                int romDirection = c.link().equipment().applyRomItemDirectionFromInput();
-                                if (c.playerState().equipmentLevels().swordLevel() != 2
-                                        || !c.playerState().vitals().fullHearts()
-                                        || c.roomSession().playerItems().activeProjectileCount() != 0) {
+                                int romDirection = inputs.link().equipment().applyRomItemDirectionFromInput();
+                                if (inputs.playerState().equipmentLevels().swordLevel() != 2
+                                        || !inputs.playerState().vitals().fullHearts()
+                                        || inputs.roomSession().playerItems().activeProjectileCount() != 0) {
                                     return false;
                                 }
-                                boolean spawned = c.roomSession()
+                                boolean spawned = inputs.roomSession()
                                         .playerItems()
                                         .fireSwordBeam(
-                                                c.link().position().romEntityX(),
-                                                c.link().position().romEntityY(),
-                                                c.link().animation().romEntityZ(),
+                                                inputs.link().position().romEntityX(),
+                                                inputs.link().position().romEntityY(),
+                                                inputs.link().animation().romEntityZ(),
                                                 romDirection);
                                 if (spawned) {
-                                    c.link().equipment().startRomItemAttackStep();
+                                    inputs.link().equipment().startRomItemAttackStep();
                                 }
                                 return spawned;
                             }
                         }));
     }
 
-    static void magicRod(EquipmentInputs c, ItemRegistry registry) {
+    static void magicRod(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.MAGIC_ROD.romValue(),
                 new MagicRod(
-                        c.romTables(),
-                        c.graphics().linkSpriteSheet(),
-                        c.graphics().linkTunicPalette(),
-                        c.gameplaySoundSink(),
+                        inputs.romTables(),
+                        inputs.graphics().linkSpriteSheet(),
+                        inputs.graphics().linkTunicPalette(),
+                        inputs.gameplaySoundSink(),
                         new MagicRod.LaunchTarget() {
                             @Override
                             public void startMagicRodAttackStep() {
 
-                                c.link().equipment().startRomMagicRodAttackStep();
+                                inputs.link().equipment().startRomMagicRodAttackStep();
                             }
 
                             @Override
                             public boolean fireMagicRodFireball() {
-                                int romDirection = c.link().equipment().applyRomItemDirectionFromInput();
-                                boolean spawned = c.roomSession()
+                                int romDirection = inputs.link().equipment().applyRomItemDirectionFromInput();
+                                boolean spawned = inputs.roomSession()
                                         .playerItems()
                                         .fireMagicRodFireball(
-                                                c.link().position().romEntityX(),
-                                                c.link().position().romEntityY(),
-                                                c.link().animation().romEntityZ(),
+                                                inputs.link().position().romEntityX(),
+                                                inputs.link().position().romEntityY(),
+                                                inputs.link().animation().romEntityZ(),
                                                 romDirection,
-                                                c.playerState()
+                                                inputs.playerState()
                                                                 .equipmentLevels()
                                                                 .activePowerUp()
                                                         == PowerUp.PIECE_OF_POWER.romValue());
@@ -141,80 +143,80 @@ final class EquipmentWiring {
 
                             @Override
                             public int activeProjectileCount() {
-                                return c.roomSession().playerItems().activeProjectileCount();
+                                return inputs.roomSession().playerItems().activeProjectileCount();
                             }
                         },
-                        c.link().equipment()::canUseItems));
+                        inputs.link().equipment()::canUseItems));
     }
 
-    static void magicPowder(EquipmentInputs c, ItemRegistry registry) {
+    static void magicPowder(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.MAGIC_POWDER.romValue(),
                 new MagicPowder(
-                        c.playerState(),
-                        c.gameplaySoundSink(),
+                        inputs.playerState(),
+                        inputs.gameplaySoundSink(),
                         new MagicPowder.SprinkleTarget() {
                             @Override
                             public boolean sprinkleMagicPowder() {
-                                int romDirection = c.link().equipment().applyRomItemDirectionFromInput();
-                                return c.roomSession()
+                                int romDirection = inputs.link().equipment().applyRomItemDirectionFromInput();
+                                return inputs.roomSession()
                                         .playerItems()
                                         .sprinkleMagicPowder(
-                                                c.link().position().romEntityX(),
-                                                c.link().position().romEntityY(),
-                                                c.link().animation().romEntityZ(),
+                                                inputs.link().position().romEntityX(),
+                                                inputs.link().position().romEntityY(),
+                                                inputs.link().animation().romEntityZ(),
                                                 romDirection);
                             }
 
                             @Override
                             public void startMagicPowderAttackStep() {
 
-                                c.link().equipment().startRomMagicPowderAttackStep();
+                                inputs.link().equipment().startRomMagicPowderAttackStep();
                             }
 
                             @Override
                             public boolean magicPowderAttackStepActive() {
-                                return c.link().equipment().romAttackStepAnimationCountdown() != 0;
+                                return inputs.link().equipment().romAttackStepAnimationCountdown() != 0;
                             }
 
                             @Override
                             public int linkPositionZ() {
-                                return c.link().animation().romEntityZ();
+                                return inputs.link().animation().romEntityZ();
                             }
 
                             @Override
                             public void presentToadstool() {
-                                c.link().animation().presentToadstool();
+                                inputs.link().animation().presentToadstool();
                             }
                         },
-                        c.link().equipment()::canUseItems));
+                        inputs.link().equipment()::canUseItems));
     }
 
-    static void arrow(EquipmentInputs c, ItemRegistry registry) {
+    static void arrow(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.BOW.romValue(),
                 new Arrow(
-                        c.playerState(),
-                        c.gameplaySoundSink(),
+                        inputs.playerState(),
+                        inputs.gameplaySoundSink(),
                         new Arrow.ShootTarget() {
                             private boolean playWhooshForLastShot;
 
                             @Override
                             public boolean shootArrow() {
-                                ArrowShotResult result = c.roomSession()
+                                ArrowShotResult result = inputs.roomSession()
                                         .playerItems()
                                         .shootArrowResult(
-                                                c.link().position().romEntityX(),
-                                                c.link().position().romEntityY(),
-                                                c.link().animation().romEntityZ(),
-                                                c.link().equipment().applyRomItemDirectionFromInput(),
-                                                c.playerState()
+                                                inputs.link().position().romEntityX(),
+                                                inputs.link().position().romEntityY(),
+                                                inputs.link().animation().romEntityZ(),
+                                                inputs.link().equipment().applyRomItemDirectionFromInput(),
+                                                inputs.playerState()
                                                                 .equipmentLevels()
                                                                 .activePowerUp()
                                                         == PowerUp.PIECE_OF_POWER.romValue());
                                 playWhooshForLastShot = result.playWhoosh();
                                 if (result.spawned()) {
-                                    c.link().equipment().startRomItemAttackStep();
+                                    inputs.link().equipment().startRomItemAttackStep();
                                 }
                                 return result.spawned();
                             }
@@ -226,45 +228,45 @@ final class EquipmentWiring {
 
                             @Override
                             public int activeProjectileCount() {
-                                return c.roomSession().playerItems().activeProjectileCount();
+                                return inputs.roomSession().playerItems().activeProjectileCount();
                             }
                         },
-                        c.link().equipment()::canUseItems));
+                        inputs.link().equipment()::canUseItems));
     }
 
-    static void ocarina(EquipmentInputs c, ItemRegistry registry) {
+    static void ocarina(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.OCARINA.romValue(),
-                new Ocarina(c.playerState(), c.gameplaySoundSink(), new Ocarina.PlaybackTarget() {
+                new Ocarina(inputs.playerState(), inputs.gameplaySoundSink(), new Ocarina.PlaybackTarget() {
                     @Override
                     public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
-                        return c.roomSession().transitions().startOcarina(countdown, songFlags, selectedSong);
+                        return inputs.roomSession().transitions().startOcarina(countdown, songFlags, selectedSong);
                     }
 
                     @Override
                     public boolean ocarinaPlaying() {
-                        return c.roomSession().transitions().ocarinaPlaying();
+                        return inputs.roomSession().transitions().ocarinaPlaying();
                     }
 
                     @Override
                     public boolean canStartOcarina() {
-                        return c.link().equipment().canUseItems()
-                                && !c.link().airborne().isAirborne()
-                                && !c.roomSession().playerItems().hookshotActive();
+                        return inputs.link().equipment().canUseItems()
+                                && !inputs.link().airborne().isAirborne()
+                                && !inputs.roomSession().playerItems().hookshotActive();
                     }
 
                     @Override
                     public int ocarinaAnimationState() {
-                        return c.roomSession().transitions().ocarinaAnimationState();
+                        return inputs.roomSession().transitions().ocarinaAnimationState();
                     }
                 }));
     }
 
-    static void shovel(EquipmentInputs c, ItemRegistry registry) {
+    static void shovel(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.SHOVEL.romValue(),
                 new Shovel(
-                        c.gameplaySoundSink(),
+                        inputs.gameplaySoundSink(),
                         new Shovel.DigTarget() {
                             private int linkEntityX;
                             private int linkEntityY;
@@ -272,87 +274,87 @@ final class EquipmentWiring {
 
                             @Override
                             public Shovel.StartResult startShovel() {
-                                romDirection = c.link().equipment().applyRomItemDirectionFromInput();
-                                linkEntityX = c.link().position().romEntityX();
-                                linkEntityY = c.link().position().romEntityY();
-                                ShovelStartResult result = c.roomSession()
+                                romDirection = inputs.link().equipment().applyRomItemDirectionFromInput();
+                                linkEntityX = inputs.link().position().romEntityX();
+                                linkEntityY = inputs.link().position().romEntityY();
+                                ShovelStartResult result = inputs.roomSession()
                                         .playerItems()
                                         .startShovel(
                                                 linkEntityX,
                                                 linkEntityY,
                                                 romDirection,
-                                                c.link().airborne().isAirborne());
+                                                inputs.link().airborne().isAirborne());
                                 return new Shovel.StartResult(result.started(), result.poking());
                             }
 
                             @Override
                             public void advanceShovel(int timer) {
 
-                                c.roomSession()
+                                inputs.roomSession()
                                         .playerItems()
                                         .advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
                             }
 
                             @Override
                             public int shovelAnimationState(int javaDirection, int timer) {
-                                return c.roomSession()
+                                return inputs.roomSession()
                                         .playerItems()
                                         .shovelAnimationState(
                                                 linksawakening.state.Direction.fromJava(javaDirection), timer);
                             }
                         },
-                        c.link().equipment()::canUseItems));
+                        inputs.link().equipment()::canUseItems));
     }
 
-    static void hookshot(EquipmentInputs c, ItemRegistry registry) {
+    static void hookshot(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(InventoryItem.HOOKSHOT.romValue(), new Hookshot(new Hookshot.LaunchTarget() {
             @Override
             public boolean fireHookshot() {
-                return c.roomSession()
+                return inputs.roomSession()
                         .playerItems()
                         .fireHookshot(
-                                c.link().position().romEntityX(),
-                                c.link().position().romEntityY(),
-                                c.link().animation().romEntityZ(),
-                                Direction.fromJava(c.link().animation().direction())
+                                inputs.link().position().romEntityX(),
+                                inputs.link().position().romEntityY(),
+                                inputs.link().animation().romEntityZ(),
+                                Direction.fromJava(inputs.link().animation().direction())
                                         .romIndex(),
-                                c.link().airborne().isAirborne(),
-                                c.link().equipment().isRomLinkPushing());
+                                inputs.link().airborne().isAirborne(),
+                                inputs.link().equipment().isRomLinkPushing());
             }
 
             @Override
             public boolean hookshotActive() {
-                return c.roomSession().playerItems().hookshotActive();
+                return inputs.roomSession().playerItems().hookshotActive();
             }
         }));
     }
 
-    static void boomerang(EquipmentInputs c, ItemRegistry registry) {
+    static void boomerang(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.BOOMERANG.romValue(),
                 new Boomerang(
                         new Boomerang.LaunchTarget() {
                             @Override
                             public boolean fireBoomerang() {
-                                boolean spawned = c.roomSession()
+                                boolean spawned = inputs.roomSession()
                                         .playerItems()
                                         .fireBoomerang(
-                                                c.link().position().romEntityX(),
-                                                c.link().position().romEntityY(),
-                                                c.link().animation().romEntityZ(),
-                                                c.link().equipment().applyRomItemDirectionFromInput(),
-                                                c.link().controls().romPressedButtonsMask());
+                                                inputs.link().position().romEntityX(),
+                                                inputs.link().position().romEntityY(),
+                                                inputs.link().animation().romEntityZ(),
+                                                inputs.link().equipment().applyRomItemDirectionFromInput(),
+                                                inputs.link().controls().romPressedButtonsMask());
                                 if (spawned) {
-                                    c.link().equipment().startRomItemAttackStep();
+                                    inputs.link().equipment().startRomItemAttackStep();
                                 }
                                 return spawned;
                             }
 
                             @Override
                             public boolean boomerangActive() {
-                                return c.roomSession().playerItems().boomerangActive();
+                                return inputs.roomSession().playerItems().boomerangActive();
                             }
                         },
-                        c.link().equipment()::canUseItems));
+                        inputs.link().equipment()::canUseItems));
     }
 }

@@ -108,3 +108,32 @@ guards and a descriptive EquipmentInspection fixture for private timing checks;
 no production timer getter is necessary. World test regrouping belongs to the
 other engineers. Two new architecture tests protect explicit imports and the
 absence of runtime ForTest APIs; existing tests and assertions remain intact.
+
+## Readability review
+
+| Reviewed file | Decision/change |
+|---|---|
+| EntitySpriteRegistrationData | Keep ROM recipe constants with the selector; family method names replace cross-file forwarding. Preserve priority. |
+| SfxCpu | Name opcode dispatch bands; retain hex opcode labels as ISA encodings rather than inventing hundreds of constants. |
+| IntroSequence | Keep ordered IntroHandler transitions and early returns; state remains in actors/water/publication owners. |
+| FileMenuController | Retain FileSelectionHandler labels and separate editing state; no further file split. |
+| DialogController | Retain DialogDrawNextCharacterHandler sequencing; page/layout cache does not alter input edges. |
+| LinkStateMachine | Keep ApplyLinkMotionState dispatch order and ROM countdown comparisons. |
+| AudioBrowserFrame | Keep Swing event wiring together; named handlers describe user actions and no game-ROM label applies to the host UI. |
+| LinkAnimator | Preserve UpdateLinkAnimation label and explicit pose precedence. |
+| EntitySpriteHandlerCatalog | Keep decoding dispatch separate from immutable recipes; named entity constants preserve ROM IDs. |
+| Sword | Keep CheckItemsToUse/UpdateLinkAnimation provenance and attack/charge ownership. |
+| EntitySpritePainter | Keep shape expansion order and OAM origin constants; no arbitrary line split. |
+| LinkMotion | Retain BackgroundCollisionHandler provenance and ordered collision probes. |
+| InventoryMenu | Keep transition state separate from menu rendering, with copy-on-change context ownership. |
+| EquipmentWiring | Rename the opaque c parameter to inputs; clarify construction-only adapters and their dependencies. |
+| LinkEntityEffects | Name the entity-driven responsibilities and OAM coordinate origins. |
+| OverworldCollision | Preserve GetObjectPhysicsFlags provenance, aligned sample arithmetic and immutable retained samples. |
+| IntroFramePublisher | Keep delayed VBlank publication separate from actor simulation; owned snapshot copies remain intentional. |
+| GameFrameState | Retain immutable ownership boundary for captures; live rendering uses reusable inputs. |
+| OpenGlFramePresenter | Name vertex attributes, stride and texture offset; preserve the exact GL argument values. |
+| LinkAirborne | Preserve ApplyLinkGroundMotion provenance and integer/subpixel landing order. |
+
+Long declarations, imports and ROM table/string literals are not grounds for
+splitting a responsibility. Early exits remain where they preserve ordering;
+no broad control-flow rewrite was justified in the timing-sensitive handlers.
