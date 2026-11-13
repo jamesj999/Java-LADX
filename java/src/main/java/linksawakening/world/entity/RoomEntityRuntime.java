@@ -31,23 +31,21 @@ public final class RoomEntityRuntime
     final EntityRuntimeState entityState = new EntityRuntimeState();
     final EntityFrameExecution frameExecution = new EntityFrameExecution(this, null);
 
-    private final EntityPlayerCommands playerCommands =
-            new EntityPlayerCommands(EntityPlayerCommandsServices.bind(this));
+    private final EntityPlayerCommands playerCommands;
 
-    final EntityRoomInitialization roomInitialization =
-            new EntityRoomInitialization(EntityRoomInitializationServices.bind(this));
+    final EntityRoomInitialization roomInitialization;
     final EntitySlotProperties slotProperties = new EntitySlotProperties(EntitySlotPropertiesServices.bind(this));
     final EntityBackgroundMechanics backgroundMechanics =
             new EntityBackgroundMechanics(EntityBackgroundMechanicsServices.bind(this));
     final EntityBombInteractions bombInteractions =
             new EntityBombInteractions(EntityBombInteractionsServices.bind(this));
-    final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(EntitySlotLifecycleServices.bind(this));
-    final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(EntityEnemySpawnsServices.bind(this));
+    final EntitySlotLifecycle lifecycle;
+    final EntityEnemySpawns entityEnemySpawns;
     final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(EntityPlayerSpawnsServices.bind(this));
     private final EntityEffectConsumption effects;
     private final EntityRuntimeConfiguration entityRuntimeConfiguration;
     final EntityDebugConfiguration entityDebugConfiguration;
-    final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
+    final EntityHandlerRegistry entityHandlers;
     final EntityRewardController rewards = new EntityRewardController(EntityRewardControllerServices.bind(this));
     final EntityStoryController story = new EntityStoryController(EntityStoryControllerServices.bind(this));
     final SlimeEyeController slimeEye = new SlimeEyeController(SlimeEyeControllerServices.bind(this));
@@ -145,6 +143,49 @@ public final class RoomEntityRuntime
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.entityProperties = romTables == null ? null : romTables.entityPropertyTables();
+        this.lifecycle = new EntitySlotLifecycle(EntitySlotLifecycleServices.bind(this), entityProperties);
+        this.playerCommands = new EntityPlayerCommands(
+                bombInteractions,
+                entityState.combatTables,
+                entityState.events,
+                liftThrow,
+                entityState.motions,
+                entityState.physicsTables,
+                entityState.presentationState,
+                rewards,
+                inspection(),
+                slotProperties,
+                slots);
+        this.entityEnemySpawns = new EntityEnemySpawns(
+                spriteHandlers,
+                bombInteractions,
+                bossRewards,
+                entityState.combatTables,
+                entityState.events,
+                liftThrow,
+                entityState.motions,
+                entityState.physicsTables,
+                pickups,
+                slotProperties,
+                slots,
+                lifecycle);
+        this.roomInitialization = new EntityRoomInitialization(
+                warpState,
+                indoorRoom,
+                bombInteractions,
+                bossRewards,
+                entityState.combatTables,
+                liftThrow,
+                entityState.motions,
+                entityState.physicsTables,
+                pickups,
+                rewards,
+                slotProperties,
+                story,
+                genie,
+                slots,
+                lifecycle);
+        this.entityHandlers = roomInitialization.createEntityHandlers();
         slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
@@ -252,33 +293,11 @@ public final class RoomEntityRuntime
      * unloaded before calling this initialization hook.
      */
     boolean initializeBossBattle(RoomEntity entity) {
-        int options = entityState.physicsTables.readEntityOptions1Override(entity.slot()) >= 0
-                ? entityState.physicsTables.readEntityOptions1Override(entity.slot())
-                : entityProperties == null ? 0 : entityProperties.entityOptions1(entity.type());
-        return initializeBossBattle(entity, options);
-    }
-
-    private boolean initializeBossBattle(RoomEntity entity, int options) {
-        if ((options & 0x80) == 0) return true;
-        // $03:48BE-48C4 rejects an already defeated room boss.
-        if ((entityState.roomVariables.readEntityRoomStatus() & 0x30) != 0) {
-            lifecycle.disableEntityWithoutPersistence(entity.slot());
-            return false;
-        }
-        bossRewards.writeInBossBattle(true);
-        return true;
+        return lifecycle.initializeBossBattle(entity);
     }
 
     void initializeHealthGroup(int slot) {
-        // ConfigureEntityHealth, $03:489B-489F, before setting initial HP.
-        // Active spawns bypass the INIT dispatch; use their fresh ROM options,
-        // not an override remaining from the previous occupant of this slot.
-        if (slots[slot].status() == EntityStatus.ACTIVE) {
-            initializeBossBattle(
-                    slots[slot], entityProperties == null ? 0 : entityProperties.entityOptions1(slots[slot].type()));
-        }
-        entityState.combatTables.writeEnemyHealthGroup(
-                slot, enemyCombatTables == null ? 0 : enemyCombatTables.healthGroup(slots[slot].type()));
+        lifecycle.initializeHealthGroup(slot);
     }
 
     int contactDamage(int slot) {

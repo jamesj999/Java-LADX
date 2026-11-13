@@ -17,8 +17,47 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 public final class EntitySlotLifecycle {
     final EntitySlotLifecycleServices runtime;
 
-    EntitySlotLifecycle(EntitySlotLifecycleServices runtime) {
+    // Absent when a ROM-free runtime uses the documented default entity properties.
+    private final linksawakening.rom.EntityPropertyTables entityProperties;
+
+    EntitySlotLifecycle(EntitySlotLifecycleServices runtime, linksawakening.rom.EntityPropertyTables entityProperties) {
+        this.entityProperties = entityProperties;
         this.runtime = runtime;
+    }
+
+    boolean initializeBossBattle(RoomEntity entity) {
+        int options = runtime.physicsTables().readEntityOptions1Override(entity.slot()) >= 0
+                ? runtime.physicsTables().readEntityOptions1Override(entity.slot())
+                : entityProperties == null ? 0 : entityProperties.entityOptions1(entity.type());
+        return initializeBossBattle(entity, options);
+    }
+
+    private boolean initializeBossBattle(RoomEntity entity, int options) {
+        if ((options & 0x80) == 0) return true;
+        // $03:48BE-48C4 rejects an already defeated room boss.
+        if ((runtime.roomVariables().readEntityRoomStatus() & 0x30) != 0) {
+            disableEntityWithoutPersistence(entity.slot());
+            return false;
+        }
+        runtime.bossRewards().writeInBossBattle(true);
+        return true;
+    }
+
+    void initializeHealthGroup(int slot) {
+        // ConfigureEntityHealth, $03:489B-489F, before setting initial HP.
+        // Active spawns bypass the INIT dispatch; use their fresh ROM options,
+        // not an override remaining from the previous occupant of this slot.
+        if (runtime.slots()[slot].status() == EntityStatus.ACTIVE) {
+            initializeBossBattle(
+                    runtime.slots()[slot],
+                    entityProperties == null ? 0 : entityProperties.entityOptions1(runtime.slots()[slot].type()));
+        }
+        runtime.combatTables()
+                .writeEnemyHealthGroup(
+                        slot,
+                        runtime.enemyCombatTables() == null
+                                ? 0
+                                : runtime.enemyCombatTables().healthGroup(runtime.slots()[slot].type()));
     }
 
     public int transitionSequenceCounter() {

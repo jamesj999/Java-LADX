@@ -14,25 +14,25 @@ final class EntityPresentationRom {
 
     private EntityPresentationRom() {}
 
-    static void initialize(EntityRoomInitializationServices runtime, Rom romData) {
+    static void initialize(EntityRoomInitialization runtime, Rom romData) {
         if (romData != null) {
-            for (int i = 0; i < runtime.pickups().storageHeartPieceMeterPairs().length; i++)
-                runtime.pickups().writeHeartPieceMeterPairs(i, romData.u8(HEART_PIECE_VARIANTS.plus(i)));
-            for (int i = 0; i < runtime.rewards().storageInstrumentPaletteCycle().length; i++) {
+            for (int i = 0; i < runtime.pickups.storageHeartPieceMeterPairs().length; i++)
+                runtime.pickups.writeHeartPieceMeterPairs(i, romData.u8(HEART_PIECE_VARIANTS.plus(i)));
+            for (int i = 0; i < runtime.rewards.storageInstrumentPaletteCycle().length; i++) {
                 int rgb555 = romData.u16le(INSTRUMENT_PALETTE.plus(i * 2));
-                runtime.rewards().writeInstrumentPaletteCycle(i, linksawakening.rom.RomBank.decodeRgb555(rgb555));
+                runtime.rewards.writeInstrumentPaletteCycle(i, linksawakening.rom.RomBank.decodeRgb555(rgb555));
             }
-            for (int i = 0; i < runtime.rewards().storageInstrumentWarpSprites().length; i++) {
-                runtime.rewards().writeInstrumentWarpSprites(i, romData.u8(INSTRUMENT_WARP_SPRITES.plus(i)));
+            for (int i = 0; i < runtime.rewards.storageInstrumentWarpSprites().length; i++) {
+                runtime.rewards.writeInstrumentWarpSprites(i, romData.u8(INSTRUMENT_WARP_SPRITES.plus(i)));
             }
             // Eighteen fixed repeat commands, two rows per controller frame.
             // Shipped ROM symbols: Data_007_6493=$6493, Data_007_64F6=$64DB.
             for (int row = 0; row < 18; row++) {
                 int tile = romData.u8(HINT_TILES.plus(row * 4 + 3));
                 int attr = romData.u8(HINT_ATTRIBUTES.plus(row * 4 + 3));
-                java.util.Arrays.fill(runtime.rewards().storageInstrumentHintTiles(), row * 20, (row + 1) * 20, tile);
+                java.util.Arrays.fill(runtime.rewards.storageInstrumentHintTiles(), row * 20, (row + 1) * 20, tile);
                 java.util.Arrays.fill(
-                        runtime.rewards().storageInstrumentHintAttributes(), row * 20, (row + 1) * 20, attr);
+                        runtime.rewards.storageInstrumentHintAttributes(), row * 20, (row + 1) * 20, attr);
             }
         }
     }

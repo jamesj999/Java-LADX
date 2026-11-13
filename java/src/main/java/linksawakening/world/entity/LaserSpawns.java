@@ -10,8 +10,8 @@ import linksawakening.world.entity.motion.*;
 
 /** Source-ordered allocation and initialization for this spawn family. */
 final class LaserSpawns {
-    static void spawnLaserSensor(EntityEnemySpawnsServices runtime, RoomEntity parent) {
-        int freeSlot = runtime.findFreeEntitySlot();
+    static void spawnLaserSensor(EntityEnemySpawns runtime, RoomEntity parent) {
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -30,29 +30,27 @@ final class LaserSpawns {
                 parent.z(),
                 -1,
                 false);
-        runtime.slots()[freeSlot] = sensor;
-        runtime.initializeHealthGroup(freeSlot);
-        runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyHealth(freeSlot, 0);
-        runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.combatTables().writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables().writePowerRecoilDeath(freeSlot, false);
-        runtime.motions()
+        runtime.slots[freeSlot] = sensor;
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyHealth(freeSlot, 0);
+        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
+        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
+        runtime.motions
                 .get(LaserMotion.class, LaserMotion::new)
                 .initializeSensor(
                         freeSlot,
                         parent.slot(),
-                        runtime.motions()
-                                .get(LaserMotion.class, LaserMotion::new)
-                                .direction(parent.slot()));
-        runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+                        runtime.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()));
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
-    static boolean spawnLaserBeam(EntityEnemySpawnsServices runtime, RoomEntity parent) {
-        int freeSlot = runtime.findFreeEntitySlot();
+    static boolean spawnLaserBeam(EntityEnemySpawns runtime, RoomEntity parent) {
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return false;
         }
@@ -71,30 +69,24 @@ final class LaserSpawns {
                 parent.z(),
                 -1,
                 false);
-        runtime.slots()[freeSlot] = beam;
-        runtime.initializeHealthGroup(freeSlot);
-        runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyHealth(freeSlot, 0);
-        runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.combatTables().writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables().writePowerRecoilDeath(freeSlot, false);
-        runtime.motions()
+        runtime.slots[freeSlot] = beam;
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyHealth(freeSlot, 0);
+        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
+        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
+        runtime.motions
                 .get(LaserMotion.class, LaserMotion::new)
                 .initializeBeam(
                         freeSlot,
-                        runtime.motions()
-                                .get(LaserMotion.class, LaserMotion::new)
-                                .direction(parent.slot()),
-                        runtime.motions()
-                                .get(LaserMotion.class, LaserMotion::new)
-                                .speedX(parent.slot()),
-                        runtime.motions()
-                                .get(LaserMotion.class, LaserMotion::new)
-                                .speedY(parent.slot()));
-        runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+                        runtime.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()),
+                        runtime.motions.get(LaserMotion.class, LaserMotion::new).speedX(parent.slot()),
+                        runtime.motions.get(LaserMotion.class, LaserMotion::new).speedY(parent.slot()));
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return true;
     }
 }
