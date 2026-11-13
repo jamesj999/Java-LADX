@@ -1,7 +1,6 @@
 package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_POKEY;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
@@ -82,11 +81,12 @@ final class PokeyHandler {
                 if (pokeyUpdate.segmentSpawn() != null) {
                     state.enemySpawns().spawnPokeySegment(pokeyUpdate.segmentSpawn());
                 }
-                if (state.sprites() != null) {
-                    slotState.updated(withDefinition(
-                            slotState.updated(),
-                            state.spriteViews().forPokeyState(pokeyUpdate.renderInertia()),
-                            slotState.updated().spriteVariant()));
+                {
+                    slotState.updated(state.sprites()
+                            .present(
+                                    slotState.updated(),
+                                    state.spriteViews().forPokeyState(pokeyUpdate.renderInertia()),
+                                    slotState.updated().spriteVariant()));
                 }
             }
             presentationFlags.preservePokeyPresentation(true);

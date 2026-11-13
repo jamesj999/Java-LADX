@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOLDORM;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -118,7 +117,6 @@ final class MoldormHandler {
         }
 
         private int slot;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction moldormBackgroundInteraction;
         private int transitionForMotion;
         // Absent before initialization or while this reusable execution scratch is inactive.
@@ -142,22 +140,25 @@ final class MoldormHandler {
             if (!timerGates.handlerInteractive()
                     || timerGates.countdownBlocksInteraction()
                     || slotState.moldormIntroOpenedThisFrame()) {
-                if (state.sprites() != null) {
-                    state.replaceEntity(withDefinition(
-                            slotState.entity(),
-                            state.sprites()
-                                    .forMoldormState(
-                                            state.motion(MoldormMotion.class, MoldormMotion::new)
-                                                    .headSpriteVariant(slot),
-                                            slotState.entity().x(),
-                                            (slotState.entity().y()
-                                                            - slotState.entity().z())
-                                                    & 0xFF,
-                                            state.motion(MoldormMotion.class, MoldormMotion::new)
-                                                    .currentTailSegments(slot),
-                                            0,
-                                            frameInput.frame()),
-                            0));
+                {
+                    state.replaceEntity(state.sprites()
+                            .present(
+                                    slotState.entity(),
+                                    state.sprites()
+                                            .forMoldormState(
+                                                    state.motion(MoldormMotion.class, MoldormMotion::new)
+                                                            .headSpriteVariant(slot),
+                                                    slotState.entity().x(),
+                                                    (slotState.entity().y()
+                                                                    - slotState
+                                                                            .entity()
+                                                                            .z())
+                                                            & 0xFF,
+                                                    state.motion(MoldormMotion.class, MoldormMotion::new)
+                                                            .currentTailSegments(slot),
+                                                    0,
+                                                    frameInput.frame()),
+                                    0));
                 }
                 if (state.roomInspection().roomTransitionActive())
                     state.motion(MoldormMotion.class, MoldormMotion::new).resetHistory(slot);
@@ -165,10 +166,8 @@ final class MoldormHandler {
                 completedResult = false;
                 return false;
             }
-            moldormBackgroundInteraction = state.background().interaction();
-            if (moldormBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                moldormBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            moldormBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
                 // Common countdowns have already ticked before dispatch;
@@ -196,23 +195,26 @@ final class MoldormHandler {
                 state.emit(new EntityCombatEvent(
                         slot, slotState.entity().type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1B));
             }
-            if (state.sprites() != null) {
+            {
                 MoldormMotion.Presentation presentation = moldormUpdate.presentation();
-                slotState.updated(withDefinition(
-                        slotState.updated(),
-                        state.sprites()
-                                .forMoldormPresentation(
-                                        presentation.headSpriteVariant(),
-                                        presentation.headX(),
-                                        presentation.headY(),
-                                        slotState.updated().x(),
-                                        (slotState.updated().y()
-                                                        - slotState.updated().z())
-                                                & 0xFF,
-                                        presentation.segments(),
-                                        0,
-                                        frameInput.frame()),
-                        0));
+                slotState.updated(state.sprites()
+                        .present(
+                                slotState.updated(),
+                                state.sprites()
+                                        .forMoldormPresentation(
+                                                presentation.headSpriteVariant(),
+                                                presentation.headX(),
+                                                presentation.headY(),
+                                                slotState.updated().x(),
+                                                (slotState.updated().y()
+                                                                - slotState
+                                                                        .updated()
+                                                                        .z())
+                                                        & 0xFF,
+                                                presentation.segments(),
+                                                0,
+                                                frameInput.frame()),
+                                0));
             }
             state.slot().setPhysicsFlags(slot, 0x02);
             presentationFlags.preserveMoldormPresentation(true);

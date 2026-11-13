@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -89,12 +88,14 @@ final class RollingBonesBarHandler {
             RollingBonesMotion.BarUpdate barUpdate = state.motion(RollingBonesMotion.class, RollingBonesMotion::new)
                     .advanceBar(slotState.entity(), frameInput.frame(), frameInput.backgroundCollision());
             slotState.updated(barUpdate.entity());
-            if (state.sprites() != null) {
-                slotState.updated(withDefinition(
-                        slotState.updated(),
-                        state.sprites()
-                                .forRollingBonesBar(0, slotState.updated().y(), barUpdate.animationVariant()),
-                        0));
+            {
+                slotState.updated(state.sprites()
+                        .present(
+                                slotState.updated(),
+                                state.sprites()
+                                        .forRollingBonesBar(
+                                                0, slotState.updated().y(), barUpdate.animationVariant()),
+                                0));
             }
             presentationFlags.preserveRollingBonesPresentation(true);
             if (barUpdate.rollingSound()) {

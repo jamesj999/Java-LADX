@@ -1,21 +1,38 @@
 package linksawakening.world.entity;
 
+import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
 /** GetRandomByte source and frame latch shared by entity ticks and sword responses. */
 final class EntityFrameRandom {
-    // An absent configured source selects the room-owned ROM-compatible fallback.
-    private final IntSupplier configured;
-    private final RomRandomByteSource fallback;
+    /** Spawn operations that historically required an explicitly configured room RNG. */
+    static final IntSupplier REQUIRED_SOURCE = () -> {
+        throw new IllegalStateException("Shovel drops require a ROM random-byte supplier");
+    };
+
+    private static final IntConsumer EXTERNALLY_CLOCKED = frame -> {};
+    private final IntSupplier source;
+    private final IntSupplier spawnSource;
+    private final IntConsumer beginFrame;
 
     EntityFrameRandom(IntSupplier configured) {
-        this.configured = configured;
-        this.fallback = new RomRandomByteSource();
+        if (configured == null) {
+            RomRandomByteSource fallback = new RomRandomByteSource();
+            source = fallback;
+            spawnSource = REQUIRED_SOURCE;
+            beginFrame = frame -> fallback.beginFrame(frame & 0xFF, 0);
+        } else {
+            source = spawnSource = configured;
+            beginFrame = EXTERNALLY_CLOCKED;
+        }
+    }
+
+    IntSupplier spawnSource() {
+        return spawnSource;
     }
 
     IntSupplier forFrame(int frameCounter) {
-        if (configured != null) return configured;
-        fallback.beginFrame(frameCounter & 0xFF, 0);
-        return fallback;
+        beginFrame.accept(frameCounter);
+        return source;
     }
 }

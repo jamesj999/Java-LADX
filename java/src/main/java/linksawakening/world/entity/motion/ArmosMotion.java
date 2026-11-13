@@ -40,7 +40,14 @@ public final class ArmosMotion {
 
     public Update advance(
             RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier) {
-        return advance(entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, null, 0);
+        return advance(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0);
     }
 
     public Update advance(
@@ -49,9 +56,9 @@ public final class ArmosMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advance(
                 entity,
                 frameCounter,
@@ -70,9 +77,9 @@ public final class ArmosMotion {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             boolean linkCollisionAllowed,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -89,7 +96,7 @@ public final class ArmosMotion {
         boolean linkFinalPositionCopyRequested = linkCollision && state[slot] < 2;
 
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-        if (nextX != x && backgroundInteraction != null) {
+        if (nextX != x) {
             EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                     entity, horizontalDirection(speedX[slot]), nextX, y, ignoreHitsCountdown, frameCounter);
             if (result.blocked()) {
@@ -99,7 +106,7 @@ public final class ArmosMotion {
         x = nextX;
 
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (nextY != y && backgroundInteraction != null) {
+        if (nextY != y) {
             EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                     entity, verticalDirection(speedY[slot]), x, nextY, ignoreHitsCountdown, frameCounter);
             if (result.blocked()) {

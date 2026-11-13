@@ -87,14 +87,11 @@ public final class DogMotion {
         return direction[slot] == 0 ? animation + 2 : animation;
     }
 
-    PositionAndCollision moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int slot) {
+    PositionAndCollision moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
-        if (interaction != null && x != entity.x()) {
+        if (x != entity.x()) {
             int direction = signedByte(speedX[slot]) < 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
@@ -104,7 +101,7 @@ public final class DogMotion {
                 x = entity.x() & 0xFF;
             }
         }
-        if (interaction != null && y != entity.y()) {
+        if (y != entity.y()) {
             int direction = signedByte(speedY[slot]) < 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;
@@ -284,8 +281,11 @@ public final class DogMotion {
             boolean actionButtonAHeld,
             boolean dialogActive,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
-            RoomEntityBackgroundInteraction backgroundInteraction) {}
+            RoomEntityBackgroundInteraction backgroundInteraction) {
+        public DogFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 
     static final class DogStep {
         private final DogMotion owner;
@@ -302,7 +302,6 @@ public final class DogMotion {
         private boolean actionButtonAHeld;
         private boolean dialogActive;
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int countdown;

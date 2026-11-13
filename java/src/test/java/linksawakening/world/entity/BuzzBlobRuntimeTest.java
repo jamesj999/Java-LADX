@@ -87,14 +87,16 @@ final class BuzzBlobRuntimeTest {
                 .spriteDefinition(definition)
                 .build();
 
-        BuzzBlobMotion.Update first = motion.advance(buzzBlob, 0, 0x00, () -> 0x03, null);
+        BuzzBlobMotion.Update first = motion.advance(
+                buzzBlob, 0, 0x00, () -> 0x03, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0, first.state());
         assertEquals(0x33, first.transitionCountdown());
         assertEquals(0x04, first.speedX());
         assertEquals(0x04, first.speedY());
         assertEquals(0, first.entity().spriteVariant());
 
-        BuzzBlobMotion.Update animated = motion.advance(first.entity(), 0x08, 0x32, () -> 0, null);
+        BuzzBlobMotion.Update animated = motion.advance(
+                first.entity(), 0x08, 0x32, () -> 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(1, animated.entity().spriteVariant());
         assertEquals(0x40, animated.entity().x());
         assertEquals(0x40, animated.entity().y());
@@ -102,7 +104,12 @@ final class BuzzBlobRuntimeTest {
 
         BuzzBlobMotion.Update afterFiveFrames = animated;
         for (int frame = 2; frame <= 5; frame++) {
-            afterFiveFrames = motion.advance(afterFiveFrames.entity(), frame * 8, 0x33 - frame, () -> 0, null);
+            afterFiveFrames = motion.advance(
+                    afterFiveFrames.entity(),
+                    frame * 8,
+                    0x33 - frame,
+                    () -> 0,
+                    linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         }
         assertEquals(0x41, afterFiveFrames.entity().x());
         assertEquals(0x41, afterFiveFrames.entity().y());
@@ -152,12 +159,18 @@ final class BuzzBlobRuntimeTest {
                 .spriteDefinition(definition)
                 .build();
 
-        BuzzBlobMotion.Update animated = motion.advance(buzzBlob, 0, 0x04, () -> 0, null);
+        BuzzBlobMotion.Update animated = motion.advance(
+                buzzBlob, 0, 0x04, () -> 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(1, animated.state());
         assertEquals(3, animated.entity().spriteVariant());
         assertFalse(animated.appliesBackgroundInteraction());
 
-        BuzzBlobMotion.Update expired = motion.advance(animated.entity(), 0x08, 0x00, () -> 0, null);
+        BuzzBlobMotion.Update expired = motion.advance(
+                animated.entity(),
+                0x08,
+                0x00,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0, expired.state());
         assertEquals(3, expired.entity().spriteVariant());
         assertFalse(expired.appliesBackgroundInteraction());
@@ -190,7 +203,7 @@ final class BuzzBlobRuntimeTest {
                 0x40,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(
                         0x40, 0x40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
@@ -221,7 +234,7 @@ final class BuzzBlobRuntimeTest {
                 0x40,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(
                         0x40, 0x40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 

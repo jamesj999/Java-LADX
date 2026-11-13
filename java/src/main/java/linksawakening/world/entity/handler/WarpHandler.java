@@ -26,7 +26,7 @@ final class WarpHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE
                 && state.roomInspection().indoorRoom()
-                && state.warpMotion() != null) {
+                && state.warpMotion().available()) {
             int slot = slotState.entity().slot();
             state.replaceEntity(withPositionAndVariant(
                     slotState.entity(),

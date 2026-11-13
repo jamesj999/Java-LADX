@@ -41,7 +41,8 @@ final class PlayerProjectileLaunchSpeedTest {
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x00))
                 .spriteVariant(direction)
                 .build();
-        RoomEntity movedArrow = arrow.advance(entity, null).entity();
+        RoomEntity movedArrow = arrow.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
         RoomEntity movedFireball = fireball.advancePosition(entity);
         assertEquals(0x40 + ((byte) expectedX >> 4), movedArrow.x());
         assertEquals(0x50 + ((byte) expectedY >> 4), movedArrow.y());

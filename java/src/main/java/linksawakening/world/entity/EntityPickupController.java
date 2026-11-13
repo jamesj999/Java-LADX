@@ -31,9 +31,14 @@ public final class EntityPickupController {
     private final RoomEntityRuntime.CommonDroppableUpdate[] commonUpdates =
             new RoomEntityRuntime.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
 
+    {
+        java.util.Arrays.fill(
+                commonUpdates, new RoomEntityRuntime.CommonDroppableUpdate(RoomEntity.disabled(0), false));
+    }
+
     RoomEntityRuntime.CommonDroppableUpdate commonUpdate(RoomEntity entity, boolean hidden) {
         var previous = commonUpdates[entity.slot()];
-        if (previous == null || previous.entity() != entity || previous.hidden() != hidden) {
+        if (previous.entity() != entity || previous.hidden() != hidden) {
             previous = new RoomEntityRuntime.CommonDroppableUpdate(entity, hidden);
             commonUpdates[entity.slot()] = previous;
         }
@@ -54,8 +59,7 @@ public final class EntityPickupController {
     final EntitySlotProperties slotProperties;
     final EntityStoryState story;
     final RoomEntity[] slots;
-    // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.world.room.ChestContentsTable chestContentsTable;
+    final EntityChestContents chestContentsTable;
 
     EntityPickupController(
             EntityPickupState state,
@@ -72,9 +76,7 @@ public final class EntityPickupController {
             EntitySlotProperties slotProperties,
             EntityStoryState story,
             RoomEntity[] slots,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .room.ChestContentsTable
-                    chestContentsTable) {
+            EntityChestContents chestContentsTable) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -89,7 +91,7 @@ public final class EntityPickupController {
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
         this.story = java.util.Objects.requireNonNull(story, "story");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.chestContentsTable = chestContentsTable;
+        this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
     }
 
     void initializeCommonDroppable(RoomEntity entity) {
@@ -116,6 +118,7 @@ public final class EntityPickupController {
 
     public CommonDroppableUpdate advanceCommonDroppable(
             RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityObjectSample objectUnderEntity) {
+        objectUnderEntity = RoomEntityObjectSample.orAbsent(objectUnderEntity);
         return this.droppablePickupFrameStep.run(entity, linkEntityX, linkEntityY, objectUnderEntity);
     }
 
@@ -307,7 +310,7 @@ public final class EntityPickupController {
         if (inertia == 0x10) {
             this.state.writeChestSpeedY(slot, 0);
         }
-        if (inertia == 0x08 && this.chestContentsTable != null) {
+        if (inertia == 0x08) {
             int soundValue = this.chestContentsTable.presentationSoundValue(itemType);
             if (soundValue == EntityRomConstants.CHEST_TREASURE_JINGLE_ID) {
                 this.events.pendingEntityEvents.add(new EntityCombatEvent(
@@ -321,10 +324,8 @@ public final class EntityPickupController {
                 this.presentationState.writePendingMusicTrack(soundValue);
             }
         }
-        if (inertia == 0x26 && this.chestContentsTable != null) {
-            int roomId = this.presentationState.readSpriteSelection() == null
-                    ? -1
-                    : this.presentationState.readSpriteSelection().roomId();
+        if (inertia == 0x26) {
+            int roomId = this.presentationState.readSpriteSelection().roomId();
             int dialogLow = this.chestContentsTable.dialogLowIdFor(
                     itemType,
                     this.state.readChestShieldLevel(),
@@ -333,7 +334,8 @@ public final class EntityPickupController {
                     this.roomVariables.readEntityMapId() < 0 ? 0 : this.roomVariables.readEntityMapId(),
                     roomId < 0 ? 0 : roomId);
             int tableId = itemType == ChestContentsTable.CHEST_MESSAGE && roomId == 0x96 ? 1 : 0;
-            this.events.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
+            if (dialogLow != EntityChestContents.NO_DIALOG)
+                this.events.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
         }
         if (inertia == 0x28) {
             this.lifecycle.clearEntity(slot);
@@ -497,7 +499,7 @@ public final class EntityPickupController {
     }
 
     public boolean hasHeartPiecePickup(int slot) {
-        return state.readHeartPiecePickup(slot) != null;
+        return state.readHeartPiecePickup(slot).started();
     }
 
     final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep(this);
@@ -529,7 +531,7 @@ public final class EntityPickupController {
                     // short grass or a shovel hole; the remaining shared drops
                     // require the shovel-hole path and set privateState4 first.
                     if (!owner.indoorRoom) {
-                        int objectId = objectUnderEntity == null ? 0xFF : objectUnderEntity.objectId() & 0xFF;
+                        int objectId = !objectUnderEntity.sampled() ? 0xFF : objectUnderEntity.objectId() & 0xFF;
                         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_HEART) {
                             reveal = objectId == EntityRomConstants.DROPPABLE_OBJECT_SHORT_GRASS
                                     || objectId == EntityRomConstants.DROPPABLE_OBJECT_SHOVEL_HOLE;

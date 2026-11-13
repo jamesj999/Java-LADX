@@ -103,9 +103,8 @@ public final class EnemyRecoilMotion {
     }
 
     /** Applies one ROM fixed-point recoil step and returns a new entity value. */
-    public Update advance(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, backgroundCollision, true);
     }
 
@@ -115,9 +114,8 @@ public final class EnemyRecoilMotion {
      * not, so its handler uses {@code clearOnBlocked == false}.
      */
     public Update advance(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision,
-            boolean clearOnBlocked) {
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean clearOnBlocked) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!active[slot]) {
             return new Update(entity, false);
@@ -126,7 +124,7 @@ public final class EnemyRecoilMotion {
         int x = addSpeedToPosition(entity.x(), recoilSpeedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), recoilSpeedY[slot], speedYAccumulator, slot);
         boolean blocked = false;
-        if (backgroundCollision != null) {
+        {
             if (x != entity.x()
                     && backgroundCollision.blocks(entity, horizontalDirection(recoilSpeedX[slot]), x, entity.y())) {
                 x = entity.x();

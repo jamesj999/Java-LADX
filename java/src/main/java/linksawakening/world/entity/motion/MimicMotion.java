@@ -38,8 +38,8 @@ public final class MimicMotion {
             int frameCounter,
             int pressedButtonsMask,
             int collisionType,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advance(entity, frameCounter, pressedButtonsMask, collisionType, backgroundInteraction, 0, frameCounter);
     }
 
@@ -48,10 +48,10 @@ public final class MimicMotion {
             int frameCounter,
             int pressedButtonsMask,
             int collisionType,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int currentFrame) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         int slot = entity.slot();
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
@@ -60,10 +60,9 @@ public final class MimicMotion {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         if (nextX != x) {
             int direction = horizontalDirection(speedX[slot]);
-            if (backgroundInteraction != null
-                    && backgroundInteraction
-                            .probe(entity, direction, nextX, y, ignoreHitsCountdown, currentFrame)
-                            .blocked()) {
+            if (backgroundInteraction
+                    .probe(entity, direction, nextX, y, ignoreHitsCountdown, currentFrame)
+                    .blocked()) {
                 blocked = true;
             } else {
                 x = nextX;
@@ -73,10 +72,9 @@ public final class MimicMotion {
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         if (nextY != y) {
             int direction = verticalDirection(speedY[slot]);
-            if (backgroundInteraction != null
-                    && backgroundInteraction
-                            .probe(entity, direction, x, nextY, ignoreHitsCountdown, currentFrame)
-                            .blocked()) {
+            if (backgroundInteraction
+                    .probe(entity, direction, x, nextY, ignoreHitsCountdown, currentFrame)
+                    .blocked()) {
                 blocked = true;
             } else {
                 y = nextY;

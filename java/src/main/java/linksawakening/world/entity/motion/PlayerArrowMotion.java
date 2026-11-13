@@ -60,31 +60,30 @@ public final class PlayerArrowMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, backgroundCollision, 0, 0, false);
     }
 
     public Update advance(
             RoomEntity entity,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             int frameCounter,
             int groundStatus,
             boolean sideScrolling) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, backgroundCollision, frameCounter, groundStatus, sideScrolling, true, true);
     }
 
     public Update advance(
             RoomEntity entity,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             int frameCounter,
             int groundStatus,
             boolean sideScrolling,
             boolean handlerInteractive,
             boolean timersInteractive) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         validateSlot(entity.slot());
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -119,17 +118,13 @@ public final class PlayerArrowMotion {
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         boolean collidedWithWall = collision[slot];
-        if (backgroundCollision != null
-                && x != entity.x()
-                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
+        if (x != entity.x() && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
             x = entity.x();
             collidedWithWall = true;
         }
 
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null
-                && y != entity.y()
-                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
+        if (y != entity.y() && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
             y = entity.y();
             collidedWithWall = true;
         }

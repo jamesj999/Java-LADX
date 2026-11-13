@@ -16,7 +16,11 @@ public final class MadBomberMotion {
     public record BombSpawn(int x, int y, int z, int speedX, int speedY, int speedZ, int transitionCountdown) {}
 
     public record Update(
-            RoomEntity entity, int transitionCountdown, int spriteVariant, BombSpawn bombSpawn, boolean playJingle) {}
+            RoomEntity entity,
+            int transitionCountdown,
+            int spriteVariant, /* Optional emitted bomb; absent when this visit does not spawn one. */
+            BombSpawn bombSpawn,
+            boolean playJingle) {}
 
     public void initialize(int slot) {
         state[slot] = 0;

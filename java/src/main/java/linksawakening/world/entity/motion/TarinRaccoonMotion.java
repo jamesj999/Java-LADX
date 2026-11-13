@@ -140,10 +140,8 @@ public final class TarinRaccoonMotion {
         return TarinRaccoonMotion.advanceBody(this, source, input);
     }
 
-    public Update advance(
-            RoomEntity source,
-            Input input, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(RoomEntity source, Input input, RoomEntityBackgroundInteraction backgroundInteraction) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return TarinRaccoonMotion.advanceBody(this, source, input, backgroundInteraction);
     }
 
@@ -157,14 +155,11 @@ public final class TarinRaccoonMotion {
         }
     }
 
-    Movement moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int slot) {
+    Movement moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = TarinRaccoonMotion.addSpeedToPosition(entity.x(), this.speedX[slot], this.accumulatorX, slot);
         int y = TarinRaccoonMotion.addSpeedToPosition(entity.y(), this.speedY[slot], this.accumulatorY, slot);
         int flags = 0;
-        if (interaction != null && x != entity.x()) {
+        if (x != entity.x()) {
             int direction = TarinRaccoonMotion.signedByte(this.speedX[slot]) < 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
@@ -174,7 +169,7 @@ public final class TarinRaccoonMotion {
                 x = entity.x();
             }
         }
-        if (interaction != null && y != entity.y()) {
+        if (y != entity.y()) {
             int direction = TarinRaccoonMotion.signedByte(this.speedY[slot]) < 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;
@@ -284,15 +279,14 @@ public final class TarinRaccoonMotion {
 
     static TarinRaccoonMotion.Update advanceBody(
             TarinRaccoonMotion owner, RoomEntity source, TarinRaccoonMotion.Input input) {
-        return owner.advance(source, input, null);
+        return owner.advance(source, input, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
     }
 
     static TarinRaccoonMotion.Update advanceBody(
             TarinRaccoonMotion owner,
             RoomEntity source,
             TarinRaccoonMotion.Input input,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         return owner.tarinRaccoonStep.run(source, input, backgroundInteraction);
     }
 
@@ -302,7 +296,6 @@ public final class TarinRaccoonMotion {
         private linksawakening.world.entity.RoomEntity source;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.TarinRaccoonMotion.Input input;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int slowCountdown;
@@ -527,9 +520,7 @@ public final class TarinRaccoonMotion {
         linksawakening.world.entity.motion.TarinRaccoonMotion.Update run(
                 linksawakening.world.entity.RoomEntity source,
                 linksawakening.world.entity.motion.TarinRaccoonMotion.Input input,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundInteraction
-                        backgroundInteraction) {
+                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
             if (inUse) {
                 return new TarinRaccoonStep(owner).run(source, input, backgroundInteraction);
             }

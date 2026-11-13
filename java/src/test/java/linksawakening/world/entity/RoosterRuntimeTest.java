@@ -33,7 +33,7 @@ final class RoosterRuntimeTest {
                 0x40,
                 0x50,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false)));
 
         RoomEntity rooster = runtime.inspection().snapshot().slots().get(0);

@@ -31,7 +31,7 @@ final class ArrowPauseTest {
             assertEquals(before.z(), paused.z());
             assertEquals(0, countdown(runtime, type));
             setGate(runtime, gate, false);
-            tick(runtime, 1, null);
+            tick(runtime, 1, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             assertEquals(
                     before.x() + (type == 0 ? 3 : 2),
                     runtime.inspection().snapshot().slots().get(slot).x());
@@ -48,7 +48,7 @@ final class ArrowPauseTest {
             int slot = slot(type);
             RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
             setGate(runtime, gate, true);
-            tick(runtime, 1, null);
+            tick(runtime, 1, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             RoomEntity paused = runtime.inspection().snapshot().slots().get(slot);
             assertEquals(before.x(), paused.x());
             assertEquals(before.y(), paused.y());
@@ -56,7 +56,7 @@ final class ArrowPauseTest {
             assertEquals(gate.equals("got_item") ? 0x17 : 0x18, countdown(runtime, type));
             assertTrue(runtime.consumePendingEntityEvents().isEmpty());
             setGate(runtime, gate, false);
-            tick(runtime, 2, null);
+            tick(runtime, 2, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             assertEquals(gate.equals("got_item") ? 0x16 : 0x17, countdown(runtime, type));
             assertEquals(
                     (before.z() + 1) & 0xFF,
@@ -71,7 +71,7 @@ final class ArrowPauseTest {
         tick(runtime, 0, (entity, direction, x, y) -> true);
         RoomEntity before = runtime.inspection().snapshot().slots().get(slot(type));
         EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
-        tick(runtime, 1, null);
+        tick(runtime, 1, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0x18, countdown(runtime, type));
         assertEquals(
                 before.z() + 1,
@@ -89,7 +89,7 @@ final class ArrowPauseTest {
                 0x40,
                 0x50,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.getFirst().kind());
@@ -97,7 +97,7 @@ final class ArrowPauseTest {
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).x());
 
         runtime.configuration().setDialogActive(false);
-        tick(runtime, 1, null);
+        tick(runtime, 1, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0x18, countdown(runtime, type));
         assertEquals(0x42, runtime.inspection().snapshot().slots().get(0).x());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -110,17 +110,17 @@ final class ArrowPauseTest {
         RoomEntityRuntime runtime = runtime(type);
         tick(runtime, 0, (entity, direction, x, y) -> true);
         for (int frame = 1; frame <= 22; frame++) {
-            tick(runtime, frame, null);
+            tick(runtime, frame, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         }
         assertEquals(2, countdown(runtime, type));
         EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(true);
-        tick(runtime, 23, null);
+        tick(runtime, 23, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(1, countdown(runtime, type));
         assertTrue(runtime.inspection().snapshot().slots().get(slot(type)).loaded());
 
         EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(false);
         EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
-        tick(runtime, 24, null);
+        tick(runtime, 24, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertFalse(runtime.inspection().snapshot().slots().get(slot(type)).loaded());
     }
 
@@ -129,11 +129,11 @@ final class ArrowPauseTest {
     void pausedReboundRendersTheStoredSpinFrameWithoutAdvancingIt(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type);
         tick(runtime, 0, (entity, direction, x, y) -> true);
-        tick(runtime, 1, null);
+        tick(runtime, 1, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0, runtime.inspection().snapshot().slots().get(slot(type)).spriteVariant());
         runtime.configuration().setDialogActive(true);
         for (int frame = 2; frame <= 10; frame++) {
-            tick(runtime, frame, null);
+            tick(runtime, frame, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             assertEquals(
                     1, runtime.inspection().snapshot().slots().get(slot(type)).spriteVariant());
             assertEquals(0x17, countdown(runtime, type));

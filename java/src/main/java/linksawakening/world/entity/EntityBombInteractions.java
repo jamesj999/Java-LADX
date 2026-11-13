@@ -23,8 +23,7 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 /** ROM bomb explosion, damage and delayed presentation ordering. */
 public final class EntityBombInteractions {
     final EntityBombState state;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -33,16 +32,13 @@ public final class EntityBombInteractions {
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntitySlotProperties slotProperties;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final EntitySlotLifecycle lifecycle;
 
     EntityBombInteractions(
             EntityBombState state,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -51,12 +47,11 @@ public final class EntityBombInteractions {
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntitySlotProperties slotProperties,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -65,7 +60,7 @@ public final class EntityBombInteractions {
         this.motions = java.util.Objects.requireNonNull(motions, "motions");
         this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
     }
@@ -89,8 +84,8 @@ public final class EntityBombInteractions {
     void markArrowAsBombArrow(int slot) {
         state.writePlayerArrowBombArrow(slot, true);
         RoomEntity arrow = this.slots[slot];
-        if (this.spriteHandlers != null && arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
-            this.slots[slot] = withDefinition(
+        if (arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
+            this.slots[slot] = this.spriteHandlers.present(
                     arrow,
                     this.slotProperties.spriteViews().forBombArrow(),
                     this.motions
@@ -134,12 +129,8 @@ public final class EntityBombInteractions {
         EntitySpriteDefinition definition =
                 switch (decision.phase()) {
                     case NORMAL -> this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB);
-                    case WARNING -> this.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : this.slotProperties.spriteViews().forBombRightBeforeExploding();
-                    case EXPLOSION -> this.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : this.slotProperties.spriteViews().forBombExplosion();
+                    case WARNING -> this.slotProperties.spriteViews().forBombRightBeforeExploding();
+                    case EXPLOSION -> this.slotProperties.spriteViews().forBombExplosion();
                 };
         int variant = decision.explosionVariant().orElse(0);
         RoomEntity updated = withDefinition(entity, definition, variant);
@@ -227,10 +218,8 @@ public final class EntityBombInteractions {
         }
 
         boolean collisionProtected = projectileLinkState.invincibilityCounter() != 0;
-        int linkDamage = runtime.enemyCombatTables == null
-                ? 0x08
-                : runtime.enemyCombatTables.contactDamageForGroup(
-                        runtime.combatTables.readEnemyHealthGroup(bomb.slot()));
+        int linkDamage = runtime.enemyCombatTables.contactDamage(
+                EntityRomConstants.ENTITY_BOMB, runtime.combatTables.readEnemyHealthGroup(bomb.slot()));
         EnemyRecoilMotion.Vector linkResponse = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 bomb.x(), bomb.y(), bomb.z(), linkEntityX, linkEntityY, 0x14);
         projectileEvents.add(new EntityProjectileEvent(
@@ -253,14 +242,11 @@ public final class EntityBombInteractions {
     void applyBombDamage(RoomEntity bomb, RoomEntity target) {
         var runtime = this;
         int targetSlot = target.slot();
-        RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables == null
-                ? null
-                : runtime.enemyCombatTables.resolveAttackDamage(
-                        target.type(),
-                        runtime.combatTables.readEnemyHealthGroup(target.slot()),
-                        EntityRomConstants.DAMAGE_TYPE_BOMB);
-        int rawDamage =
-                damageResult == null ? RoomEntityCombatRules.basicSwordDamage(target.type()) : damageResult.rawValue();
+        RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables.resolveAttackDamage(
+                target.type(),
+                runtime.combatTables.readEnemyHealthGroup(target.slot()),
+                EntityRomConstants.DAMAGE_TYPE_BOMB);
+        int rawDamage = damageResult.rawValue();
 
         if (rawDamage != 0) {
             int enemyDamage = rawDamage < 0xF0 ? rawDamage : 0;
@@ -326,9 +312,7 @@ public final class EntityBombInteractions {
     }
 
     public RoomEntity applyBombStunnedPostActiveWork(
-            RoomEntity stunned, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision,
-            int frame) {
+            RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         var runtime = this;
         int slot = stunned.slot();
         RoomEntity moved = stunned;

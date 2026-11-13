@@ -35,8 +35,8 @@ public final class LeeverMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return leeverFrameStep.run(
                 entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
@@ -136,7 +136,6 @@ public final class LeeverMotion {
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
@@ -161,7 +160,7 @@ public final class LeeverMotion {
 
             // ApplyEntityInteractionWithBackground restores blocked coordinates
             // before the Leever state handler; it does not reverse ordinary speed.
-            if (backgroundCollision != null) {
+            {
                 if (x != entity.x()
                         && backgroundCollision.blocks(entity, LeeverMotion.directionForX(owner.speedX[slot]), x, y)) {
                     x = entity.x();
@@ -266,9 +265,7 @@ public final class LeeverMotion {
                 int linkEntityX,
                 int linkEntityY,
                 java.util.function.IntSupplier randomByteSupplier,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundCollision
-                        backgroundCollision) {
+                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
             if (inUse) {
                 return new LeeverFrameStep(owner)
                         .run(entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);

@@ -8,20 +8,19 @@ import linksawakening.world.room.ChestContentsTable;
 
 /** Named runtime construction inputs. Validation occurs after all inputs are supplied. */
 public final class RoomEntityRuntimeBuilder {
-    // Absent before initialization or while this reusable execution scratch is inactive.
-    private RoomEntitySnapshot initial;
+    // Builder input; validated or resolved to an explicit source by build().
+    private final RoomEntitySnapshot initial;
     private boolean indoorRoom;
-    // Absent before initialization or while this reusable execution scratch is inactive.
+    // Builder input; validated or resolved to an explicit source by build().
     private IntSupplier randomByteSupplier;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
+    // Omitted builder input; build() selects the ROM-free policy.
     private EntitySpriteHandlerCatalog spriteHandlers;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private RomEnemyCombatTables enemyCombatTables;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
+    // Omitted builder input; build() selects the ROM-free policy.
     private ChestContentsTable chestContentsTable;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
+    // Omitted builder input; build() selects the ROM-free policy.
     private RomTables romTables;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
+    // Omitted builder input; build() selects the ROM-free policy.
     private Rom romData;
     private boolean enemyCombatTablesSupplied;
     private boolean chestContentsTableSupplied;
@@ -54,8 +53,8 @@ public final class RoomEntityRuntimeBuilder {
         return this;
     }
 
-    EntitySpriteHandlerCatalog spriteHandlers() {
-        return spriteHandlers;
+    EntitySpriteViews spriteHandlers() {
+        return new EntitySpriteViews(spriteHandlers);
     }
 
     public RoomEntityRuntimeBuilder spriteHandlers(
@@ -66,19 +65,17 @@ public final class RoomEntityRuntimeBuilder {
     }
 
     RomEnemyCombatTables enemyCombatTables() {
-        return enemyCombatTables;
+        return java.util.Objects.requireNonNullElse(enemyCombatTables, RomEnemyCombatTables.DEFAULTS);
     }
 
-    public RoomEntityRuntimeBuilder enemyCombatTables(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    value) {
+    public RoomEntityRuntimeBuilder enemyCombatTables(RomEnemyCombatTables value) {
         enemyCombatTables = value;
         enemyCombatTablesSupplied = true;
         return this;
     }
 
-    ChestContentsTable chestContentsTable() {
-        return chestContentsTable;
+    EntityChestContents chestContentsTable() {
+        return EntityChestContents.from(chestContentsTable);
     }
 
     public RoomEntityRuntimeBuilder chestContentsTable(
@@ -98,6 +95,14 @@ public final class RoomEntityRuntimeBuilder {
         romTables = value;
         romTablesSupplied = true;
         return this;
+    }
+
+    boolean hasRom() {
+        return romDataSupplied;
+    }
+
+    java.util.function.IntUnaryOperator entityOptionsLookup() {
+        return romTablesSupplied ? romTables.entityPropertyTables()::entityOptions1 : ignored -> 0;
     }
 
     Rom rom() {

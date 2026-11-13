@@ -46,34 +46,54 @@ final class EntityAllocationSemanticsTest {
         RoomEntity second = entity(1, 0x0B);
         RoamingEnemyMotion actual = new RoamingEnemyMotion();
         RoamingEnemyMotion expected = new RoamingEnemyMotion();
-        RoomEntity expectedOuter = expected.advance(first, 32, 32, () -> 36, null);
-        RoomEntity expectedInner = expected.advance(second, 48, 24, () -> 36, null);
+        RoomEntity expectedOuter = expected.advance(
+                first, 32, 32, () -> 36, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        RoomEntity expectedInner = expected.advance(
+                second, 48, 24, () -> 36, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         RoomEntity[] nested = new RoomEntity[1];
         RoomEntity actualOuter = actual.advance(
                 first,
                 32,
                 32,
                 () -> {
-                    if (nested[0] == null) nested[0] = actual.advance(second, 48, 24, () -> 36, null);
+                    if (nested[0] == null)
+                        nested[0] = actual.advance(
+                                second,
+                                48,
+                                24,
+                                () -> 36,
+                                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
                     return 36;
                 },
-                null);
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(expectedOuter, actualOuter);
         assertEquals(expectedInner, nested[0]);
         assertEquals(
-                expected.advance(actualOuter, 32, 32, () -> 36, null),
-                actual.advance(actualOuter, 32, 32, () -> 36, null));
+                expected.advance(
+                        actualOuter, 32, 32, () -> 36, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN),
+                actual.advance(
+                        actualOuter, 32, 32, () -> 36, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
     }
 
     @Test
     void retainedMoldormSegmentsRemainImmutableAcrossLaterTicks() {
         MoldormMotion motion = new MoldormMotion();
         RoomEntity entity = entity(0, EntityRomConstants.ENTITY_MOLDORM);
-        var first = motion.advance(entity, 0, 0, 0, 0, 5, () -> 36, null);
+        var first = motion.advance(
+                entity, 0, 0, 0, 0, 5, () -> 36, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         var retained = first.segments();
         var values = java.util.List.copyOf(retained);
         for (int frame = 1; frame < 80; frame++) {
-            entity = motion.advance(entity, frame, 0, 0, 0, 5, () -> 36, null).entity();
+            entity = motion.advance(
+                            entity,
+                            frame,
+                            0,
+                            0,
+                            0,
+                            5,
+                            () -> 36,
+                            linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE)
+                    .entity();
         }
         assertEquals(values, retained);
         assertThrows(UnsupportedOperationException.class, () -> retained.set(0, values.get(1)));

@@ -115,7 +115,11 @@ public final class LaserMotion {
     }
 
     public SensorUpdate advanceSensor(
-            RoomEntity sensor, RoomEntity parent, int linkX, int linkY, int invincibilityCounter) {
+            RoomEntity sensor, /* Optional parent; absence retires the sensor after its initialization step. */
+            RoomEntity parent,
+            int linkX,
+            int linkY,
+            int invincibilityCounter) {
         int slot = sensor.slot();
         if (!isSensor(slot)) {
             initializeSensor(slot, parent == null ? 0 : parent.slot(), 0);
@@ -149,24 +153,19 @@ public final class LaserMotion {
         return new SensorUpdate(withPosition(sensor, x, y), false, false);
     }
 
-    public BeamUpdate advanceBeam(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public BeamUpdate advanceBeam(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!isBeam(slot)) {
             initializeBeam(slot, 0, 0, 0);
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
-        if (backgroundCollision != null
-                && x != entity.x()
-                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
+        if (x != entity.x() && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
             return new BeamUpdate(entity, true);
         }
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null
-                && y != entity.y()
-                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
+        if (y != entity.y() && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
             return new BeamUpdate(entity, true);
         }
         return new BeamUpdate(withPosition(entity, x, y), false);

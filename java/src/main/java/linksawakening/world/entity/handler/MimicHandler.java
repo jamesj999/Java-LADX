@@ -23,11 +23,8 @@ final class MimicHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction mimicBackgroundInteraction =
-                    state.background().interaction();
-            if (mimicBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                mimicBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction mimicBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             MimicMotion.Update mimicUpdate = state.motion(MimicMotion.class, MimicMotion::new)
                     .advance(
                             slotState.entity(),

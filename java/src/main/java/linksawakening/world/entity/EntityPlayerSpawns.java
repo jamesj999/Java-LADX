@@ -1,6 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import linksawakening.entity.EntitySpriteDefinition;
@@ -24,7 +23,7 @@ public final class EntityPlayerSpawns {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final java.util.function.IntSupplier defaultRandomByteSupplier;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombInteractions bombInteractions;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
@@ -42,7 +41,7 @@ public final class EntityPlayerSpawns {
     final EntitySlotProperties slotProperties;
     final RoomEntity[] slots;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final linksawakening.world.room.ChestContentsTable chestContentsTable;
+    final EntityChestContents chestContentsTable;
     final EntityPlayerCommands playerCommands;
 
     EntityPlayerSpawns(
@@ -50,9 +49,7 @@ public final class EntityPlayerSpawns {
             /* Optional RNG override; null selects the room-owned ROM-compatible source. */ java.util.function
                             .IntSupplier
                     defaultRandomByteSupplier,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombInteractions bombInteractions,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
@@ -69,13 +66,12 @@ public final class EntityPlayerSpawns {
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             RoomEntity[] slots,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .room.ChestContentsTable
-                    chestContentsTable,
+            EntityChestContents chestContentsTable,
             EntityPlayerCommands playerCommands) {
         this.indoorRoom = indoorRoom;
-        this.defaultRandomByteSupplier = defaultRandomByteSupplier;
-        this.spriteHandlers = spriteHandlers;
+        this.defaultRandomByteSupplier =
+                java.util.Objects.requireNonNull(defaultRandomByteSupplier, "randomByteSupplier");
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
@@ -92,7 +88,7 @@ public final class EntityPlayerSpawns {
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.chestContentsTable = chestContentsTable;
+        this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
         this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
@@ -693,9 +689,6 @@ public final class EntityPlayerSpawns {
     }
 
     int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY, boolean allowDrop) {
-        if (this.defaultRandomByteSupplier == null) {
-            throw new IllegalStateException("Shovel drops require a ROM random-byte supplier");
-        }
         if ((this.defaultRandomByteSupplier.getAsInt() & 0x07) != 0 || !allowDrop) {
             return -1;
         }
@@ -757,9 +750,7 @@ public final class EntityPlayerSpawns {
     }
 
     int spawnChestWithItem(int objectLeft, int objectTop, int itemType) {
-        if (this.chestContentsTable == null) {
-            throw new IllegalStateException("ROM chest contents table is not configured");
-        }
+        this.chestContentsTable.requireSpawnTable();
         EntitySlotValidation.validateByte(objectLeft, "Chest object left");
         EntitySlotValidation.validateByte(objectTop, "Chest object top");
         if (itemType < 0 || itemType > ChestContentsTable.CHEST_ZOL) {
@@ -822,7 +813,6 @@ public final class EntityPlayerSpawns {
         EntitySpriteDefinition definition =
                 runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
         boolean swampLeaves = !runtime.indoorRoom
-                && runtime.presentationState.readSpriteSelection() != null
                 && runtime.presentationState.readSpriteSelection().roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
                 && runtime.presentationState.readSpriteSelection().roomId() == 0x32;
         int variant = definition.supported()
@@ -937,8 +927,8 @@ public final class EntityPlayerSpawns {
             }
             runtime.bombInteractions.state.writeLatestDroppedBombEntityIndex(-1);
             runtime.bombInteractions.state.writePlayerArrowBombArrow(freeSlot, true);
-            if (runtime.spriteHandlers != null) {
-                runtime.slots[freeSlot] = withDefinition(
+            {
+                runtime.slots[freeSlot] = runtime.spriteHandlers.present(
                         runtime.slots[freeSlot],
                         runtime.slotProperties.spriteViews().forBombArrow(),
                         romDirection);

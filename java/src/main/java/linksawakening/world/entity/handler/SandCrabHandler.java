@@ -30,11 +30,8 @@ final class SandCrabHandler {
                 && !frameInput.creditsGameplay()
                 && timerGates.handlerLinkCollisionEnabled()) {
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction sandCrabBackgroundInteraction =
-                    state.background().interaction();
-            if (sandCrabBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                sandCrabBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction sandCrabBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             SandCrabMotion.Update sandCrabUpdate = state.motion(SandCrabMotion.class, SandCrabMotion::new)
                     .advance(
                             slotState.updated(),

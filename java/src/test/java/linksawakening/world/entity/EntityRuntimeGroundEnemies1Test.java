@@ -675,7 +675,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 // The statue uses CheckLinkCollisionWithEnemy.collisionEvenInTheAir;
                 // Link's Z must not suppress this collision.
                 new EnemyProjectileCollision.LinkState(64, 64, 0x10, 0, 0, false)));

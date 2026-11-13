@@ -112,11 +112,12 @@ public final class EnemyDropMotion {
     public RoomEntity resolveWalls(
             RoomEntity before,
             RoomEntity moved,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    background,
+            RoomEntityBackgroundInteraction background,
             int ignoreHitsCountdown,
             int frameCounter) {
-        if (background == null) return moved;
+        background = RoomEntityBackgroundInteraction.orNone(background);
+        {
+        }
         int slot = moved.slot();
         int x = moved.x();
         int y = moved.y();

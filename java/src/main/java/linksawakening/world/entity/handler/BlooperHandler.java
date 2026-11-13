@@ -30,11 +30,8 @@ final class BlooperHandler {
                 && !slotState.wasInitializing()
                 && timerGates.handlerLinkCollisionEnabled()) {
 
-            RoomEntityBackgroundInteraction blooperBackgroundInteraction =
-                    state.background().interaction();
-            if (blooperBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                blooperBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction blooperBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             BlooperMotion.Movement movement = state.motion(BlooperMotion.class, BlooperMotion::new)
                     .move(
                             slotState.entity(),

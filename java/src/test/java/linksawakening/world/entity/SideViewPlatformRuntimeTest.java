@@ -87,7 +87,7 @@ final class SideViewPlatformRuntimeTest {
                 0x48,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x48, 0x40, 1, 0, 3, false),
                 0x00,
                 0x00));
@@ -112,8 +112,16 @@ final class SideViewPlatformRuntimeTest {
     void nonInteractiveSkipsContact() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         EnemyProjectileCollision.LinkState nonInteractive = EnemyProjectileCollision.LinkState.nonInteractive();
-        runtime.tick(
-                EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null, nonInteractive, 0x00, 0x00));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                0,
+                0x48,
+                0x40,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                nonInteractive,
+                0x00,
+                0x00));
 
         assertTrue(runtime.consumePendingSideViewPlatformLinkRequests().isEmpty());
     }
@@ -291,7 +299,7 @@ final class SideViewPlatformRuntimeTest {
                 linkX,
                 linkY,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 3, false),
                 speedX,
                 speedY));

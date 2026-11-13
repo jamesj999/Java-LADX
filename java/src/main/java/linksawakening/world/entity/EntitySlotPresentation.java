@@ -6,6 +6,7 @@ import linksawakening.world.entity.motion.PincerMotion;
 
 /** Shared slotProperties slot state, independent of behavior dispatch and construction order. */
 final class EntitySlotPresentation {
+    private final List<PincerBodyOam.Entry> pincerEntries = new ArrayList<>();
     private final EntitySpriteViews spriteViews;
 
     EntitySlotPresentation(EntitySpriteViews spriteViews) {
@@ -80,12 +81,12 @@ final class EntitySlotPresentation {
     }
 
     void updatePincerBodyOam(RoomEntity[] slots, EntityMotionRegistry motions) {
-        List<PincerBodyOam.Entry> entries = null;
+        List<PincerBodyOam.Entry> entries = pincerEntries;
+        entries.clear();
         for (RoomEntity entity : slots) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
                 continue;
             }
-            if (entries == null) entries = new ArrayList<>();
             entries.addAll(PincerBodyOam.entries(
                     entity.slot(),
                     motions.get(PincerMotion.class, PincerMotion::new).holeX(entity.slot()),
@@ -94,6 +95,6 @@ final class EntitySlotPresentation {
                     entity.y(),
                     motions.get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
         }
-        writePincerBodyOam(entries == null ? List.of() : List.copyOf(entries));
+        writePincerBodyOam(List.copyOf(entries));
     }
 }

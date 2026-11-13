@@ -51,7 +51,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                     0x40,
                     0x50,
                     () -> 0,
-                    null,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
 
             assertEquals(1, events.size());

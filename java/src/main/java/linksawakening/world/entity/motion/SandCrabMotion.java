@@ -42,8 +42,8 @@ public final class SandCrabMotion {
             int frameCounter,
             int transitionCountdown,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         checkType(entity);
         validateByte(transitionCountdown, "Sand Crab transition countdown");
         Objects.requireNonNull(randomByteSupplier, "Sand Crab random-byte supplier");
@@ -82,14 +82,12 @@ public final class SandCrabMotion {
     }
 
     private PositionAndCollision moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int slot) {
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
 
-        if (interaction != null && x != entity.x()) {
+        if (x != entity.x()) {
             int direction = signedByte(speedX[slot]) < 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
@@ -99,7 +97,7 @@ public final class SandCrabMotion {
                 x = entity.x() & 0xFF;
             }
         }
-        if (interaction != null && y != entity.y()) {
+        if (y != entity.y()) {
             int direction = signedByte(speedY[slot]) < 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;

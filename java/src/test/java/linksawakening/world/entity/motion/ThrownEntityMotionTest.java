@@ -44,14 +44,17 @@ final class ThrownEntityMotionTest {
         motion.start(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT, 0x05, false);
         RoomEntity entity = entity(0, 0x05, 0x20, 0x30, 0x10);
 
-        RoomEntity updated = motion.advance(entity, false, null).entity();
+        RoomEntity updated = motion.advance(
+                        entity, false, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
         assertEquals(0x23, updated.x());
         assertEquals(0x30, updated.y());
         assertEquals(0x10, updated.z());
         assertEquals(0x02, motion.speedZ(0));
 
         for (int frame = 1; frame < 8; frame++) {
-            updated = motion.advance(updated, false, null).entity();
+            updated = motion.advance(updated, false, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                    .entity();
         }
         assertEquals(0x38, updated.x());
     }
@@ -73,8 +76,11 @@ final class ThrownEntityMotionTest {
     void topViewLandingBouncesAndHalvesHorizontalSpeed() {
         ThrownEntityMotion motion = new ThrownEntityMotion();
         motion.startEnemyBomb(0, 0x18, 0xE8, 0xE0);
-        RoomEntity landed =
-                motion.advance(entity(0, 2, 0x40, 0x50, 1), false, null).entity();
+        RoomEntity landed = motion.advance(
+                        entity(0, 2, 0x40, 0x50, 1),
+                        false,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
         assertEquals(0, landed.z());
         // $60FB: SRA then CPL of the post-gravity speed $DE.
         assertEquals(0x10, motion.speedZ(0));
@@ -87,7 +93,12 @@ final class ThrownEntityMotionTest {
         for (int groundStatus : new int[] {0, 2}) {
             ThrownEntityMotion motion = new ThrownEntityMotion();
             motion.startEnemyBomb(0, 0x18, 0xE8, groundStatus == 0 ? 0xFE : 0xE0);
-            RoomEntity landed = motion.advance(entity(0, 2, 0x40, 0x50, 0), false, null, 0, groundStatus)
+            RoomEntity landed = motion.advance(
+                            entity(0, 2, 0x40, 0x50, 0),
+                            false,
+                            linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                            0,
+                            groundStatus)
                     .entity();
             assertEquals(0, landed.z());
             assertEquals(0, motion.speedX(0));
@@ -102,7 +113,9 @@ final class ThrownEntityMotionTest {
         motion.start(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT, 0x05, true);
         RoomEntity thrown = entity(0, 5, 0x20, 0x50, 0);
         for (int frame = 0; frame < 32; frame++) {
-            thrown = motion.advance(thrown, true, null, frame, 0).entity();
+            thrown = motion.advance(
+                            thrown, true, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, frame, 0)
+                    .entity();
         }
         assertEquals(0x34, motion.speedY(0));
         assertEquals(0x76, thrown.y());

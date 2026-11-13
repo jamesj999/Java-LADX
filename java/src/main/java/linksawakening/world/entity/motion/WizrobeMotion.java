@@ -113,7 +113,10 @@ public final class WizrobeMotion {
     public record ProjectileSpawn(int x, int y, int direction) {}
 
     public record Update(
-            RoomEntity entity, int transitionCountdown, int physicsFlags, ProjectileSpawn projectileSpawn) {}
+            RoomEntity entity,
+            int transitionCountdown,
+            int physicsFlags, /* Optional emitted projectile; absent when this visit does not fire. */
+            ProjectileSpawn projectileSpawn) {}
 
     final WizrobeFrameStep wizrobeFrameStep = new WizrobeFrameStep(this);
 
@@ -133,7 +136,9 @@ public final class WizrobeMotion {
         private int countdown;
         private int physicsFlags;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.WizrobeMotion.ProjectileSpawn projectileSpawn;
+        /* Optional emitted projectile; absent when this visit does not fire. */ private linksawakening.world.entity
+                        .motion.WizrobeMotion.ProjectileSpawn
+                projectileSpawn;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
 

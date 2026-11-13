@@ -37,8 +37,7 @@ import linksawakening.world.room.ChestContentsTable;
 public final class EntityRewardController {
     final EntityRewardState state;
     final EntityMotionRegistry motions;
-    // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
     final EntityLinkState linkState;
@@ -57,9 +56,7 @@ public final class EntityRewardController {
     EntityRewardController(
             EntityRewardState state,
             EntityMotionRegistry motions,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
@@ -78,7 +75,7 @@ public final class EntityRewardController {
 
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
         this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
@@ -118,7 +115,7 @@ public final class EntityRewardController {
 
     void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) {
         int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
-        if (freeSlot < 0 || this.spriteHandlers == null) {
+        if (freeSlot < 0 || !this.spriteHandlers.supportsPresentation()) {
             return;
         }
         int[] xOffsets = {0x0A, -0x06};
@@ -248,7 +245,7 @@ public final class EntityRewardController {
                 || state.readInstrumentParticleKind(slot) != 0
                 || state.readInstrumentPickupState(slot) >= 3
                 || this.roomVariables.readTransitionSequenceCounter() != 4
-                || this.presentationState.readSpriteSelection() == null) return;
+                || !this.presentationState.hasSpriteSelection()) return;
         int[][] palettes = this.presentationState.readSpriteSelection().objectPalettes();
         int offset = ((frame >> 1) & 0x3C) / 2;
         palettes[1][2] = state.readInstrumentPaletteCycle(offset);
@@ -455,7 +452,8 @@ public final class EntityRewardController {
                     || entity.status() != EntityStatus.ACTIVE
                     || !RoomEntityPickupRules.isPickable(entity.type())
                     || (floatingType && !floating)
-                    || (entity.type() == 0x35 && owner.pickups.readHeartPiecePickup(entity.slot()) != null)
+                    || (entity.type() == 0x35
+                            && owner.pickups.readHeartPiecePickup(entity.slot()).started())
                     || owner.state.readPowerUpPickupCountdown(entity.slot()) != 0
                     || owner.bossRewards.readDropPrivateCountdown1(entity.slot()) > 0
                     || (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER

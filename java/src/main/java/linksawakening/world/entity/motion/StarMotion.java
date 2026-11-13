@@ -31,9 +31,9 @@ public final class StarMotion {
             RoomEntity entity,
             int frameCounter,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, randomByteSupplier);
@@ -43,7 +43,7 @@ public final class StarMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         boolean horizontalCollision = false;
         boolean verticalCollision = false;
-        if (backgroundInteraction != null) {
+        {
             if (x != entity.x()) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                         entity,

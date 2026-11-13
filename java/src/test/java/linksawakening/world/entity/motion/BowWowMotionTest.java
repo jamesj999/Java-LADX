@@ -31,7 +31,16 @@ final class BowWowMotionTest {
         BowWowMotion motion = new BowWowMotion();
         RoomEntity entity = bowWowEntity(0, 40, 40, 0);
         entity = motion.advanceAfterTimers(new BowWowCollisionFrame(
-                        entity, 0, 100, 48, 0, () -> 0, null, List.of(entity), type -> false, 0))
+                        entity,
+                        0,
+                        100,
+                        48,
+                        0,
+                        () -> 0,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                        List.of(entity),
+                        type -> false,
+                        0))
                 .entity();
         motion.advanceAfterTimers(new BowWowCollisionFrame(
                 entity,
@@ -42,7 +51,7 @@ final class BowWowMotionTest {
                 () -> {
                     throw new AssertionError("The home lunge does not sample RNG");
                 },
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 List.of(entity),
                 type -> false,
                 0));
@@ -67,7 +76,7 @@ final class BowWowMotionTest {
                         () -> {
                             throw new AssertionError("Setup must not sample RNG");
                         },
-                        null,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                         List.of(initial),
                         type -> true,
                         0x80))
@@ -83,7 +92,7 @@ final class BowWowMotionTest {
                 () -> {
                     throw new AssertionError("Kidnapped BowWow must not scan targets");
                 },
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 List.of(setup),
                 type -> true,
                 0x80));
@@ -98,12 +107,21 @@ final class BowWowMotionTest {
     void targetScanSkipsItsOwnSlotAndContinuesToTheEnd(int random, int bowWowSlot, int targetSlot) {
         BowWowMotion motion = new BowWowMotion();
         RoomEntity bowWow = bowWowEntity(bowWowSlot, 0x40, 0x50, 0);
-        RoomEntity current = motion.advance(bowWow, 0, 0x44, 0x58, 0, () -> random, null);
+        RoomEntity current = motion.advance(
+                bowWow, 0, 0x44, 0x58, 0, () -> random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         List<RoomEntity> slots = emptySlots();
         slots.set(bowWowSlot, current);
         slots.set(targetSlot, targetEntity(targetSlot, 0x54, 0x58));
-        BowWowMotion.Update update = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(current, 1, 0x44, 0x58, 0, () -> random, null, slots, type -> true));
+        BowWowMotion.Update update = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                current,
+                1,
+                0x44,
+                0x58,
+                0,
+                () -> random,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> true));
         assertEquals(targetSlot, update.targetSlot());
         assertEquals(4, motion.activeState(bowWowSlot));
     }
@@ -114,8 +132,16 @@ final class BowWowMotionTest {
         BowWowMotion motion = new BowWowMotion();
         List<RoomEntity> slots = emptySlots();
         RoomEntity current = acquireTarget(motion, slots, 0x44 + targetDx, 0x58 + targetDy);
-        BowWowMotion.Update update = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(current, 2, 0x44 + linkDx, 0x58 + linkDy, 0, () -> 0, null, slots, type -> true));
+        BowWowMotion.Update update = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                current,
+                2,
+                0x44 + linkDx,
+                0x58 + linkDy,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> true));
         assertEquals(3, motion.activeState(5));
         assertEquals(0x10, motion.transitionCountdown(5));
         assertEquals(0, motion.speedX(5));
@@ -131,8 +157,16 @@ final class BowWowMotionTest {
         List<RoomEntity> slots = emptySlots();
         RoomEntity current = acquireTarget(motion, slots, 0x74, 0x58);
         slots.set(6, targetEntity(6, 0x44 + targetDx, 0x58 + targetDy));
-        BowWowMotion.Update update = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(current, 2, 0x44, 0x58, 0, () -> 0, null, slots, type -> true));
+        BowWowMotion.Update update = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                current,
+                2,
+                0x44,
+                0x58,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> true));
         assertEquals(0x47, update.entity().x());
         assertEquals(1, update.entity().z());
         if (bite) {
@@ -146,27 +180,65 @@ final class BowWowMotionTest {
     void acquiredLungeUsesTheHeightAfterGravityHasRun() {
         BowWowMotion motion = new BowWowMotion();
         List<RoomEntity> slots = emptySlots();
-        RoomEntity current = motion.advance(bowWowEntity(5, 0x40, 0x50, 8), 0, 0x64, 0x58, 0, () -> 0, null);
-        current = motion.advanceWithTargetScan(
-                        new BowWowTargetFrame(current, 1, 0x64, 0x58, 0, () -> 0, null, slots, type -> true))
+        RoomEntity current = motion.advance(
+                bowWowEntity(5, 0x40, 0x50, 8),
+                0,
+                0x64,
+                0x58,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        current = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                        current,
+                        1,
+                        0x64,
+                        0x58,
+                        0,
+                        () -> 0,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                        slots,
+                        type -> true))
                 .entity();
         assertEquals(8, current.z());
         motion.setTransitionCountdown(5, 1);
         slots.set(5, current);
         slots.set(6, targetEntity(6, 0x64, 0x58));
-        BowWowMotion.Update acquired = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(current, 2, 0x64, 0x58, 0, () -> 0, null, slots, type -> true));
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                current,
+                2,
+                0x64,
+                0x58,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> true));
         assertEquals(7, acquired.entity().z());
         assertEquals(0x30, motion.speedX(5));
         assertEquals(0x0A, motion.speedY(5));
     }
 
     private static RoomEntity acquireTarget(BowWowMotion motion, List<RoomEntity> slots, int targetX, int targetY) {
-        RoomEntity current = motion.advance(bowWowEntity(5, 0x40, 0x50, 0), 0, targetX, targetY, 0, () -> 0, null);
+        RoomEntity current = motion.advance(
+                bowWowEntity(5, 0x40, 0x50, 0),
+                0,
+                targetX,
+                targetY,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         slots.set(5, current);
         slots.set(6, targetEntity(6, targetX, targetY));
-        BowWowMotion.Update acquired = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(current, 1, targetX, targetY, 0, () -> 0, null, slots, type -> true));
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                current,
+                1,
+                targetX,
+                targetY,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> true));
         assertEquals(4, motion.activeState(5));
         return acquired.entity();
     }
@@ -210,7 +282,8 @@ final class BowWowMotionTest {
                 .build();
         BowWowMotion motion = new BowWowMotion();
 
-        RoomEntity result = motion.advance(entity, 0, 0x60, 0x70, 0x00, () -> 0, null);
+        RoomEntity result = motion.advance(
+                entity, 0, 0x60, 0x70, 0x00, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(0x44, result.x());
         assertEquals(0x58, result.y());
@@ -232,9 +305,12 @@ final class BowWowMotionTest {
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0x00, 0x00, 0x00);
 
-        entity = motion.advance(entity, 0, 0x60, 0x70, 0x00, random, null);
-        entity = motion.advance(entity, 1, 0x60, 0x70, 0x08, random, null);
-        entity = motion.advance(entity, 2, 0x60, 0x70, 0x08, random, null);
+        entity = motion.advance(
+                entity, 0, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        entity = motion.advance(
+                entity, 1, 0x60, 0x70, 0x08, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        entity = motion.advance(
+                entity, 2, 0x60, 0x70, 0x08, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(0x60, motion.targetX(0));
         assertEquals(0x68, motion.targetY(0));
@@ -255,18 +331,23 @@ final class BowWowMotionTest {
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0x00, 0x00, 0x00);
 
-        entity = motion.advance(entity, 0, 0x60, 0x70, 0x00, random, null);
-        entity = motion.advance(entity, 1, 0x60, 0x70, 0x00, random, null);
-        entity = motion.advance(entity, 2, 0x60, 0x70, 0x00, random, null);
+        entity = motion.advance(
+                entity, 0, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        entity = motion.advance(
+                entity, 1, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        entity = motion.advance(
+                entity, 2, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         int beforeMovementX = entity.x();
         int beforeMovementY = entity.y();
-        entity = motion.advance(entity, 3, 0x60, 0x70, 0x00, random, null);
+        entity = motion.advance(
+                entity, 3, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(beforeMovementX, entity.x());
         assertEquals(beforeMovementY - 1, entity.y());
 
         int beforeFarTargetX = entity.x();
-        entity = motion.advance(entity, 4, 0xE0, 0x70, 0x00, random, null);
+        entity = motion.advance(
+                entity, 4, 0xE0, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(beforeFarTargetX, entity.x());
     }
 
@@ -321,11 +402,20 @@ final class BowWowMotionTest {
                         .build());
 
         BowWowMotion motion = new BowWowMotion();
-        RoomEntity initialized = motion.advance(bowWow, 0, 0x00, 0x00, 0x00, () -> 0, null);
+        RoomEntity initialized = motion.advance(
+                bowWow, 0, 0x00, 0x00, 0x00, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         slots.set(5, initialized);
 
-        BowWowMotion.Update update = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(initialized, 1, 0x60, 0x70, 0x00, () -> 0, null, slots, type -> type == 0x09));
+        BowWowMotion.Update update = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                initialized,
+                1,
+                0x60,
+                0x70,
+                0x00,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> type == 0x09));
 
         assertEquals(10, update.targetSlot());
         assertEquals(4, motion.activeState(5));
@@ -361,14 +451,31 @@ final class BowWowMotionTest {
                         .build());
 
         BowWowMotion motion = new BowWowMotion();
-        RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0x00, () -> 0, null);
+        RoomEntity initialized = motion.advance(
+                bowWow, 0, 0x44, 0x58, 0x00, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         slots.set(5, initialized);
-        BowWowMotion.Update acquired = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(initialized, 1, 0x44, 0x58, 0x00, () -> 0, null, slots, type -> type == 0x09));
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                initialized,
+                1,
+                0x44,
+                0x58,
+                0x00,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> type == 0x09));
         MotionTestFixture.setTransitionCountdownForTest(motion, 5, 1);
 
         BowWowMotion.Update terminal = motion.advanceWithTargetScan(new BowWowTargetFrame(
-                acquired.entity(), 2, 0x44, 0x58, 0x00, () -> 0, null, slots, type -> type == 0x09));
+                acquired.entity(),
+                2,
+                0x44,
+                0x58,
+                0x00,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> type == 0x09));
 
         assertNotNull(terminal.targetContact());
         assertEquals(6, terminal.targetContact().slot());
@@ -401,13 +508,30 @@ final class BowWowMotionTest {
                         .build());
 
         BowWowMotion motion = new BowWowMotion();
-        RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0, () -> 0, null);
+        RoomEntity initialized = motion.advance(
+                bowWow, 0, 0x44, 0x58, 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         slots.set(5, initialized);
-        BowWowMotion.Update acquired = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(initialized, 1, 0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09));
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                initialized,
+                1,
+                0x44,
+                0x58,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> type == 0x09));
 
-        BowWowMotion.Update moving = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(acquired.entity(), 2, 0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09));
+        BowWowMotion.Update moving = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                acquired.entity(),
+                2,
+                0x44,
+                0x58,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> type == 0x09));
 
         assertEquals(0x27, motion.transitionCountdown(5));
         assertNotNull(moving.targetContact());
@@ -440,10 +564,19 @@ final class BowWowMotionTest {
                         .build());
 
         BowWowMotion motion = new BowWowMotion();
-        RoomEntity initialized = motion.advance(bowWow, 0, 0x60, 0x70, 0, () -> 0, null);
+        RoomEntity initialized = motion.advance(
+                bowWow, 0, 0x60, 0x70, 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         slots.set(5, initialized);
-        BowWowMotion.Update acquired = motion.advanceWithTargetScan(
-                new BowWowTargetFrame(initialized, 1, 0x40, 0x44, 0, () -> 0, null, slots, type -> type == 0x09));
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                initialized,
+                1,
+                0x40,
+                0x44,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                slots,
+                type -> type == 0x09));
         int beforeX = acquired.entity().x();
         int beforeY = acquired.entity().y();
 
@@ -487,20 +620,45 @@ final class BowWowMotionTest {
                         .build());
 
         BowWowMotion motion = new BowWowMotion();
-        RoomEntity current = motion.advance(bowWow, 0, 0x44, 0x58, 0, () -> 0, null);
+        RoomEntity current = motion.advance(
+                bowWow, 0, 0x44, 0x58, 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         slots.set(5, current);
-        current = motion.advanceWithTargetScan(
-                        new BowWowTargetFrame(current, 1, 0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09))
+        current = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                        current,
+                        1,
+                        0x44,
+                        0x58,
+                        0,
+                        () -> 0,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                        slots,
+                        type -> type == 0x09))
                 .entity();
         MotionTestFixture.setTransitionCountdownForTest(motion, 5, 1);
-        current = motion.advanceWithTargetScan(
-                        new BowWowTargetFrame(current, 2, 0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09))
+        current = motion.advanceWithTargetScan(new BowWowTargetFrame(
+                        current,
+                        2,
+                        0x44,
+                        0x58,
+                        0,
+                        () -> 0,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                        slots,
+                        type -> type == 0x09))
                 .entity();
         slots.set(6, RoomEntity.disabled(6));
 
         for (int frame = 3; frame < 19; frame++) {
             current = motion.advanceWithTargetScan(new BowWowTargetFrame(
-                            current, frame, 0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09))
+                            current,
+                            frame,
+                            0x44,
+                            0x58,
+                            0,
+                            () -> 0,
+                            linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                            slots,
+                            type -> type == 0x09))
                     .entity();
         }
 
@@ -521,13 +679,23 @@ final class BowWowMotionTest {
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0, 0, 0);
 
-        current = motion.advance(current, 0, 0x44, 0x58, 0, random, null);
-        current = motion.advance(current, 1, 0x44, 0x58, 0, random, null);
-        current = motion.advance(current, 2, 0x44, 0x58, 0, random, null);
+        current = motion.advance(
+                current, 0, 0x44, 0x58, 0, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        current = motion.advance(
+                current, 1, 0x44, 0x58, 0, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        current = motion.advance(
+                current, 2, 0x44, 0x58, 0, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(1, motion.activeState(5));
 
         for (int frame = 3; frame < 35; frame++) {
-            current = motion.advance(current, frame, 0x44, 0x58, 0, random, null);
+            current = motion.advance(
+                    current,
+                    frame,
+                    0x44,
+                    0x58,
+                    0,
+                    random,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         }
 
         assertEquals(0, motion.activeState(5));

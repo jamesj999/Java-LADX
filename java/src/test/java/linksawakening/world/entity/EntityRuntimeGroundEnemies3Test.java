@@ -243,7 +243,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00, 0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -251,7 +251,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00, 0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
 
         List<LikeLikeEvent> events = runtime.consumePendingLikeLikeEvents();
@@ -285,7 +285,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
@@ -295,7 +295,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         LikeLikeEvent stolen = runtime.consumePendingLikeLikeEvents().getFirst();
         assertEquals(LikeLikeEvent.Kind.CAPTURE, stolen.kind());
@@ -319,7 +319,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
         levelTwo.consumePendingLikeLikeEvents();
         levelTwo.tick(EntityTestFrames.projectileFrame(
@@ -328,7 +328,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
         LikeLikeEvent protectedShield = levelTwo.consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
@@ -353,7 +353,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
@@ -363,7 +363,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 80,
                 80,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0)));
         var events = runtime.consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
@@ -391,7 +391,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
@@ -403,7 +403,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                     64,
                     64,
                     sequence(0x00),
-                    null,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
             runtime.consumePendingLikeLikeEvents();
         }
@@ -416,7 +416,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         LikeLikeEvent release = runtime.consumePendingLikeLikeEvents().getFirst();
         assertEquals(LikeLikeEvent.Kind.RELEASE, release.kind());

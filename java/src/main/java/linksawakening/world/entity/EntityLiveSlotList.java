@@ -8,14 +8,16 @@ import java.util.RandomAccess;
 final class EntityLiveSlotList extends AbstractList<RoomEntity> implements RandomAccess {
     private final EntityRoomInspection runtime;
     private final boolean loadedOnly;
-    // Unread slots have no cached source or projection yet.
+    // Cache seeds never match a live slot; later hits require source identity.
     private final RoomEntity[] sources = new RoomEntity[RoomEntity.SLOT_COUNT];
-    // Unread slots have no cached presentation yet.
+    // Cached immutable presentation paired with each source identity.
     private final RoomEntity[] presentations = new RoomEntity[RoomEntity.SLOT_COUNT];
 
     EntityLiveSlotList(EntityRoomInspection runtime, boolean loadedOnly) {
         this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
         this.loadedOnly = loadedOnly;
+        java.util.Arrays.fill(sources, EntityRoomInspection.UNREAD_PRESENTATION);
+        java.util.Arrays.fill(presentations, EntityRoomInspection.UNREAD_PRESENTATION);
     }
 
     @Override

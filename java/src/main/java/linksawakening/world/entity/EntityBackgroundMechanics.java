@@ -2,7 +2,6 @@ package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.FallingVector;
 import static linksawakening.world.entity.EntityMotionMath.vectorTowardsTarget;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 import static linksawakening.world.entity.EntityTypeRules.isEnemyProjectileType;
 import static linksawakening.world.entity.EntityTypeRules.isRoamingEnemyType;
@@ -38,8 +37,10 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ROM background collision, falling, recoil and Link push glue. */
 public final class EntityBackgroundMechanics {
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    /** Completed EntityFallHandler visit; callers consume only the disabled status. */
+    private static final RoomEntity FINISHED_FALL = RoomEntity.disabled(0);
+
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEnemyInspection enemyInspection;
@@ -53,9 +54,7 @@ public final class EntityBackgroundMechanics {
     final EntitySlotLifecycle lifecycle;
 
     EntityBackgroundMechanics(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
@@ -67,7 +66,7 @@ public final class EntityBackgroundMechanics {
             RoomEntity[] slots,
             EntitySpriteViews spriteViews,
             EntitySlotLifecycle lifecycle) {
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
@@ -118,10 +117,8 @@ public final class EntityBackgroundMechanics {
                 .advance(entity.slot());
         RoomEntity moved =
                 withPositionAndVariant(entity, step.state().x(), step.state().y(), entity.spriteVariant());
-        RoomEntityObjectSample object = runtime.physicsTables.readObjectQuery() == null
-                ? null
-                : runtime.physicsTables.readObjectQuery().sample(moved);
-        boolean clear = object != null
+        RoomEntityObjectSample object = runtime.physicsTables.readObjectQuery().sampleOrAbsent(moved);
+        boolean clear = object.sampled()
                 && object.objectId() != EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
                 && object.physicsFlag() == 0;
         runtime.events.hookshotBridgeUpdates.add(
@@ -202,7 +199,7 @@ public final class EntityBackgroundMechanics {
         int slot = entity.slot();
         int transition = runtime.physicsTables.readEnemyTransitionCountdown(slot) & 0xFF;
         if (transition == 0) {
-            return null;
+            return FINISHED_FALL;
         }
 
         if (transition >= 0x40) {
@@ -248,8 +245,8 @@ public final class EntityBackgroundMechanics {
         runtime.physicsTables.writeFallingSpeedY(slot, vector.y());
         int x = runtime.physicsTables.advanceFallingX(entity.x(), runtime.physicsTables.readFallingSpeedX(slot), slot);
         int y = runtime.physicsTables.advanceFallingY(entity.y(), runtime.physicsTables.readFallingSpeedY(slot), slot);
-        if (runtime.spriteHandlers != null) {
-            entity = withDefinition(entity, runtime.spriteViews.forFallingEntity(), phase);
+        {
+            entity = runtime.spriteHandlers.present(entity, runtime.spriteViews.forFallingEntity(), phase);
         }
         return withPositionAndVariant(entity, x, y, phase);
     }
@@ -349,7 +346,9 @@ public final class EntityBackgroundMechanics {
         requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
     }
 
-    public void requestLinkPush(RoomEntity entity, EntityLinkCollisionRules.LinkPushPolicy policy) {
+    public void requestLinkPush(
+            /* Optional source actor; absence emits no push. */ RoomEntity entity,
+            /* Optional push outcome; absence emits no push. */ EntityLinkCollisionRules.LinkPushPolicy policy) {
         if (entity == null || policy == null || !policy.restoreFinalPosition()) {
             return;
         }
@@ -398,8 +397,7 @@ public final class EntityBackgroundMechanics {
     }
 
     public EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         var runtime = this;
         int slot = entity.slot();
         if (!runtime.motions

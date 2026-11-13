@@ -27,7 +27,7 @@ public final class StalfosEvasiveMotion {
             int transitionCountdown,
             boolean unloadRequested,
             boolean swordPokeRequested,
-            CloneRequest cloneRequest) {}
+            /* Optional clone request; absent when this visit does not spawn a clone. */ CloneRequest cloneRequest) {}
 
     public record CloneRequest(int sourceSlot, int x, int y, int z, int speedX, int speedY) {}
 
@@ -63,8 +63,7 @@ public final class StalfosEvasiveMotion {
     Update advanceAirborne(
             RoomEntity entity,
             int transitionCountdown,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             CloneRequest cloneRequest) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
@@ -92,8 +91,7 @@ public final class StalfosEvasiveMotion {
             int frame,
             int transitionCountdown,
             int ignoreHitsCountdown,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -170,13 +168,10 @@ public final class StalfosEvasiveMotion {
     }
 
     static MoveResult applyBackground(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         boolean xBlocked = false;
         boolean yBlocked = false;
-        if (backgroundCollision != null) {
+        {
             if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(x - entity.x()), x, entity.y())) {
                 x = entity.x();
                 xBlocked = true;
@@ -273,9 +268,12 @@ public final class StalfosEvasiveMotion {
             int transitionCountdown,
             int ignoreHitsCountdown,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
-            int mapId) {}
+            int mapId) {
+        public StalfosEvasiveFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     static final class StalfosEvasiveFrameStep {
         private final StalfosEvasiveMotion owner;
@@ -291,14 +289,15 @@ public final class StalfosEvasiveMotion {
         private int ignoreHitsCountdown;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int mapId;
         private int slot;
         private boolean cloneBranchReady;
         private int frame;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.StalfosEvasiveMotion.CloneRequest cloneRequest;
+        /* Optional clone request; absent when this visit does not spawn a clone. */ private linksawakening.world.entity
+                        .motion.StalfosEvasiveMotion.CloneRequest
+                cloneRequest;
         private int x;
         private int y;
         // Absent before initialization or while this reusable execution scratch is inactive.

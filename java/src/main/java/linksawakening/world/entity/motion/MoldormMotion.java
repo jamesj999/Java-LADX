@@ -57,6 +57,7 @@ public final class MoldormMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] noiseCadence = new int[EntityRoomLoader.MAX_ENTITIES];
+    // No vulnerable tail exists before initialization or after this slot is cleared.
     private final MoldormSegmentPosition[] vulnerableTail = new MoldormSegmentPosition[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -138,8 +139,8 @@ public final class MoldormMotion {
             int flashCountdown,
             int health,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(entity);
@@ -238,15 +239,14 @@ public final class MoldormMotion {
             int ignoreHitsCountdown,
             int flashCountdown,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         int slot = entity.slot();
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
         int collisionFlags = 0;
         if ((flashCountdown & 0xFF) == 0) {
             int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-            if (nextX != x && backgroundInteraction != null) {
+            if (nextX != x) {
                 int direction = signedByte(speedX[slot]) < 0
                         ? EntityBackgroundCollisionResult.LEFT
                         : EntityBackgroundCollisionResult.RIGHT;
@@ -262,7 +262,7 @@ public final class MoldormMotion {
             }
 
             int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-            if (nextY != y && backgroundInteraction != null) {
+            if (nextY != y) {
                 int direction = signedByte(speedY[slot]) < 0
                         ? EntityBackgroundCollisionResult.UP
                         : EntityBackgroundCollisionResult.DOWN;
@@ -322,10 +322,8 @@ public final class MoldormMotion {
             int y,
             int ignoreHitsCountdown,
             int frameCounter,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
-        if (backgroundInteraction == null) {
-            return 0;
+            RoomEntityBackgroundInteraction backgroundInteraction) {
+        {
         }
         int collisionFlags = 0;
         int signedSpeedX = signedByte(speedX[entity.slot()]);

@@ -333,7 +333,7 @@ final class MagicPowderRuntimeTest {
                 linkX,
                 linkY,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(linkX, linkY, 0, linkMotionState, 0, false)));
     }
 

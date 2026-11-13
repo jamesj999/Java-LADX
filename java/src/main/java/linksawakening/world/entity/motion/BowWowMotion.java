@@ -33,6 +33,11 @@ public final class BowWowMotion {
     static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8};
 
     private final BowWowChain[] chains = new BowWowChain[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] chainAvailable = new boolean[EntityRoomLoader.MAX_ENTITIES];
+
+    {
+        java.util.Arrays.setAll(chains, ignored -> new BowWowChain());
+    }
 
     final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -65,8 +70,7 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         return advanceWithTargetScan(new BowWowTargetFrame(
                         entity,
                         frameCounter,
@@ -113,6 +117,7 @@ public final class BowWowMotion {
 
     public void clear(int slot) {
         chains[slot] = new BowWowChain();
+        chainAvailable[slot] = true;
         activeState[slot] = 0;
         selectedVariant[slot] = 0;
         setupComplete[slot] = 0;
@@ -134,12 +139,12 @@ public final class BowWowMotion {
 
     public RoomEntity advanceChain(RoomEntity entity, int questState, boolean linkMoving) {
         int slot = entity.slot();
-        if (chains[slot] == null) chains[slot] = new BowWowChain();
+        chainAvailable[slot] = true;
         return chains[slot].advance(entity, targetX[slot], targetY[slot], questState, linkMoving);
     }
 
     public List<BowWowChain.Entry> chainEntries(int slot, int questState, int frame) {
-        return chains[slot] == null ? List.of() : chains[slot].entries(slot, questState, frame);
+        return !chainAvailable[slot] ? List.of() : chains[slot].entries(slot, questState, frame);
     }
 
     int activeState(int slot) {
@@ -245,12 +250,7 @@ public final class BowWowMotion {
         return true;
     }
 
-    int[] move(
-            RoomEntity entity,
-            int x,
-            int y,
-            int slot, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    int[] move(RoomEntity entity, int x, int y, int slot, RoomEntityBackgroundCollision backgroundCollision) {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         // ApplyEntityInteractionWithBackground returns before the generic wall
@@ -376,7 +376,10 @@ public final class BowWowMotion {
         return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
     }
 
-    public record Update(RoomEntity entity, int targetSlot, TargetContact targetContact) {
+    public record Update(
+            RoomEntity entity,
+            int targetSlot, /* Optional Bow-Wow target contact; absent when no target was reached. */
+            TargetContact targetContact) {
         boolean targetAcquired() {
             return targetSlot >= 0;
         }
@@ -450,11 +453,14 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             java.util.List<RoomEntity> entities,
             java.util.function.IntPredicate canEatEntity,
-            int bowWowState) {}
+            int bowWowState) {
+        public BowWowCollisionFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     record BowWowFrame(
             RoomEntity entity,
@@ -463,7 +469,6 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             java.util.List<RoomEntity> entities,
             java.util.function.IntPredicate canEatEntity) {}
@@ -480,7 +485,6 @@ public final class BowWowMotion {
         private int linkEntityZ;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.List<linksawakening.world.entity.RoomEntity> entities;
@@ -494,7 +498,9 @@ public final class BowWowMotion {
         private int y;
         private int z;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.BowWowMotion.TargetContact targetContact;
+        /* Optional Bow-Wow target contact; absent when no target was reached. */ private linksawakening.world.entity
+                        .motion.BowWowMotion.TargetContact
+                targetContact;
 
         BowWowStep(linksawakening.world.entity.motion.BowWowMotion owner) {
             this.owner = java.util.Objects.requireNonNull(owner, "owner");
@@ -715,7 +721,6 @@ public final class BowWowMotion {
             int linkEntityY,
             int linkEntityZ,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             java.util.List<RoomEntity> entities,
             java.util.function.IntPredicate canEatEntity) {}

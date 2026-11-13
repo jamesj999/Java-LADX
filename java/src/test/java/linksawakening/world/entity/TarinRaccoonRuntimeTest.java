@@ -693,7 +693,7 @@ final class TarinRaccoonRuntimeTest {
                 linkX,
                 linkY,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false)));
     }
 

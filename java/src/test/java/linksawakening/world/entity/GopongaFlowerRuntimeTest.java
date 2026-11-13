@@ -120,7 +120,7 @@ final class GopongaFlowerRuntimeTest {
                 0x40,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x40, 0x40, 0x10, 0, 0, false)));
 
         assertEquals(

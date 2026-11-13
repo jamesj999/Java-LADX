@@ -117,8 +117,17 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update =
-                motion.advance(new UrchinFrame(urchin, 0, 0x12, 0x48, 0x40, 1, true, false, true, null));
+        UrchinMotion.Update update = motion.advance(new UrchinFrame(
+                urchin,
+                0,
+                0x12,
+                0x48,
+                0x40,
+                1,
+                true,
+                false,
+                true,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
 
         assertEquals(0, update.direction());
         assertEquals(0xFD, update.speedX());
@@ -136,8 +145,17 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update =
-                motion.advance(new UrchinFrame(urchin, 0, 0x12, 0x40, 0x3A, 3, true, false, true, null));
+        UrchinMotion.Update update = motion.advance(new UrchinFrame(
+                urchin,
+                0,
+                0x12,
+                0x40,
+                0x3A,
+                3,
+                true,
+                false,
+                true,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
 
         assertEquals(2, update.direction());
         assertEquals(0x00, update.speedX());
@@ -152,8 +170,17 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update =
-                motion.advance(new UrchinFrame(urchin, 0, 0x12, 0x48, 0x40, 0, true, false, true, null));
+        UrchinMotion.Update update = motion.advance(new UrchinFrame(
+                urchin,
+                0,
+                0x12,
+                0x48,
+                0x40,
+                0,
+                true,
+                false,
+                true,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
 
         assertEquals(0, update.direction());
         assertEquals(0x12, update.physicsFlags());
@@ -170,8 +197,17 @@ final class UrchinRuntimeTest {
         UrchinMotion motion = new UrchinMotion();
         RoomEntity urchin = urchin(loadRom());
 
-        UrchinMotion.Update update =
-                motion.advance(new UrchinFrame(urchin, 0, 0x12, 0x48, 0x40, 1, true, false, false, null));
+        UrchinMotion.Update update = motion.advance(new UrchinFrame(
+                urchin,
+                0,
+                0x12,
+                0x48,
+                0x40,
+                1,
+                true,
+                false,
+                false,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
 
         assertEquals(0x12, update.physicsFlags());
         assertFalse(update.linkCollision());
@@ -202,7 +238,7 @@ final class UrchinRuntimeTest {
                 0x48,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true)));
 
         assertEquals(0x3F, runtime.inspection().snapshot().slots().get(0).x());
@@ -245,7 +281,7 @@ final class UrchinRuntimeTest {
                 0x48,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false)));
 
         assertEquals(0x12, runtime.enemies().physicsFlags(0));

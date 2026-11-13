@@ -78,11 +78,9 @@ public final class MaskedMimicMotion {
         boolean blocked = false;
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         if (nextX != x) {
-            EntityBackgroundCollisionResult result = backgroundInteraction == null
-                    ? null
-                    : backgroundInteraction.probe(
-                            entity, horizontalDirection(speedX[slot]), nextX, y, ignoreHitsCountdown, currentFrame);
-            if (result != null && result.blocked()) {
+            EntityBackgroundCollisionResult result = backgroundInteraction.probeOrNone(
+                    entity, horizontalDirection(speedX[slot]), nextX, y, ignoreHitsCountdown, currentFrame);
+            if (result.blocked()) {
                 blocked = true;
             } else {
                 x = nextX;
@@ -91,11 +89,9 @@ public final class MaskedMimicMotion {
 
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         if (nextY != y) {
-            EntityBackgroundCollisionResult result = backgroundInteraction == null
-                    ? null
-                    : backgroundInteraction.probe(
-                            entity, verticalDirection(speedY[slot]), x, nextY, ignoreHitsCountdown, currentFrame);
-            if (result != null && result.blocked()) {
+            EntityBackgroundCollisionResult result = backgroundInteraction.probeOrNone(
+                    entity, verticalDirection(speedY[slot]), x, nextY, ignoreHitsCountdown, currentFrame);
+            if (result.blocked()) {
                 blocked = true;
             } else {
                 y = nextY;
@@ -205,8 +201,11 @@ public final class MaskedMimicMotion {
             int romLinkDirection,
             int pressedButtonsMask,
             int collisionType,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
-            int currentFrame) {}
+            int currentFrame) {
+        public MaskedMimicFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 }

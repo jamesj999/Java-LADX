@@ -28,7 +28,6 @@ public final class FollowingNpcEntitySpawner {
     static final int ROOM_SECTION_OW_GHOST_TRIGGER = 0x40;
     static final int ROOM_INDOOR_B_MRS_MEOW_MEOW = 0xA7;
 
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final EntitySpriteHandlerCatalog spriteHandlers;
 
     public FollowingNpcEntitySpawner(EntitySpriteHandlerCatalog spriteHandlers) {
@@ -71,10 +70,10 @@ public final class FollowingNpcEntitySpawner {
                         -1,
                         false);
                 slots.set(slot, entity);
-                return new SpawnResult(entity, true);
+                return new SpawnResult(slot, true);
             }
         }
-        return new SpawnResult(null, changed);
+        return new SpawnResult(SpawnResult.NO_SLOT, changed);
     }
 
     static RoomEntity withPosition(RoomEntity entity, int x, int y) {
@@ -117,7 +116,13 @@ public final class FollowingNpcEntitySpawner {
         }
     }
 
-    record SpawnResult(RoomEntity entity, boolean changed) {}
+    record SpawnResult(int slot, boolean changed) {
+        static final int NO_SLOT = -1;
+
+        boolean spawned() {
+            return slot != NO_SLOT;
+        }
+    }
 
     final FollowingNpcEntitySpawnerFrameStep followingNpcEntitySpawnerFrameStep =
             new FollowingNpcEntitySpawnerFrameStep(this);
@@ -137,7 +142,7 @@ public final class FollowingNpcEntitySpawner {
         private int linkZ;
         private int entityYOffset;
         private int linkDirection;
-        // Optional room geometry/history; null preserves the path without that room input.
+        // Absent only while scratch is inactive; synchronization requires position history.
         private linksawakening.world.entity.LinkPositionHistory history;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.List<linksawakening.world.entity.RoomEntity> slots;
@@ -199,10 +204,10 @@ public final class FollowingNpcEntitySpawner {
                         FollowingNpcEntitySpawner.byteValue(linkY + entityYOffset),
                         owner.spriteHandlers.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_ROOSTER));
                 changed |= spawn.changed();
-                if (spawn.entity() != null) {
+                if (spawn.spawned()) {
                     overrides.put(
                             FollowingNpcEntitySpawner.ENTITY_ROOSTER,
-                            spawn.entity().spriteDefinition());
+                            slots.get(spawn.slot()).spriteDefinition());
                 }
             }
             return true;
@@ -218,10 +223,10 @@ public final class FollowingNpcEntitySpawner {
                         FollowingNpcEntitySpawner.byteValue(linkY + entityYOffset),
                         owner.spriteHandlers.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_GHOST));
                 changed |= spawn.changed();
-                if (spawn.entity() != null) {
+                if (spawn.spawned()) {
                     overrides.put(
                             FollowingNpcEntitySpawner.ENTITY_GHOST,
-                            spawn.entity().spriteDefinition());
+                            slots.get(spawn.slot()).spriteDefinition());
                 }
             } else if (state.ghostFollowingState() == 2) {
                 boolean shouldFollow = !room.indoor()
@@ -241,7 +246,7 @@ public final class FollowingNpcEntitySpawner {
                         owner.spriteHandlers.forFollowerEntityType(
                                 FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE));
                 changed |= spawn.changed();
-                if (spawn.entity() != null) {
+                if (spawn.spawned()) {
                     history.fill(linkX, linkY + entityYOffset, linkZ, linkDirection);
                     int x = FollowingNpcEntitySpawner.byteValue(linkX);
                     int y = FollowingNpcEntitySpawner.byteValue(linkY + entityYOffset);
@@ -249,7 +254,7 @@ public final class FollowingNpcEntitySpawner {
                         x = FollowingNpcEntitySpawner.byteValue(x + 0x20);
                         y = FollowingNpcEntitySpawner.byteValue(y + 0x10);
                     }
-                    RoomEntity marin = spawn.entity();
+                    RoomEntity marin = slots.get(spawn.slot());
                     slots.set(marin.slot(), FollowingNpcEntitySpawner.withPosition(marin, x, y));
                     overrides.put(FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE, marin.spriteDefinition());
                 }
@@ -267,10 +272,10 @@ public final class FollowingNpcEntitySpawner {
                         FollowingNpcEntitySpawner.byteValue(linkY),
                         owner.spriteHandlers.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW));
                 changed |= spawn.changed();
-                if (spawn.entity() != null) {
+                if (spawn.spawned()) {
                     overrides.put(
                             FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
-                            spawn.entity().spriteDefinition());
+                            slots.get(spawn.slot()).spriteDefinition());
                 }
             }
 

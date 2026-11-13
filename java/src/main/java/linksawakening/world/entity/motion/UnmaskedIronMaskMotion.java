@@ -52,12 +52,12 @@ public final class UnmaskedIronMaskMotion {
             RoomEntity entity,
             int frame,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            RoomEntityBackgroundCollision backgroundCollision,
             int ignoreHitsCountdown,
             int transitionCountdown) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orBoolean(backgroundInteraction, backgroundCollision);
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initializeFromMasked(slot, 0, 0, 0);
@@ -130,18 +130,15 @@ public final class UnmaskedIronMaskMotion {
             int entityDirection,
             int nextX,
             int nextY,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            RoomEntityBackgroundCollision backgroundCollision,
             int ignoreHitsCountdown,
             int frame) {
-        if (backgroundInteraction != null) {
+        {
             return backgroundInteraction
                     .probe(entity, entityDirection, nextX, nextY, ignoreHitsCountdown, frame)
                     .blocked();
         }
-        return backgroundCollision != null && backgroundCollision.blocks(entity, entityDirection, nextX, nextY);
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {

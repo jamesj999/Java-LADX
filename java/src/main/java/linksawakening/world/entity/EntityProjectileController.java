@@ -33,8 +33,7 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 /** ArrowEntityHandler, BoomerangEntityHandler and MagicRodFireballEntityHandler collision/object effects. */
 public final class EntityProjectileController {
     final boolean indoorRoom;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombState bombInteractions;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -45,16 +44,13 @@ public final class EntityProjectileController {
     final EntityRoomVariables roomVariables;
     final EntitySlotLifecycle lifecycle;
     final EntitySlotProperties slotProperties;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final EntityProjectileState state;
 
     EntityProjectileController(
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombState bombInteractions,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -65,12 +61,11 @@ public final class EntityProjectileController {
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             EntityProjectileState state) {
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -81,7 +76,7 @@ public final class EntityProjectileController {
         this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.state = java.util.Objects.requireNonNull(state, "state");
     }
@@ -145,11 +140,9 @@ public final class EntityProjectileController {
         ProjectileEntityCollision entityCollision = this.collideSwordBeamWithEntities(entity, frame);
         RoomEntity moved =
                 runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).advancePosition(entity);
-        RoomEntityObjectQuery intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery() != null
-                ? runtime.physicsTables.readObjectIntersectionQuery()
-                : runtime.physicsTables.readObjectQuery();
-        RoomEntityObjectSample object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
-        ProjectileObjectCollision objectCollision = object == null
+        RoomEntityObjectQuery intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery();
+        RoomEntityObjectSample object = intersectionQuery.sampleOrAbsent(moved);
+        ProjectileObjectCollision objectCollision = !object.sampled()
                 ? ProjectileObjectCollision.NONE
                 : this.projectileObjectCollision(moved, object, frame, slot);
         if (entityCollision.unload()
@@ -179,7 +172,7 @@ public final class EntityProjectileController {
     }
 
     boolean isMagicRodBurnableObject(RoomEntityObjectSample object) {
-        if (object == null) {
+        if (!object.sampled()) {
             return false;
         }
         int objectId = object.objectId() & 0xFF;
@@ -711,7 +704,6 @@ public final class EntityProjectileController {
         private int variant;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery intersectionQuery;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample object;
@@ -762,13 +754,11 @@ public final class EntityProjectileController {
             moved = owner.motions
                     .get(BoomerangMotion.class, BoomerangMotion::new)
                     .advancePosition(entity);
-            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery() != null
-                    ? owner.physicsTables.readObjectIntersectionQuery()
-                    : owner.physicsTables.readObjectQuery();
-            object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
-            objectCollision = object != null
+            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
+            object = intersectionQuery.sampleOrAbsent(moved);
+            objectCollision = object.sampled()
                     && owner.projectileObjectCollision(moved, object, frame, slot) == ProjectileObjectCollision.BLOCKED;
-            bushCollision = object != null
+            bushCollision = object.sampled()
                     && !owner.indoorRoom
                     && (object.objectId() == EntityRomConstants.OBJECT_BUSH
                             || object.objectId() == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS);
@@ -902,7 +892,6 @@ public final class EntityProjectileController {
         private boolean timersInteractive;
         private int slot;
         private int transitionCountdown;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery intersectionQuery;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample object;
@@ -979,19 +968,13 @@ public final class EntityProjectileController {
                 return false;
             }
 
-            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery() != null
-                    ? owner.physicsTables.readObjectIntersectionQuery()
-                    : owner.physicsTables.readObjectQuery();
-            object = intersectionQuery == null
-                    // The shared query samples (X, Y-8). Powder's $797E-$7997
-                    // formula instead samples (X-1, Y-9), including byte wrapping.
-                    ? null
-                    : intersectionQuery.sample(withPositionAndVariant(
-                            entity, (entity.x() - 1) & 0xFF, (entity.y() - 1) & 0xFF, entity.spriteVariant()));
+            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
+            object = intersectionQuery.sampleOrAbsent(withPositionAndVariant(
+                    entity, (entity.x() - 1) & 0xFF, (entity.y() - 1) & 0xFF, entity.spriteVariant()));
             objectLeft = EntityMotionMath.magicPowderObjectLeft(entity);
             objectTop = EntityMotionMath.magicPowderObjectTop(entity);
             location = (objectTop | (objectLeft >>> 4)) & 0xFF;
-            objectId = object == null ? 0xFF : object.objectId() & 0xFF;
+            objectId = !object.sampled() ? 0xFF : object.objectId() & 0xFF;
 
             if (!owner.indoorRoom
                     && (objectId == EntityRomConstants.OBJECT_BUSH
@@ -1031,7 +1014,7 @@ public final class EntityProjectileController {
                 owner.physicsTables.writeSlowTimerInitialized(slot, true);
                 owner.physicsTables.writeEnemyTransitionCountdown(slot, 0);
                 RoomEntity torch = withPositionAndVariant(entity, objectLeft, objectTop, 0);
-                EntitySpriteDefinition torchDefinition = owner.spriteHandlers == null
+                EntitySpriteDefinition torchDefinition = !owner.spriteHandlers.supportsPresentation()
                         ? entity.spriteDefinition()
                         : owner.slotProperties.spriteViews().forMagicPowderTorchState(true);
                 owner.slots[index] = withDefinition(torch, torchDefinition, 0);
@@ -1114,7 +1097,6 @@ public final class EntityProjectileController {
         private int variant;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery intersectionQuery;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample object;
@@ -1158,7 +1140,7 @@ public final class EntityProjectileController {
                     owner.lifecycle.clearEntity(slot);
                     return false;
                 }
-                EntitySpriteDefinition fireDefinition = owner.spriteHandlers == null
+                EntitySpriteDefinition fireDefinition = !owner.spriteHandlers.supportsPresentation()
                         ? entity.spriteDefinition()
                         : owner.slotProperties.spriteViews().forMagicRodFireState();
                 owner.slots[index] = withDefinition(entity, fireDefinition, variant);
@@ -1175,16 +1157,14 @@ public final class EntityProjectileController {
             moved = owner.motions
                     .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                     .advancePosition(entity);
-            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery() != null
-                    ? owner.physicsTables.readObjectIntersectionQuery()
-                    : owner.physicsTables.readObjectQuery();
-            object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
+            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
+            object = intersectionQuery.sampleOrAbsent(moved);
             return true;
         }
 
         private boolean resolveObjectCollision() {
 
-            objectCollision = object == null
+            objectCollision = !object.sampled()
                     ? ProjectileObjectCollision.NONE
                     : owner.projectileObjectCollision(moved, object, frame, slot);
             if (objectCollision == ProjectileObjectCollision.UNLOAD) {
@@ -1299,13 +1279,9 @@ public final class EntityProjectileController {
                     .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                     .configureFromSpeed(targetSlot, speedX, speedY);
 
-            damageResult = owner.enemyCombatTables == null
-                    ? null
-                    : owner.enemyCombatTables.resolveAttackDamage(
-                            target.type(), owner.combatTables.readEnemyHealthGroup(target.slot()), damageType);
-            rawDamage = damageResult == null
-                    ? RoomEntityCombatRules.basicSwordDamage(target.type())
-                    : damageResult.rawValue();
+            damageResult = owner.enemyCombatTables.resolveAttackDamage(
+                    target.type(), owner.combatTables.readEnemyHealthGroup(target.slot()), damageType);
+            rawDamage = damageResult.rawValue();
             if (rawDamage == 0) {
                 return false;
             }
@@ -1357,8 +1333,8 @@ public final class EntityProjectileController {
                     owner.slots[targetSlot] = withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false);
                 } else if (isZolGelType(target.type())) {
                     owner.motions.get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(targetSlot);
-                    if (target.type() == EntityRomConstants.ENTITY_ZOL && owner.spriteHandlers != null) {
-                        owner.slots[targetSlot] = withDefinition(
+                    if (target.type() == EntityRomConstants.ENTITY_ZOL) {
+                        owner.slots[targetSlot] = owner.spriteHandlers.present(
                                 target, owner.slotProperties.spriteViews().forZolSlimeEye(), target.spriteVariant());
                     }
                 }

@@ -18,7 +18,8 @@ final class MoblinSwordMotionTest {
         motion.initialize(0, 0x50);
         RoomEntity source = entity(0, 0x50, 0x40);
 
-        MoblinSwordMotion.Update update = motion.advance(source, 0xC0, 0x40, null, 0, 0);
+        MoblinSwordMotion.Update update = motion.advance(
+                source, 0xC0, 0x40, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 0);
 
         assertEquals(source, update.entity());
         assertEquals(1, motion.state(0));
@@ -34,8 +35,9 @@ final class MoblinSwordMotionTest {
         motion.initialize(0, 0x50);
         RoomEntity source = entity(0, 0x50, 0x40);
 
-        motion.advance(source, 0xC0, 0x40, null, 0, 0);
-        MoblinSwordMotion.Update update = motion.advance(source, 0x70, 0x40, null, 0, 1);
+        motion.advance(source, 0xC0, 0x40, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 0);
+        MoblinSwordMotion.Update update = motion.advance(
+                source, 0x70, 0x40, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 1);
 
         assertEquals(source.x(), update.entity().x());
         assertEquals(source.y(), update.entity().y());
@@ -51,9 +53,18 @@ final class MoblinSwordMotionTest {
         motion.initialize(0, 0x50);
         RoomEntity current = entity(0, 0x50, 0x40);
 
-        current = motion.advance(current, 0xC0, 0x40, null, 0, 0).entity();
+        current = motion.advance(
+                        current, 0xC0, 0x40, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 0)
+                .entity();
         for (int frame = 1; frame <= 0x80; frame++) {
-            current = motion.advance(current, 0xC0, 0x40, null, 0, frame).entity();
+            current = motion.advance(
+                            current,
+                            0xC0,
+                            0x40,
+                            linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                            0,
+                            frame)
+                    .entity();
         }
 
         assertEquals(2, motion.state(0));
@@ -67,9 +78,18 @@ final class MoblinSwordMotionTest {
         motion.initialize(1, 0x50);
         RoomEntity current = entity(1, 0x50, 0x40);
 
-        current = motion.advance(current, 0xC0, 0x40, null, 0, 0).entity();
+        current = motion.advance(
+                        current, 0xC0, 0x40, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 0)
+                .entity();
         for (int frame = 1; frame <= 0xB0; frame++) {
-            current = motion.advance(current, 0xC0, 0x40, null, 0, frame).entity();
+            current = motion.advance(
+                            current,
+                            0xC0,
+                            0x40,
+                            linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                            0,
+                            frame)
+                    .entity();
         }
 
         assertEquals(0, motion.state(1));
@@ -85,16 +105,36 @@ final class MoblinSwordMotionTest {
         motion.initialize(0, 0x50);
         RoomEntity current = entity(0, 0x50, 0x40);
 
-        current = motion.advance(current, 0xC0, 0x40, null, 0, 0).entity();
-        current = motion.advance(current, 0x70, 0x40, null, 0, 1).entity();
+        current = motion.advance(
+                        current, 0xC0, 0x40, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 0)
+                .entity();
+        current = motion.advance(
+                        current, 0x70, 0x40, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 1)
+                .entity();
 
-        MoblinSwordMotion.Update dialogFrame =
-                motion.advance(new MoblinSwordFrame(current, 0x70, 0x40, null, 0, 0, 0x15, 0x04, 2));
+        MoblinSwordMotion.Update dialogFrame = motion.advance(new MoblinSwordFrame(
+                current,
+                0x70,
+                0x40,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0,
+                0,
+                0x15,
+                0x04,
+                2));
         assertTrue(dialogFrame.dialogRequested());
         assertEquals(1, motion.privateState3(0));
 
-        MoblinSwordMotion.Update followingFrame =
-                motion.advance(new MoblinSwordFrame(dialogFrame.entity(), 0x70, 0x40, null, 0, 0, 0x15, 0x04, 3));
+        MoblinSwordMotion.Update followingFrame = motion.advance(new MoblinSwordFrame(
+                dialogFrame.entity(),
+                0x70,
+                0x40,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0,
+                0,
+                0x15,
+                0x04,
+                3));
         assertFalse(followingFrame.dialogRequested());
         assertEquals(1, motion.privateState3(0));
     }
@@ -103,7 +143,8 @@ final class MoblinSwordMotionTest {
     void hideoutGuardAlertsImmediatelyEvenWhenLinkIsOutsideDetectionRange() {
         MoblinSwordMotion motion = new MoblinSwordMotion();
         RoomEntity source = entity(0, 104, 64);
-        var update = motion.advance(new MoblinSwordFrame(source, 80, 124, null, 0, 0, 0x15, 4, 0));
+        var update = motion.advance(new MoblinSwordFrame(
+                source, 80, 124, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, 0, 0, 0x15, 4, 0));
         assertTrue(update.dialogRequested());
         assertEquals(source.x(), update.entity().x());
         assertEquals(source.y(), update.entity().y());

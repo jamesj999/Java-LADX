@@ -17,7 +17,8 @@ final class HardHatMotionTest {
     void wallContactPreservesSpeedUntilTheSteeringTickThenStopsTheBlockedAxis(
             int direction, int linkX, int linkY, int speedX, int speedY) {
         HardHatMotion motion = new HardHatMotion();
-        RoomEntity beetle = motion.advance(entity(), 0, linkX, linkY, () -> 0, null);
+        RoomEntity beetle = motion.advance(
+                entity(), 0, linkX, linkY, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(speedX, motion.speedX(0));
         assertEquals(speedY, motion.speedY(0));
 

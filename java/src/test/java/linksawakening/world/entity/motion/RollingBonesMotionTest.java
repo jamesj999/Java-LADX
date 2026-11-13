@@ -50,7 +50,9 @@ final class RollingBonesMotionTest {
             motion.initializeBar(1);
             // Approach, release the bar, then enter the jump state.
             for (int step = 0; step < 3; step++) {
-                boss = motion.advanceBoss(boss, bar, 0, 8, null).entity();
+                boss = motion.advanceBoss(
+                                boss, bar, 0, 8, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                        .entity();
             }
             assertEquals(3, motion.bossState(0));
             RollingBonesMotion.BossUpdate launch =

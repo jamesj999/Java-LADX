@@ -6,6 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRI
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 
 import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -202,11 +203,11 @@ final class HookshotChainHandler {
                 completedResult = false;
                 return false;
             }
-            collisionResult = null;
+            collisionResult = EntityBackgroundCollisionResult.NONE;
 
-            if (state.background().interaction() != null) {
-                collisionResult = state.background()
-                        .interaction()
+            {
+                collisionResult = frameInput
+                        .hinoxBackgroundInteraction()
                         .probe(
                                 slotState.entity(),
                                 hookshotState.direction(),
@@ -215,15 +216,6 @@ final class HookshotChainHandler {
                                 state.slot().ignoreHits(slotState.entity().slot()),
                                 frameInput.frame());
                 blocked = collisionResult.blocked();
-            } else {
-                blocked = frameInput.backgroundCollision() != null
-                        && frameInput
-                                .backgroundCollision()
-                                .blocks(
-                                        slotState.entity(),
-                                        hookshotState.direction(),
-                                        nextPosition.x(),
-                                        nextPosition.y());
             }
             return true;
         }
@@ -233,7 +225,7 @@ final class HookshotChainHandler {
             if (blocked) {
                 HookshotChainMotion.State stopped =
                         HookshotChainMotion.rollbackTo(step.state(), hookshotState.x(), hookshotState.y());
-                if (collisionResult != null && collisionResult.physicsFlag() == 0x60) {
+                if (collisionResult.physicsFlag() == 0x60) {
                     if (HookshotChainMotion.shouldUnloadForHookshotable(
                             step.state().transitionCountdown())) {
                         state.lifecycle().clearEntity(slotState.entity().slot());
@@ -253,16 +245,14 @@ final class HookshotChainHandler {
                 return false;
             }
 
-            if (state.roomInspection().indoorRoom()
-                    && hookshotState.speedY() != 0
-                    && state.background().objectQuery() != null) {
+            if (state.roomInspection().indoorRoom() && hookshotState.speedY() != 0) {
                 RoomEntity movedChain = withPositionAndVariant(
                         slotState.entity(),
                         step.state().x(),
                         step.state().y(),
                         slotState.entity().spriteVariant());
-                RoomEntityObjectSample object = state.background().objectQuery().sample(movedChain);
-                if (object != null) {
+                RoomEntityObjectSample object = state.background().objectQuery().sampleOrAbsent(movedChain);
+                if (object.sampled()) {
                     int bridgeObject = (hookshotState.speedY() & 0x80) != 0
                             ? OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
                             : OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
@@ -310,7 +300,7 @@ final class HookshotChainHandler {
             nextPosition = null;
             step = null;
             unmasked = false;
-            collisionResult = null;
+            collisionResult = EntityBackgroundCollisionResult.NONE;
             blocked = false;
             completedResult = false;
 
@@ -325,7 +315,7 @@ final class HookshotChainHandler {
                 this.hookshotState = null;
                 this.nextPosition = null;
                 this.step = null;
-                this.collisionResult = null;
+                this.collisionResult = EntityBackgroundCollisionResult.NONE;
             }
         }
     }

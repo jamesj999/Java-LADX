@@ -6,5 +6,11 @@ package linksawakening.world.entity;
  */
 @FunctionalInterface
 public interface RoomEntityObjectCollision {
+    RoomEntityObjectCollision NONE = entity -> false;
+
+    static RoomEntityObjectCollision orNone(RoomEntityObjectCollision value) {
+        return java.util.Objects.requireNonNullElse(value, NONE);
+    }
+
     boolean collides(RoomEntity entity);
 }

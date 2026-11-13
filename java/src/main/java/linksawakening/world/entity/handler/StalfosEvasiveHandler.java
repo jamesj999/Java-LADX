@@ -1,7 +1,6 @@
 package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_STALFOS_EVASIVE;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -68,14 +67,15 @@ final class StalfosEvasiveHandler {
                         .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
-            if (state.sprites() != null) {
+            {
                 EntitySpriteDefinition evasiveDefinition = state.spriteViews()
                         .forStalfosEvasiveState(state.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
                                 .privateState1(slotState.entity().slot()));
-                slotState.updated(withDefinition(
-                        slotState.updated(),
-                        evasiveDefinition,
-                        slotState.updated().spriteVariant()));
+                slotState.updated(state.sprites()
+                        .present(
+                                slotState.updated(),
+                                evasiveDefinition,
+                                slotState.updated().spriteVariant()));
             }
         }
         return true;

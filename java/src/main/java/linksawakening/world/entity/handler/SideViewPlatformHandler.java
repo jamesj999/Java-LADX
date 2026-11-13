@@ -37,7 +37,6 @@ final class SideViewPlatformHandler {
                     .beginFrame(slotState.entity());
             RoomEntity movedPlatform = platformFrame.entity();
             if (platformFrame.horizontalDelta() != 0
-                    && frameInput.backgroundCollision() != null
                     && frameInput
                             .backgroundCollision()
                             .blocks(
@@ -49,7 +48,7 @@ final class SideViewPlatformHandler {
                         .restoreHorizontalPosition(slotState.entity(), platformFrame);
                 movedPlatform = platformFrame.entity();
             }
-            if (platformFrame.verticalDelta() != 0 && frameInput.backgroundCollision() != null) {
+            if (platformFrame.verticalDelta() != 0) {
                 int direction = platformFrame.verticalDelta() < 0 ? 2 : 3;
                 if (frameInput
                         .backgroundCollision()

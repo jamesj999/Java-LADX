@@ -188,8 +188,11 @@ public final class BombiteMotion {
             int enemyIgnoreHitsCountdown,
             boolean runningWithPegasusBoots,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
-            RoomEntityBackgroundCollision backgroundCollision) {}
+            RoomEntityBackgroundCollision backgroundCollision) {
+        public BombiteFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     static final class BombiteStep {
         private final BombiteMotion owner;
@@ -207,7 +210,6 @@ public final class BombiteMotion {
         private boolean runningWithPegasusBoots;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int nextTransition;
@@ -320,7 +322,7 @@ public final class BombiteMotion {
             y = BombiteMotion.addSpeedToPosition(entity.y(), owner.speedY[slot], owner.speedYAccumulator, slot);
             blockedX = false;
             blockedY = false;
-            if (backgroundCollision != null) {
+            {
                 if (x != entity.x()
                         && backgroundCollision.blocks(
                                 entity, BombiteMotion.horizontalDirection(owner.speedX[slot]), x, entity.y())) {

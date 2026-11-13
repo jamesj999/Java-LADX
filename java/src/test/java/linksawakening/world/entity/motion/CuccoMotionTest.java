@@ -35,7 +35,7 @@ final class CuccoMotionTest {
                 false,
                 false,
                 () -> random[randomIndex.getAndIncrement()],
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 false,
                 false,
                 0x04));
@@ -55,7 +55,21 @@ final class CuccoMotionTest {
         MotionTestFixture.setStateForTest(motion, 0, 1, 0, 0, 0, 0, 0x80);
 
         CuccoMotion.Update update = motion.advance(new CuccoFrame(
-                entity(0x40, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
+                entity(0x40, 0x50, 0),
+                0,
+                0,
+                0,
+                0x40,
+                0x50,
+                0,
+                true,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                false,
+                false,
+                0x04));
 
         assertEquals(0, motion.state(0));
         assertEquals(0x30, update.transitionCountdown());
@@ -69,7 +83,21 @@ final class CuccoMotionTest {
         MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0, 0, 0, 0);
 
         CuccoMotion.Update update = motion.advance(new CuccoFrame(
-                entity(0x40, 0x50, 0), 0, 0, 0, 0x30, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
+                entity(0x40, 0x50, 0),
+                0,
+                0,
+                0,
+                0x30,
+                0x50,
+                0,
+                true,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                false,
+                false,
+                0x04));
 
         assertEquals(0x0C, motion.speedX(0));
         assertEquals(0x00, motion.speedY(0));
@@ -96,7 +124,7 @@ final class CuccoMotionTest {
                 () -> {
                     throw new AssertionError("Lift must return before random flight selection");
                 },
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 false,
                 false,
                 0x04));
@@ -112,7 +140,21 @@ final class CuccoMotionTest {
         motion.initializeAngry(0, 0x10, 0);
 
         CuccoMotion.Update update = motion.advance(new CuccoFrame(
-                entity(0xA8, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
+                entity(0xA8, 0x50, 0),
+                0,
+                0,
+                0,
+                0x40,
+                0x50,
+                0,
+                true,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                false,
+                false,
+                0x04));
 
         assertTrue(update.unloaded());
         assertTrue(update.boomerangSound());
@@ -124,7 +166,21 @@ final class CuccoMotionTest {
         CuccoMotion motion = new CuccoMotion();
         MotionTestFixture.setPrivateStateForTest(motion, 0, 0x22);
         CuccoMotion.Update dialog = motion.advance(new CuccoFrame(
-                entity(0x40, 0x50, 0), 1, 0, 8, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, true, 0x04));
+                entity(0x40, 0x50, 0),
+                1,
+                0,
+                8,
+                0x40,
+                0x50,
+                0,
+                true,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                false,
+                true,
+                0x04));
 
         assertEquals(0x23, motion.privateState1(0));
         assertEquals(2, motion.state(0));
@@ -134,7 +190,21 @@ final class CuccoMotionTest {
         CuccoMotion spawnMotion = new CuccoMotion();
         MotionTestFixture.setStateForTest(spawnMotion, 0, 2, 0, 0x23, 0, 0, 0);
         CuccoMotion.Update spawn = spawnMotion.advance(new CuccoFrame(
-                entity(0x40, 0x50, 0), 0, 1, 0, 0x60, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
+                entity(0x40, 0x50, 0),
+                0,
+                1,
+                0,
+                0x60,
+                0x50,
+                0,
+                true,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                false,
+                false,
+                0x04));
 
         assertNotNull(spawn.spawnRequest());
         assertEquals(0x28, spawn.spawnRequest().x());
@@ -162,7 +232,7 @@ final class CuccoMotionTest {
                 () -> {
                     throw new AssertionError("Attack-step guard must return before random flight selection");
                 },
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 false,
                 false,
                 0x04));
@@ -177,7 +247,21 @@ final class CuccoMotionTest {
             CuccoMotion motion = new CuccoMotion();
             RoomEntity chicken = entity(0x40, 0x50, 0);
             motion.advance(new CuccoFrame(
-                    chicken, 0, 0, 0, 0, 0, 0, true, false, false, () -> randomX, null, false, false, 4));
+                    chicken,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    true,
+                    false,
+                    false,
+                    () -> randomX,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                    false,
+                    false,
+                    4));
             for (int frame = 1; frame <= 16; frame++) {
                 chicken = motion.advance(new CuccoFrame(
                                 chicken,
@@ -193,7 +277,7 @@ final class CuccoMotionTest {
                                 () -> {
                                     throw new AssertionError("No RNG during walk");
                                 },
-                                null,
+                                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                                 false,
                                 false,
                                 4))
@@ -222,7 +306,7 @@ final class CuccoMotionTest {
                 () -> {
                     throw new AssertionError("Spawn failure precedes GetRandomByte at $05:472B");
                 },
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 false,
                 false,
                 4,

@@ -121,7 +121,8 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
 
         EnemyProjectileCollision.LinkState link =
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, false, 0, 0);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 8, 0x40, 0x50, () -> 0, null, link));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 8, 0x40, 0x50, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, link));
 
         assertEquals(
                 EntityStatus.DISABLED,
@@ -145,7 +146,13 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setLaserBeamForTest(0, 0x10, 0, 0);
 
         runtime.tick(EntityTestFrames.projectileFrame(
-                runtime, 0, 0, 0, () -> 0, null, EnemyProjectileCollision.LinkState.nonInteractive()));
+                runtime,
+                0,
+                0,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                EnemyProjectileCollision.LinkState.nonInteractive()));
 
         RoomEntity beam = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x21, beam.x());
@@ -170,8 +177,8 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
         EnemyProjectileCollision.LinkState link =
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, true, 2, 0);
 
-        List<EntityProjectileEvent> events =
-                runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x50, () -> 0, null, link));
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
+                runtime, 0, 0x40, 0x50, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, link));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());

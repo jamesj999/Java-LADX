@@ -30,7 +30,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 0x40,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 null,
                 0,
                 0,
@@ -61,7 +61,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 0x40,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 null,
                 0,
                 0,
@@ -129,7 +129,17 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
         for (int frame = 0; frame <= 0x20; frame++) {
             runtime.tick(EntityTestFrames.projectileFrame(
-                    runtime, frame, 0x40, 0x40, () -> 0, null, null, 0, 0, 0, interactive));
+                    runtime,
+                    frame,
+                    0x40,
+                    0x40,
+                    () -> 0,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                    null,
+                    0,
+                    0,
+                    0,
+                    interactive));
         }
         assertEquals(0x50, runtime.consumePendingMusicTrack());
     }
@@ -200,7 +210,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 0x30,
                 0x30,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false)));
 
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();

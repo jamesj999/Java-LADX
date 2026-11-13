@@ -106,12 +106,11 @@ public final class EntitySlotLifecycle {
     final EntityRoomVariables roomVariables;
     final EntityStoryState story;
     final GenieEntityController.State genie;
-    // Optional ROM data, absent in ROM-free runtimes.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final SlimeEyeController.State slimeEye;
     // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.rom.EntityPropertyTables entityProperties;
+    final java.util.function.IntUnaryOperator entityProperties;
 
     final EntityRoomInspection inspection;
     final EntitySlotPresentation slotPresentation;
@@ -134,12 +133,11 @@ public final class EntitySlotLifecycle {
             EntityRoomVariables roomVariables,
             EntityStoryState story,
             GenieEntityController.State genie,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             SlimeEyeController.State slimeEye,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.rom
-                            .EntityPropertyTables
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ java.util.function
+                            .IntUnaryOperator
                     entityProperties,
             EntityRoomInspection inspection,
             EntitySlotPresentation slotPresentation) {
@@ -163,16 +161,16 @@ public final class EntitySlotLifecycle {
         this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
         this.story = java.util.Objects.requireNonNull(story, "story");
         this.genie = java.util.Objects.requireNonNull(genie, "genie");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
-        this.entityProperties = entityProperties;
+        this.entityProperties = java.util.Objects.requireNonNull(entityProperties, "entity options");
     }
 
     boolean initializeBossBattle(RoomEntity entity) {
         int options = this.physicsTables.readEntityOptions1Override(entity.slot()) >= 0
                 ? this.physicsTables.readEntityOptions1Override(entity.slot())
-                : entityProperties == null ? 0 : entityProperties.entityOptions1(entity.type());
+                : entityProperties.applyAsInt(entity.type());
         return initializeBossBattle(entity, options);
     }
 
@@ -192,12 +190,9 @@ public final class EntitySlotLifecycle {
         // Active spawns bypass the INIT dispatch; use their fresh ROM options,
         // not an override remaining from the previous occupant of this slot.
         if (this.slots[slot].status() == EntityStatus.ACTIVE) {
-            initializeBossBattle(
-                    this.slots[slot],
-                    entityProperties == null ? 0 : entityProperties.entityOptions1(this.slots[slot].type()));
+            initializeBossBattle(this.slots[slot], entityProperties.applyAsInt(this.slots[slot].type()));
         }
-        this.combatTables.writeEnemyHealthGroup(
-                slot, this.enemyCombatTables == null ? 0 : this.enemyCombatTables.healthGroup(this.slots[slot].type()));
+        this.combatTables.writeEnemyHealthGroup(slot, this.enemyCombatTables.healthGroup(this.slots[slot].type()));
     }
 
     public int transitionSequenceCounter() {
@@ -253,8 +248,7 @@ public final class EntitySlotLifecycle {
         this.physicsTables.writeEnemyTransitionCountdown(slot, 0);
         this.combatTables.writeEnemyStunnedCountdown(slot, 0);
         this.combatTables.writeEnemyHealthGroup(
-                slot,
-                this.enemyCombatTables == null ? 0 : this.enemyCombatTables.healthGroup(EntityRomConstants.ENTITY_GEL));
+                slot, this.enemyCombatTables.healthGroup(EntityRomConstants.ENTITY_GEL));
         this.combatTables.writeEnemyHealth(slot, this.inspection.initialHealth(EntityRomConstants.ENTITY_GEL));
         this.combatTables.writeEnemyFlashCountdown(slot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);

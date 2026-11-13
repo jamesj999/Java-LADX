@@ -93,7 +93,7 @@ final class BoomerangRuntimeTest {
                         0x20,
                         0x50,
                         () -> 0,
-                        null,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                         new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false)));
             }
             assertEquals(8, runtime.inspection().snapshot().slots().get(slot).z());
@@ -106,7 +106,7 @@ final class BoomerangRuntimeTest {
                     0x20,
                     0x50,
                     () -> 0,
-                    null,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false)));
             assertEquals(0xE0, new EntityRoomInspectionQueries(runtime.inspection()).boomerangSpeedX(slot));
             assertEquals(4, new EntityRoomInspectionQueries(runtime.inspection()).boomerangSpeedY(slot));
@@ -353,7 +353,7 @@ final class BoomerangRuntimeTest {
                 linkX,
                 linkY,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false)));
     }
 

@@ -167,13 +167,15 @@ final class EntitySlotPipeline {
 
     private static void prepareBackgroundCollision(EntityFrameExecution state) {
 
-        if (state.physicsTables().readBackgroundInteraction() != null) {
+        if (state.physicsTables().hasRichBackgroundInteraction()) {
             state.inputs().backgroundCollision(state.collisionAdapters().booleanProbe());
-        }
-        state.inputs().hinoxBackgroundInteraction(state.physicsTables().readBackgroundInteraction());
-        if (state.inputs().hinoxBackgroundInteraction() == null
-                && state.inputs().backgroundCollision() != null) {
-            state.inputs().hinoxBackgroundInteraction(state.collisionAdapters().richProbe());
+            state.inputs().hinoxBackgroundInteraction(state.physicsTables().readBackgroundInteraction());
+        } else {
+            state.inputs()
+                    .hinoxBackgroundInteraction(
+                            state.inputs().backgroundCollision() == RoomEntityBackgroundCollision.OPEN
+                                    ? RoomEntityBackgroundInteraction.NONE
+                                    : state.collisionAdapters().richProbe());
         }
     }
 
@@ -580,7 +582,7 @@ final class EntitySlotPipeline {
 
         if (!state.handlers().tick(EntityTickStage.PHASE_2_FALLING, state)) return false;
         RoomEntity falling = state.background().advanceFallingEntity(slotState.entity());
-        if (falling == null) {
+        if (!falling.loaded()) {
             state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
@@ -911,9 +913,7 @@ final class EntitySlotPipeline {
                                 frameInput.randomByteSupplier(),
                                 frameInput.backgroundCollision(),
                                 Arrays.asList(state.runtime().slots),
-                                state.runtime().enemyCombatTables == null
-                                        ? type -> false
-                                        : state.runtime().enemyCombatTables::canBowWowEatEntity,
+                                state.runtime().enemyCombatTables::canBowWowEatEntity,
                                 state.motion(BowWowMotion.class, BowWowMotion::new)
                                         .readBowWowState()));
                 slotState.updated(bowWowUpdate.entity());
@@ -976,11 +976,7 @@ final class EntitySlotPipeline {
                         .readEnemyDropActive(slotState.updated().slot())) {
             // BouncingEntityPhysics calls the complete background helper before
             // bouncing. Ground effects alone omit the neighbouring bush walls.
-            RoomEntityBackgroundInteraction dropBackground =
-                    state.physicsTables().readBackgroundInteraction();
-            if (dropBackground == null && frameInput.backgroundCollision() != null) {
-                dropBackground = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction dropBackground = frameInput.hinoxBackgroundInteraction();
             slotState.updated(state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
                     .resolveWalls(
                             beforeDropPhysics,
@@ -998,7 +994,6 @@ final class EntitySlotPipeline {
                                             .speedY(slotState.updated().slot())
                                     & 0x80)
                             == 0
-                    && frameInput.backgroundCollision() != null
                     && frameInput
                             .backgroundCollision()
                             .blocks(

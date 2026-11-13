@@ -119,10 +119,10 @@ public final class MiniMoldormMotion {
             int transitionCountdown,
             int ignoreHitsCountdown,
             int flashCountdown,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             IntSupplier randomByteSupplier,
             int frameCounter) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return miniMoldormFrameStep.run(
                 entity,
                 transitionCountdown,
@@ -212,7 +212,6 @@ public final class MiniMoldormMotion {
         private int transitionCountdown;
         private int ignoreHitsCountdown;
         private int flashCountdown;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
@@ -278,7 +277,7 @@ public final class MiniMoldormMotion {
 
             if ((flashCountdown & 0xFF) == 0) {
                 int nextX = MiniMoldormMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-                if (nextX != x && backgroundInteraction != null) {
+                if (nextX != x) {
                     int direction = MiniMoldormMotion.signedByte(owner.speedX[slot]) < 0
                             ? EntityBackgroundCollisionResult.LEFT
                             : EntityBackgroundCollisionResult.RIGHT;
@@ -294,7 +293,7 @@ public final class MiniMoldormMotion {
                 }
 
                 int nextY = MiniMoldormMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
-                if (nextY != y && backgroundInteraction != null) {
+                if (nextY != y) {
                     int direction = MiniMoldormMotion.signedByte(owner.speedY[slot]) < 0
                             ? EntityBackgroundCollisionResult.UP
                             : EntityBackgroundCollisionResult.DOWN;
@@ -351,9 +350,7 @@ public final class MiniMoldormMotion {
                 int transitionCountdown,
                 int ignoreHitsCountdown,
                 int flashCountdown,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundInteraction
-                        backgroundInteraction,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
                 java.util.function.IntSupplier randomByteSupplier,
                 int frameCounter) {
             if (inUse) {

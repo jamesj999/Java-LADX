@@ -35,9 +35,9 @@ public final class BlooperMotion {
     public Movement move(
             RoomEntity entity,
             int frameCounter,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -45,7 +45,7 @@ public final class BlooperMotion {
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (backgroundInteraction != null) {
+        {
             if (x != entity.x()) {
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                         entity,
@@ -77,7 +77,9 @@ public final class BlooperMotion {
      */
     public Update finish(
             Movement movement,
-            RoomEntityGroundInteraction.Result groundResult,
+            /* Optional ground-pass outcome; absence retains the current motion result. */ RoomEntityGroundInteraction
+                            .Result
+                    groundResult,
             int frameCounter,
             int linkEntityX,
             int linkEntityY) {
@@ -250,5 +252,7 @@ public final class BlooperMotion {
 
     public record Movement(RoomEntity original, RoomEntity entity) {}
 
-    public record Update(RoomEntity entity, RoomEntityGroundInteraction.Result groundResult) {}
+    public record Update(
+            RoomEntity entity, /* Optional ground-pass outcome; absence retains the current motion result. */
+            RoomEntityGroundInteraction.Result groundResult) {}
 }

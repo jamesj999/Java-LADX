@@ -16,14 +16,16 @@ final class MimicMotionTest {
         MimicMotion motion = new MimicMotion();
         motion.initialize(entity.slot());
 
-        MimicMotion.Update left = motion.advance(entity, 0x00, 0x01, 0, null);
+        MimicMotion.Update left =
+                motion.advance(entity, 0x00, 0x01, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0x40, left.entity().x());
         assertEquals(0x50, left.entity().y());
         assertEquals(0xF0, motion.speedX(entity.slot()));
         assertEquals(0x00, motion.speedY(entity.slot()));
         assertEquals(4, left.entity().spriteVariant());
 
-        MimicMotion.Update animated = motion.advance(left.entity(), 0x08, 0x01, 0, null);
+        MimicMotion.Update animated = motion.advance(
+                left.entity(), 0x08, 0x01, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0x3F, animated.entity().x());
         assertEquals(5, animated.entity().spriteVariant());
     }
@@ -34,12 +36,14 @@ final class MimicMotionTest {
         MimicMotion motion = new MimicMotion();
         motion.initialize(entity.slot());
 
-        MimicMotion.Update up = motion.advance(entity, 0x00, 0x04, 0, null);
+        MimicMotion.Update up =
+                motion.advance(entity, 0x00, 0x04, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0x10, motion.speedY(entity.slot()));
         assertEquals(0x00, motion.speedX(entity.slot()));
         assertEquals(0, up.entity().spriteVariant());
 
-        MimicMotion.Update down = motion.advance(up.entity(), 0x08, 0x08, 0, null);
+        MimicMotion.Update down = motion.advance(
+                up.entity(), 0x08, 0x08, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0xF0, motion.speedY(entity.slot()));
         assertEquals(3, down.entity().spriteVariant());
     }
@@ -51,7 +55,8 @@ final class MimicMotionTest {
         motion.initialize(entity.slot());
         MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0xF0, 0x00);
 
-        MimicMotion.Update update = motion.advance(entity, 0x00, 0x02, 0x01, null);
+        MimicMotion.Update update = motion.advance(
+                entity, 0x00, 0x02, 0x01, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         assertEquals(0x3F, update.entity().x());
         assertEquals(0x50, update.entity().y());

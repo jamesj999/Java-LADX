@@ -29,10 +29,11 @@ import linksawakening.world.room.ChestContentsTable;
 
 /** ROM per-slot options, sprite definitions and handler metadata. */
 public final class EntitySlotProperties {
+    private final List<BowWowChain.Entry> bowWowEntries = new ArrayList<>();
+    private final List<WingedOctorokOam.Entry> wingedEntries = new ArrayList<>();
     final EntitySlotPresentation state;
     final boolean indoorRoom;
-    // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -51,9 +52,7 @@ public final class EntitySlotProperties {
     EntitySlotProperties(
             EntitySlotPresentation state,
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -70,7 +69,7 @@ public final class EntitySlotProperties {
             EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -164,7 +163,7 @@ public final class EntitySlotProperties {
         this.projectiles.writeMusicalNoteInertia(slot, inertia);
         if (inertia == 0) {
             this.lifecycle.clearEntity(slot);
-            return null;
+            return this.slots[slot];
         }
 
         int speedXAdjustment = (inertia & 0x10) != 0 ? -1 : 1;
@@ -190,7 +189,8 @@ public final class EntitySlotProperties {
 
     void updateBowWowChain(int frame) {
         var runtime = this;
-        List<BowWowChain.Entry> entries = null;
+        List<BowWowChain.Entry> entries = bowWowEntries;
+        entries.clear();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
         if (runtime.roomVariables.readTransitionSequenceCounter() != 4
@@ -216,7 +216,6 @@ public final class EntitySlotProperties {
                                     .get(BowWowMotion.class, BowWowMotion::new)
                                     .readBowWowState(),
                             moving);
-            if (entries == null) entries = new ArrayList<>();
             entries.addAll(runtime.motions
                     .get(BowWowMotion.class, BowWowMotion::new)
                     .chainEntries(
@@ -226,7 +225,7 @@ public final class EntitySlotProperties {
                                     .readBowWowState(),
                             frame));
         }
-        this.state.writeBowWowChainOam(entries == null ? List.of() : List.copyOf(entries));
+        this.state.writeBowWowChainOam(List.copyOf(entries));
     }
 
     void updatePincerBodyOam() {
@@ -234,12 +233,12 @@ public final class EntitySlotProperties {
     }
 
     void updateWingedOctorokOam() {
-        List<WingedOctorokOam.Entry> entries = null;
+        List<WingedOctorokOam.Entry> entries = wingedEntries;
+        entries.clear();
         for (RoomEntity entity : this.slots) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
-            if (entries == null) entries = new ArrayList<>();
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
                     this.motions
@@ -249,7 +248,7 @@ public final class EntitySlotProperties {
                     entity.y(),
                     entity.z()));
         }
-        state.writeWingedOctorokOam(entries == null ? List.of() : List.copyOf(entries));
+        state.writeWingedOctorokOam(List.copyOf(entries));
     }
 
     public boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
@@ -304,22 +303,16 @@ public final class EntitySlotProperties {
         if (itemType == ChestContentsTable.CHEST_ZOL) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        if (this.spriteHandlers == null) {
+        if (!this.spriteHandlers.supportsPresentation()) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        int roomId = this.presentationState.readSpriteSelection() == null
-                ? -1
-                : this.presentationState.readSpriteSelection().roomId();
+        int roomId = this.presentationState.readSpriteSelection().roomId();
         if (this.roomVariables.readEntityMapId() >= 0 && roomId >= 0) {
             return this.spriteHandlers.forChestState(this.roomVariables.readEntityMapId(), roomId, itemType);
         }
         return this.spriteHandlers.forEntityType(
                 EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                this.presentationState.readSpriteSelection() == null
-                        ? (this.indoorRoom
-                                ? EntityRoomLoader.RoomTable.INDOORS_A
-                                : EntityRoomLoader.RoomTable.OVERWORLD)
-                        : this.presentationState.readSpriteSelection().roomTable(),
+                this.presentationState.readSpriteSelection().roomTable(),
                 this.roomVariables.readEntityMapId());
     }
 

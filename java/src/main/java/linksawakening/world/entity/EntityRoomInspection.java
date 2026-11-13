@@ -19,10 +19,10 @@ import linksawakening.world.entity.motion.WitchMotion;
 
 /** Queries over ExecuteEntities slot state; snapshot() owns data, view() follows the live room. */
 public final class EntityRoomInspection {
+    static final RoomEntity UNREAD_PRESENTATION = RoomEntity.disabled(0);
     final EntityWarpController warpState;
     final boolean indoorRoom;
-    // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     // Optional ROM data, absent in ROM-free runtimes.
     final linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles;
     final EntityBombState bombInteractions;
@@ -40,7 +40,6 @@ public final class EntityRoomInspection {
     final EntityRoomVariables roomVariables;
     final EntitySlotPresentation slotProperties;
     final EntityStoryState story;
-    // Optional ROM data, absent in ROM-free runtimes.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
 
@@ -49,9 +48,7 @@ public final class EntityRoomInspection {
     EntityRoomInspection(
             EntityWarpController warpState,
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.gpu
                             .EntitySpriteTileSnapshot
                     spriteTiles,
@@ -70,12 +67,11 @@ public final class EntityRoomInspection {
             EntityRoomVariables roomVariables,
             EntitySlotPresentation slotProperties,
             EntityStoryState story,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots) {
         this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.spriteTiles = spriteTiles;
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -92,7 +88,7 @@ public final class EntityRoomInspection {
         this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
         this.story = java.util.Objects.requireNonNull(story, "story");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.liveView = RoomEntitySnapshot.liveView(this);
     }
@@ -116,15 +112,12 @@ public final class EntityRoomInspection {
     }
 
     int initialHealth(int type) {
-        return this.enemyCombatTables == null
-                ? RoomEntityCombatRules.initialHealth(type)
-                : this.enemyCombatTables.initialHealth(type);
+        return this.enemyCombatTables.initialHealth(type);
     }
 
     int contactDamage(int slot) {
-        return this.enemyCombatTables == null
-                ? RoomEntityCombatRules.contactDamage(this.slots[slot].type())
-                : this.enemyCombatTables.contactDamageForGroup(this.combatTables.readEnemyHealthGroup(slot));
+        return this.enemyCombatTables.contactDamage(
+                this.slots[slot].type(), this.combatTables.readEnemyHealthGroup(slot));
     }
 
     public int activeProjectileCount() {
@@ -349,13 +342,13 @@ public final class EntityRoomInspection {
     }
 
     public boolean heartPiecePickupActive() {
-        for (var motion : this.pickups.storageHeartPiecePickup()) if (motion != null && motion.active()) return true;
+        for (var motion : this.pickups.storageHeartPiecePickup()) if (motion.active()) return true;
         return false;
     }
 
     public HeartPieceVisual heartPieceVisual() {
         for (var motion : this.pickups.storageHeartPiecePickup())
-            if (motion != null && motion.showMeter())
+            if (motion.showMeter())
                 return new HeartPieceVisual(
                         this.pickups.readHeartPiecesCount(), this.pickups.storageHeartPieceMeterPairs());
         return null;
@@ -421,67 +414,48 @@ public final class EntityRoomInspection {
     }
 
     RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
-        if (this.spriteHandlers == null) {
-            return entity;
-        }
         boolean flying = ((frameCounter >>> 2) & 0x02) != 0;
-        return withDefinition(entity, this.slotProperties.spriteViews().forOwlEvent(flying), 0);
+        return this.spriteHandlers.present(
+                entity, this.slotProperties.spriteViews().forOwlEvent(flying), 0);
     }
 
     int enemyDropHealthGroup(int slot) {
-        if (this.enemyCombatTables == null) {
-            throw new IllegalStateException("ROM enemy combat tables are required for enemy drop resolution");
-        }
+        this.enemyCombatTables.requireDropTables();
         return this.combatTables.readEnemyHealthGroup(slot);
     }
 
     EntitySpriteDefinition spriteDefinitionFor(int entityType) {
-        if (this.spriteHandlers == null) {
-            return this.slotProperties
-                    .spriteViews()
-                    .forEntityType(entityType, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        }
-        EntityRoomLoader.RoomTable table = this.presentationState.readSpriteSelection() == null
-                ? (this.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
-                : this.presentationState.readSpriteSelection().roomTable();
-        int mapId = this.presentationState.readSpriteSelection() == null
-                ? -1
-                : this.presentationState.readSpriteSelection().roomId();
+
+        EntityRoomLoader.RoomTable table =
+                this.presentationState.readSpriteSelection().roomTable();
+        int mapId = this.presentationState.readSpriteSelection().roomId();
         return this.slotProperties.spriteViews().forEntityType(entityType, table, mapId);
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int disguiseState) {
-        return this.spriteHandlers == null
-                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : this.slotProperties.spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
+        return this.slotProperties.spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
-        return this.spriteHandlers == null
-                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_POKEY)
-                : this.slotProperties.spriteViews().forPokeySegment();
+        return this.slotProperties.spriteViews().forPokeySegment();
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int crawlState) {
-        return this.spriteHandlers == null
-                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : this.slotProperties.spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
+        return this.slotProperties.spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
     }
 
     EntityRoomLoader.RoomTable spriteRoomTable() {
-        return this.presentationState.readSpriteSelection() == null
-                ? (this.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
-                : this.presentationState.readSpriteSelection().roomTable();
+        return this.presentationState.readSpriteSelection().roomTable();
     }
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int evadeState) {
-        return this.spriteHandlers == null
+        return !this.spriteHandlers.supportsPresentation()
                 ? fallback
                 : this.slotProperties.spriteViews().forStalfosEvasiveState(evadeState);
     }
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
-        if (!ColorShellMotion.isColorShellType(entity.type()) || this.spriteHandlers == null) {
+        if (!ColorShellMotion.isColorShellType(entity.type()) || !this.spriteHandlers.supportsPresentation()) {
             return entity;
         }
         EntitySpriteDefinition definition = this.slotProperties
@@ -602,7 +576,7 @@ public final class EntityRoomInspection {
             presentedSlots.add(entityRoomQueriesPresentedEntity(runtime, slot));
         return new RoomEntitySnapshot(
                 presentedSlots,
-                runtime.presentationState.readSpriteSelection(),
+                runtime.presentationState.snapshotSelection(),
                 runtime.spriteTiles,
                 runtime.physicsTables.readGroundInteractionSideScrolling(),
                 runtime.slotProperties.readHookshotChainOam(),
@@ -620,14 +594,14 @@ public final class EntityRoomInspection {
     }
 
     static RoomEntity entityRoomQueriesPresentedEntity(EntityRoomInspection runtime, int slot) {
-        return entityRoomQueriesPresentedEntity(runtime, slot, null, null);
+        return entityRoomQueriesPresentedEntity(runtime, slot, UNREAD_PRESENTATION, UNREAD_PRESENTATION);
     }
 
     static RoomEntity entityRoomQueriesPresentedEntity(
             EntityRoomInspection runtime,
-            int slot, /* Optional cached source; null means this slot has not been read. */
+            int slot, /* Source identity of the cached projection, or UNREAD_PRESENTATION. */
             RoomEntity previousSource,
-            /* Optional cached projection; null means no presentation is cached. */ RoomEntity previousPresentation) {
+            /* Immutable cached projection, seeded with UNREAD_PRESENTATION. */ RoomEntity previousPresentation) {
         RoomEntity entity = runtime.slots[slot];
         boolean hidden = entity.type() == 0x3E
                 && (runtime.indoorRoom
@@ -635,8 +609,7 @@ public final class EntityRoomInspection {
                         : runtime.pickups.readChestPlayerLevelsKnown() && runtime.pickups.readChestSwordLevel() == 0);
         hidden |= entity.type() == 0x3F && runtime.indoorRoom && entityRoomQueriesIndoorTarinAbsent(runtime);
         if (!hidden || entity.spriteVariant() == -1) return entity;
-        if (entity == previousSource && previousPresentation != null && previousPresentation.spriteVariant() == -1)
-            return previousPresentation;
+        if (entity == previousSource && previousPresentation.spriteVariant() == -1) return previousPresentation;
         return EntitySnapshots.withVariant(entity, -1);
     }
 }

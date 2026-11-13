@@ -1,7 +1,6 @@
 package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_IRON_MASK;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
@@ -29,9 +28,9 @@ final class IronMaskHandler {
                     state.slot().ironMaskPrivateState2(slotState.entity().slot());
             int variant =
                     privateState2 == 0 ? slotState.updated().spriteVariant() : ((frameInput.frame() >>> 4) & 0x01);
-            if (state.sprites() != null) {
-                slotState.updated(withDefinition(
-                        slotState.updated(), state.spriteViews().forIronMaskState(privateState2), variant));
+            {
+                slotState.updated(state.sprites()
+                        .present(slotState.updated(), state.spriteViews().forIronMaskState(privateState2), variant));
             }
             presentationFlags.preserveIronMaskPresentation(true);
         }

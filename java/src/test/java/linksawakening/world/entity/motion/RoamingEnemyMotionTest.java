@@ -26,9 +26,9 @@ final class RoamingEnemyMotionTest {
             });
             assertEquals(0, motion.collisionFlags(0));
         }
-        motion.advance(source, 0x50, 0x40, () -> 0, null);
+        motion.advance(source, 0x50, 0x40, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0, motion.state(0));
-        motion.advance(source, 0x50, 0x40, () -> 0, null);
+        motion.advance(source, 0x50, 0x40, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0, motion.state(0));
     }
 
@@ -47,7 +47,7 @@ final class RoamingEnemyMotionTest {
                     randomCalls.incrementAndGet();
                     return 0xFF;
                 },
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 false);
 
         assertEquals(source, update.entity());
@@ -65,7 +65,8 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x0B, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 1, 0x0B, 0, 0, 3);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x48, 0x48, () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(
+                source, 0x48, 0x48, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, false);
 
         assertNotNull(update.launchRequest());
         assertEquals(0x0B, update.launchRequest().sourceType());
@@ -78,7 +79,8 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x09, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 1, 0x0A, 0, 0, 0);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(
+                source, 0x50, 0x40, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, false);
 
         assertNull(update.launchRequest());
         assertEquals(0x09, motion.transitionCountdown(0));
@@ -89,7 +91,13 @@ final class RoamingEnemyMotionTest {
         for (int cycle = 0; cycle < 4; cycle++) {
             RoamingEnemyMotion motion = new RoamingEnemyMotion();
             MotionTestFixture.setStateForTest(motion, 0, 1, 0x0B, 0, cycle, 0);
-            assertNotNull(motion.advance(entity(0, 0x09, 0x40, 0x40), 0x50, 0x40, () -> 0, null, false)
+            assertNotNull(motion.advance(
+                            entity(0, 0x09, 0x40, 0x40),
+                            0x50,
+                            0x40,
+                            () -> 0,
+                            linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                            false)
                     .launchRequest());
         }
     }
@@ -102,7 +110,8 @@ final class RoamingEnemyMotionTest {
 
         MotionTestFixture.setPrivateCountdown1ForTest(motion, 0, 2);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(
+                source, 0x50, 0x40, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, false);
 
         assertNull(update.launchRequest());
     }
@@ -113,7 +122,8 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x09, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 1, 0x0B, 0, 0, 1);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(
+                source, 0x50, 0x40, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, false);
 
         assertNull(update.launchRequest());
     }
@@ -124,7 +134,8 @@ final class RoamingEnemyMotionTest {
         RoomEntity source = entity(0, 0x24, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 1, 0x0B, 0, 0, 0);
 
-        RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40, () -> 0, null, false);
+        RoamingEnemyMotion.Update update = motion.advance(
+                source, 0x50, 0x40, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, false);
 
         assertNull(update.launchRequest());
     }
@@ -134,11 +145,25 @@ final class RoamingEnemyMotionTest {
         RoamingEnemyMotion motion = new RoamingEnemyMotion();
         RoomEntity octorok = entity(0, 0x09, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 1, 0x0B, 0, 0, 0);
-        assertNull(motion.advance(octorok, 0x50, 0x40, () -> 0, null, true).launchRequest());
+        assertNull(motion.advance(
+                        octorok,
+                        0x50,
+                        0x40,
+                        () -> 0,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                        true)
+                .launchRequest());
 
         RoomEntity moblin = entity(0, 0x0B, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 1, 0x0B, 0, 0, 0);
-        assertNotNull(motion.advance(moblin, 0x50, 0x40, () -> 0, null, true).launchRequest());
+        assertNotNull(motion.advance(
+                        moblin,
+                        0x50,
+                        0x40,
+                        () -> 0,
+                        linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                        true)
+                .launchRequest());
     }
 
     @Test

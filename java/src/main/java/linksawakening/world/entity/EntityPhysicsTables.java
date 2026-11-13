@@ -2,11 +2,8 @@ package linksawakening.world.entity;
 
 /** Owned PhysicsTables storage; preserves ROM slot indexing. */
 final class EntityPhysicsTables {
-    private RoomEntityGroundInteraction groundInteraction =
-            (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
-                    RoomEntityGroundInteraction.Result.unchanged(entity, 0);
-    // Optional room geometry/history; null preserves the path without that room input.
-    private RoomEntityBackgroundInteraction backgroundInteraction;
+    private RoomEntityGroundInteraction groundInteraction = RoomEntityGroundInteraction.NONE;
+    private RoomEntityBackgroundInteraction backgroundInteraction = RoomEntityBackgroundInteraction.NONE;
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -27,29 +24,27 @@ final class EntityPhysicsTables {
     private final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean groundInteractionSideScrolling;
-    // Optional room geometry/history; null preserves the path without that room input.
-    private RoomEntityObjectQuery objectQuery;
-    // Optional room geometry/history; null preserves the path without that room input.
-    private RoomEntityObjectQuery objectIntersectionQuery;
+    private RoomEntityObjectQuery objectQuery = RoomEntityObjectQuery.NONE;
+    private RoomEntityObjectQuery objectIntersectionQuery = RoomEntityObjectQuery.NONE;
 
     RoomEntityGroundInteraction readGroundInteraction() {
         return groundInteraction;
     }
 
-    RoomEntityGroundInteraction writeGroundInteraction(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityGroundInteraction
-                    value) {
-        return groundInteraction = value;
+    RoomEntityGroundInteraction writeGroundInteraction(RoomEntityGroundInteraction value) {
+        return groundInteraction = java.util.Objects.requireNonNullElse(value, RoomEntityGroundInteraction.NONE);
+    }
+
+    boolean hasRichBackgroundInteraction() {
+        return backgroundInteraction != RoomEntityBackgroundInteraction.NONE;
     }
 
     RoomEntityBackgroundInteraction readBackgroundInteraction() {
         return backgroundInteraction;
     }
 
-    RoomEntityBackgroundInteraction writeBackgroundInteraction(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    value) {
-        return backgroundInteraction = value;
+    RoomEntityBackgroundInteraction writeBackgroundInteraction(RoomEntityBackgroundInteraction value) {
+        return backgroundInteraction = RoomEntityBackgroundInteraction.orNone(value);
     }
 
     int readSlowTransitionCountdown(int slot) {
@@ -248,19 +243,15 @@ final class EntityPhysicsTables {
         return objectQuery;
     }
 
-    RoomEntityObjectQuery writeObjectQuery(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
-                    value) {
-        return objectQuery = value;
+    RoomEntityObjectQuery writeObjectQuery(RoomEntityObjectQuery value) {
+        return objectQuery = RoomEntityObjectQuery.orNone(value);
     }
 
     RoomEntityObjectQuery readObjectIntersectionQuery() {
-        return objectIntersectionQuery;
+        return objectIntersectionQuery == RoomEntityObjectQuery.NONE ? objectQuery : objectIntersectionQuery;
     }
 
-    RoomEntityObjectQuery writeObjectIntersectionQuery(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
-                    value) {
-        return objectIntersectionQuery = value;
+    RoomEntityObjectQuery writeObjectIntersectionQuery(RoomEntityObjectQuery value) {
+        return objectIntersectionQuery = RoomEntityObjectQuery.orNone(value);
     }
 }

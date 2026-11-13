@@ -23,7 +23,8 @@ final class MiniMoldormMotionTest {
         assertEquals(0x50, motion.historyX(entity.sourceLoadOrder(), 1));
         assertEquals(0x60, motion.historyY(entity.sourceLoadOrder(), 1));
 
-        MiniMoldormMotion.Update update = motion.advanceAfterHistory(entity, 0, 0, 0, null, () -> 0, 0);
+        MiniMoldormMotion.Update update = motion.advanceAfterHistory(
+                entity, 0, 0, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, () -> 0, 0);
 
         assertEquals(0x50, update.entity().x());
         assertEquals(0x60, update.entity().y());
@@ -40,7 +41,8 @@ final class MiniMoldormMotionTest {
         MiniMoldormMotion motion = new MiniMoldormMotion();
         motion.initialize(entity);
         motion.beginFrame(entity, false);
-        motion.advanceAfterHistory(entity, 0, 0, 0, null, () -> 0, 0);
+        motion.advanceAfterHistory(
+                entity, 0, 0, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, () -> 0, 0);
 
         RoomEntity moved = new RoomEntityBuilder()
                 .sourceLoadOrder(7)
@@ -54,7 +56,8 @@ final class MiniMoldormMotionTest {
         assertEquals(0, motion.historyX(moved.sourceLoadOrder(), 1));
         assertEquals(0x50, motion.historyX(moved.sourceLoadOrder(), 2));
 
-        MiniMoldormMotion.Update update = motion.advanceAfterHistory(moved, 0x0F, 0, 0, null, () -> 0, 1);
+        MiniMoldormMotion.Update update = motion.advanceAfterHistory(
+                moved, 0x0F, 0, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, () -> 0, 1);
 
         assertEquals(0x51, update.entity().x());
         assertEquals(0x60, update.entity().y());
@@ -68,7 +71,8 @@ final class MiniMoldormMotionTest {
         MiniMoldormMotion motion = new MiniMoldormMotion();
         motion.initialize(entity);
         motion.beginFrame(entity, false);
-        motion.advanceAfterHistory(entity, 0, 0, 0, null, () -> 0, 0);
+        motion.advanceAfterHistory(
+                entity, 0, 0, 0, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE, () -> 0, 0);
 
         AtomicInteger probes = new AtomicInteger();
         RoomEntityBackgroundInteraction blockedRight = (candidate, direction, nextX, nextY) -> {

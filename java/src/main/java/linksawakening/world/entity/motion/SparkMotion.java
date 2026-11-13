@@ -39,10 +39,8 @@ public final class SparkMotion {
         return withPosition(entity, entity.x(), entity.y() + offset);
     }
 
-    public RoomEntity advance(
-            RoomEntity entity,
-            int frameCounter, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(RoomEntity entity, int frameCounter, RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.type());
@@ -106,11 +104,8 @@ public final class SparkMotion {
         return speedY[slot];
     }
 
-    private static int collisionMask(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
-        if (backgroundCollision == null) {
-            return 0;
+    private static int collisionMask(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        {
         }
         int mask = 0;
         if (backgroundCollision.blocks(entity, 0, entity.x(), entity.y())) {

@@ -9,10 +9,8 @@ public final class EntityFrameContextBuilder {
     private int linkEntityY;
     private int collisionType;
     // Absent before initialization or while this reusable execution scratch is inactive.
-    private IntSupplier randomByteSupplier;
-    // Optional room geometry/history; null preserves the path without that room input.
+    private IntSupplier randomByteSupplier = EntityFrameRandom.REQUIRED_SOURCE;
     private RoomEntityBackgroundCollision backgroundCollision;
-    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityObjectCollision objectCollision;
     // Optional room geometry/history; null preserves the path without that room input.
     private LinkPositionHistory linkPositionHistory;
@@ -56,20 +54,16 @@ public final class EntityFrameContextBuilder {
     }
 
     public EntityFrameContextBuilder randomByteSupplier(IntSupplier value) {
-        randomByteSupplier = value;
+        randomByteSupplier = java.util.Objects.requireNonNullElse(value, EntityFrameRandom.REQUIRED_SOURCE);
         return this;
     }
 
-    public EntityFrameContextBuilder backgroundCollision(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    value) {
+    public EntityFrameContextBuilder backgroundCollision(RoomEntityBackgroundCollision value) {
         backgroundCollision = value;
         return this;
     }
 
-    public EntityFrameContextBuilder objectCollision(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectCollision
-                    value) {
+    public EntityFrameContextBuilder objectCollision(RoomEntityObjectCollision value) {
         objectCollision = value;
         return this;
     }

@@ -80,12 +80,16 @@ final class EntityPickupState {
         return chestPowerBraceletLevel = value;
     }
 
+    {
+        java.util.Arrays.setAll(heartPiecePickup, ignored -> HeartPiecePickupMotion.inactive());
+    }
+
     HeartPiecePickupMotion readHeartPiecePickup(int slot) {
         return heartPiecePickup[slot];
     }
 
     HeartPiecePickupMotion writeHeartPiecePickup(int slot, HeartPiecePickupMotion value) {
-        return heartPiecePickup[slot] = value;
+        return heartPiecePickup[slot] = java.util.Objects.requireNonNull(value, "pickup sequence");
     }
 
     HeartPiecePickupMotion[] storageHeartPiecePickup() {

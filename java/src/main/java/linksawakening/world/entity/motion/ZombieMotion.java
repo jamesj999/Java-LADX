@@ -39,7 +39,7 @@ public final class ZombieMotion {
             int physicsFlags,
             int speedX,
             int speedY,
-            SpawnRequest spawnRequest,
+            /* Optional emitted spawn request; absent when no spawn is due. */ SpawnRequest spawnRequest,
             boolean unloadRequested,
             boolean appliesBackgroundInteraction) {}
 
@@ -112,10 +112,7 @@ public final class ZombieMotion {
     }
 
     PositionAndCollision moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int ignoreHitsCountdown,
-            int frameCounter) {
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int ignoreHitsCountdown, int frameCounter) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -257,11 +254,13 @@ public final class ZombieMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityObjectQuery objectQuery,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
-            int ignoreHitsCountdown) {}
+            int ignoreHitsCountdown) {
+        public ZombieFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 
     static final class ZombieStep {
         private final ZombieMotion owner;
@@ -275,9 +274,7 @@ public final class ZombieMotion {
         private int linkEntityX;
         private int linkEntityY;
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
         private int slot;
@@ -288,7 +285,9 @@ public final class ZombieMotion {
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.ZombieMotion.SpawnRequest spawnRequest;
+        /* Optional emitted spawn request; absent when no spawn is due. */ private linksawakening.world.entity.motion
+                        .ZombieMotion.SpawnRequest
+                spawnRequest;
         private boolean unloadRequested;
         private boolean appliesBackgroundInteraction;
         private int renderedVariant;
@@ -347,14 +346,8 @@ public final class ZombieMotion {
 
         private boolean advanceState2() {
             appliesBackgroundInteraction = true;
-            ZombieMotion.PositionAndCollision moved = backgroundInteraction == null
-                    ? new ZombieMotion.PositionAndCollision(
-                            ZombieMotion.addSpeedToPosition(
-                                    entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot),
-                            ZombieMotion.addSpeedToPosition(
-                                    entity.y(), owner.speedY[slot], owner.speedYAccumulator, slot),
-                            0)
-                    : owner.moveWithBackground(entity, backgroundInteraction, ignoreHitsCountdown, frameCounter);
+            ZombieMotion.PositionAndCollision moved =
+                    owner.moveWithBackground(entity, backgroundInteraction, ignoreHitsCountdown, frameCounter);
             int x = moved.x();
             int y = moved.y();
             int collisionMask = moved.collisionMask();
@@ -388,7 +381,7 @@ public final class ZombieMotion {
             linkEntityX = inputs.linkEntityX();
             linkEntityY = inputs.linkEntityY();
             randomByteSupplier = inputs.randomByteSupplier();
-            objectQuery = inputs.objectQuery();
+            objectQuery = RoomEntityObjectQuery.orNone(inputs.objectQuery());
             backgroundInteraction = inputs.backgroundInteraction();
             ignoreHitsCountdown = inputs.ignoreHitsCountdown();
             ZombieMotion.checkType(entity);
@@ -424,8 +417,8 @@ public final class ZombieMotion {
                     int x = ZombieMotion.SPAWN_X[index];
                     int y = ZombieMotion.SPAWN_Y[index];
                     updated = ZombieMotion.withPositionAndVariant(entity, x, y, variant);
-                    RoomEntityObjectSample object = objectQuery == null ? null : objectQuery.sample(updated);
-                    if (object != null && ZombieMotion.isAllowedSpawnPhysics(object.physicsFlag())) {
+                    RoomEntityObjectSample object = objectQuery.sampleOrAbsent(updated);
+                    if (object.sampled() && ZombieMotion.isAllowedSpawnPhysics(object.physicsFlag())) {
                         countdown = (randomByteSupplier.getAsInt() & 0x3F) + 0x40;
                         spawnRequest = new ZombieMotion.SpawnRequest(x, y);
                     }

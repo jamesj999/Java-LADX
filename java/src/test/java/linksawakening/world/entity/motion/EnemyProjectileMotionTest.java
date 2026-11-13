@@ -35,7 +35,8 @@ final class EnemyProjectileMotionTest {
         RoomEntity entity = entity(0x0C, 0x10, 0x20, 0);
         motion.initializeSpawn(0, entity.type(), 0);
 
-        EnemyProjectileMotion.Update first = motion.advance(entity, null);
+        EnemyProjectileMotion.Update first =
+                motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0x12, first.entity().x());
         assertEquals(0x20, first.entity().y());
         assertEquals(0, first.entity().spriteVariant());
@@ -43,9 +44,11 @@ final class EnemyProjectileMotionTest {
 
         MotionTestFixture.setSpeedForTest(motion, 0, 0x08, 0, 0);
         RoomEntity fractional = first.entity();
-        EnemyProjectileMotion.Update half = motion.advance(fractional, null);
+        EnemyProjectileMotion.Update half =
+                motion.advance(fractional, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0x12, half.entity().x());
-        EnemyProjectileMotion.Update whole = motion.advance(half.entity(), null);
+        EnemyProjectileMotion.Update whole =
+                motion.advance(half.entity(), linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0x13, whole.entity().x());
     }
 
@@ -76,19 +79,26 @@ final class EnemyProjectileMotionTest {
         arrowMotion.initializeSpawn(0, arrow.type(), 0);
         MotionTestFixture.setTransitionForTest(arrowMotion, 0, 0x10, 0, 0x10);
 
-        EnemyProjectileMotion.Update arrowUpdate = arrowMotion.advance(arrow, null);
+        EnemyProjectileMotion.Update arrowUpdate =
+                arrowMotion.advance(arrow, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0x0F, arrowMotion.transitionCountdown(0));
         assertEquals(0x01, arrowUpdate.entity().z());
         assertEquals(0x0E, arrowMotion.speedZ(0));
         assertEquals(0, arrowUpdate.entity().spriteVariant());
-        assertEquals(3, arrowMotion.advance(arrowUpdate.entity(), null).entity().spriteVariant());
+        assertEquals(
+                3,
+                arrowMotion
+                        .advance(arrowUpdate.entity(), linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                        .entity()
+                        .spriteVariant());
 
         EnemyProjectileMotion rockMotion = new EnemyProjectileMotion();
         RoomEntity rock = entity(0x0A, 0x10, 0x20, 0);
         rockMotion.initializeSpawn(0, rock.type(), 0);
         MotionTestFixture.setTransitionForTest(rockMotion, 0, 0x10, 0, 0x10);
 
-        EnemyProjectileMotion.Update rockUpdate = rockMotion.advance(rock, null);
+        EnemyProjectileMotion.Update rockUpdate =
+                rockMotion.advance(rock, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0, rockUpdate.entity().spriteVariant());
     }
 
@@ -99,7 +109,8 @@ final class EnemyProjectileMotionTest {
         motion.initializeSpawn(0, entity.type(), 0);
         MotionTestFixture.setTransitionForTest(motion, 0, 0x02, 0x07, 0x10);
 
-        EnemyProjectileMotion.Update update = motion.advance(entity, null);
+        EnemyProjectileMotion.Update update =
+                motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertTrue(update.unloaded());
         assertEquals(0x01, motion.transitionCountdown(0));
@@ -115,7 +126,8 @@ final class EnemyProjectileMotionTest {
         MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
 
         for (int frame = 1; frame <= 9; frame++) {
-            EnemyProjectileMotion.Update update = motion.advance(entity, null, false, frame, 0, true);
+            EnemyProjectileMotion.Update update = motion.advance(
+                    entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, false, frame, 0, true);
             assertFalse(update.unloaded());
             entity = update.entity();
             assertEquals(7, entity.z());
@@ -144,10 +156,17 @@ final class EnemyProjectileMotionTest {
         MotionTestFixture.setSpeedForTest(motion, 0, initialX, expectedY - 1, 0x10);
         MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
 
-        EnemyProjectileMotion.Update first = motion.advance(entity, null, false, 7, groundStatus, true);
+        EnemyProjectileMotion.Update first = motion.advance(
+                entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, false, 7, groundStatus, true);
         assertEquals(initialX, motion.speedX(0));
         assertEquals(expectedY, motion.speedY(0));
-        motion.advance(first.entity(), null, false, 8, groundStatus, true);
+        motion.advance(
+                first.entity(),
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                false,
+                8,
+                groundStatus,
+                true);
         assertEquals(expectedX, motion.speedX(0));
         assertEquals(expectedY, motion.speedY(0));
     }
@@ -163,18 +182,24 @@ final class EnemyProjectileMotionTest {
         // After impact: direction 0 once, then left for eight frames,
         // down for eight, and right until the countdown-1 unload pass.
         for (int frame = 1; frame <= 22; frame++) {
-            EnemyProjectileMotion.Update update = motion.advance(entity, null);
+            EnemyProjectileMotion.Update update =
+                    motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             assertFalse(update.unloaded());
             int expected = frame == 1 ? 0 : frame <= 9 ? 1 : frame <= 17 ? 3 : 0;
             assertEquals(expected, update.entity().spriteVariant(), "frame " + frame);
             entity = update.entity();
         }
-        assertTrue(motion.advance(entity, null).unloaded());
+        assertTrue(motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .unloaded());
 
         motion.clear(0);
         motion.initializeSpawn(0, 0x0C, 2);
         MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 0, 0x10);
-        assertEquals(2, motion.advance(entity, null).entity().spriteVariant());
+        assertEquals(
+                2,
+                motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                        .entity()
+                        .spriteVariant());
     }
 
     private static void assertSpawnData(

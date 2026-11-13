@@ -16,7 +16,7 @@ final class EntityBossState {
     private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
     // Optional configured drop tables; absence preserves the no-drop path.
-    private EnemyDropResolver enemyDropResolver;
+    private EnemyDropResolver enemyDropResolver = EnemyDropResolver.NONE;
     private EnemyDropResolver.CounterState enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
     private int enemyDropMaxHearts = 3;
     private int enemyDropHealth = 6;
@@ -125,10 +125,8 @@ final class EntityBossState {
         return enemyDropResolver;
     }
 
-    EnemyDropResolver writeEnemyDropResolver(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EnemyDropResolver
-                    value) {
-        return enemyDropResolver = value;
+    EnemyDropResolver writeEnemyDropResolver(EnemyDropResolver value) {
+        return enemyDropResolver = java.util.Objects.requireNonNullElse(value, EnemyDropResolver.NONE);
     }
 
     EnemyDropResolver.CounterState readEnemyDropCounters() {

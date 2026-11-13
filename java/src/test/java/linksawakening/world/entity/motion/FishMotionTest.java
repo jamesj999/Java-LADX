@@ -18,7 +18,8 @@ final class FishMotionTest {
         FishMotion motion = new FishMotion();
         RoomEntity entity = entity(0x40, 0x50, 0);
 
-        FishMotion.Update started = motion.advance(entity, 0, () -> 0, null);
+        FishMotion.Update started =
+                motion.advance(entity, 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(1, motion.state(0));
         assertEquals(0x08, motion.speedX(0));
         assertEquals(0x40, started.transitionCountdown());
@@ -26,10 +27,15 @@ final class FishMotionTest {
         assertEquals(0x52, started.physicsFlags());
         assertFalse(started.waterSplash());
 
-        FishMotion.Update swimming = motion.advance(started.entity(), started.transitionCountdown() - 1, () -> 0, null);
+        FishMotion.Update swimming = motion.advance(
+                started.entity(),
+                started.transitionCountdown() - 1,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(6, swimming.entity().spriteVariant());
 
-        FishMotion.Update launched = motion.advance(swimming.entity(), 0, () -> 0, null);
+        FishMotion.Update launched = motion.advance(
+                swimming.entity(), 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(2, motion.state(0));
         assertEquals(0x10, motion.speedX(0));
         assertEquals(0x18, motion.speedZ(0));
@@ -39,7 +45,8 @@ final class FishMotionTest {
         FishMotion.Update update = launched;
         boolean landed = false;
         for (int frame = 0; frame < 0x80; frame++) {
-            update = motion.advance(update.entity(), 0, () -> 0, null);
+            update = motion.advance(
+                    update.entity(), 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             if (update.waterSplash()) {
                 landed = true;
                 break;
@@ -57,8 +64,10 @@ final class FishMotionTest {
     @Test
     void reversesHorizontalSpeedOnlyWhenTheRomCollisionByteIsSet() {
         FishMotion motion = new FishMotion();
-        FishMotion.Update started = motion.advance(entity(0x40, 0x50, 0), 0, () -> 0, null);
-        FishMotion.Update swimming = motion.advance(started.entity(), 1, () -> 0, null);
+        FishMotion.Update started = motion.advance(
+                entity(0x40, 0x50, 0), 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
+        FishMotion.Update swimming = motion.advance(
+                started.entity(), 1, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         FishMotion.Update blocked = motion.advance(swimming.entity(), 1, () -> 0, (entity, direction, nextX, nextY) -> {
             assertEquals(EntityBackgroundCollisionResult.RIGHT, direction);

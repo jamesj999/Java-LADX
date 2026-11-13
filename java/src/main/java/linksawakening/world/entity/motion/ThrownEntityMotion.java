@@ -90,21 +90,18 @@ public final class ThrownEntityMotion {
     }
 
     /** Applies bank-$03 BouncingEntityPhysics and BombEntityHandler.BounceOffWalls. */
-    public Update advance(
-            RoomEntity entity,
-            boolean
-                    sideScrolling, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(RoomEntity entity, boolean sideScrolling, RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, sideScrolling, backgroundCollision, 0, 0);
     }
 
     public Update advance(
             RoomEntity entity,
             boolean sideScrolling,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             int frameCounter,
             int groundStatus) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         validateSlot(slot);
         if (!active[slot]) {
@@ -127,7 +124,7 @@ public final class ThrownEntityMotion {
         boolean blockedX = false;
         boolean blockedY = false;
         boolean floorCollision = false;
-        if (backgroundCollision != null) {
+        {
             if (speedX[slot] != 0
                     && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
                 x = entity.x();

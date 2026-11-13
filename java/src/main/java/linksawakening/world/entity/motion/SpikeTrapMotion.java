@@ -35,10 +35,8 @@ public final class SpikeTrapMotion {
     }
 
     public Update advance(
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             // A directly-created ACTIVE snapshot has no EntityInitHandler pass.
@@ -105,8 +103,7 @@ public final class SpikeTrapMotion {
             int slot,
             int linkEntityX,
             int linkEntityY,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         if (transitionCountdown[slot] != 0) {
             return Update.silent(entity);
         }
@@ -144,10 +141,7 @@ public final class SpikeTrapMotion {
         return Update.sound(entity, EntityCombatEvent.SoundChannel.NOISE, 0x0A);
     }
 
-    private Update advanceForward(
-            RoomEntity entity,
-            int slot, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    private Update advanceForward(RoomEntity entity, int slot, RoomEntityBackgroundCollision backgroundCollision) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         RoomEntity moved = withPosition(entity, x, y);
@@ -183,11 +177,8 @@ public final class SpikeTrapMotion {
     }
 
     private static boolean hasBackgroundCollision(
-            RoomEntity entity,
-            int direction, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
-        if (backgroundCollision == null) {
-            return false;
+            RoomEntity entity, int direction, RoomEntityBackgroundCollision backgroundCollision) {
+        {
         }
         // SpikeTrapEntityHandler sets hActiveEntityNoBGCollision. The shared
         // ROM routine still records collision bits, but does not snap the

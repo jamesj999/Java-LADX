@@ -67,8 +67,8 @@ public final class FollowingNpcMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(new FollowingNpcFrame(
                 entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision));
     }
@@ -117,8 +117,7 @@ public final class FollowingNpcMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         // GhostEntityHandler writes the current bob height before aiming ($19:5E56).
         int z = GHOST_Z[(frameCounter >>> 3) & 0x07];
         int variant = ghostVariant(entity.x(), entity.y(), linkEntityX, linkEntityY, frameCounter);
@@ -146,8 +145,7 @@ public final class FollowingNpcMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         int direction = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
         int variant = direction * 2 + ((frameCounter >>> 3) & 0x01);
         boolean outsideFollowWindow = !withinRoosterWindow(entity.x(), entity.y(), linkEntityX, linkEntityY);
@@ -220,14 +218,10 @@ public final class FollowingNpcMotion {
         return withPositionAndVariant(entity, x, y, z, variant);
     }
 
-    private int[] move(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    private int[] move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-        if (backgroundCollision != null && nextX != x) {
+        if (nextX != x) {
             int direction = signedByte(speedX[slot]) < 0 ? 1 : 0;
             if (backgroundCollision.blocks(entity, direction, nextX, y)) {
                 nextX = x;
@@ -235,7 +229,7 @@ public final class FollowingNpcMotion {
             }
         }
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null && nextY != y) {
+        if (nextY != y) {
             int direction = signedByte(speedY[slot]) < 0 ? 2 : 3;
             if (backgroundCollision.blocks(entity, direction, nextX, nextY)) {
                 nextY = y;
@@ -351,6 +345,9 @@ public final class FollowingNpcMotion {
             int entityYOffset,
             // Optional room geometry/history; null preserves the path without that room input.
             LinkPositionHistory linkPositionHistory,
-            // Optional room geometry/history; null preserves the path without that room input.
-            RoomEntityBackgroundCollision backgroundCollision) {}
+            RoomEntityBackgroundCollision backgroundCollision) {
+        public FollowingNpcFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 }

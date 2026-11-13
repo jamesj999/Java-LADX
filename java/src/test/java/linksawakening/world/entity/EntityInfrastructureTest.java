@@ -170,7 +170,7 @@ class EntityInfrastructureTest {
                 .collisionType(0)
                 .randomByteSupplier(random)
                 .backgroundCollision(collision)
-                .objectCollision(null)
+                .objectCollision(linksawakening.world.entity.RoomEntityObjectCollision.NONE)
                 .linkPositionHistory(null)
                 .linkZ(0)
                 .linkAirborne(false)

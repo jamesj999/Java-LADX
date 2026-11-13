@@ -24,5 +24,6 @@ public interface EnemyCombatInputs {
 
     int swordHeight();
 
+    /** Optional attack details; absence selects the existing basic attack context. */
     EnemyAttackContext attackContext();
 }

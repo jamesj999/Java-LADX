@@ -6,7 +6,6 @@ import static linksawakening.world.entity.EntityMotionMath.directionFromLinkToEn
 import static linksawakening.world.entity.EntityMotionMath.directionToLink;
 import static linksawakening.world.entity.EntityMotionMath.signedByte;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
-import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
@@ -30,8 +29,7 @@ import linksawakening.world.entity.motion.WitchMotion;
 public final class EntityStoryController {
     final EntityStoryState state;
     final EntityMotionRegistry motions;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
-    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
@@ -51,9 +49,7 @@ public final class EntityStoryController {
     EntityStoryController(
             EntityStoryState state,
             EntityMotionRegistry motions,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
-                            .EntitySpriteHandlerCatalog
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
@@ -71,7 +67,7 @@ public final class EntityStoryController {
             EntityPlayerCommands playerCommands) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.spriteHandlers = spriteHandlers;
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
@@ -875,11 +871,12 @@ public final class EntityStoryController {
                 return false;
             }
             owner.pushLinkFromKid(entity, linkX, linkY);
-            if (owner.spriteHandlers != null)
-                entity = withDefinition(
+            {
+                entity = owner.spriteHandlers.present(
                         entity,
                         owner.spriteViews.forKidPlaying(),
                         (entity.type() == 0x71 ? 2 : 0) | (owner.state.readKidPlayState(slot) == 1 ? 1 : 0));
+            }
             z = addFallingSpeedToPosition(
                     entity.z(),
                     owner.state.postKidZSpeed(slot, -1) & 255,
@@ -904,7 +901,7 @@ public final class EntityStoryController {
                     timer = 0x80;
                     int ball =
                             EntitySlotAllocator.findFreeSlot(owner.slots, owner.combatTables, owner.slots.length - 1);
-                    if (ball >= 0 && owner.spriteHandlers != null) {
+                    if (ball >= 0 && owner.spriteHandlers.supportsPresentation()) {
                         var definition = owner.spriteViews.forKidBall();
                         owner.slots[ball] = new RoomEntity(
                                 ball,

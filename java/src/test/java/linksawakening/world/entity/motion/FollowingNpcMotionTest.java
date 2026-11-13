@@ -33,7 +33,8 @@ final class FollowingNpcMotionTest {
         RoomEntity frame16 = entity;
         RoomEntity current = entity;
         for (int frame = 0; frame <= 16; frame++) {
-            current = motion.advance(current, frame, 0x50, 0x50, null);
+            current = motion.advance(
+                    current, frame, 0x50, 0x50, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             if (frame == 0) {
                 frame0 = current;
             } else if (frame == 8) {
@@ -68,7 +69,8 @@ final class FollowingNpcMotionTest {
         // Frame zero sets Z=$0C before calculating (dx=$30, dy=$0C).
         // The resulting ($08,$02) speed reaches one Y pixel after eight ticks.
         for (int frame = 0; frame < 8; frame++) {
-            current = motion.advance(current, frame, 0x70, 0x50, null);
+            current = motion.advance(
+                    current, frame, 0x70, 0x50, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         }
         assertEquals(0x44, current.x());
         assertEquals(0x51, current.y());
@@ -86,7 +88,8 @@ final class FollowingNpcMotionTest {
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
-        RoomEntity result = motion.advance(entity, 16, 0x40, 0x30, null);
+        RoomEntity result =
+                motion.advance(entity, 16, 0x40, 0x30, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(0x40, result.x());
         assertEquals(0x40, result.y());
@@ -110,7 +113,8 @@ final class FollowingNpcMotionTest {
         RoomEntity frame16 = entity;
         RoomEntity current = entity;
         for (int frame = 0; frame <= 16; frame++) {
-            current = motion.advance(current, frame, 0x50, 0x40, null);
+            current = motion.advance(
+                    current, frame, 0x50, 0x40, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             if (frame == 0) {
                 frame0 = current;
             } else if (frame == 8) {
@@ -143,8 +147,16 @@ final class FollowingNpcMotionTest {
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
-        RoomEntity result =
-                motion.advance(new FollowingNpcFrame(entity, 0, 0x50, 0x60, 0x04, 0x00, 0x00, history, null));
+        RoomEntity result = motion.advance(new FollowingNpcFrame(
+                entity,
+                0,
+                0x50,
+                0x60,
+                0x04,
+                0x00,
+                0x00,
+                history,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(0x30, result.x());
         assertEquals(0x40, result.y());
@@ -172,12 +184,36 @@ final class FollowingNpcMotionTest {
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
-        RoomEntity first =
-                motion.advance(new FollowingNpcFrame(entity, 0, 0x50, 0x60, 0x00, 0x00, 0x00, history, null));
-        RoomEntity second =
-                motion.advance(new FollowingNpcFrame(first, 1, 0x51, 0x61, 0x00, 0x00, 0x00, history, null));
-        RoomEntity third =
-                motion.advance(new FollowingNpcFrame(second, 2, 0x52, 0x62, 0x00, 0x00, 0x00, history, null));
+        RoomEntity first = motion.advance(new FollowingNpcFrame(
+                entity,
+                0,
+                0x50,
+                0x60,
+                0x00,
+                0x00,
+                0x00,
+                history,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
+        RoomEntity second = motion.advance(new FollowingNpcFrame(
+                first,
+                1,
+                0x51,
+                0x61,
+                0x00,
+                0x00,
+                0x00,
+                history,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
+        RoomEntity third = motion.advance(new FollowingNpcFrame(
+                second,
+                2,
+                0x52,
+                0x62,
+                0x00,
+                0x00,
+                0x00,
+                history,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(0x31, third.x());
         assertEquals(0x41, third.y());

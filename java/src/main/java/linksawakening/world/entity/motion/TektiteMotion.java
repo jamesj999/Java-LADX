@@ -48,8 +48,8 @@ public final class TektiteMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -66,7 +66,7 @@ public final class TektiteMotion {
         // ApplyEntityInteractionWithBackground populates directional collision
         // flags before TektiteHorizontal/VerticalCollision. Restore the blocked
         // coordinate and mirror each helper's negate-and-arithmetic-half step.
-        if (backgroundCollision != null) {
+        {
             if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, y)) {
                 x = entity.x();
                 speedX[slot] = negateAndHalve(speedX[slot]);

@@ -13,12 +13,20 @@ public final class RomRandomByteSource implements IntSupplier {
     /** Read-only observation of one actual consumption; no source value is overridden. */
     public record Draw(int frameCounter, int scanline, int previousSeed, int value) {}
 
-    // Optional draw observer; null disables tracing without changing the random stream.
-    private java.util.function.Consumer<Draw> observer;
+    @FunctionalInterface
+    private interface Trace {
+        Trace NONE = (frame, scanline, previous, value) -> {};
+
+        void draw(int frame, int scanline, int previous, int value);
+    }
+
+    private Trace trace = Trace.NONE;
 
     public void setObserver(
             /* Optional observer; null disables tracing. */ java.util.function.Consumer<Draw> observer) {
-        this.observer = observer;
+        this.trace = observer == null
+                ? Trace.NONE
+                : (frame, scanline, previous, value) -> observer.accept(new Draw(frame, scanline, previous, value));
     }
 
     private final int initialSeed;
@@ -64,7 +72,7 @@ public final class RomRandomByteSource implements IntSupplier {
         int previousSeed = randomSeed;
         int sum = (frameCounter + randomSeed + scanline) & 0xFF;
         randomSeed = ((sum >>> 1) | ((sum & 0x01) << 7)) & 0xFF;
-        if (observer != null) observer.accept(new Draw(frameCounter, scanline, previousSeed, randomSeed));
+        trace.draw(frameCounter, scanline, previousSeed, randomSeed);
         return randomSeed;
     }
 }

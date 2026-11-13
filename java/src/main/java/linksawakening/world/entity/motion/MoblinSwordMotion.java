@@ -70,10 +70,10 @@ public final class MoblinSwordMotion {
             RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advance(entity, linkEntityX, linkEntityY, backgroundInteraction, ignoreHitsCountdown, 0, frameCounter);
     }
 
@@ -81,11 +81,11 @@ public final class MoblinSwordMotion {
             RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int alertingSoundCounter,
             int frameCounter) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advance(new MoblinSwordFrame(
                 entity,
                 linkEntityX,
@@ -254,8 +254,7 @@ public final class MoblinSwordMotion {
 
     private RoomEntity moveAndRender(
             RoomEntity entity,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean renderVariant) {
@@ -263,7 +262,7 @@ public final class MoblinSwordMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         collisionsTable[slot] = 0;
-        if (backgroundInteraction != null) {
+        {
             if (x != entity.x()) {
                 int direction = speedX[slot] < 0x80 ? 0 : 1;
                 EntityBackgroundCollisionResult result = backgroundInteraction.probe(
@@ -397,11 +396,14 @@ public final class MoblinSwordMotion {
             RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int alertingSoundCounter,
             int mapId,
             int transitionSequenceCounter,
-            int frameCounter) {}
+            int frameCounter) {
+        public MoblinSwordFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 }

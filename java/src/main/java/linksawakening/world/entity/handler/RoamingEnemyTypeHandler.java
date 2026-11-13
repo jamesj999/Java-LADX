@@ -44,33 +44,24 @@ final class RoamingEnemyTypeHandler {
                                 slotState.entity(),
                                 frameInput.frame(),
                                 frameInput.randomByteSupplier(),
-                                state.background().interaction(),
+                                frameInput.hinoxBackgroundInteraction(),
                                 frameInput.backgroundCollision(),
                                 state.slot().ignoreHits(slotState.entity().slot()),
                                 frameInput.frame());
                 slotState.updated(unmaskedUpdate.entity());
                 state.slot().setTransitionCountdown(slotState.entity().slot(), unmaskedUpdate.transitionCountdown());
             } else {
-                RoamingEnemyMotion.Update roamingUpdate = state.background().interaction() == null
-                        ? state.motion(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                .advance(
-                                        slotState.entity(),
-                                        frameInput.linkEntityX(),
-                                        frameInput.linkEntityY(),
-                                        frameInput.randomByteSupplier(),
-                                        frameInput.backgroundCollision(),
-                                        frameInput.creditsGameplay())
-                        : state.motion(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                .advanceWithInteraction(
-                                        slotState.entity(),
-                                        frameInput.linkEntityX(),
-                                        frameInput.linkEntityY(),
-                                        frameInput.randomByteSupplier(),
-                                        state.background().interaction(),
-                                        state.slot()
-                                                .ignoreHits(slotState.entity().slot()),
-                                        frameInput.frame(),
-                                        frameInput.creditsGameplay());
+                RoamingEnemyMotion.Update roamingUpdate = state.motion(
+                                RoamingEnemyMotion.class, RoamingEnemyMotion::new)
+                        .advanceWithInteraction(
+                                slotState.entity(),
+                                frameInput.linkEntityX(),
+                                frameInput.linkEntityY(),
+                                frameInput.randomByteSupplier(),
+                                frameInput.hinoxBackgroundInteraction(),
+                                state.slot().ignoreHits(slotState.entity().slot()),
+                                frameInput.frame(),
+                                frameInput.creditsGameplay());
                 slotState.updated(roamingUpdate.entity());
                 if (roamingUpdate.launchRequest() != null) {
                     state.emit(roamingUpdate.launchRequest());

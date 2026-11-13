@@ -41,8 +41,8 @@ public final class FishMotion {
             RoomEntity entity,
             int transitionCountdown,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return fishFrameStep.run(entity, transitionCountdown, randomByteSupplier, backgroundCollision);
     }
 
@@ -114,7 +114,6 @@ public final class FishMotion {
         private int transitionCountdown;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int countdown;
@@ -148,7 +147,6 @@ public final class FishMotion {
             x = FishMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot);
             horizontalCollision = false;
             if (owner.speedX[slot] != 0
-                    && backgroundCollision != null
                     && backgroundCollision.blocks(
                             entity, FishMotion.horizontalDirection(owner.speedX[slot]), x, entity.y())) {
                 x = entity.x() & 0xFF;
@@ -237,9 +235,7 @@ public final class FishMotion {
                 linksawakening.world.entity.RoomEntity entity,
                 int transitionCountdown,
                 java.util.function.IntSupplier randomByteSupplier,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundCollision
-                        backgroundCollision) {
+                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
             if (inUse) {
                 return new FishFrameStep(owner)
                         .run(entity, transitionCountdown, randomByteSupplier, backgroundCollision);
