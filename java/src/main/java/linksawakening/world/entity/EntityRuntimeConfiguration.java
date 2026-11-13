@@ -15,32 +15,32 @@ import linksawakening.world.entity.motion.*;
 public final class EntityRuntimeConfiguration {
     // Absent for ROM-free runtimes; sword pickup presentation then retains its supplied definition.
     private final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
-    private final EntityBossRewards bossRewards;
-    private final EntityLiftThrowController liftThrow;
+    private final EntityBossState bossRewards;
+    private final EntityLiftState liftThrow;
     private final EntityLinkState linkState;
     private final EntityMotionRegistry motions;
     private final EntityPhysicsTables physicsTables;
-    private final EntityPickupController pickups;
+    private final EntityPickupState pickups;
     private final EntityPresentationState presentationState;
-    private final EntityProjectileController projectiles;
+    private final EntityProjectileState projectiles;
     private final EntityRoomVariables roomVariables;
-    private final EntityStoryController story;
+    private final EntityStoryState story;
     private final RoomEntity[] slots;
     private final SlimeEyeController slimeEye;
     private final EntitySpriteViews spriteViews;
 
     EntityRuntimeConfiguration(
             linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
-            EntityBossRewards bossRewards,
-            EntityLiftThrowController liftThrow,
+            EntityBossState bossRewards,
+            EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
-            EntityPickupController pickups,
+            EntityPickupState pickups,
             EntityPresentationState presentationState,
-            EntityProjectileController projectiles,
+            EntityProjectileState projectiles,
             EntityRoomVariables roomVariables,
-            EntityStoryController story,
+            EntityStoryState story,
             RoomEntity[] slots,
             SlimeEyeController slimeEye,
             EntitySpriteViews spriteViews) {
@@ -64,14 +64,14 @@ public final class EntityRuntimeConfiguration {
         if (counter < 0 || counter >= EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD) {
             throw new IllegalArgumentException("Boomerang sound counter out of range: " + counter);
         }
-        this.projectiles.state.writeBoomerangSfxCounter(counter);
-        this.projectiles.state.writeBoomerangSoundClockProvided(true);
+        this.projectiles.writeBoomerangSfxCounter(counter);
+        this.projectiles.writeBoomerangSoundClockProvided(true);
     }
 
     public void setTorchPaletteTransitionState(int targetAddress, boolean active) {
         EntitySlotValidation.validateByte(targetAddress, "Torch palette target");
-        this.projectiles.state.writeTorchPaletteTargetAddress(targetAddress);
-        this.projectiles.state.writeTorchPaletteTransitionActive(active);
+        this.projectiles.writeTorchPaletteTargetAddress(targetAddress);
+        this.projectiles.writeTorchPaletteTransitionActive(active);
     }
 
     public void setLinkVelocityZ(int velocity) {

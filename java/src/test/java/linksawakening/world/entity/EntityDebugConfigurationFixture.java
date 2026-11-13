@@ -81,7 +81,7 @@ final class EntityDebugConfigurationFixture {
     void setDroppedItemForTest(int slot, int itemType) {
         EntitySlotValidation.validateEntitySlot(slot);
         EntitySlotValidation.validateEnemyDropByte(itemType, "Dropped item");
-        runtime.bossRewards.writeDroppedItemBySlot(slot, itemType);
+        runtime.bossRewards.state.writeDroppedItemBySlot(slot, itemType);
     }
 
     void setEntityMapIdForTest(int mapId) {
@@ -115,13 +115,13 @@ final class EntityDebugConfigurationFixture {
         if (!isCommonDroppableType(type)) {
             throw new IllegalArgumentException("Entity slot is not an ordinary droppable: " + slot);
         }
-        runtime.bossRewards.writeDroppablePrivateState3(slot, 0);
-        runtime.bossRewards.writeDroppablePrivateState4(slot, 0);
+        runtime.bossRewards.state.writeDroppablePrivateState3(slot, 0);
+        runtime.bossRewards.state.writeDroppablePrivateState4(slot, 0);
         runtime.entityState.physicsTables.writeEntityOptions1Override(
                 slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
         runtime.entityState.physicsTables.writeSlowTransitionCountdown(slot, slowCountdown);
         runtime.entityState.physicsTables.writeSlowTimerInitialized(slot, true);
-        runtime.bossRewards.writeEnemyDropActive(slot, false);
+        runtime.bossRewards.state.writeEnemyDropActive(slot, false);
         runtime.entityState
                 .motions
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)

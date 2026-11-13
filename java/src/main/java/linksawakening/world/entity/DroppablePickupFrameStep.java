@@ -23,7 +23,7 @@ final class DroppablePickupFrameStep {
     linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate run() {
         runtime = owner.runtime;
         slot = entity.slot();
-        hiddenState = runtime.bossRewards().readDroppablePrivateState3(slot);
+        hiddenState = runtime.bossRewards().state.readDroppablePrivateState3(slot);
         if (hiddenState != 0) {
             boolean reveal = false;
             if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_BURIED) {
@@ -37,7 +37,7 @@ final class DroppablePickupFrameStep {
                         reveal = objectId == EntityRomConstants.DROPPABLE_OBJECT_SHORT_GRASS
                                 || objectId == EntityRomConstants.DROPPABLE_OBJECT_SHOVEL_HOLE;
                     } else {
-                        runtime.bossRewards().writeDroppablePrivateState4(slot, 1);
+                        runtime.bossRewards().state.writeDroppablePrivateState4(slot, 1);
                         reveal = objectId == EntityRomConstants.DROPPABLE_OBJECT_SHOVEL_HOLE;
                     }
                 }
@@ -88,11 +88,11 @@ final class DroppablePickupFrameStep {
                                 ? runtime.physicsTables().readEntityOptions1Override(slot)
                                 : EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
         if (entity.type() != EntityRomConstants.ENTITY_DROPPABLE_FAIRY
-                && !runtime.bossRewards().readEnemyDropActive(slot)) {
+                && !runtime.bossRewards().state.readEnemyDropActive(slot)) {
             runtime.motions()
                     .get(EnemyDropMotion.class, EnemyDropMotion::new)
                     .initialize(slot, runtime.physicsTables().readGroundInteractionSideScrolling());
-            runtime.bossRewards().writeEnemyDropActive(slot, true);
+            runtime.bossRewards().state.writeEnemyDropActive(slot, true);
         }
         return owner.commonUpdate(withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
     }

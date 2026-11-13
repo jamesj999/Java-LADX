@@ -27,6 +27,13 @@ import linksawakening.world.room.ChestContentsTable;
  */
 public final class RoomEntityRuntime
         implements EntityRuntimeEffects, EntityRuntimeCombat, EntityRuntimeSpawns, EntityRuntimePlayerCommands {
+    final EntityBombState bombInteractionsState = new EntityBombState();
+    final EntityStoryState storyState = new EntityStoryState();
+    final EntityLiftState liftThrowState = new EntityLiftState();
+    final EntityRewardState rewardsState = new EntityRewardState();
+    final EntityPickupState pickupsState = new EntityPickupState();
+    final EntityBossState bossRewardsState = new EntityBossState();
+    final EntitySlotPresentation slotPropertiesState;
     final EntityProjectileState projectileState = new EntityProjectileState();
     final EntityWarpController warpState = new EntityWarpController();
     final EntityRuntimeState entityState = new EntityRuntimeState();
@@ -35,7 +42,7 @@ public final class RoomEntityRuntime
     private final EntityPlayerCommands playerCommands;
 
     final EntityRoomInitialization roomInitialization;
-    final EntitySlotProperties slotProperties = new EntitySlotProperties(EntitySlotPropertiesServices.bind(this));
+    final EntitySlotProperties slotProperties;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBombInteractions bombInteractions;
     final EntitySlotLifecycle lifecycle;
@@ -45,17 +52,17 @@ public final class RoomEntityRuntime
     private final EntityRuntimeConfiguration entityRuntimeConfiguration;
     final EntityDebugConfiguration entityDebugConfiguration;
     final EntityHandlerRegistry entityHandlers;
-    final EntityRewardController rewards = new EntityRewardController(EntityRewardControllerServices.bind(this));
+    final EntityRewardController rewards;
     final EntityStoryController story;
     final SlimeEyeController slimeEye;
     final GenieEntityController genie;
     final EntityProjectileController projectiles;
-    final EntityPickupController pickups = new EntityPickupController(EntityPickupControllerServices.bind(this));
-    final EntityLiftThrowController liftThrow =
-            new EntityLiftThrowController(EntityLiftThrowControllerServices.bind(this));
+    final EntityPickupController pickups =
+            new EntityPickupController(pickupsState, EntityPickupControllerServices.bind(this));
+    final EntityLiftThrowController liftThrow;
     private final EntityCombatResolver combat;
-    final EntityBossRewards bossRewards = new EntityBossRewards(EntityBossRewardsServices.bind(this));
-    final EntityRoomInspection roomInspection = new EntityRoomInspection(EntityRoomInspectionServices.bind(this));
+    final EntityBossRewards bossRewards = new EntityBossRewards(bossRewardsState, EntityBossRewardsServices.bind(this));
+    final EntityRoomInspection roomInspection;
     final EntityBossInspection bossInspection;
     final EntityFlyingEnemyInspection flyingEnemyInspection;
     final EntityPickupInspection pickupInspection;
@@ -134,30 +141,96 @@ public final class RoomEntityRuntime
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.entityProperties = romTables == null ? null : romTables.entityPropertyTables();
+        this.slotPropertiesState = new EntitySlotPresentation(new EntitySpriteViews(spriteHandlers));
         this.entityDebugConfiguration = new EntityDebugConfiguration(entityState.combatTables, entityState.motions);
         this.effects = new EntityEffectConsumption(
                 entityState.events, entityState.presentationState, entityState.roomVariables);
         this.flyingEnemyInspection = new EntityFlyingEnemyInspection(entityState.motions, entityState.physicsTables);
         this.frameRandom = new EntityFrameRandom(defaultRandomByteSupplier);
         this.lifecycle = new EntitySlotLifecycle(EntitySlotLifecycleServices.bind(this), entityProperties);
-        this.enemyInspection = new EntityEnemyInspection(
-                bossRewards,
+        this.pickupInspection =
+                new EntityPickupInspection(bombInteractionsState, entityState.motions, entityState.physicsTables);
+        this.slotProperties = new EntitySlotProperties(slotPropertiesState, EntitySlotPropertiesServices.bind(this));
+        this.roomInspection = new EntityRoomInspection(
+                warpState,
+                indoorRoom,
+                spriteHandlers,
+                spriteTiles,
+                bombInteractionsState,
+                bossRewardsState,
                 entityState.combatTables,
                 entityState.events,
-                liftThrow,
+                liftThrowState,
                 entityState.linkState,
                 entityState.motions,
                 entityState.physicsTables,
-                inspection(),
+                pickupsState,
+                entityState.presentationState,
+                projectileState,
+                rewardsState,
+                entityState.roomVariables,
+                slotPropertiesState,
+                storyState,
+                enemyCombatTables,
+                slots);
+        this.enemyInspection = new EntityEnemyInspection(
+                bossRewardsState,
+                entityState.combatTables,
+                entityState.events,
+                liftThrowState,
+                entityState.linkState,
+                entityState.motions,
+                entityState.physicsTables,
+                roomInspection,
                 roomInspection,
                 entityState.roomVariables,
+                slotPropertiesState,
+                slots);
+        this.playerCommands = new EntityPlayerCommands(
+                bombInteractionsState,
+                entityState.combatTables,
+                entityState.events,
+                liftThrowState,
+                entityState.motions,
+                entityState.physicsTables,
+                entityState.presentationState,
+                rewardsState,
+                roomInspection,
                 slotProperties,
                 slots);
-        this.bossInspection =
-                new EntityBossInspection(bossRewards, enemyInspection, entityState.motions, entityState.physicsTables);
+        this.entityEnemySpawns = new EntityEnemySpawns(
+                spriteHandlers,
+                bombInteractionsState,
+                bossRewardsState,
+                entityState.combatTables,
+                entityState.events,
+                liftThrowState,
+                entityState.motions,
+                entityState.physicsTables,
+                pickups,
+                slotProperties,
+                slots,
+                lifecycle);
+        this.rewards = new EntityRewardController(
+                rewardsState,
+                entityState.motions,
+                spriteHandlers,
+                entityState.combatTables,
+                entityState.events,
+                entityState.linkState,
+                entityState.physicsTables,
+                entityState.presentationState,
+                entityState.roomVariables,
+                lifecycle,
+                storyState,
+                slots,
+                slotProperties.spriteViews(),
+                playerCommands);
+        this.bossInspection = new EntityBossInspection(
+                bossRewardsState, enemyInspection, entityState.motions, entityState.physicsTables);
         this.backgroundMechanics = new EntityBackgroundMechanics(
                 spriteHandlers,
-                bossRewards,
+                bossRewardsState,
                 entityState.combatTables,
                 enemyInspection,
                 entityState.events,
@@ -183,11 +256,12 @@ public final class RoomEntityRuntime
                 enemyCombatTables,
                 slots);
         this.bombInteractions = new EntityBombInteractions(
+                bombInteractionsState,
                 spriteHandlers,
                 backgroundMechanics,
                 entityState.combatTables,
                 entityState.events,
-                liftThrow,
+                liftThrowState,
                 entityState.linkState,
                 entityState.motions,
                 entityState.physicsTables,
@@ -195,33 +269,25 @@ public final class RoomEntityRuntime
                 enemyCombatTables,
                 slots,
                 lifecycle);
-        this.pickupInspection =
-                new EntityPickupInspection(bombInteractions, entityState.motions, entityState.physicsTables);
-        this.playerCommands = new EntityPlayerCommands(
-                bombInteractions,
-                entityState.combatTables,
-                entityState.events,
-                liftThrow,
+        this.story = new EntityStoryController(
+                storyState,
                 entityState.motions,
-                entityState.physicsTables,
-                entityState.presentationState,
-                rewards,
-                inspection(),
-                slotProperties,
-                slots);
-        this.entityEnemySpawns = new EntityEnemySpawns(
                 spriteHandlers,
-                bombInteractions,
-                bossRewards,
+                backgroundMechanics,
+                bossRewardsState,
                 entityState.combatTables,
                 entityState.events,
-                liftThrow,
-                entityState.motions,
+                entityState.linkState,
                 entityState.physicsTables,
-                pickups,
-                slotProperties,
+                pickupsState,
+                entityState.presentationState,
+                roomInspection,
+                roomInspection,
+                entityState.roomVariables,
+                lifecycle,
                 slots,
-                lifecycle);
+                slotProperties.spriteViews(),
+                playerCommands);
         this.combat = new EntityCombatResolver(
                 spriteHandlers,
                 backgroundMechanics,
@@ -243,16 +309,16 @@ public final class RoomEntityRuntime
                 defaultRandomByteSupplier,
                 spriteHandlers,
                 bombInteractions,
-                bossRewards,
+                bossRewardsState,
                 entityState.combatTables,
                 entityState.events,
-                liftThrow,
+                liftThrowState,
                 entityState.motions,
                 entityState.physicsTables,
                 pickups,
                 entityState.presentationState,
                 projectileState,
-                inspection(),
+                roomInspection,
                 roomInspection,
                 entityState.roomVariables,
                 lifecycle,
@@ -260,31 +326,28 @@ public final class RoomEntityRuntime
                 slots,
                 chestContentsTable,
                 playerCommands);
-        this.story = new EntityStoryController(
-                entityState.motions,
+        this.entityRuntimeConfiguration = new EntityRuntimeConfiguration(
                 spriteHandlers,
-                backgroundMechanics,
-                bossRewards,
-                entityState.combatTables,
-                entityState.events,
+                bossRewardsState,
+                liftThrowState,
                 entityState.linkState,
+                entityState.motions,
                 entityState.physicsTables,
-                pickups,
+                pickupsState,
                 entityState.presentationState,
-                inspection(),
-                roomInspection,
+                projectileState,
                 entityState.roomVariables,
-                lifecycle,
+                storyState,
                 slots,
-                slotProperties.spriteViews(),
-                playerCommands);
+                slimeEye,
+                slotProperties.spriteViews());
         this.projectiles = new EntityProjectileController(
                 indoorRoom,
                 spriteHandlers,
-                bombInteractions,
+                bombInteractionsState,
                 entityState.combatTables,
                 entityState.events,
-                liftThrow,
+                liftThrowState,
                 entityState.motions,
                 entityState.physicsTables,
                 entityPlayerSpawns,
@@ -298,44 +361,48 @@ public final class RoomEntityRuntime
                 bossRewards,
                 entityState.combatTables,
                 entityState.events,
-                liftThrow,
+                liftThrowState,
                 entityState.motions,
                 entityState.physicsTables,
                 entityPlayerSpawns,
                 lifecycle,
                 slotProperties,
                 slots);
-        this.roomInitialization = new EntityRoomInitialization(
-                warpState,
+        this.liftThrow = new EntityLiftThrowController(
+                liftThrowState,
                 indoorRoom,
-                bombInteractions,
-                bossRewards,
-                entityState.combatTables,
-                liftThrow,
-                entityState.motions,
-                entityState.physicsTables,
-                pickups,
-                rewards,
-                slotProperties,
-                story,
-                genie,
-                slots,
-                lifecycle);
-        this.entityRuntimeConfiguration = new EntityRuntimeConfiguration(
                 spriteHandlers,
-                bossRewards,
-                liftThrow,
+                bombInteractionsState,
+                entityState.combatTables,
+                entityState.events,
                 entityState.linkState,
                 entityState.motions,
                 entityState.physicsTables,
-                pickups,
+                pickupsState,
                 entityState.presentationState,
                 projectiles,
-                entityState.roomVariables,
-                story,
+                slotProperties,
+                genie,
                 slots,
-                slimeEye,
-                slotProperties.spriteViews());
+                lifecycle,
+                playerCommands,
+                entityPlayerSpawns);
+        this.roomInitialization = new EntityRoomInitialization(
+                warpState,
+                indoorRoom,
+                bombInteractionsState,
+                bossRewardsState,
+                entityState.combatTables,
+                liftThrowState,
+                entityState.motions,
+                entityState.physicsTables,
+                pickupsState,
+                rewardsState,
+                slotProperties,
+                storyState,
+                genie,
+                slots,
+                lifecycle);
 
         this.entityHandlers = roomInitialization.createEntityHandlers();
         slimeEye.loadRom(romData);
@@ -417,7 +484,7 @@ public final class RoomEntityRuntime
      * The battle flag survives boss death, but not a room load/warp.
      */
     void resetRoomVariables() {
-        bossRewards.writeInBossBattle(false);
+        bossRewards.state.writeInBossBattle(false);
     }
 
     /** EntityInitHandler $03:48B5-4910. No boss-handler writes are outstanding:
@@ -444,7 +511,7 @@ public final class RoomEntityRuntime
     }
 
     public void setHeartPiecesCount(int count) {
-        pickups.writeHeartPiecesCount(count);
+        pickups.state.writeHeartPiecesCount(count);
     }
 
     void blockLinkForOwl(int slot) {
@@ -462,7 +529,7 @@ public final class RoomEntityRuntime
     /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail for a bomb. */
     public int thrownDirection(int slot) {
         validateEntitySlot(slot);
-        return liftThrow.readThrownDirection(slot) & 0xFF;
+        return liftThrow.state.readThrownDirection(slot) & 0xFF;
     }
 
     public int options1(int slot) {

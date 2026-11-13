@@ -24,6 +24,7 @@ final class DroppablePickupBehavior {
         // handler, which selects the Pegasus branch outdoors and the buried
         // branch indoors.
         runtime.bossRewards()
+                .state
                 .writeDroppablePrivateState3(
                         slot,
                         entity.type() == EntityRomConstants.ENTITY_DROPPABLE_HEART
@@ -32,7 +33,7 @@ final class DroppablePickupBehavior {
                                         || runtime.indoorRoom()
                                 ? EntityRomConstants.DROPPABLE_HIDDEN_STATE_BURIED
                                 : EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS);
-        runtime.bossRewards().writeDroppablePrivateState4(slot, 0);
+        runtime.bossRewards().state.writeDroppablePrivateState4(slot, 0);
         runtime.physicsTables()
                 .writeEntityOptions1Override(
                         slot,
@@ -54,9 +55,9 @@ final class DroppablePickupBehavior {
             EntityPickupController owner, RoomEntity entity, int linkEntityX, int linkEntityY) {
         var runtime = owner.runtime;
         int slot = entity.slot();
-        runtime.bossRewards().writeDroppablePrivateState3(slot, 0);
-        runtime.bossRewards().writeDroppablePrivateState4(slot, 0);
-        runtime.bossRewards().writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
+        runtime.bossRewards().state.writeDroppablePrivateState3(slot, 0);
+        runtime.bossRewards().state.writeDroppablePrivateState4(slot, 0);
+        runtime.bossRewards().state.writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
         runtime.physicsTables().writeSlowTransitionCountdown(slot, EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN);
         runtime.physicsTables().writeSlowTimerInitialized(slot, true);
 
@@ -87,7 +88,7 @@ final class DroppablePickupBehavior {
                         linkEntityX,
                         linkEntityY,
                         EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-        runtime.bossRewards().writeEnemyDropActive(slot, true);
+        runtime.bossRewards().state.writeEnemyDropActive(slot, true);
         runtime.physicsTables().writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
     }
 
@@ -133,14 +134,15 @@ final class DroppablePickupBehavior {
     static void advanceHeartPiecePickup(EntityPickupController owner, RoomEntity entity, int x, int y, int z) {
         var runtime = owner.runtime;
         int slot = entity.slot();
-        var update = owner.readHeartPiecePickup(slot)
+        var update = owner.state
+                .readHeartPiecePickup(slot)
                 .advance(
                         runtime.physicsTables().readEnemyTransitionCountdown(slot),
                         runtime.linkState().dialogActive,
-                        owner.readHeartPiecesCount());
+                        owner.state.readHeartPiecesCount());
         runtime.events().heartPieceUpdates.add(update);
-        if (update.incrementPiece()) owner.postHeartPiecesCount(1);
-        if (update.newContainer()) owner.writeHeartPiecesCount(0);
+        if (update.incrementPiece()) owner.state.postHeartPiecesCount(1);
+        if (update.newContainer()) owner.state.writeHeartPiecesCount(0);
         if (update.dialogId() >= 0) runtime.events().pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
         if (update.newContainer())
             runtime.events()

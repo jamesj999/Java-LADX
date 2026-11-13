@@ -26,7 +26,7 @@ final class BossDeathBehavior {
             runtime.roomVariables()
                     .writePendingRoomStatusMask(runtime.roomVariables().readPendingRoomStatusMask() | (0x20));
         }
-        if (entity.sourceLoadOrder() < 0 || (owner.readEnemyDropResolver() == null && !swallowedShield)) {
+        if (entity.sourceLoadOrder() < 0 || (owner.state.readEnemyDropResolver() == null && !swallowedShield)) {
             if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 runtime.roomVariables()
                         .writePendingClearedEntityMask(
@@ -39,26 +39,26 @@ final class BossDeathBehavior {
         EnemyDropResolver.Result result;
         if (swallowedShield) {
             result = new EnemyDropResolver.Result(
-                    EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP, owner.readEnemyDropCounters(), 0);
+                    EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP, owner.state.readEnemyDropCounters(), 0);
         } else {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
                     entity.type(),
                     runtime.roomInspection().enemyDropHealthGroup(entity.slot()),
-                    owner.readDroppedItemBySlot(entity.slot()),
-                    owner.readEnemyDropMaxHearts(),
-                    owner.readEnemyDropHealth(),
-                    owner.readInBossBattle(),
-                    owner.readEnemyDropActivePowerUp(),
+                    owner.state.readDroppedItemBySlot(entity.slot()),
+                    owner.state.readEnemyDropMaxHearts(),
+                    owner.state.readEnemyDropHealth(),
+                    owner.state.readInBossBattle(),
+                    owner.state.readEnemyDropActivePowerUp(),
                     runtime.physicsTables().readGroundInteractionSideScrolling(),
-                    owner.readEnemyDropCounters(),
+                    owner.state.readEnemyDropCounters(),
                     randomByteSupplier);
             result = owner.resolveDrop(context);
-            owner.writeEnemyDropCounters(result.counters());
+            owner.state.writeEnemyDropCounters(result.counters());
         }
 
-        int killIndex = owner.readKillCount() & 0xFF;
-        owner.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
-        owner.writeKillCount((owner.readKillCount() + 1) & 0xFF);
+        int killIndex = owner.state.readKillCount() & 0xFF;
+        owner.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
+        owner.state.writeKillCount((owner.state.readKillCount() + 1) & 0xFF);
         runtime.roomVariables()
                 .writePendingClearedEntityMask(
                         runtime.roomVariables().readPendingClearedEntityMask() | (persistentClearMask(entity)));
@@ -87,24 +87,24 @@ final class BossDeathBehavior {
         if (countdown == 0) {
             // $06:6CC1 calls DidKillEnemy, including SpawnEnemyDrop. The
             // ROM health-group tables select the miniboss healing fairy.
-            if (owner.readEnemyDropResolver() != null) {
+            if (owner.state.readEnemyDropResolver() != null) {
                 EnemyDropResolver.Result drop = owner.resolveDrop(new EnemyDropResolver.Context(
                         entity.type(),
                         runtime.roomInspection().enemyDropHealthGroup(entity.slot()),
-                        owner.readDroppedItemBySlot(slot),
-                        owner.readEnemyDropMaxHearts(),
-                        owner.readEnemyDropHealth(),
-                        owner.readInBossBattle(),
-                        owner.readEnemyDropActivePowerUp(),
+                        owner.state.readDroppedItemBySlot(slot),
+                        owner.state.readEnemyDropMaxHearts(),
+                        owner.state.readEnemyDropHealth(),
+                        owner.state.readInBossBattle(),
+                        owner.state.readEnemyDropActivePowerUp(),
                         runtime.physicsTables().readGroundInteractionSideScrolling(),
-                        owner.readEnemyDropCounters(),
+                        owner.state.readEnemyDropCounters(),
                         randomByteSupplier));
-                owner.writeEnemyDropCounters(drop.counters());
+                owner.state.writeEnemyDropCounters(drop.counters());
                 if (drop.dropped()) runtime.pickups().spawnEnemyDrop(entity, drop.itemType());
             }
-            int killIndex = owner.readKillCount() & 0xFF;
-            owner.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
-            owner.writeKillCount((owner.readKillCount() + 1) & 0xFF);
+            int killIndex = owner.state.readKillCount() & 0xFF;
+            owner.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
+            owner.state.writeKillCount((owner.state.readKillCount() + 1) & 0xFF);
             runtime.roomVariables()
                     .writePendingClearedEntityMask(
                             runtime.roomVariables().readPendingClearedEntityMask() | (persistentClearMask(entity)));
@@ -145,15 +145,15 @@ final class BossDeathBehavior {
                 source,
                 runtime.physicsTables().readBaseEntityFlipAttribute(slot)
                         ^ ((runtime.combatTables().readEnemyFlashCountdown(slot) << 2) & 0x10));
-        if (owner.readBossDeathProducerState(slot) == 0) {
+        if (owner.state.readBossDeathProducerState(slot) == 0) {
             runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xA0);
             runtime.combatTables().writeEnemyFlashCountdown(slot, 0xFF);
-            owner.writeBossDeathProducerState(slot, 1);
-        } else if (owner.readBossDeathProducerState(slot) == 1) {
+            owner.state.writeBossDeathProducerState(slot, 1);
+        } else if (owner.state.readBossDeathProducerState(slot) == 1) {
             if (runtime.physicsTables().readEnemyTransitionCountdown(slot) == 0) {
                 runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xC0);
                 runtime.combatTables().writeEnemyFlashCountdown(slot, 0xFF);
-                owner.writeBossDeathProducerState(slot, 2);
+                owner.state.writeBossDeathProducerState(slot, 2);
             }
         } else if (runtime.physicsTables().readEnemyTransitionCountdown(slot) == 0) {
             runtime.events()

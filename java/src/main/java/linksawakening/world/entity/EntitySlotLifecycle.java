@@ -39,7 +39,7 @@ public final class EntitySlotLifecycle {
             disableEntityWithoutPersistence(entity.slot());
             return false;
         }
-        runtime.bossRewards().writeInBossBattle(true);
+        runtime.bossRewards().state.writeInBossBattle(true);
         return true;
     }
 
@@ -232,20 +232,20 @@ public final class EntitySlotLifecycle {
         if (runtime.combatTables().readDyingCountdown(slot) > 0) {
             runtime.combatTables().postDyingCountdown(slot, -1);
         }
-        if (runtime.bombInteractions().readBombPrivateCountdown1(slot) > 0) {
-            runtime.bombInteractions().postBombPrivateCountdown1(slot, -1);
+        if (runtime.bombInteractions().state.readBombPrivateCountdown1(slot) > 0) {
+            runtime.bombInteractions().state.postBombPrivateCountdown1(slot, -1);
         }
-        if (runtime.bombInteractions().readBombPrivateCountdown3(slot) > 0) {
-            runtime.bombInteractions().postBombPrivateCountdown3(slot, -1);
+        if (runtime.bombInteractions().state.readBombPrivateCountdown3(slot) > 0) {
+            runtime.bombInteractions().state.postBombPrivateCountdown3(slot, -1);
         }
-        if (runtime.story().owlState().readOwlPrivateCountdown1(slot) > 0
+        if (runtime.story().state.owlState().readOwlPrivateCountdown1(slot) > 0
                 && runtime.backgroundMechanics().entityTimersInteractive()) {
-            runtime.story().owlState().postOwlPrivateCountdown1(slot, -1);
+            runtime.story().state.owlState().postOwlPrivateCountdown1(slot, -1);
         }
         runtime.motions().get(HinoxMotion.class, HinoxMotion::new).decrementPrivateCountdown1(slot);
-        if (runtime.liftThrow().readLiftableRockSmashActive(slot)
-                && runtime.liftThrow().readLiftableRockSmashCountdown(slot) > 0) {
-            runtime.liftThrow().postLiftableRockSmashCountdown(slot, -1);
+        if (runtime.liftThrow().state.readLiftableRockSmashActive(slot)
+                && runtime.liftThrow().state.readLiftableRockSmashCountdown(slot) > 0) {
+            runtime.liftThrow().state.postLiftableRockSmashCountdown(slot, -1);
         }
         runtime.motions().get(BlooperMotion.class, BlooperMotion::new).decrementPrivateCountdown3(slot);
         runtime.motions()
@@ -272,7 +272,7 @@ public final class EntitySlotLifecycle {
     }
 
     public void setDroppedItemBySlot(int slot, int value) {
-        runtime.bossRewards().writeDroppedItemBySlot(slot, value);
+        runtime.bossRewards().state.writeDroppedItemBySlot(slot, value);
     }
 
     public void setDyingCountdown(int slot, int value) {
@@ -280,7 +280,7 @@ public final class EntitySlotLifecycle {
     }
 
     public void setDropPrivateCountdown3(int slot, int value) {
-        runtime.bossRewards().writeDropPrivateCountdown3(slot, value);
+        runtime.bossRewards().state.writeDropPrivateCountdown3(slot, value);
     }
 
     public int warpState(int slot) {
@@ -300,7 +300,7 @@ public final class EntitySlotLifecycle {
     }
 
     public int droppablePrivateState3(int slot) {
-        return runtime.bossRewards().readDroppablePrivateState3(slot);
+        return runtime.bossRewards().state.readDroppablePrivateState3(slot);
     }
 
     final EntitySlotLifecycleFrameStep entitySlotLifecycleFrameStep = new EntitySlotLifecycleFrameStep();

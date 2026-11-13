@@ -22,8 +22,8 @@ final class GenieProjectileBehavior {
         if (!owner.genieDeathInitialized[slot]) {
             owner.genieDeathInitialized[slot] = true;
             owner.genieActiveState[slot] = 0;
-            runtime.bossRewards.writeBossAgonySfxCountdown(0x03);
-            runtime.bossRewards.writeBossAgonySourceSlot(slot);
+            runtime.bossRewards.state.writeBossAgonySfxCountdown(0x03);
+            runtime.bossRewards.state.writeBossAgonySourceSlot(slot);
         }
         runtime.combatTables.writeEnemyFlashCountdown(slot, frameCounter & 0xFF);
         switch (owner.genieActiveState[slot]) {

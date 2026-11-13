@@ -52,6 +52,7 @@ final class EntityCompositePresentation {
             }
             int slot = entity.slot();
             runtime.bossRewards()
+                    .state
                     .writeDroppedItemBySlot(
                             slot,
                             runtime.motions()
@@ -85,7 +86,7 @@ final class EntityCompositePresentation {
                 && !runtime.linkState().dialogActive
                 && !runtime.linkState().inventoryAppearing
                 && !runtime.inspection().witchGotItemPresentationActive()) {
-            owner.writeBowWowChainOam(List.of());
+            owner.state.writeBowWowChainOam(List.of());
             return;
         }
         boolean moving = (runtime.linkState().currentLinkSpeedX
@@ -113,6 +114,6 @@ final class EntityCompositePresentation {
                                     .readBowWowState(),
                             frame));
         }
-        owner.writeBowWowChainOam(entries == null ? List.of() : List.copyOf(entries));
+        owner.state.writeBowWowChainOam(entries == null ? List.of() : List.copyOf(entries));
     }
 }

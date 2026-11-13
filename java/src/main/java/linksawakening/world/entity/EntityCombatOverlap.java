@@ -33,7 +33,7 @@ final class EntityCombatOverlap {
                 && RoomEntityCombatRules.overlapsLink(slot.entity, frame.linkEntityX(), frame.linkEntityY());
         slot.swordHit = frame.swordCollisionActive()
                 && slot.booBuddyAllowsSwordCollision
-                && !runtime.slotProperties.readWingedSwordAttackThisFrame(slot.entity.slot())
+                && !runtime.slotProperties.state.readWingedSwordAttackThisFrame(slot.entity.slot())
                 && (slot.entity.type() != EntityRomConstants.ENTITY_LIKE_LIKE
                         || runtime.motions
                                         .get(LikeLikeMotion.class, LikeLikeMotion::new)

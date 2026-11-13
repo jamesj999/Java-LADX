@@ -173,10 +173,10 @@ final class PlayerRewardSpawns {
         runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
         runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        runtime.pickups.writeChestSpeedY(freeSlot, 0);
-        runtime.pickups.writeChestSpeedYAccumulator(freeSlot, 0);
-        runtime.pickups.writeChestInertia(freeSlot, 0);
-        runtime.pickups.writeChestItemBySlot(freeSlot, itemType);
+        runtime.pickups.state.writeChestSpeedY(freeSlot, 0);
+        runtime.pickups.state.writeChestSpeedYAccumulator(freeSlot, 0);
+        runtime.pickups.state.writeChestInertia(freeSlot, 0);
+        runtime.pickups.state.writeChestItemBySlot(freeSlot, itemType);
         runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
         runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, false);
         return freeSlot;

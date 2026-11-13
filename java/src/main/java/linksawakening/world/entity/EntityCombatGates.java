@@ -181,7 +181,7 @@ final class EntityCombatGates {
                                         .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
                                         .state(slot.entity.slot())
                                 == 2
-                        || runtime.slotProperties.readWingedStateTwoThisFrame(slot.entity.slot()))) {
+                        || runtime.slotProperties.state.readWingedStateTwoThisFrame(slot.entity.slot()))) {
             // WingedOctorokEntityHandler returns directly from its jump
             // state instead of calling DefaultEnemyDamageCollisionHandler.
             return false;
@@ -224,7 +224,7 @@ final class EntityCombatGates {
                                         .state(slot.entity.slot())
                                 == 1)
                 || (slot.entity.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE
-                        && runtime.bombInteractions.readBombPrivateCountdown1(slot.entity.slot()) > 0)) {
+                        && runtime.bombInteractions.state.readBombPrivateCountdown1(slot.entity.slot()) > 0)) {
             return false;
         }
         return true;

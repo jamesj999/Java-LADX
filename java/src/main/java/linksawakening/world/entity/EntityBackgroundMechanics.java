@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 public final class EntityBackgroundMechanics {
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
-    final EntityBossRewards bossRewards;
+    final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEnemyInspection enemyInspection;
     final EntityEventChannels events;
@@ -28,7 +28,7 @@ public final class EntityBackgroundMechanics {
 
     EntityBackgroundMechanics(
             linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
-            EntityBossRewards bossRewards,
+            EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
             EntityEventChannels events,

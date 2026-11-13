@@ -27,7 +27,7 @@ final class OwlEventStep {
     void run() {
         runtime = owner;
         slot = entity.slot();
-        switch (owner.owlState().readOwlEventState(slot)) {
+        switch (owner.state.owlState().readOwlEventState(slot)) {
             case 0 -> {
                 if (!advanceState0()) return;
             }
@@ -51,15 +51,17 @@ final class OwlEventStep {
             if (linkEntityY < 0x44 || linkEntityX < 0x40 || linkEntityX >= 0x70) {
                 return false;
             }
-            owner.owlState().writeOwlPreviousMusicTrack(slot, 0x1D);
+            owner.state.owlState().writeOwlPreviousMusicTrack(slot, 0x1D);
         } else if (runtime.roomVariables.readEntityRoomId() == EntityRomConstants.ROOM_OW_TAIL_KEY_CHEST) {
-            if (!owner.readPlayerHasTailKey() || owner.owlState().readOwlPrivateCountdown1(slot) != 0) {
+            if (!owner.state.readPlayerHasTailKey() || owner.state.owlState().readOwlPrivateCountdown1(slot) != 0) {
                 return false;
             }
-            owner.owlState()
+            owner.state
+                    .owlState()
                     .writeOwlPreviousMusicTrack(
                             slot,
-                            owner.owlState()
+                            owner.state
+                                    .owlState()
                                     .readOwlDefaultMusicResolver()
                                     .applyAsInt(runtime.roomVariables.readEntityRoomId()));
         } else if (runtime.roomVariables.readEntityRoomId() == EntityRomConstants.ROOM_OW_WEST_OF_TAIL_CAVE) {
@@ -68,14 +70,16 @@ final class OwlEventStep {
                 runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 return false;
             }
-            owner.owlState()
+            owner.state
+                    .owlState()
                     .writeOwlPreviousMusicTrack(
                             slot,
-                            owner.owlState()
+                            owner.state
+                                    .owlState()
                                     .readOwlDefaultMusicResolver()
                                     .applyAsInt(runtime.roomVariables.readEntityRoomId()));
             runtime.presentationState.writePendingMusicTrack(0x22);
-            owner.owlState().writeOwlEventState(slot, 2);
+            owner.state.owlState().writeOwlEventState(slot, 2);
             return false;
         } else if (runtime.roomVariables.readEntityRoomId() == EntityRomConstants.ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
             if (runtime.pickups.readChestSwordLevel() == 0
@@ -88,14 +92,16 @@ final class OwlEventStep {
                 runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 return false;
             }
-            owner.owlState()
+            owner.state
+                    .owlState()
                     .writeOwlPreviousMusicTrack(
                             slot,
-                            owner.owlState()
+                            owner.state
+                                    .owlState()
                                     .readOwlDefaultMusicResolver()
                                     .applyAsInt(runtime.roomVariables.readEntityRoomId()));
             runtime.presentationState.writePendingMusicTrack(0x22);
-            owner.owlState().writeOwlEventState(slot, 2);
+            owner.state.owlState().writeOwlEventState(slot, 2);
             return false;
         } else {
             if (runtime.pickups.readChestSwordLevel() == 0) {
@@ -105,19 +111,21 @@ final class OwlEventStep {
             if (runtime.roomVariables.readEntityRoomId() != 0x80) {
                 return false;
             }
-            owner.owlState()
+            owner.state
+                    .owlState()
                     .writeOwlPreviousMusicTrack(
                             slot,
-                            owner.owlState()
+                            owner.state
+                                    .owlState()
                                     .readOwlDefaultMusicResolver()
                                     .applyAsInt(runtime.roomVariables.readEntityRoomId()));
         }
         runtime.presentationState.writePendingMusicTrack(0x22);
-        owner.owlState().writeOwlSpeedX(slot, 0x18);
-        owner.owlState().writeOwlSpeedY(slot, 0x10);
-        owner.owlState().writeOwlSpeedZ(slot, 0xFC);
+        owner.state.owlState().writeOwlSpeedX(slot, 0x18);
+        owner.state.owlState().writeOwlSpeedY(slot, 0x10);
+        owner.state.owlState().writeOwlSpeedZ(slot, 0xFC);
         runtime.slots[slot] = withZ(entity, 0x20);
-        owner.owlState().writeOwlEventState(slot, 1);
+        owner.state.owlState().writeOwlEventState(slot, 1);
 
         return true;
     }
@@ -127,41 +135,43 @@ final class OwlEventStep {
         runtime.blockLinkForOwl(slot);
         runtime.events.pendingLinkFacingRequests.add(
                 new LinkFacingRequest(slot, directionFromLinkToEntity(entity, linkEntityX, linkEntityY)));
-        if (owner.owlState().readOwlBoomerangSfxCounter(slot) == 0) {
+        if (owner.state.owlState().readOwlBoomerangSfxCounter(slot) == 0) {
             runtime.events.pendingEntityEvents.add(
                     new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x2D));
-            owner.owlState().writeOwlBoomerangSfxCounter(slot, 0x1A);
+            owner.state.owlState().writeOwlBoomerangSfxCounter(slot, 0x1A);
         } else {
-            owner.owlState().postOwlBoomerangSfxCounter(slot, -1);
+            owner.state.owlState().postOwlBoomerangSfxCounter(slot, -1);
         }
         RoomEntity flying = runtime.roomInspection.owlPresentation(entity, frameCounter);
         int x = addFallingSpeedToPosition(
                 flying.x(),
-                owner.owlState().readOwlSpeedX(slot),
-                owner.owlState().storageOwlXAccumulator(),
+                owner.state.owlState().readOwlSpeedX(slot),
+                owner.state.owlState().storageOwlXAccumulator(),
                 slot);
         int y = addFallingSpeedToPosition(
                 flying.y(),
-                owner.owlState().readOwlSpeedY(slot),
-                owner.owlState().storageOwlYAccumulator(),
+                owner.state.owlState().readOwlSpeedY(slot),
+                owner.state.owlState().storageOwlYAccumulator(),
                 slot);
         if (flying.z() == 0) {
-            owner.owlState().writeOwlEventState(slot, 2);
+            owner.state.owlState().writeOwlEventState(slot, 2);
             runtime.slots[slot] = withPositionAndVariant(flying, x, y, 0);
             return false;
         }
         int z = addFallingSpeedToPosition(
                 flying.z(),
-                owner.owlState().readOwlSpeedZ(slot),
-                owner.owlState().storageOwlZAccumulator(),
+                owner.state.owlState().readOwlSpeedZ(slot),
+                owner.state.owlState().storageOwlZAccumulator(),
                 slot);
         if ((frameCounter & 0x03) == 0) {
-            owner.owlState()
+            owner.state
+                    .owlState()
                     .writeOwlSpeedX(
-                            slot, approachSignedByteZero(owner.owlState().readOwlSpeedX(slot)));
-            owner.owlState()
+                            slot, approachSignedByteZero(owner.state.owlState().readOwlSpeedX(slot)));
+            owner.state
+                    .owlState()
                     .writeOwlSpeedY(
-                            slot, approachSignedByteZero(owner.owlState().readOwlSpeedY(slot)));
+                            slot, approachSignedByteZero(owner.state.owlState().readOwlSpeedY(slot)));
         }
         if (signedByte(z) <= 0) z = 0;
         runtime.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
@@ -178,11 +188,11 @@ final class OwlEventStep {
         }
         runtime.slots[slot] = runtime.roomInspection.owlPresentation(entity, frameCounter);
         int globalDialogId =
-                owner.owlState().readOwlDialogResolver().applyAsInt(runtime.roomVariables.readEntityRoomId());
+                owner.state.owlState().readOwlDialogResolver().applyAsInt(runtime.roomVariables.readEntityRoomId());
         runtime.events.pendingDialogRequests.add(
                 new DialogRequest((globalDialogId >>> 8) & 0xFF, globalDialogId & 0xFF));
         runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
-        owner.owlState().writeOwlEventState(slot, 3);
+        owner.state.owlState().writeOwlEventState(slot, 3);
 
         return true;
     }
@@ -200,14 +210,14 @@ final class OwlEventStep {
             return false;
         }
         if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
-            if (!owner.owlState().readOwlCompletionEmitted(slot)) {
+            if (!owner.state.owlState().readOwlCompletionEmitted(slot)) {
                 runtime.events.pendingOwlEventCompletions.add(new OwlEventCompletion(slot));
-                owner.owlState().writeOwlCompletionEmitted(slot, true);
+                owner.state.owlState().writeOwlCompletionEmitted(slot, true);
             }
-            owner.owlState().writeOwlSpeedX(slot, linkEntityX < entity.x() ? 0x20 : 0xE0);
-            owner.owlState().writeOwlSpeedY(slot, linkEntityY < entity.y() ? 0x20 : 0xE0);
-            owner.owlState().writeOwlSpeedZ(slot, 0x04);
-            owner.owlState().writeOwlEventState(slot, 4);
+            owner.state.owlState().writeOwlSpeedX(slot, linkEntityX < entity.x() ? 0x20 : 0xE0);
+            owner.state.owlState().writeOwlSpeedY(slot, linkEntityY < entity.y() ? 0x20 : 0xE0);
+            owner.state.owlState().writeOwlSpeedZ(slot, 0x04);
+            owner.state.owlState().writeOwlEventState(slot, 4);
         }
 
         return true;

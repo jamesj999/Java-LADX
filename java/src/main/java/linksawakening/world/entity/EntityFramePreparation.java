@@ -72,7 +72,7 @@ final class EntityFramePreparation {
                         && state.gates().handlerLinkCollisionEnabled()
                         && state.inputs().projectileLinkState().motionState()
                                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
-        state.story().writeShouldGetLostInMysteriousWoods(false);
+        state.story().state.writeShouldGetLostInMysteriousWoods(false);
         state.bombInteractions().finalizePendingBombPresentations();
         state.inputs().frame(state.inputs().frameCounter() & 0xFF);
         state.inputs().romCollisionType(state.inputs().collisionType() & 0xFF);
@@ -94,8 +94,8 @@ final class EntityFramePreparation {
         if (state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).readSwordMoblinAlertingSoundCounter() > 0) {
             state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).postSwordMoblinAlertingSoundCounter(-1);
         }
-        if (state.bombInteractions().readBombArrowCooldown() > 0) {
-            state.bombInteractions().postBombArrowCooldown(-1);
+        if (state.bombInteractions().state.readBombArrowCooldown() > 0) {
+            state.bombInteractions().state.postBombArrowCooldown(-1);
         }
     }
 
@@ -117,8 +117,8 @@ final class EntityFramePreparation {
         state.physicsTables().clearEnemyProjectileSpawnedThisFrame();
         state.physicsTables().clearDynamicEntitySpawnedThisFrame();
         state.genie().beginFrame();
-        Arrays.fill(state.slotProperties().storageWingedSwordAttackThisFrame(), false);
-        Arrays.fill(state.slotProperties().storageWingedStateTwoThisFrame(), false);
+        Arrays.fill(state.slotProperties().state.storageWingedSwordAttackThisFrame(), false);
+        Arrays.fill(state.slotProperties().state.storageWingedStateTwoThisFrame(), false);
         state.events().transientVfxRequests.clear();
         state.events().pendingLinkFinalPositionRequests.clear();
         state.events().pendingRoosterLinkStateRequests.clear();
@@ -162,13 +162,13 @@ final class EntityFramePreparation {
 
     static void prepareLateFrameEvents(EntityFrameExecution state) {
 
-        if (state.bossRewards().readBossAgonySfxCountdown() > 0) {
-            state.bossRewards().postBossAgonySfxCountdown(-1);
-            if (state.bossRewards().readBossAgonySfxCountdown() == 0) {
+        if (state.bossRewards().state.readBossAgonySfxCountdown() > 0) {
+            state.bossRewards().state.postBossAgonySfxCountdown(-1);
+            if (state.bossRewards().state.readBossAgonySfxCountdown() == 0) {
                 state.events()
                         .pendingEntityEvents
                         .add(new EntityCombatEvent(
-                                state.bossRewards().readBossAgonySourceSlot(),
+                                state.bossRewards().state.readBossAgonySourceSlot(),
                                 EntityRomConstants.ENTITY_GENIE,
                                 0,
                                 false,

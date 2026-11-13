@@ -19,11 +19,11 @@ import linksawakening.world.entity.motion.ZoraMotion;
 public final class EntityEnemySpawns {
     // Optional ROM catalog for ROM-free entity fixtures.
     final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
-    final EntityBombInteractions bombInteractions;
-    final EntityBossRewards bossRewards;
+    final EntityBombState bombInteractions;
+    final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
-    final EntityLiftThrowController liftThrow;
+    final EntityLiftState liftThrow;
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntityPickupController pickups;
@@ -33,11 +33,11 @@ public final class EntityEnemySpawns {
 
     EntityEnemySpawns(
             linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
-            EntityBombInteractions bombInteractions,
-            EntityBossRewards bossRewards,
+            EntityBombState bombInteractions,
+            EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEventChannels events,
-            EntityLiftThrowController liftThrow,
+            EntityLiftState liftThrow,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntityPickupController pickups,

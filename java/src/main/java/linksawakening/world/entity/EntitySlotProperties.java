@@ -12,23 +12,17 @@ import linksawakening.world.entity.motion.*;
 
 /** ROM per-slot options, sprite definitions and handler metadata. */
 public final class EntitySlotProperties {
-    private List<HookshotChainOam.Entry> hookshotChainOam = List.of();
-    private List<PincerBodyOam.Entry> pincerBodyOam = List.of();
-    private List<WingedOctorokOam.Entry> wingedOctorokOam = List.of();
-    private final boolean[] wingedSwordAttackThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] wingedStateTwoThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private List<BowWowChain.Entry> bowWowChainOam = List.of();
+    final EntitySlotPresentation state;
     final EntitySlotPropertiesServices runtime;
-    private EntitySpriteViews spriteViews;
 
-    EntitySlotProperties(EntitySlotPropertiesServices runtime) {
+    EntitySlotProperties(EntitySlotPresentation state, EntitySlotPropertiesServices runtime) {
+        this.state = java.util.Objects.requireNonNull(state, "state");
         this.runtime = runtime;
         this.puzzleCountdown = runtime.physicsTables()::readEnemyTransitionCountdown;
     }
 
     public EntitySpriteViews spriteViews() {
-        if (spriteViews == null) spriteViews = new EntitySpriteViews(runtime.spriteHandlers());
-        return spriteViews;
+        return state.spriteViews();
     }
 
     void resolveThreeOfAKindPuzzle() {
@@ -67,11 +61,11 @@ public final class EntitySlotProperties {
     void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
         int slot = runtime.inspection().hookshotSlot();
         if (slot < 0 || !runtime.slots()[slot].loaded()) {
-            this.writeHookshotChainOam(List.of());
+            state.writeHookshotChainOam(List.of());
             return;
         }
         RoomEntity chain = runtime.slots()[slot];
-        this.writeHookshotChainOam(
+        state.writeHookshotChainOam(
                 HookshotChainOam.entries(chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter));
     }
 
@@ -94,7 +88,7 @@ public final class EntitySlotProperties {
                     entity.y(),
                     runtime.motions().get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
         }
-        this.writePincerBodyOam(entries == null ? List.of() : List.copyOf(entries));
+        state.writePincerBodyOam(entries == null ? List.of() : List.copyOf(entries));
     }
 
     void updateWingedOctorokOam() {
@@ -113,7 +107,7 @@ public final class EntitySlotProperties {
                     entity.y(),
                     entity.z()));
         }
-        this.writeWingedOctorokOam(entries == null ? List.of() : List.copyOf(entries));
+        state.writeWingedOctorokOam(entries == null ? List.of() : List.copyOf(entries));
     }
 
     public boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
@@ -150,62 +144,6 @@ public final class EntitySlotProperties {
 
     public int options1(int slot) {
         return EntitySlotPropertyRules.options1(this, slot);
-    }
-
-    List<HookshotChainOam.Entry> readHookshotChainOam() {
-        return hookshotChainOam;
-    }
-
-    List<HookshotChainOam.Entry> writeHookshotChainOam(List<HookshotChainOam.Entry> value) {
-        return hookshotChainOam = value;
-    }
-
-    List<PincerBodyOam.Entry> readPincerBodyOam() {
-        return pincerBodyOam;
-    }
-
-    List<PincerBodyOam.Entry> writePincerBodyOam(List<PincerBodyOam.Entry> value) {
-        return pincerBodyOam = value;
-    }
-
-    List<WingedOctorokOam.Entry> readWingedOctorokOam() {
-        return wingedOctorokOam;
-    }
-
-    List<WingedOctorokOam.Entry> writeWingedOctorokOam(List<WingedOctorokOam.Entry> value) {
-        return wingedOctorokOam = value;
-    }
-
-    boolean readWingedSwordAttackThisFrame(int slot) {
-        return wingedSwordAttackThisFrame[slot];
-    }
-
-    boolean writeWingedSwordAttackThisFrame(int slot, boolean value) {
-        return wingedSwordAttackThisFrame[slot] = value;
-    }
-
-    boolean[] storageWingedSwordAttackThisFrame() {
-        return wingedSwordAttackThisFrame;
-    }
-
-    boolean readWingedStateTwoThisFrame(int slot) {
-        return wingedStateTwoThisFrame[slot];
-    }
-
-    boolean writeWingedStateTwoThisFrame(int slot, boolean value) {
-        return wingedStateTwoThisFrame[slot] = value;
-    }
-
-    boolean[] storageWingedStateTwoThisFrame() {
-        return wingedStateTwoThisFrame;
-    }
-
-    List<BowWowChain.Entry> readBowWowChainOam() {
-        return bowWowChainOam;
-    }
-
-    List<BowWowChain.Entry> writeBowWowChainOam(List<BowWowChain.Entry> value) {
-        return bowWowChainOam = value;
     }
 
     final java.util.function.IntUnaryOperator puzzleCountdown;

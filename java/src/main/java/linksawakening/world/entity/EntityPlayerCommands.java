@@ -15,14 +15,14 @@ import linksawakening.world.entity.motion.BombMotion;
 
 /** Player lift, throw, block movement and held-item presentation commands. */
 final class EntityPlayerCommands {
-    final EntityBombInteractions bombInteractions;
+    final EntityBombState bombInteractions;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
-    final EntityLiftThrowController liftThrow;
+    final EntityLiftState liftThrow;
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntityPresentationState presentationState;
-    final EntityRewardController rewards;
+    final EntityRewardState rewards;
     final EntityRoomInspection inspection;
     final EntitySlotProperties slotProperties;
     final RoomEntity[] slots;
@@ -31,14 +31,14 @@ final class EntityPlayerCommands {
     private final RoomEntity[] marinPresentations = new RoomEntity[8];
 
     EntityPlayerCommands(
-            EntityBombInteractions bombInteractions,
+            EntityBombState bombInteractions,
             EntityCombatTables combatTables,
             EntityEventChannels events,
-            EntityLiftThrowController liftThrow,
+            EntityLiftState liftThrow,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntityPresentationState presentationState,
-            EntityRewardController rewards,
+            EntityRewardState rewards,
             EntityRoomInspection inspection,
             EntitySlotProperties slotProperties,
             RoomEntity[] slots) {

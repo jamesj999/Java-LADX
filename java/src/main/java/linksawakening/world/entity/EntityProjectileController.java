@@ -16,10 +16,10 @@ public final class EntityProjectileController {
     final boolean indoorRoom;
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
-    final EntityBombInteractions bombInteractions;
+    final EntityBombState bombInteractions;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
-    final EntityLiftThrowController liftThrow;
+    final EntityLiftState liftThrow;
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntityPlayerSpawns entityPlayerSpawns;
@@ -34,10 +34,10 @@ public final class EntityProjectileController {
     EntityProjectileController(
             boolean indoorRoom,
             linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
-            EntityBombInteractions bombInteractions,
+            EntityBombState bombInteractions,
             EntityCombatTables combatTables,
             EntityEventChannels events,
-            EntityLiftThrowController liftThrow,
+            EntityLiftState liftThrow,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntityPlayerSpawns entityPlayerSpawns,
@@ -191,11 +191,11 @@ public final class EntityProjectileController {
     }
 
     public void setWingedStateTwoThisFrame(int slot, boolean value) {
-        this.slotProperties.writeWingedStateTwoThisFrame(slot, value);
+        this.slotProperties.state.writeWingedStateTwoThisFrame(slot, value);
     }
 
     public void setWingedSwordAttackThisFrame(int slot, boolean value) {
-        this.slotProperties.writeWingedSwordAttackThisFrame(slot, value);
+        this.slotProperties.state.writeWingedSwordAttackThisFrame(slot, value);
     }
 
     public int swordMoblinAlertingSoundCounter() {

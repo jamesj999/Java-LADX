@@ -26,7 +26,7 @@ final class BossKeyDropStep {
             return;
         }
 
-        state = owner.readBossDeathProducerState(slot);
+        state = owner.state.readBossDeathProducerState(slot);
         if (source.type() == EntityRomConstants.ENTITY_DESERT_LANMOLA) {
             switch (state) {
                 case 0 -> {
@@ -73,14 +73,14 @@ final class BossKeyDropStep {
 
     private boolean advanceState0() {
         // func_006_5629: transition $60, then private state 2++.
-        owner.writeBossDeathProducerState(slot, 1);
+        owner.state.writeBossDeathProducerState(slot, 1);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x60);
         return false;
     }
 
     private boolean advanceState1() {
         // func_006_563A: transition $CF, then private state 2++.
-        owner.writeBossDeathProducerState(slot, 2);
+        owner.state.writeBossDeathProducerState(slot, 2);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xCF);
         return false;
     }
@@ -100,7 +100,7 @@ final class BossKeyDropStep {
     private boolean advanceState02() {
         // ArmosKnightPrivateState0Handler: transition $A0 and
         // the first full flash countdown.
-        owner.writeBossDeathProducerState(slot, 1);
+        owner.state.writeBossDeathProducerState(slot, 1);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xA0);
         runtime.combatTables().writeEnemyFlashCountdown(slot, 0xFF);
         return false;
@@ -109,7 +109,7 @@ final class BossKeyDropStep {
     private boolean advanceState12() {
         // ArmosKnightPrivateState1Handler: the second flash
         // begins only after the first countdown reaches zero.
-        owner.writeBossDeathProducerState(slot, 2);
+        owner.state.writeBossDeathProducerState(slot, 2);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xC0);
         runtime.combatTables().writeEnemyFlashCountdown(slot, 0xFF);
         return false;
@@ -120,9 +120,9 @@ final class BossKeyDropStep {
         // then calls DidKillEnemy. Armos has pre-forced the key;
         // Hinox uses the ordinary drop resolver here.
         if (source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
-            int killIndex = owner.readKillCount() & 0xFF;
-            owner.writeKillOrder(killIndex, source.sourceLoadOrder() & 0xFF);
-            owner.writeKillCount((owner.readKillCount() + 1) & 0xFF);
+            int killIndex = owner.state.readKillCount() & 0xFF;
+            owner.state.writeKillOrder(killIndex, source.sourceLoadOrder() & 0xFF);
+            owner.state.writeKillCount((owner.state.readKillCount() + 1) & 0xFF);
             runtime.roomVariables()
                     .writePendingClearedEntityMask(
                             runtime.roomVariables().readPendingClearedEntityMask() | (persistentClearMask(source)));
@@ -147,7 +147,7 @@ final class BossKeyDropStep {
 
     private boolean advanceState03() {
         // func_007_7EB6: transition $A0, then private state 2++.
-        owner.writeBossDeathProducerState(slot, 1);
+        owner.state.writeBossDeathProducerState(slot, 1);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xA0);
 
         return true;
@@ -155,7 +155,7 @@ final class BossKeyDropStep {
 
     private boolean advanceState13() {
         // func_007_7EC7: transition $C0, then private state 2++.
-        owner.writeBossDeathProducerState(slot, 2);
+        owner.state.writeBossDeathProducerState(slot, 2);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xC0);
 
         return true;

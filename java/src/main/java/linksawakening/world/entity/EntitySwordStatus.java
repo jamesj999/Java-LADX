@@ -76,13 +76,13 @@ final class EntitySwordStatus {
                         ? 0
                         : (frame.attackContext().powerRecoil() ? 0x40 : 0x2F));
         if (slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
-            runtime.bossRewards.writeBossDeathProducerState(slot.entity.slot(), 0);
+            runtime.bossRewards.state.writeBossDeathProducerState(slot.entity.slot(), 0);
             runtime.motions
                     .get(MoblinKingMotion.class, MoblinKingMotion::new)
                     .setLethalHitFrame(slot.entity.slot(), (frame.frameCounter() & 255) + 1);
         }
         if (slot.entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-            runtime.bossRewards.writeBossDeathProducerState(slot.entity.slot(), 0);
+            runtime.bossRewards.state.writeBossDeathProducerState(slot.entity.slot(), 0);
             runtime.motions.get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot.entity.slot(), 0);
         }
         if (slot.entity.type() == 0x12) {

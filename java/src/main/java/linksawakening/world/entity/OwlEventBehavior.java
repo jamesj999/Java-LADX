@@ -26,18 +26,18 @@ final class OwlEventBehavior {
         RoomEntity flying = runtime.roomInspection.owlPresentation(entity, frameCounter);
         int x = addFallingSpeedToPosition(
                 flying.x(),
-                owner.owlState().readOwlSpeedX(slot),
-                owner.owlState().storageOwlXAccumulator(),
+                owner.state.owlState().readOwlSpeedX(slot),
+                owner.state.owlState().storageOwlXAccumulator(),
                 slot);
         int y = addFallingSpeedToPosition(
                 flying.y(),
-                owner.owlState().readOwlSpeedY(slot),
-                owner.owlState().storageOwlYAccumulator(),
+                owner.state.owlState().readOwlSpeedY(slot),
+                owner.state.owlState().storageOwlYAccumulator(),
                 slot);
         int z = addFallingSpeedToPosition(
                 flying.z(),
-                owner.owlState().readOwlSpeedZ(slot),
-                owner.owlState().storageOwlZAccumulator(),
+                owner.state.owlState().readOwlSpeedZ(slot),
+                owner.state.owlState().storageOwlZAccumulator(),
                 slot);
         runtime.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
         if ((frameCounter & 0x07) == 0) {
@@ -48,7 +48,7 @@ final class OwlEventBehavior {
             runtime.presentationState.writePendingMusicTrack(
                     runtime.bossRewards.readEnemyDropActivePowerUp()
                             ? 0x49
-                            : owner.owlState().readOwlPreviousMusicTrack(slot));
+                            : owner.state.owlState().readOwlPreviousMusicTrack(slot));
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
         }
     }

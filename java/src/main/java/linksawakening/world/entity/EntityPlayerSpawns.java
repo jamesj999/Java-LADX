@@ -15,10 +15,10 @@ public final class EntityPlayerSpawns {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
     final EntityBombInteractions bombInteractions;
-    final EntityBossRewards bossRewards;
+    final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
-    final EntityLiftThrowController liftThrow;
+    final EntityLiftState liftThrow;
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntityPickupController pickups;
@@ -39,10 +39,10 @@ public final class EntityPlayerSpawns {
             java.util.function.IntSupplier defaultRandomByteSupplier,
             linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
             EntityBombInteractions bombInteractions,
-            EntityBossRewards bossRewards,
+            EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEventChannels events,
-            EntityLiftThrowController liftThrow,
+            EntityLiftState liftThrow,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntityPickupController pickups,

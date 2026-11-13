@@ -17,10 +17,10 @@ final class ChestPickupBehavior {
     static void initializeChestEntity(EntityPickupController owner, RoomEntity entity) {
         var runtime = owner.runtime;
         int slot = entity.slot();
-        int itemType = owner.readChestItemBySlot(slot) & 0xFF;
-        owner.writeChestSpeedY(slot, 0xFC);
-        owner.writeChestSpeedYAccumulator(slot, 0);
-        owner.writeChestInertia(slot, 0);
+        int itemType = owner.state.readChestItemBySlot(slot) & 0xFF;
+        owner.state.writeChestSpeedY(slot, 0xFC);
+        owner.state.writeChestSpeedYAccumulator(slot, 0);
+        owner.state.writeChestInertia(slot, 0);
         runtime.events()
                 .pendingEntityEvents
                 .add(new EntityCombatEvent(
@@ -33,7 +33,7 @@ final class ChestPickupBehavior {
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
             for (RoomEntity candidate : runtime.slots()) {
                 if (candidate.loaded() && candidate.type() == EntityRomConstants.ENTITY_OWL_EVENT) {
-                    runtime.story().owlState().writeOwlPrivateCountdown1(candidate.slot(), 0x38);
+                    runtime.story().state.owlState().writeOwlPrivateCountdown1(candidate.slot(), 0x38);
                     break;
                 }
             }
@@ -46,7 +46,7 @@ final class ChestPickupBehavior {
     static boolean advanceChestEntity(EntityPickupController owner, int index, RoomEntity entity) {
         var runtime = owner.runtime;
         int slot = entity.slot();
-        int itemType = owner.readChestItemBySlot(slot) & 0xFF;
+        int itemType = owner.state.readChestItemBySlot(slot) & 0xFF;
         if (itemType == ChestContentsTable.CHEST_ZOL) {
             owner.spawnChestZol(entity);
             runtime.clearEntity(slot);
@@ -60,11 +60,11 @@ final class ChestPickupBehavior {
         }
 
         int y = addFallingSpeedToPosition(
-                entity.y(), owner.readChestSpeedY(slot), owner.storageChestSpeedYAccumulator(), slot);
-        int inertia = (owner.readChestInertia(slot) + 1) & 0xFF;
-        owner.writeChestInertia(slot, inertia);
+                entity.y(), owner.state.readChestSpeedY(slot), owner.state.storageChestSpeedYAccumulator(), slot);
+        int inertia = (owner.state.readChestInertia(slot) + 1) & 0xFF;
+        owner.state.writeChestInertia(slot, inertia);
         if (inertia == 0x10) {
-            owner.writeChestSpeedY(slot, 0);
+            owner.state.writeChestSpeedY(slot, 0);
         }
         if (inertia == 0x08 && runtime.chestContentsTable() != null) {
             int soundValue = runtime.chestContentsTable().presentationSoundValue(itemType);
@@ -89,9 +89,9 @@ final class ChestPickupBehavior {
             int dialogLow = runtime.chestContentsTable()
                     .dialogLowIdFor(
                             itemType,
-                            owner.readChestShieldLevel(),
-                            owner.readChestSwordLevel(),
-                            owner.readChestPowerBraceletLevel(),
+                            owner.state.readChestShieldLevel(),
+                            owner.state.readChestSwordLevel(),
+                            owner.state.readChestPowerBraceletLevel(),
                             runtime.roomVariables().readEntityMapId() < 0
                                     ? 0
                                     : runtime.roomVariables().readEntityMapId(),

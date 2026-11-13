@@ -30,8 +30,8 @@ final class EntitySlotPropertyRules {
                 continue;
             }
             if (candidate.type() == EntityRomConstants.ENTITY_LIFTABLE_ROCK
-                    && runtime.liftThrow().readLiftableRockSmashActive(candidate.slot())
-                    && runtime.liftThrow().readLiftableRockSmashSourceVariant(candidate.slot())
+                    && runtime.liftThrow().state.readLiftableRockSmashActive(candidate.slot())
+                    && runtime.liftThrow().state.readLiftableRockSmashSourceVariant(candidate.slot())
                             == EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK) {
                 int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
                 int distanceY = signedByte(((crow.y() - crow.z()) - candidate.y()) & 0xFF);

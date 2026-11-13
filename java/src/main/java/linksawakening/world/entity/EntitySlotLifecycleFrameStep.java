@@ -75,7 +75,7 @@ final class EntitySlotLifecycleFrameStep {
         if (!canCollect(entity, swordPickup, floatingType, floating)) return null;
 
         int persistentClearMask = entity.type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP
-                        && owner.runtime.pickups().readChestSwordLevel() == 0
+                        && owner.runtime.pickups().state.readChestSwordLevel() == 0
                 ? 0
                 : persistentClearMask(entity);
         if (entity.type() == EntityRomConstants.ENTITY_KEY_DROP_POINT) {
@@ -91,20 +91,20 @@ final class EntitySlotLifecycleFrameStep {
                 owner.clearEntity(entity.slot());
             }
         } else if (entity.type() == 0x35) {
-            owner.runtime.pickups().writeHeartPiecePickup(entity.slot(), new HeartPiecePickupMotion());
+            owner.runtime.pickups().state.writeHeartPiecePickup(entity.slot(), new HeartPiecePickupMotion());
             owner.runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 5);
             owner.runtime.presentationState().writePendingMusicTrack(0x10);
         } else if (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER) {
             owner.runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0x70);
         } else if (entity.type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP
-                && owner.runtime.pickups().readChestSwordLevel() == 0) {
+                && owner.runtime.pickups().state.readChestSwordLevel() == 0) {
             owner.runtime.startSwordPickup(entity.slot());
         } else if (entity.type() == EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL) {
             owner.runtime.startToadstoolPickup(entity.slot());
         } else if (entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
             owner.runtime.rewards().startInstrumentPickup(entity.slot());
         } else if (entity.type() == 0x33 || entity.type() == 0x34) {
-            owner.runtime.rewards().writePowerUpPickupCountdown(entity.slot(), 0x30);
+            owner.runtime.rewards().state.writePowerUpPickupCountdown(entity.slot(), 0x30);
             owner.runtime.roomVariables().writeEntityInteractionCountdown(0x30);
             owner.runtime.presentationState().writePendingMusicTrack(0x27);
         } else if (requiresHeldPickupTransition(entity.type())) {
@@ -121,15 +121,15 @@ final class EntitySlotLifecycleFrameStep {
                 || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
-                || (entity.type() == 0x35 && owner.runtime.pickups().readHeartPiecePickup(entity.slot()) != null)
-                || owner.runtime.rewards().readPowerUpPickupCountdown(entity.slot()) != 0
-                || owner.runtime.bossRewards().readDropPrivateCountdown1(entity.slot()) > 0
+                || (entity.type() == 0x35 && owner.runtime.pickups().state.readHeartPiecePickup(entity.slot()) != null)
+                || owner.runtime.rewards().state.readPowerUpPickupCountdown(entity.slot()) != 0
+                || owner.runtime.bossRewards().state.readDropPrivateCountdown1(entity.slot()) > 0
                 || (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER
                         && owner.runtime.physicsTables().readEnemyTransitionCountdown(entity.slot()) != 0)
                 || (entity.type() == EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL
-                        && owner.runtime.rewards().readToadstoolPickupSequenceActive(entity.slot()))
+                        && owner.runtime.rewards().state.readToadstoolPickupSequenceActive(entity.slot()))
                 || (isCommonDroppableType(entity.type())
-                        && owner.runtime.bossRewards().readDroppablePrivateState3(entity.slot()) != 0)
+                        && owner.runtime.bossRewards().state.readDroppablePrivateState3(entity.slot()) != 0)
                 || (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL
                         && (owner.runtime
                                                 .motions()

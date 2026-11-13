@@ -54,15 +54,15 @@ final class EnemyDropSpawns {
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, -1);
         runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.bossRewards().writeDropPrivateCountdown1(freeSlot, 0x18);
-        runtime.bossRewards().writeDropPrivateCountdown3(freeSlot, 0x03);
+        runtime.bossRewards().state.writeDropPrivateCountdown1(freeSlot, 0x18);
+        runtime.bossRewards().state.writeDropPrivateCountdown3(freeSlot, 0x03);
         if (itemType == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
             runtime.motions().get(FairyMotion.class, FairyMotion::new).initialize(freeSlot);
         } else {
             runtime.motions()
                     .get(EnemyDropMotion.class, EnemyDropMotion::new)
                     .initialize(freeSlot, runtime.physicsTables().readGroundInteractionSideScrolling());
-            runtime.bossRewards().writeEnemyDropActive(freeSlot, true);
+            runtime.bossRewards().state.writeEnemyDropActive(freeSlot, true);
         }
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
@@ -104,11 +104,11 @@ final class EnemyDropSpawns {
         runtime.motions()
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(freeSlot, runtime.physicsTables().readGroundInteractionSideScrolling(), speedZ);
-        runtime.bossRewards().writeEnemyDropActive(freeSlot, true);
+        runtime.bossRewards().state.writeEnemyDropActive(freeSlot, true);
         runtime.physicsTables().writeSlowTransitionCountdown(freeSlot, 0);
         runtime.physicsTables().writeSlowTimerInitialized(freeSlot, false);
-        runtime.bossRewards().writeDropPrivateCountdown1(freeSlot, privateCountdown1);
-        runtime.bossRewards().writeDropPrivateCountdown3(freeSlot, 0);
+        runtime.bossRewards().state.writeDropPrivateCountdown1(freeSlot, privateCountdown1);
+        runtime.bossRewards().state.writeDropPrivateCountdown3(freeSlot, 0);
         runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
         runtime.combatTables().writeDyingCountdown(freeSlot, 0);

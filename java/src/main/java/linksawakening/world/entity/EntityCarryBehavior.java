@@ -21,33 +21,33 @@ final class EntityCarryBehavior {
             int linkEntityY,
             int linkZ,
             int romLinkDirection) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         int slot = entity.slot();
-        if (!owner.readLiftedStateInitialized(slot)) {
-            owner.writeLiftedPhase(slot, 0);
-            owner.writeLiftedSourceDirection(slot, romLinkDirection);
-            owner.writeLiftedStateInitialized(slot, true);
-            owner.writeLiftedEffectiveDirection(romLinkDirection);
-            runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x02);
+        if (!owner.state.readLiftedStateInitialized(slot)) {
+            owner.state.writeLiftedPhase(slot, 0);
+            owner.state.writeLiftedSourceDirection(slot, romLinkDirection);
+            owner.state.writeLiftedStateInitialized(slot, true);
+            owner.state.writeLiftedEffectiveDirection(romLinkDirection);
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x02);
         }
 
         LiftedEntityMotion.Update update = LiftedEntityMotion.advance(new LiftedEntityFrame(
-                owner.readLiftedPhase(slot),
-                runtime.physicsTables().readEnemyTransitionCountdown(slot),
-                owner.readLiftedSourceDirection(slot),
+                owner.state.readLiftedPhase(slot),
+                runtime.physicsTables.readEnemyTransitionCountdown(slot),
+                owner.state.readLiftedSourceDirection(slot),
                 romLinkDirection,
                 byteValue(linkEntityX),
                 byteValue(linkEntityY),
                 byteValue(linkZ),
-                owner.readLiftedLinkC13B(),
+                owner.state.readLiftedLinkC13B(),
                 entity.type(),
-                runtime.physicsTables().readGroundInteractionSideScrolling(),
-                runtime.pickups().readChestPowerBraceletLevel() >= 2 || runtime.linkState().fastLiftTransition,
+                runtime.physicsTables.readGroundInteractionSideScrolling(),
+                runtime.pickups.readChestPowerBraceletLevel() >= 2 || runtime.linkState.fastLiftTransition,
                 entity.z()));
-        owner.writeLiftedPhase(slot, update.phase());
-        runtime.physicsTables().writeEnemyTransitionCountdown(slot, update.transitionCountdown());
-        owner.writeLiftedCarryState(update.carryState());
-        owner.writeLiftedEffectiveDirection(update.effectiveDirection());
+        owner.state.writeLiftedPhase(slot, update.phase());
+        runtime.physicsTables.writeEnemyTransitionCountdown(slot, update.transitionCountdown());
+        owner.state.writeLiftedCarryState(update.carryState());
+        owner.state.writeLiftedEffectiveDirection(update.effectiveDirection());
         return new RoomEntity(
                 entity.slot(),
                 entity.sourceLoadOrder(),
@@ -66,40 +66,33 @@ final class EntityCarryBehavior {
 
     static boolean beginBushCrawlerLift(
             EntityLiftThrowController owner, int index, RoomEntity source, int privateState4, int romLinkDirection) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         if (source.type() != EntityRomConstants.ENTITY_BUSH_CRAWLER) {
             return false;
         }
-        runtime.slots()[index] = source;
-        if (!runtime.beginLift(source.slot(), romLinkDirection)) {
+        runtime.slots[index] = source;
+        if (!runtime.playerCommands.beginLift(source.slot(), romLinkDirection)) {
             return false;
         }
 
         int slot = source.slot();
-        RoomEntity carried = runtime.slots()[slot];
+        RoomEntity carried = runtime.slots[slot];
         EntitySpriteDefinition rockDefinition =
-                runtime.slotProperties().spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
         carried = withType(carried, EntityRomConstants.ENTITY_LIFTABLE_ROCK, rockDefinition);
         carried = withVariant(carried, rockDefinition.supported() ? (privateState4 ^ 0x01) & 0x01 : -1);
-        runtime.slots()[slot] = carried;
-        runtime.physicsTables().writeFallingVisualYOffset(slot, 0);
-        runtime.motions().get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
-        runtime.events()
-                .pendingEntityEvents
-                .add(new EntityCombatEvent(
-                        slot,
-                        EntityRomConstants.ENTITY_BUSH_CRAWLER,
-                        0,
-                        false,
-                        EntityCombatEvent.SoundChannel.WAVE,
-                        0x02));
+        runtime.slots[slot] = carried;
+        runtime.physicsTables.writeFallingVisualYOffset(slot, 0);
+        runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
 
-        int freeSlot = runtime.findFreeEntitySlot();
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return true;
         }
         EntitySpriteDefinition crawlerDefinition =
-                runtime.slotProperties().spriteDefinitionFor(EntityRomConstants.ENTITY_BUSH_CRAWLER);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BUSH_CRAWLER);
         int crawlerVariant = crawlerDefinition.supported() ? crawlerDefinition.initialVariant() : -1;
         RoomEntity replacement = new RoomEntity(
                 freeSlot,
@@ -115,24 +108,24 @@ final class EntityCarryBehavior {
                 carried.z(),
                 -1,
                 false);
-        runtime.slots()[freeSlot] = replacement;
-        runtime.initializeHealthGroup(freeSlot);
-        runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables().writeEntityOptions1Override(freeSlot, -1);
-        runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0x40);
-        runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables()
-                .writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_BUSH_CRAWLER));
-        runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.combatTables()
-                .writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
-        runtime.physicsTables()
-                .writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
-        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.physicsTables().writeFallingVisualYOffset(freeSlot, 0);
-        runtime.motions().get(BushCrawlerMotion.class, BushCrawlerMotion::new).initializeSpecial(freeSlot);
-        runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        runtime.slots[freeSlot] = replacement;
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0x40);
+        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyHealth(
+                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_BUSH_CRAWLER));
+        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        runtime.combatTables.writeEnemyHitboxFlags(
+                freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
+        runtime.physicsTables.writeEnemyPhysicsFlags(
+                freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
+        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.physicsTables.writeFallingVisualYOffset(freeSlot, 0);
+        runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).initializeSpecial(freeSlot);
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return true;
     }
 
@@ -144,23 +137,23 @@ final class EntityCarryBehavior {
             int linkEntityY,
             int linkZ,
             int romLinkDirection) {
-        var runtime = owner.runtime;
-        if (decision.phase() != BombMotion.Phase.NORMAL || !runtime.linkState().bombButtonHeld) {
+        var runtime = owner;
+        if (decision.phase() != BombMotion.Phase.NORMAL || !runtime.linkState.bombButtonHeld) {
             return false;
         }
-        RoomEntity entity = runtime.slots()[index];
+        RoomEntity entity = runtime.slots[index];
         if (!entity.loaded()
                 || entity.type() != EntityRomConstants.ENTITY_BOMB
-                || runtime.bombInteractions().readBombPrivateState4(entity.slot()) != 0
-                || runtime.bombInteractions().readBombPrivateCountdown1(entity.slot()) != 0
+                || runtime.bombInteractions.readBombPrivateState4(entity.slot()) != 0
+                || runtime.bombInteractions.readBombPrivateCountdown1(entity.slot()) != 0
                 || !RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
             return false;
         }
-        if (!runtime.beginLift(entity.slot(), romLinkDirection)) {
+        if (!runtime.playerCommands.beginLift(entity.slot(), romLinkDirection)) {
             return false;
         }
-        runtime.slots()[index] = owner.advanceLiftedEntity(
-                owner.renderLiftedBomb(runtime.slots()[index]), linkEntityX, linkEntityY, linkZ, romLinkDirection);
+        runtime.slots[index] = owner.advanceLiftedEntity(
+                owner.renderLiftedBomb(runtime.slots[index]), linkEntityX, linkEntityY, linkZ, romLinkDirection);
         return true;
     }
 }

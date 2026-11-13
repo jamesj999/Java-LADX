@@ -9,12 +9,12 @@ import linksawakening.world.entity.motion.*;
 
 /** Read-only inspection for Pickup. */
 final class EntityPickupInspection {
-    private final EntityBombInteractions bombInteractions;
+    private final EntityBombState bombInteractions;
     private final EntityMotionRegistry motions;
     private final EntityPhysicsTables physicsTables;
 
     EntityPickupInspection(
-            EntityBombInteractions bombInteractions, EntityMotionRegistry motions, EntityPhysicsTables physicsTables) {
+            EntityBombState bombInteractions, EntityMotionRegistry motions, EntityPhysicsTables physicsTables) {
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.motions = java.util.Objects.requireNonNull(motions, "motions");
         this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");

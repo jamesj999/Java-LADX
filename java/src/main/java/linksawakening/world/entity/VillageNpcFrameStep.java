@@ -33,16 +33,19 @@ final class VillageNpcFrameStep {
 
         runtime = owner;
         slot = entity.slot();
-        if (owner.readKidBall(slot)) {
-            if (owner.preKidPlayTimer(slot, -1) <= 0) {
+        if (owner.state.readKidBall(slot)) {
+            if (owner.state.preKidPlayTimer(slot, -1) <= 0) {
                 runtime.slots[slot] = withStatus(entity, EntityStatus.DISABLED);
-                owner.writeKidBall(slot, false);
+                owner.state.writeKidBall(slot, false);
                 return false;
             }
             int x = addFallingSpeedToPosition(
-                    entity.x(), owner.readKidPlayState(slot), owner.storageKidSpeedXAccumulator(), slot);
+                    entity.x(), owner.state.readKidPlayState(slot), owner.state.storageKidSpeedXAccumulator(), slot);
             int z = addFallingSpeedToPosition(
-                    entity.z(), owner.postKidZSpeed(slot, -1) & 255, owner.storageKidSpeedYAccumulator(), slot);
+                    entity.z(),
+                    owner.state.postKidZSpeed(slot, -1) & 255,
+                    owner.state.storageKidSpeedYAccumulator(),
+                    slot);
             runtime.slots[slot] = withZ(withPositionAndVariant(entity, x, entity.y(), 0), z);
             return false;
         }
@@ -55,16 +58,16 @@ final class VillageNpcFrameStep {
             entity = withDefinition(
                     entity,
                     runtime.spriteViews.forKidPlaying(),
-                    (entity.type() == 0x71 ? 2 : 0) | (owner.readKidPlayState(slot) == 1 ? 1 : 0));
+                    (entity.type() == 0x71 ? 2 : 0) | (owner.state.readKidPlayState(slot) == 1 ? 1 : 0));
         z = addFallingSpeedToPosition(
-                entity.z(), owner.postKidZSpeed(slot, -1) & 255, owner.storageKidSpeedYAccumulator(), slot);
+                entity.z(), owner.state.postKidZSpeed(slot, -1) & 255, owner.state.storageKidSpeedYAccumulator(), slot);
         landed = (z & 128) != 0;
         if (landed) {
             z = 0;
-            owner.writeKidZSpeed(slot, 0);
+            owner.state.writeKidZSpeed(slot, 0);
         }
         runtime.slots[slot] = withZ(entity, z);
-        timer = owner.readKidPlayTimer(slot);
+        timer = owner.state.readKidPlayTimer(slot);
         if (timer > 0) timer--;
         return true;
     }
@@ -72,8 +75,8 @@ final class VillageNpcFrameStep {
     private boolean advancePlayTimer() {
 
         if (timer == 0) {
-            if (owner.readKidPlayState(slot) == 0) {
-                owner.writeKidPlayState(slot, 1);
+            if (owner.state.readKidPlayState(slot) == 0) {
+                owner.state.writeKidPlayState(slot, 1);
                 timer = 0x80;
                 int ball =
                         EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
@@ -98,23 +101,23 @@ final class VillageNpcFrameStep {
                     runtime.combatTables.writeEnemyHitboxFlags(ball, 0);
                     runtime.physicsTables.writeEntityOptions1Override(
                             ball, EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION);
-                    owner.writeKidBall(ball, true);
-                    owner.writeKidPlayTimer(ball, 0x24);
-                    owner.writeKidPlayState(ball, entity.type() == 0x71 ? 0x14 : 0xEC);
-                    owner.writeKidZSpeed(ball, 0x10);
-                    owner.writeKidSpeedXAccumulator(ball, 0);
-                    owner.writeKidSpeedYAccumulator(ball, 0);
+                    owner.state.writeKidBall(ball, true);
+                    owner.state.writeKidPlayTimer(ball, 0x24);
+                    owner.state.writeKidPlayState(ball, entity.type() == 0x71 ? 0x14 : 0xEC);
+                    owner.state.writeKidZSpeed(ball, 0x10);
+                    owner.state.writeKidSpeedXAccumulator(ball, 0);
+                    owner.state.writeKidSpeedYAccumulator(ball, 0);
                     runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(ball, true);
                 }
             } else {
-                owner.writeKidPlayState(slot, 0);
+                owner.state.writeKidPlayState(slot, 0);
                 timer = 0x60;
             }
-        } else if (owner.readKidPlayState(slot) == 1 && timer < 0x60) {
+        } else if (owner.state.readKidPlayState(slot) == 1 && timer < 0x60) {
             runtime.slots[slot] = withVariant(runtime.slots[slot], entity.type() == 0x71 ? 2 : 0);
-            if (timer < 0x40 && landed) owner.writeKidZSpeed(slot, 8);
+            if (timer < 0x40 && landed) owner.state.writeKidZSpeed(slot, 8);
         }
-        owner.writeKidPlayTimer(slot, timer);
+        owner.state.writeKidPlayTimer(slot, timer);
         return true;
     }
 
@@ -128,7 +131,7 @@ final class VillageNpcFrameStep {
                 && Math.abs(signedByte(linkX - entity.x())) < 0x10
                 && Math.abs(signedByte(linkY - entity.y())) < 0x14) {
             int dialog = (runtime.roomVariables.readInstrument1Flags() & 2) == 0
-                    ? 0x18 + (owner.postKidHintIndex(1) & 3)
+                    ? 0x18 + (owner.state.postKidHintIndex(1) & 3)
                     : 0x1C + entity.type() - 0x70;
             runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialog));
         }

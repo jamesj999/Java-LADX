@@ -23,30 +23,30 @@ final class ItemPickupFrameStep {
     private int linkEntityX;
     private int linkEntityY;
     private int linkZ;
-    private linksawakening.world.entity.EntityRewardControllerServices runtime;
+    private linksawakening.world.entity.EntityRewardController runtime;
     private int slot;
 
     ItemPickupFrameStep() {}
 
     void run() {
-        runtime = owner.runtime;
+        runtime = owner;
         slot = entity.slot();
-        if (runtime.linkState().dialogActive) {
-            if (runtime.physicsTables().readEnemyTransitionCountdown(slot) > 0) {
-                runtime.physicsTables().postEnemyTransitionCountdown(slot, 1);
+        if (runtime.linkState.dialogActive) {
+            if (runtime.physicsTables.readEnemyTransitionCountdown(slot) > 0) {
+                runtime.physicsTables.postEnemyTransitionCountdown(slot, 1);
             }
-            if (owner.readSwordPickupState(slot) != 2) {
-                runtime.holdSwordAboveLink(
-                        entity, linkEntityX, linkEntityY, linkZ, owner.readSwordPickupState(slot) == 3);
+            if (owner.state.readSwordPickupState(slot) != 2) {
+                runtime.playerCommands.holdSwordAboveLink(
+                        entity, linkEntityX, linkEntityY, linkZ, owner.state.readSwordPickupState(slot) == 3);
             } else {
-                runtime.events().pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
             }
             return;
         }
-        if (owner.readSwordPickupState(slot) == 1) {
-            runtime.lifecycle().decrementSlowTransitionCountdown(slot, frameCounter);
+        if (owner.state.readSwordPickupState(slot) == 1) {
+            runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
         }
-        switch (owner.readSwordPickupState(slot)) {
+        switch (owner.state.readSwordPickupState(slot)) {
             case 0 -> {
                 if (!advanceState0()) return;
             }
@@ -63,32 +63,30 @@ final class ItemPickupFrameStep {
     }
 
     private boolean advanceState0() {
-        runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
-        int countdown = runtime.physicsTables().readEnemyTransitionCountdown(slot);
+        runtime.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
+        int countdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
         if (countdown == 0x10) {
-            runtime.physicsTables().postEnemyTransitionCountdown(slot, -1);
-            runtime.events().pendingDialogRequests.add(new DialogRequest(0, 0x9B));
+            runtime.physicsTables.postEnemyTransitionCountdown(slot, -1);
+            runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x9B));
         } else if (countdown == 1) {
-            runtime.presentationState().writePendingMusicTrack(0x31);
-            runtime.physicsTables().writeSlowTransitionCountdown(slot, 0x52);
-            runtime.physicsTables().writeSlowTimerInitialized(slot, true);
-            owner.writeSwordPickupState(slot, 1);
+            runtime.presentationState.writePendingMusicTrack(0x31);
+            runtime.physicsTables.writeSlowTransitionCountdown(slot, 0x52);
+            runtime.physicsTables.writeSlowTimerInitialized(slot, true);
+            owner.state.writeSwordPickupState(slot, 1);
         }
 
         return true;
     }
 
     private boolean advanceState1() {
-        runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
-        if (runtime.physicsTables().readSlowTransitionCountdown(slot) == 0) {
-            runtime.slots()[slot] = withVariant(runtime.slots()[slot], -1);
-            runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x20);
-            owner.writeSwordPickupState(slot, 2);
-            runtime.events().pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(slot, 0x20));
-            runtime.events()
-                    .pendingEntityEvents
-                    .add(new EntityCombatEvent(
-                            slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x03));
+        runtime.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
+        if (runtime.physicsTables.readSlowTransitionCountdown(slot) == 0) {
+            runtime.slots[slot] = withVariant(runtime.slots[slot], -1);
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x20);
+            owner.state.writeSwordPickupState(slot, 2);
+            runtime.events.pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(slot, 0x20));
+            runtime.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x03));
         }
 
         return true;
@@ -98,36 +96,32 @@ final class ItemPickupFrameStep {
         // SwordShieldPickableState2Handler only advances the entity
         // countdown and restores variant 0; Link's spin handler owns
         // the motion lock and animation pose for these frames.
-        runtime.events()
-                .pendingLinkSwordSpinPoseRequests
-                .add(new LinkSwordSpinPoseRequest(slot, runtime.physicsTables().readEnemyTransitionCountdown(slot)));
-        if (runtime.physicsTables().readEnemyTransitionCountdown(slot) == 0) {
-            runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x20);
-            runtime.slots()[slot] = withVariant(runtime.slots()[slot], 0);
-            owner.writeSwordPickupState(slot, 3);
+        runtime.events.pendingLinkSwordSpinPoseRequests.add(
+                new LinkSwordSpinPoseRequest(slot, runtime.physicsTables.readEnemyTransitionCountdown(slot)));
+        if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x20);
+            runtime.slots[slot] = withVariant(runtime.slots[slot], 0);
+            owner.state.writeSwordPickupState(slot, 3);
         }
 
         return true;
     }
 
     private boolean advanceDefault() {
-        runtime.events().pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
-        runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, true);
-        if (runtime.physicsTables().readEnemyTransitionCountdown(slot) == 0x1A) {
-            runtime.events()
-                    .transientVfxRequests
-                    .add(new TransientVfxRequest(TransientVfxType.SWORD_POKE, entity.x(), (entity.y() - 0x0C) & 0xFF));
-            runtime.events()
-                    .pendingEntityEvents
-                    .add(new EntityCombatEvent(
-                            slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07));
+        runtime.events.pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
+        runtime.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, true);
+        if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0x1A) {
+            runtime.events.transientVfxRequests.add(
+                    new TransientVfxRequest(TransientVfxType.SWORD_POKE, entity.x(), (entity.y() - 0x0C) & 0xFF));
+            runtime.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07));
         }
-        if (runtime.physicsTables().readEnemyTransitionCountdown(slot) == 0) {
+        if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
             // The ROM leaves MUSIC_OVERWORLD_INTRO playing after the pose;
             // the track data itself continues into the overworld loop.
-            runtime.events().pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
-            owner.writeSwordPickupSequenceActive(slot, false);
-            runtime.lifecycle().disableEntityWithoutPersistence(slot);
+            runtime.events.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
+            owner.state.writeSwordPickupSequenceActive(slot, false);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
         }
 
         return true;

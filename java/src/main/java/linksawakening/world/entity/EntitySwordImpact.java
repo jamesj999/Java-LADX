@@ -140,7 +140,7 @@ final class EntitySwordImpact {
                 .get(BombiteMotion.class, BombiteMotion::new)
                 .enterBouncingLitFromSword(slot.entity.slot(), slot.entity, frame.linkEntityX(), frame.linkEntityY());
         runtime.physicsTables.writeEnemyTransitionCountdown(slot.entity.slot(), 0x40);
-        runtime.bombInteractions.writeBombPrivateCountdown1(slot.entity.slot(), 0x08);
+        runtime.bombInteractions.state.writeBombPrivateCountdown1(slot.entity.slot(), 0x08);
         runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
     }
 }

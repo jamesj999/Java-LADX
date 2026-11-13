@@ -9,13 +9,13 @@ import linksawakening.world.entity.motion.*;
 
 /** Read-only inspection for Boss. */
 final class EntityBossInspection {
-    private final EntityBossRewards bossRewards;
+    private final EntityBossState bossRewards;
     private final EntityEnemyInspection enemyInspection;
     private final EntityMotionRegistry motions;
     private final EntityPhysicsTables physicsTables;
 
     EntityBossInspection(
-            EntityBossRewards bossRewards,
+            EntityBossState bossRewards,
             EntityEnemyInspection enemyInspection,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables) {

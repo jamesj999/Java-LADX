@@ -12,7 +12,7 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
  */
 public final class RoomEntitySnapshot {
 
-    private final EntityRoomInspectionServices liveSource;
+    private final EntityRoomInspection liveSource;
     private final List<RoomEntity> slots;
     private final List<RoomEntity> loadedEntities;
     private final EntitySpriteSelection spriteSelection;
@@ -25,11 +25,11 @@ public final class RoomEntitySnapshot {
     private final List<BowWowChain.Entry> bowWowChainOam;
 
     /** Live read-only view; lists and metadata follow the owning room until it is discarded. */
-    static RoomEntitySnapshot liveView(EntityRoomInspectionServices liveSource) {
+    static RoomEntitySnapshot liveView(EntityRoomInspection liveSource) {
         return new RoomEntitySnapshot(liveSource);
     }
 
-    private RoomEntitySnapshot(EntityRoomInspectionServices liveSource) {
+    private RoomEntitySnapshot(EntityRoomInspection liveSource) {
         this.liveSource = liveSource;
         this.slots = new EntityLiveSlotList(liveSource, false);
         this.loadedEntities = new EntityLiveSlotList(liveSource, true);
@@ -248,7 +248,7 @@ public final class RoomEntitySnapshot {
 
     /** Returns whether the room uses the side-scroll OAM path. */
     public boolean sideScrolling() {
-        return liveSource == null ? sideScrolling : liveSource.physicsTables().readGroundInteractionSideScrolling();
+        return liveSource == null ? sideScrolling : liveSource.physicsTables.readGroundInteractionSideScrolling();
     }
 
     public RoomEntitySnapshot withSideScrolling(boolean sideScrolling) {
@@ -274,23 +274,19 @@ public final class RoomEntitySnapshot {
     }
 
     public EntitySpriteSelection spriteSelection() {
-        return liveSource == null
-                ? spriteSelection
-                : liveSource.presentationState().readSpriteSelection();
+        return liveSource == null ? spriteSelection : liveSource.presentationState.readSpriteSelection();
     }
 
     public EntitySpriteTileSnapshot spriteTiles() {
-        return liveSource == null ? spriteTiles : liveSource.spriteTiles();
+        return liveSource == null ? spriteTiles : liveSource.spriteTiles;
     }
 
     public List<HookshotChainOam.Entry> hookshotChainOam() {
-        return liveSource == null
-                ? hookshotChainOam
-                : liveSource.slotProperties().readHookshotChainOam();
+        return liveSource == null ? hookshotChainOam : liveSource.slotProperties.readHookshotChainOam();
     }
 
     public List<PincerBodyOam.Entry> pincerBodyOam() {
-        return liveSource == null ? pincerBodyOam : liveSource.slotProperties().readPincerBodyOam();
+        return liveSource == null ? pincerBodyOam : liveSource.slotProperties.readPincerBodyOam();
     }
 
     public RoomEntitySnapshot withBowWowChainOam(List<BowWowChain.Entry> entries) {
@@ -308,20 +304,18 @@ public final class RoomEntitySnapshot {
     }
 
     public List<BowWowChain.Entry> bowWowChainOam() {
-        return liveSource == null ? bowWowChainOam : liveSource.slotProperties().readBowWowChainOam();
+        return liveSource == null ? bowWowChainOam : liveSource.slotProperties.readBowWowChainOam();
     }
 
     public List<WingedOctorokOam.Entry> wingedOctorokOam() {
-        return liveSource == null
-                ? wingedOctorokOam
-                : liveSource.slotProperties().readWingedOctorokOam();
+        return liveSource == null ? wingedOctorokOam : liveSource.slotProperties.readWingedOctorokOam();
     }
 
     /** Returns the ROM display-only Y correction for an entity slot. */
     public int visualYOffset(int slot) {
         if (liveSource != null) {
             java.util.Objects.checkIndex(slot, RoomEntity.SLOT_COUNT);
-            return liveSource.physicsTables().readFallingVisualYOffset(slot);
+            return liveSource.physicsTables.readFallingVisualYOffset(slot);
         }
         if (slot < 0 || slot >= visualYOffsetBySlot.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);

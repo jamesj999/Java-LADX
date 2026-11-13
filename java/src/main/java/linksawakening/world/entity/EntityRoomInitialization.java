@@ -17,16 +17,16 @@ import linksawakening.world.entity.motion.WarpMotion;
 final class EntityRoomInitialization {
     final EntityWarpController warpState;
     final boolean indoorRoom;
-    final EntityBombInteractions bombInteractions;
-    final EntityBossRewards bossRewards;
+    final EntityBombState bombInteractions;
+    final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
-    final EntityLiftThrowController liftThrow;
+    final EntityLiftState liftThrow;
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
-    final EntityPickupController pickups;
-    final EntityRewardController rewards;
+    final EntityPickupState pickups;
+    final EntityRewardState rewards;
     final EntitySlotProperties slotProperties;
-    final EntityStoryController story;
+    final EntityStoryState story;
     final GenieEntityController genie;
     final RoomEntity[] slots;
     final EntitySlotLifecycle lifecycle;
@@ -34,16 +34,16 @@ final class EntityRoomInitialization {
     EntityRoomInitialization(
             EntityWarpController warpState,
             boolean indoorRoom,
-            EntityBombInteractions bombInteractions,
-            EntityBossRewards bossRewards,
+            EntityBombState bombInteractions,
+            EntityBossState bossRewards,
             EntityCombatTables combatTables,
-            EntityLiftThrowController liftThrow,
+            EntityLiftState liftThrow,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
-            EntityPickupController pickups,
-            EntityRewardController rewards,
+            EntityPickupState pickups,
+            EntityRewardState rewards,
             EntitySlotProperties slotProperties,
-            EntityStoryController story,
+            EntityStoryState story,
             GenieEntityController genie,
             RoomEntity[] slots,
             EntitySlotLifecycle lifecycle) {
@@ -76,9 +76,9 @@ final class EntityRoomInitialization {
 
     void initializeRoomSlots(RoomEntitySnapshot initial) {
 
-        this.slotProperties.writeHookshotChainOam(initial.hookshotChainOam());
-        this.slotProperties.writePincerBodyOam(initial.pincerBodyOam());
-        this.slotProperties.writeWingedOctorokOam(initial.wingedOctorokOam());
+        this.slotProperties.state.writeHookshotChainOam(initial.hookshotChainOam());
+        this.slotProperties.state.writePincerBodyOam(initial.pincerBodyOam());
+        this.slotProperties.state.writeWingedOctorokOam(initial.wingedOctorokOam());
         Arrays.fill(this.story.storageKidBall(), false);
         Arrays.fill(this.story.storageKidPlayTimer(), 0);
         Arrays.fill(this.story.storageKidPlayState(), 0);

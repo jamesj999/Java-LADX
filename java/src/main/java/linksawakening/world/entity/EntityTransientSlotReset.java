@@ -17,10 +17,10 @@ final class EntityTransientSlotReset {
         clearPhysicsAndWeaponState(runtime, slot);
         clearRoamingMotions(runtime, slot);
         clearRemainingMotions(runtime, slot);
-        if (runtime.liftThrow().readLiftedEntitySlot() == slot) {
-            runtime.liftThrow().writeLiftedEntitySlot(-1);
-            runtime.liftThrow().writeLiftedCarryState(0);
-            runtime.liftThrow().writeLiftedEffectiveDirection(0);
+        if (runtime.liftThrow().state.readLiftedEntitySlot() == slot) {
+            runtime.liftThrow().state.writeLiftedEntitySlot(-1);
+            runtime.liftThrow().state.writeLiftedCarryState(0);
+            runtime.liftThrow().state.writeLiftedEffectiveDirection(0);
         }
         runtime.slots()[slot] = RoomEntity.disabled(slot);
     }
@@ -60,7 +60,7 @@ final class EntityTransientSlotReset {
         runtime.physicsTables().writeSlowTransitionCountdown(slot, 0);
         runtime.physicsTables().writeSlowTimerInitialized(slot, false);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0);
-        runtime.bossRewards().writeBossDeathProducerState(slot, 0);
+        runtime.bossRewards().state.writeBossDeathProducerState(slot, 0);
         runtime.motions().get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot, 0);
         runtime.combatTables().writeEnemyStunnedCountdown(slot, 0);
         runtime.combatTables().writeDyingCountdown(slot, 0);
@@ -70,16 +70,16 @@ final class EntityTransientSlotReset {
         runtime.combatTables().writeEnemyHealthGroup(slot, 0);
         runtime.combatTables().writeEnemyFlashCountdown(slot, 0);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(slot, 0);
-        runtime.pickups().writeChestSpeedY(slot, 0);
-        runtime.pickups().writeChestSpeedYAccumulator(slot, 0);
-        runtime.pickups().writeChestInertia(slot, 0);
-        runtime.pickups().writeChestItemBySlot(slot, 0);
+        runtime.pickups().state.writeChestSpeedY(slot, 0);
+        runtime.pickups().state.writeChestSpeedYAccumulator(slot, 0);
+        runtime.pickups().state.writeChestInertia(slot, 0);
+        runtime.pickups().state.writeChestItemBySlot(slot, 0);
         runtime.combatTables().writeEnemyHitboxFlags(slot, 0);
-        runtime.rewards().writeInstrumentParticleKind(slot, 0);
-        runtime.rewards().writeInstrumentParticleSpeedX(slot, 0);
-        runtime.rewards().writeInstrumentParticleSpeedY(slot, 0);
-        runtime.rewards().writeInstrumentParticleXAccumulator(slot, 0);
-        runtime.rewards().writeInstrumentParticleYAccumulator(slot, 0);
+        runtime.rewards().state.writeInstrumentParticleKind(slot, 0);
+        runtime.rewards().state.writeInstrumentParticleSpeedX(slot, 0);
+        runtime.rewards().state.writeInstrumentParticleSpeedY(slot, 0);
+        runtime.rewards().state.writeInstrumentParticleXAccumulator(slot, 0);
+        runtime.rewards().state.writeInstrumentParticleYAccumulator(slot, 0);
         runtime.motions().get(ArmosKnightMotion.class, ArmosKnightMotion::new).clear(slot);
     }
 
@@ -92,30 +92,30 @@ final class EntityTransientSlotReset {
         runtime.physicsTables().writeFallingSpeedXAccumulator(slot, 0);
         runtime.physicsTables().writeFallingSpeedYAccumulator(slot, 0);
         runtime.physicsTables().writeFallingVisualYOffset(slot, 0);
-        runtime.liftThrow().writeLiftedPhase(slot, 0);
-        runtime.liftThrow().writeLiftedSourceDirection(slot, 0);
-        runtime.liftThrow().writeLiftedStateInitialized(slot, false);
-        runtime.liftThrow().writeThrownDirection(slot, 0xFF);
-        runtime.bombInteractions().writeBombDirection(slot, 0xFF);
-        runtime.bombInteractions().writeBombPrivateState4(slot, 0);
+        runtime.liftThrow().state.writeLiftedPhase(slot, 0);
+        runtime.liftThrow().state.writeLiftedSourceDirection(slot, 0);
+        runtime.liftThrow().state.writeLiftedStateInitialized(slot, false);
+        runtime.liftThrow().state.writeThrownDirection(slot, 0xFF);
+        runtime.bombInteractions().state.writeBombDirection(slot, 0xFF);
+        runtime.bombInteractions().state.writeBombPrivateState4(slot, 0);
         runtime.projectiles().state.writeMagicPowderState(slot, 0);
         runtime.projectiles().state.writeMagicPowderPrivateState4(slot, 0);
-        runtime.bombInteractions().writeBombPrivateCountdown1(slot, 0);
-        runtime.bombInteractions().writeBombPrivateCountdown3(slot, 0);
+        runtime.bombInteractions().state.writeBombPrivateCountdown1(slot, 0);
+        runtime.bombInteractions().state.writeBombPrivateCountdown3(slot, 0);
         runtime.motions()
                 .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
                 .setMaskRemovalState(slot, 0);
         runtime.motions()
                 .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
                 .setMaskSourceHookshotSlot(slot, 0);
-        runtime.liftThrow().writeLiftableRockSmashCountdown(slot, 0);
-        runtime.liftThrow().writeLiftableRockSmashSourceVariant(slot, 0);
-        runtime.liftThrow().writeLiftableRockSmashActive(slot, false);
+        runtime.liftThrow().state.writeLiftableRockSmashCountdown(slot, 0);
+        runtime.liftThrow().state.writeLiftableRockSmashSourceVariant(slot, 0);
+        runtime.liftThrow().state.writeLiftableRockSmashActive(slot, false);
         runtime.setBombFinalPresentationPending(slot, false);
-        runtime.bombInteractions().writePlacedBombMotionInitialized(slot, false);
-        runtime.bombInteractions().writeEnemyBombMotionInitialized(slot, false);
-        runtime.liftThrow().writeLedgeTransitionTimer(slot, 0);
-        runtime.liftThrow().writeThrownMotionInitialized(slot, false);
+        runtime.bombInteractions().state.writePlacedBombMotionInitialized(slot, false);
+        runtime.bombInteractions().state.writeEnemyBombMotionInitialized(slot, false);
+        runtime.liftThrow().state.writeLedgeTransitionTimer(slot, 0);
+        runtime.liftThrow().state.writeThrownMotionInitialized(slot, false);
         runtime.physicsTables().writeBaseEntityFlipAttribute(slot, 0);
         runtime.physicsTables().writeEntityOptions1Override(slot, -1);
         runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
@@ -164,12 +164,12 @@ final class EntityTransientSlotReset {
         runtime.motions()
                 .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                 .clear(slot);
-        runtime.bombInteractions().writePlayerArrowBombArrow(slot, false);
+        runtime.bombInteractions().state.writePlayerArrowBombArrow(slot, false);
     }
 
     private static void clearRemainingMotions(EntitySlotLifecycleServices runtime, int slot) {
-        if (runtime.bombInteractions().readLatestDroppedBombEntityIndex() == slot) {
-            runtime.bombInteractions().writeLatestDroppedBombEntityIndex(-1);
+        if (runtime.bombInteractions().state.readLatestDroppedBombEntityIndex() == slot) {
+            runtime.bombInteractions().state.writeLatestDroppedBombEntityIndex(-1);
         }
         if (runtime.projectiles().state.readLatestShotArrowEntityIndex() == slot) {
             runtime.projectiles().state.writeLatestShotArrowEntityIndex(-1);

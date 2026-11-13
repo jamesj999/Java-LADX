@@ -74,7 +74,7 @@ interface EntitySlotLifecycleServices {
         }
 
         public void setBombFinalPresentationPending(int slot, boolean value) {
-            room.get().bombInteractions.setBombFinalPresentationPending(slot, value);
+            room.get().bombInteractions.state.setBombFinalPresentationPending(slot, value);
         }
 
         public EntityWarpController warpState() {

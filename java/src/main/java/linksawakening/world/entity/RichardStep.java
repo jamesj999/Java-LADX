@@ -40,25 +40,27 @@ final class RichardStep {
                 || runtime.inspection.witchGotItemPresentationActive()) {
             return;
         }
-        if (owner.readRichardState(slot) == 0 && runtime.roomVariables.readEntityGoldenLeavesCount() >= 0x06) {
+        if (owner.state.readRichardState(slot) == 0 && runtime.roomVariables.readEntityGoldenLeavesCount() >= 0x06) {
             entity = withPositionAndVariant(entity, 0x58, entity.y(), entity.spriteVariant());
-            owner.writeRichardDirection(slot, 3);
+            owner.state.writeRichardDirection(slot, 3);
         }
         xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
         yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
         if ((frameCounter & 0x1F) == 0) {
-            owner.writeRichardDirection(
+            owner.state.writeRichardDirection(
                     slot,
                     Math.abs(xDistance) >= Math.abs(yDistance) ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3));
         }
         baseVariant = new int[] {6, 4, 2, 0};
-        variant = baseVariant[owner.readRichardDirection(slot)] + ((owner.postRichardInertia(slot, 1) >>> 4) & 0x01);
+        variant = baseVariant[owner.state.readRichardDirection(slot)]
+                + ((owner.state.postRichardInertia(slot, 1) >>> 4) & 0x01);
         updated = withVariant(entity, variant);
-        if (owner.readRichardState(slot) < 3 && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
+        if (owner.state.readRichardState(slot) < 3
+                && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
             runtime.backgroundMechanics.requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
         }
 
-        switch (owner.readRichardState(slot)) {
+        switch (owner.state.readRichardState(slot)) {
             case 0 -> {
                 if (!advanceState0()) return;
             }
@@ -83,8 +85,8 @@ final class RichardStep {
         if (runtime.pickups.readChestSwordLevel() != 0) {
             runtime.presentationState.writePendingMusicTrack(0x40);
         }
-        owner.writeRichardState(slot, runtime.roomVariables.readEntityGoldenLeavesCount() >= 0x06 ? 4 : 1);
-        if (owner.readRichardState(slot) == 4) {
+        owner.state.writeRichardState(slot, runtime.roomVariables.readEntityGoldenLeavesCount() >= 0x06 ? 4 : 1);
+        if (owner.state.readRichardState(slot) == 4) {
             updated = withPositionAndVariant(updated, 0x58, updated.y(), variant);
         }
 
@@ -105,7 +107,7 @@ final class RichardStep {
             runtime.events.pendingRichardProgressEvents.add(new RichardProgressEvent(
                     slot, RichardProgressEvent.Kind.START_QUEST, runtime.roomVariables.readEntityGoldenLeavesCount()));
             runtime.roomVariables.writeEntityRoomStatus(runtime.roomVariables.readEntityRoomStatus() | (0x10));
-            owner.writeRichardState(slot, 2);
+            owner.state.writeRichardState(slot, 2);
         } else if (runtime.roomVariables.readEntityGoldenLeavesCount() < 5) {
             runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x3F));
         } else {
@@ -113,7 +115,7 @@ final class RichardStep {
             runtime.roomVariables.writeEntityGoldenLeavesCount(0xFF);
             runtime.events.pendingRichardProgressEvents.add(
                     new RichardProgressEvent(slot, RichardProgressEvent.Kind.RETURN_ALL_LEAVES, 0xFF));
-            owner.writeRichardState(slot, 3);
+            owner.state.writeRichardState(slot, 3);
             runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x20);
         }
 
@@ -127,16 +129,16 @@ final class RichardStep {
         }
         runtime.events.pendingDialogRequests.add(
                 new DialogRequest(1, runtime.linkState.dialogAskSelectionIndex == 0 ? 0x3B : 0x3C));
-        owner.writeRichardState(slot, 1);
+        owner.state.writeRichardState(slot, 1);
 
         return true;
     }
 
     private boolean advanceState3() {
         if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
-            owner.writeRichardState(slot, 4);
+            owner.state.writeRichardState(slot, 4);
         }
-        int x = addFallingSpeedToPosition(updated.x(), 0xF8, owner.storageRichardXAccumulator(), slot);
+        int x = addFallingSpeedToPosition(updated.x(), 0xF8, owner.state.storageRichardXAccumulator(), slot);
         updated = withPositionAndVariant(updated, x, updated.y(), variant);
 
         return true;

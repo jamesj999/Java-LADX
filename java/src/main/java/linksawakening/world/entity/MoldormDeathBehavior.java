@@ -39,17 +39,17 @@ final class MoldormDeathBehavior {
                             ^ ((runtime.combatTables().readEnemyFlashCountdown(slot) << 2) & 0x10));
         }
 
-        switch (owner.readBossDeathProducerState(slot)) {
+        switch (owner.state.readBossDeathProducerState(slot)) {
             case 0 -> {
                 runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x60);
                 runtime.combatTables().writeEnemyFlashCountdown(slot, 0xFF);
-                owner.writeBossDeathProducerState(slot, 1);
+                owner.state.writeBossDeathProducerState(slot, 1);
             }
             case 1 -> {
                 if (runtime.physicsTables().readEnemyTransitionCountdown(slot) == 0) {
                     runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xFF);
                     runtime.combatTables().writeEnemyFlashCountdown(slot, 0xFF);
-                    owner.writeBossDeathProducerState(slot, 2);
+                    owner.state.writeBossDeathProducerState(slot, 2);
                 }
             }
             case 2 -> {
@@ -58,7 +58,7 @@ final class MoldormDeathBehavior {
                 }
                 if (tailState == 4) {
                     runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x30);
-                    owner.writeBossDeathProducerState(slot, 3);
+                    owner.state.writeBossDeathProducerState(slot, 3);
                     return;
                 }
                 MoldormSegmentPosition poofPosition = runtime.motions()
@@ -130,7 +130,7 @@ final class MoldormDeathBehavior {
         runtime.motions()
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(freeSlot, runtime.physicsTables().readGroundInteractionSideScrolling(), 0x10);
-        owner.writeEnemyDropActive(freeSlot, true);
+        owner.state.writeEnemyDropActive(freeSlot, true);
         runtime.physicsTables().writeSlowTransitionCountdown(freeSlot, 0);
         runtime.physicsTables().writeSlowTimerInitialized(freeSlot, false);
         runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0);

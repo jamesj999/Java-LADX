@@ -57,6 +57,7 @@ final class EntitySlotPhase1 {
                 return false;
             }
             state.bossRewards()
+                    .state
                     .writeDroppedItemBySlot(slotState.entity().slot(), EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
             if (slotState.entity().sourceLoadOrder() != 0xFF) {
                 slotState.entity(withSourceLoadOrder(slotState.entity(), 0xFF));
@@ -179,7 +180,10 @@ final class EntitySlotPhase1 {
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, state)) return false;
         if (slotState.status() == EntityStatus.ACTIVE
-                && state.rewards().readPowerUpPickupCountdown(slotState.entity().slot()) != 0) {
+                && state.rewards()
+                                .state
+                                .readPowerUpPickupCountdown(slotState.entity().slot())
+                        != 0) {
             state.rewards()
                     .advancePowerUpPickup(
                             slotState.entity(),

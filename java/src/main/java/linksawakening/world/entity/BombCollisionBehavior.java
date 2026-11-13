@@ -59,7 +59,7 @@ final class BombCollisionBehavior {
         owner.queueBombExplosionInteractions(
                 updated, decision, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
         if (decision.unloadAfterPresentation()) {
-            owner.setBombFinalPresentationPending(slot, true);
+            owner.state.setBombFinalPresentationPending(slot, true);
         }
         return decision;
     }
@@ -81,7 +81,7 @@ final class BombCollisionBehavior {
         // BombExplosionHandler returns before every interaction for Tarin's
         // transformation explosion. All other bomb variants, including
         // enemy bombs, still run the shared destroyable-object checks.
-        if (owner.readBombPrivateState4(bombSlot) == 0x4C) {
+        if (owner.state.readBombPrivateState4(bombSlot) == 0x4C) {
             return;
         }
         if (countdown < 0x0E || countdown > 0x16) {
@@ -100,7 +100,7 @@ final class BombCollisionBehavior {
         if (countdown != 0x12) {
             return;
         }
-        if (owner.readBombPrivateState4(bombSlot) != 0) {
+        if (owner.state.readBombPrivateState4(bombSlot) != 0) {
             owner.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }

@@ -69,14 +69,14 @@ final class PlayerProjectileSpawns {
         runtime.combatTables.writeDyingCountdown(freeSlot, 0);
         runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
         runtime.projectiles.writeLatestShotArrowEntityIndex(freeSlot);
-        if (runtime.bombInteractions.readBombArrowCooldown() != 0) {
-            int bombSlot = runtime.bombInteractions.readLatestDroppedBombEntityIndex();
-            runtime.bombInteractions.writeBombArrowCooldown(0);
+        if (runtime.bombInteractions.state.readBombArrowCooldown() != 0) {
+            int bombSlot = runtime.bombInteractions.state.readLatestDroppedBombEntityIndex();
+            runtime.bombInteractions.state.writeBombArrowCooldown(0);
             if (runtime.roomInspection.isLoadedEntityOfType(bombSlot, EntityRomConstants.ENTITY_BOMB)) {
                 runtime.lifecycle.disableEntityWithoutPersistence(bombSlot);
             }
-            runtime.bombInteractions.writeLatestDroppedBombEntityIndex(-1);
-            runtime.bombInteractions.writePlayerArrowBombArrow(freeSlot, true);
+            runtime.bombInteractions.state.writeLatestDroppedBombEntityIndex(-1);
+            runtime.bombInteractions.state.writePlayerArrowBombArrow(freeSlot, true);
             if (runtime.spriteHandlers != null) {
                 runtime.slots[freeSlot] = withDefinition(
                         runtime.slots[freeSlot],
@@ -84,7 +84,7 @@ final class PlayerProjectileSpawns {
                         romDirection);
             }
         } else {
-            runtime.bombInteractions.writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);
+            runtime.bombInteractions.state.writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);
             runtime.projectiles.writeLastArrowShotPlayedWhoosh(true);
         }
         return freeSlot;

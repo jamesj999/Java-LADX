@@ -35,7 +35,7 @@ public final class GenieEntityController {
     final EntityBossRewards bossRewards;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
-    final EntityLiftThrowController liftThrow;
+    final EntityLiftState liftThrow;
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntityPlayerSpawns entityPlayerSpawns;
@@ -47,7 +47,7 @@ public final class GenieEntityController {
             EntityBossRewards bossRewards,
             EntityCombatTables combatTables,
             EntityEventChannels events,
-            EntityLiftThrowController liftThrow,
+            EntityLiftState liftThrow,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntityPlayerSpawns entityPlayerSpawns,

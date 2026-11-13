@@ -24,7 +24,9 @@ final class EntitySlotPhase5 {
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
                 && !slotState.keyDropTransitionActive()
-                && state.bossRewards().readEnemyDropActive(slotState.updated().slot())) {
+                && state.bossRewards()
+                        .state
+                        .readEnemyDropActive(slotState.updated().slot())) {
             slotState.updated(state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
                     .advance(
                             slotState.updated(),
@@ -44,7 +46,9 @@ final class EntitySlotPhase5 {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE
-                && state.bossRewards().readEnemyDropActive(slotState.updated().slot())) {
+                && state.bossRewards()
+                        .state
+                        .readEnemyDropActive(slotState.updated().slot())) {
             // BouncingEntityPhysics calls the complete background helper before
             // bouncing. Ground effects alone omit the neighbouring bush walls.
             RoomEntityBackgroundInteraction dropBackground =
@@ -214,6 +218,7 @@ final class EntitySlotPhase5 {
                 && slotState.updated().type() == EntityRomConstants.ENTITY_TIMER_BOMBITE) {
             slotState.renderFlipAttribute(slotState.renderFlipAttribute()
                     | ((state.bombInteractions()
+                                            .state
                                             .readBombPrivateCountdown1(
                                                     slotState.updated().slot())
                                     << 3)

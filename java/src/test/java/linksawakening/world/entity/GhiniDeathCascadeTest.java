@@ -40,9 +40,9 @@ class GhiniDeathCascadeTest {
         var draws = new AtomicInteger();
         runtime.bossRewards.cascadeGhiniDeath(killed, draws::getAndIncrement);
         assertEquals(2, draws.get());
-        assertEquals(0x2D, runtime.bossRewards.readDroppedItemBySlot(15));
-        assertEquals(0x2E, runtime.bossRewards.readDroppedItemBySlot(12));
-        assertEquals(0x2E, runtime.bossRewards.readDroppedItemBySlot(8));
+        assertEquals(0x2D, runtime.bossRewards.state.readDroppedItemBySlot(15));
+        assertEquals(0x2E, runtime.bossRewards.state.readDroppedItemBySlot(12));
+        assertEquals(0x2E, runtime.bossRewards.state.readDroppedItemBySlot(8));
         for (int slot : new int[] {15, 12}) {
             assertEquals(EntityStatus.DYING, runtime.slots[slot].status());
             assertEquals(0x1F, runtime.entityState.combatTables.readDyingCountdown(slot));

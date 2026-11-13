@@ -14,31 +14,31 @@ import linksawakening.world.entity.motion.*;
 
 /** Read-only views over ROM slot state for gameplay and diagnostics. */
 public final class EntityEnemyInspection {
-    final EntityBossRewards bossRewards;
+    final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
-    final EntityLiftThrowController liftThrow;
+    final EntityLiftState liftThrow;
     final EntityLinkState linkState;
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntityRoomInspection inspection;
     final EntityRoomInspection roomInspection;
     final EntityRoomVariables roomVariables;
-    final EntitySlotProperties slotProperties;
+    final EntitySlotPresentation slotProperties;
     final RoomEntity[] slots;
 
     EntityEnemyInspection(
-            EntityBossRewards bossRewards,
+            EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEventChannels events,
-            EntityLiftThrowController liftThrow,
+            EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntityRoomInspection inspection,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
-            EntitySlotProperties slotProperties,
+            EntitySlotPresentation slotProperties,
             RoomEntity[] slots) {
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");

@@ -30,7 +30,7 @@ class EntityBossBattleFlagTest {
                 .romTables(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
-        runtime.bossRewards.writeEnemyDropResolver(
+        runtime.bossRewards.state.writeEnemyDropResolver(
                 new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         return runtime;
     }
@@ -80,14 +80,14 @@ class EntityBossBattleFlagTest {
         runtime.slots[0] = source;
         runtime.slots[15] = entity(15, 0x81);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        runtime.bossRewards.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
+        runtime.bossRewards.state.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
         runtime.bossRewards.handleTerminalEnemyDeath(runtime.slots[0], () -> 0);
         assertFalse(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
         var peaceful = runtime();
         peaceful.slots[0] = source;
         peaceful.initializeHealthGroup(0);
-        peaceful.bossRewards.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
+        peaceful.bossRewards.state.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
         peaceful.bossRewards.handleTerminalEnemyDeath(source, () -> 0);
         assertTrue(peaceful.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
     }
