@@ -17,22 +17,4 @@ public record LinkMotion(boolean airborne, int rawState, boolean shield, int inv
     public static LinkMotionState stateForRomByte(int raw) {
         return raw >= 0 && raw <= LinkMotionState.UNKNOWN_0A.romValue() ? LinkMotionState.fromRom(raw) : null;
     }
-    /** Compatibility: the raw dispatch byte has always taken precedence. */
-    @Deprecated(forRemoval = true)
-    public LinkMotion(
-            boolean airborne,
-            LinkMotionState state,
-            boolean shield,
-            int invincibility,
-            int speedX,
-            int speedY,
-            int rawState) {
-        this(airborne, rawState, shield, invincibility, speedX, speedY);
-    }
-    /** Compatibility: use the raw ROM dispatch value. */
-    @Deprecated(forRemoval = true)
-    public LinkMotion(
-            boolean airborne, LinkMotionState state, boolean shield, int invincibility, int speedX, int speedY) {
-        this(airborne, state.romValue(), shield, invincibility, speedX, speedY);
-    }
 }

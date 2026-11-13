@@ -197,3 +197,11 @@ false no-room result; title-message tick returns -1 with the ordinary zero clock
 adjacent-scroll operations retain NullPointerException; warp destination loads
 remain supported before the first room. World null expressions: 158 -> 129.
 Gate: 2967 tests, zero failures/errors, one existing skip; 986 identical scenes.
+
+## Completed boundary hand-offs
+
+EntityInputCache.linkPosition/linkMotion and FrameInputCache.pickup/ground now
+call the canonical raw-value constructors with the same original expressions.
+All eight deprecated enum/dual-value constructors are deleted; the four record
+types each expose only one canonical constructor. Derived enum accessors and
+unknown byte behavior are unchanged. Gate: 2967 tests, zero failures/errors, one skip.

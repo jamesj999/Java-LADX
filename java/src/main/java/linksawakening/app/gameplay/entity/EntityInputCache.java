@@ -34,8 +34,7 @@ final class EntityInputCache {
                 || linkPosition.z() != z
                 || linkPosition.rawDirection() != direction
                 || linkPosition.collisionType() != collisionType) {
-            linkPosition = new LinkPosition(
-                    x, y, z, linksawakening.state.Direction.fromJavaOrUnknown(direction), collisionType, direction);
+            linkPosition = new LinkPosition(x, y, z, direction, collisionType);
         }
         return linkPosition;
     }
@@ -48,14 +47,7 @@ final class EntityInputCache {
                 || linkMotion.invincibility() != invincibility
                 || linkMotion.speedX() != speedX
                 || linkMotion.speedY() != speedY) {
-            linkMotion = new LinkMotion(
-                    airborne,
-                    linksawakening.world.room.LinkMotion.stateForRomByte(state),
-                    shield,
-                    invincibility,
-                    speedX,
-                    speedY,
-                    state);
+            linkMotion = new LinkMotion(airborne, state, shield, invincibility, speedX, speedY);
         }
         return linkMotion;
     }

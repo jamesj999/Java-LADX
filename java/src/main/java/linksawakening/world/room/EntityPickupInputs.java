@@ -57,15 +57,5 @@ public record EntityPickupInputs(int frameCounter, Link link, SwordBox sword)
         public Direction knownDirection() {
             return direction();
         }
-        /** Compatibility: the raw direction has always been authoritative. */
-        @Deprecated(forRemoval = true)
-        public Link(int x, int y, boolean airborne, boolean interactive, Direction direction, int z, int rawDirection) {
-            this(x, y, airborne, interactive, rawDirection, z);
-        }
-        /** Compatibility: use the Java direction index directly. */
-        @Deprecated(forRemoval = true)
-        public Link(int x, int y, boolean airborne, boolean interactive, Direction direction, int z) {
-            this(x, y, airborne, interactive, direction.javaIndex(), z);
-        }
     }
 }
