@@ -89,11 +89,12 @@ public final class OpeningStory implements OpeningRestoration {
         }
         if (state.opening().wakeUp() == null
                 || !world.roomSession().rooms().hasActiveRoom()
-                || world.roomSession().rooms().activeRoom().mapId() != 0x10
-                || world.roomSession().rooms().activeRoom().roomId() != 0xA3) {
+                || world.roomSession().rooms().activeRoomOrNull().mapId() != 0x10
+                || world.roomSession().rooms().activeRoomOrNull().roomId() != 0xA3) {
             return;
         }
-        var loadedEntities = world.roomSession().rooms().activeRoom().entities().loadedEntities();
+        var loadedEntities =
+                world.roomSession().rooms().activeRoomOrNull().entities().loadedEntities();
         for (int entityIndex = 0; entityIndex < loadedEntities.size(); entityIndex++) {
             RoomEntity entity = loadedEntities.get(entityIndex);
 
@@ -124,7 +125,7 @@ public final class OpeningStory implements OpeningRestoration {
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
@@ -171,7 +172,7 @@ public final class OpeningStory implements OpeningRestoration {
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
@@ -208,8 +209,8 @@ public final class OpeningStory implements OpeningRestoration {
     public boolean tickNewGameTarinShield() {
         if (state.opening().shield() == null
                 || !world.roomSession().rooms().hasActiveRoom()
-                || world.roomSession().rooms().activeRoom().mapId() != 0x10
-                || world.roomSession().rooms().activeRoom().roomId() != 0xA3) {
+                || world.roomSession().rooms().activeRoomOrNull().mapId() != 0x10
+                || world.roomSession().rooms().activeRoomOrNull().roomId() != 0xA3) {
             return false;
         }
         TarinShieldMotion.Update update = state.opening()

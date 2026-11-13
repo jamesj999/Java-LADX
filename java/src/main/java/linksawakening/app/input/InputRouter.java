@@ -153,7 +153,7 @@ public final class InputRouter implements DebugScroll {
 
     public void dumpLinkSurroundings() {
         if (!world.roomSession().rooms().hasActiveRoom()) return;
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
         int[] roomObjectsArea = room.roomObjectsArea();
         int lx = player.link().position().pixelX();
         int ly = player.link().position().pixelY();
@@ -224,7 +224,7 @@ public final class InputRouter implements DebugScroll {
                 return false;
             }
         }
-        if (world.roomSession().rooms().activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (world.roomSession().rooms().activeRoomOrNull().mapCategory() == Warp.CATEGORY_OVERWORLD) {
             world.roomTransitionCoordinator().handleOverworldBoundary(player.link());
         } else {
             world.roomTransitionCoordinator().handleWarpAndIndoorBoundaries(player.link());

@@ -86,7 +86,7 @@ final class RoomSessionProjectilesTest {
         assertFalse(session.playerItems().fireHookshot(0x40, 0x50, 0, 0, false, false));
         assertEquals(
                 0x03,
-                session.rooms().activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x03)
                         .findFirst()
                         .orElseThrow()
@@ -103,7 +103,7 @@ final class RoomSessionProjectilesTest {
         assertTrue(session.playerItems().placeBomb(0x40, 0x50, 0x07, 3));
         assertTrue(session.playerItems().bombActive());
 
-        RoomEntity bomb = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity bomb = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x02)
                 .findFirst()
                 .orElseThrow();
@@ -112,13 +112,13 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x08, bomb.z());
         assertEquals(3, RoomDebugFixture.of(session).bombDirectionForTest(bomb.slot()));
         assertEquals(
-                session.rooms().activeRoom().entities(),
-                session.rooms().renderSnapshot().entities());
+                session.rooms().activeRoomOrNull().entities(),
+                session.rooms().renderSnapshotOrNull().entities());
 
         assertFalse(session.playerItems().placeBomb(0x44, 0x54, 0, 1));
         assertEquals(
                 1,
-                session.rooms().activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x02)
                         .count());
     }
@@ -128,7 +128,7 @@ final class RoomSessionProjectilesTest {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x92);
         assertTrue(session.playerItems().placeBomb(0x40, 0x50, 0, 0));
-        int bombSlot = session.rooms().activeRoom().entities().loadedEntities().stream()
+        int bombSlot = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x02)
                 .findFirst()
                 .orElseThrow()
@@ -168,16 +168,16 @@ final class RoomSessionProjectilesTest {
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
-        session.rooms().activeRoom().renderValues()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().renderValues()[areaIndex] = 0x5C;
 
         assertTrue(session.playerItems().placeBomb(0x40, 0x50, 0, 0));
         for (int frame = 0; frame <= 136; frame++) {
             session.entities().tickEntities(frame, 0, 0);
         }
 
-        assertEquals(0x04, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x04, session.rooms().activeRoom().renderValues()[areaIndex]);
+        assertEquals(0x04, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         assertEquals(0, vfx.activeCount());
         assertTrue(session.components.entityBridge().outbox.consumeBombExplosionEvents().stream()
                 .anyMatch(event -> event.targetsRoomObjects() && event.countdown() == 0x16));
@@ -190,15 +190,15 @@ final class RoomSessionProjectilesTest {
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
-        session.rooms().activeRoom().renderValues()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().renderValues()[areaIndex] = 0x5C;
 
         assertTrue(session.playerItems().placeBomb(0x40, 0x50, 0, 0));
         for (int frame = 0; frame <= 136; frame++) {
             session.entities().tickEntities(frame, 0, 0);
         }
 
-        RoomEntity smash = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity smash = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x05)
                 .findFirst()
                 .orElseThrow();
@@ -224,15 +224,15 @@ final class RoomSessionProjectilesTest {
         int[] skullLocations = {0x44, 0x45, 0x54, 0x55};
         for (int location : skullLocations) {
             int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-            assertEquals(0x09, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-            assertEquals(0x09, session.rooms().activeRoom().renderValues()[areaIndex]);
+            assertEquals(0x09, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
+            assertEquals(0x09, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         }
         assertEquals(0x04, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x97));
 
         session.rooms().loadOverworld(0x97);
         for (int location : skullLocations) {
             int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-            assertEquals(0x09, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
+            assertEquals(0x09, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         }
     }
 
@@ -253,7 +253,7 @@ final class RoomSessionProjectilesTest {
 
         assertTrue(destroyed);
         int[][] expectedPositions = {{0x48, 0x50}, {0x58, 0x50}, {0x48, 0x60}, {0x58, 0x60}};
-        List<RoomEntity> rubble = session.rooms().activeRoom().entities().loadedEntities().stream()
+        List<RoomEntity> rubble = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x05)
                 .toList();
         assertEquals(4, rubble.size());
@@ -306,15 +306,15 @@ final class RoomSessionProjectilesTest {
 
         assertTrue(events.isEmpty());
         assertEquals(
-                session.rooms().activeRoom().entities(),
-                session.rooms().renderSnapshot().entities());
+                session.rooms().activeRoomOrNull().entities(),
+                session.rooms().renderSnapshotOrNull().entities());
     }
 
     @Test
     void publishesARealRomProjectileIntoTheSessionRenderSnapshot() {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x2F);
-        RoomEntity parent = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity parent = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x09)
                 .findFirst()
                 .orElseThrow();
@@ -322,11 +322,11 @@ final class RoomSessionProjectilesTest {
         RoomEntity projectile = null;
         for (int frame = 0; frame < 0x40 && projectile == null; frame++) {
             RoomEntity currentParent =
-                    session.rooms().activeRoom().entities().slots().get(parent.slot());
+                    session.rooms().activeRoomOrNull().entities().slots().get(parent.slot());
             session.entities()
                     .tickEntitiesWithProjectileEvents(
                             frame, (currentParent.x() + 0x20) & 0xFF, currentParent.y(), 0x00, 0x00, 0x00, false);
-            projectile = session.rooms().activeRoom().entities().loadedEntities().stream()
+            projectile = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x0A)
                     .findFirst()
                     .orElse(null);
@@ -338,9 +338,9 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x6A1E, projectile.spriteDefinition().address());
         assertTrue(projectile.spriteDefinition().supported());
         assertEquals(
-                session.rooms().activeRoom().entities(),
-                session.rooms().renderSnapshot().entities());
-        assertNotNull(session.rooms().renderSnapshot().entities().spriteTiles());
+                session.rooms().activeRoomOrNull().entities(),
+                session.rooms().renderSnapshotOrNull().entities());
+        assertNotNull(session.rooms().renderSnapshotOrNull().entities().spriteTiles());
     }
 
     @Test
@@ -351,7 +351,7 @@ final class RoomSessionProjectilesTest {
         session.story().restoreRoomStatuses(new byte[0x100], new byte[0x100], indoorB, new byte[0x20]);
         session.setEntityGoldenLeavesCount(5);
         session.rooms().loadIndoor(0x10, 0xC7);
-        RoomEntity richard = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity richard = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)
                 .findFirst()
                 .orElseThrow();
@@ -374,7 +374,7 @@ final class RoomSessionProjectilesTest {
             session.entities().tickEntities(frame, 0x20, 0x70, 0, Direction.DOWN.javaIndex());
         }
         RoomEntity movedRichard =
-                session.rooms().activeRoom().entities().slots().get(richard.slot());
+                session.rooms().activeRoomOrNull().entities().slots().get(richard.slot());
         assertEquals(0x58, movedRichard.x());
 
         session.entities().tickEntities(35, 0x78, 0x20, 0, Direction.DOWN.javaIndex());

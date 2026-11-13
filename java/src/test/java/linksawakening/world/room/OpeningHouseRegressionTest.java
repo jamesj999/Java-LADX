@@ -60,11 +60,12 @@ final class OpeningHouseRegressionTest {
         byte[] rom = rom();
         RoomSession session = session(rom, new GPU());
         session.rooms().loadIndoor(0x10, 0xA3);
-        var before = session.rooms().activeRoom().entities().slots().get(1);
+        var before = session.rooms().activeRoomOrNull().entities().slots().get(1);
         session.story().updateHouseTarinPresentation(31, 0x38, 0x34);
-        assertEquals(before, session.rooms().activeRoom().entities().slots().get(1));
+        assertEquals(
+                before, session.rooms().activeRoomOrNull().entities().slots().get(1));
         session.story().updateHouseTarinPresentation(32, 0x38, 0x34);
-        var after = session.rooms().activeRoom().entities().slots().get(1);
+        var after = session.rooms().activeRoomOrNull().entities().slots().get(1);
         assertEquals(1, after.spriteVariant());
         assertEquals(before.x(), after.x());
         assertEquals(before.y(), after.y());

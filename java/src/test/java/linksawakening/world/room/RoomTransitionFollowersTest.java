@@ -27,7 +27,7 @@ final class RoomTransitionFollowersTest {
         assertEquals(0xE0, session.rooms().currentRoomId());
         assertEquals(
                 4,
-                session.rooms().activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x0B)
                         .count());
     }

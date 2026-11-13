@@ -92,7 +92,7 @@ final class SlimeEyeSessionTest {
             assertTrue(eyes(room).isEmpty());
             assertEquals(
                     1,
-                    room.rooms().activeRoom().entities().loadedEntities().stream()
+                    room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                             .filter(e -> e.type() == 0x36)
                             .count());
             save(game.headlessFrame(), output.resolve("session-defeated.png"));
@@ -110,7 +110,7 @@ final class SlimeEyeSessionTest {
     }
 
     private List<RoomEntity> eyes(linksawakening.world.room.RoomSession room) {
-        return room.rooms().activeRoom().entities().loadedEntities().stream()
+        return room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(e -> e.type() == 0x5B)
                 .toList();
     }

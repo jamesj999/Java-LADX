@@ -129,9 +129,9 @@ final class RoomDebugFixture {
         if (!session.hasRoom()) {
             return 0;
         }
-        RoomEntity entity = session.rooms().activeRoom() == null
+        RoomEntity entity = session.rooms().activeRoomOrNull() == null
                 ? null
-                : session.rooms().activeRoom().entityView().slots().get(slot);
+                : session.rooms().activeRoomOrNull().entityView().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
                 ? session.loadedRoomOrNull().entities.inspection().warpTransitionCountdown(slot)
                 : session.loadedRoomOrNull().entities.enemies().transitionCountdown(slot);

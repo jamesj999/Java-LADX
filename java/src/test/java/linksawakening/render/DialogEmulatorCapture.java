@@ -133,7 +133,7 @@ public final class DialogEmulatorCapture {
             link.animation().showStandingShieldDownPose();
         }
         var motion = new MarinWakeUpMotion();
-        var marinSource = session.rooms().activeRoom().entities().slots().get(0);
+        var marinSource = session.rooms().activeRoomOrNull().entities().slots().get(0);
         String[] initial = initialClocks.trim().split("\\t");
         int firstFrame = Integer.parseInt(initial[0]);
         int inertia = Integer.parseInt(initial[1]);
@@ -219,7 +219,7 @@ public final class DialogEmulatorCapture {
                     .build(GameFrameState.empty()
                             .withScreen(RenderScreen.OVERWORLD)
                             .withRoom(
-                                    session.rooms().renderSnapshot(),
+                                    session.rooms().renderSnapshotOrNull(),
                                     new ScrollController(),
                                     new TransitionController())
                             .withLink(link)

@@ -60,7 +60,7 @@ final class EscapeSaveScreenTest {
                             ScrollController.RIGHT,
                             80,
                             80,
-                            state.roomSession().rooms().renderSnapshot(),
+                            state.roomSession().rooms().renderSnapshotOrNull(),
                             160);
             case TRANSITION -> state.transitionController().startFadeOut(() -> {});
             case PASS_OUT -> state.link().status().beginPassOut();

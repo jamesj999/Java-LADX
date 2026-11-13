@@ -25,7 +25,7 @@ class ObjectInteractionSessionTest {
     @Test
     void crackedFloorGivesWayThenLinkFallsThroughNormalPitPhysics() throws Exception {
         var game = session();
-        var room = game.diagnostics().roomSession().rooms().activeRoom();
+        var room = game.diagnostics().roomSession().rooms().activeRoomOrNull();
         int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
         game.headlessFrame(); // establish the preceding GetObjectUnderLink sample
         room.roomObjectsArea()[index] = 0xDF;
@@ -42,7 +42,7 @@ class ObjectInteractionSessionTest {
         var game = session();
         var roomSession = game.diagnostics().roomSession();
         game.headlessFrame();
-        roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
+        roomSession.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
         for (int i = 0; i < 17; i++) game.headlessFrame();
         assertEquals(17, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
         game.diagnostics().dialogController().open("Ground physics during dialog.");
@@ -50,7 +50,8 @@ class ObjectInteractionSessionTest {
         assertTrue(game.diagnostics().dialogController().isActive());
         // $02:75C4 -> 76C0 -> 7757 -> $7858/$786C, despite the Java motion gate.
         assertEquals(0, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
-        assertEquals(0xDF, roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
+        assertEquals(
+                0xDF, roomSession.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
     }
 
     @Test
@@ -63,7 +64,7 @@ class ObjectInteractionSessionTest {
         player.inventory().setItemA(linksawakening.state.InventoryItem.MAGIC_POWDER.romValue());
         player.inventory().setItemB(0);
         game.headlessFrame();
-        roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
+        roomSession.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
         for (int i = 0; i < 17; i++) game.headlessFrame();
         assertEquals(17, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
         // UseMagicPowder $00:149E sets wDialogGotItem; $02:7854 then resets wC1C9.
@@ -73,7 +74,8 @@ class ObjectInteractionSessionTest {
         assertTrue(game.diagnostics().link().animation().dialogGotItemActive());
         game.headlessFrame();
         assertEquals(0, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
-        assertEquals(0xDF, roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
+        assertEquals(
+                0xDF, roomSession.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
     }
 
     @Test
@@ -81,8 +83,8 @@ class ObjectInteractionSessionTest {
         var game = session();
         var roomSession = game.diagnostics().roomSession();
         game.headlessFrame();
-        roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
-        roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x34] = 0xDF;
+        roomSession.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
+        roomSession.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x34] = 0xDF;
         for (int i = 0; i < 17; i++) game.headlessFrame();
         game.diagnostics().link().position().setPixelPosition(56, 40); // entity-style move between Link passes
         game.headlessFrame();
@@ -97,7 +99,7 @@ class ObjectInteractionSessionTest {
         var player = game.diagnostics().playerState();
         player.equipmentLevels().setSwordLevel(1);
         player.inventory().setItemA(linksawakening.state.InventoryItem.SWORD.romValue());
-        var room = game.diagnostics().roomSession().rooms().activeRoom();
+        var room = game.diagnostics().roomSession().rooms().activeRoomOrNull();
         // Face right, then put a crystal at the ROM's sword probe (X+$16,Y+$08).
         game.headlessButton("right", true);
         game.headlessFrame();

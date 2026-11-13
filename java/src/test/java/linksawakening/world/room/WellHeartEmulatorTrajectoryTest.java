@@ -29,23 +29,23 @@ final class WellHeartEmulatorTrajectoryTest {
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
         session.rooms().loadInitialOverworld(0xA0);
-        int slot = session.rooms().activeRoom().entities().loadedEntities().stream()
+        int slot = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(e -> e.type() == 0x2D && e.x() == 72)
                 .findFirst()
                 .orElseThrow()
                 .slot();
         // Replace only this bush, just as the emulator experiment does. Keep
         // the adjacent bushes/house walls in the actual ROM room buffer.
-        session.rooms().activeRoom().roomObjectsArea()[0x35] = 0x04;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[0x35] = 0x04;
         session.entities().tickEntities(0, 56, 32); // Entity init.
         session.entities().tickEntities(1, 56, 32); // Reveal return; no movement yet.
-        var reveal = session.rooms().activeRoom().entities().slots().get(slot);
+        var reveal = session.rooms().activeRoomOrNull().entities().slots().get(slot);
         assertEquals(-1, reveal.spriteVariant());
         assertEquals(72, reveal.x());
         assertEquals(48, reveal.y());
         for (int pass = 1; pass <= 80; pass++) {
             session.entities().tickEntities(pass + 1, 56, 32);
-            var actual = session.rooms().activeRoom().entities().slots().get(slot);
+            var actual = session.rooms().activeRoomOrNull().entities().slots().get(slot);
             // PyBoy, real ROM room A0: XY advances $0C/16 until blocked
             // at (77,53) on pass 8; speeds/fractions survive wall restoration.
             int travel = Math.min(5, 12 * pass / 16);

@@ -46,7 +46,7 @@ public final class ReplayCheckpoint implements HeadlessState {
 
     public ReplayCheckpoint(SessionDiagnostics snapshot) {
 
-        var tarin = snapshot.roomSession().rooms().activeRoom().entities().loadedEntities().stream()
+        var tarin = snapshot.roomSession().rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x3F)
                 .findFirst()
                 .orElse(null);
@@ -61,7 +61,7 @@ public final class ReplayCheckpoint implements HeadlessState {
         this.shield = snapshot.playerState().equipmentLevels().shieldLevel();
         this.health = snapshot.playerState().vitals().health();
         this.sword = snapshot.playerState().equipmentLevels().swordLevel();
-        this.urchins = (int) snapshot.roomSession().rooms().activeRoom().entities().loadedEntities().stream()
+        this.urchins = (int) snapshot.roomSession().rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xC5 && entity.status() == EntityStatus.ACTIVE)
                 .count();
         this.toadstool = snapshot.playerState().ammunition().hasToadstool();

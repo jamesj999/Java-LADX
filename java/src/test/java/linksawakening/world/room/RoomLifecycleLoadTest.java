@@ -44,7 +44,7 @@ class RoomLifecycleLoadTest {
         RoomSession[] holder = new RoomSession[1];
         var observed = new java.util.ArrayList<Integer>();
         holder[0] = newSession(room -> {
-            org.junit.jupiter.api.Assertions.assertSame(room, holder[0].rooms().activeRoom());
+            org.junit.jupiter.api.Assertions.assertSame(room, holder[0].rooms().activeRoomOrNull());
             observed.add(room.roomId());
             if (room.roomId() == 0xA2) holder[0].rooms().loadOverworld(0xA3);
             if (room.roomId() == 0xA3) room.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE] = 0xE7;
@@ -53,7 +53,7 @@ class RoomLifecycleLoadTest {
         session.rooms().loadInitialOverworld(0xA2);
         assertEquals(java.util.List.of(0xA2, 0xA3), observed);
         assertEquals(0xA3, session.rooms().currentRoomId());
-        var active = session.rooms().activeRoom();
+        var active = session.rooms().activeRoomOrNull();
         // A distinct callback-time mutation proves the outer continuation uses the replacement map.
         assertEquals(0xE7, active.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE]);
         assertEquals(0xE7, session.components.overworldCollision().objectIdAtPoint(0, 0));

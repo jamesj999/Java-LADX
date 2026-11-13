@@ -41,7 +41,7 @@ class RoomDungeonLiveViewTest {
     }
 
     private void roomMap(RoomSession session, int map) {
-        var current = session.rooms().activeRoom();
+        var current = session.rooms().activeRoomOrNull();
         var room = ActiveRoom.from(new LoadedRoom(new LoadedRoomSpec(
                 new LoadedRoomSpec.Identity(1, 1, map, 0),
                 new LoadedRoomSpec.Objects(new int[256], null, null),

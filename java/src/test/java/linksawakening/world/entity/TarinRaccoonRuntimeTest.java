@@ -480,10 +480,10 @@ final class TarinRaccoonRuntimeTest {
 
         RoomPaletteLoader palettes = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         assertArrayEquals(
-                palettes.loadIndoor(0x10, 0xA3, null, 2), session.rooms().palettes());
+                palettes.loadIndoor(0x10, 0xA3, null, 2), session.rooms().palettesOrNull());
         assertArrayEquals(
                 palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 2),
-                session.rooms().activeRoom().entities().spriteSelection().objectPalettes());
+                session.rooms().activeRoomOrNull().entities().spriteSelection().objectPalettes());
     }
 
     @Test
@@ -496,10 +496,10 @@ final class TarinRaccoonRuntimeTest {
 
         RoomPaletteLoader palettes = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         assertArrayEquals(
-                palettes.loadIndoor(0x10, 0xA3, null, 0, 1), session.rooms().palettes());
+                palettes.loadIndoor(0x10, 0xA3, null, 0, 1), session.rooms().palettesOrNull());
         assertArrayEquals(
                 palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 1),
-                session.rooms().activeRoom().entities().spriteSelection().objectPalettes());
+                session.rooms().activeRoomOrNull().entities().spriteSelection().objectPalettes());
     }
 
     @Test
@@ -513,10 +513,10 @@ final class TarinRaccoonRuntimeTest {
 
         RoomPaletteLoader palettes = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         assertArrayEquals(
-                palettes.loadIndoor(0x10, 0xA3, null, 0, 0), session.rooms().palettes());
+                palettes.loadIndoor(0x10, 0xA3, null, 0, 0), session.rooms().palettesOrNull());
         assertArrayEquals(
                 palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 0),
-                session.rooms().activeRoom().entities().spriteSelection().objectPalettes());
+                session.rooms().activeRoomOrNull().entities().spriteSelection().objectPalettes());
     }
 
     @Test
@@ -619,14 +619,14 @@ final class TarinRaccoonRuntimeTest {
     }
 
     private static RoomEntity raccoon(RoomSession session) {
-        return session.rooms().activeRoom().entities().loadedEntities().stream()
+        return session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == ENTITY_TARIN)
                 .findFirst()
                 .orElseThrow();
     }
 
     private static boolean hasRaccoon(RoomSession session) {
-        return session.rooms().activeRoom().entities().loadedEntities().stream()
+        return session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == ENTITY_TARIN);
     }
 

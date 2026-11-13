@@ -42,7 +42,7 @@ public final class DialogInteractions {
                 || !world.roomSession().rooms().hasActiveRoom()) {
             return false;
         }
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
         return ui.overworldDialogInteraction()
                 .tryOpenSignpostDialog(
                         room.roomId(),

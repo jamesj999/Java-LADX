@@ -49,7 +49,7 @@ final class SlimeEyeControlsTest {
             int splitFrame = -1, bodyHits = 0;
             int previousBodyStretch = 0;
             for (int frame = 0; frame < 9000; frame++) {
-                var eyes = room.rooms().activeRoom().entities().loadedEntities().stream()
+                var eyes = room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .filter(e -> e.type() == 0x5B)
                         .toList();
                 var active = eyes.stream()
@@ -90,7 +90,7 @@ final class SlimeEyeControlsTest {
                     }
                 } else if (eyes.isEmpty()) {
                     dead = true;
-                    var heart = room.rooms().activeRoom().entities().loadedEntities().stream()
+                    var heart = room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                             .filter(e -> e.type() == 0x36)
                             .findFirst()
                             .orElse(null);
@@ -103,7 +103,7 @@ final class SlimeEyeControlsTest {
                 for (String key : desired) if (!pressed.contains(key)) game.headlessButton(key, true);
                 pressed = desired;
                 byte[] rgba = game.headlessFrame();
-                var after = room.rooms().activeRoom().entities().loadedEntities().stream()
+                var after = room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .filter(e -> e.type() == 0x5B)
                         .toList();
                 trace.append(frame)

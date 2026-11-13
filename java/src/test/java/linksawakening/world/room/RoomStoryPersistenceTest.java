@@ -54,11 +54,12 @@ final class RoomStoryPersistenceTest {
         assertTrue(session.rooms().hasActiveRoom());
         assertEquals(0x92, session.rooms().currentRoomId());
         assertEquals(Warp.CATEGORY_OVERWORLD, session.rooms().mapCategory());
-        assertNotNull(session.rooms().activeRoom().roomObjectsArea());
+        assertNotNull(session.rooms().activeRoomOrNull().roomObjectsArea());
         assertEquals(
-                0x92, session.rooms().activeRoom().entities().spriteSelection().roomId());
-        assertNotNull(session.rooms().activeRoom().entities().spriteTiles());
-        assertNotNull(session.rooms().renderSnapshot());
+                0x92,
+                session.rooms().activeRoomOrNull().entities().spriteSelection().roomId());
+        assertNotNull(session.rooms().activeRoomOrNull().entities().spriteTiles());
+        assertNotNull(session.rooms().renderSnapshotOrNull());
     }
 
     @Test
@@ -150,26 +151,29 @@ final class RoomStoryPersistenceTest {
 
         assertEquals(
                 EntityStatus.ACTIVE,
-                session.rooms().activeRoom().entities().slots().get(0).status());
+                session.rooms().activeRoomOrNull().entities().slots().get(0).status());
         assertEquals(
-                0x6E, session.rooms().activeRoom().entities().slots().get(3).type());
-        assertEquals(1, session.rooms().activeRoom().entities().slots().get(3).spriteVariant());
+                0x6E,
+                session.rooms().activeRoomOrNull().entities().slots().get(3).type());
         assertEquals(
-                session.rooms().activeRoom().entities(),
-                session.rooms().renderSnapshot().entities());
+                1, session.rooms().activeRoomOrNull().entities().slots().get(3).spriteVariant());
+        assertEquals(
+                session.rooms().activeRoomOrNull().entities(),
+                session.rooms().renderSnapshotOrNull().entities());
     }
 
     @Test
     void forwardsPerFrameLinkCollisionTypeToGhiniAndOldOverloadDefaultsToZero() {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x67);
-        RoomEntity hiddenGhini = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity hiddenGhini = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x10)
                 .findFirst()
                 .orElseThrow();
 
         session.entities().tickEntities(0, hiddenGhini.x(), hiddenGhini.y(), hiddenGhini.z(), 0);
-        RoomEntity initialized = session.rooms().activeRoom().entities().slots().get(hiddenGhini.slot());
+        RoomEntity initialized =
+                session.rooms().activeRoomOrNull().entities().slots().get(hiddenGhini.slot());
 
         session.tickEntities(new EntityTickInputs(
                 1,
@@ -177,7 +181,8 @@ final class RoomStoryPersistenceTest {
                 new LinkMotion(false, 0, false, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
-        RoomEntity revealTick = session.rooms().activeRoom().entities().slots().get(hiddenGhini.slot());
+        RoomEntity revealTick =
+                session.rooms().activeRoomOrNull().entities().slots().get(hiddenGhini.slot());
         assertEquals(-1, revealTick.spriteVariant());
 
         session.tickEntities(new EntityTickInputs(
@@ -186,12 +191,13 @@ final class RoomStoryPersistenceTest {
                 new LinkMotion(false, 0, false, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
-        RoomEntity visibleTick = session.rooms().activeRoom().entities().slots().get(hiddenGhini.slot());
+        RoomEntity visibleTick =
+                session.rooms().activeRoomOrNull().entities().slots().get(hiddenGhini.slot());
         assertTrue(visibleTick.spriteVariant() >= 0);
 
         RoomSession oldOverloadSession = newSession();
         oldOverloadSession.rooms().loadInitialOverworld(0x67);
-        RoomEntity oldOverloadGhini = oldOverloadSession.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity oldOverloadGhini = oldOverloadSession.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x10)
                 .findFirst()
                 .orElseThrow();
@@ -209,7 +215,7 @@ final class RoomStoryPersistenceTest {
                 -1,
                 oldOverloadSession
                         .rooms()
-                        .activeRoom()
+                        .activeRoomOrNull()
                         .entities()
                         .slots()
                         .get(oldOverloadGhini.slot())
@@ -231,7 +237,7 @@ final class RoomStoryPersistenceTest {
         }
 
         assertEquals(0x66, RoomDebugFixture.of(session).activeRoomEventForTest());
-        assertNotEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
+        assertNotEquals(0xA0, session.rooms().activeRoomOrNull().roomObjectsArea()[chestIndex]);
         assertTrue(vfx.activeSlots().isEmpty());
     }
 
@@ -239,7 +245,7 @@ final class RoomStoryPersistenceTest {
     void dungeonTitleCountsOnlyInteractiveClosedInventoryFramesAfterOverworldEntry() {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0xD3);
-        Warp entrance = session.rooms().activeRoom().warps().stream()
+        Warp entrance = session.rooms().activeRoomOrNull().warps().stream()
                 .filter(warp -> warp.destRoom() == 0x17)
                 .findFirst()
                 .orElseThrow();
@@ -268,7 +274,7 @@ final class RoomStoryPersistenceTest {
             RoomSession session = newSession();
             session.rooms().loadInitialOverworld(0x92);
             assertTrue(session.playerItems().fireMagicRodFireball(0x50, 0x58, 0, 0, power));
-            RoomEntity spawn = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity spawn = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x04)
                     .findFirst()
                     .orElseThrow();
@@ -276,7 +282,7 @@ final class RoomStoryPersistenceTest {
             assertEquals(0x5C, spawn.y());
 
             session.entities().tickEntitiesWithProjectileEvents(0, 0x50, 0x58, 0, 0, 0, false);
-            RoomEntity moved = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity moved = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x04)
                     .findFirst()
                     .orElseThrow();
@@ -291,8 +297,8 @@ final class RoomStoryPersistenceTest {
         for (int[] position : powderPositions) {
             RoomSession session = newSession();
             session.rooms().loadInitialOverworld(0x92);
-            int[] objects = session.rooms().activeRoom().roomObjectsArea();
-            int[] renderValues = session.rooms().activeRoom().renderValues();
+            int[] objects = session.rooms().activeRoomOrNull().roomObjectsArea();
+            int[] renderValues = session.rooms().activeRoomOrNull().renderValues();
             for (int location : new int[] {0x55, 0x56, 0x65, 0x66}) {
                 int index = RoomConstants.ROOM_OBJECTS_BASE + location;
                 objects[index] = location == 0x55 ? 0x5C : 0x04;
@@ -329,7 +335,7 @@ final class RoomStoryPersistenceTest {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 0x74);
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x22;
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0xAB;
         assertTrue(session.playerItems().sprinkleMagicPowder(0x13, 0x29, 0, 0));
         for (int frame = 0; frame < 16; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
@@ -337,22 +343,23 @@ final class RoomStoryPersistenceTest {
         // The skipped draw must retain VRAM, including attributes changed
         // since ignition, rather than rebuild graphics from the old object ID.
         int topLeft = 4 * RoomConstants.ROOM_TILE_WIDTH + 4;
-        session.rooms().activeRoom().tileIds()[topLeft] = 0x61;
-        session.rooms().activeRoom().tileAttrs()[topLeft] = 0x25;
+        session.rooms().activeRoomOrNull().tileIds()[topLeft] = 0x61;
+        session.rooms().activeRoomOrNull().tileAttrs()[topLeft] = 0x25;
         int[] litTiles = torchTiles(session, 0x22);
         for (int frame = 16; frame < 1024; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
-        assertEquals(0xAB, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0xAB, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         assertEquals(1, RoomDebugFixture.of(session).roomTriggerCountForTest());
         assertArrayEquals(litTiles, torchTiles(session, 0x22));
 
-        session.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xAB;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xAB;
         assertTrue(session.playerItems().sprinkleMagicPowder(0x23, 0x39, 0, 0));
         for (int frame = 1024; frame < 1040; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
-        assertEquals(0xAC, session.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
+        assertEquals(
+                0xAC, session.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
         assertArrayEquals(litTiles, torchTiles(session, 0x22));
     }
 
@@ -361,16 +368,16 @@ final class RoomStoryPersistenceTest {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 0);
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x22;
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0xAB;
         assertTrue(session.playerItems().sprinkleMagicPowder(0x13, 0x29, 0, 0));
         for (int frame = 0; frame < 16; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x0D;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x0D;
         for (int frame = 16; frame < 1024; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
-        assertEquals(0xAB, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0xAB, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         assertEquals(0, RoomDebugFixture.of(session).roomTriggerCountForTest());
     }
 
@@ -381,7 +388,7 @@ final class RoomStoryPersistenceTest {
 
         int location = 0x22;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0xAB;
 
         assertTrue(session.playerItems().sprinkleMagicPowder(0x13, 0x29, 0, 0));
         for (int frame = 0; frame < 16; frame++) {
@@ -390,12 +397,12 @@ final class RoomStoryPersistenceTest {
         assertEquals(1, RoomDebugFixture.of(session).roomTriggerCountForTest());
 
         for (int frame = 16;
-                frame < 1024 && session.rooms().activeRoom().roomObjectsArea()[areaIndex] == 0xAC;
+                frame < 1024 && session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] == 0xAC;
                 frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
 
-        assertEquals(0xAB, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0xAB, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         assertEquals(0, RoomDebugFixture.of(session).roomTriggerCountForTest());
 
         session.rooms().loadIndoor(0x00, 0x00);
@@ -409,8 +416,8 @@ final class RoomStoryPersistenceTest {
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x04;
-        session.rooms().activeRoom().renderValues()[areaIndex] = 0x04;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x04;
+        session.rooms().activeRoomOrNull().renderValues()[areaIndex] = 0x04;
 
         ShovelStartResult start = session.playerItems().startShovel(0x44, 0x56, 0, false);
 
@@ -426,12 +433,12 @@ final class RoomStoryPersistenceTest {
         for (int timer = 1; timer <= 15; timer++) {
             session.playerItems().advanceShovel(0x44, 0x56, 0, timer);
         }
-        assertEquals(0x04, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
 
         session.playerItems().advanceShovel(0x44, 0x56, 0, 0x10);
 
-        assertEquals(0xCC, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0xCC, session.rooms().activeRoom().renderValues()[areaIndex]);
+        assertEquals(0xCC, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
+        assertEquals(0xCC, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
     }
 
     @Test
@@ -441,8 +448,8 @@ final class RoomStoryPersistenceTest {
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x04;
-        session.rooms().activeRoom().renderValues()[areaIndex] = 0x04;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x04;
+        session.rooms().activeRoomOrNull().renderValues()[areaIndex] = 0x04;
 
         assertTrue(session.playerItems().startShovel(0x44, 0x56, 0, false).started());
         session.playerItems().advanceShovel(0x44, 0x56, 0, 0x10);
@@ -452,7 +459,7 @@ final class RoomStoryPersistenceTest {
         // byte (RRA carry set).
         session.entities().tickEntities(14, 0x44, 0x56);
 
-        RoomEntity drop = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity drop = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.sourceLoadOrder() == -1 && (entity.type() == 0x2D || entity.type() == 0x2E))
                 .findFirst()
                 .orElseThrow();
@@ -468,7 +475,7 @@ final class RoomStoryPersistenceTest {
     void forwardsHeldActionButtonsToTheLiveEvasiveStalfosHandler() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x0F);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x1E)
                 .findFirst()
                 .orElseThrow();
@@ -479,7 +486,8 @@ final class RoomStoryPersistenceTest {
         session.entityState().setEntityActionButtonsHeld(false);
         session.entities().tickEntities(2, initial.x() + 0x10, initial.y());
 
-        RoomEntity jumping = session.rooms().activeRoom().entities().slots().get(initial.slot());
+        RoomEntity jumping =
+                session.rooms().activeRoomOrNull().entities().slots().get(initial.slot());
         assertEquals(0x1E, jumping.type());
         assertEquals(1, jumping.z());
         assertEquals(2, jumping.spriteVariant());
@@ -490,7 +498,7 @@ final class RoomStoryPersistenceTest {
     void positiveZSkipsRomGroundSamplingForAnAirborneEntity() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x0F);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x1E)
                 .findFirst()
                 .orElseThrow();
@@ -502,7 +510,8 @@ final class RoomStoryPersistenceTest {
         session.entityState().setEntityActionButtonsHeld(false);
         session.entities().tickEntities(2, initial.x() + 0x10, initial.y());
 
-        RoomEntity airborne = session.rooms().activeRoom().entities().slots().get(initial.slot());
+        RoomEntity airborne =
+                session.rooms().activeRoomOrNull().entities().slots().get(initial.slot());
         assertEquals(1, airborne.z());
         assertEquals(0, RoomDebugFixture.of(session).entityGroundStatusForTest(initial.slot()));
     }
@@ -511,7 +520,7 @@ final class RoomStoryPersistenceTest {
     void liveAnglersTunnelEvasiveStalfosCreatesTheRomFleeingCloneAfterLanding() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x03, 0x0F);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x1E)
                 .findFirst()
                 .orElseThrow();
@@ -525,7 +534,7 @@ final class RoomStoryPersistenceTest {
         RoomEntity clone = null;
         for (int frame = 2; frame < 80; frame++) {
             session.entities().tickEntities(frame, linkX, initial.y());
-            clone = session.rooms().activeRoom().entities().slots().stream()
+            clone = session.rooms().activeRoomOrNull().entities().slots().stream()
                     .filter(entity -> entity.sourceLoadOrder() == -1 && entity.type() == 0x1E)
                     .findFirst()
                     .orElse(null);
@@ -546,14 +555,14 @@ final class RoomStoryPersistenceTest {
     void waterTektiteMovesThroughDeepWaterInTheLiveRoomSession() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x65);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x99)
                 .findFirst()
                 .orElseThrow();
         assertEquals(0x58, initial.x());
         assertEquals(0x40, initial.y());
 
-        int[] roomObjects = session.rooms().activeRoom().roomObjectsArea();
+        int[] roomObjects = session.rooms().activeRoomOrNull().roomObjectsArea();
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
                 roomObjects[RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] =
@@ -565,7 +574,7 @@ final class RoomStoryPersistenceTest {
             session.entities().tickEntities(frame, 0, 0);
         }
 
-        RoomEntity moved = session.rooms().activeRoom().entities().slots().get(initial.slot());
+        RoomEntity moved = session.rooms().activeRoomOrNull().entities().slots().get(initial.slot());
         assertTrue(moved.x() != initial.x() || moved.y() != initial.y());
     }
 
@@ -573,12 +582,12 @@ final class RoomStoryPersistenceTest {
     void waterTektiteStillStopsOnSolidTerrainInTheLiveRoomSession() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x65);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x99)
                 .findFirst()
                 .orElseThrow();
 
-        int[] roomObjects = session.rooms().activeRoom().roomObjectsArea();
+        int[] roomObjects = session.rooms().activeRoomOrNull().roomObjectsArea();
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
                 roomObjects[RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] =
@@ -590,7 +599,8 @@ final class RoomStoryPersistenceTest {
             session.entities().tickEntities(frame, 0, 0);
         }
 
-        RoomEntity blocked = session.rooms().activeRoom().entities().slots().get(initial.slot());
+        RoomEntity blocked =
+                session.rooms().activeRoomOrNull().entities().slots().get(initial.slot());
         assertEquals(initial.x(), blocked.x());
         assertEquals(initial.y(), blocked.y());
     }
@@ -599,11 +609,11 @@ final class RoomStoryPersistenceTest {
     void peaHatRetainsTheRomDeepWaterGroundStatus() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x6B);
-        List<RoomEntity> peaHats = session.rooms().activeRoom().entities().loadedEntities().stream()
+        List<RoomEntity> peaHats = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xA0)
                 .toList();
         assertTrue(!peaHats.isEmpty());
-        for (RoomEntity entity : session.rooms().activeRoom().entities().loadedEntities()) {
+        for (RoomEntity entity : session.rooms().activeRoomOrNull().entities().loadedEntities()) {
             if (entity.type() != 0xA0) {
                 session.entityState().clearEntity(entity.slot());
             }
@@ -614,7 +624,8 @@ final class RoomStoryPersistenceTest {
         session.entities().tickEntities(1);
 
         for (RoomEntity peaHat : peaHats) {
-            RoomEntity current = session.rooms().activeRoom().entities().slots().get(peaHat.slot());
+            RoomEntity current =
+                    session.rooms().activeRoomOrNull().entities().slots().get(peaHat.slot());
             assertEquals(EntityStatus.ACTIVE, current.status());
             assertEquals(0x02, RoomDebugFixture.of(session).entityGroundStatusForTest(peaHat.slot()));
         }
@@ -628,12 +639,12 @@ final class RoomStoryPersistenceTest {
         passableSession.rooms().loadInitialOverworld(0x2F);
         conveyorSession.rooms().loadInitialOverworld(0x2F);
 
-        RoomEntity passableInitial = passableSession.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity passableInitial = passableSession.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x09)
                 .findFirst()
                 .orElseThrow();
         RoomEntity conveyorInitial =
-                conveyorSession.rooms().activeRoom().entities().slots().get(passableInitial.slot());
+                conveyorSession.rooms().activeRoomOrNull().entities().slots().get(passableInitial.slot());
         assertEquals(passableInitial.x(), conveyorInitial.x());
         assertEquals(passableInitial.y(), conveyorInitial.y());
         fillActiveObjects(passableSession, 0x01);
@@ -645,9 +656,9 @@ final class RoomStoryPersistenceTest {
         }
 
         RoomEntity passable =
-                passableSession.rooms().activeRoom().entities().slots().get(passableInitial.slot());
+                passableSession.rooms().activeRoomOrNull().entities().slots().get(passableInitial.slot());
         RoomEntity conveyor =
-                conveyorSession.rooms().activeRoom().entities().slots().get(conveyorInitial.slot());
+                conveyorSession.rooms().activeRoomOrNull().entities().slots().get(conveyorInitial.slot());
         // Overworld $CF is physics $F4, whose bank-$03 movement table entry is
         // (+1,+1). The ordinary entity's own motion is identical in both runs.
         assertEquals((passable.x() + 1) & 0xFF, conveyor.x());
@@ -661,12 +672,12 @@ final class RoomStoryPersistenceTest {
         passableSession.rooms().loadIndoor(0x00, 0x05);
         conveyorSession.rooms().loadIndoor(0x00, 0x05);
 
-        RoomEntity passableInitial = passableSession.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity passableInitial = passableSession.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x17)
                 .findFirst()
                 .orElseThrow();
         RoomEntity conveyorInitial =
-                conveyorSession.rooms().activeRoom().entities().slots().get(passableInitial.slot());
+                conveyorSession.rooms().activeRoomOrNull().entities().slots().get(passableInitial.slot());
         fillActiveObjects(passableSession, 0x02);
         fillActiveObjects(conveyorSession, 0xCF);
 
@@ -676,9 +687,9 @@ final class RoomStoryPersistenceTest {
         }
 
         RoomEntity passable =
-                passableSession.rooms().activeRoom().entities().slots().get(passableInitial.slot());
+                passableSession.rooms().activeRoomOrNull().entities().slots().get(passableInitial.slot());
         RoomEntity conveyor =
-                conveyorSession.rooms().activeRoom().entities().slots().get(conveyorInitial.slot());
+                conveyorSession.rooms().activeRoomOrNull().entities().slots().get(conveyorInitial.slot());
         assertEquals(passable.x(), conveyor.x());
         assertEquals(passable.y(), conveyor.y());
     }
@@ -687,7 +698,7 @@ final class RoomStoryPersistenceTest {
     void ordinaryEntityKeepsTheRomShallowWaterGroundStatus() {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x2F);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x09)
                 .findFirst()
                 .orElseThrow();
@@ -696,7 +707,8 @@ final class RoomStoryPersistenceTest {
         session.entities().tickEntities(0);
         session.entities().tickEntities(1);
 
-        RoomEntity entity = session.rooms().activeRoom().entities().slots().get(initial.slot());
+        RoomEntity entity =
+                session.rooms().activeRoomOrNull().entities().slots().get(initial.slot());
         assertEquals(EntityStatus.ACTIVE, entity.status());
         assertEquals(0x02, RoomDebugFixture.of(session).entityGroundStatusForTest(initial.slot()));
     }
@@ -722,11 +734,11 @@ final class RoomStoryPersistenceTest {
         TransientVfxSystem vfx = new TransientVfxSystem(16);
         RoomSession session = newSession(vfx);
         session.rooms().loadInitialOverworld(0x2F);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x09)
                 .findFirst()
                 .orElseThrow();
-        for (RoomEntity entity : session.rooms().activeRoom().entities().loadedEntities()) {
+        for (RoomEntity entity : session.rooms().activeRoomOrNull().entities().loadedEntities()) {
             if (entity.slot() != initial.slot()) {
                 session.entityState().clearEntity(entity.slot());
             }
@@ -739,7 +751,7 @@ final class RoomStoryPersistenceTest {
         assertEquals(
                 EntityStatus.DISABLED,
                 session.rooms()
-                        .activeRoom()
+                        .activeRoomOrNull()
                         .entities()
                         .slots()
                         .get(initial.slot())
@@ -765,25 +777,30 @@ final class RoomStoryPersistenceTest {
                 | (((Byte.toUnsignedInt(rom[sourceOffset + 1]) >>> 7) & 0x01) << 1);
         assertEquals(
                 EntityRoomLoader.RoomTable.COLOR_DUNGEON,
-                session.rooms().activeRoom().entities().spriteSelection().roomTable());
-        assertNotNull(session.rooms().activeRoom().entities().spriteTiles());
+                session.rooms().activeRoomOrNull().entities().spriteSelection().roomTable());
+        assertNotNull(session.rooms().activeRoomOrNull().entities().spriteTiles());
         assertEquals(
                 expectedPixel,
-                session.rooms().activeRoom().entities().spriteTiles().tile(0x40).getPixel(0, 0));
+                session.rooms()
+                        .activeRoomOrNull()
+                        .entities()
+                        .spriteTiles()
+                        .tile(0x40)
+                        .getPixel(0, 0));
 
-        int objectId = session.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE];
+        int objectId = session.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE];
         int expectedTileOffset = RomBank.romOffset(0x08, 0x4760) + objectId * 4;
         int expectedAttrOffset = RomBank.romOffset(0x23, 0x6000) + objectId * 4;
         int expectedPaletteOffset = RomBank.romOffset(0x21, 0x67D0);
         int expectedPaletteColor = RomBank.decodeRgb555(Byte.toUnsignedInt(rom[expectedPaletteOffset])
                 | (Byte.toUnsignedInt(rom[expectedPaletteOffset + 1]) << 8));
-        assertEquals(expectedPaletteColor, session.rooms().activeRoom().palettes()[0][0]);
+        assertEquals(expectedPaletteColor, session.rooms().activeRoomOrNull().palettes()[0][0]);
         assertEquals(
                 Byte.toUnsignedInt(rom[expectedTileOffset]),
-                session.rooms().activeRoom().tileIds()[0]);
+                session.rooms().activeRoomOrNull().tileIds()[0]);
         assertEquals(
                 Byte.toUnsignedInt(rom[expectedAttrOffset]),
-                session.rooms().activeRoom().tileAttrs()[0]);
+                session.rooms().activeRoomOrNull().tileAttrs()[0]);
     }
 
     @Test
@@ -792,22 +809,22 @@ final class RoomStoryPersistenceTest {
         session.rooms().loadIndoor(0xFF, 0x07);
         session.entities().tickEntities(0);
 
-        RoomEntity shell = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity shell = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xE9)
                 .findFirst()
                 .orElseThrow();
         int objectIndex =
                 RoomConstants.ROOM_OBJECTS_BASE + ((shell.y() - 0x07) & 0xF0) + (((shell.x() - 0x01) & 0xF0) >>> 4);
-        session.rooms().activeRoom().roomObjectsArea()[objectIndex - 1] = 0x5E;
-        int[] beforeTiles = session.rooms().activeRoom().tileIds().clone();
+        session.rooms().activeRoomOrNull().roomObjectsArea()[objectIndex - 1] = 0x5E;
+        int[] beforeTiles = session.rooms().activeRoomOrNull().tileIds().clone();
         RoomDebugFixture.of(session).setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
 
         session.entities().tickEntities(1);
 
-        assertEquals(0x67, session.rooms().activeRoom().roomObjectsArea()[objectIndex]);
+        assertEquals(0x67, session.rooms().activeRoomOrNull().roomObjectsArea()[objectIndex]);
         assertNotEquals(
                 Arrays.toString(beforeTiles),
-                Arrays.toString(session.rooms().activeRoom().tileIds()));
+                Arrays.toString(session.rooms().activeRoomOrNull().tileIds()));
     }
 
     @Test
@@ -819,8 +836,10 @@ final class RoomStoryPersistenceTest {
         session.rooms().loadOverworld(0x92);
 
         assertEquals(
-                0x3E, session.rooms().activeRoom().entities().slots().get(0).type());
-        assertEquals(1, session.rooms().activeRoom().entities().slots().get(0).sourceLoadOrder());
+                0x3E,
+                session.rooms().activeRoomOrNull().entities().slots().get(0).type());
+        assertEquals(
+                1, session.rooms().activeRoomOrNull().entities().slots().get(0).sourceLoadOrder());
     }
 
     @Test
@@ -878,7 +897,7 @@ final class RoomStoryPersistenceTest {
         RoomSession session = newSession();
         session.story().setBowWowState(0x80);
         session.rooms().loadIndoor(0x10, 0xA7);
-        RoomEntity madam = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity madam = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
                 .findFirst()
                 .orElseThrow();

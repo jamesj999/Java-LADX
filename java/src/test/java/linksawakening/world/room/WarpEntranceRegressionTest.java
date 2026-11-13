@@ -103,7 +103,7 @@ final class WarpEntranceRegressionTest {
         // Marin, Madam MeowMeow, kennel, witch, shop.
         for (int[] house : new int[][] {{0x10, 0xA3}, {0x10, 0xA7}, {0x12, 0xB2}, {0x0E, 0xA2}, {0x0E, 0xA1}}) {
             session.rooms().loadIndoor(house[0], house[1]);
-            Warp exit = session.rooms().activeRoom().firstWarp();
+            Warp exit = session.rooms().activeRoomOrNull().firstWarp();
             assertEquals(Warp.CATEGORY_OVERWORLD, exit.category());
             link.position().setRoomEntryPixelPosition(72, 128);
             coordinator.handleWarpAndIndoorBoundaries(link);

@@ -35,10 +35,6 @@ final class RoomRoomsView implements RoomRooms {
         session.loadIndoor(mapId, roomId, mapCategory);
     }
 
-    public ActiveRoom activeRoom() {
-        return activeRoomOrNull();
-    }
-
     public ActiveRoom activeRoomOrNull() {
         return session.activeRoom();
     }
@@ -71,10 +67,6 @@ final class RoomRoomsView implements RoomRooms {
         return session.indoorRoomPositionForSave();
     }
 
-    public int[][] palettes() {
-        return session.palettes();
-    }
-
     public boolean heartPiecePickupActive() {
         return session.heartPiecePickupActive();
     }
@@ -92,14 +84,6 @@ final class RoomRoomsView implements RoomRooms {
     }
 
     public RoomRenderSnapshot renderSnapshotOrNull() {
-        return session.renderSnapshot();
-    }
-
-    public RoomRenderSnapshot.View renderView() {
-        return session.renderView();
-    }
-
-    public RoomRenderSnapshot renderSnapshot() {
         return session.renderSnapshot();
     }
 

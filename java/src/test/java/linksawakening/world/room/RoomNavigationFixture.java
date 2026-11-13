@@ -247,14 +247,14 @@ final class RoomNavigationFixture {
 
     static int letBowWowEatAllGoponga(RoomSession session, OverworldCollision collision, Link link, int frame) {
         int deadline = frame + 0x4000;
-        while (session.rooms().activeRoom().entities().loadedEntities().stream()
+        while (session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
                 && frame < deadline) {
-            RoomEntity target = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity target = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
                     .findFirst()
                     .orElseThrow();
-            RoomEntity bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity bowWow = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x6D)
                     .findFirst()
                     .orElseThrow();
@@ -270,7 +270,7 @@ final class RoomNavigationFixture {
                         link.position().romEntityX(),
                         link.position().romEntityY());
                 session.consumeEntityEvents();
-                bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
+                bowWow = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x6D)
                         .findFirst()
                         .orElseThrow();
@@ -312,7 +312,7 @@ final class RoomNavigationFixture {
                     session.consumeEntityEvents();
                 }
             }
-            while (session.rooms().activeRoom().entities().loadedEntities().stream()
+            while (session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                             .anyMatch(entity ->
                                     entity.slot() == target.slot() && (entity.type() == 0x7C || entity.type() == 0x7E))
                     && frame < deadline) {
@@ -325,9 +325,9 @@ final class RoomNavigationFixture {
             }
         }
         assertFalse(
-                session.rooms().activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E),
-                session.rooms().activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .map(entity -> String.format(
                                 "slot%d:%02X@(%02X,%02X,z=%02X,v=%d,s=%s)",
                                 entity.slot(),
@@ -349,7 +349,7 @@ final class RoomNavigationFixture {
 
     static int objectAt(RoomSession session, int location) {
         return session.rooms()
-                .activeRoom()
+                .activeRoomOrNull()
                 .roomObjectsArea()[ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F)];
     }
 
@@ -368,7 +368,7 @@ final class RoomNavigationFixture {
     static int[] roomObjectTiles(RoomSession session, int location) {
         int tileX = (location & 0x0F) * 2;
         int tileY = ((location & 0xF0) >>> 4) * 2;
-        int[] tiles = session.rooms().activeRoom().tileIds();
+        int[] tiles = session.rooms().activeRoomOrNull().tileIds();
         int rowStride = RoomConstants.ROOM_TILE_WIDTH;
         return new int[] {
             tiles[tileY * rowStride + tileX],
@@ -379,7 +379,7 @@ final class RoomNavigationFixture {
     }
 
     static boolean bowWowOutsideLeash(RoomSession session, Link link) {
-        RoomEntity bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity bowWow = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x6D)
                 .findFirst()
                 .orElseThrow();

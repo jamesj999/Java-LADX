@@ -160,7 +160,7 @@ public final class SessionDiagnosticSnapshot implements SessionDiagnostics {
                         box.width(),
                         box.y(),
                         box.height(),
-                        roomSession.rooms().activeRoom().entities().loadedEntities().stream()
+                        roomSession.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                                 .filter(e -> e.type() == 0x81 || e.type() == 0x82 || e.type() == 0x59)
                                 .map(e -> "%d,%d,%d,%d,%d,%d"
                                         .formatted(
@@ -174,7 +174,7 @@ public final class SessionDiagnosticSnapshot implements SessionDiagnostics {
     }
 
     public String headlessEntityPositions() {
-        return roomSession.rooms().activeRoom().entities().loadedEntities().stream()
+        return roomSession.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .map(e -> "%02X:%s@%d,%d".formatted(e.type(), e.status(), e.x(), e.y()))
                 .collect(Collectors.joining(" "));
     }

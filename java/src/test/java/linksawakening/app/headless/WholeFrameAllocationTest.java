@@ -50,7 +50,7 @@ class WholeFrameAllocationTest {
             assertFalse(diagnostic
                     .roomSession()
                     .rooms()
-                    .activeRoom()
+                    .activeRoomOrNull()
                     .entityView()
                     .loadedEntities()
                     .isEmpty());

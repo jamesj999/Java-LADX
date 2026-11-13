@@ -275,7 +275,7 @@ public final class SaveCoordinator implements SaveActions {
                     world.roomSession().progress().respawnIndoorRoom());
             return;
         }
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
         boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
         int indoorRoom = world.roomSession().rooms().indoorRoomPositionForSave();
         if (indoorRoom < 0) {

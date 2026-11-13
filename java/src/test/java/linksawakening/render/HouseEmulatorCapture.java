@@ -58,7 +58,7 @@ public final class HouseEmulatorCapture {
                 player,
                 new ItemRegistry());
         var motion = new MarinWakeUpMotion();
-        var marinSource = session.rooms().activeRoom().entities().slots().get(0);
+        var marinSource = session.rooms().activeRoomOrNull().entities().slots().get(0);
         var clocks = Files.readAllLines(out.resolve("clocks.tsv"));
         String[] first = clocks.get(0).split("\t");
         int firstFrame = Integer.parseInt(first[0]);
@@ -92,7 +92,7 @@ public final class HouseEmulatorCapture {
                     .build(GameFrameState.empty()
                             .withScreen(RenderScreen.OVERWORLD)
                             .withRoom(
-                                    session.rooms().renderSnapshot(),
+                                    session.rooms().renderSnapshotOrNull(),
                                     new ScrollController(),
                                     new TransitionController())
                             .withLink(link)

@@ -89,8 +89,9 @@ class FileMenuBehaviorTest {
             assertEquals(
                     0, s.c.services().player().playerState().equipmentLevels().swordLevel());
             assertEquals(0xA3, s.c.services().world().roomSession().rooms().currentRoomId());
-            assertTrue(s.c.services().world().roomSession().rooms().activeRoom().entities().loadedEntities().stream()
-                    .anyMatch(e -> e.type() == 0x3F));
+            assertTrue(
+                    s.c.services().world().roomSession().rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                            .anyMatch(e -> e.type() == 0x3F));
             s.game.stepWithoutRender();
             assertTrue(s.c.services().player().link().animation().isMarinWakeUpBedVisible());
         }
@@ -163,10 +164,11 @@ class FileMenuBehaviorTest {
                     .story()
                     .tryOpenMarinFollowUpDialog(
                             s.c.services().input().inputConfig().bKey()));
-            var marin = s.c.services().world().roomSession().rooms().activeRoom().entities().loadedEntities().stream()
-                    .filter(e -> e.type() == 0x3E)
-                    .findFirst()
-                    .orElseThrow();
+            var marin =
+                    s.c.services().world().roomSession().rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                            .filter(e -> e.type() == 0x3E)
+                            .findFirst()
+                            .orElseThrow();
             s.c.services().player().link().position().setPixelPosition(marin.x() - 8, marin.y() - 8);
             s.c.services().player().link().animation().setRomDirection(2);
             assertTrue(s.c.runtime()

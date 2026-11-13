@@ -142,7 +142,7 @@ final class RoomTransitionBoundariesTest {
             OverworldCollision collision = new OverworldCollision(tables);
             RoomSession session = newSession(rom, tables, collision);
             session.rooms().loadIndoor(sideView ? 0 : 0x10, sideView ? 6 : 0xA3);
-            Warp warp = session.rooms().activeRoom().firstWarp();
+            Warp warp = session.rooms().activeRoomOrNull().firstWarp();
             assertEquals(sideView, warp.category() == Warp.CATEGORY_SIDESCROLL);
             if (!sideView) {
                 int[] objects = roomWithPitAt(1, 1);

@@ -27,13 +27,13 @@ final class HouseNpcReentryTest {
         room.story().setTarinFlag(1);
         room.rooms().loadIndoorFromSavedPosition(0x10, 0xA3, 0);
         assertTrue(
-                room.rooms().activeRoom().entities().loadedEntities().stream()
+                room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x3F && entity.spriteVariant() >= 0),
                 "Tarin returns home after the raccoon transformation");
     }
 
     private static void assertHouseNpcsHidden(GameSession game) {
-        assertFalse(game.diagnostics().roomSession().rooms().activeRoom().entities().loadedEntities().stream()
+        assertFalse(game.diagnostics().roomSession().rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> (entity.type() == 0x3E || entity.type() == 0x3F) && entity.spriteVariant() >= 0));
     }
 }

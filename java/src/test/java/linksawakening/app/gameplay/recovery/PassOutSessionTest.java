@@ -107,7 +107,7 @@ class PassOutSessionTest {
             for (int xTile = 0; xTile < 20; xTile++) {
                 initialTiles[yTile * 32 + xTile] = 0xAE + ((xTile ^ yTile) & 1);
             }
-        var room = game.diagnostics().roomSession().rooms().renderSnapshot();
+        var room = game.diagnostics().roomSession().rooms().renderSnapshotOrNull();
         var frame = new linksawakening.ui.FileMenuFrameSnapshot.Builder()
                 .sceneId("game_over")
                 .selectedSlot(0)

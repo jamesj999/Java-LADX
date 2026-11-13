@@ -42,17 +42,18 @@ final class RoomSessionBoundariesTest {
         RoomSession session = newSession();
         ScrollController scrollController = new ScrollController();
         session.rooms().loadInitialOverworld(0x92);
-        var previousEntities = session.rooms().activeRoom().entities();
+        var previousEntities = session.rooms().activeRoomOrNull().entities();
 
         session.transitions().startAdjacentOverworldScroll(scrollController, ScrollController.RIGHT, 161, 40);
 
         assertEquals(0x93, session.rooms().currentRoomId());
-        assertNotSame(previousEntities, session.rooms().activeRoom().entities());
+        assertNotSame(previousEntities, session.rooms().activeRoomOrNull().entities());
         assertNotSame(
                 previousEntities.spriteTiles(),
-                session.rooms().activeRoom().entities().spriteTiles());
+                session.rooms().activeRoomOrNull().entities().spriteTiles());
         assertEquals(
-                0x93, session.rooms().activeRoom().entities().spriteSelection().roomId());
+                0x93,
+                session.rooms().activeRoomOrNull().entities().spriteSelection().roomId());
         assertEquals(previousEntities, scrollController.previousRoom().entities());
         assertNotNull(scrollController.previousRoom().entities().spriteTiles());
         assertTrue(scrollController.isActive());
@@ -64,13 +65,13 @@ final class RoomSessionBoundariesTest {
     void forwardsLiveOcarinaPlaybackToAPolsVoiceEntity() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x25);
-        RoomEntity polsVoice = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity polsVoice = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x18)
                 .findFirst()
                 .orElseThrow();
 
         session.entities().tickEntities(0, polsVoice.x(), polsVoice.y(), polsVoice.z(), 0);
-        polsVoice = session.rooms().activeRoom().entities().loadedEntities().stream()
+        polsVoice = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x18)
                 .findFirst()
                 .orElseThrow();
@@ -80,7 +81,7 @@ final class RoomSessionBoundariesTest {
         session.entities().tickEntities(1, polsVoice.x(), polsVoice.y(), polsVoice.z(), 0);
 
         RoomEntity dyingPolsVoice =
-                session.rooms().activeRoom().entities().slots().get(polsVoice.slot());
+                session.rooms().activeRoomOrNull().entities().slots().get(polsVoice.slot());
         assertEquals(EntityStatus.DYING, dyingPolsVoice.status());
         assertFalse(session.transitions().ocarinaPlaying());
         assertEquals(
@@ -117,14 +118,14 @@ final class RoomSessionBoundariesTest {
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
-        session.rooms().activeRoom().renderValues()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().renderValues()[areaIndex] = 0x5C;
 
         assertTrue(session.playerItems().fireMagicRodFireball(0x50, 0x58, 0, 0));
         session.entities().tickEntitiesWithProjectileEvents(0, 0x50, 0x58, 0, 0, 0, false);
 
-        assertEquals(0x04, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x04, session.rooms().activeRoom().renderValues()[areaIndex]);
+        assertEquals(0x04, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
         assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x04
@@ -140,8 +141,8 @@ final class RoomSessionBoundariesTest {
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
-        session.rooms().activeRoom().renderValues()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x5C;
+        session.rooms().activeRoomOrNull().renderValues()[areaIndex] = 0x5C;
 
         // The source entity cell is computed from entity X/Y as
         // ((x - 1) & F0, (y - 9) & F0); these Link coordinates place it on
@@ -151,8 +152,8 @@ final class RoomSessionBoundariesTest {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
 
-        assertEquals(0x04, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x04, session.rooms().activeRoom().renderValues()[areaIndex]);
+        assertEquals(0x04, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
         assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x08
@@ -164,7 +165,7 @@ final class RoomSessionBoundariesTest {
     void liveEntityCollisionProbeUsesActiveIgnoreHitsCountdownForGroundedPits() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x0F);
-        RoomEntity entity = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity entity = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(candidate -> candidate.type() == 0x1E)
                 .findFirst()
                 .orElseThrow();
@@ -197,11 +198,11 @@ final class RoomSessionBoundariesTest {
     void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x0F);
-        RoomEntity initial = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity initial = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x1E)
                 .findFirst()
                 .orElseThrow();
-        for (RoomEntity entity : session.rooms().activeRoom().entities().loadedEntities()) {
+        for (RoomEntity entity : session.rooms().activeRoomOrNull().entities().loadedEntities()) {
             if (entity.slot() != initial.slot()) {
                 session.entityState().clearEntity(entity.slot());
             }
@@ -214,7 +215,8 @@ final class RoomSessionBoundariesTest {
         session.entities().tickEntities(0, 0, 0);
         session.entities().tickEntities(1, 0, 0);
 
-        RoomEntity falling = session.rooms().activeRoom().entities().slots().get(initial.slot());
+        RoomEntity falling =
+                session.rooms().activeRoomOrNull().entities().slots().get(initial.slot());
         assertEquals(EntityStatus.FALLING, falling.status());
         assertEquals(
                 (falling.x() - 1) & 0xF0,
@@ -232,8 +234,8 @@ final class RoomSessionBoundariesTest {
                 .setFollowingNpcState(
                         new FollowingNpcState(true, 0, false, false, 0, 0, false), 0x50, 0x60, 0x00, 0x00, 0x00);
 
-        assertTrue(session.rooms().activeRoom().entities().sideScrolling());
-        assertFalse(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertTrue(session.rooms().activeRoomOrNull().entities().sideScrolling());
+        assertFalse(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == FollowingNpcEntitySpawner.ENTITY_ROOSTER));
     }
 
@@ -245,13 +247,13 @@ final class RoomSessionBoundariesTest {
         session.rooms().loadIndoor(0xFF, 0x07);
         session.entities().tickEntities(0);
 
-        RoomEntity shell = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity shell = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xE9)
                 .findFirst()
                 .orElseThrow();
         int objectIndex =
                 RoomConstants.ROOM_OBJECTS_BASE + ((shell.y() - 0x07) & 0xF0) + (((shell.x() - 0x01) & 0xF0) >>> 4);
-        session.rooms().activeRoom().roomObjectsArea()[objectIndex - 1] = 0x00;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[objectIndex - 1] = 0x00;
         RoomDebugFixture.of(session).setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
 
         session.entities().tickEntities(1);
