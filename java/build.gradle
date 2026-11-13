@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'net.ltgt.errorprone' version '5.0.0'
     id 'com.diffplug.spotless' version '6.25.0'
 }
 
@@ -28,6 +29,17 @@ def detected = os.contains('mac') ? (arm ? 'macos-arm64' : 'macos') :
     os.contains('linux') ? (arm ? 'linux-arm64' : 'linux') : os.contains('windows') ? 'windows' : 'unsupported'
 def selected = providers.gradleProperty('platform').getOrElse(detected)
 if (!(selected in platforms)) throw new GradleException("Unsupported platform: $selected; set -Pplatform=" + platforms)
+// Both source sets use the same pinned compiler analysis; no runtime dependency.
+tasks.withType(JavaCompile).configureEach {
+    // Serialization is not a persistence API here; no Java annotation processors
+    // are used (Error Prone is a javac plugin, not an annotation processor).
+    options.compilerArgs += ['-Xlint:all,-serial,-processing', '-Xmaxwarns', '10000',
+                             '-XDaddTypeAnnotationsToSymbol=true']
+    options.forkOptions.memoryMaximumSize = '3g'
+    // Baseline/triage only; step 4 promotes every enabled diagnostic to an error.
+    options.errorprone.allErrorsAsWarnings = true
+}
+
 dependencies {
     ['lwjgl', 'lwjgl-glfw', 'lwjgl-openal', 'lwjgl-opengl'].each { module ->
         implementation "org.lwjgl:$module:$lwjglVersion"
@@ -35,6 +47,7 @@ dependencies {
             runtimeOnly "org.lwjgl:$module:$lwjglVersion:natives-$target"
         }
     }
+    errorprone "com.google.errorprone:error_prone_core:2.43.0"
     testImplementation platform("org.junit:junit-bom:5.10.2")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
