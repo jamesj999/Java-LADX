@@ -18,7 +18,7 @@ final class MagicRodFrameStep {
     private int frame;
     private boolean handlerInteractive;
     private boolean timersInteractive;
-    private linksawakening.world.entity.EntityProjectileControllerServices runtime;
+    private linksawakening.world.entity.EntityProjectileController runtime;
     private int slot;
     private boolean unloadOnHit;
     private int variant;
@@ -37,7 +37,7 @@ final class MagicRodFrameStep {
 
     private boolean advanceProjectile() {
 
-        runtime = owner.runtime;
+        runtime = owner;
         slot = entity.slot();
         // The source calls func_003_75A2 before either the wall-fire branch or
         // ReturnIfNonInteractive. A fireball can therefore still deliver the
@@ -46,42 +46,42 @@ final class MagicRodFrameStep {
         if (unloadOnHit) {
             // $7782-$7795 unloads a normal projectile hit. Blocking targets
             // and existing wall flames retain a nonzero collision byte.
-            runtime.lifecycle().disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return false;
         }
-        variant = runtime.motions()
+        variant = runtime.motions
                 .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                 .advanceSpriteVariant(slot, frame);
-        if (runtime.motions()
+        if (runtime.motions
                         .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                         .privateCountdown1(slot)
                 != 0) {
-            if (runtime.motions()
+            if (runtime.motions
                     .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                     .tickFireTransition(slot, timersInteractive)) {
-                runtime.clearEntity(slot);
+                runtime.lifecycle.clearEntity(slot);
                 return false;
             }
-            EntitySpriteDefinition fireDefinition = runtime.spriteHandlers() == null
+            EntitySpriteDefinition fireDefinition = runtime.spriteHandlers == null
                     ? entity.spriteDefinition()
-                    : runtime.slotProperties().spriteViews().forMagicRodFireState();
-            runtime.slots()[index] = withDefinition(entity, fireDefinition, variant);
+                    : runtime.slotProperties.spriteViews().forMagicRodFireState();
+            runtime.slots[index] = withDefinition(entity, fireDefinition, variant);
             return false;
         }
 
         // ReturnIfNonInteractive_03 is after the normal sprite write and
         // before movement/object lookup in the ROM helper.
         if (!handlerInteractive) {
-            runtime.slots()[index] = withVariant(entity, variant);
+            runtime.slots[index] = withVariant(entity, variant);
             return false;
         }
 
-        moved = runtime.motions()
+        moved = runtime.motions
                 .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                 .advancePosition(entity);
-        intersectionQuery = runtime.physicsTables().readObjectIntersectionQuery() != null
-                ? runtime.physicsTables().readObjectIntersectionQuery()
-                : runtime.physicsTables().readObjectQuery();
+        intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery() != null
+                ? runtime.physicsTables.readObjectIntersectionQuery()
+                : runtime.physicsTables.readObjectQuery();
         object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
         return true;
     }
@@ -92,25 +92,24 @@ final class MagicRodFrameStep {
                 ? ProjectileObjectCollision.NONE
                 : owner.projectileObjectCollision(moved, object, frame, slot);
         if (objectCollision == ProjectileObjectCollision.UNLOAD) {
-            runtime.lifecycle().disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return false;
         }
         // $7DF3-$7E00 restores BOTH coordinates from the active pre-movement
         // position before the fireball handler can clear a burnable collision.
         positioned = objectCollision == ProjectileObjectCollision.BLOCKED ? entity : moved;
         if (owner.isMagicRodBurnableObject(object)) {
-            runtime.motions()
+            runtime.motions
                     .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                     .setCollision(slot, false);
             int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-            runtime.events()
-                    .magicRodObjectRequests
-                    .add(new MagicRodObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
-            runtime.slots()[index] = withVariant(positioned, variant);
+            runtime.events.magicRodObjectRequests.add(
+                    new MagicRodObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
+            runtime.slots[index] = withVariant(positioned, variant);
             return false;
         }
 
-        if (runtime.motions()
+        if (runtime.motions
                         .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                         .collided(slot)
                 || objectCollision == ProjectileObjectCollision.BLOCKED) {
@@ -118,11 +117,11 @@ final class MagicRodFrameStep {
             // fireball display has already been rendered. Keep the normal
             // definition for this frame; the next handler tick switches to
             // FireSpriteVariants and decrements the $30 countdown.
-            runtime.motions()
+            runtime.motions
                     .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                     .beginFireTransition(slot);
         }
-        runtime.slots()[index] = withVariant(positioned, variant);
+        runtime.slots[index] = withVariant(positioned, variant);
         return true;
     }
 

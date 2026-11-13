@@ -92,7 +92,7 @@ final class EntityRoomInspectionQueries {
 
     int magicPowderState(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.projectiles().readMagicPowderState(slot);
+        return runtime.projectiles().state.readMagicPowderState(slot);
     }
 
     int magicPowderSlowTransitionCountdown(int slot) {

@@ -54,7 +54,7 @@ public final class EntityRoomInspection {
     }
 
     public boolean lastArrowShotPlayedWhoosh() {
-        return runtime.projectiles().readLastArrowShotPlayedWhoosh();
+        return runtime.projectiles().state.readLastArrowShotPlayedWhoosh();
     }
 
     public boolean lastBombPlacementPlayedBump() {

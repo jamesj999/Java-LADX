@@ -22,7 +22,7 @@ final class MagicPowderStep {
     private int linkMotionState;
     private boolean handlerInteractive;
     private boolean timersInteractive;
-    private linksawakening.world.entity.EntityProjectileControllerServices runtime;
+    private linksawakening.world.entity.EntityProjectileController runtime;
     private int slot;
     private int transitionCountdown;
     private linksawakening.world.entity.RoomEntityObjectQuery intersectionQuery;
@@ -42,50 +42,48 @@ final class MagicPowderStep {
 
     private boolean prepareCountdowns() {
 
-        runtime = owner.runtime;
+        runtime = owner;
         slot = entity.slot();
         if (timersInteractive) {
-            runtime.lifecycle().decrementSlowTransitionCountdown(slot, frame);
+            runtime.lifecycle.decrementSlowTransitionCountdown(slot, frame);
         }
 
         // func_018_7B02 renders before ReturnIfNonInteractive_18, even when
         // the handler is paused. Zero means no sprinkle sprite, not unloading.
-        transitionCountdown = runtime.physicsTables().readEnemyTransitionCountdown(slot);
-        runtime.slots()[index] =
-                withVariant(entity, transitionCountdown == 0 ? -1 : (transitionCountdown >>> 2) & 0x07);
+        transitionCountdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
+        runtime.slots[index] = withVariant(entity, transitionCountdown == 0 ? -1 : (transitionCountdown >>> 2) & 0x07);
         if (!handlerInteractive) {
             return false;
         }
 
-        if (owner.readMagicPowderState(slot) != 0) {
+        if (owner.state.readMagicPowderState(slot) != 0) {
             // State one has no ordinary sprinkle rectangle: the source emits
             // its short torch pair only at the state transition boundaries.
-            if (runtime.physicsTables().readSlowTransitionCountdown(slot) != 0) {
-                runtime.slots()[index] = withVariant(entity, -1);
+            if (runtime.physicsTables.readSlowTransitionCountdown(slot) != 0) {
+                runtime.slots[index] = withVariant(entity, -1);
                 return false;
             }
 
             int objectLeft = entity.x() & 0xF0;
             int objectTop = entity.y() & 0xF0;
             int location = (objectTop | (objectLeft >>> 4)) & 0xFF;
-            runtime.events()
-                    .magicPowderObjectRequests
-                    .add(new MagicPowderObjectRequest(
-                            slot, location, objectLeft, objectTop, MagicPowderObjectAction.EXTINGUISH_TORCH));
+            runtime.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                    slot, location, objectLeft, objectTop, MagicPowderObjectAction.EXTINGUISH_TORCH));
             // Keep the palette state visible to later powder handlers in
             // this pass, before RoomSession applies their object requests.
-            if (runtime.roomVariables().readEntityRoomId() != 0x74 && owner.readTorchPaletteTargetAddress() < 0x0C) {
-                owner.writeTorchPaletteTargetAddress(owner.readTorchPaletteTargetAddress() + (4));
+            if (runtime.roomVariables.readEntityRoomId() != 0x74
+                    && owner.state.readTorchPaletteTargetAddress() < 0x0C) {
+                owner.state.writeTorchPaletteTargetAddress(owner.state.readTorchPaletteTargetAddress() + (4));
                 if (linkMotionState != 0x05) {
-                    owner.writeTorchPaletteTransitionActive(true);
+                    owner.state.writeTorchPaletteTransitionActive(true);
                 }
             }
-            runtime.clearEntity(slot);
+            runtime.lifecycle.clearEntity(slot);
             return false;
         }
 
         if (transitionCountdown == 0) {
-            runtime.clearEntity(slot);
+            runtime.lifecycle.clearEntity(slot);
             return false;
         }
         return true;
@@ -94,15 +92,15 @@ final class MagicPowderStep {
     private boolean prepareObjectInteraction() {
 
         if (transitionCountdown != 0x07) {
-            if (transitionCountdown < 0x10 && owner.readMagicPowderPrivateState4(slot) == 0) {
+            if (transitionCountdown < 0x10 && owner.state.readMagicPowderPrivateState4(slot) == 0) {
                 owner.collideMagicPowderWithEntities(entity, frame);
             }
             return false;
         }
 
-        intersectionQuery = runtime.physicsTables().readObjectIntersectionQuery() != null
-                ? runtime.physicsTables().readObjectIntersectionQuery()
-                : runtime.physicsTables().readObjectQuery();
+        intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery() != null
+                ? runtime.physicsTables.readObjectIntersectionQuery()
+                : runtime.physicsTables.readObjectQuery();
         object = intersectionQuery == null
                 // The shared query samples (X, Y-8). Powder's $797E-$7997
                 // formula instead samples (X-1, Y-9), including byte wrapping.
@@ -114,26 +112,21 @@ final class MagicPowderStep {
         location = (objectTop | (objectLeft >>> 4)) & 0xFF;
         objectId = object == null ? 0xFF : object.objectId() & 0xFF;
 
-        if (!runtime.indoorRoom()
+        if (!runtime.indoorRoom
                 && (objectId == EntityRomConstants.OBJECT_BUSH
                         || objectId == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS)) {
-            runtime.events()
-                    .magicPowderObjectRequests
-                    .add(new MagicPowderObjectRequest(
-                            slot, location, objectLeft, objectTop, MagicPowderObjectAction.REVEAL));
-            runtime.events()
-                    .transientVfxRequests
-                    .add(new TransientVfxRequest(TransientVfxType.POOF, entity.x(), (entity.y() - entity.z()) & 0xFF));
-            runtime.events()
-                    .pendingEntityEvents
-                    .add(new EntityCombatEvent(
-                            slot,
-                            EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
-                            0,
-                            false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            EntityRomConstants.MAGIC_POWDER_POOF_JINGLE_ID));
-            runtime.clearEntity(slot);
+            runtime.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                    slot, location, objectLeft, objectTop, MagicPowderObjectAction.REVEAL));
+            runtime.events.transientVfxRequests.add(
+                    new TransientVfxRequest(TransientVfxType.POOF, entity.x(), (entity.y() - entity.z()) & 0xFF));
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    slot,
+                    EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
+                    0,
+                    false,
+                    EntityCombatEvent.SoundChannel.JINGLE,
+                    EntityRomConstants.MAGIC_POWDER_POOF_JINGLE_ID));
+            runtime.lifecycle.clearEntity(slot);
             return false;
         }
         return true;
@@ -141,38 +134,34 @@ final class MagicPowderStep {
 
     private boolean applyTorchInteraction() {
 
-        if (runtime.indoorRoom() && objectId == EntityRomConstants.OBJECT_TORCH_UNLIT) {
+        if (runtime.indoorRoom && objectId == EntityRomConstants.OBJECT_TORCH_UNLIT) {
             // This motion-state check belongs only to GBC torch ignition.
-            if (linkMotionState == 0x05 || owner.readTorchPaletteTransitionActive()) {
+            if (linkMotionState == 0x05 || owner.state.readTorchPaletteTransitionActive()) {
                 return false;
             }
-            if (owner.readTorchPaletteTargetAddress() != 0) {
-                owner.writeTorchPaletteTargetAddress((owner.readTorchPaletteTargetAddress() - 4) & 0xFF);
-                owner.writeTorchPaletteTransitionActive(true);
+            if (owner.state.readTorchPaletteTargetAddress() != 0) {
+                owner.state.writeTorchPaletteTargetAddress((owner.state.readTorchPaletteTargetAddress() - 4) & 0xFF);
+                owner.state.writeTorchPaletteTransitionActive(true);
             }
-            owner.writeMagicPowderState(slot, 1);
-            runtime.physicsTables()
-                    .writeSlowTransitionCountdown(slot, EntityRomConstants.MAGIC_POWDER_SLOW_TRANSITION_COUNTDOWN);
-            runtime.physicsTables().writeSlowTimerInitialized(slot, true);
-            runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0);
+            owner.state.writeMagicPowderState(slot, 1);
+            runtime.physicsTables.writeSlowTransitionCountdown(
+                    slot, EntityRomConstants.MAGIC_POWDER_SLOW_TRANSITION_COUNTDOWN);
+            runtime.physicsTables.writeSlowTimerInitialized(slot, true);
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0);
             RoomEntity torch = withPositionAndVariant(entity, objectLeft, objectTop, 0);
-            EntitySpriteDefinition torchDefinition = runtime.spriteHandlers() == null
+            EntitySpriteDefinition torchDefinition = runtime.spriteHandlers == null
                     ? entity.spriteDefinition()
-                    : runtime.slotProperties().spriteViews().forMagicPowderTorchState(true);
-            runtime.slots()[index] = withDefinition(torch, torchDefinition, 0);
-            runtime.events()
-                    .magicPowderObjectRequests
-                    .add(new MagicPowderObjectRequest(
-                            slot, location, objectLeft, objectTop, MagicPowderObjectAction.IGNITE_TORCH));
-            runtime.events()
-                    .pendingEntityEvents
-                    .add(new EntityCombatEvent(
-                            slot,
-                            EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
-                            0,
-                            false,
-                            EntityCombatEvent.SoundChannel.NOISE,
-                            0x12));
+                    : runtime.slotProperties.spriteViews().forMagicPowderTorchState(true);
+            runtime.slots[index] = withDefinition(torch, torchDefinition, 0);
+            runtime.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                    slot, location, objectLeft, objectTop, MagicPowderObjectAction.IGNITE_TORCH));
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    slot,
+                    EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
+                    0,
+                    false,
+                    EntityCombatEvent.SoundChannel.NOISE,
+                    0x12));
             return false;
         }
 
@@ -180,7 +169,7 @@ final class MagicPowderStep {
         // final sixteen transition ticks and only when private state 4 is 0.
         // $79DA returns for non-torch indoor objects. Outdoors, $79CF leaves
         // A=0 and jumps to the collision branch regardless of the object id.
-        if (!runtime.indoorRoom() && owner.readMagicPowderPrivateState4(slot) == 0) {
+        if (!runtime.indoorRoom && owner.state.readMagicPowderPrivateState4(slot) == 0) {
             owner.collideMagicPowderWithEntities(entity, frame);
         }
         return true;

@@ -17,7 +17,7 @@ import linksawakening.world.entity.motion.BoomerangMotion;
 final class BoomerangStep {
     private linksawakening.world.entity.EntityProjectileController owner;
     private linksawakening.world.entity.BoomerangFrame inputs;
-    private linksawakening.world.entity.EntityProjectileControllerServices runtime;
+    private linksawakening.world.entity.EntityProjectileController runtime;
     private int index;
     private linksawakening.world.entity.RoomEntity entity;
     private int frame;
@@ -47,7 +47,7 @@ final class BoomerangStep {
 
     private boolean prepareMotion() {
 
-        runtime = owner.runtime;
+        runtime = owner;
         index = inputs.index();
         entity = inputs.entity();
         frame = inputs.frame();
@@ -59,13 +59,13 @@ final class BoomerangStep {
         timersInteractive = inputs.timersInteractive();
         slot = entity.slot();
         if (timersInteractive) {
-            runtime.motions().get(BoomerangMotion.class, BoomerangMotion::new).decrementTransitionCountdown(slot);
+            runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).decrementTransitionCountdown(slot);
         }
-        variant = runtime.motions()
+        variant = runtime.motions
                 .get(BoomerangMotion.class, BoomerangMotion::new)
                 .advanceSpriteVariant(slot, frame, handlerInteractive);
         if (!handlerInteractive) {
-            runtime.slots()[index] = withVariant(entity, variant);
+            runtime.slots[index] = withVariant(entity, variant);
             return false;
         }
         owner.playBoomerangSoundIfDue(entity);
@@ -74,21 +74,19 @@ final class BoomerangStep {
         // vector for recoil. This pass also clears the outbound countdown on
         // a successful enemy/object collision, as the ROM does.
         owner.collideBoomerangWithEntities(entity, frame);
-        moved = runtime.motions()
-                .get(BoomerangMotion.class, BoomerangMotion::new)
-                .advancePosition(entity);
-        intersectionQuery = runtime.physicsTables().readObjectIntersectionQuery() != null
-                ? runtime.physicsTables().readObjectIntersectionQuery()
-                : runtime.physicsTables().readObjectQuery();
+        moved = runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).advancePosition(entity);
+        intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery() != null
+                ? runtime.physicsTables.readObjectIntersectionQuery()
+                : runtime.physicsTables.readObjectQuery();
         object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
         objectCollision = object != null
                 && owner.projectileObjectCollision(moved, object, frame, slot) == ProjectileObjectCollision.BLOCKED;
         bushCollision = object != null
-                && !runtime.indoorRoom()
+                && !runtime.indoorRoom
                 && (object.objectId() == EntityRomConstants.OBJECT_BUSH
                         || object.objectId() == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS);
         positioned = objectCollision
-                        && runtime.motions()
+                        && runtime.motions
                                         .get(BoomerangMotion.class, BoomerangMotion::new)
                                         .transitionCountdown(slot)
                                 != 0
@@ -101,9 +99,8 @@ final class BoomerangStep {
 
         if (bushCollision) {
             int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-            runtime.events()
-                    .boomerangObjectRequests
-                    .add(new BoomerangObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
+            runtime.events.boomerangObjectRequests.add(
+                    new BoomerangObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
         }
 
         // BoomerangDestroyBushIfNeeded clears the source collision byte before
@@ -115,40 +112,27 @@ final class BoomerangStep {
 
     private boolean advanceOutboundOrReturn() {
 
-        if (runtime.motions().get(BoomerangMotion.class, BoomerangMotion::new).state(slot) == 0) {
-            if (runtime.motions()
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .transitionCountdown(slot)
-                    == 0) {
-                runtime.motions()
+        if (runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).state(slot) == 0) {
+            if (runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).transitionCountdown(slot) == 0) {
+                runtime.motions
                         .get(BoomerangMotion.class, BoomerangMotion::new)
                         .setVectorTowardsLink(slot, positioned, linkEntityX, linkEntityY, 0x08);
-                runtime.motions()
-                        .get(BoomerangMotion.class, BoomerangMotion::new)
-                        .setState(slot, 1);
+                runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).setState(slot, 1);
             } else if (stateCollision) {
-                runtime.motions()
-                        .get(BoomerangMotion.class, BoomerangMotion::new)
-                        .setTransitionCountdown(slot, 0);
-                runtime.events()
-                        .transientVfxRequests
-                        .add(new TransientVfxRequest(
-                                TransientVfxType.SWORD_POKE,
-                                positioned.x(),
-                                (positioned.y() - positioned.z() + 0x03) & 0xFF));
-                runtime.events()
-                        .pendingEntityEvents
-                        .add(new EntityCombatEvent(
-                                slot,
-                                EntityRomConstants.ENTITY_BOOMERANG,
-                                0,
-                                false,
-                                EntityCombatEvent.SoundChannel.JINGLE,
-                                0x07));
+                runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).setTransitionCountdown(slot, 0);
+                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.SWORD_POKE, positioned.x(), (positioned.y() - positioned.z() + 0x03) & 0xFF));
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                        slot,
+                        EntityRomConstants.ENTITY_BOOMERANG,
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        0x07));
             }
         } else {
             if ((frame & 0x03) == 0) {
-                runtime.motions()
+                runtime.motions
                         .get(BoomerangMotion.class, BoomerangMotion::new)
                         .setVectorTowardsLink(slot, positioned, linkEntityX, linkEntityY, 0x20);
             }
@@ -158,11 +142,11 @@ final class BoomerangStep {
                     // label_3B44 reads hActiveEntityPosX/VisualPosY, cached before
                     // movement. The vector above instead reads the updated WRAM.
                     && BoomerangMotion.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                runtime.clearEntity(slot);
+                runtime.lifecycle.clearEntity(slot);
                 return false;
             }
         }
-        runtime.slots()[index] = withPositionAndVariant(positioned, positioned.x(), positioned.y(), variant);
+        runtime.slots[index] = withPositionAndVariant(positioned, positioned.x(), positioned.y(), variant);
         return true;
     }
 

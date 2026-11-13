@@ -9,14 +9,14 @@ import linksawakening.world.entity.motion.BossIntroMotion;
 /** Focused behavior using the state owned by SlimeEyeController. */
 final class SlimeEyeBehavior {
     static void advanceHandler(SlimeEyeController owner, EntityFrameExecution frame) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         RoomEntity entity = frame.slotFrame().entity();
         int slot = entity.slot();
         if (entity.status() == EntityStatus.INIT) {
             owner.clear(slot);
-            runtime.combatTables().writeEnemyHealth(slot, 0x50);
-            runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xA0);
-            runtime.slots()[slot] = withZ(withStatus(entity, EntityStatus.ACTIVE), 0x7E);
+            runtime.combatTables.writeEnemyHealth(slot, 0x50);
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
+            runtime.slots[slot] = withZ(withStatus(entity, EntityStatus.ACTIVE), 0x7E);
             owner.render(slot);
             return;
         }
@@ -37,16 +37,15 @@ final class SlimeEyeBehavior {
                 frame.lifecycle().delayInteractions(2);
             }
         }
-        runtime.lifecycle()
-                .decrementSlowTransitionCountdown(slot, frame.inputs().frame());
+        runtime.lifecycle.decrementSlowTransitionCountdown(slot, frame.inputs().frame());
         if (!frame.link().inventoryAppearing() && !frame.roomInspection().roomTransitionActive()) {
-            BossIntroMotion.Update intro = runtime.motions()
+            BossIntroMotion.Update intro = runtime.motions
                     .get(BossIntroMotion.class, BossIntroMotion::new)
                     .advance(
-                            runtime.slotProperties().options1(slot),
+                            runtime.slotProperties.options1(slot),
                             entity.type(),
-                            runtime.roomVariables().readEntityMapId(),
-                            runtime.lifecycle().transitionSequenceCounter());
+                            runtime.roomVariables.readEntityMapId(),
+                            runtime.lifecycle.transitionSequenceCounter());
             if (intro.musicTrack() >= 0) frame.requestMusic(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
                 frame.emit(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
@@ -56,11 +55,10 @@ final class SlimeEyeBehavior {
         }
         // Main's combat pass precedes tick. Restore the fresh write that the
         // common flash tick would otherwise age before the ROM collision site.
-        if (owner.hitThisFrame(slot, frame.inputs().frame()))
-            runtime.combatTables().writeEnemyFlashCountdown(slot, 0x18);
+        if (owner.hitThisFrame(slot, frame.inputs().frame())) runtime.combatTables.writeEnemyFlashCountdown(slot, 0x18);
         // RenderActiveEntitySpritesRect runs before this frame's state changes.
         owner.render(slot);
-        if (runtime.physicsTables().readSlowTransitionCountdown(slot) != 0) {
+        if (runtime.physicsTables.readSlowTransitionCountdown(slot) != 0) {
             frame.emit(new LinkMotionBlockRequest(slot));
             frame.emit(new LinkFallenPoseRequest(slot));
         }
@@ -75,7 +73,7 @@ final class SlimeEyeBehavior {
             owner.advanceDeath(frame);
             return;
         }
-        if (owner.half[slot] == 0) runtime.combatTables().writeEnemyHealth(slot, 0x50);
+        if (owner.half[slot] == 0) runtime.combatTables.writeEnemyHealth(slot, 0x50);
         if ((owner.half[slot] != 0 || owner.state[slot] != 0)
                 && (!frame.gates().handlerInteractive() || frame.gates().countdownBlocksInteraction())) return;
         if (owner.half[slot] == 0) owner.advanceBody(frame);
@@ -83,19 +81,19 @@ final class SlimeEyeBehavior {
     }
 
     static void advanceBody(SlimeEyeController owner, EntityFrameExecution f) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         int s = f.slotFrame().entity().slot();
-        RoomEntity e = runtime.slots()[s];
-        runtime.combatTables().writeEnemyHealth(s, 0x50);
+        RoomEntity e = runtime.slots[s];
+        runtime.combatTables.writeEnemyHealth(s, 0x50);
         switch (owner.state[s]) {
             case 0 -> {
                 if (owner.screenShakeCountdown == 5) {
                     owner.state[s] = 1;
                     owner.sound(s, 8);
                 }
-                if (runtime.physicsTables().readEnemyTransitionCountdown(s) == 0) {
-                    runtime.physicsTables().writeEnemyTransitionCountdown(s, 0x50);
-                    long zols = runtime.slotEntities().stream()
+                if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) {
+                    runtime.physicsTables.writeEnemyTransitionCountdown(s, 0x50);
+                    long zols = runtime.slotEntities.stream()
                             .filter(x -> x.loaded() && x.type() == 0x1B)
                             .count();
                     if (zols < 2)
@@ -112,20 +110,20 @@ final class SlimeEyeBehavior {
                 if ((e.z() & 0x80) != 0) {
                     e = withZ(e, 0);
                     f.emit(new ScreenShakeRequest(s, 0x50, 4));
-                    runtime.physicsTables().writeEnemyTransitionCountdown(s, 0x40);
+                    runtime.physicsTables.writeEnemyTransitionCountdown(s, 0x40);
                     owner.noise(s, 0x0C);
                     if (!f.inputs().linkAirborne()) owner.stunLink(s, 0x14);
                     owner.state[s] = 2;
                 }
-                runtime.slots()[s] = e;
+                runtime.slots[s] = e;
             }
             case 2 -> {
-                if (runtime.physicsTables().readEnemyTransitionCountdown(s) == 0) owner.state[s] = 3;
+                if (runtime.physicsTables.readEnemyTransitionCountdown(s) == 0) owner.state[s] = 3;
             }
             case 3 -> {
-                if (runtime.combatTables().readEnemyIgnoreHitsCountdown(s) > 0
+                if (runtime.combatTables.readEnemyIgnoreHitsCountdown(s) > 0
                         && !owner.hitThisFrame(s, f.inputs().frame()))
-                    runtime.combatTables().postEnemyIgnoreHitsCountdown(s, -1);
+                    runtime.combatTables.postEnemyIgnoreHitsCountdown(s, -1);
                 if (owner.splitting[s] != 0) {
                     if (owner.splitting[s] == 1) {
                         owner.split(e);
@@ -145,7 +143,7 @@ final class SlimeEyeBehavior {
                         owner.stretch[s]--;
                     }
                 }
-                if (runtime.combatTables().readEnemyFlashCountdown(s) != 0
+                if (runtime.combatTables.readEnemyFlashCountdown(s) != 0
                         && (f.inputs().frame() & 0x1F) == 0) {
                     owner.private1[s] = 0x50;
                     if (owner.stretch[s] != 4) owner.stretch[s]++;
@@ -160,14 +158,14 @@ final class SlimeEyeBehavior {
     }
 
     static int spawn(SlimeEyeController owner, int type, int x, int y, int z) {
-        var runtime = owner.runtime;
-        int s = runtime.findFreeEntitySlot();
+        var runtime = owner;
+        int s = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (s < 0) return -1;
-        runtime.lifecycle().disableEntityWithoutPersistence(s);
-        var definition = type == 0x1B && runtime.spriteHandlers() != null
-                ? runtime.slotProperties().spriteViews().forZolSlimeEye()
-                : runtime.slotProperties().spriteDefinitionFor(type);
-        runtime.slots()[s] = new RoomEntity(
+        runtime.lifecycle.disableEntityWithoutPersistence(s);
+        var definition = type == 0x1B && runtime.spriteHandlers != null
+                ? runtime.slotProperties.spriteViews().forZolSlimeEye()
+                : runtime.slotProperties.spriteDefinitionFor(type);
+        runtime.slots[s] = new RoomEntity(
                 s,
                 -1,
                 type,
@@ -181,11 +179,11 @@ final class SlimeEyeBehavior {
                 z,
                 -1,
                 false);
-        runtime.initializeHealthGroup(s);
-        runtime.combatTables().writeEnemyHealth(s, runtime.initialHealth(type));
-        runtime.physicsTables().writeEnemyPhysicsFlags(s, EntityTypeRules.initialPhysicsFlags(type));
-        runtime.combatTables().writeEnemyIgnoreHitsCountdown(s, 1);
-        runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(s, true);
+        runtime.lifecycle.initializeHealthGroup(s);
+        runtime.combatTables.writeEnemyHealth(s, runtime.slotProperties.initialHealth(type));
+        runtime.physicsTables.writeEnemyPhysicsFlags(s, EntityTypeRules.initialPhysicsFlags(type));
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(s, 1);
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(s, true);
         return s;
     }
 }

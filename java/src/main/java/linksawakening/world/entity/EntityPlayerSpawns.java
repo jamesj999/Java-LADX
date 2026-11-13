@@ -23,7 +23,7 @@ public final class EntityPlayerSpawns {
     final EntityPhysicsTables physicsTables;
     final EntityPickupController pickups;
     final EntityPresentationState presentationState;
-    final EntityProjectileController projectiles;
+    final EntityProjectileState projectiles;
     final EntityRoomInspection inspection;
     final EntityRoomInspection roomInspection;
     final EntityRoomVariables roomVariables;
@@ -47,7 +47,7 @@ public final class EntityPlayerSpawns {
             EntityPhysicsTables physicsTables,
             EntityPickupController pickups,
             EntityPresentationState presentationState,
-            EntityProjectileController projectiles,
+            EntityProjectileState projectiles,
             EntityRoomInspection inspection,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,

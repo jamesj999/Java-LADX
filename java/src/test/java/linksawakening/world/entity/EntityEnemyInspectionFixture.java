@@ -32,7 +32,7 @@ final class EntityEnemyInspectionFixture {
 
     int musicalNoteInertiaForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.projectiles.readMusicalNoteInertia(slot);
+        return runtime.projectiles.state.readMusicalNoteInertia(slot);
     }
 
     int hitboxFlagsForTest(int slot) {

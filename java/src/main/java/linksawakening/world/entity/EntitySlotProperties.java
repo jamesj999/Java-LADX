@@ -45,8 +45,8 @@ public final class EntitySlotProperties {
 
     public RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
         int slot = entity.slot();
-        int inertia = (runtime.projectiles().readMusicalNoteInertia(slot) - 1) & 0xFF;
-        runtime.projectiles().writeMusicalNoteInertia(slot, inertia);
+        int inertia = (runtime.projectiles().state.readMusicalNoteInertia(slot) - 1) & 0xFF;
+        runtime.projectiles().state.writeMusicalNoteInertia(slot, inertia);
         if (inertia == 0) {
             runtime.clearEntity(slot);
             return null;
@@ -55,11 +55,12 @@ public final class EntitySlotProperties {
         int speedXAdjustment = (inertia & 0x10) != 0 ? -1 : 1;
         if ((inertia & 0x01) == 0) {
             runtime.projectiles()
+                    .state
                     .writeMusicalNoteSpeedX(
-                            slot, (runtime.projectiles().readMusicalNoteSpeedX(slot) + speedXAdjustment) & 0xFF);
+                            slot, (runtime.projectiles().state.readMusicalNoteSpeedX(slot) + speedXAdjustment) & 0xFF);
         }
-        int x = (entity.x() + signedByte(runtime.projectiles().readMusicalNoteSpeedX(slot))) & 0xFF;
-        int y = (entity.y() + signedByte(runtime.projectiles().readMusicalNoteSpeedY(slot))) & 0xFF;
+        int x = (entity.x() + signedByte(runtime.projectiles().state.readMusicalNoteSpeedX(slot))) & 0xFF;
+        int y = (entity.y() + signedByte(runtime.projectiles().state.readMusicalNoteSpeedY(slot))) & 0xFF;
         return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 

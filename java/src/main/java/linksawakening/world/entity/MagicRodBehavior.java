@@ -21,17 +21,17 @@ final class MagicRodBehavior {
 
     static boolean collideMagicRodFireballWithEntities(
             EntityProjectileController owner, RoomEntity fireball, int frame) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         int sourceSlot = fireball.slot();
         int sourceVisualY = (fireball.y() - fireball.z()) & 0xFF;
         boolean unloadOnHit = false;
-        for (int targetSlot = runtime.slots().length - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = runtime.slots.length - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots()[targetSlot];
-            int targetPhysics = runtime.physicsTables().readEnemyPhysicsFlags(targetSlot);
+            RoomEntity target = runtime.slots[targetSlot];
+            int targetPhysics = runtime.physicsTables.readEnemyPhysicsFlags(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
                     || (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) != 0
@@ -43,44 +43,44 @@ final class MagicRodBehavior {
                 continue;
             }
 
-            if ((runtime.combatTables().readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
+            if ((runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
                     != 0) {
-                runtime.motions()
+                runtime.motions
                         .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                         .setCollision(sourceSlot, true);
                 continue;
             }
-            if (runtime.combatTables().readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+            if (runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
             if (target.type() == EntityRomConstants.ENTITY_IRON_MASK
-                    && runtime.motions()
+                    && runtime.motions
                                     .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
                                     .maskRemovalState(targetSlot)
                             == 0
-                    && (runtime.motions()
+                    && (runtime.motions
                                             .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
                                             .direction(targetSlot)
                                     ^ 0x01)
-                            == runtime.motions()
+                            == runtime.motions
                                     .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                                     .direction(sourceSlot)) {
-                runtime.motions()
+                runtime.motions
                         .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                         .setCollision(sourceSlot, true);
                 continue;
             }
 
-            unloadOnHit |= !runtime.motions()
+            unloadOnHit |= !runtime.motions
                     .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                     .collided(sourceSlot);
             owner.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_MAGIC_ROD,
-                    runtime.motions()
+                    runtime.motions
                             .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                             .speedX(sourceSlot),
-                    runtime.motions()
+                    runtime.motions
                             .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                             .speedY(sourceSlot));
         }

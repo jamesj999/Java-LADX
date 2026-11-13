@@ -70,16 +70,16 @@ final class EntityPersistentSlotReset {
         runtime.bombInteractions().writePlayerArrowBombArrow(slot, false);
         runtime.bombInteractions().writeBombPrivateCountdown1(slot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown3(slot, 0);
-        runtime.projectiles().writeMagicPowderState(slot, 0);
-        runtime.projectiles().writeMagicPowderPrivateState4(slot, 0);
+        runtime.projectiles().state.writeMagicPowderState(slot, 0);
+        runtime.projectiles().state.writeMagicPowderPrivateState4(slot, 0);
         runtime.motions()
                 .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                 .clear(slot);
         runtime.physicsTables().writeEntityPrivateState4(slot, 0);
         runtime.physicsTables().writeEntityInertia(slot, 0);
-        runtime.projectiles().writeMusicalNoteInertia(slot, 0);
-        runtime.projectiles().writeMusicalNoteSpeedX(slot, 0);
-        runtime.projectiles().writeMusicalNoteSpeedY(slot, 0);
+        runtime.projectiles().state.writeMusicalNoteInertia(slot, 0);
+        runtime.projectiles().state.writeMusicalNoteSpeedX(slot, 0);
+        runtime.projectiles().state.writeMusicalNoteSpeedY(slot, 0);
         runtime.physicsTables().writeEntityUnknownJ(slot, 0);
         runtime.motions()
                 .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
@@ -93,8 +93,8 @@ final class EntityPersistentSlotReset {
         if (runtime.bombInteractions().readLatestDroppedBombEntityIndex() == slot) {
             runtime.bombInteractions().writeLatestDroppedBombEntityIndex(-1);
         }
-        if (runtime.projectiles().readLatestShotArrowEntityIndex() == slot) {
-            runtime.projectiles().writeLatestShotArrowEntityIndex(-1);
+        if (runtime.projectiles().state.readLatestShotArrowEntityIndex() == slot) {
+            runtime.projectiles().state.writeLatestShotArrowEntityIndex(-1);
         }
         runtime.motions().get(BombiteMotion.class, BombiteMotion::new).clear(slot);
         runtime.motions().get(BlooperMotion.class, BlooperMotion::new).clear(slot);
@@ -145,8 +145,8 @@ final class EntityPersistentSlotReset {
         runtime.liftThrow().writeThrownDirection(slot, 0xFF);
         runtime.bombInteractions().writeBombDirection(slot, 0xFF);
         runtime.bombInteractions().writeBombPrivateState4(slot, 0);
-        runtime.projectiles().writeMagicPowderState(slot, 0);
-        runtime.projectiles().writeMagicPowderPrivateState4(slot, 0);
+        runtime.projectiles().state.writeMagicPowderState(slot, 0);
+        runtime.projectiles().state.writeMagicPowderPrivateState4(slot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown1(slot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown3(slot, 0);
         runtime.bombInteractions().writePlacedBombMotionInitialized(slot, false);

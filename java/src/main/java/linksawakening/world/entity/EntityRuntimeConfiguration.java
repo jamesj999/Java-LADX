@@ -64,14 +64,14 @@ public final class EntityRuntimeConfiguration {
         if (counter < 0 || counter >= EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD) {
             throw new IllegalArgumentException("Boomerang sound counter out of range: " + counter);
         }
-        this.projectiles.writeBoomerangSfxCounter(counter);
-        this.projectiles.writeBoomerangSoundClockProvided(true);
+        this.projectiles.state.writeBoomerangSfxCounter(counter);
+        this.projectiles.state.writeBoomerangSoundClockProvided(true);
     }
 
     public void setTorchPaletteTransitionState(int targetAddress, boolean active) {
         EntitySlotValidation.validateByte(targetAddress, "Torch palette target");
-        this.projectiles.writeTorchPaletteTargetAddress(targetAddress);
-        this.projectiles.writeTorchPaletteTransitionActive(active);
+        this.projectiles.state.writeTorchPaletteTargetAddress(targetAddress);
+        this.projectiles.state.writeTorchPaletteTransitionActive(active);
     }
 
     public void setLinkVelocityZ(int velocity) {

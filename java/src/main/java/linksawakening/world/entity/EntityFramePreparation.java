@@ -82,14 +82,15 @@ final class EntityFramePreparation {
 
         // WorldHandler runs $14:4B21 before AnimateEntities, even when no
         // boomerang exists or dialogs/room transitions suspend its handler.
-        if (!state.projectiles().readBoomerangSoundClockProvided()
+        if (!state.projectiles().state.readBoomerangSoundClockProvided()
                 && state.roomVariables().readGameplayWorld()
                 && !state.inputs().creditsGameplay()) {
             state.projectiles()
-                    .writeBoomerangSfxCounter((state.projectiles().readBoomerangSfxCounter() + 1)
+                    .state
+                    .writeBoomerangSfxCounter((state.projectiles().state.readBoomerangSfxCounter() + 1)
                             % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD);
         }
-        state.projectiles().writeBoomerangSoundClockProvided(false);
+        state.projectiles().state.writeBoomerangSoundClockProvided(false);
         if (state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).readSwordMoblinAlertingSoundCounter() > 0) {
             state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).postSwordMoblinAlertingSoundCounter(-1);
         }

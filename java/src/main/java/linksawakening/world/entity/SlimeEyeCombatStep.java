@@ -10,7 +10,7 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 final class SlimeEyeCombatStep {
     private linksawakening.world.entity.SlimeEyeController owner;
     private linksawakening.world.entity.SlimeEyeCombatFrame inputs;
-    private linksawakening.world.entity.SlimeEyeControllerServices runtime;
+    private linksawakening.world.entity.SlimeEyeController runtime;
     private linksawakening.world.entity.RoomEntity e;
     private int frame;
     private int lx;
@@ -38,7 +38,7 @@ final class SlimeEyeCombatStep {
 
     private boolean prepareCollision() {
 
-        runtime = owner.runtime;
+        runtime = owner;
         e = inputs.e();
         frame = inputs.frame();
         lx = inputs.lx();
@@ -55,17 +55,16 @@ final class SlimeEyeCombatStep {
         s = e.slot();
         if (!interactive
                 || e.status() != EntityStatus.ACTIVE
-                || runtime.combatTables().readEnemyIgnoreHitsCountdown(s) != 0) return false;
+                || runtime.combatTables.readEnemyIgnoreHitsCountdown(s) != 0) return false;
         isHalf = owner.half[s] != 0;
         if ((!isHalf && owner.state[s] != 3)
                 || (isHalf
                         && (owner.state[s] >= 2
                                 || (owner.state[s] == 1
-                                        && runtime.physicsTables().readEnemyTransitionCountdown(s) != 0))))
-            return false;
+                                        && runtime.physicsTables.readEnemyTransitionCountdown(s) != 0)))) return false;
         if (owner.splitting[s] != 0
-                || runtime.combatTables().readEnemyFlashCountdown(s) > 0
-                        && runtime.combatTables().readEnemyFlashCountdown(s) < 0x18) return false;
+                || runtime.combatTables.readEnemyFlashCountdown(s) > 0
+                        && runtime.combatTables.readEnemyFlashCountdown(s) < 0x18) return false;
         hitbox = isHalf ? 24 : 20;
         hit = sword && owner.overlaps(e, hitbox, sx, sw, sy, sh);
         return true;
@@ -79,10 +78,9 @@ final class SlimeEyeCombatStep {
                 && !(isHalf && owner.dropping[s] != 0)
                 && RoomEntityCombatRules.collisionCadenceMatches(frame, s)
                 && owner.overlaps(e, isHalf ? 24 : owner.stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
-            int damage = runtime.enemyCombatTables() == null
+            int damage = runtime.enemyCombatTables == null
                     ? 4
-                    : runtime.enemyCombatTables()
-                            .contactDamageForGroup(runtime.combatTables().readEnemyHealthGroup(s));
+                    : runtime.enemyCombatTables.contactDamageForGroup(runtime.combatTables.readEnemyHealthGroup(s));
             var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(e.x(), e.y(), e.z(), lx, ly, 0x14);
             events.add(linksawakening.world.entity.event.EntityCombatEvent.builder(s, 0x5B)
                     .linkDamage(damage)
@@ -120,24 +118,23 @@ final class SlimeEyeCombatStep {
                         attack.romDirection(),
                         attack.linkZ())
                 : attack;
-        var damage = runtime.enemyCombatTables() == null
+        var damage = runtime.enemyCombatTables == null
                 ? null
-                : runtime.enemyCombatTables()
-                        .resolveSwordDamage(0x5B, runtime.combatTables().readEnemyHealthGroup(s), damageAttack);
+                : runtime.enemyCombatTables.resolveSwordDamage(
+                        0x5B, runtime.combatTables.readEnemyHealthGroup(s), damageAttack);
         int amount = damage == null ? 1 : damage.numericDamage();
         if (amount == 0) return false;
         owner.swordHitFrame[s] = (frame & 255) + 1;
-        runtime.combatTables()
-                .writeEnemyHealth(s, Math.max(0, runtime.combatTables().readEnemyHealth(s) - amount));
-        runtime.combatTables().writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
-        runtime.combatTables().writeEnemyFlashCountdown(s, 0x18);
+        runtime.combatTables.writeEnemyHealth(s, Math.max(0, runtime.combatTables.readEnemyHealth(s) - amount));
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
+        runtime.combatTables.writeEnemyFlashCountdown(s, 0x18);
         if (isHalf)
-            runtime.motions()
+            runtime.motions
                     .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                     .configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
-        if (isHalf && runtime.combatTables().readEnemyHealth(s) == 0) {
+        if (isHalf && runtime.combatTables.readEnemyHealth(s) == 0) {
             owner.state[s] = 0;
-            runtime.slots()[s] = withStatus(e, EntityStatus.DYING);
+            runtime.slots[s] = withStatus(e, EntityStatus.DYING);
         }
         // Bank 03:7081–70B6 applies the Slime Eye sword response to both halves
         // as well as the unsplit body. Pegasus hits call 6DDF (reset boots,

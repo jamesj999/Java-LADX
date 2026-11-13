@@ -12,14 +12,49 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 /** ROM background collision, falling, recoil and Link push glue. */
 public final class EntityBackgroundMechanics {
-    final EntityBackgroundMechanicsServices runtime;
+    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
+    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final EntityBossRewards bossRewards;
+    final EntityCombatTables combatTables;
+    final EntityEnemyInspection enemyInspection;
+    final EntityEventChannels events;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityRoomInspection roomInspection;
+    final EntityRoomVariables roomVariables;
+    final RoomEntity[] slots;
+    final EntitySpriteViews spriteViews;
+    final EntitySlotLifecycle lifecycle;
 
-    EntityBackgroundMechanics(EntityBackgroundMechanicsServices runtime) {
-        this.runtime = runtime;
+    EntityBackgroundMechanics(
+            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            EntityBossRewards bossRewards,
+            EntityCombatTables combatTables,
+            EntityEnemyInspection enemyInspection,
+            EntityEventChannels events,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityRoomInspection roomInspection,
+            EntityRoomVariables roomVariables,
+            RoomEntity[] slots,
+            EntitySpriteViews spriteViews,
+            EntitySlotLifecycle lifecycle) {
+        this.spriteHandlers = spriteHandlers;
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
     }
 
     public RoomEntityBackgroundInteraction interaction() {
-        return runtime.physicsTables().readBackgroundInteraction();
+        return this.physicsTables.readBackgroundInteraction();
     }
 
     boolean moldormOrHeadOverlapsSword(RoomEntity entity, int swordX, int swordWidth, int swordY, int swordHeight) {
@@ -29,11 +64,11 @@ public final class EntityBackgroundMechanics {
         if (entity.type() != EntityRomConstants.ENTITY_MOLDORM) {
             return false;
         }
-        if (runtime.combatTables().readEnemyFlashCountdown(entity.slot()) != 0) {
+        if (this.combatTables.readEnemyFlashCountdown(entity.slot()) != 0) {
             return false;
         }
         MoldormSegmentPosition tail =
-                runtime.motions().get(MoldormMotion.class, MoldormMotion::new).vulnerableTail(entity.slot());
+                this.motions.get(MoldormMotion.class, MoldormMotion::new).vulnerableTail(entity.slot());
         RoomEntity tailCollisionEntity =
                 withPositionAndVariant(entity, tail.x(), (tail.y() + entity.z()) & 0xFF, entity.spriteVariant());
         return RoomEntityCombatRules.overlapsSword(tailCollisionEntity, swordX, swordWidth, swordY, swordHeight);
@@ -45,20 +80,20 @@ public final class EntityBackgroundMechanics {
 
     void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
         if (slot >= 0
-                && slot < runtime.slots().length
-                && runtime.slots()[slot].type() == EntityRomConstants.ENTITY_PUSHED_BLOCK
-                && runtime.slots()[slot].status() == EntityStatus.ACTIVE
-                && RoomEntityCombatRules.overlapsLink(runtime.slots()[slot], linkEntityX, linkEntityY)) {
-            requestLinkPush(runtime.slots()[slot], EntityLinkCollisionRules.PUSHED_BLOCK);
+                && slot < this.slots.length
+                && this.slots[slot].type() == EntityRomConstants.ENTITY_PUSHED_BLOCK
+                && this.slots[slot].status() == EntityStatus.ACTIVE
+                && RoomEntityCombatRules.overlapsLink(this.slots[slot], linkEntityX, linkEntityY)) {
+            requestLinkPush(this.slots[slot], EntityLinkCollisionRules.PUSHED_BLOCK);
         }
     }
 
     boolean gameplayEntityTimersInteractive(boolean creditsGameplay) {
-        return runtime.roomInspection().gameplayEntityTimersInteractive(creditsGameplay);
+        return this.roomInspection.gameplayEntityTimersInteractive(creditsGameplay);
     }
 
     boolean hasNoGroundInteraction(RoomEntity entity) {
-        return runtime.roomInspection().hasNoGroundInteraction(entity);
+        return this.roomInspection.hasNoGroundInteraction(entity);
     }
 
     boolean beginFalling(
@@ -77,11 +112,11 @@ public final class EntityBackgroundMechanics {
     }
 
     boolean entityHandlerInteractive(boolean creditsGameplay) {
-        return runtime.enemyInspection().entityHandlerInteractive(creditsGameplay);
+        return this.enemyInspection.entityHandlerInteractive(creditsGameplay);
     }
 
     public boolean entityTimersInteractive() {
-        return runtime.enemyInspection().entityTimersInteractive();
+        return this.enemyInspection.entityTimersInteractive();
     }
 
     public void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY, int linkMotionState) {
@@ -96,14 +131,12 @@ public final class EntityBackgroundMechanics {
         if (entity == null || policy == null || !policy.restoreFinalPosition()) {
             return;
         }
-        runtime.events()
-                .pendingLinkFinalPositionRequests
-                .add(new LinkFinalPositionRequest(
-                        entity.slot(),
-                        policy.resetPegasusBoots(),
-                        policy.resetHookshotChain(),
-                        policy.markLinkPushing(),
-                        policy.clearLinkPositionIncrement()));
+        this.events.pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(
+                entity.slot(),
+                policy.resetPegasusBoots(),
+                policy.resetHookshotChain(),
+                policy.markLinkPushing(),
+                policy.clearLinkPositionIncrement()));
         if (policy.resetHookshotChain()) {
             resetHookshotChainAfterLinkPush();
         }
@@ -119,44 +152,44 @@ public final class EntityBackgroundMechanics {
     }
 
     public boolean groundInteractionSideScrolling() {
-        return runtime.physicsTables().readGroundInteractionSideScrolling();
+        return this.physicsTables.readGroundInteractionSideScrolling();
     }
 
     public RoomEntityObjectQuery objectQuery() {
-        return runtime.physicsTables().readObjectQuery();
+        return this.physicsTables.readObjectQuery();
     }
 
     public RoomEntityGroundInteraction groundInteraction() {
-        return runtime.physicsTables().readGroundInteraction();
+        return this.physicsTables.readGroundInteraction();
     }
 
     public boolean switchBlockAnimationActive() {
-        return runtime.roomVariables().readSwitchBlockAnimationActive();
+        return this.roomVariables.readSwitchBlockAnimationActive();
     }
 
     public void requestSwitchBlockAnimation() {
-        runtime.roomVariables().writePendingSwitchBlockAnimationRequest(true);
+        this.roomVariables.writePendingSwitchBlockAnimationRequest(true);
     }
 
     public int entityGroundStatus(int slot) {
-        return runtime.physicsTables().readEntityGroundStatus(slot);
+        return this.physicsTables.readEntityGroundStatus(slot);
     }
 
     public void setEntityGroundStatus(int slot, int value) {
-        runtime.physicsTables().writeEntityGroundStatus(slot, value);
+        this.physicsTables.writeEntityGroundStatus(slot, value);
     }
 
     public void setFallingVisualYOffset(int slot, int value) {
-        runtime.physicsTables().writeFallingVisualYOffset(slot, value);
+        this.physicsTables.writeFallingVisualYOffset(slot, value);
     }
 
     public void initializeKeyQuicksandFall(int slot) {
-        runtime.physicsTables().writeFallingTargetX(slot, 0x50);
-        runtime.physicsTables().writeFallingTargetY(slot, 0x48);
-        runtime.physicsTables().writeFallingSpeedX(slot, 0);
-        runtime.physicsTables().writeFallingSpeedY(slot, 0);
-        runtime.physicsTables().writeFallingSpeedXAccumulator(slot, 0);
-        runtime.physicsTables().writeFallingSpeedYAccumulator(slot, 0);
-        runtime.physicsTables().writeFallingVisualYOffset(slot, 0);
+        this.physicsTables.writeFallingTargetX(slot, 0x50);
+        this.physicsTables.writeFallingTargetY(slot, 0x48);
+        this.physicsTables.writeFallingSpeedX(slot, 0);
+        this.physicsTables.writeFallingSpeedY(slot, 0);
+        this.physicsTables.writeFallingSpeedXAccumulator(slot, 0);
+        this.physicsTables.writeFallingSpeedYAccumulator(slot, 0);
+        this.physicsTables.writeFallingVisualYOffset(slot, 0);
     }
 }

@@ -13,35 +13,67 @@ import linksawakening.world.entity.motion.HookshotChainMotion;
 
 /** ROM player-projectile collision and object effects, sharing the owning room slot table. */
 public final class EntityProjectileController {
-    private final int[] magicPowderPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private int latestShotArrowEntityIndex = -1;
-    private boolean lastArrowShotPlayedWhoosh;
-    private final int[] magicPowderState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private int torchPaletteTargetAddress;
-    private boolean torchPaletteTransitionActive;
-    private final int[] musicalNoteInertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] musicalNoteSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] musicalNoteSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private int boomerangSfxCounter;
-    private boolean boomerangSoundClockProvided;
-    final EntityProjectileControllerServices runtime;
+    final boolean indoorRoom;
+    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
+    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final EntityBombInteractions bombInteractions;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityLiftThrowController liftThrow;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityPlayerSpawns entityPlayerSpawns;
+    final EntityRoomVariables roomVariables;
+    final EntitySlotLifecycle lifecycle;
+    final EntitySlotProperties slotProperties;
+    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
+    final RomEnemyCombatTables enemyCombatTables;
+    final RoomEntity[] slots;
+    final EntityProjectileState state;
 
-    EntityProjectileController(EntityProjectileControllerServices runtime) {
-        this.runtime = runtime;
+    EntityProjectileController(
+            boolean indoorRoom,
+            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            EntityBombInteractions bombInteractions,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityLiftThrowController liftThrow,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityPlayerSpawns entityPlayerSpawns,
+            EntityRoomVariables roomVariables,
+            EntitySlotLifecycle lifecycle,
+            EntitySlotProperties slotProperties,
+            RomEnemyCombatTables enemyCombatTables,
+            RoomEntity[] slots,
+            EntityProjectileState state) {
+        this.indoorRoom = indoorRoom;
+        this.spriteHandlers = spriteHandlers;
+        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.entityPlayerSpawns = java.util.Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.enemyCombatTables = enemyCombatTables;
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.state = java.util.Objects.requireNonNull(state, "state");
     }
 
     public void playBoomerangSoundIfDue(RoomEntity entity) {
         // PlayBoomerangSfx ($20:4C98) only reads the shared clock.
-        if (this.readBoomerangSfxCounter() == 0) {
-            runtime.events()
-                    .pendingEntityEvents
-                    .add(new EntityCombatEvent(
-                            entity.slot(),
-                            entity.type(),
-                            0,
-                            false,
-                            EntityCombatEvent.SoundChannel.NOISE,
-                            EntityRomConstants.BOOMERANG_SFX_ID));
+        if (state.readBoomerangSfxCounter() == 0) {
+            this.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    entity.slot(),
+                    entity.type(),
+                    0,
+                    false,
+                    EntityCombatEvent.SoundChannel.NOISE,
+                    EntityRomConstants.BOOMERANG_SFX_ID));
         }
     }
 
@@ -72,7 +104,7 @@ public final class EntityProjectileController {
             return false;
         }
         int objectId = object.objectId() & 0xFF;
-        if (runtime.indoorRoom()) {
+        if (this.indoorRoom) {
             return objectId == 0x8A; // OBJECT_FROZEN_BLOCK
         }
         return objectId == EntityRomConstants.OBJECT_BUSH || objectId == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS;
@@ -116,11 +148,11 @@ public final class EntityProjectileController {
 
     boolean ironMaskBlocksProjectile(RoomEntity target, int direction) {
         return target.type() == EntityRomConstants.ENTITY_IRON_MASK
-                && runtime.motions()
+                && this.motions
                                 .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
                                 .maskRemovalState(target.slot())
                         == 0
-                && (runtime.motions()
+                && (this.motions
                                         .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
                                         .direction(target.slot())
                                 ^ 1)
@@ -139,13 +171,13 @@ public final class EntityProjectileController {
     void applyPlayerArrowDamage(RoomEntity arrow, RoomEntity target) {
         applyPlayerProjectileDamage(
                 target,
-                runtime.bombInteractions().readPlayerArrowBombArrow(arrow.slot())
+                this.bombInteractions.readPlayerArrowBombArrow(arrow.slot())
                         ? EntityRomConstants.DAMAGE_TYPE_BOMB_ARROW
                         : EntityRomConstants.DAMAGE_TYPE_ARROW,
-                runtime.motions()
+                this.motions
                         .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
                         .speedX(arrow.slot()),
-                runtime.motions()
+                this.motions
                         .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
                         .speedY(arrow.slot()));
     }
@@ -155,115 +187,23 @@ public final class EntityProjectileController {
     }
 
     public boolean playerArrowBombArrow(int slot) {
-        return runtime.bombInteractions().readPlayerArrowBombArrow(slot);
+        return this.bombInteractions.readPlayerArrowBombArrow(slot);
     }
 
     public void setWingedStateTwoThisFrame(int slot, boolean value) {
-        runtime.slotProperties().writeWingedStateTwoThisFrame(slot, value);
+        this.slotProperties.writeWingedStateTwoThisFrame(slot, value);
     }
 
     public void setWingedSwordAttackThisFrame(int slot, boolean value) {
-        runtime.slotProperties().writeWingedSwordAttackThisFrame(slot, value);
+        this.slotProperties.writeWingedSwordAttackThisFrame(slot, value);
     }
 
     public int swordMoblinAlertingSoundCounter() {
-        return runtime.motions()
-                .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
-                .readSwordMoblinAlertingSoundCounter();
+        return this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).readSwordMoblinAlertingSoundCounter();
     }
 
     public void setSwordMoblinAlertingSoundCounter(int value) {
-        runtime.motions()
-                .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
-                .writeSwordMoblinAlertingSoundCounter(value);
-    }
-
-    int readMagicPowderPrivateState4(int slot) {
-        return magicPowderPrivateState4[slot];
-    }
-
-    int writeMagicPowderPrivateState4(int slot, int value) {
-        return magicPowderPrivateState4[slot] = value;
-    }
-
-    int readLatestShotArrowEntityIndex() {
-        return latestShotArrowEntityIndex;
-    }
-
-    int writeLatestShotArrowEntityIndex(int value) {
-        return latestShotArrowEntityIndex = value;
-    }
-
-    boolean readLastArrowShotPlayedWhoosh() {
-        return lastArrowShotPlayedWhoosh;
-    }
-
-    boolean writeLastArrowShotPlayedWhoosh(boolean value) {
-        return lastArrowShotPlayedWhoosh = value;
-    }
-
-    int readMagicPowderState(int slot) {
-        return magicPowderState[slot];
-    }
-
-    int writeMagicPowderState(int slot, int value) {
-        return magicPowderState[slot] = value;
-    }
-
-    int readTorchPaletteTargetAddress() {
-        return torchPaletteTargetAddress;
-    }
-
-    int writeTorchPaletteTargetAddress(int value) {
-        return torchPaletteTargetAddress = value;
-    }
-
-    boolean readTorchPaletteTransitionActive() {
-        return torchPaletteTransitionActive;
-    }
-
-    boolean writeTorchPaletteTransitionActive(boolean value) {
-        return torchPaletteTransitionActive = value;
-    }
-
-    int readMusicalNoteInertia(int slot) {
-        return musicalNoteInertia[slot];
-    }
-
-    int writeMusicalNoteInertia(int slot, int value) {
-        return musicalNoteInertia[slot] = value;
-    }
-
-    int readMusicalNoteSpeedX(int slot) {
-        return musicalNoteSpeedX[slot];
-    }
-
-    int writeMusicalNoteSpeedX(int slot, int value) {
-        return musicalNoteSpeedX[slot] = value;
-    }
-
-    int readMusicalNoteSpeedY(int slot) {
-        return musicalNoteSpeedY[slot];
-    }
-
-    int writeMusicalNoteSpeedY(int slot, int value) {
-        return musicalNoteSpeedY[slot] = value;
-    }
-
-    int readBoomerangSfxCounter() {
-        return boomerangSfxCounter;
-    }
-
-    int writeBoomerangSfxCounter(int value) {
-        return boomerangSfxCounter = value;
-    }
-
-    boolean readBoomerangSoundClockProvided() {
-        return boomerangSoundClockProvided;
-    }
-
-    boolean writeBoomerangSoundClockProvided(boolean value) {
-        return boomerangSoundClockProvided = value;
+        this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(value);
     }
 
     final PlayerProjectileDamageFrameStep playerProjectileDamageFrameStep = new PlayerProjectileDamageFrameStep();

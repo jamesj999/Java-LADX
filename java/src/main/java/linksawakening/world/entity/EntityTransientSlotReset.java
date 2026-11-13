@@ -98,8 +98,8 @@ final class EntityTransientSlotReset {
         runtime.liftThrow().writeThrownDirection(slot, 0xFF);
         runtime.bombInteractions().writeBombDirection(slot, 0xFF);
         runtime.bombInteractions().writeBombPrivateState4(slot, 0);
-        runtime.projectiles().writeMagicPowderState(slot, 0);
-        runtime.projectiles().writeMagicPowderPrivateState4(slot, 0);
+        runtime.projectiles().state.writeMagicPowderState(slot, 0);
+        runtime.projectiles().state.writeMagicPowderPrivateState4(slot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown1(slot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown3(slot, 0);
         runtime.motions()
@@ -171,8 +171,8 @@ final class EntityTransientSlotReset {
         if (runtime.bombInteractions().readLatestDroppedBombEntityIndex() == slot) {
             runtime.bombInteractions().writeLatestDroppedBombEntityIndex(-1);
         }
-        if (runtime.projectiles().readLatestShotArrowEntityIndex() == slot) {
-            runtime.projectiles().writeLatestShotArrowEntityIndex(-1);
+        if (runtime.projectiles().state.readLatestShotArrowEntityIndex() == slot) {
+            runtime.projectiles().state.writeLatestShotArrowEntityIndex(-1);
         }
         runtime.motions()
                 .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)

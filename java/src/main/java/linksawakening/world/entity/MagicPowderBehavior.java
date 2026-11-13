@@ -21,17 +21,17 @@ final class MagicPowderBehavior {
     }
 
     static boolean collideMagicPowderWithEntities(EntityProjectileController owner, RoomEntity sprinkle, int frame) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         int sourceSlot = sprinkle.slot();
         int sourceVisualY = (sprinkle.y() - sprinkle.z()) & 0xFF;
         boolean collided = false;
-        for (int targetSlot = runtime.slots().length - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = runtime.slots.length - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots()[targetSlot];
-            int targetPhysics = runtime.physicsTables().readEnemyPhysicsFlags(targetSlot);
+            RoomEntity target = runtime.slots[targetSlot];
+            int targetPhysics = runtime.physicsTables.readEnemyPhysicsFlags(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
                     || (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
@@ -40,28 +40,27 @@ final class MagicPowderBehavior {
                     || ((target.y() - target.z() - sourceVisualY + 0x0C) & 0xFF) >= 0x18) {
                 continue;
             }
-            if (!runtime.indoorRoom()
+            if (!runtime.indoorRoom
                     && (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) == 0
                     && target.type() == EntityRomConstants.ENTITY_TARIN
-                    && runtime.motions()
+                    && runtime.motions
                                     .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                                     .state(targetSlot)
                             == 0) {
-                runtime.motions()
+                runtime.motions
                         .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                         .startPowderTransformation(targetSlot);
-                runtime.physicsTables().writeSlowTransitionCountdown(targetSlot, 0x7F);
-                runtime.physicsTables().writeSlowTimerInitialized(targetSlot, true);
-                runtime.combatTables().writeEnemyFlashCountdown(targetSlot, 0x10);
+                runtime.physicsTables.writeSlowTransitionCountdown(targetSlot, 0x7F);
+                runtime.physicsTables.writeSlowTimerInitialized(targetSlot, true);
+                runtime.combatTables.writeEnemyFlashCountdown(targetSlot, 0x10);
                 collided = true;
                 continue;
             }
             if ((targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) != 0
                     || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
-                    || (runtime.combatTables().readEnemyHitboxFlags(targetSlot)
-                                    & EntityRomConstants.HITFLAGS_IGNORE_HITS)
+                    || (runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
                             != 0
-                    || runtime.combatTables().readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+                    || runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
 
