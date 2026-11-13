@@ -6,7 +6,26 @@ import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
 import java.util.function.IntSupplier;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.InstrumentCompletionEvent;
+import linksawakening.world.entity.event.InstrumentRewardEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
+import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.FloatingItemMotion;
+import linksawakening.world.entity.motion.HeartPiecePickupMotion;
+import linksawakening.world.entity.motion.KeyDropPointMotion;
+import linksawakening.world.room.ChestContentsTable;
 
 /** SirensInstrumentEntityHandler and SwordShieldPickableEntityHandler pickup sequences and owned state. */
 public final class EntityRewardController {
@@ -86,12 +105,12 @@ public final class EntityRewardController {
             int linkEntityY,
             int linkZ,
             IntSupplier randomByteSupplier) {
-        InstrumentPickupBehavior.advanceInstrumentPickup(
+        EntityRewardController.instrumentPickupBehaviorAdvanceInstrumentPickup(
                 this, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier);
     }
 
     void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) {
-        InstrumentPickupBehavior.spawnInstrumentParticle(this, source, offsetIndex, variant);
+        EntityRewardController.instrumentPickupBehaviorSpawnInstrumentParticle(this, source, offsetIndex, variant);
     }
 
     public void advanceInstrumentParticle(RoomEntity entity) {
@@ -114,15 +133,16 @@ public final class EntityRewardController {
     }
 
     public void advanceToadstoolPickup(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) {
-        ItemPickupBehavior.advanceToadstoolPickup(this, entity, linkEntityX, linkEntityY, linkZ);
+        EntityRewardController.itemPickupBehaviorAdvanceToadstoolPickup(this, entity, linkEntityX, linkEntityY, linkZ);
     }
 
     public void advanceSwordPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ) {
-        ItemPickupBehavior.advanceSwordPickup(this, entity, frameCounter, linkEntityX, linkEntityY, linkZ);
+        EntityRewardController.itemPickupBehaviorAdvanceSwordPickup(
+                this, entity, frameCounter, linkEntityX, linkEntityY, linkZ);
     }
 
     void advancePowerUpPickup(RoomEntity entity, int frame, int linkX, int linkY, int linkZ) {
-        ItemPickupBehavior.advancePowerUpPickup(this, entity, frame, linkX, linkY, linkZ);
+        EntityRewardController.itemPickupBehaviorAdvancePowerUpPickup(this, entity, frame, linkX, linkY, linkZ);
     }
 
     public void refreshInstrumentPalette(EntityStatus status, int slot, int frame) {
@@ -231,4 +251,631 @@ public final class EntityRewardController {
     }
 
     final EntitySlotLifecycleFrameStep entitySlotLifecycleFrameStep = new EntitySlotLifecycleFrameStep();
+
+    static void instrumentPickupBehaviorAdvanceInstrumentPickup(
+            EntityRewardController owner,
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ,
+            IntSupplier randomByteSupplier) {
+        owner.instrumentPickupStep.run(
+                owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier);
+    }
+
+    static void instrumentPickupBehaviorSpawnInstrumentParticle(
+            EntityRewardController owner, RoomEntity source, int offsetIndex, int variant) {
+        var runtime = owner;
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        if (freeSlot < 0 || runtime.spriteHandlers == null) {
+            return;
+        }
+        int[] xOffsets = {0x0A, -0x06};
+        int[] speedX = {0x04, 0xFC};
+        EntitySpriteDefinition definition = runtime.spriteViews.forInstrumentShard();
+        runtime.slots[freeSlot] = new RoomEntity(
+                freeSlot,
+                -1,
+                source.type(),
+                (source.x() + xOffsets[offsetIndex]) & 0xFF,
+                (source.y() - 0x08) & 0xFF,
+                EntityStatus.ACTIVE,
+                definition,
+                variant & 0x01,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        owner.state.writeInstrumentParticleKind(freeSlot, 1);
+        owner.state.writeInstrumentParticleSpeedX(freeSlot, speedX[offsetIndex]);
+        owner.state.writeInstrumentParticleSpeedY(freeSlot, 0xFD);
+        owner.state.writeInstrumentParticleXAccumulator(freeSlot, 0);
+        owner.state.writeInstrumentParticleYAccumulator(freeSlot, 0);
+        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0x38);
+        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyHealth(freeSlot, 0);
+        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, ENTITY_PHYSICS_HARMLESS);
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
+        runtime.physicsTables.writeEntityOptions1Override(
+                freeSlot, EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION);
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+    }
+
+    static void itemPickupBehaviorAdvanceToadstoolPickup(
+            EntityRewardController owner, RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) {
+        var runtime = owner;
+        int slot = entity.slot();
+        int countdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
+        if (runtime.linkState.dialogActive) {
+            // UpdateEntityTimers is paused while a dialogue is open in the
+            // ROM. Undo this runtime's generic tick before holding the item.
+            if (countdown > 0) runtime.physicsTables.postEnemyTransitionCountdown(slot, 1);
+        } else if (countdown == 0x10) {
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x0F);
+            runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x0F));
+        } else if (countdown == 1) {
+            runtime.events.pendingToadstoolRewards.add(new ToadstoolRewardEvent(slot));
+            runtime.presentationState.writePendingMusicTrack(runtime.story
+                    .owlState()
+                    .readOwlDefaultMusicResolver()
+                    .applyAsInt(runtime.roomVariables.readEntityRoomId()));
+            owner.state.writeToadstoolPickupSequenceActive(slot, false);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
+            return;
+        }
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        RoomEntity held =
+                withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
+        runtime.slots[slot] = withZ(held, linkZ & 0xFF);
+    }
+
+    static void itemPickupBehaviorAdvanceSwordPickup(
+            EntityRewardController owner,
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ) {
+        owner.itemPickupFrameStep.run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ);
+    }
+
+    static void itemPickupBehaviorAdvancePowerUpPickup(
+            EntityRewardController owner, RoomEntity entity, int frame, int linkX, int linkY, int linkZ) {
+        var runtime = owner;
+        int slot = entity.slot();
+        if (owner.state.readPowerUpPickupCountdown(slot) == 0x30) {
+            int[] xOffsets = {-0x1C, 0x14, -0x1C, 0x14};
+            int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
+            for (int variant = 3; variant >= 0; variant--) {
+                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.MOVING_SPARKLE,
+                        (linkX + xOffsets[variant]) & 0xFF,
+                        (linkY + yOffsets[variant]) & 0xFF,
+                        variant));
+            }
+        }
+        if (!runtime.linkState.dialogActive) {
+            int countdown = owner.state.prePowerUpPickupCountdown(slot, -1);
+            if (countdown == 0x2E) {
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x17));
+            }
+            if (countdown == 2) {
+                owner.state.writePowerUpPickupCountdown(slot, 1);
+                runtime.events.pendingDialogRequests.add(new DialogRequest(0, entity.type() == 0x33 ? 0x08 : 0xEC));
+            } else if (countdown == 0) {
+                runtime.presentationState.writePendingMusicTrack(0x49);
+                runtime.lifecycle.clearEntity(slot);
+                return;
+            }
+        }
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot, true));
+        RoomEntity held = withPositionAndVariant(
+                entity,
+                linkX,
+                (linkY - 0x10) & 0xFF,
+                entity.type() == 0x33 ? (frame >>> 4) & 1 : entity.spriteVariant());
+        runtime.slots[slot] = withZ(held, linkZ & 0xFF);
+    }
+
+    static final class EntitySlotLifecycleFrameStep {
+        private EntityRewardController owner;
+        private linksawakening.world.entity.EntityPickupFrameInputs inputs;
+        private int frameCounter;
+        private int linkEntityX;
+        private int linkEntityY;
+        private boolean linkAirborne;
+        private boolean linkInteractive;
+        private int linkDirection;
+        private int linkZ;
+        private boolean swordActive;
+        private int swordX;
+        private int swordWidth;
+        private int swordY;
+        private int swordHeight;
+        private int romDirection;
+
+        EntitySlotLifecycleFrameStep() {}
+
+        linksawakening.world.entity.EntityPickupEvent run() {
+            frameCounter = inputs.frameCounter();
+            linkEntityX = inputs.linkEntityX();
+            linkEntityY = inputs.linkEntityY();
+            linkAirborne = inputs.linkAirborne();
+            linkInteractive = inputs.linkInteractive();
+            linkDirection = inputs.linkDirection();
+            linkZ = inputs.linkZ();
+            swordActive = inputs.swordActive();
+            swordX = inputs.swordX();
+            swordWidth = inputs.swordWidth();
+            swordY = inputs.swordY();
+            swordHeight = inputs.swordHeight();
+            if (!linkInteractive) {
+                return null;
+            }
+            romDirection = romDirectionForJavaDirection(linkDirection);
+
+            for (int index = owner.slots.length - 1; index >= 0; index--) {
+                EntityPickupEvent pickup = collectSlot(index);
+                if (pickup != null) return pickup;
+            }
+            return null;
+        }
+
+        private EntityPickupEvent collectSlot(int index) {
+
+            RoomEntity entity = owner.slots[index];
+            if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+                owner.motions
+                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                        .ensureInitialized(entity.slot(), owner.roomVariables.readEntityRoomId());
+            }
+            boolean swordPickup =
+                    swordActive && RoomEntityPickupRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight);
+            boolean floatingType = FloatingItemMotion.isFloatingItem(entity.type());
+            boolean floating = isRuntimeFloatingItem(entity);
+            if (!canCollect(entity, swordPickup, floatingType, floating)) return null;
+
+            int persistentClearMask = entity.type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP
+                            && owner.pickups.readChestSwordLevel() == 0
+                    ? 0
+                    : persistentClearMask(entity);
+            if (entity.type() == EntityRomConstants.ENTITY_KEY_DROP_POINT) {
+                if (owner.roomVariables.readEntityRoomId() == 0x80 || entity.spriteVariant() != 0) {
+                    owner.physicsTables.writeEnemyTransitionCountdown(
+                            entity.slot(), KeyDropPointMotion.TRANSITION_COUNTDOWN);
+                } else {
+                    owner.events.pendingKeyRewardEvents.add(
+                            new KeyRewardEvent(entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
+                    owner.lifecycle.clearEntity(entity.slot());
+                }
+            } else if (entity.type() == 0x35) {
+                owner.pickups.writeHeartPiecePickup(entity.slot(), new HeartPiecePickupMotion());
+                owner.physicsTables.writeEnemyTransitionCountdown(entity.slot(), 5);
+                owner.presentationState.writePendingMusicTrack(0x10);
+            } else if (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER) {
+                owner.physicsTables.writeEnemyTransitionCountdown(entity.slot(), 0x70);
+            } else if (entity.type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP
+                    && owner.pickups.readChestSwordLevel() == 0) {
+                owner.playerCommands.startSwordPickup(entity.slot());
+            } else if (entity.type() == EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL) {
+                owner.playerCommands.startToadstoolPickup(entity.slot());
+            } else if (entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
+                owner.startInstrumentPickup(entity.slot());
+            } else if (entity.type() == 0x33 || entity.type() == 0x34) {
+                owner.state.writePowerUpPickupCountdown(entity.slot(), 0x30);
+                owner.roomVariables.writeEntityInteractionCountdown(0x30);
+                owner.presentationState.writePendingMusicTrack(0x27);
+            } else if (requiresHeldPickupTransition(entity.type())) {
+                owner.playerCommands.beginLift(entity.slot(), romDirection);
+            } else {
+                owner.lifecycle.clearEntity(entity.slot());
+            }
+            return new EntityPickupEvent(
+                    entity.slot(), entity.type(), persistentClearMask, floating ? entity.spriteVariant() : -1);
+        }
+
+        private boolean canCollect(RoomEntity entity, boolean swordPickup, boolean floatingType, boolean floating) {
+            return !(!entity.loaded()
+                    || entity.status() != EntityStatus.ACTIVE
+                    || !RoomEntityPickupRules.isPickable(entity.type())
+                    || (floatingType && !floating)
+                    || (entity.type() == 0x35 && owner.pickups.readHeartPiecePickup(entity.slot()) != null)
+                    || owner.state.readPowerUpPickupCountdown(entity.slot()) != 0
+                    || owner.bossRewards.readDropPrivateCountdown1(entity.slot()) > 0
+                    || (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER
+                            && owner.physicsTables.readEnemyTransitionCountdown(entity.slot()) != 0)
+                    || (entity.type() == EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL
+                            && owner.state.readToadstoolPickupSequenceActive(entity.slot()))
+                    || (isCommonDroppableType(entity.type())
+                            && owner.bossRewards.readDroppablePrivateState3(entity.slot()) != 0)
+                    || (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL
+                            && (owner.motions
+                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                                                    .privateState3(entity.slot())
+                                            != 0
+                                    || owner.motions
+                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                                                    .privateCountdown1(entity.slot())
+                                            != 0))
+                    || (!swordPickup
+                            && !floating
+                            && !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot()))
+                    || (!swordPickup && !floating && linkAirborne)
+                    || (floating
+                            && !FloatingItemMotion.linkZAllowsCollection(
+                                    owner.physicsTables.readGroundInteractionSideScrolling(), linkZ))
+                    || !(swordPickup
+                            || (floating
+                                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
+                                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY))));
+        }
+
+        private boolean inUse;
+
+        linksawakening.world.entity.EntityPickupEvent run(
+                EntityRewardController owner, linksawakening.world.entity.EntityPickupFrameInputs inputs) {
+            if (inUse) {
+                return new EntitySlotLifecycleFrameStep().run(owner, inputs);
+            }
+            inUse = true;
+            frameCounter = 0;
+            linkEntityX = 0;
+            linkEntityY = 0;
+            linkAirborne = false;
+            linkInteractive = false;
+            linkDirection = 0;
+            linkZ = 0;
+            swordActive = false;
+            swordX = 0;
+            swordWidth = 0;
+            swordY = 0;
+            swordHeight = 0;
+            romDirection = 0;
+            this.owner = owner;
+            this.inputs = inputs;
+            try {
+                return run();
+            } finally {
+                inUse = false;
+                this.owner = null;
+                this.inputs = null;
+            }
+        }
+    }
+
+    static final class InstrumentPickupStep {
+        private linksawakening.world.entity.EntityRewardController owner;
+        private linksawakening.world.entity.RoomEntity entity;
+        private int frameCounter;
+        private int linkEntityX;
+        private int linkEntityY;
+        private int linkZ;
+        private java.util.function.IntSupplier randomByteSupplier;
+        private linksawakening.world.entity.EntityRewardController runtime;
+        private int slot;
+        private linksawakening.world.entity.RoomEntity held;
+
+        InstrumentPickupStep() {}
+
+        void run() {
+            if (!prepareSparkles()) return;
+            if (!advancePickupSequence()) return;
+            if (!holdPickupPose()) return;
+        }
+
+        private boolean prepareSparkles() {
+
+            runtime = owner;
+            slot = entity.slot();
+            if (owner.state.readInstrumentPickupSparklesPending(slot)) {
+                owner.state.writeInstrumentPickupSparklesPending(slot, false);
+                int[] xOffsets = {-0x18, 0x18, -0x18, 0x18};
+                int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
+                for (int variant = 3; variant >= 0; variant--) {
+                    runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+                            TransientVfxType.MOVING_SPARKLE,
+                            (linkEntityX + xOffsets[variant]) & 0xFF,
+                            (linkEntityY + yOffsets[variant]) & 0xFF,
+                            variant));
+                }
+            }
+            return true;
+        }
+
+        private boolean advancePickupSequence() {
+
+            if (owner.state.readInstrumentPickupState(slot) == 0
+                    && runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0x10) {
+                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x0F);
+                owner.state.writeInstrumentPickupState(slot, 1);
+                runtime.events.pendingDialogRequests.add(
+                        new DialogRequest(1, runtime.roomVariables.readEntityMapId() & 0xFF));
+                runtime.events.pendingInstrumentRewards.add(new InstrumentRewardEvent(slot));
+            } else if (owner.state.readInstrumentPickupState(slot) == 1
+                    && !runtime.presentationState.readActiveMusic()
+                    && !runtime.linkState.dialogActive) {
+                int mapId = runtime.roomVariables.readEntityMapId() & 0xFF;
+                if (mapId < EntityRomConstants.INSTRUMENT_MUSIC_TRACKS.length) {
+                    runtime.presentationState.writePendingMusicTrack(EntityRomConstants.INSTRUMENT_MUSIC_TRACKS[mapId]);
+                    owner.state.writeInstrumentPickupState(slot, 2);
+                    runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
+                }
+            } else if (owner.state.readInstrumentPickupState(slot) == 2
+                    && runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+                owner.state.writeInstrumentPickupState(slot, 3);
+                owner.state.writeInstrumentWarpX(slot, (entity.x() - 1) & 255); // $03:5F43
+                owner.state.writeInstrumentWarpY(slot, entity.y());
+                runtime.physicsTables.writeSlowTransitionCountdown(slot, 0x80);
+                runtime.physicsTables.writeSlowTimerInitialized(slot, true);
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x2B));
+            } else if (owner.state.readInstrumentPickupState(slot) == 2) {
+                owner.state.writeInstrumentParticleSpawnCountdown(
+                        slot, (owner.state.readInstrumentParticleSpawnCountdown(slot) - 1) & 0xFF);
+                if (owner.state.readInstrumentParticleSpawnCountdown(slot) == 0xFF) {
+                    owner.state.writeInstrumentParticleSpawnCountdown(slot, 0x17);
+                    owner.state.writeInstrumentParticleSpawnCounter(
+                            slot, (owner.state.readInstrumentParticleSpawnCounter(slot) + 1) & 0xFF);
+                    owner.spawnInstrumentParticle(
+                            entity,
+                            owner.state.readInstrumentParticleSpawnCounter(slot) & 0x01,
+                            randomByteSupplier.getAsInt() & 0x01);
+                }
+            } else if (owner.state.readInstrumentPickupState(slot) == 3
+                    && !runtime.linkState.dialogActive
+                    && !runtime.linkState.inventoryAppearing
+                    && !runtime.roomVariables.readRoomTransitionActive()) {
+                return advanceWarpFade();
+            }
+            return true;
+        }
+
+        private boolean holdPickupPose() {
+
+            runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+            runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+            held = withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
+            runtime.slots[slot] = withZ(held, linkZ & 0xFF);
+            return true;
+        }
+
+        private boolean advanceWarpFade() {
+            runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
+            // $03:5E29: the warp controller advances its fade every eight
+            // frames, then starts the fullscreen hint controller ($07:6523).
+            if (owner.state.readInstrumentHintCountdown(slot) > 0) {
+                owner.state.writeInstrumentHintBatches(
+                        slot, Math.min(9, owner.state.readInstrumentHintBatches(slot) + 1));
+                if (owner.state.preInstrumentHintCountdown(slot, -1) == 0
+                        && !owner.state.readInstrumentHintOpened(slot)) {
+                    owner.state.writeInstrumentHintOpened(slot, true);
+                    runtime.events.pendingDialogRequests.add(
+                            new DialogRequest(1, 0x50 + (runtime.roomVariables.readEntityMapId() & 0xFF)));
+                }
+            }
+            if (runtime.physicsTables.readSlowTransitionCountdown(slot) < 0x50
+                    && owner.state.readInstrumentWarpFadeStep(slot) < 0x19
+                    && (frameCounter & 7) == 0) {
+                int step = owner.state.postInstrumentWarpFadeStep(slot, 1);
+                if (step == 0) {
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                            slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x2C));
+                }
+                if (step == 0x18) owner.state.writeInstrumentHintCountdown(slot, 0x60);
+            }
+            // func_020_6D0E raises RGB555 channels by one on even frames.
+            // BG starts at private state 5; OBJ starts at state 15.
+            int fadeStep = owner.state.readInstrumentWarpFadeStep(slot);
+            if (runtime.physicsTables.readSlowTransitionCountdown(slot) < 0x50
+                    && fadeStep <= 0x19
+                    && (frameCounter & 1) == 0) {
+                if (fadeStep >= 5)
+                    owner.state.writeInstrumentBackgroundFade(
+                            slot, Math.min(31, owner.state.readInstrumentBackgroundFade(slot) + 1));
+                if (fadeStep >= 15)
+                    owner.state.writeInstrumentObjectFade(
+                            slot, Math.min(31, owner.state.readInstrumentObjectFade(slot) + 1));
+            }
+            if (runtime.physicsTables.readSlowTransitionCountdown(slot) == 0) {
+                owner.state.writeInstrumentPickupState(slot, 4);
+                owner.state.writeInstrumentPickupSequenceActive(slot, false);
+                runtime.events.pendingInstrumentCompletions.add(
+                        new InstrumentCompletionEvent(slot, runtime.roomVariables.readEntityMapId() & 0xFF));
+                runtime.lifecycle.disableEntityWithoutPersistence(slot);
+                return false;
+            }
+
+            return true;
+        }
+
+        private boolean inUse;
+
+        void run(
+                linksawakening.world.entity.EntityRewardController owner,
+                linksawakening.world.entity.RoomEntity entity,
+                int frameCounter,
+                int linkEntityX,
+                int linkEntityY,
+                int linkZ,
+                java.util.function.IntSupplier randomByteSupplier) {
+            if (inUse) {
+                new InstrumentPickupStep()
+                        .run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier);
+                return;
+            }
+            inUse = true;
+            runtime = null;
+            slot = 0;
+            held = null;
+            this.owner = owner;
+            this.entity = entity;
+            this.frameCounter = frameCounter;
+            this.linkEntityX = linkEntityX;
+            this.linkEntityY = linkEntityY;
+            this.linkZ = linkZ;
+            this.randomByteSupplier = randomByteSupplier;
+            try {
+                run();
+            } finally {
+                inUse = false;
+                this.owner = null;
+                this.entity = null;
+                this.randomByteSupplier = null;
+                this.runtime = null;
+                this.held = null;
+            }
+        }
+    }
+
+    static final class ItemPickupFrameStep {
+        private linksawakening.world.entity.EntityRewardController owner;
+        private linksawakening.world.entity.RoomEntity entity;
+        private int frameCounter;
+        private int linkEntityX;
+        private int linkEntityY;
+        private int linkZ;
+        private linksawakening.world.entity.EntityRewardController runtime;
+        private int slot;
+
+        ItemPickupFrameStep() {}
+
+        void run() {
+            runtime = owner;
+            slot = entity.slot();
+            if (runtime.linkState.dialogActive) {
+                if (runtime.physicsTables.readEnemyTransitionCountdown(slot) > 0) {
+                    runtime.physicsTables.postEnemyTransitionCountdown(slot, 1);
+                }
+                if (owner.state.readSwordPickupState(slot) != 2) {
+                    runtime.playerCommands.holdSwordAboveLink(
+                            entity, linkEntityX, linkEntityY, linkZ, owner.state.readSwordPickupState(slot) == 3);
+                } else {
+                    runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                }
+                return;
+            }
+            if (owner.state.readSwordPickupState(slot) == 1) {
+                runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
+            }
+            switch (owner.state.readSwordPickupState(slot)) {
+                case 0 -> {
+                    if (!advanceState0()) return;
+                }
+                case 1 -> {
+                    if (!advanceState1()) return;
+                }
+                case 2 -> {
+                    if (!advanceState2()) return;
+                }
+                default -> {
+                    if (!advanceDefault()) return;
+                }
+            }
+        }
+
+        private boolean advanceState0() {
+            runtime.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
+            int countdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
+            if (countdown == 0x10) {
+                runtime.physicsTables.postEnemyTransitionCountdown(slot, -1);
+                runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x9B));
+            } else if (countdown == 1) {
+                runtime.presentationState.writePendingMusicTrack(0x31);
+                runtime.physicsTables.writeSlowTransitionCountdown(slot, 0x52);
+                runtime.physicsTables.writeSlowTimerInitialized(slot, true);
+                owner.state.writeSwordPickupState(slot, 1);
+            }
+
+            return true;
+        }
+
+        private boolean advanceState1() {
+            runtime.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
+            if (runtime.physicsTables.readSlowTransitionCountdown(slot) == 0) {
+                runtime.slots[slot] = withVariant(runtime.slots[slot], -1);
+                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x20);
+                owner.state.writeSwordPickupState(slot, 2);
+                runtime.events.pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(slot, 0x20));
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x03));
+            }
+
+            return true;
+        }
+
+        private boolean advanceState2() {
+            // SwordShieldPickableState2Handler only advances the entity
+            // countdown and restores variant 0; Link's spin handler owns
+            // the motion lock and animation pose for these frames.
+            runtime.events.pendingLinkSwordSpinPoseRequests.add(
+                    new LinkSwordSpinPoseRequest(slot, runtime.physicsTables.readEnemyTransitionCountdown(slot)));
+            if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x20);
+                runtime.slots[slot] = withVariant(runtime.slots[slot], 0);
+                owner.state.writeSwordPickupState(slot, 3);
+            }
+
+            return true;
+        }
+
+        private boolean advanceDefault() {
+            runtime.events.pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
+            runtime.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, true);
+            if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0x1A) {
+                runtime.events.transientVfxRequests.add(
+                        new TransientVfxRequest(TransientVfxType.SWORD_POKE, entity.x(), (entity.y() - 0x0C) & 0xFF));
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07));
+            }
+            if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+                // The ROM leaves MUSIC_OVERWORLD_INTRO playing after the pose;
+                // the track data itself continues into the overworld loop.
+                runtime.events.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
+                owner.state.writeSwordPickupSequenceActive(slot, false);
+                runtime.lifecycle.disableEntityWithoutPersistence(slot);
+            }
+
+            return true;
+        }
+
+        private boolean inUse;
+
+        void run(
+                linksawakening.world.entity.EntityRewardController owner,
+                linksawakening.world.entity.RoomEntity entity,
+                int frameCounter,
+                int linkEntityX,
+                int linkEntityY,
+                int linkZ) {
+            if (inUse) {
+                new ItemPickupFrameStep().run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ);
+                return;
+            }
+            inUse = true;
+            runtime = null;
+            slot = 0;
+            this.owner = owner;
+            this.entity = entity;
+            this.frameCounter = frameCounter;
+            this.linkEntityX = linkEntityX;
+            this.linkEntityY = linkEntityY;
+            this.linkZ = linkZ;
+            try {
+                run();
+            } finally {
+                inUse = false;
+                this.owner = null;
+                this.entity = null;
+                this.runtime = null;
+            }
+        }
+    }
 }
