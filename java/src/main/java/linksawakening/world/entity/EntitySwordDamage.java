@@ -15,13 +15,12 @@ final class EntitySwordDamage {
         var runtime = slot.runtime;
         var frame = slot.inputs;
 
-        slot.swordResult = runtime.enemyCombatTables() == null
+        slot.swordResult = runtime.enemyCombatTables == null
                 ? null
-                : runtime.enemyCombatTables()
-                        .resolveSwordDamage(
-                                slot.entity.type(),
-                                runtime.combatTables().readEnemyHealthGroup(slot.entity.slot()),
-                                frame.attackContext());
+                : runtime.enemyCombatTables.resolveSwordDamage(
+                        slot.entity.type(),
+                        runtime.combatTables.readEnemyHealthGroup(slot.entity.slot()),
+                        frame.attackContext());
         slot.swordDamage = slot.swordResult == null
                 ? RoomEntityCombatRules.basicSwordDamage(slot.entity.type())
                 : slot.swordResult.numericDamage();
@@ -33,7 +32,7 @@ final class EntitySwordDamage {
         if (usesSharedRecoil(slot.entity.type()) || slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // EnemyCollidedWithSword applies the default `$30` recoil
             // before ApplySwordDamagesToEnemy changes health.
-            runtime.motions()
+            runtime.motions
                     .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                     .configure(
                             slot.entity.slot(),
@@ -46,24 +45,22 @@ final class EntitySwordDamage {
         }
         // ConfigureEntityRecoil reaches StartIgnoringHitsForEntity
         // before ApplySwordDamagesToEnemy, including lethal hits.
-        runtime.combatTables()
-                .writeEnemyIgnoreHitsCountdown(
-                        slot.entity.slot(), frame.attackContext().powerRecoil() ? 0x20 : 0x0A);
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(
+                slot.entity.slot(), frame.attackContext().powerRecoil() ? 0x20 : 0x0A);
         if (slot.swordDamage > 0) {
             // $06:6CEB checks existing recoil before $6CEE applies a new hit.
             // Main resolves combat before ticking handlers, so preserve that phase.
             if (slot.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES)
-                runtime.motions()
+                runtime.motions
                         .get(RollingBonesMotion.class, RollingBonesMotion::new)
                         .setSwordHitFrame(slot.entity.slot(), (frame.frameCounter() & 0xFF) + 1);
-            runtime.combatTables()
-                    .writeEnemyHealth(
-                            slot.entity.slot(),
-                            Math.max(0, runtime.combatTables().readEnemyHealth(slot.entity.slot()) - slot.swordDamage));
+            runtime.combatTables.writeEnemyHealth(
+                    slot.entity.slot(),
+                    Math.max(0, runtime.combatTables.readEnemyHealth(slot.entity.slot()) - slot.swordDamage));
             if (slot.entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-                runtime.motions().get(MoldormMotion.class, MoldormMotion::new).onSwordHit(slot.entity.slot());
-                runtime.combatTables().writeEnemyFlashCountdown(slot.entity.slot(), 0x28);
-                runtime.combatTables().writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0);
+                runtime.motions.get(MoldormMotion.class, MoldormMotion::new).onSwordHit(slot.entity.slot());
+                runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0x28);
+                runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0);
             }
         }
         slot.soundChannel = EntityCombatEvent.SoundChannel.JINGLE;

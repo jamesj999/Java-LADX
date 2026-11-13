@@ -41,7 +41,7 @@ public final class RoomEntityRuntime
             new EntityBombInteractions(EntityBombInteractionsServices.bind(this));
     final EntitySlotLifecycle lifecycle;
     final EntityEnemySpawns entityEnemySpawns;
-    final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(EntityPlayerSpawnsServices.bind(this));
+    final EntityPlayerSpawns entityPlayerSpawns;
     private final EntityEffectConsumption effects;
     private final EntityRuntimeConfiguration entityRuntimeConfiguration;
     final EntityDebugConfiguration entityDebugConfiguration;
@@ -55,13 +55,13 @@ public final class RoomEntityRuntime
     final EntityPickupController pickups = new EntityPickupController(EntityPickupControllerServices.bind(this));
     final EntityLiftThrowController liftThrow =
             new EntityLiftThrowController(EntityLiftThrowControllerServices.bind(this));
-    private final EntityCombatResolver combat = new EntityCombatResolver(EntityCombatResolverServices.bind(this));
+    private final EntityCombatResolver combat;
     final EntityBossRewards bossRewards = new EntityBossRewards(EntityBossRewardsServices.bind(this));
     final EntityRoomInspection roomInspection = new EntityRoomInspection(EntityRoomInspectionServices.bind(this));
     final EntityBossInspection bossInspection;
     final EntityFlyingEnemyInspection flyingEnemyInspection;
     final EntityPickupInspection pickupInspection;
-    final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(EntityEnemyInspectionServices.bind(this));
+    final EntityEnemyInspection enemyInspection;
 
     final RoomEntity[] slots;
     final java.util.List<RoomEntity> slotEntities;
@@ -70,7 +70,7 @@ public final class RoomEntityRuntime
     final boolean indoorRoom;
     private final EntityPropertyTables entityProperties;
     final IntSupplier defaultRandomByteSupplier;
-    private final RomRandomByteSource fallbackRomRandomByteSource;
+    private final EntityFrameRandom frameRandom;
     final EntitySpriteHandlerCatalog spriteHandlers;
     final RomEnemyCombatTables enemyCombatTables;
     final ChestContentsTable chestContentsTable;
@@ -120,8 +120,7 @@ public final class RoomEntityRuntime
         this.flyingEnemyInspection = new EntityFlyingEnemyInspection(entityState.motions, entityState.physicsTables);
         this.pickupInspection =
                 new EntityPickupInspection(bombInteractions, entityState.motions, entityState.physicsTables);
-        this.bossInspection =
-                new EntityBossInspection(bossRewards, enemyInspection, entityState.motions, entityState.physicsTables);
+
         RoomEntitySnapshot initial = builder.initial();
         boolean indoorRoom = builder.indoorRoom();
         IntSupplier defaultRandomByteSupplier = builder.randomByteSupplier();
@@ -138,7 +137,7 @@ public final class RoomEntityRuntime
         this.entityState.physicsTables.writeGroundInteractionSideScrolling(initial.sideScrolling());
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
-        this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null ? new RomRandomByteSource() : null;
+        this.frameRandom = new EntityFrameRandom(defaultRandomByteSupplier);
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
@@ -185,6 +184,59 @@ public final class RoomEntityRuntime
                 genie,
                 slots,
                 lifecycle);
+        this.enemyInspection = new EntityEnemyInspection(
+                bossRewards,
+                entityState.combatTables,
+                entityState.events,
+                liftThrow,
+                entityState.linkState,
+                entityState.motions,
+                entityState.physicsTables,
+                inspection(),
+                roomInspection,
+                entityState.roomVariables,
+                slotProperties,
+                slots);
+        this.combat = new EntityCombatResolver(
+                spriteHandlers,
+                backgroundMechanics,
+                bombInteractions,
+                bossRewards,
+                entityState.combatTables,
+                entityState.events,
+                entityState.linkState,
+                entityState.motions,
+                entityState.physicsTables,
+                roomInspection,
+                slotProperties,
+                enemyCombatTables,
+                slots,
+                slimeEye,
+                frameRandom);
+        this.entityPlayerSpawns = new EntityPlayerSpawns(
+                indoorRoom,
+                defaultRandomByteSupplier,
+                spriteHandlers,
+                bombInteractions,
+                bossRewards,
+                entityState.combatTables,
+                entityState.events,
+                liftThrow,
+                entityState.motions,
+                entityState.physicsTables,
+                pickups,
+                entityState.presentationState,
+                projectiles,
+                inspection(),
+                roomInspection,
+                entityState.roomVariables,
+                lifecycle,
+                slotProperties,
+                slots,
+                chestContentsTable,
+                playerCommands);
+        this.bossInspection =
+                new EntityBossInspection(bossRewards, enemyInspection, entityState.motions, entityState.physicsTables);
         this.entityHandlers = roomInitialization.createEntityHandlers();
         slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
@@ -214,11 +266,7 @@ public final class RoomEntityRuntime
 
     /** Frame-only inputs using the runtime RNG, including its carried state. */
     EntityFrameContext frameContext(int frameCounter) {
-        IntSupplier randomByteSupplier = defaultRandomByteSupplier;
-        if (randomByteSupplier == null) {
-            fallbackRomRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
-            randomByteSupplier = fallbackRomRandomByteSource;
-        }
+        IntSupplier randomByteSupplier = frameRandom.forFrame(frameCounter);
         return EntityFrameContext.builder()
                 .frameCounter(frameCounter)
                 .randomByteSupplier(randomByteSupplier)

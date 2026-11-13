@@ -12,7 +12,7 @@ import linksawakening.world.entity.motion.*;
 /** Focused behavior using the state owned by EntityCombatResolver. */
 final class EntityCombatPass {
     static List<EntityCombatEvent> resolveCombat(EntityCombatResolver owner, EnemyCombatInputs inputs) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
@@ -30,18 +30,18 @@ final class EntityCombatPass {
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
-        runtime.linkState().runningWithPegasusBoots = attackContext.pegasusBoots();
-        List<EntityCombatEvent> events = runtime.events().outbox.channel(EntityCombatEvent.class, "resolvedCombat");
+        runtime.linkState.runningWithPegasusBoots = attackContext.pegasusBoots();
+        List<EntityCombatEvent> events = runtime.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
         EntityCombatSlot slot = owner.acquireSlot();
         try {
-            for (int index = runtime.slots().length - 1; index >= 0; index--) {
-                slot.reset(inputs, events, runtime.slots()[index]);
+            for (int index = runtime.slots.length - 1; index >= 0; index--) {
+                slot.reset(inputs, events, runtime.slots[index]);
                 EntitySlotCombat.resolve(slot);
             }
         } finally {
             owner.releaseSlot(slot);
         }
-        return runtime.events().outbox.drain(EntityCombatEvent.class, "resolvedCombat");
+        return runtime.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
     }
 }

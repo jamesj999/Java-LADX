@@ -11,15 +11,15 @@ import linksawakening.world.entity.motion.*;
 
 /** Source-ordered allocation and initialization for this spawn family. */
 final class PlayerObjectSpawns {
-    static int spawnPushedBlock(EntityPlayerSpawnsServices runtime, int x, int y) {
-        int freeSlot = runtime.findFreeEntitySlot();
+    static int spawnPushedBlock(EntityPlayerSpawns runtime, int x, int y) {
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return -1;
         }
         EntitySpriteDefinition definition =
-                runtime.slotProperties().spriteDefinitionFor(EntityRomConstants.ENTITY_PUSHED_BLOCK);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_PUSHED_BLOCK);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        runtime.slots()[freeSlot] = new RoomEntity(
+        runtime.slots[freeSlot] = new RoomEntity(
                 freeSlot,
                 -1,
                 EntityRomConstants.ENTITY_PUSHED_BLOCK,
@@ -33,30 +33,26 @@ final class PlayerObjectSpawns {
                 0,
                 -1,
                 false);
-        runtime.initializeHealthGroup(freeSlot);
-        runtime.physicsTables()
-                .writeEnemyPhysicsFlags(
-                        freeSlot,
-                        2
-                                | EntityRomConstants.ENTITY_PHYSICS_HARMLESS
-                                | EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP);
-        runtime.combatTables().writeEnemyHealth(freeSlot, 0);
-        runtime.physicsTables()
-                .writeEntityOptions1Override(freeSlot, EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL);
-        runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        runtime.physicsTables.writeEnemyPhysicsFlags(
+                freeSlot,
+                2 | EntityRomConstants.ENTITY_PHYSICS_HARMLESS | EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP);
+        runtime.combatTables.writeEnemyHealth(freeSlot, 0);
+        runtime.physicsTables.writeEntityOptions1Override(
+                freeSlot, EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL);
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
 
-    static int spawnLiftedRoomObject(
-            EntityPlayerSpawnsServices runtime, int x, int y, int romDirection, int spriteVariant) {
-        int freeSlot = runtime.findFreeEntitySlot();
+    static int spawnLiftedRoomObject(EntityPlayerSpawns runtime, int x, int y, int romDirection, int spriteVariant) {
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return -1;
         }
         EntitySpriteDefinition definition =
-                runtime.slotProperties().spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
         int variant = definition.supported() ? spriteVariant : -1;
-        runtime.slots()[freeSlot] = new RoomEntity(
+        runtime.slots[freeSlot] = new RoomEntity(
                 freeSlot,
                 -1,
                 EntityRomConstants.ENTITY_LIFTABLE_ROCK,
@@ -70,40 +66,36 @@ final class PlayerObjectSpawns {
                 0,
                 -1,
                 false);
-        runtime.initializeHealthGroup(freeSlot);
-        runtime.physicsTables()
-                .writeEnemyPhysicsFlags(
-                        freeSlot,
-                        0x02
-                                | EntityRomConstants.ENTITY_PHYSICS_HARMLESS
-                                | EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP
-                                | EntityRomConstants.ENTITY_PHYSICS_SHADOW);
-        runtime.combatTables()
-                .writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_LIFTABLE_ROCK));
-        runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        if (!runtime.beginLift(freeSlot, romDirection)) {
-            runtime.slots()[freeSlot] = RoomEntity.disabled(freeSlot);
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        runtime.physicsTables.writeEnemyPhysicsFlags(
+                freeSlot,
+                0x02
+                        | EntityRomConstants.ENTITY_PHYSICS_HARMLESS
+                        | EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP
+                        | EntityRomConstants.ENTITY_PHYSICS_SHADOW);
+        runtime.combatTables.writeEnemyHealth(
+                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_LIFTABLE_ROCK));
+        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
+        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        if (!runtime.playerCommands.beginLift(freeSlot, romDirection)) {
+            runtime.slots[freeSlot] = RoomEntity.disabled(freeSlot);
             return -1;
         }
-        runtime.events()
-                .pendingEntityEvents
-                .add(new EntityCombatEvent(
-                        freeSlot,
-                        EntityRomConstants.ENTITY_LIFTABLE_ROCK,
-                        0,
-                        false,
-                        EntityCombatEvent.SoundChannel.WAVE,
-                        0x02));
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                freeSlot,
+                EntityRomConstants.ENTITY_LIFTABLE_ROCK,
+                0,
+                false,
+                EntityCombatEvent.SoundChannel.WAVE,
+                0x02));
         return freeSlot;
     }
 
-    static int spawnLiftableRockSmash(
-            EntityPlayerSpawnsServices runtime, int entityX, int entityY, int sourceSpriteVariant) {
+    static int spawnLiftableRockSmash(EntityPlayerSpawns runtime, int entityX, int entityY, int sourceSpriteVariant) {
         if (sourceSpriteVariant != EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK
                 && sourceSpriteVariant != EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_BUSH
                 && sourceSpriteVariant != EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_GRASS) {
@@ -121,7 +113,7 @@ final class PlayerObjectSpawns {
                 rock ? 0x09 : 0x05);
     }
 
-    static int spawnLiftableRockRubble(EntityPlayerSpawnsServices runtime, int entityX, int entityY) {
+    static int spawnLiftableRockRubble(EntityPlayerSpawns runtime, int entityX, int entityY) {
         return PlayerObjectSpawns.spawnLiftableRockAnimation(
                 runtime,
                 entityX,
@@ -133,24 +125,24 @@ final class PlayerObjectSpawns {
     }
 
     static int spawnLiftableRockAnimation(
-            EntityPlayerSpawnsServices runtime,
+            EntityPlayerSpawns runtime,
             int entityX,
             int entityY,
             int sourceSpriteVariant,
             int initialCountdown,
             int physicsFlags,
             int soundId) {
-        int freeSlot = runtime.findFreeEntitySlot();
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return -1;
         }
 
         EntitySpriteDefinition definition =
-                runtime.slotProperties().spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
-        boolean swampLeaves = !runtime.indoorRoom()
-                && runtime.presentationState().readSpriteSelection() != null
-                && runtime.presentationState().readSpriteSelection().roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
-                && runtime.presentationState().readSpriteSelection().roomId() == 0x32;
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
+        boolean swampLeaves = !runtime.indoorRoom
+                && runtime.presentationState.readSpriteSelection() != null
+                && runtime.presentationState.readSpriteSelection().roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
+                && runtime.presentationState.readSpriteSelection().roomId() == 0x32;
         int variant = definition.supported()
                 ? EntityMotionMath.liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown)
                 : -1;
@@ -168,33 +160,31 @@ final class PlayerObjectSpawns {
                 0,
                 -1,
                 false);
-        runtime.slots()[freeSlot] = smash;
-        runtime.initializeHealthGroup(freeSlot);
-        runtime.liftThrow().writeLiftableRockSmashActive(freeSlot, true);
-        runtime.liftThrow().writeLiftableRockSmashCountdown(freeSlot, initialCountdown);
-        runtime.liftThrow().writeLiftableRockSmashSourceVariant(freeSlot, sourceSpriteVariant);
-        runtime.physicsTables().writeEnemyPhysicsFlags(freeSlot, physicsFlags);
-        runtime.combatTables().writeEnemyHitboxFlags(freeSlot, 0);
-        runtime.combatTables()
-                .writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_LIFTABLE_ROCK));
-        runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.physicsTables().writeEntityOptions1Override(freeSlot, EntityRomConstants.BOMB_OPTIONS1);
+        runtime.slots[freeSlot] = smash;
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        runtime.liftThrow.writeLiftableRockSmashActive(freeSlot, true);
+        runtime.liftThrow.writeLiftableRockSmashCountdown(freeSlot, initialCountdown);
+        runtime.liftThrow.writeLiftableRockSmashSourceVariant(freeSlot, sourceSpriteVariant);
+        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, physicsFlags);
+        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
+        runtime.combatTables.writeEnemyHealth(
+                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_LIFTABLE_ROCK));
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.BOMB_OPTIONS1);
         if (soundId >= 0) {
-            runtime.events()
-                    .pendingEntityEvents
-                    .add(new EntityCombatEvent(
-                            freeSlot,
-                            EntityRomConstants.ENTITY_LIFTABLE_ROCK,
-                            0,
-                            false,
-                            EntityCombatEvent.SoundChannel.NOISE,
-                            soundId));
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    freeSlot,
+                    EntityRomConstants.ENTITY_LIFTABLE_ROCK,
+                    0,
+                    false,
+                    EntityCombatEvent.SoundChannel.NOISE,
+                    soundId));
         }
-        runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
 }

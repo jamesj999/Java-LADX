@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 /** Scratch values for exactly one slot's ordered combat pass. */
 final class EntityCombatSlot {
-    final EntityCombatResolverServices runtime;
+    final EntityCombatResolver runtime;
     EnemyCombatInputs inputs;
     java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
     linksawakening.world.entity.RoomEntity entity;
@@ -34,7 +34,7 @@ final class EntityCombatSlot {
     int swordDamage;
     boolean swordResultApplied;
 
-    EntityCombatSlot(EntityCombatResolverServices runtime) {
+    EntityCombatSlot(EntityCombatResolver runtime) {
         this.runtime = runtime;
     }
 

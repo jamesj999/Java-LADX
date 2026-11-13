@@ -12,7 +12,7 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 /** Focused behavior using the state owned by EntityCombatResolver. */
 final class EnemyContactRecoil {
     static void finishLeeverContactRecoil(EntityCombatResolver owner, RoomEntity moved) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         int slot = moved.slot();
         if (!owner.deferredLeeverContact[slot]) return;
         owner.deferredLeeverContact[slot] = false;
@@ -21,9 +21,8 @@ final class EnemyContactRecoil {
         // the updated position tables when selecting Link's recoil vector.
         var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 moved.x(), moved.y(), moved.z(), owner.contactLinkX[slot], owner.contactLinkY[slot], 0x14);
-        runtime.events()
-                .pendingEntityEvents
-                .add(linksawakening.world.entity.event.EntityCombatEvent.builder(slot, moved.type())
+        runtime.events.pendingEntityEvents.add(
+                linksawakening.world.entity.event.EntityCombatEvent.builder(slot, moved.type())
                         .linkDamage(0)
                         .swordHit(false)
                         .enemyDamage(0)
