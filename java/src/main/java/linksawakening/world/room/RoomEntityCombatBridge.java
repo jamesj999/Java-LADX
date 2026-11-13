@@ -31,34 +31,30 @@ final class RoomEntityCombatBridge {
         EnemyAttackContext attackContext = inputs.attackContext();
 
         if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+                || dependencies.entityBridge().get().runtime() == null) {
             return List.of();
         }
         List<EntityCombatEvent> events =
-                dependencies.entityBridge().get().entityRuntime.resolveCombat(inputs);
+                dependencies.entityBridge().get().runtime().resolveCombat(inputs);
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityBridge().get().runtime().inspection().view());
         return events;
     }
 
     boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.deferContactRecoil(slot, linkX, linkY);
+        return dependencies.entityBridge().get().runtime() != null
+                && dependencies.entityBridge().get().runtime().deferContactRecoil(slot, linkX, linkY);
     }
 
     int clearEntity(int slot) {
         if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+                || dependencies.entityBridge().get().runtime() == null) {
             return 0;
         }
-        int mask = dependencies.entityBridge().get().entityRuntime.clearEntity(slot);
+        int mask = dependencies.entityBridge().get().runtime().clearEntity(slot);
         if (mask != 0) {
             dependencies
                     .entityFrame()
@@ -68,12 +64,8 @@ final class RoomEntityCombatBridge {
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityBridge().get().runtime().inspection().view());
         return mask;
     }
 
@@ -144,13 +136,12 @@ final class RoomEntityCombatBridge {
         int swordHeight = inputs.sword().height();
 
         if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+                || dependencies.entityBridge().get().runtime() == null) {
             return null;
         }
         dependencies.followers().followingLinkZ = linkZ & 0xFF;
         dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
-        EntityPickupEvent event =
-                dependencies.entityBridge().get().entityRuntime.collectIfNeeded(inputs);
+        EntityPickupEvent event = dependencies.entityBridge().get().runtime().collectIfNeeded(inputs);
         if (event == null) {
             return null;
         }
@@ -184,12 +175,8 @@ final class RoomEntityCombatBridge {
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityBridge().get().runtime().inspection().view());
         return event;
     }
 

@@ -11,10 +11,8 @@ import linksawakening.world.object.SwitchBlockAnimation;
 
 /** Owns room-level entity output queues and their consumption boundary. */
 final class RoomEntityBridge {
-    /** Absent until a room has loaded; replaced, rather than mutated across room loads. */
-    RoomEntityRuntime entityRuntime;
 
-    final RoomEntityOutbox outbox = new RoomEntityOutbox(() -> entityRuntime);
+    final RoomEntityOutbox outbox;
     final RoomEntityCombatBridge combat;
     private final Dependencies dependencies;
     private final RoomEntityTickDefaults roomEntityTickDefaults;
@@ -22,21 +20,25 @@ final class RoomEntityBridge {
 
     RoomEntityBridge(Dependencies dependencies) {
         this.dependencies = dependencies;
+        outbox = dependencies.entityFrame().outbox;
         combat = dependencies.entityCombatBridge().get();
-        roomEntityTickDefaults = new RoomEntityTickDefaults(
-                new RoomEntityTickDefaults.Dependencies(dependencies.entityBridge(), dependencies.followers()));
+        roomEntityTickDefaults =
+                new RoomEntityTickDefaults(new RoomEntityTickDefaults.Dependencies(this, dependencies.followers()));
         roomEntitySimulation = new RoomEntitySimulation(
                 new RoomEntitySimulation.Dependencies(
-                        dependencies.entityBridge(),
+                        this,
                         dependencies.entityFrame(),
                         dependencies.entityRandomByteSource(),
                         dependencies.followers(),
                         dependencies.items(),
                         dependencies.location(),
-                        dependencies.roomCollisionQueries(),
-                        () -> this),
+                        dependencies.roomCollisionQueries()),
                 dependencies.entityConfiguration().get(),
                 dependencies.entityEffects().get());
+    }
+
+    RoomEntityRuntime runtime() {
+        return dependencies.entityFrame().runtime;
     }
 
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
@@ -119,9 +121,9 @@ final class RoomEntityBridge {
     }
 
     List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
-        List<WarpLinkStateRequest> requests = dependencies.entityBridge().get().entityRuntime == null
+        List<WarpLinkStateRequest> requests = dependencies.entityRuntimeState().runtime == null
                 ? List.of()
-                : dependencies.entityBridge().get().entityRuntime.consumePendingWarpLinkStateRequests();
+                : dependencies.entityRuntimeState().runtime.consumePendingWarpLinkStateRequests();
         if (!requests.isEmpty()) {
             dependencies.items().ocarinaPlaybackCountdown = 0;
             dependencies.items().ocarinaAnimationCounter = 0;
@@ -169,7 +171,7 @@ final class RoomEntityBridge {
             RoomLocationState location,
             RoomTerrainState terrain,
             java.util.function.Supplier<RoomEntitySimulation.EffectsDependencies> entityEffects,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             java.util.function.Supplier<RoomEntityCombatBridge> entityCombatBridge,
             java.util.function.Supplier<RoomEntitySimulation.SetupDependencies> entityConfiguration,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
@@ -185,7 +187,7 @@ final class RoomEntityBridge {
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityEffects, "entityEffects");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityCombatBridge, "entityCombatBridge");
             java.util.Objects.requireNonNull(entityConfiguration, "entityConfiguration");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");

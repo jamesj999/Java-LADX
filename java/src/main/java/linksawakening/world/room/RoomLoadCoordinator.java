@@ -27,7 +27,7 @@ final class RoomLoadCoordinator {
                 dependencies.colorShellWorld(),
                 dependencies.enemyCombatTables(),
                 dependencies.entityBackgroundInteraction(),
-                dependencies.entityBridge(),
+                dependencies.entityRuntimeState(),
                 dependencies.entityInputs(),
                 dependencies.entityRandomByteSource(),
                 dependencies.entitySpriteHandlerCatalog(),
@@ -203,31 +203,27 @@ final class RoomLoadCoordinator {
     }
 
     void configureEnemyDropRuntime() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
         dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .configuration()
                 .setDialogActive(dependencies.entityInputs().get().entityDialogActive);
         dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .configuration()
                 .setEnemyDropResolver(dependencies.enemyDropResolver());
         dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .configuration()
                 .setEnemyDropCounters(dependencies.entityFrame().enemyDropCounters);
         dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .configuration()
                 .setEnemyDropPlayerState(
                         dependencies.entityFrame().enemyDropMaxHearts,
@@ -235,9 +231,8 @@ final class RoomLoadCoordinator {
                         dependencies.entityFrame().enemyDropActivePowerUp);
         if (dependencies.entityFrame().enemyDropLowHealth != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setEnemyDropPlayerState(
                             dependencies.entityFrame().enemyDropMaxHearts, dependencies.entityFrame().enemyDropHealth,
@@ -247,8 +242,8 @@ final class RoomLoadCoordinator {
     }
 
     boolean roomHasBossBattle() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().inBossBattle();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().inBossBattle();
     }
 
     void loadRoomSpecificTilesIfNeeded(int roomId) {
@@ -272,7 +267,7 @@ final class RoomLoadCoordinator {
             RomEnemyCombatTables enemyCombatTables,
             EnemyDropResolver enemyDropResolver,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
@@ -307,7 +302,7 @@ final class RoomLoadCoordinator {
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
             java.util.Objects.requireNonNull(enemyDropResolver, "enemyDropResolver");
             java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");

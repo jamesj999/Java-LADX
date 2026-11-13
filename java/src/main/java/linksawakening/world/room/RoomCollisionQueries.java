@@ -119,9 +119,9 @@ final class RoomCollisionQueries {
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY) {
-        int ignoreHitsCountdown = dependencies.entityBridge().get().entityRuntime == null
+        int ignoreHitsCountdown = dependencies.entityRuntimeState().runtime == null
                 ? 0
-                : dependencies.entityBridge().get().entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
+                : dependencies.entityRuntimeState().runtime.enemies().enemyIgnoreHitsCountdown(entity.slot());
         return dependencies
                 .roomCollisionQueries()
                 .get()
@@ -144,15 +144,15 @@ final class RoomCollisionQueries {
         int pointY = sample.y();
         int objectId = dependencies.overworldCollision().objectIdAtPoint(pointX, pointY);
         int physicsFlag = dependencies.overworldCollision().objectPhysicsFlagAtPoint(pointX, pointY);
-        int ledgeTimer = dependencies.entityBridge().get().entityRuntime == null
+        int ledgeTimer = dependencies.entityRuntimeState().runtime == null
                 ? 0
-                : dependencies.entityBridge().get().entityRuntime.enemies().ledgeTransitionTimer(entity.slot());
+                : dependencies.entityRuntimeState().runtime.enemies().ledgeTransitionTimer(entity.slot());
         if ((entity.z() & 0x80) != 0) {
             ledgeTimer = 0;
         }
-        int thrownDirection = dependencies.entityBridge().get().entityRuntime == null
+        int thrownDirection = dependencies.entityRuntimeState().runtime == null
                 ? 0xFF
-                : dependencies.entityBridge().get().entityRuntime.thrownDirection(entity.slot());
+                : dependencies.entityRuntimeState().runtime.thrownDirection(entity.slot());
         EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
                 frameCounter,
                 dependencies.location().activeRoom != null
@@ -164,11 +164,10 @@ final class RoomCollisionQueries {
         EntityBackgroundCollisionResolution resolution = dependencies
                 .entityBackgroundCollisionResolver()
                 .resolveWithState(entity, direction, sample, objectId, physicsFlag, ignoreHitsCountdown, state);
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
         }
@@ -185,9 +184,9 @@ final class RoomCollisionQueries {
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
             RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) {
-        int ignoreHitsCountdown = dependencies.entityBridge().get().entityRuntime == null
+        int ignoreHitsCountdown = dependencies.entityRuntimeState().runtime == null
                 ? 0
-                : dependencies.entityBridge().get().entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
+                : dependencies.entityRuntimeState().runtime.enemies().enemyIgnoreHitsCountdown(entity.slot());
         return dependencies
                 .roomCollisionQueries()
                 .get()
@@ -263,7 +262,7 @@ final class RoomCollisionQueries {
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             EntityBackgroundCollisionResolver entityBackgroundCollisionResolver,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             EntityCollisionPointProbe entityCollisionPointProbe,
             OverworldCollision overworldCollision,
             RomTables romTables,
@@ -274,7 +273,7 @@ final class RoomCollisionQueries {
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityBackgroundCollisionResolver, "entityBackgroundCollisionResolver");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityCollisionPointProbe, "entityCollisionPointProbe");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romTables, "romTables");

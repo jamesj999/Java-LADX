@@ -12,13 +12,12 @@ final class RoomEntityTickDefaults {
     }
 
     void tickEntities(int frameCounter) {
-        dependencies.entityBridge().get().tickEntities(frameCounter, 0, 0);
+        dependencies.entityBridge().tickEntities(frameCounter, 0, 0);
     }
 
     void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
         dependencies
                 .entityBridge()
-                .get()
                 .tickEntities(
                         frameCounter,
                         linkEntityX,
@@ -30,7 +29,6 @@ final class RoomEntityTickDefaults {
     void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
         dependencies
                 .entityBridge()
-                .get()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -50,7 +48,6 @@ final class RoomEntityTickDefaults {
             int linkDirection) {
         dependencies
                 .entityBridge()
-                .get()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -72,7 +69,6 @@ final class RoomEntityTickDefaults {
             boolean usingShield) {
         return dependencies
                 .entityBridge()
-                .get()
                 .tickEntities(new EntityTickInputs(
                         frameCounter,
                         new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
@@ -92,7 +88,6 @@ final class RoomEntityTickDefaults {
             boolean usingShield) {
         return dependencies
                 .entityBridge()
-                .get()
                 .tickEntities(new EntityTickInputs(
                         frameCounter,
                         new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
@@ -101,7 +96,7 @@ final class RoomEntityTickDefaults {
                         new SwordBox(false, 0, 0, 0, 0)));
     }
 
-    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge, RoomFollowerState followers) {
+    record Dependencies(RoomEntityBridge entityBridge, RoomFollowerState followers) {
         Dependencies {
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
             java.util.Objects.requireNonNull(followers, "followers");
@@ -109,6 +104,6 @@ final class RoomEntityTickDefaults {
     }
 
     List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
-        return dependencies.entityBridge().get().tickEntities(inputs);
+        return dependencies.entityBridge().tickEntities(inputs);
     }
 }

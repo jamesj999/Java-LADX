@@ -13,36 +13,36 @@ public final class PresentationOutputs {
     }
 
     public List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return dependencies.entityBridge().get().outbox.consumeScreenShakeRequests();
+        return dependencies.entityRuntimeState().outbox.consumeScreenShakeRequests();
     }
 
     public List<EntityCombatEvent> consumeEntityEvents() {
-        return dependencies.entityBridge().get().outbox.consumeEntityEvents();
+        return dependencies.entityRuntimeState().outbox.consumeEntityEvents();
     }
 
     public int consumePendingMusicFadeOutCountdown() {
-        return dependencies.entityBridge().get().outbox.consumePendingMusicFadeOutCountdown();
+        return dependencies.entityRuntimeState().outbox.consumePendingMusicFadeOutCountdown();
     }
 
     public int consumePendingMusicTrack() {
-        return dependencies.entityBridge().get().outbox.consumePendingMusicTrack();
+        return dependencies.entityRuntimeState().outbox.consumePendingMusicTrack();
     }
 
     public List<LikeLikeEvent> consumeLikeLikeEvents() {
-        return dependencies.entityBridge().get().outbox.consumeLikeLikeEvents();
+        return dependencies.entityRuntimeState().outbox.consumeLikeLikeEvents();
     }
 
     public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
-        dependencies.entityBridge().get().outbox.drainEntityEvents(target);
+        dependencies.entityRuntimeState().outbox.drainEntityEvents(target);
     }
 
     public linksawakening.world.entity.event.DialogRequest consumeFirstEntityDialogRequest() {
-        return dependencies.entityBridge().get().outbox.consumeFirstEntityDialogRequest();
+        return dependencies.entityRuntimeState().outbox.consumeFirstEntityDialogRequest();
     }
 
-    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {
+    record Dependencies(RoomEntityFrameState entityRuntimeState) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
         }
     }
 }

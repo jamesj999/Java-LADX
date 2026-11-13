@@ -158,18 +158,17 @@ final class RoomObjectMutations {
                 || dependencies.roomSessionViews().get().objectAtRoomLocation(location) != 0xDD) return false;
         dependencies.location().activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0x0D;
         dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             // Variant zero uses LiftableRockStartSmashingAnimation ($03:53E4):
             // fifteen frames of rock debris and NOISE_SFX_POT_SMASHED ($09).
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .spawnLiftableRockSmash(((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
             // Link runs before the entity tick, which clears its frame outbox.
             RoomEntityOutbox.append(
-                    dependencies.entityBridge().get().outbox.pendingRoomEntityEvents,
-                    dependencies.entityBridge().get().entityRuntime.consumePendingEntityEvents());
+                    dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents,
+                    dependencies.entityRuntimeState().runtime.consumePendingEntityEvents());
         }
         return true;
     }
@@ -243,12 +242,11 @@ final class RoomObjectMutations {
             return;
         }
 
-        if (result.bushLeavesVisible() && dependencies.entityBridge().get().entityRuntime != null) {
+        if (result.bushLeavesVisible() && dependencies.entityRuntimeState().runtime != null) {
             int sourceSpriteVariant = result.originalObjectId() == 0x0A ? 0xFF : 0x01;
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .spawnLiftableRockSmash(
                             dependencies.overworldBushInteraction().effectOriginXForLocation(location),
                             dependencies.overworldBushInteraction().effectOriginYForLocation(location),
@@ -288,8 +286,7 @@ final class RoomObjectMutations {
                         .spawn(TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
             dependencies
-                    .entityBridge()
-                    .get()
+                    .entityRuntimeState()
                     .outbox
                     .pendingRoomEntityEvents
                     .add(new EntityCombatEvent(
@@ -349,8 +346,7 @@ final class RoomObjectMutations {
                         .spawn(TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
             dependencies
-                    .entityBridge()
-                    .get()
+                    .entityRuntimeState()
                     .outbox
                     .pendingRoomEntityEvents
                     .add(new EntityCombatEvent(
@@ -506,12 +502,11 @@ final class RoomObjectMutations {
         int blockLeft = candidate.objectLeft() & 0xE0;
         int[] rubbleXOffsets = {0x18, 0x08, 0x18, 0x08};
         int[] rubbleYOffsets = {0x20, 0x20, 0x10, 0x10};
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             for (int index = 0; index < rubbleXOffsets.length; index++) {
                 dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
+                        .entityRuntimeState()
+                        .runtime
                         .spawnLiftableRockRubble(
                                 blockLeft + rubbleXOffsets[index], blockTop + rubbleYOffsets[index] - sourceZ);
             }
@@ -648,8 +643,7 @@ final class RoomObjectMutations {
 
     void queuePuzzleSolvedJingle(int sourceSlot) {
         dependencies
-                .entityBridge()
-                .get()
+                .entityRuntimeState()
                 .outbox
                 .pendingRoomEntityEvents
                 .add(new EntityCombatEvent(sourceSlot, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
@@ -679,11 +673,10 @@ final class RoomObjectMutations {
                 (byte) INDOOR_ROOM_STATUS_EVENT_3;
         dependencies.terrain().bombedBlockTileOverrides.add(areaIndex);
 
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .spawnLiftableRockSmash(candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
         }
 
@@ -722,7 +715,7 @@ final class RoomObjectMutations {
             RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             IndoorTorchPaletteEffect indoorTorchPaletteEffect,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
@@ -738,7 +731,7 @@ final class RoomObjectMutations {
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
             java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");

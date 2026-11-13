@@ -29,25 +29,24 @@ final class RoomTransientState {
         dependencies.terrain().bombedBlockTileOverrides.clear();
         dependencies.terrain().bombedCaveDoorTileOverrides.clear();
         dependencies.terrain().retainedTorchTiles.clear();
-        dependencies.entityBridge().get().outbox.pendingBombExplosionEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingBombExplosionEvents.clear();
         dependencies.location().pendingDungeonWarp = null;
-        dependencies.entityBridge().get().outbox.pendingRoomEntityEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingChestRewardEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingKeyRewardEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingSlimeKeyRewardEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingHeartContainerRewards.clear();
+        dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingChestRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingKeyRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingSlimeKeyRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingHeartContainerRewards.clear();
         dependencies
-                .entityBridge()
-                .get()
+                .entityRuntimeState()
                 .outbox
                 .pendingMadamMeowMeowFullHealRequests
                 .clear();
-        dependencies.entityBridge().get().outbox.pendingRichardProgressEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingSwordPickupRewards.clear();
-        dependencies.entityBridge().get().outbox.pendingToadstoolRewards.clear();
-        dependencies.entityBridge().get().outbox.pendingWitchExchangeEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingWitchRewardEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingRoomDialogRequests.clear();
+        dependencies.entityRuntimeState().outbox.pendingRichardProgressEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingSwordPickupRewards.clear();
+        dependencies.entityRuntimeState().outbox.pendingToadstoolRewards.clear();
+        dependencies.entityRuntimeState().outbox.pendingWitchExchangeEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingWitchRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingRoomDialogRequests.clear();
         dependencies.items().pendingManboTransition = false;
         dependencies.items().pendingInstrumentTransition = false;
         dependencies.items().pendingShovelDrop = null;
@@ -80,7 +79,7 @@ final class RoomTransientState {
         dependencies.puzzles().tailCaveKeyholeCountdown = 0;
         dependencies.puzzles().tailCaveFinalMotionBlockPending = false;
         dependencies.puzzles().nextWorldMusicTrackCountdown = 0;
-        dependencies.entityBridge().get().outbox.pendingRoomMusicTrack = -1;
+        dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack = -1;
     }
 
     record Dependencies(
@@ -90,7 +89,7 @@ final class RoomTransientState {
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             DroppableRupeeSystem droppableRupeeSystem,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             TransientVfxSystem transientVfxSystem) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
@@ -98,7 +97,7 @@ final class RoomTransientState {
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
         }
     }
 }

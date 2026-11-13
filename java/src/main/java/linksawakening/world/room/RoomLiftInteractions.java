@@ -83,13 +83,12 @@ final class RoomLiftInteractions {
             int braceletLevel,
             boolean anyPowerUpActive) {
         if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null
+                || dependencies.entityRuntimeState().runtime == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
                 || !braceletButtonHeld
                 || dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
+                        .entityRuntimeState()
+                        .runtime
                         .inspection()
                         .liftedEntityState()
                         .active()) {
@@ -113,16 +112,12 @@ final class RoomLiftInteractions {
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityRuntimeState().runtime.inspection().view());
     }
 
     record Dependencies(
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             RoomFollowerState followers,
             RoomLocationState location,
             OverworldBushInteraction overworldBushInteraction,
@@ -134,7 +129,7 @@ final class RoomLiftInteractions {
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             java.util.function.Supplier<RoomDoorInteractions> owner) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
@@ -180,9 +175,8 @@ final class RoomLiftInteractions {
         linksawakening.world.entity.RoomEntity statue = null;
         if (!outdoor) {
             for (var entity : dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .inspection()
                     .view()
                     .loadedEntities()) {
@@ -235,13 +229,11 @@ final class RoomLiftInteractions {
     private void completeStatueLift(linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
 
         dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .beginLift(statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         dependencies
-                .entityBridge()
-                .get()
+                .entityRuntimeState()
                 .outbox
                 .pendingRoomEntityEvents
                 .add(new linksawakening.world.entity.event.EntityCombatEvent(
@@ -295,9 +287,8 @@ final class RoomLiftInteractions {
         int x = request.linkPixelX() + 0x08;
         int y = request.linkPixelY() + 0x10;
         dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnLiftedRoomObject(
                         x,
                         y,

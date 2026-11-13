@@ -64,8 +64,7 @@ final class RoomShovelActions {
             if (dependencies.items().shovelUseState == SHOVEL_STATE_DUG
                     && dependencies.followers().followingNpcState.marinFollowing()) {
                 dependencies
-                        .entityBridge()
-                        .get()
+                        .entityRuntimeState()
                         .outbox
                         .pendingRoomDialogRequests
                         .add(new DialogRequest(SHOVEL_DIALOG_TABLE, SHOVEL_DIALOG_ID));
@@ -154,7 +153,7 @@ final class RoomShovelActions {
     }
 
     record Dependencies(
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
@@ -166,7 +165,7 @@ final class RoomShovelActions {
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");

@@ -79,8 +79,7 @@ final class RoomFrameInputApplier {
     }
 
     private void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
-        if (bridge.entityRuntime != null)
-            bridge.entityRuntime.configuration().setLiftStrengthBoost(redTunic, pieceOfPower);
+        if (bridge.runtime() != null) bridge.runtime().configuration().setLiftStrengthBoost(redTunic, pieceOfPower);
     }
 
     private void setEnemyDropPlayerState(int maxHearts, int health, boolean power, boolean low) {

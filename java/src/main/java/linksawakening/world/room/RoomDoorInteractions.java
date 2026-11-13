@@ -44,7 +44,7 @@ final class RoomDoorInteractions {
         this.dependencies = dependencies;
         roomChestInteractions = new RoomChestInteractions(new RoomChestInteractions.Dependencies(
                 dependencies.chestContentsTable(),
-                dependencies.entityBridge(),
+                dependencies.entityRuntimeState(),
                 dependencies.location(),
                 dependencies.overworldCollision(),
                 dependencies.romData(),
@@ -54,7 +54,7 @@ final class RoomDoorInteractions {
                 dependencies.roomTileRedraw()));
 
         roomLiftInteractions = new RoomLiftInteractions(new RoomLiftInteractions.Dependencies(
-                dependencies.entityBridge(),
+                dependencies.entityRuntimeState(),
                 dependencies.followers(),
                 dependencies.location(),
                 dependencies.overworldBushInteraction(),
@@ -110,8 +110,7 @@ final class RoomDoorInteractions {
             }
             if (dependencies.roomState().dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
                 dependencies
-                        .entityBridge()
-                        .get()
+                        .entityRuntimeState()
                         .outbox
                         .pendingRoomDialogRequests
                         .add(new DialogRequest(0, 0x07));
@@ -187,9 +186,9 @@ final class RoomDoorInteractions {
         }
         int sourceX = ((touchedLocation & 0x0F) << 4) + 0x08;
         int sourceY = (touchedLocation & 0xF0) + 0x10;
-        int spawnedSlot = dependencies.entityBridge().get().entityRuntime == null
+        int spawnedSlot = dependencies.entityRuntimeState().runtime == null
                 ? -1
-                : dependencies.entityBridge().get().entityRuntime.spawnPushedBlock(sourceX, sourceY);
+                : dependencies.entityRuntimeState().runtime.spawnPushedBlock(sourceX, sourceY);
         if (spawnedSlot < 0) {
             return true;
         }
@@ -206,14 +205,13 @@ final class RoomDoorInteractions {
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
         dependencies.overworldCollision().setGbcOverlay(null);
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
                     .location()
                     .activeRoom
                     .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
+                            .entityRuntimeState()
+                            .runtime
                             .inspection()
                             .view());
         }
@@ -320,7 +318,7 @@ final class RoomDoorInteractions {
         }
         if (dependencies.roomState().dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
             dependencies.puzzles().pushBlockContactTicks = 0;
-            dependencies.entityBridge().get().outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
+            dependencies.entityRuntimeState().outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
             return true;
         }
         dependencies.puzzles().pushBlockContactTicks++;
@@ -406,8 +404,7 @@ final class RoomDoorInteractions {
         }
         if (!hasKey) {
             dependencies
-                    .entityBridge()
-                    .get()
+                    .entityRuntimeState()
                     .outbox
                     .pendingRoomDialogRequests
                     .add(new DialogRequest(KEYHOLE_DIALOG_TABLE, dialogLowId));
@@ -417,7 +414,7 @@ final class RoomDoorInteractions {
         dependencies.roomState().overworldRoomStatus[roomId] |= (byte) ROOM_STATUS_EVENT_1;
         dependencies.puzzles().tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
         dependencies.puzzles().tailCaveResumeMusicTrack = dependencies.followers().entityDefaultMusicTrack;
-        dependencies.entityBridge().get().outbox.pendingRoomMusicTrack = 0x00;
+        dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack = 0x00;
         return true;
     }
 
@@ -504,7 +501,7 @@ final class RoomDoorInteractions {
         }
         dependencies.puzzles().nextWorldMusicTrackCountdown--;
         if (dependencies.puzzles().nextWorldMusicTrackCountdown == 0) {
-            dependencies.entityBridge().get().outbox.pendingRoomMusicTrack =
+            dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack =
                     dependencies.puzzles().tailCaveResumeMusicTrack;
         }
     }
@@ -515,7 +512,7 @@ final class RoomDoorInteractions {
             RoomLocationState location,
             RoomPuzzleState puzzles,
             ChestContentsTable chestContentsTable,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             Rom romData,
@@ -530,7 +527,7 @@ final class RoomDoorInteractions {
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romData, "romData");

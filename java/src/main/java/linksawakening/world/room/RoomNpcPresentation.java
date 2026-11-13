@@ -14,19 +14,15 @@ final class RoomNpcPresentation {
 
     boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
         if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null
-                || !dependencies.entityBridge().get().entityRuntime.applyMarinWakeUpPresentation(x, y, spriteVariant)) {
+                || dependencies.entityRuntimeState().runtime == null
+                || !dependencies.entityRuntimeState().runtime.applyMarinWakeUpPresentation(x, y, spriteVariant)) {
             return false;
         }
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityRuntimeState().runtime.inspection().view());
         return true;
     }
 
@@ -36,16 +32,15 @@ final class RoomNpcPresentation {
                 && dependencies.location().activeRoom.roomId() == 0xA3
                 && dependencies.followers().tarinFlag != 1
                 && dependencies.followers().tarinFlag != 2
-                && dependencies.entityBridge().get().entityRuntime != null
+                && dependencies.entityRuntimeState().runtime != null
                 && (frameCounter & 0x1F) == 0) {
-            dependencies.entityBridge().get().entityRuntime.updateHouseTarinPresentation(linkX, linkY);
+            dependencies.entityRuntimeState().runtime.updateHouseTarinPresentation(linkX, linkY);
             dependencies
                     .location()
                     .activeRoom
                     .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
+                            .entityRuntimeState()
+                            .runtime
                             .inspection()
                             .view());
         }
@@ -77,22 +72,15 @@ final class RoomNpcPresentation {
                         .spriteSelection()
                         .withSpriteOverrides(merged));
         dependencies.location().activeRoom.replaceEntities(updated);
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .configuration()
-                    .setSpriteSelection(updated.spriteSelection());
+        if (dependencies.entityRuntimeState().runtime != null) {
+            dependencies.entityRuntimeState().runtime.configuration().setSpriteSelection(updated.spriteSelection());
         }
     }
 
     record Dependencies(
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
-            RoomFollowerState followers,
-            RoomLocationState location) {
+            RoomEntityFrameState entityRuntimeState, RoomFollowerState followers, RoomLocationState location) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(location, "location");
         }

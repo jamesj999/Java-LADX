@@ -15,7 +15,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void resetGuardianAcornCounterOnHurt() {
-        var runtime = dependencies.entityBridge().entityRuntime;
+        var runtime = dependencies.entityBridge().runtime();
         var counters = runtime == null
                 ? dependencies.entityFrame().enemyDropCounters
                 : runtime.inspection().enemyDropCounters();
@@ -28,8 +28,8 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public boolean gelClingingToLink() {
-        return dependencies.entityBridge().entityRuntime != null
-                && dependencies.entityBridge().entityRuntime.gelClingingToLink();
+        return dependencies.entityBridge().runtime() != null
+                && dependencies.entityBridge().runtime().gelClingingToLink();
     }
 
     public void setEntityDialogActive(boolean active) {
@@ -49,8 +49,8 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void setEntityScreenShakeCountdown(int countdown) {
-        if (dependencies.entityBridge().entityRuntime != null)
-            dependencies.entityBridge().entityRuntime.configuration().setScreenShakeCountdown(countdown);
+        if (dependencies.entityBridge().runtime() != null)
+            dependencies.entityBridge().runtime().configuration().setScreenShakeCountdown(countdown);
     }
 
     public void setSecretSeashellPegasusCollisionState(

@@ -14,12 +14,11 @@ final class RoomSessionViews {
     RoomSessionViews(Dependencies dependencies) {
         this.dependencies = dependencies;
         renderView = new RoomRenderLiveView(
-                () -> dependencies.location().activeRoom,
-                () -> dependencies.entityBridge().get().entityRuntime);
+                () -> dependencies.location().activeRoom, () -> dependencies.entityRuntimeState().runtime);
     }
 
     int entityHealth(int slot) {
-        return dependencies.entityBridge().get().entityRuntime.enemies().enemyHealth(slot);
+        return dependencies.entityRuntimeState().runtime.enemies().enemyHealth(slot);
     }
 
     ActiveRoom activeRoom() {
@@ -109,18 +108,18 @@ final class RoomSessionViews {
     }
 
     boolean heartPiecePickupActive() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().heartPiecePickupActive();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().heartPiecePickupActive();
     }
 
     void setHeartPiecesCount(int count) {
-        if (dependencies.entityBridge().get().entityRuntime != null)
-            dependencies.entityBridge().get().entityRuntime.setHeartPiecesCount(count);
+        if (dependencies.entityRuntimeState().runtime != null)
+            dependencies.entityRuntimeState().runtime.setHeartPiecesCount(count);
     }
 
     List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
-        if (dependencies.entityBridge().get().entityRuntime == null) return List.of();
-        var updates = dependencies.entityBridge().get().entityRuntime.consumeHeartPieceUpdates();
+        if (dependencies.entityRuntimeState().runtime == null) return List.of();
+        var updates = dependencies.entityRuntimeState().runtime.consumeHeartPieceUpdates();
         for (int i = 0; i < updates.size(); i++) {
             if (updates.get(i).complete()) {
                 dependencies.roomStoryState().get().markActiveRoomCompleted();
@@ -131,15 +130,15 @@ final class RoomSessionViews {
     }
 
     String instrumentTrace() {
-        return dependencies.entityBridge().get().entityRuntime == null
+        return dependencies.entityRuntimeState().runtime == null
                 ? ""
-                : dependencies.entityBridge().get().entityRuntime.inspection().instrumentTrace();
+                : dependencies.entityRuntimeState().runtime.inspection().instrumentTrace();
     }
 
     String moblinKingTrace() {
-        return dependencies.entityBridge().get().entityRuntime == null
+        return dependencies.entityRuntimeState().runtime == null
                 ? "-1"
-                : dependencies.entityBridge().get().entityRuntime.inspection().moblinKingTrace();
+                : dependencies.entityRuntimeState().runtime.inspection().moblinKingTrace();
     }
 
     RoomRenderSnapshot.View renderView() {
@@ -154,29 +153,19 @@ final class RoomSessionViews {
                 snapshot.tileAttrs(),
                 snapshot.palettes(),
                 snapshot.entities(),
-                dependencies.entityBridge().get().entityRuntime == null
+                dependencies.entityRuntimeState().runtime == null
                         ? null
-                        : dependencies
-                                .entityBridge()
-                                .get()
-                                .entityRuntime
-                                .inspection()
-                                .instrumentWarpVisual(),
-                dependencies.entityBridge().get().entityRuntime == null
+                        : dependencies.entityRuntimeState().runtime.inspection().instrumentWarpVisual(),
+                dependencies.entityRuntimeState().runtime == null
                         ? null
-                        : dependencies
-                                .entityBridge()
-                                .get()
-                                .entityRuntime
-                                .inspection()
-                                .heartPieceVisual(),
+                        : dependencies.entityRuntimeState().runtime.inspection().heartPieceVisual(),
                 snapshot.linkGrassPalette());
     }
 
     LiftedEntityState liftedEntityState() {
-        return dependencies.entityBridge().get().entityRuntime == null
+        return dependencies.entityRuntimeState().runtime == null
                 ? LiftedEntityState.none()
-                : dependencies.entityBridge().get().entityRuntime.inspection().liftedEntityState();
+                : dependencies.entityRuntimeState().runtime.inspection().liftedEntityState();
     }
 
     void setColorShellSoundSink(GameplaySoundSink soundSink) {
@@ -215,14 +204,14 @@ final class RoomSessionViews {
     record Dependencies(
             RoomEntityFrameState entityFrame,
             RoomLocationState location,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             RoomWorldState roomState,
             java.util.function.Supplier<RoomStoryState> roomStoryState,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(roomState, "roomState");
             java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
             java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");

@@ -56,10 +56,10 @@ final class RoomPuzzleController {
     }
 
     void harvestThrownRoomEventCollisions() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
-        var collisions = dependencies.entityBridge().get().entityRuntime.consumePendingThrownBackgroundCollisions();
+        var collisions = dependencies.entityRuntimeState().runtime.consumePendingThrownBackgroundCollisions();
         for (int i = 0; i < collisions.size(); i++) {
             var collision = collisions.get(i);
             int objectId = collision.objectId();
@@ -103,25 +103,22 @@ final class RoomPuzzleController {
                         || (trigger == EVENT_TRIGGER_THROW_AT_DOOR
                                 && dependencies.puzzles().thrownAtDoorTriggerResolved)
                         || (trigger == EVENT_TRIGGER_KILL_IN_ORDER
-                                && dependencies.entityBridge().get().entityRuntime != null
+                                && dependencies.entityRuntimeState().runtime != null
                                 && dependencies
-                                                .entityBridge()
-                                                .get()
-                                                .entityRuntime
+                                                .entityRuntimeState()
+                                                .runtime
                                                 .inspection()
                                                 .killOrderAt(0)
                                         == 0
                                 && dependencies
-                                                .entityBridge()
-                                                .get()
-                                                .entityRuntime
+                                                .entityRuntimeState()
+                                                .runtime
                                                 .inspection()
                                                 .killOrderAt(1)
                                         == 1
                                 && dependencies
-                                                .entityBridge()
-                                                .get()
-                                                .entityRuntime
+                                                .entityRuntimeState()
+                                                .runtime
                                                 .inspection()
                                                 .killOrderAt(2)
                                         == 2))) {
@@ -169,18 +166,16 @@ final class RoomPuzzleController {
                 return;
             }
         }
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .movePushedBlock(dependencies.puzzles().pushedBlockEntitySlot, x, y);
             if (dependencies.entityFrame().currentLinkMotionState
                     < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
                 dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
+                        .entityRuntimeState()
+                        .runtime
                         .resolvePushedBlockLinkContact(
                                 dependencies.puzzles().pushedBlockEntitySlot, linkEntityX, linkEntityY);
             }
@@ -188,9 +183,8 @@ final class RoomPuzzleController {
                     .location()
                     .activeRoom
                     .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
+                            .entityRuntimeState()
+                            .runtime
                             .inspection()
                             .view());
         }
@@ -466,7 +460,7 @@ final class RoomPuzzleController {
             RoomEntityFrameState entityFrame,
             RoomLocationState location,
             RoomPuzzleState puzzles,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             GPU gpu,
             OverworldCollision overworldCollision,
@@ -484,7 +478,7 @@ final class RoomPuzzleController {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(gpu, "gpu");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
@@ -517,15 +511,14 @@ final class RoomPuzzleController {
             dependencies.puzzles().activeRoomEvent = 0;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         } else if (effect == EVENT_EFFECT_DROP_KEY) {
-            if (dependencies.entityBridge().get().entityRuntime != null
-                    && dependencies.entityBridge().get().entityRuntime.spawnRoomEventKeyDrop() >= 0) {
+            if (dependencies.entityRuntimeState().runtime != null
+                    && dependencies.entityRuntimeState().runtime.spawnRoomEventKeyDrop() >= 0) {
                 dependencies
                         .location()
                         .activeRoom
                         .replaceEntities(dependencies
-                                .entityBridge()
-                                .get()
-                                .entityRuntime
+                                .entityRuntimeState()
+                                .runtime
                                 .inspection()
                                 .view());
             }
@@ -551,10 +544,9 @@ final class RoomPuzzleController {
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |= 0x20;
-                dependencies.entityBridge().get().entityRuntime.configuration().setDungeonMinibossReady(true);
+                dependencies.entityRuntimeState().runtime.configuration().setDungeonMinibossReady(true);
                 dependencies
-                        .entityBridge()
-                        .get()
+                        .entityRuntimeState()
                         .outbox
                         .pendingRoomEntityEvents
                         .add(new EntityCombatEvent(0, 0x61, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1B));
@@ -569,19 +561,14 @@ final class RoomPuzzleController {
                 && destinationIndex < dependencies.location().activeRoom.roomObjectsArea().length) {
             dependencies.location().activeRoom.roomObjectsArea()[destinationIndex] = OBJECT_SETTLED_PUSHED_BLOCK;
         }
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
-                    .removePushedBlock(dependencies.puzzles().pushedBlockEntitySlot);
+        if (dependencies.entityRuntimeState().runtime != null) {
+            dependencies.entityRuntimeState().runtime.removePushedBlock(dependencies.puzzles().pushedBlockEntitySlot);
             dependencies
                     .location()
                     .activeRoom
                     .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
+                            .entityRuntimeState()
+                            .runtime
                             .inspection()
                             .view());
         }

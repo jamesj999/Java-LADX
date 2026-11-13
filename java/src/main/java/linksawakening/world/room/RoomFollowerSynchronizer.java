@@ -22,7 +22,7 @@ final class RoomFollowerSynchronizer {
     void synchronizeFollowingNpcEntitiesIfNeeded() {
         if (!dependencies.followers().followingNpcRoomNeedsSync
                 || dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null
+                || dependencies.entityRuntimeState().runtime == null
                 || dependencies.location().activeRoom.entityView() == null) {
             return;
         }
@@ -46,7 +46,7 @@ final class RoomFollowerSynchronizer {
         dependencies.followers().followingNpcState = result.state();
         dependencies.followers().followingNpcRoomNeedsSync = false;
         dependencies.location().activeRoom.replaceEntities(result.snapshot());
-        dependencies.entityBridge().get().entityRuntime = RoomEntityRuntime.builder(result.snapshot())
+        dependencies.entityRuntimeState().runtime = RoomEntityRuntime.builder(result.snapshot())
                 .indoorRoom(dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD)
                 .randomByteSupplier(dependencies.entityRandomByteSource())
                 .spriteHandlers(dependencies.entitySpriteHandlerCatalog())
@@ -59,14 +59,13 @@ final class RoomFollowerSynchronizer {
         configureFollowerCollision();
         configureFollowerInputs();
         configureFollowerProgress();
-        dependencies.owner().get().configureHouseNpcStoryState();
+        dependencies.owner().configureHouseNpcStoryState();
         if (dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                 && dependencies.location().activeRoom.mapId() == 0x10
                 && dependencies.location().activeRoom.roomId() == 0xA3) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setChestPlayerLevels(
                             dependencies.followers().playerShieldLevel,
@@ -76,9 +75,8 @@ final class RoomFollowerSynchronizer {
                     .location()
                     .activeRoom
                     .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
+                            .entityRuntimeState()
+                            .runtime
                             .inspection()
                             .view());
         }
@@ -90,7 +88,7 @@ final class RoomFollowerSynchronizer {
             ColorShellWorld colorShellWorld,
             RomEnemyCombatTables enemyCombatTables,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
@@ -104,13 +102,13 @@ final class RoomFollowerSynchronizer {
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> owner) {
+            RoomStoryState owner) {
         Dependencies {
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
             java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
             java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
@@ -129,7 +127,7 @@ final class RoomFollowerSynchronizer {
     }
 
     private void configureFollowerWorld() {
-        var configuration = dependencies.entityBridge().get().entityRuntime.configuration();
+        var configuration = dependencies.entityRuntimeState().runtime.configuration();
         configuration.setColorShellWorld(dependencies.colorShellWorld());
         configuration.setFollowingNpcState(dependencies.followers().followingNpcState);
         configuration.setEntityMapId(dependencies.location().activeRoom.mapId());
@@ -145,7 +143,7 @@ final class RoomFollowerSynchronizer {
     }
 
     private void configureFollowerCollision() {
-        var configuration = dependencies.entityBridge().get().entityRuntime.configuration();
+        var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setOwlDefaultMusicResolver(dependencies.owlEventDialogResolver()::defaultMusicTrack);
         configuration.setGroundInteraction(dependencies.roomCollisionQueries().get()::entityGroundInteraction);
@@ -158,7 +156,7 @@ final class RoomFollowerSynchronizer {
     }
 
     private void configureFollowerInputs() {
-        var configuration = dependencies.entityBridge().get().entityRuntime.configuration();
+        var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setActionButtonsHeld(
                 dependencies.entityInputs().get().actionButtonAHeld,
@@ -174,7 +172,7 @@ final class RoomFollowerSynchronizer {
     }
 
     private void configureFollowerProgress() {
-        var configuration = dependencies.entityBridge().get().entityRuntime.configuration();
+        var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setLiftedLinkC13B(dependencies.followers().followingEntityYOffset);
         configuration.setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());

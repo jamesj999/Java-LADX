@@ -28,13 +28,13 @@ final class RoomStoryState {
     RoomStoryState(Dependencies dependencies) {
         this.dependencies = dependencies;
         roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(
-                dependencies.entityBridge(), dependencies.followers(), dependencies.location()));
+                dependencies.entityRuntimeState(), dependencies.followers(), dependencies.location()));
         roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
                 dependencies.chestContentsTable(),
                 dependencies.colorShellWorld(),
                 dependencies.enemyCombatTables(),
                 dependencies.entityBackgroundInteraction(),
-                dependencies.entityBridge(),
+                dependencies.entityRuntimeState(),
                 dependencies.entityInputs(),
                 dependencies.entityRandomByteSource(),
                 dependencies.entitySpriteHandlerCatalog(),
@@ -48,7 +48,7 @@ final class RoomStoryState {
                 dependencies.roomLoadCoordinator(),
                 dependencies.roomSessionViews(),
                 dependencies.roomState(),
-                () -> this));
+                this));
     }
 
     boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
@@ -65,8 +65,8 @@ final class RoomStoryState {
 
     void setTailKeyOwned(boolean owned) {
         dependencies.followers().hasTailKey = owned;
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies.entityBridge().get().entityRuntime.configuration().setTailKeyOwned(owned);
+        if (dependencies.entityRuntimeState().runtime != null) {
+            dependencies.entityRuntimeState().runtime.configuration().setTailKeyOwned(owned);
         }
     }
 
@@ -106,17 +106,15 @@ final class RoomStoryState {
     void restoreRoomStatuses(
             byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
         dependencies.roomState().restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
-        if (dependencies.entityBridge().get().entityRuntime != null && dependencies.location().activeRoom != null) {
+        if (dependencies.entityRuntimeState().runtime != null && dependencies.location().activeRoom != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setTailKeyOwned(dependencies.followers().hasTailKey);
         }
@@ -156,8 +154,8 @@ final class RoomStoryState {
             throw new IllegalArgumentException("BowWow state must be an unsigned byte");
         }
         dependencies.followers().bowWowState = state;
-        if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies.entityBridge().get().entityRuntime.configuration().setBowWowState(state);
+        if (dependencies.entityRuntimeState().runtime != null) {
+            dependencies.entityRuntimeState().runtime.configuration().setBowWowState(state);
         }
     }
 
@@ -191,11 +189,10 @@ final class RoomStoryState {
         dependencies.followers().playerSwordLevel = swordLevel;
         dependencies.followers().playerBraceletLevel = powerBraceletLevel;
         configureHouseNpcStoryState();
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
             if (dependencies.location().activeRoom != null) {
@@ -203,9 +200,8 @@ final class RoomStoryState {
                         .location()
                         .activeRoom
                         .replaceEntities(dependencies
-                                .entityBridge()
-                                .get()
-                                .entityRuntime
+                                .entityRuntimeState()
+                                .runtime
                                 .inspection()
                                 .view());
             }
@@ -219,11 +215,10 @@ final class RoomStoryState {
     }
 
     void configureHouseNpcStoryState() {
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setHouseNpcStoryState(
                             dependencies.followers().tarinFlag,
@@ -242,11 +237,10 @@ final class RoomStoryState {
     }
 
     void updateWitchEnvironment() {
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
-                    .entityBridge()
-                    .get()
-                    .entityRuntime
+                    .entityRuntimeState()
+                    .runtime
                     .configuration()
                     .setWitchEnvironment(
                             dependencies.indoorTorchPaletteEffect().effectAddress(),
@@ -303,7 +297,7 @@ final class RoomStoryState {
             ColorShellWorld colorShellWorld,
             RomEnemyCombatTables enemyCombatTables,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
@@ -328,7 +322,7 @@ final class RoomStoryState {
             java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
             java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");

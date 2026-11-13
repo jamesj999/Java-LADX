@@ -13,8 +13,8 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     public boolean inBossBattle() {
-        return dependencies.entityBridge().entityRuntime != null
-                && dependencies.entityBridge().entityRuntime.inspection().inBossBattle();
+        return dependencies.entityBridge().runtime() != null
+                && dependencies.entityBridge().runtime().inspection().inBossBattle();
     }
 
     public EntityPickupEvent collectEntityIfNeeded(

@@ -38,7 +38,7 @@ final class RoomActiveRoomInitializer {
         RoomEntitySnapshot entities = prepareEntities(room, objectPalettes);
         dependencies.location().activeRoom = ActiveRoom.from(room, entities);
         configureDoorAndEventState();
-        dependencies.entityBridge().get().entityRuntime = entities == null
+        dependencies.entityRuntimeState().runtime = entities == null
                 ? null
                 : RoomEntityRuntime.builder(entities)
                         .indoorRoom(dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD)
@@ -49,7 +49,7 @@ final class RoomActiveRoomInitializer {
                         .romTables(dependencies.romTables())
                         .rom(dependencies.romData())
                         .build();
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             configureRuntimeWorld();
             configureRuntimeInputs();
             configureRuntimeProgress();
@@ -66,7 +66,7 @@ final class RoomActiveRoomInitializer {
             ColorShellWorld colorShellWorld,
             RomEnemyCombatTables enemyCombatTables,
             RoomEntityBackgroundInteraction entityBackgroundInteraction,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
@@ -90,7 +90,7 @@ final class RoomActiveRoomInitializer {
             java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
             java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
@@ -172,7 +172,7 @@ final class RoomActiveRoomInitializer {
     }
 
     private void configureRuntimeWorld() {
-        var configuration = dependencies.entityBridge().get().entityRuntime.configuration();
+        var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setBooBuddyTriggerCount(dependencies.puzzles().roomTriggerCount);
         configuration.setColorShellWorld(dependencies.colorShellWorld());
@@ -186,7 +186,7 @@ final class RoomActiveRoomInitializer {
     }
 
     private void configureRuntimeInputs() {
-        var configuration = dependencies.entityBridge().get().entityRuntime.configuration();
+        var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setObjectQuery(dependencies.roomCollisionQueries().get()::entityObjectSample);
         configuration.setObjectIntersectionQuery(
@@ -207,7 +207,7 @@ final class RoomActiveRoomInitializer {
     }
 
     private void configureRuntimeProgress() {
-        var configuration = dependencies.entityBridge().get().entityRuntime.configuration();
+        var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
         configuration.setLiftedLinkC13B(dependencies.followers().followingEntityYOffset);
         configuration.setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());

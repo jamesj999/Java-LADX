@@ -99,8 +99,7 @@ final class RoomTransitionController {
         dependencies.roomLoadCoordinator().get().loadOverworld(nextRoomId, true);
         if (discoveredTailKeyRoom) {
             dependencies
-                    .entityBridge()
-                    .get()
+                    .entityRuntimeState()
                     .outbox
                     .pendingRoomEntityEvents
                     .add(new EntityCombatEvent(
@@ -121,8 +120,7 @@ final class RoomTransitionController {
                 previousRoom,
                 RoomInteractionGeometry.scrollTarget(ScrollController.UP));
         dependencies
-                .entityBridge()
-                .get()
+                .entityRuntimeState()
                 .outbox
                 .pendingRoomEntityEvents
                 .add(new EntityCombatEvent(0, ENTITY_TARIN, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1E));
@@ -162,7 +160,7 @@ final class RoomTransitionController {
             throw new IllegalArgumentException("Selected Ocarina song must be an unsigned byte: " + selectedSong);
         }
         if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null
+                || dependencies.entityRuntimeState().runtime == null
                 || dependencies.items().ocarinaPlaybackCountdown != 0) {
             return false;
         }
@@ -221,8 +219,7 @@ final class RoomTransitionController {
                 dependencies.items().pendingManboTransition = true;
             } else if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 dependencies
-                        .entityBridge()
-                        .get()
+                        .entityRuntimeState()
                         .outbox
                         .pendingRoomDialogRequests
                         .add(new DialogRequest(OCARINA_MARIN_DIALOG_TABLE, OCARINA_MARIN_DIALOG_ID));
@@ -231,8 +228,7 @@ final class RoomTransitionController {
         }
         if (dependencies.items().ocarinaSongFlags == 0) {
             dependencies
-                    .entityBridge()
-                    .get()
+                    .entityRuntimeState()
                     .outbox
                     .pendingRoomDialogRequests
                     .add(new DialogRequest(OCARINA_NO_SONG_DIALOG_TABLE, OCARINA_NO_SONG_DIALOG_ID));
@@ -307,7 +303,7 @@ final class RoomTransitionController {
             RoomItemUseState items,
             RoomLocationState location,
             RoomPuzzleState puzzles,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             GPU gpu,
             ManboWarpResolver manboWarpResolver,
             Rom romData,
@@ -322,7 +318,7 @@ final class RoomTransitionController {
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(gpu, "gpu");
             java.util.Objects.requireNonNull(manboWarpResolver, "manboWarpResolver");
             java.util.Objects.requireNonNull(romData, "romData");

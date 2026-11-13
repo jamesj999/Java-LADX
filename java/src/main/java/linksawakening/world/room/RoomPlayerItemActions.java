@@ -12,7 +12,7 @@ final class RoomPlayerItemActions {
     RoomPlayerItemActions(Dependencies dependencies) {
         this.dependencies = dependencies;
         roomShovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
-                dependencies.entityBridge(),
+                dependencies.entityRuntimeState(),
                 dependencies.followers(),
                 dependencies.items(),
                 dependencies.location(),
@@ -26,13 +26,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         boolean thrown = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .throwLiftedEntity(RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
             publishEntityView();
@@ -50,13 +49,12 @@ final class RoomPlayerItemActions {
         if (linkAirborne
                 || linkPushing
                 || dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+                || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -66,14 +64,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
         if (slot < 0) {
             return false;
@@ -83,14 +79,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -108,14 +102,12 @@ final class RoomPlayerItemActions {
 
     boolean fireMagicRodFireball(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return false;
@@ -125,14 +117,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -162,14 +152,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -179,8 +167,8 @@ final class RoomPlayerItemActions {
     }
 
     boolean lastBombPlacementPlayedBump() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().lastBombPlacementPlayedBump();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().lastBombPlacementPlayedBump();
     }
 
     boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
@@ -200,62 +188,56 @@ final class RoomPlayerItemActions {
 
     ArrowShotResult shootArrowResult(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return new ArrowShotResult(false, false);
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }
         boolean playWhoosh =
-                dependencies.entityBridge().get().entityRuntime.inspection().lastArrowShotPlayedWhoosh();
+                dependencies.entityRuntimeState().runtime.inspection().lastArrowShotPlayedWhoosh();
         publishEntityView();
         return new ArrowShotResult(true, playWhoosh);
     }
 
     int activeProjectileCount() {
-        return dependencies.entityBridge().get().entityRuntime == null
+        return dependencies.entityRuntimeState().runtime == null
                 ? 0
-                : dependencies.entityBridge().get().entityRuntime.inspection().activeProjectileCount();
+                : dependencies.entityRuntimeState().runtime.inspection().activeProjectileCount();
     }
 
     boolean bombActive() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().bombActive();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().bombActive();
     }
 
     boolean hookshotActive() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().hookshotActive();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().hookshotActive();
     }
 
     boolean boomerangActive() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().boomerangActive();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().boomerangActive();
     }
 
     private void publishEntityView() {
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityRuntimeState().runtime.inspection().view());
     }
 
     record Dependencies(
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             RomTables romTables,
@@ -267,7 +249,7 @@ final class RoomPlayerItemActions {
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romTables, "romTables");

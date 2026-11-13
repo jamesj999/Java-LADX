@@ -21,7 +21,7 @@ final class RoomChestInteractions {
         if (!actionPressed
                 || linkDirection != Direction.UP
                 || dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+                || dependencies.entityRuntimeState().runtime == null) {
             return new ChestOpenResult(false, -1, -1, -1);
         }
         if (linkPixelX < 0 || linkPixelY < 0 || linkPixelX >= ROOM_PIXEL_WIDTH || linkPixelY >= ROOM_PIXEL_HEIGHT) {
@@ -48,7 +48,7 @@ final class RoomChestInteractions {
                         dependencies.location().activeRoom.roomId(),
                         swordLevel,
                         dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD);
-        int slot = dependencies.entityBridge().get().entityRuntime.spawnChestWithItem(column << 4, row << 4, itemType);
+        int slot = dependencies.entityRuntimeState().runtime.spawnChestWithItem(column << 4, row << 4, itemType);
         if (slot < 0) {
             return new ChestOpenResult(false, -1, -1, location);
         }
@@ -79,18 +79,14 @@ final class RoomChestInteractions {
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityRuntimeState().runtime.inspection().view());
         return new ChestOpenResult(true, itemType, slot, location);
     }
 
     record Dependencies(
             ChestContentsTable chestContentsTable,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntityFrameState entityRuntimeState,
             RoomLocationState location,
             OverworldCollision overworldCollision,
             Rom romData,
@@ -100,7 +96,7 @@ final class RoomChestInteractions {
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
         Dependencies {
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romData, "romData");
