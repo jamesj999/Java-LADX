@@ -393,3 +393,11 @@ Optional snapshot scroll/upload values remain nullable at the existing render bo
 Intentional optional values retained: Swing selections, resource/property/map lookup results, exception/cleanup diagnostics, save destinations/backups, alternate sprite definitions, palette rows in legacy frame snapshots, and externally consumed event results. These are domain data rather than services. Save persistence and diagnostic failure state have named predicates; field/record documentation identifies absence. Standard-library query results and argument validation remain checked locally, preserving exception and fallback behavior.
 
 Validation: 2,967 tests, zero failures. Added absence-versus-empty scroll checks and room bind/unbind checks; existing scene, sprite, VFX retention and save tests unchanged.
+
+## Step 5: explicit no-result protocols
+
+Null comparisons: **131 → 90**. Sprite registration families return a shared `NO_MATCH`, distinct from a matched-but-unsupported entity. The private duplicate room-table check is removed. Empty inventory slots contain `EquipmentItem.none()`; owned callers use `ItemRegistry.item()` and no longer branch around missing handlers. Nullable `lookup()` and `activeSword()` remain thin external adapters. Resource sounds use a pending bit without adding an enum member that would break external exhaustive switches. Normal-pit queries return an explicit absent `PitCell` with `present()`; the only caller is owned Link motion.
+
+The final audit also removed impossible tile-null checks: Link/sword sheets populate every tile; signed background indices are always 128–383 and VRAM constructs all 384 tiles. The music-name null check was unreachable after rejecting id zero. Palette validation now precedes copying, removing its duplicate row-null branch. HUD and tile-plane absence normalize once to named no-attribute arrays.
+
+Validation: 2,970 tests, zero failures. Added checks distinguish unmatched from explicitly unsupported recipes and verify empty equipment/unregistration semantics. All former assertions remain.

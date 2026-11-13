@@ -4,25 +4,34 @@ import java.util.function.Function;
 
 /** Last ROM resource sound write awaiting presentation. */
 public final class PlayerSounds {
-    private ResourceSound pending;
+    // The presence bit is independent of the last ROM sound byte; no new enum value changes switches.
+    private ResourceSound pending = ResourceSound.RUPEE;
+    private boolean pendingSound;
+
+    public boolean hasPendingSound() {
+        return pendingSound;
+    }
 
     void write(ResourceSound sound) {
         pending = sound;
+        pendingSound = true;
     }
 
     void clear() {
-        pending = null;
+        pendingSound = false;
     }
 
     public ResourceSound takeResourceSound() {
-        ResourceSound sound = pending;
-        pending = null;
+        ResourceSound sound = pendingSound ? pending : null;
+        pendingSound = false;
         return sound;
     }
 
     /** Consumes the pending sound and maps it at the presentation boundary; no request yields null. */
     public <T> T takeResourceSound(Function<ResourceSound, T> presentation) {
-        ResourceSound sound = takeResourceSound();
-        return sound == null ? null : presentation.apply(sound);
+        if (!pendingSound) return null;
+        ResourceSound sound = pending;
+        pendingSound = false;
+        return presentation.apply(sound);
     }
 }

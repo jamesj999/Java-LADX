@@ -172,7 +172,7 @@ final class LinkMotion {
                 linkAirborne.get().elevation().airborne(false);
                 linkDamage.get().collisionIgnoreFramesRemaining = 0;
                 linkServices.get().playerState.vitals().setInvincibilityCounter(0);
-                if (linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
+                if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
                         instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
                 linkServices.get().soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
             }
@@ -204,7 +204,7 @@ final class LinkMotion {
                 blocked = true;
                 // ApplyCollisionWithSolid $02:72FA-7338: holding the sword
                 // follows its poke path; a raised shield suppresses the write.
-                var sword = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
+                var sword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
                 boolean swordHolding = sword instanceof linksawakening.equipment.Sword blade
                         && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
                 boolean running =

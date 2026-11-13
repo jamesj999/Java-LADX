@@ -9,9 +9,6 @@ final class ItemSpriteRenderer {
 
     static void drawTile(
             byte[] buffer, Tile tile, int screenX, int screenY, boolean flipX, boolean flipY, int[] palette) {
-        if (tile == null) {
-            return;
-        }
         for (int ty = 0; ty < 8; ty++) {
             for (int tx = 0; tx < 8; tx++) {
                 int px = screenX + tx;

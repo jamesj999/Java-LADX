@@ -128,7 +128,7 @@ final class LinkSwimming {
     }
 
     void updateRecover() {
-        if (linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
+        if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
                 instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         linkMotion.get().position().lastRomSpeedX(linkMotion.get().position().lastRomSpeedY(0));
         linkAnimationState.get().movingThisFrame = false;

@@ -30,9 +30,6 @@ final class LinkSpriteComposer {
 
     static void drawTile(
             byte[] buffer, Tile tile, int screenX, int screenY, boolean flipX, boolean flipY, int[] palette) {
-        if (tile == null) {
-            return;
-        }
         for (int ty = 0; ty < 8; ty++) {
             for (int tx = 0; tx < 8; tx++) {
                 int px = screenX + tx;
@@ -112,8 +109,8 @@ final class LinkSpriteComposer {
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemA());
-        if (a != null) {
+                .item(linkServices.get().playerState.inventory().itemA());
+        {
             a.render(
                     displayBuffer,
                     linkMotion.get().position().pixelX(),
@@ -125,8 +122,8 @@ final class LinkSpriteComposer {
         EquipmentItem b = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemB());
-        if (b != null && b != a) {
+                .item(linkServices.get().playerState.inventory().itemB());
+        if (b != a) {
             b.render(
                     displayBuffer,
                     linkMotion.get().position().pixelX(),
@@ -140,8 +137,8 @@ final class LinkSpriteComposer {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
-            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
+            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
+            if (acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.render(
                         displayBuffer,
                         linkMotion.get().position().pixelX(),
@@ -219,8 +216,8 @@ final class LinkSpriteComposer {
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemA());
-        if (a != null) {
+                .item(linkServices.get().playerState.inventory().itemA());
+        {
             a.submitOam(
                     sink,
                     linkMotion.get().position().pixelX(),
@@ -232,8 +229,8 @@ final class LinkSpriteComposer {
         EquipmentItem b = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemB());
-        if (b != null && b != a) {
+                .item(linkServices.get().playerState.inventory().itemB());
+        if (b != a) {
             b.submitOam(
                     sink,
                     linkMotion.get().position().pixelX(),
@@ -247,8 +244,8 @@ final class LinkSpriteComposer {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
-            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
+            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
+            if (acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.submitOam(
                         sink,
                         linkMotion.get().position().pixelX(),

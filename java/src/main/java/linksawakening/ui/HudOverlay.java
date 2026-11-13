@@ -1,10 +1,12 @@
 package linksawakening.ui;
 
+import java.util.Objects;
 import linksawakening.state.PlayerState;
 
 /** Applies InventoryItemTiles and live player quantities to the two HUD tile rows. */
 // Item IDs remain raw saved bytes so unknown inventory values preserve the HUD fallback.
 public final class HudOverlay {
+    private static final int[] NO_ATTRIBUTES = new int[0];
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;
 
@@ -40,10 +42,11 @@ public final class HudOverlay {
     private HudOverlay() {}
 
     public static void apply(int[] tilemap, PlayerState player) {
-        apply(tilemap, null, player);
+        apply(tilemap, NO_ATTRIBUTES, player);
     }
 
     public static void apply(int[] tilemap, int[] attrmap, PlayerState player) {
+        attrmap = Objects.requireNonNullElse(attrmap, NO_ATTRIBUTES);
         patchItemSlot(tilemap, attrmap, B_SLOT_COL, player.inventory().itemB(), player);
         patchItemSlot(tilemap, attrmap, A_SLOT_COL, player.inventory().itemA(), player);
         patchRupees(tilemap, player.wallet().rupees());
@@ -106,9 +109,6 @@ public final class HudOverlay {
     }
 
     private static void writePalette(int[] attrmap, int col, int row, int paletteIndex) {
-        if (attrmap == null) {
-            return;
-        }
         int index = row * WIDTH + col;
         if (index >= 0 && index < attrmap.length) {
             attrmap[index] = (attrmap[index] & ~ATTR_PALETTE_MASK) | (paletteIndex & ATTR_PALETTE_MASK);

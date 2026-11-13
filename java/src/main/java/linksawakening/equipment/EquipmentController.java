@@ -63,10 +63,7 @@ public final class EquipmentController {
     }
 
     private void dispatchButtonEdges(int glfwKey, int inventoryId) {
-        EquipmentItem item = itemRegistry.lookup(inventoryId);
-        if (item == null) {
-            return;
-        }
+        EquipmentItem item = itemRegistry.item(inventoryId);
         if (inputState.wasPressed(glfwKey)) {
             item.onPress();
         }

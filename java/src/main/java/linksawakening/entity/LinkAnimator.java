@@ -170,9 +170,7 @@ final class LinkAnimator {
     }
 
     int queryOverride(EquipmentItem item) {
-        if (item == null) {
-            return -1;
-        }
+
         return item.overrideAnimationState(
                 linkAnimationState.get().direction.javaIndex(), linkAnimationState.get().walkFrame);
     }

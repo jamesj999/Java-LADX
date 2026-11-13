@@ -17,12 +17,12 @@ public final class LinkTunicPalette {
         if (objectPalettes == null || objectPalettes.length <= BLUE_OBJECT_PALETTE) {
             throw new IllegalArgumentException("ROM object palette rows are incomplete");
         }
-        this.objectPalettes = clonePalettes(objectPalettes);
-        for (int[] palette : this.objectPalettes) {
+        for (int[] palette : objectPalettes) {
             if (palette == null || palette.length != 4) {
                 throw new IllegalArgumentException("ROM object palettes must contain four colors");
             }
         }
+        this.objectPalettes = clonePalettes(objectPalettes);
     }
 
     /** Loads {@code ObjectPalettes} through the existing ROM palette decoder. */
@@ -65,7 +65,7 @@ public final class LinkTunicPalette {
     private static int[][] clonePalettes(int[][] source) {
         int[][] copy = new int[source.length][];
         for (int i = 0; i < source.length; i++) {
-            copy[i] = source[i] == null ? null : Arrays.copyOf(source[i], source[i].length);
+            copy[i] = Arrays.copyOf(source[i], source[i].length);
         }
         return copy;
     }

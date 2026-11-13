@@ -9,6 +9,13 @@ record EntitySpriteRecipe(
         int spriteCount,
         int initialVariant,
         EntitySpriteDefinition.DynamicSprite.TileSource tileSource) {
+    /** A registration family did not recognize this entity; continue to the next family. */
+    static final EntitySpriteRecipe NO_MATCH = special(Kind.UNSUPPORTED, -1);
+
+    boolean matched() {
+        return this != NO_MATCH;
+    }
+
     enum Kind {
         PAIR,
         SINGLE,

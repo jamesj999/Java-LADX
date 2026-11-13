@@ -42,7 +42,13 @@ public final class OverworldCollision {
      * Java top-left sprite position that aligns Link's ROM-style center/bottom
      * sample point with the pit cell's center/bottom target.
      */
-    public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {}
+    public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {
+        private static final PitCell NONE = new PitCell(0, 0, PhysicsFlags.NONE);
+
+        public boolean present() {
+            return this != NONE;
+        }
+    }
 
     /** The complete padded-buffer sample used by entity ground interaction. */
     public record GroundInteractionSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {}
@@ -201,12 +207,12 @@ public final class OverworldCollision {
         int cellX = cellCoordinate(linkPixelX + 8);
         int cellY = cellCoordinate(linkPixelY + 12);
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
-            return null;
+            return PitCell.NONE;
         }
         int objectId = objectIdAtCell(cellX, cellY);
         int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         if (flag != 0x50 && flag != 0x51) {
-            return null;
+            return PitCell.NONE;
         }
         return new PitCell(cellX * CELL_SIZE, cellY * CELL_SIZE, flag);
     }

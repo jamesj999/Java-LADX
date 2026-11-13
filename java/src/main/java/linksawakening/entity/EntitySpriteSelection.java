@@ -12,6 +12,7 @@ public final class EntitySpriteSelection {
     private final int groupIndex;
     private final int[] sheetValues;
     private final boolean standardSheets;
+    // Optional room palette override; absent sets/rows inherit the renderer palette selection.
     private final int[][] objectPalettes;
     private final Map<Integer, EntitySpriteDefinition> spriteOverrides;
     private final Map<Integer, EntitySpriteDefinition> spriteOverlays;

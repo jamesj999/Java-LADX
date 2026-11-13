@@ -115,7 +115,7 @@ final class LinkPitFall {
                     .normalPitUnderLink(
                             linkMotion.get().position().pixelX(),
                             linkMotion.get().position().pixelY());
-            if (pit != null) {
+            if (pit.present()) {
                 pitSlipTargetTopLeftX = pit.targetTopLeftX();
                 pitSlipTargetTopLeftY = pit.targetTopLeftY();
                 pitSlipPhysicsFlag = pit.physicsFlag();

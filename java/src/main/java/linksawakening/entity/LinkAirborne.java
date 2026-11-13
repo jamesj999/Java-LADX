@@ -229,7 +229,7 @@ final class LinkAirborne {
 
     boolean swordSuppressesJumpAnimation() {
 
-        EquipmentItem item = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
+        EquipmentItem item = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
         return item instanceof linksawakening.equipment.Sword sword && sword.suppressesJumpAnimation();
     }
 
@@ -317,7 +317,7 @@ final class LinkAirborne {
         // ApplyGotItem caches body Y before func_21E1 updates Z; the held OAM
         // entry uses the updated Z. Preserve the fractional position at ground.
         linkAnimator.get().bedJumpRenderZ(accessZPixels());
-        if (linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
+        if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
                 instanceof linksawakening.equipment.Sword sword) {
             sword.resetSpinAttack();
         }
