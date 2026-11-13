@@ -20,32 +20,32 @@ final class RichardBehavior {
     }
 
     static void enableBowWowFollowing(EntityStoryController owner) {
-        var runtime = owner.runtime;
-        runtime.motions()
+        var runtime = owner;
+        runtime.motions
                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                 .writeFollowingNpcState(new FollowingNpcState(
-                        runtime.motions()
+                        runtime.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .roosterFollowing(),
-                        runtime.motions()
+                        runtime.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .ghostFollowingState(),
-                        runtime.motions()
+                        runtime.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .marinFollowing(),
                         true,
-                        runtime.motions()
+                        runtime.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .instrument4Flags(),
-                        runtime.motions()
+                        runtime.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .powerBraceletLevel(),
-                        runtime.motions()
+                        runtime.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .db10()));

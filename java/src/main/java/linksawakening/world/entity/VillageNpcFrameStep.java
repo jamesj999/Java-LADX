@@ -15,7 +15,7 @@ final class VillageNpcFrameStep {
     private int frame;
     private int linkX;
     private int linkY;
-    private linksawakening.world.entity.EntityStoryControllerServices runtime;
+    private linksawakening.world.entity.EntityStoryController runtime;
     private int slot;
     private int z;
     private boolean landed;
@@ -31,11 +31,11 @@ final class VillageNpcFrameStep {
 
     private boolean advanceKidMotion() {
 
-        runtime = owner.runtime;
+        runtime = owner;
         slot = entity.slot();
         if (owner.readKidBall(slot)) {
             if (owner.preKidPlayTimer(slot, -1) <= 0) {
-                runtime.slots()[slot] = withStatus(entity, EntityStatus.DISABLED);
+                runtime.slots[slot] = withStatus(entity, EntityStatus.DISABLED);
                 owner.writeKidBall(slot, false);
                 return false;
             }
@@ -43,18 +43,18 @@ final class VillageNpcFrameStep {
                     entity.x(), owner.readKidPlayState(slot), owner.storageKidSpeedXAccumulator(), slot);
             int z = addFallingSpeedToPosition(
                     entity.z(), owner.postKidZSpeed(slot, -1) & 255, owner.storageKidSpeedYAccumulator(), slot);
-            runtime.slots()[slot] = withZ(withPositionAndVariant(entity, x, entity.y(), 0), z);
+            runtime.slots[slot] = withZ(withPositionAndVariant(entity, x, entity.y(), 0), z);
             return false;
         }
-        if (runtime.motions().get(BowWowMotion.class, BowWowMotion::new).readBowWowState() == 0x80) {
+        if (runtime.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() == 0x80) {
             owner.advanceKidnapWarningKid(entity, frame, linkX, linkY);
             return false;
         }
         owner.pushLinkFromKid(entity, linkX, linkY);
-        if (runtime.spriteHandlers() != null)
+        if (runtime.spriteHandlers != null)
             entity = withDefinition(
                     entity,
-                    runtime.spriteViews().forKidPlaying(),
+                    runtime.spriteViews.forKidPlaying(),
                     (entity.type() == 0x71 ? 2 : 0) | (owner.readKidPlayState(slot) == 1 ? 1 : 0));
         z = addFallingSpeedToPosition(
                 entity.z(), owner.postKidZSpeed(slot, -1) & 255, owner.storageKidSpeedYAccumulator(), slot);
@@ -63,7 +63,7 @@ final class VillageNpcFrameStep {
             z = 0;
             owner.writeKidZSpeed(slot, 0);
         }
-        runtime.slots()[slot] = withZ(entity, z);
+        runtime.slots[slot] = withZ(entity, z);
         timer = owner.readKidPlayTimer(slot);
         if (timer > 0) timer--;
         return true;
@@ -75,10 +75,11 @@ final class VillageNpcFrameStep {
             if (owner.readKidPlayState(slot) == 0) {
                 owner.writeKidPlayState(slot, 1);
                 timer = 0x80;
-                int ball = runtime.findFreeEntitySlot();
-                if (ball >= 0 && runtime.spriteHandlers() != null) {
-                    var definition = runtime.spriteViews().forKidBall();
-                    runtime.slots()[ball] = new RoomEntity(
+                int ball =
+                        EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+                if (ball >= 0 && runtime.spriteHandlers != null) {
+                    var definition = runtime.spriteViews.forKidBall();
+                    runtime.slots[ball] = new RoomEntity(
                             ball,
                             -1,
                             0x71,
@@ -92,25 +93,25 @@ final class VillageNpcFrameStep {
                             0,
                             -1,
                             false);
-                    runtime.initializeHealthGroup(ball);
-                    runtime.physicsTables().writeEnemyPhysicsFlags(ball, ENTITY_PHYSICS_HARMLESS);
-                    runtime.combatTables().writeEnemyHitboxFlags(ball, 0);
-                    runtime.physicsTables()
-                            .writeEntityOptions1Override(ball, EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION);
+                    runtime.lifecycle.initializeHealthGroup(ball);
+                    runtime.physicsTables.writeEnemyPhysicsFlags(ball, ENTITY_PHYSICS_HARMLESS);
+                    runtime.combatTables.writeEnemyHitboxFlags(ball, 0);
+                    runtime.physicsTables.writeEntityOptions1Override(
+                            ball, EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION);
                     owner.writeKidBall(ball, true);
                     owner.writeKidPlayTimer(ball, 0x24);
                     owner.writeKidPlayState(ball, entity.type() == 0x71 ? 0x14 : 0xEC);
                     owner.writeKidZSpeed(ball, 0x10);
                     owner.writeKidSpeedXAccumulator(ball, 0);
                     owner.writeKidSpeedYAccumulator(ball, 0);
-                    runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(ball, true);
+                    runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(ball, true);
                 }
             } else {
                 owner.writeKidPlayState(slot, 0);
                 timer = 0x60;
             }
         } else if (owner.readKidPlayState(slot) == 1 && timer < 0x60) {
-            runtime.slots()[slot] = withVariant(runtime.slots()[slot], entity.type() == 0x71 ? 2 : 0);
+            runtime.slots[slot] = withVariant(runtime.slots[slot], entity.type() == 0x71 ? 2 : 0);
             if (timer < 0x40 && landed) owner.writeKidZSpeed(slot, 8);
         }
         owner.writeKidPlayTimer(slot, timer);
@@ -119,17 +120,17 @@ final class VillageNpcFrameStep {
 
     private boolean openKidDialog() {
 
-        if (runtime.linkState().actionButtonAHeld
-                && !runtime.linkState().dialogActive
-                && runtime.linkState().dialogCooldown == 0
-                && !runtime.linkState().inventoryAppearing
-                && runtime.linkState().windowY == 0x80
+        if (runtime.linkState.actionButtonAHeld
+                && !runtime.linkState.dialogActive
+                && runtime.linkState.dialogCooldown == 0
+                && !runtime.linkState.inventoryAppearing
+                && runtime.linkState.windowY == 0x80
                 && Math.abs(signedByte(linkX - entity.x())) < 0x10
                 && Math.abs(signedByte(linkY - entity.y())) < 0x14) {
-            int dialog = (runtime.roomVariables().readInstrument1Flags() & 2) == 0
+            int dialog = (runtime.roomVariables.readInstrument1Flags() & 2) == 0
                     ? 0x18 + (owner.postKidHintIndex(1) & 3)
                     : 0x1C + entity.type() - 0x70;
-            runtime.events().pendingDialogRequests.add(new DialogRequest(1, dialog));
+            runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialog));
         }
         return true;
     }

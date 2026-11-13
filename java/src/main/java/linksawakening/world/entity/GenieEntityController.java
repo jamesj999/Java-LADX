@@ -32,10 +32,38 @@ public final class GenieEntityController {
     int genieSharedBodySpeedX;
     int genieSharedBodySpeedY;
 
-    final GenieEntityControllerServices runtime;
+    final EntityBossRewards bossRewards;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityLiftThrowController liftThrow;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityPlayerSpawns entityPlayerSpawns;
+    final EntitySlotLifecycle lifecycle;
+    final EntitySlotProperties slotProperties;
+    final RoomEntity[] slots;
 
-    GenieEntityController(GenieEntityControllerServices runtime) {
-        this.runtime = runtime;
+    GenieEntityController(
+            EntityBossRewards bossRewards,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityLiftThrowController liftThrow,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityPlayerSpawns entityPlayerSpawns,
+            EntitySlotLifecycle lifecycle,
+            EntitySlotProperties slotProperties,
+            RoomEntity[] slots) {
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.entityPlayerSpawns = java.util.Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
     }
 
     public void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) {
@@ -86,10 +114,10 @@ public final class GenieEntityController {
         int z = addFallingSpeedToPosition(fireball.z(), genieSpeedZ[slot], genieSpeedZAccumulator, slot);
         genieSpeedZ[slot] = (genieSpeedZ[slot] - 2) & 0xFF;
         if ((z & 0x80) != 0) {
-            runtime.lifecycle().disableEntityWithoutPersistence(slot);
+            this.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        runtime.slots()[slot] = withZ(withPositionAndVariant(fireball, x, y, (frameCounter >>> 3) & 1), z);
+        this.slots[slot] = withZ(withPositionAndVariant(fireball, x, y, (frameCounter >>> 3) & 1), z);
     }
 
     int spawnGenieBody(GenieMotion.BodySpawnRequest request) {

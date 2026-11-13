@@ -24,46 +24,81 @@ public final class EntityBombInteractions {
     private int bombArrowCooldown;
     private int latestDroppedBombEntityIndex = -1;
     private boolean lastBombPlacementPlayedBump;
-    final EntityBombInteractionsServices runtime;
+    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
+    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final EntityBackgroundMechanics backgroundMechanics;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityLiftThrowController liftThrow;
+    final EntityLinkState linkState;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntitySlotProperties slotProperties;
+    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
+    final RomEnemyCombatTables enemyCombatTables;
+    final RoomEntity[] slots;
+    final EntitySlotLifecycle lifecycle;
 
-    EntityBombInteractions(EntityBombInteractionsServices runtime) {
-        this.runtime = runtime;
+    EntityBombInteractions(
+            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            EntityBackgroundMechanics backgroundMechanics,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityLiftThrowController liftThrow,
+            EntityLinkState linkState,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntitySlotProperties slotProperties,
+            RomEnemyCombatTables enemyCombatTables,
+            RoomEntity[] slots,
+            EntitySlotLifecycle lifecycle) {
+        this.spriteHandlers = spriteHandlers;
+        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.enemyCombatTables = enemyCombatTables;
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
     }
 
     void applyInitialBombArrowCandidateState(int slot, int romDirection) {
-        int x = runtime.slots()[slot].x() + bombArrowXOffset(romDirection);
-        int y = runtime.slots()[slot].y() + bombArrowYOffset(romDirection);
-        runtime.slots()[slot] =
-                withPositionAndVariant(runtime.slots()[slot], x, y, runtime.slots()[slot].spriteVariant());
+        int x = this.slots[slot].x() + bombArrowXOffset(romDirection);
+        int y = this.slots[slot].y() + bombArrowYOffset(romDirection);
+        this.slots[slot] = withPositionAndVariant(this.slots[slot], x, y, this.slots[slot].spriteVariant());
         this.writeBombPrivateCountdown3(slot, 0x03);
-        this.writeLastBombPlacementPlayedBump(!runtime.physicsTables().readGroundInteractionSideScrolling());
-        if (runtime.physicsTables().readGroundInteractionSideScrolling()) {
-            runtime.slots()[slot] = withZ(runtime.slots()[slot], 0);
+        this.writeLastBombPlacementPlayedBump(!this.physicsTables.readGroundInteractionSideScrolling());
+        if (this.physicsTables.readGroundInteractionSideScrolling()) {
+            this.slots[slot] = withZ(this.slots[slot], 0);
         }
         // ConvertToBombArrowIfNeeded zeros speeds, but BombEntityHandler
         // must still run gravity and floor contact on subsequent frames.
-        runtime.motions().get(ThrownEntityMotion.class, ThrownEntityMotion::new).startEnemyBomb(slot, 0, 0, 0);
+        this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).startEnemyBomb(slot, 0, 0, 0);
         // Keep the placed-bomb bridge from restoring directional launch speed.
         this.writePlacedBombMotionInitialized(slot, true);
     }
 
     void markArrowAsBombArrow(int slot) {
         this.writePlayerArrowBombArrow(slot, true);
-        RoomEntity arrow = runtime.slots()[slot];
-        if (runtime.spriteHandlers() != null && arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
-            runtime.slots()[slot] = withDefinition(
+        RoomEntity arrow = this.slots[slot];
+        if (this.spriteHandlers != null && arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
+            this.slots[slot] = withDefinition(
                     arrow,
-                    runtime.slotProperties().spriteViews().forBombArrow(),
-                    runtime.motions()
+                    this.slotProperties.spriteViews().forBombArrow(),
+                    this.motions
                             .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
                             .direction(slot));
         }
     }
 
     void finalizePendingBombPresentations() {
-        for (int slot = 0; slot < runtime.slots().length; slot++) {
+        for (int slot = 0; slot < this.slots.length; slot++) {
             if (bombFinalPresentationPending(slot)) {
-                runtime.clearEntity(slot);
+                this.lifecycle.clearEntity(slot);
             }
         }
     }

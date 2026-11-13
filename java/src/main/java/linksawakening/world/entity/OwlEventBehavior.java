@@ -21,9 +21,9 @@ final class OwlEventBehavior {
     }
 
     static void advanceDepartingOwl(EntityStoryController owner, RoomEntity entity, int slot, int frameCounter) {
-        var runtime = owner.runtime;
+        var runtime = owner;
         runtime.blockLinkForOwl(slot);
-        RoomEntity flying = runtime.roomInspection().owlPresentation(entity, frameCounter);
+        RoomEntity flying = runtime.roomInspection.owlPresentation(entity, frameCounter);
         int x = addFallingSpeedToPosition(
                 flying.x(),
                 owner.owlState().readOwlSpeedX(slot),
@@ -39,20 +39,17 @@ final class OwlEventBehavior {
                 owner.owlState().readOwlSpeedZ(slot),
                 owner.owlState().storageOwlZAccumulator(),
                 slot);
-        runtime.slots()[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
+        runtime.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
         if ((frameCounter & 0x07) == 0) {
-            runtime.events()
-                    .pendingEntityEvents
-                    .add(new EntityCombatEvent(
-                            slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x05));
+            runtime.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x05));
         }
         if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
-            runtime.presentationState()
-                    .writePendingMusicTrack(
-                            runtime.bossRewards().readEnemyDropActivePowerUp()
-                                    ? 0x49
-                                    : owner.owlState().readOwlPreviousMusicTrack(slot));
-            runtime.lifecycle().disableEntityWithoutPersistence(slot);
+            runtime.presentationState.writePendingMusicTrack(
+                    runtime.bossRewards.readEnemyDropActivePowerUp()
+                            ? 0x49
+                            : owner.owlState().readOwlPreviousMusicTrack(slot));
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
         }
     }
 }

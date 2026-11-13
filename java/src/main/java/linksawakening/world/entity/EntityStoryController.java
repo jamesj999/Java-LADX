@@ -32,10 +32,60 @@ public final class EntityStoryController {
     private int houseInstrument3Flags;
     private int houseWalrusStatus;
     private final OwlEventState owl = new OwlEventState();
-    final EntityStoryControllerServices runtime;
+    final EntityMotionRegistry motions;
+    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
+    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final EntityBackgroundMechanics backgroundMechanics;
+    final EntityBossRewards bossRewards;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityLinkState linkState;
+    final EntityPhysicsTables physicsTables;
+    final EntityPickupController pickups;
+    final EntityPresentationState presentationState;
+    final EntityRoomInspection inspection;
+    final EntityRoomInspection roomInspection;
+    final EntityRoomVariables roomVariables;
+    final EntitySlotLifecycle lifecycle;
+    final RoomEntity[] slots;
+    final EntitySpriteViews spriteViews;
+    final EntityPlayerCommands playerCommands;
 
-    EntityStoryController(EntityStoryControllerServices runtime) {
-        this.runtime = runtime;
+    EntityStoryController(
+            EntityMotionRegistry motions,
+            linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers,
+            EntityBackgroundMechanics backgroundMechanics,
+            EntityBossRewards bossRewards,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityLinkState linkState,
+            EntityPhysicsTables physicsTables,
+            EntityPickupController pickups,
+            EntityPresentationState presentationState,
+            EntityRoomInspection inspection,
+            EntityRoomInspection roomInspection,
+            EntityRoomVariables roomVariables,
+            EntitySlotLifecycle lifecycle,
+            RoomEntity[] slots,
+            EntitySpriteViews spriteViews,
+            EntityPlayerCommands playerCommands) {
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.spriteHandlers = spriteHandlers;
+        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
+        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
+        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
+        this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
     /** Bank 06:607F–620D. Speeds use the ROM's sixteenth-pixel units. */
@@ -47,7 +97,7 @@ public final class EntityStoryController {
     // contact, so the child's hopping height does not move its collision box.
     void pushLinkFromKid(RoomEntity entity, int linkX, int linkY) {
         if (RoomEntityCombatRules.overlapsLink(withZ(entity, 0), linkX, linkY)) {
-            runtime.backgroundMechanics().requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+            this.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
         }
     }
 
@@ -81,24 +131,23 @@ public final class EntityStoryController {
     }
 
     public void advanceWitchGotItemPresentation(int slot) {
-        int countdown =
-                runtime.motions().get(WitchMotion.class, WitchMotion::new).readWitchGotItemCountdown(slot);
+        int countdown = this.motions.get(WitchMotion.class, WitchMotion::new).readWitchGotItemCountdown(slot);
         if (countdown == 0) {
             return;
         }
-        runtime.presentWitchGotItem(slot);
-        if (runtime.linkState().dialogActive) {
+        this.playerCommands.presentWitchGotItem(slot);
+        if (this.linkState.dialogActive) {
             return;
         }
         countdown--;
-        runtime.motions().get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, countdown);
+        this.motions.get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, countdown);
         if (countdown == 0x02) {
-            runtime.events().pendingDialogRequests.add(new DialogRequest(0, 0x99));
+            this.events.pendingDialogRequests.add(new DialogRequest(0, 0x99));
         }
     }
 
     public void presentWitchGotItem(int slot) {
-        runtime.presentWitchGotItem(slot);
+        this.playerCommands.presentWitchGotItem(slot);
     }
 
     public void enableBowWowFollowing() {
@@ -106,7 +155,7 @@ public final class EntityStoryController {
     }
 
     public void markBowWowRescued() {
-        runtime.motions().get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0x01);
+        this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0x01);
     }
 
     public void consumeToadstool() {
@@ -114,21 +163,21 @@ public final class EntityStoryController {
     }
 
     public void startWitchGotItemCountdown(int slot) {
-        runtime.motions().get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, 0x2A);
+        this.motions.get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, 0x2A);
     }
 
     public int bowWowState() {
-        return runtime.motions().get(BowWowMotion.class, BowWowMotion::new).readBowWowState();
+        return this.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState();
     }
 
     public FollowingNpcState followingNpcState() {
-        return runtime.motions()
+        return this.motions
                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                 .readFollowingNpcState();
     }
 
     public int booBuddyTriggerCount() {
-        return runtime.motions().get(BooBuddyMotion.class, BooBuddyMotion::new).readBooBuddyTriggerCount();
+        return this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).readBooBuddyTriggerCount();
     }
 
     public boolean playerHasToadstool() {
@@ -140,11 +189,11 @@ public final class EntityStoryController {
     }
 
     public int bgPaletteEffectAddress() {
-        return runtime.presentationState().readBgPaletteEffectAddress();
+        return this.presentationState.readBgPaletteEffectAddress();
     }
 
     public int paletteDataFlags() {
-        return runtime.presentationState().readPaletteDataFlags();
+        return this.presentationState.readPaletteDataFlags();
     }
 
     public void setShouldGetLostInMysteriousWoods(boolean value) {
@@ -352,4 +401,8 @@ public final class EntityStoryController {
     final RichardStep richardStep = new RichardStep();
     final VillageNpcFrameStep villageNpcFrameStep = new VillageNpcFrameStep();
     final OwlEventStep owlEventStep = new OwlEventStep();
+
+    void blockLinkForOwl(int slot) {
+        events.pendingLinkMotionBlockRequests.add(new linksawakening.world.entity.event.LinkMotionBlockRequest(slot));
+    }
 }
