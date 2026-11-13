@@ -296,3 +296,9 @@ The render engineer can make these switches in the off-limits file
 | currentGameFrameState | rooms().renderSnapshot() -> rooms().renderSnapshotOrNull() |
 
 The four app frame-cache constructor hand-offs are complete; none remain.
+
+Required RoomSessionConfig collaborators are now validated once at the public
+construction boundary; optional presentation settings retain their disabled
+forms. The now-empty PresentationOutputs dependency record and its wiring slot
+were removed. Null-comparison metrics remain unchanged. The gate remains 2969
+tests, zero failures/errors, one existing skip, and 986 identical scenes.

@@ -110,7 +110,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         frameResults = new EntityFrameResults(
                 new LinkOutputs(components.linkOutputsDependencies(), this),
                 new RewardOutputs(components.rewardOutputsDependencies(), this),
-                new PresentationOutputs(components.presentationOutputsDependencies(), this));
+                new PresentationOutputs(this));
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {

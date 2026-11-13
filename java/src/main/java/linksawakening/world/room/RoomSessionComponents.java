@@ -66,7 +66,6 @@ record RoomSessionComponents(
         RoomEntityCombatBridge entityCombatBridge,
         LinkOutputs.Dependencies linkOutputsDependencies,
         RewardOutputs.Dependencies rewardOutputsDependencies,
-        PresentationOutputs.Dependencies presentationOutputsDependencies,
         RoomRuntime.Services roomRuntimeServices) {
     static final class Builder {
         RoomRuntime.Services roomRuntimeServices;
@@ -171,7 +170,6 @@ record RoomSessionComponents(
                     entityCombatBridge,
                     new LinkOutputs.Dependencies(entityBridge),
                     new RewardOutputs.Dependencies(entityFrame),
-                    new PresentationOutputs.Dependencies(),
                     roomRuntimeServices);
         }
     }

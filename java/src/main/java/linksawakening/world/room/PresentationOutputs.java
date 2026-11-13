@@ -7,10 +7,8 @@ import linksawakening.world.entity.event.ScreenShakeRequest;
 
 public final class PresentationOutputs {
     private final RoomEntityOutputSource session;
-    private final Dependencies dependencies;
 
-    PresentationOutputs(Dependencies dependencies, RoomEntityOutputSource session) {
-        this.dependencies = dependencies;
+    PresentationOutputs(RoomEntityOutputSource session) {
         this.session = java.util.Objects.requireNonNull(session);
     }
 
@@ -40,9 +38,5 @@ public final class PresentationOutputs {
 
     public linksawakening.world.entity.event.DialogRequest consumeFirstEntityDialogRequest() {
         return session.consumeFirstEntityDialogRequest();
-    }
-
-    record Dependencies() {
-        Dependencies {}
     }
 }
