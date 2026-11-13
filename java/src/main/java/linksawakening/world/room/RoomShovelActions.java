@@ -1,6 +1,18 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_BLOCKER_A;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_BLOCKER_B;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_BLOCKER_C;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_HOLE;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_INDOOR_DIGGABLE;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_DIALOG_ID;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_DIALOG_TABLE;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_DIG_TIMER;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_FINISH_TIMER;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_STATE_ACTIVE;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_STATE_DUG;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_TARGET_X;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_TARGET_Y;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
@@ -22,8 +34,7 @@ final class RoomShovelActions {
         if (dependencies.location().activeRoom == null || linkAirborne || dependencies.items().shovelUseState != 0) {
             return new ShovelStartResult(false, true, -1);
         }
-        ShovelProbe probe =
-                dependencies.roomPlayerItemActions().get().probeShovel(linkEntityX, linkEntityY, romDirection);
+        ShovelProbe probe = dependencies.roomPlayerItemActions().probeShovel(linkEntityX, linkEntityY, romDirection);
         dependencies.items().shovelUseState = SHOVEL_STATE_ACTIVE;
         return new ShovelStartResult(true, !probe.valid(), probe.location());
     }
@@ -35,12 +46,12 @@ final class RoomShovelActions {
         int normalizedTimer = timer & 0xFF;
         if (normalizedTimer == SHOVEL_DIG_TIMER) {
             ShovelProbe probe =
-                    dependencies.roomPlayerItemActions().get().probeShovel(linkEntityX, linkEntityY, romDirection);
+                    dependencies.roomPlayerItemActions().probeShovel(linkEntityX, linkEntityY, romDirection);
             if (!probe.valid()) {
                 return;
             }
             dependencies.items().shovelUseState = SHOVEL_STATE_DUG;
-            dependencies.roomPlayerItemActions().get().writeShovelHole(probe);
+            dependencies.roomPlayerItemActions().writeShovelHole(probe);
             dependencies.items().pendingShovelDrop = new PendingShovelDrop(
                     probe.objectLeft(),
                     probe.objectTop(),
@@ -52,8 +63,7 @@ final class RoomShovelActions {
             if (dependencies.items().shovelUseState == SHOVEL_STATE_DUG
                     && dependencies.followers().followingNpcState.marinFollowing()) {
                 dependencies
-                        .entityBridge()
-                        .get()
+                        .entityRuntimeState()
                         .outbox
                         .pendingRoomDialogRequests
                         .add(new DialogRequest(SHOVEL_DIALOG_TABLE, SHOVEL_DIALOG_ID));
@@ -90,7 +100,7 @@ final class RoomShovelActions {
         }
 
         int location = objectTop | cellX;
-        int objectId = dependencies.roomSessionViews().get().objectAtRoomLocation(location);
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(location);
         int physicsTable = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? RomTables.PHYSICS_TABLE_OVERWORLD
                 : dependencies.location().activeRoom.mapId() == 0xFF
@@ -132,9 +142,9 @@ final class RoomShovelActions {
                             dependencies.location().activeRoom.gbcOverlay(),
                             dependencies.location().activeRoom.tileIds(),
                             dependencies.location().activeRoom.tileAttrs());
-            dependencies.roomObjectMutations().get().refreshOverworldCollisionAfterObjectMutation();
+            dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation();
         } else {
-            dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap();
             dependencies
                     .overworldCollision()
                     .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -142,15 +152,29 @@ final class RoomShovelActions {
     }
 
     record Dependencies(
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntitySessionState entityRuntimeState,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             RomTables romTables,
-            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomPlayerItemActions> roomPlayerItemActions,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {}
+            RoomObjectMutations roomObjectMutations,
+            RoomPlayerItemActions roomPlayerItemActions,
+            RoomSessionViews roomSessionViews,
+            RoomObjectMutations roomTileRedraw) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romTables, "romTables");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomPlayerItemActions, "roomPlayerItemActions");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+        }
+    }
 }

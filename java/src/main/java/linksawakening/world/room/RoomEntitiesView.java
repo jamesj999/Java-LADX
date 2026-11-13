@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import java.util.List;
 import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -15,8 +13,8 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     public boolean inBossBattle() {
-        return dependencies.entityBridge().entityRuntime != null
-                && dependencies.entityBridge().entityRuntime.inspection().inBossBattle();
+        return dependencies.entityBridge().runtime() != null
+                && dependencies.entityBridge().runtime().inspection().inBossBattle();
     }
 
     public EntityPickupEvent collectEntityIfNeeded(
@@ -134,5 +132,9 @@ final class RoomEntitiesView implements RoomEntities {
         return dependencies.entityBridge().tickEntities(inputs);
     }
 
-    record Dependencies(RoomEntityBridge entityBridge) {}
+    record Dependencies(RoomEntityBridge entityBridge) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+        }
+    }
 }

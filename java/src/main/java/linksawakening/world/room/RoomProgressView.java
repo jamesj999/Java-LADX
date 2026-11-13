@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.transition.Warp;
 
@@ -42,8 +40,15 @@ final class RoomProgressView implements RoomProgress {
     }
 
     record Dependencies(
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomLocationState location,
             RoomLoadCoordinator roomLoadCoordinator,
-            RoomTerrainState terrain) {}
+            RoomTerrainState terrain) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+        }
+    }
 }

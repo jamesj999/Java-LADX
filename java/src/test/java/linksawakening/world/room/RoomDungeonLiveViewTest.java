@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import linksawakening.rom.RomSymbols;

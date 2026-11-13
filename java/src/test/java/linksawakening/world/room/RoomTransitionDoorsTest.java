@@ -1,8 +1,16 @@
 package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomTransitionTestSupport.*;
-import static linksawakening.world.room.RoomTransitionTestSupport2.*;
+import static linksawakening.world.room.RoomNavigationFixture.INDOOR_ROOM_WITH_NO_WARPS;
+import static linksawakening.world.room.RoomNavigationFixture.MAP_WITH_NO_WARP_ROOM;
+import static linksawakening.world.room.RoomNavigationFixture.loadRom;
+import static linksawakening.world.room.RoomNavigationFixture.newSession;
+import static linksawakening.world.room.RoomNavigationFixture.objectAt;
+import static linksawakening.world.room.RoomNavigationFixture.roomObjectTiles;
+import static linksawakening.world.room.RoomNavigationFixture.roomWithPitAt;
+import static linksawakening.world.room.RoomNavigationFixture.runUntilPitFallFinishes;
+import static linksawakening.world.room.RoomNavigationFixture.runUntilPitFallStarts;
+import static linksawakening.world.room.RoomNavigationFixture.tickInteractiveEntities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 final class RoomTerrainView implements RoomTerrain {
     private final Dependencies dependencies;
 
@@ -21,5 +19,9 @@ final class RoomTerrainView implements RoomTerrain {
         return dependencies.roomObjectMutations().breakIndoorSwordCrystal(location);
     }
 
-    record Dependencies(RoomObjectMutations roomObjectMutations) {}
+    record Dependencies(RoomObjectMutations roomObjectMutations) {
+        Dependencies {
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+        }
+    }
 }

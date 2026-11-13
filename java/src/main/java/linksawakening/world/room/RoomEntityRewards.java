@@ -1,6 +1,8 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.OW_ROOM_STATUS_FLAG_CHANGED;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_2;
 
 import java.util.List;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
@@ -20,11 +22,10 @@ final class RoomEntityRewards {
     }
 
     void harvestKeyQuicksandEvents() {
-        if (dependencies.entityBridge().get().entityRuntime == null
+        if (dependencies.entityRuntimeState().runtime == null
                 || dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
+                        .entityRuntimeState()
+                        .runtime
                         .consumePendingKeyQuicksandEvents()
                         .isEmpty()) {
             return;
@@ -34,11 +35,10 @@ final class RoomEntityRewards {
     }
 
     void harvestKeyRewardEvents() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
-        List<KeyRewardEvent> rewards =
-                dependencies.entityBridge().get().entityRuntime.consumePendingKeyRewardEvents();
+        List<KeyRewardEvent> rewards = dependencies.entityRuntimeState().runtime.consumePendingKeyRewardEvents();
         for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
             KeyRewardEvent reward = rewards.get(rewardIndex);
 
@@ -46,60 +46,57 @@ final class RoomEntityRewards {
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
-            dependencies.roomStoryState().get().markActiveRoomCompleted();
+            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
         }
-        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingKeyRewardEvents, rewards);
+        RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingKeyRewardEvents, rewards);
     }
 
     void harvestHeartContainerRewards() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
         List<HeartContainerRewardEvent> rewards =
-                dependencies.entityBridge().get().entityRuntime.consumePendingHeartContainerRewards();
+                dependencies.entityRuntimeState().runtime.consumePendingHeartContainerRewards();
         if (rewards.isEmpty()) {
             return;
         }
-        dependencies.roomStoryState().get().markHeartContainerCollected();
-        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingHeartContainerRewards, rewards);
+        dependencies.roomStoryState().markHeartContainerCollected();
+        RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingHeartContainerRewards, rewards);
     }
 
     void harvestSwordPickupRewards() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
         List<SwordPickupRewardEvent> rewards =
-                dependencies.entityBridge().get().entityRuntime.consumePendingSwordPickupRewards();
+                dependencies.entityRuntimeState().runtime.consumePendingSwordPickupRewards();
         if (rewards.isEmpty()) {
             return;
         }
-        dependencies.roomStoryState().get().markActiveRoomCompleted();
-        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingSwordPickupRewards, rewards);
+        dependencies.roomState().markCompleted(dependencies.location().activeRoom);
+        RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingSwordPickupRewards, rewards);
     }
 
     void harvestToadstoolRewards() {
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             RoomEntityOutbox.append(
-                    dependencies.entityBridge().get().outbox.pendingToadstoolRewards,
-                    dependencies.entityBridge().get().entityRuntime.consumePendingToadstoolRewards());
+                    dependencies.entityRuntimeState().outbox.pendingToadstoolRewards,
+                    dependencies.entityRuntimeState().runtime.consumePendingToadstoolRewards());
         }
     }
 
     void harvestInstrumentRewards() {
-        if (dependencies.entityBridge().get().entityRuntime == null
+        if (dependencies.entityRuntimeState().runtime == null
                 || dependencies.location().activeRoom == null
                 || dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
+                        .entityRuntimeState()
+                        .runtime
                         .consumePendingInstrumentRewards()
                         .isEmpty()
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
-        dependencies
-                        .roomSessionViews()
-                        .get()
+        dependencies.roomSessionViews()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
@@ -110,19 +107,17 @@ final class RoomEntityRewards {
                     .dungeonProgressFlags[dependencies.location().activeRoom.mapId()] |= 0x02;
         }
         dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .configuration()
-                .setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
+                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags());
     }
 
     void harvestInstrumentCompletions() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
-        var instrumentCompletions =
-                dependencies.entityBridge().get().entityRuntime.consumePendingInstrumentCompletions();
+        var instrumentCompletions = dependencies.entityRuntimeState().runtime.consumePendingInstrumentCompletions();
         for (int completionIndex = 0; completionIndex < instrumentCompletions.size(); completionIndex++) {
             InstrumentCompletionEvent completion = instrumentCompletions.get(completionIndex);
 
@@ -136,11 +131,11 @@ final class RoomEntityRewards {
     }
 
     void harvestRichardProgressEvents() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
         List<RichardProgressEvent> events =
-                dependencies.entityBridge().get().entityRuntime.consumePendingRichardProgressEvents();
+                dependencies.entityRuntimeState().runtime.consumePendingRichardProgressEvents();
         for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
             RichardProgressEvent event = events.get(eventIndex);
 
@@ -148,31 +143,30 @@ final class RoomEntityRewards {
                 dependencies.roomState().indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
                 dependencies.followers().richardSpokenFlag = Math.max(dependencies.followers().richardSpokenFlag, 0x02);
             } else {
-                dependencies.entityInputs().get().entityGoldenLeavesCount = event.goldenLeavesCount();
+                dependencies.entityInputs().entityGoldenLeavesCount = event.goldenLeavesCount();
             }
         }
-        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingRichardProgressEvents, events);
+        RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingRichardProgressEvents, events);
     }
 
     void harvestWitchEvents() {
-        if (dependencies.entityBridge().get().entityRuntime != null) {
+        if (dependencies.entityRuntimeState().runtime != null) {
             RoomEntityOutbox.append(
-                    dependencies.entityBridge().get().outbox.pendingWitchExchangeEvents,
-                    dependencies.entityBridge().get().entityRuntime.consumePendingWitchExchangeEvents());
+                    dependencies.entityRuntimeState().outbox.pendingWitchExchangeEvents,
+                    dependencies.entityRuntimeState().runtime.consumePendingWitchExchangeEvents());
             RoomEntityOutbox.append(
-                    dependencies.entityBridge().get().outbox.pendingWitchRewardEvents,
-                    dependencies.entityBridge().get().entityRuntime.consumePendingWitchRewardEvents());
+                    dependencies.entityRuntimeState().outbox.pendingWitchRewardEvents,
+                    dependencies.entityRuntimeState().runtime.consumePendingWitchRewardEvents());
         }
     }
 
     void harvestOwlEventCompletions() {
-        if (dependencies.entityBridge().get().entityRuntime == null || dependencies.location().activeRoom == null) {
+        if (dependencies.entityRuntimeState().runtime == null || dependencies.location().activeRoom == null) {
             return;
         }
         if (dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .consumePendingOwlEventCompletions()
                 .isEmpty()) {
             return;
@@ -182,27 +176,38 @@ final class RoomEntityRewards {
     }
 
     void harvestSlimeKeyRewardEvents() {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return;
         }
         List<SlimeKeyRewardEvent> rewards =
-                dependencies.entityBridge().get().entityRuntime.consumePendingSlimeKeyRewardEvents();
+                dependencies.entityRuntimeState().runtime.consumePendingSlimeKeyRewardEvents();
         for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
             SlimeKeyRewardEvent reward = rewards.get(rewardIndex);
 
-            dependencies.entityInputs().get().entityGoldenLeavesCount = reward.goldenLeavesCount();
-            dependencies.roomStoryState().get().markActiveRoomCompleted();
+            dependencies.entityInputs().entityGoldenLeavesCount = reward.goldenLeavesCount();
+            dependencies.roomState().markCompleted(dependencies.location().activeRoom);
         }
-        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingSlimeKeyRewardEvents, rewards);
+        RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingSlimeKeyRewardEvents, rewards);
     }
 
     record Dependencies(
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
-            java.util.function.Supplier<RoomEntityInputs> entityInputs,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomEntitySessionState entityRuntimeState,
+            RoomEntityInputs entityInputs,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> roomStoryState) {}
+            RoomStoryState roomStoryState) {
+        Dependencies {
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+        }
+    }
 }

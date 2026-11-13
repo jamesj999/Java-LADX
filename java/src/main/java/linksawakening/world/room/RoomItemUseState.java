@@ -1,9 +1,9 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 final class RoomItemUseState {
+    /** Absent when no shovel drop awaits the next entity pass. */
     PendingShovelDrop pendingShovelDrop;
+
     int shovelUseState;
     int ocarinaPlaybackCountdown;
     int ocarinaSongFlags;

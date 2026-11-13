@@ -1,6 +1,10 @@
 package linksawakening.world.room;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteSelection;
@@ -9,7 +13,10 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.TestRoms;
-import linksawakening.world.entity.*;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RomRandomByteSource;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.TestEntities;
 import org.junit.jupiter.api.Test;
 
 /** Read-only production paths over a populated synthetic room; no user ROM needed. */
@@ -48,7 +55,7 @@ class RoomRenderAllocationTest {
                         new int[8][4]),
                 new LoadedRoomSpec.Exits(List.of(), false, 0, -1),
                 runtime.inspection().view())));
-        session.components.entityBridge().entityRuntime = runtime;
+        session.components.entityFrame().runtime = runtime;
         return session;
     }
 

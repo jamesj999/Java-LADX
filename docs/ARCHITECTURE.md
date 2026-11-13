@@ -796,8 +796,9 @@ are top-level types. Construction takes `RoomSessionConfig`.
 All 26 former entity-test bridges, the legacy constructor and the private
 reflection alias have been deleted. `RoomSession` has no deprecated members.
 Tests use role views and test-side `RoomDebugFixture` / `RoomFrameTestAccess`
-for internal setup and queries. All deprecated members in world/render/gpu/audio/rom/app/gameplay have been
-removed after their callers migrated. Room wiring accepts `Rom` directly; no
+for internal setup and queries. The four Link probe records retain deprecated
+constructor adapters for app clients awaiting migration; their raw values are
+authoritative. The facade itself retains no deprecated bridges. Room wiring accepts `Rom` directly; no
 `unsafeBytes()` accessor or call remains. Bounded `RomSlice` reads let audio
 retain shared read-only storage without exposing the backing array or allocating
 an address per byte. Unaligned synthetic/legacy input uses the supported unchecked
@@ -805,9 +806,13 @@ factory; validation, bounds and backing storage are preserved.
 View implementations receive only their specific collaborators and state.
 `RoomSessionContext` is private construction-time wiring. Runtime collaborators
 receive their own dependency records and typed state: location, terrain,
-followers, entity-frame state, item use and puzzles. No runtime collaborator
-reads through the composition root. Typed service suppliers defer cyclic
-room references until the room is wired.
+followers, retained RoomEntitySessionState, item use and puzzles. No runtime
+collaborator reads through the composition root. Runtime-only consumers receive
+retained entity state directly, and self-lookups are removed. Completion,
+staircase and drop configuration operations live with their state owners; map mutation and redraw share one owner. RoomSessionContext wires all
+services eagerly in dependency order, with no lazy collaborator suppliers.
+Only live projections/outboxes borrow changing active-room/runtime values.
+See the [room simplification report](archive/history/room-simplification.md).
 `RoomWorldState`, `RoomTransientState` and `RoomStoryState` separate persistent
 world concerns, transient state and story progression.
 `ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.
@@ -815,13 +820,18 @@ Immediate room integration uses `EntityRoomInspection.view()` and the live
 `ActiveRoom.entityView()`. Per-frame rendering uses `RoomRenderView` and the
 cached room/dungeon views, with indexed read-only access. They are valid only
 until the next simulation tick, room change or world mutation on the same thread;
-never retain them as history or share them across threads. Public `ActiveRoom.entities()` and render snapshots
+never retain them as history or share them across threads. `renderView()` returns
+null before the first room is loaded; it does not invent an empty room.
+Public `ActiveRoom.entities()` and render snapshots
 retain owned immutable entity state; a bounded eight-presentation cache avoids
 copying recurring unchanged poses while preserving historical snapshots.
 
 `EntityFrameInputs` composes Link, player, UI, button and sword values. Link
-facings and motion dispatch use `Direction` and `LinkMotionState`. Raw values
-are retained alongside classifications where ROM gates accept unknown bytes.
+position, motion, ground and pickup probes each store only the raw integer
+required by ROM numeric gates. Direction and motion classifications are derived,
+with explicit absence for unknown motion states; no enum and raw field can
+disagree. Closed selections use their existing enum APIs; saved inventory bytes
+and flag-only projections retain their raw/boolean boundary contracts.
 Inventory construction accepts `InventoryItem`, `Tunic` and `PowerUp`, retaining
 saved raw item bytes and the original flag-only inputs. Known ocarina selectors
 use `OcarinaSong`; unknown selections and song flags remain bytes. Entity ground
@@ -829,7 +839,8 @@ codes are a separate ROM domain from Link's `GroundStatus` (entity water is
 `$02`), so they must not be converted by matching integer values.
 
 `RoomLoadCoordinator` coordinates room loading; `RoomLoader` reads room streams,
-`RoomObjectParser` decodes objects, and `RoomTilemapBuilder` constructs tilemaps.
+`RoomObjectParser` owns decode scratch state, stream walking, macro expansion
+and persisted-status patches, and `RoomTilemapBuilder` constructs tilemaps.
 `RoomPaletteLoader` owns palette decoding. Pointer tables and tileset tables
 retain bank/page selection rather than flattening ROM addressing. All internal
 ROM parameters, fields and reads use `Rom` and typed addresses. The five former app wiring byte entry points and the unused palette byte
@@ -843,12 +854,14 @@ intact: a visually plausible destination alone does not verify a transition.
 
 `RoomObjectMutations` and room redraw helpers coordinate object changes with
 room representation. Door, puzzle and player-item collaborators implement
-specific interactions; `world.object` contains object-specific behavior.
+specific interactions; `world.object` contains object-specific behavior. Object
+mutation, puzzle and door operations are kept together with their respective
+owners, without file-size limits or stateless sequence slices.
 Entity integration passes through room bridges, inputs and reward handling.
-`RoomEntityBridge` coordinates ticking; `RoomEntityFrameSetup` configures
-the runtime, `RoomEntityAfterTick` applies ordered room effects,
+`RoomEntityBridge` coordinates ticking; `RoomEntitySimulation` owns the complete
+configuration/tick/ordered-effects sequence,
 `RoomEntityCombatBridge` handles combat/pickup integration and
-`RoomEntityOutbox` owns queued outputs. The outbox uses a runtime supplier
+`RoomEntityOutbox` owns queued outputs under the retained session state. The outbox uses a runtime supplier
 because loading a room replaces the runtime. Results expose grouped Link,
 reward and presentation consumers. Link writes merge by descending source slot
 with the established cross-stream tie precedence; the application applies the

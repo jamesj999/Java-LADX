@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -19,15 +20,13 @@ class RoomDependencyInjectionTest {
                 RoomEntityRewards.class,
                 RewardOutputs.class,
                 RoomEntityBridge.class,
-                RoomEntityFrameSetup.class,
+                RoomEntitySimulation.class,
                 RoomPlayerItemActions.class,
                 RoomTransitionCoordinator.class,
                 RoomStoryState.class,
                 RoomSessionViews.class,
                 RoomPuzzleController.class,
                 PresentationOutputs.class,
-                RoomTileRedraw.class,
-                RoomEntityAfterTick.class,
                 RoomDoorInteractions.class,
                 RoomObjectMutations.class)) {
             for (var field : type.getDeclaredFields()) {

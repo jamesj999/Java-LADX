@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.world.entity.event.LiftedEntityState;
 
 public interface RoomRooms {
@@ -40,6 +38,7 @@ public interface RoomRooms {
     RoomRenderSnapshot renderSnapshot();
 
     /** Reused read-only render projection, valid until the next tick or room change. */
+    /** Nullable until the first room load; otherwise a same-thread view valid until the next tick. */
     RoomRenderSnapshot.View renderView();
 
     LiftedEntityState liftedEntityState();

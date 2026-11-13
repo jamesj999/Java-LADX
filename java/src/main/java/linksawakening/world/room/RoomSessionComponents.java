@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
@@ -23,7 +21,7 @@ record RoomSessionComponents(
         RoomLocationState location,
         RoomTerrainState terrain,
         RoomFollowerState followers,
-        RoomEntityFrameState entityFrame,
+        RoomEntitySessionState entityFrame,
         RoomItemUseState items,
         RoomPuzzleState puzzles,
         Rom romData,
@@ -58,7 +56,6 @@ record RoomSessionComponents(
         RoomSessionViews roomSessionViews,
         RoomTransientState roomTransientState,
         RoomEntityRewards roomEntityRewards,
-        RoomTileRedraw roomTileRedraw,
         RoomCollisionQueries roomCollisionQueries,
         RoomPlayerItemActions roomPlayerItemActions,
         RoomPuzzleController roomPuzzleController,
@@ -69,8 +66,8 @@ record RoomSessionComponents(
         RoomLoadCoordinator roomLoadCoordinator,
         RoomEntityBridge entityBridge,
         RoomEntityInputs entityInputs,
-        RoomEntityAfterTick entityAfterTick,
-        RoomEntityFrameSetup entityFrameSetup,
+        RoomEntitySimulation.EffectsDependencies entityEffects,
+        RoomEntitySimulation.SetupDependencies entityConfiguration,
         RoomEntityCombatBridge entityCombatBridge,
         LinkOutputs.Dependencies linkOutputsDependencies,
         RewardOutputs.Dependencies rewardOutputsDependencies,
@@ -108,7 +105,6 @@ record RoomSessionComponents(
         RoomSessionViews roomSessionViews;
         RoomTransientState roomTransientState;
         RoomEntityRewards roomEntityRewards;
-        RoomTileRedraw roomTileRedraw;
         RoomCollisionQueries roomCollisionQueries;
         RoomPlayerItemActions roomPlayerItemActions;
         RoomPuzzleController roomPuzzleController;
@@ -119,13 +115,13 @@ record RoomSessionComponents(
         RoomLoadCoordinator roomLoadCoordinator;
         RoomEntityBridge entityBridge;
         RoomEntityInputs entityInputs;
-        RoomEntityAfterTick entityAfterTick;
-        RoomEntityFrameSetup entityFrameSetup;
+        RoomEntitySimulation.EffectsDependencies entityEffects;
+        RoomEntitySimulation.SetupDependencies entityConfiguration;
         RoomEntityCombatBridge entityCombatBridge;
         final RoomLocationState location = new RoomLocationState();
         final RoomTerrainState terrain = new RoomTerrainState();
         final RoomFollowerState followers = new RoomFollowerState();
-        final RoomEntityFrameState entityFrame = new RoomEntityFrameState();
+        final RoomEntitySessionState entityFrame = new RoomEntitySessionState();
         final RoomItemUseState items = new RoomItemUseState();
         final RoomPuzzleState puzzles = new RoomPuzzleState();
 
@@ -169,7 +165,6 @@ record RoomSessionComponents(
                     roomSessionViews,
                     roomTransientState,
                     roomEntityRewards,
-                    roomTileRedraw,
                     roomCollisionQueries,
                     roomPlayerItemActions,
                     roomPuzzleController,
@@ -180,12 +175,12 @@ record RoomSessionComponents(
                     roomLoadCoordinator,
                     entityBridge,
                     entityInputs,
-                    entityAfterTick,
-                    entityFrameSetup,
+                    entityEffects,
+                    entityConfiguration,
                     entityCombatBridge,
-                    new LinkOutputs.Dependencies(() -> entityBridge),
-                    new RewardOutputs.Dependencies(() -> entityBridge, () -> roomSessionViews),
-                    new PresentationOutputs.Dependencies(() -> entityBridge));
+                    new LinkOutputs.Dependencies(entityBridge),
+                    new RewardOutputs.Dependencies(entityFrame, roomSessionViews),
+                    new PresentationOutputs.Dependencies(entityFrame));
         }
     }
 }

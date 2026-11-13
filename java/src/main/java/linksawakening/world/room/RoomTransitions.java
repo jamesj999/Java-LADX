@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 

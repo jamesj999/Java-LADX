@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import linksawakening.world.entity.*;
-import linksawakening.world.room.*;
 import org.junit.jupiter.api.Test;
 
 final class SwitchBlockLinkInteractionTest {

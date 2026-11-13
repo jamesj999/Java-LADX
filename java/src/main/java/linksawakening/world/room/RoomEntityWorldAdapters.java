@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
@@ -11,45 +9,39 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 final class RoomEntityWorldAdapters {
-    static RoomEntityBackgroundInteraction background(java.util.function.Supplier<RoomCollisionQueries> collision) {
+    static RoomEntityBackgroundInteraction background(RoomCollisionQueries collision) {
         return new RoomEntityBackgroundInteraction() {
             @Override
             public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
-                return collision.get().entityBackgroundCollisionResult(entity, direction, nextX, nextY, 0);
+                return collision.entityBackgroundCollisionResult(entity, direction, nextX, nextY, 0);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-                return collision
-                        .get()
-                        .entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown);
+                return collision.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
-                return collision
-                        .get()
-                        .entityBackgroundCollisionResult(
-                                entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
+                return collision.entityBackgroundCollisionResult(
+                        entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
             }
         };
     }
 
     static ColorShellWorld colorShell(
-            java.util.function.Supplier<RoomObjectMutations> objects,
-            RoomEntityFrameState entityFrame,
-            TransientVfxSystem transientVfxSystem) {
+            RoomObjectMutations objects, RoomEntitySessionState entityFrame, TransientVfxSystem transientVfxSystem) {
         return new ColorShellWorld() {
             @Override
             public int objectAt(RoomEntity entity, int relativeOffset) {
-                return objects.get().colorShellObjectAt(entity, relativeOffset);
+                return objects.colorShellObjectAt(entity, relativeOffset);
             }
 
             @Override
             public void writeObject(RoomEntity entity, int objectId) {
-                objects.get().writeColorShellObject(entity, objectId);
+                objects.writeColorShellObject(entity, objectId);
             }
 
             @Override

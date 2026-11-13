@@ -1,12 +1,10 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.world.object.OverworldBushInteraction;
 
-/** Player item entry points (PlaceBomb/ShootArrow) and publication of their entity presentation. */
+/** ApplyLinkMotionState player-item dispatch; lift, chest and shovel routines retain their own action state. */
 final class RoomPlayerItemActions {
     private final Dependencies dependencies;
     private final RoomShovelActions roomShovelActions;
@@ -14,7 +12,7 @@ final class RoomPlayerItemActions {
     RoomPlayerItemActions(Dependencies dependencies) {
         this.dependencies = dependencies;
         roomShovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
-                dependencies.entityBridge(),
+                dependencies.entityRuntimeState(),
                 dependencies.followers(),
                 dependencies.items(),
                 dependencies.location(),
@@ -22,19 +20,18 @@ final class RoomPlayerItemActions {
                 dependencies.overworldCollision(),
                 dependencies.romTables(),
                 dependencies.roomObjectMutations(),
-                dependencies.roomPlayerItemActions(),
+                this,
                 dependencies.roomSessionViews(),
                 dependencies.roomTileRedraw()));
     }
 
     boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
-        if (dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         boolean thrown = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .throwLiftedEntity(RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
             publishEntityView();
@@ -52,13 +49,12 @@ final class RoomPlayerItemActions {
         if (linkAirborne
                 || linkPushing
                 || dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+                || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -68,14 +64,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
         if (slot < 0) {
             return false;
@@ -85,14 +79,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -102,22 +94,17 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return dependencies
-                .roomPlayerItemActions()
-                .get()
-                .fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return this.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     boolean fireMagicRodFireball(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return false;
@@ -127,14 +114,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -164,14 +149,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return false;
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
@@ -181,88 +164,87 @@ final class RoomPlayerItemActions {
     }
 
     boolean lastBombPlacementPlayedBump() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().lastBombPlacementPlayedBump();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().lastBombPlacementPlayedBump();
     }
 
     boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return dependencies
-                .roomPlayerItemActions()
-                .get()
-                .shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
+        return this.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
                 .spawned();
     }
 
     ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return dependencies
-                .roomPlayerItemActions()
-                .get()
-                .shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return this.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     ArrowShotResult shootArrowResult(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
             return new ArrowShotResult(false, false);
         }
         int slot = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
+                .entityRuntimeState()
+                .runtime
                 .spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }
         boolean playWhoosh =
-                dependencies.entityBridge().get().entityRuntime.inspection().lastArrowShotPlayedWhoosh();
+                dependencies.entityRuntimeState().runtime.inspection().lastArrowShotPlayedWhoosh();
         publishEntityView();
         return new ArrowShotResult(true, playWhoosh);
     }
 
     int activeProjectileCount() {
-        return dependencies.entityBridge().get().entityRuntime == null
+        return dependencies.entityRuntimeState().runtime == null
                 ? 0
-                : dependencies.entityBridge().get().entityRuntime.inspection().activeProjectileCount();
+                : dependencies.entityRuntimeState().runtime.inspection().activeProjectileCount();
     }
 
     boolean bombActive() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().bombActive();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().bombActive();
     }
 
     boolean hookshotActive() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().hookshotActive();
+        return dependencies.entityRuntimeState().hookshotActive();
     }
 
     boolean boomerangActive() {
-        return dependencies.entityBridge().get().entityRuntime != null
-                && dependencies.entityBridge().get().entityRuntime.inspection().boomerangActive();
+        return dependencies.entityRuntimeState().runtime != null
+                && dependencies.entityRuntimeState().runtime.inspection().boomerangActive();
     }
 
     private void publishEntityView() {
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityRuntimeState().runtime.inspection().view());
     }
 
     record Dependencies(
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntitySessionState entityRuntimeState,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             RomTables romTables,
-            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomPlayerItemActions> roomPlayerItemActions,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {}
+            RoomObjectMutations roomObjectMutations,
+            RoomSessionViews roomSessionViews,
+            RoomObjectMutations roomTileRedraw) {
+        Dependencies {
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romTables, "romTables");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+        }
+    }
 }

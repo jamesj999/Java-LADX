@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;

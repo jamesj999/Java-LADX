@@ -1,6 +1,8 @@
 package linksawakening.world.room;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
@@ -15,7 +17,10 @@ import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.transition.*;
+import linksawakening.world.transition.RoomBoundaryController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom

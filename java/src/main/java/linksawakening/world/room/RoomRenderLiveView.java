@@ -10,12 +10,14 @@ import linksawakening.world.entity.event.InstrumentWarpVisual;
 /** Cached read-only projection; the owner controls updates and room replacement. */
 final class RoomRenderLiveView implements RoomRenderSnapshot.View {
     private final Supplier<ActiveRoom> room;
+    /** Absent for a standalone ActiveRoom projection with no live entity runtime. */
     private final Supplier<RoomEntityRuntime> runtime;
+
     private EntitySpriteSelection paletteSelection;
     private int[][] spritePalettes = EMPTY_PALETTES;
 
     RoomRenderLiveView(Supplier<ActiveRoom> room, Supplier<RoomEntityRuntime> runtime) {
-        this.room = room;
+        this.room = java.util.Objects.requireNonNull(room);
         this.runtime = runtime;
     }
 

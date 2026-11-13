@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityTypeRules;
 import linksawakening.world.entity.RoomEntity;
@@ -48,44 +46,44 @@ final class RoomDebugFixture {
     }
 
     int bombDirectionForTest(int slot) {
-        return session.components.entityBridge().entityRuntime == null
+        return session.components.entityFrame().runtime == null
                 ? 0xFF
-                : session.components.entityBridge().entityRuntime.inspection().bombDirection(slot);
+                : session.components.entityFrame().runtime.inspection().bombDirection(slot);
     }
 
     void setColorShellStateForTest(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        if (session.components.entityBridge().entityRuntime != null) {
+        if (session.components.entityFrame().runtime != null) {
             session.components
                     .entityBridge()
-                    .entityRuntime
+                    .runtime()
                     .debug()
                     .setColorShellState(slot, state, transitionCountdown, direction, speedX, speedY);
         }
     }
 
     int entityGroundStatusForTest(int slot) {
-        if (session.components.entityBridge().entityRuntime == null) {
+        if (session.components.entityFrame().runtime == null) {
             return 0;
         }
-        return session.components.entityBridge().entityRuntime.inspection().groundStatus(slot);
+        return session.components.entityFrame().runtime.inspection().groundStatus(slot);
     }
 
     void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
-        if (session.components.entityBridge().entityRuntime != null) {
-            session.components.entityBridge().entityRuntime.debug().setEnemyIgnoreHitsCountdown(slot, value);
+        if (session.components.entityFrame().runtime != null) {
+            session.components.entityFrame().runtime.debug().setEnemyIgnoreHitsCountdown(slot, value);
         }
     }
 
     void setEntityThrownDirectionForTest(int slot, int value) {
-        if (session.components.entityBridge().entityRuntime != null) {
-            session.components.entityBridge().entityRuntime.configuration().setThrownDirection(slot, value);
+        if (session.components.entityFrame().runtime != null) {
+            session.components.entityFrame().runtime.configuration().setThrownDirection(slot, value);
         }
     }
 
     void setEntityLedgeTimerForTest(int slot, int value) {
-        if (session.components.entityBridge().entityRuntime != null) {
-            session.components.entityBridge().entityRuntime.configuration().setLedgeTransitionTimer(slot, value);
+        if (session.components.entityFrame().runtime != null) {
+            session.components.entityFrame().runtime.configuration().setLedgeTransitionTimer(slot, value);
         }
     }
 
@@ -117,27 +115,27 @@ final class RoomDebugFixture {
     }
 
     int entityLedgeTimerForTest(int slot) {
-        return session.components.entityBridge().entityRuntime == null
+        return session.components.entityFrame().runtime == null
                 ? 0
-                : session.components.entityBridge().entityRuntime.enemies().ledgeTransitionTimer(slot);
+                : session.components.entityFrame().runtime.enemies().ledgeTransitionTimer(slot);
     }
 
     int entityFallingTargetXForTest(int slot) {
-        return session.components.entityBridge().entityRuntime == null
+        return session.components.entityFrame().runtime == null
                 ? 0
-                : session.components.entityBridge().entityRuntime.enemies().fallingTargetX(slot);
+                : session.components.entityFrame().runtime.enemies().fallingTargetX(slot);
     }
 
     int entityTransitionCountdownForTest(int slot) {
-        if (session.components.entityBridge().entityRuntime == null) {
+        if (session.components.entityFrame().runtime == null) {
             return 0;
         }
         RoomEntity entity = session.components.location().activeRoom == null
                 ? null
                 : session.components.location().activeRoom.entityView().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
-                ? session.components.entityBridge().entityRuntime.inspection().warpTransitionCountdown(slot)
-                : session.components.entityBridge().entityRuntime.enemies().transitionCountdown(slot);
+                ? session.components.entityFrame().runtime.inspection().warpTransitionCountdown(slot)
+                : session.components.entityFrame().runtime.enemies().transitionCountdown(slot);
     }
 
     int roomTriggerCountForTest() {
@@ -170,24 +168,24 @@ final class RoomDebugFixture {
     }
 
     int entityDropSpeedXForTest(int slot) {
-        return session.components.entityBridge().entityRuntime == null
+        return session.components.entityFrame().runtime == null
                 ? 0
-                : session.components.entityBridge().entityRuntime.inspection().dropSpeedX(slot);
+                : session.components.entityFrame().runtime.inspection().dropSpeedX(slot);
     }
 
     int entityDropSpeedZForTest(int slot) {
-        return session.components.entityBridge().entityRuntime == null
+        return session.components.entityFrame().runtime == null
                 ? 0
-                : session.components.entityBridge().entityRuntime.inspection().dropSpeedZ(slot);
+                : session.components.entityFrame().runtime.inspection().dropSpeedZ(slot);
     }
 
     void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
-        session.components.entityBridge().entityRuntime = runtime;
+        session.components.entityFrame().runtime = runtime;
     }
 
     int entityPhysicsFlagsForTest(int slot) {
-        return session.components.entityBridge().entityRuntime == null
+        return session.components.entityFrame().runtime == null
                 ? 0
-                : session.components.entityBridge().entityRuntime.enemies().physicsFlags(slot);
+                : session.components.entityFrame().runtime.enemies().physicsFlags(slot);
     }
 }

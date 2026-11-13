@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 public interface RoomDungeon {
     /** Same-thread read-only inventory data, valid until the next tick or world mutation. */
     interface View {

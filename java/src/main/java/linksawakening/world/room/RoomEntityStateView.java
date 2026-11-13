@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.world.entity.EnemyDropResolver;
@@ -17,7 +15,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void resetGuardianAcornCounterOnHurt() {
-        var runtime = dependencies.entityBridge().entityRuntime;
+        var runtime = dependencies.entityBridge().runtime();
         var counters = runtime == null
                 ? dependencies.entityFrame().enemyDropCounters
                 : runtime.inspection().enemyDropCounters();
@@ -30,8 +28,8 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public boolean gelClingingToLink() {
-        return dependencies.entityBridge().entityRuntime != null
-                && dependencies.entityBridge().entityRuntime.gelClingingToLink();
+        return dependencies.entityBridge().runtime() != null
+                && dependencies.entityBridge().runtime().gelClingingToLink();
     }
 
     public void setEntityDialogActive(boolean active) {
@@ -51,8 +49,8 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void setEntityScreenShakeCountdown(int countdown) {
-        if (dependencies.entityBridge().entityRuntime != null)
-            dependencies.entityBridge().entityRuntime.configuration().setScreenShakeCountdown(countdown);
+        if (dependencies.entityBridge().runtime() != null)
+            dependencies.entityBridge().runtime().configuration().setScreenShakeCountdown(countdown);
     }
 
     public void setSecretSeashellPegasusCollisionState(
@@ -128,8 +126,16 @@ final class RoomEntityStateView implements RoomEntityState {
 
     record Dependencies(
             RoomEntityBridge entityBridge,
-            RoomEntityFrameState entityFrame,
+            RoomEntitySessionState entityFrame,
             RoomEntityInputs entityInputs,
             RoomFollowerState followers,
-            RoomSessionViews roomSessionViews) {}
+            RoomSessionViews roomSessionViews) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+        }
+    }
 }

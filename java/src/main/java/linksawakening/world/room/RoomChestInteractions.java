@@ -2,7 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_CHEST_OPEN;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
@@ -21,7 +21,7 @@ final class RoomChestInteractions {
         if (!actionPressed
                 || linkDirection != Direction.UP
                 || dependencies.location().activeRoom == null
-                || dependencies.entityBridge().get().entityRuntime == null) {
+                || dependencies.entityRuntimeState().runtime == null) {
             return new ChestOpenResult(false, -1, -1, -1);
         }
         if (linkPixelX < 0 || linkPixelY < 0 || linkPixelX >= ROOM_PIXEL_WIDTH || linkPixelY >= ROOM_PIXEL_HEIGHT) {
@@ -38,7 +38,7 @@ final class RoomChestInteractions {
             return new ChestOpenResult(false, -1, -1, -1);
         }
         int location = (row << 4) | column;
-        if (dependencies.roomSessionViews().get().objectAtRoomLocation(location) != 0xA0) {
+        if (dependencies.roomSessionViews().objectAtRoomLocation(location) != 0xA0) {
             return new ChestOpenResult(false, -1, -1, location);
         }
         int itemType = dependencies
@@ -48,24 +48,23 @@ final class RoomChestInteractions {
                         dependencies.location().activeRoom.roomId(),
                         swordLevel,
                         dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD);
-        int slot = dependencies.entityBridge().get().entityRuntime.spawnChestWithItem(column << 4, row << 4, itemType);
+        int slot = dependencies.entityRuntimeState().runtime.spawnChestWithItem(column << 4, row << 4, itemType);
         if (slot < 0) {
             return new ChestOpenResult(false, -1, -1, location);
         }
 
-        dependencies.roomObjectMutations().get().writeBombPuzzleObject(location, 0xA1);
+        dependencies.roomObjectMutations().writeBombPuzzleObject(location, 0xA1);
         byte[] status = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? dependencies.roomState().overworldRoomStatus
                 : dependencies
                         .roomSessionViews()
-                        .get()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId());
         status[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
         // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
         // from the ROM overlay would discard other live mutations (cut bushes).
         if (dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         }
         dependencies
                 .overworldCollision()
@@ -79,23 +78,31 @@ final class RoomChestInteractions {
         dependencies
                 .location()
                 .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+                .replaceEntities(
+                        dependencies.entityRuntimeState().runtime.inspection().view());
         return new ChestOpenResult(true, itemType, slot, location);
     }
 
     record Dependencies(
             ChestContentsTable chestContentsTable,
-            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            RoomEntitySessionState entityRuntimeState,
             RoomLocationState location,
             OverworldCollision overworldCollision,
             Rom romData,
-            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomObjectMutations roomObjectMutations,
+            RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {}
+            RoomObjectMutations roomTileRedraw) {
+        Dependencies {
+            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+        }
+    }
 }

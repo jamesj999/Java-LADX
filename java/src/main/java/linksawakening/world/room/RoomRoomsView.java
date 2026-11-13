@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.world.entity.event.LiftedEntityState;
 
 final class RoomRoomsView implements RoomRooms {
@@ -87,5 +85,10 @@ final class RoomRoomsView implements RoomRooms {
         return dependencies.roomSessionViews().liftedEntityState();
     }
 
-    record Dependencies(RoomLoadCoordinator roomLoadCoordinator, RoomSessionViews roomSessionViews) {}
+    record Dependencies(RoomLoadCoordinator roomLoadCoordinator, RoomSessionViews roomSessionViews) {
+        Dependencies {
+            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+        }
+    }
 }

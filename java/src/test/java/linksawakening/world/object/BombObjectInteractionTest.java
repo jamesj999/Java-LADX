@@ -3,8 +3,6 @@ package linksawakening.world.object;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import linksawakening.world.entity.*;
-import linksawakening.world.room.*;
 import org.junit.jupiter.api.Test;
 
 final class BombObjectInteractionTest {

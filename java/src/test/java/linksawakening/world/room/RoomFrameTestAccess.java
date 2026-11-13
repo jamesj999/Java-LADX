@@ -7,7 +7,7 @@ public final class RoomFrameTestAccess {
     private RoomFrameTestAccess() {}
 
     public static linksawakening.world.entity.RoomEntityRuntime runtime(RoomSession room) {
-        return room.components.entityBridge().entityRuntime;
+        return room.components.entityFrame().runtime;
     }
 
     public static void music(RoomSession room, int track) {

@@ -1,7 +1,12 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomTransitionTestSupport.*;
-import static linksawakening.world.room.RoomTransitionTestSupport2.*;
+import static linksawakening.world.room.RoomNavigationFixture.collisionGrid;
+import static linksawakening.world.room.RoomNavigationFixture.loadRom;
+import static linksawakening.world.room.RoomNavigationFixture.newSession;
+import static linksawakening.world.room.RoomNavigationFixture.objectAt;
+import static linksawakening.world.room.RoomNavigationFixture.reachablePositionPath;
+import static linksawakening.world.room.RoomNavigationFixture.tickInteractiveEntities;
+import static linksawakening.world.room.RoomNavigationFixture.walkToAndCrossIndoorBoundary;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,7 +32,7 @@ import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
-final class RoomTransitionState1Test {
+final class KeyCavernEntranceRouteTest {
 
     @Test
     void keyCavernEntranceRouteEarnsAndSpendsFirstKeyToReachNorthBasement() throws Exception {

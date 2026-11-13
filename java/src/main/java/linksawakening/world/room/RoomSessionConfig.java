@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
@@ -17,6 +15,7 @@ public record RoomSessionConfig(
         OverworldCollision overworldCollision,
         Presentation presentation,
         RomRandomByteSource randomByteSource) {
+    /** Each service is optional for headless/domain-only sessions; null disables that output. */
     public record Presentation(
             TransientVfxSystem transientVfxSystem,
             DroppableRupeeSystem droppableRupeeSystem,
