@@ -166,7 +166,7 @@ public final class EntitySlotProperties {
         this.projectiles.writeMusicalNoteInertia(slot, inertia);
         if (inertia == 0) {
             this.lifecycle.clearEntity(slot);
-            return null;
+            return this.slots[slot];
         }
 
         int speedXAdjustment = (inertia & 0x10) != 0 ? -1 : 1;

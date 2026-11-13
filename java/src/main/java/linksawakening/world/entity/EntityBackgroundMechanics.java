@@ -37,6 +37,8 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ROM background collision, falling, recoil and Link push glue. */
 public final class EntityBackgroundMechanics {
+    /** Completed EntityFallHandler visit; callers consume only the disabled status. */
+    private static final RoomEntity FINISHED_FALL = RoomEntity.disabled(0);
     // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
@@ -199,7 +201,7 @@ public final class EntityBackgroundMechanics {
         int slot = entity.slot();
         int transition = runtime.physicsTables.readEnemyTransitionCountdown(slot) & 0xFF;
         if (transition == 0) {
-            return null;
+            return FINISHED_FALL;
         }
 
         if (transition >= 0x40) {

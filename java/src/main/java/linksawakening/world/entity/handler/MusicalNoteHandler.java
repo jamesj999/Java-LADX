@@ -23,7 +23,7 @@ final class MusicalNoteHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE) {
             RoomEntity note = state.slotProperties().advanceMusicalNoteEntity(slotState.entity());
-            if (note == null) {
+            if (!note.loaded()) {
                 return false;
             }
             state.replaceEntity(note);

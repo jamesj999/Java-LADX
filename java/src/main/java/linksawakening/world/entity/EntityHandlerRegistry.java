@@ -11,30 +11,38 @@ import java.util.function.Predicate;
 
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
 public final class EntityHandlerRegistry {
+    private static final EntityHandler NO_INITIALIZER = (entity, random) -> {};
+    private static final BiFunction<RoomEntity, EntityFrameContext, RoomEntity> NO_ADVANCE = (entity, frame) -> entity;
+    private static final Predicate<EntityFrameExecution> USE_INITIALIZER = frame -> true;
+
     private static final class Binding implements EntityHandler {
-        private EntityHandler initializer;
-        private BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance;
+        private EntityHandler initializer = NO_INITIALIZER;
+        private boolean initializerRegistered;
+        private BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance = NO_ADVANCE;
+        private boolean advanceRegistered;
         private final EnumMap<EntityTickStage, List<Predicate<EntityFrameExecution>>> stages =
                 new EnumMap<>(EntityTickStage.class);
 
-        private Binding(/* Optional hook for a type registered only at dispatch sites. */ EntityHandler initializer) {
-            this.initializer = initializer;
+        private Binding() {}
+
+        private Binding(EntityHandler initializer) {
+            this.initializer = Objects.requireNonNull(initializer, "initializer");
+            initializerRegistered = true;
         }
 
         public void initialize(RoomEntity entity, IntSupplier random) {
-            if (initializer != null) initializer.initialize(entity, random);
+            initializer.initialize(entity, random);
         }
 
         public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
-            if (advance != null) return advance.apply(entity, context);
-            return initializer == null ? entity : initializer.advance(entity, context);
+            if (advanceRegistered) return advance.apply(entity, context);
+            return initializer.advance(entity, context);
         }
 
         boolean tickVisit(EntityTickStage stage, int visit, EntityFrameExecution frame) {
-            List<Predicate<EntityFrameExecution>> callbacks = stages.get(stage);
-            Predicate<EntityFrameExecution> handler = callbacks == null ? null : callbacks.get(visit);
-            if (handler != null) return handler.test(frame);
-            return initializer == null || initializer.tick(stage, frame);
+            List<Predicate<EntityFrameExecution>> callbacks = stages.getOrDefault(stage, List.of());
+            Predicate<EntityFrameExecution> handler = callbacks.isEmpty() ? USE_INITIALIZER : callbacks.get(visit);
+            return handler == USE_INITIALIZER ? initializer.tick(stage, frame) : handler.test(frame);
         }
     }
 
@@ -55,9 +63,10 @@ public final class EntityHandlerRegistry {
     public void registerInitializer(int type, java.util.function.BiConsumer<RoomEntity, IntSupplier> initializer) {
         Objects.requireNonNull(initializer);
         Binding binding = binding(type);
-        if (binding.initializer != null)
+        if (binding.initializerRegistered)
             throw new IllegalArgumentException("Duplicate initializer for entity type: " + type);
         binding.initializer = initializer::accept;
+        binding.initializerRegistered = true;
     }
 
     // Unregistered type entries are absent; supports() distinguishes them from registered no-op hooks.
@@ -65,7 +74,7 @@ public final class EntityHandlerRegistry {
     private final boolean[] registered = new boolean[256];
 
     {
-        java.util.Arrays.setAll(handlers, ignored -> new Binding(null));
+        java.util.Arrays.setAll(handlers, ignored -> new Binding());
     }
 
     void register(int type, EntityHandler handler) {
@@ -93,12 +102,13 @@ public final class EntityHandlerRegistry {
         Objects.checkIndex(type, handlers.length);
         Objects.requireNonNull(advance);
         Binding binding = binding(type);
-        if (binding.advance != null) throw new IllegalArgumentException("Duplicate advancing entity type: " + type);
+        if (binding.advanceRegistered) throw new IllegalArgumentException("Duplicate advancing entity type: " + type);
         binding.advance = advance;
+        binding.advanceRegistered = true;
     }
 
     boolean hasAdvance(int type) {
-        return supports(type) && handlers[type].advance != null;
+        return supports(type) && handlers[type].advanceRegistered;
     }
 
     RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
@@ -112,8 +122,8 @@ public final class EntityHandlerRegistry {
         Binding binding = binding(type);
         Objects.checkIndex(visit, stage.visits());
         List<Predicate<EntityFrameExecution>> callbacks = binding.stages.computeIfAbsent(
-                stage, ignored -> new ArrayList<>(Collections.nCopies(stage.visits(), null)));
-        if (callbacks.get(visit) != null) {
+                stage, ignored -> new ArrayList<>(Collections.nCopies(stage.visits(), USE_INITIALIZER)));
+        if (callbacks.get(visit) != USE_INITIALIZER) {
             throw new IllegalArgumentException("Duplicate tick stage for type: " + type);
         }
         callbacks.set(visit, tick);

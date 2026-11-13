@@ -78,9 +78,9 @@ public final class MaskedMimicMotion {
         boolean blocked = false;
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         if (nextX != x) {
-            EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+            EntityBackgroundCollisionResult result = backgroundInteraction.probeOrNone(
                     entity, horizontalDirection(speedX[slot]), nextX, y, ignoreHitsCountdown, currentFrame);
-            if (result != null && result.blocked()) {
+            if (result.blocked()) {
                 blocked = true;
             } else {
                 x = nextX;
@@ -89,9 +89,9 @@ public final class MaskedMimicMotion {
 
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         if (nextY != y) {
-            EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+            EntityBackgroundCollisionResult result = backgroundInteraction.probeOrNone(
                     entity, verticalDirection(speedY[slot]), x, nextY, ignoreHitsCountdown, currentFrame);
-            if (result != null && result.blocked()) {
+            if (result.blocked()) {
                 blocked = true;
             } else {
                 y = nextY;

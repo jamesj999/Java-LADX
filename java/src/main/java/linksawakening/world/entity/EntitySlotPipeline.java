@@ -582,7 +582,7 @@ final class EntitySlotPipeline {
 
         if (!state.handlers().tick(EntityTickStage.PHASE_2_FALLING, state)) return false;
         RoomEntity falling = state.background().advanceFallingEntity(slotState.entity());
-        if (falling == null) {
+        if (!falling.loaded()) {
             state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }

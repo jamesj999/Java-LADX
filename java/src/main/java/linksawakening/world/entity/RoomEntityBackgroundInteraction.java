@@ -21,6 +21,13 @@ public interface RoomEntityBackgroundInteraction {
 
     EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY);
 
+    /** Explicit no-result value for legacy probes that return null. */
+    default EntityBackgroundCollisionResult probeOrNone(
+            RoomEntity entity, int direction, int x, int y, int ignoreHits, int frame) {
+        return Objects.requireNonNullElse(
+                probe(entity, direction, x, y, ignoreHits, frame), EntityBackgroundCollisionResult.NONE);
+    }
+
     /**
      * Rich probe variant carrying the ROM's current ignore-hits countdown.
      * Existing four-argument callers retain their original behavior.

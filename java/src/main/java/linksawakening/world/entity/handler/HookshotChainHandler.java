@@ -6,6 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRI
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 
 import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -202,7 +203,7 @@ final class HookshotChainHandler {
                 completedResult = false;
                 return false;
             }
-            collisionResult = null;
+            collisionResult = EntityBackgroundCollisionResult.NONE;
 
             {
                 collisionResult = frameInput
@@ -224,7 +225,7 @@ final class HookshotChainHandler {
             if (blocked) {
                 HookshotChainMotion.State stopped =
                         HookshotChainMotion.rollbackTo(step.state(), hookshotState.x(), hookshotState.y());
-                if (collisionResult != null && collisionResult.physicsFlag() == 0x60) {
+                if (collisionResult.physicsFlag() == 0x60) {
                     if (HookshotChainMotion.shouldUnloadForHookshotable(
                             step.state().transitionCountdown())) {
                         state.lifecycle().clearEntity(slotState.entity().slot());
@@ -299,7 +300,7 @@ final class HookshotChainHandler {
             nextPosition = null;
             step = null;
             unmasked = false;
-            collisionResult = null;
+            collisionResult = EntityBackgroundCollisionResult.NONE;
             blocked = false;
             completedResult = false;
 
@@ -314,7 +315,7 @@ final class HookshotChainHandler {
                 this.hookshotState = null;
                 this.nextPosition = null;
                 this.step = null;
-                this.collisionResult = null;
+                this.collisionResult = EntityBackgroundCollisionResult.NONE;
             }
         }
     }
