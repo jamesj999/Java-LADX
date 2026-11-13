@@ -676,18 +676,52 @@ inspector/reset path and a behavior controller has an independent owner:
 bomb, projectile, lift, pickup, reward, story, boss and slot-presentation state,
 plus Genie and Slime Eye encounter state. This breaks construction cycles
 without exposing a partially constructed controller. Controllers receive final,
-validated concrete dependencies. Optional ROM data, room geometry, caller
-overrides and presentation values are documented where declared; absence keeps
-the established ROM-free or no-interaction path.
+validated concrete dependencies. `RoomEntityRuntime.builder(snapshot)` selects
+explicit ROM-backed or ROM-free policies during construction. Room loading and
+follower synchronization supply the real RNG, sprite catalog, combat tables,
+chest table and ROM readers. The ROM-free fixture supplies deterministic RNG
+and uses the runtime's named collision/query defaults. Execution does not test
+collaborators for null. Legacy nullable inputs are normalized at their construction/configuration
+boundary, retaining the old public contracts.
+
+| Dependency | Explicit absent-input policy |
+| --- | --- |
+| Boolean background / object collision | `RoomEntityBackgroundCollision.OPEN` / `RoomEntityObjectCollision.NONE` never block |
+| Rich background interaction | `RoomEntityBackgroundInteraction.NONE` returns a shared no-collision result |
+| Ground interaction | `RoomEntityGroundInteraction.NONE` returns the entity unchanged with ground status zero |
+| Object sampling | `RoomEntityObjectQuery.NONE` returns `RoomEntityObjectSample.UNSAMPLED`; a genuinely sampled `$FF` cell is still distinguishable |
+| Sprite catalog | `EntitySpriteViews` selects a ROM source or an unsupported source; unsupported presentation preserves the entity and its variant |
+| Combat tables | `RomEnemyCombatTables.DEFAULTS` preserves the old type-sensitive health/damage rules and disables Bow-Wow eating; ROM-dependent drop lookup retains its precondition |
+| Chest table | `EntityChestContents.Empty` emits no presentation sound/dialog and retains the original error if a spawn requires ROM contents |
+| Drop / warp policies | `EnemyDropResolver.NONE` performs no defeat bookkeeping or RNG reads; `WarpMotion.DISABLED` skips the original warp handler path |
+| RNG | `EntityFrameRandom` selects an externally clocked source or the old room-owned ROM RNG; operations that required an explicitly supplied RNG retain that precondition |
+
+Room geometry policies can still be replaced through configuration because room
+consumers own their lifecycle. The physics owner always stores a non-null policy;
+controllers keep final references to that owner. Frame preparation selects rich
+versus boolean collision precedence once, using stable adapters. Some sprite
+capability gates remain where the unsupported path historically skipped a spawn
+or state change. They are behavior choices, not nullable-service checks.
+
+Genuine optional domain values remain documented: an unspawned hookshot, an
+unavailable tail/parent, follower history, saved-room flags, snapshot presentation
+metadata, and optional attack overrides or emitted effects. Construction-time
+validation/default selection is distinct from these values. The detailed
+[null-contract audit and small-class review](../java/src/test/java/linksawakening/world/entity/README.md)
+lists every class with remaining comparisons and the retained responsibilities.
 
 One entity's motion, input records, state handlers and reusable scratch live
 in its motion class. `EntityMotionRegistry` supplies one typed motion instance
-per room through `get(MotionClass.class, MotionClass::new)`. Adding a motion
-does not add a field to central runtime state. Controllers likewise contain
+per room through `get(MotionClass.class, MotionClass::new)`. Its one first-use
+entry marker is checked inside the registry; callers never test for a missing
+motion. Adding a motion does not add a field to central runtime state. Controllers likewise contain
 their own behavior sequences and scratch. Scratch owners are final constructor
 dependencies; invocation inputs and temporary results are reset and released.
 A reentrant call uses a separate holder. Moldorm's tail snapshot cache stays
 separate because it owns retained immutable projections of the history taps.
+Combat gates, sword impact and Link-contact responses form one ordered sequence
+inside `EntityCombatResolver`. Slime Eye half transitions belong to its encounter
+controller, beside their integration and timer call sites.
 
 `EntitySlotPipeline` contains frame preparation, five named phase methods and
 presentation commit. The descending slot loop and every early return remain
@@ -704,6 +738,8 @@ registry using explicit type IDs and named callbacks. Their initialization,
 advance, tick hooks and nested scratch live together. The ordered
 `EntityHandlerFamilies.INSTALLERS` list contains one registration line per
 family; duplicate registrations fail and unsupported bindings remain explicit.
+All bindings are allocated at registry construction, with named no-hook and
+initializer-fallback actions; dispatch never depends on a null callback.
 
 `EntityTickStage` describes 27 dispatch sites between phase operations. Each
 site retains ordered visit positions, preserving all 141 original visits.
@@ -725,10 +761,16 @@ Stable collision adapters and typed state views retain their identities.
 state and consumers that require ownership. `view()` returns a cached read-only
 live `RoomEntitySnapshot` for immediate same-thread consumption. Its lists and
 metadata follow the runtime; it is not a historical frame or a cross-thread
-snapshot. A `withX` operation on a live view materializes owned data first.
+snapshot. Both forms have a non-null data representation (`Owned` or `Live`),
+rather than an optional live source checked by every accessor. A `withX`
+operation on a live view materializes owned data first.
 Moldorm tail presentation reuses immutable segment lists only while their
-coordinates are unchanged. Empty cache entries, optional hooks and optional
-results are domain absence; they are distinct from required collaborators.
+coordinates are unchanged. Projection caches and pickup sequence owners are
+seeded eagerly. An explicit state distinguishes a pickup never collected from
+one whose collection has completed. Hookshot outcomes and completed falling or
+musical-note motion use named no-result values; optional emitted spawn/effect
+requests remain nullable where that directly expresses the result without
+per-frame allocation.
 
 `EntityTickAllocationTest` measures a ROM-free six-entity mix: roaming enemies,
 a projectile, active Moldorm, a droppable and an NPC, with three inspection
@@ -756,8 +798,8 @@ ported routines and original labels, including unnamed disassembly tables.
 
 Use `RoomEntityRuntime.builder(snapshot)` for construction. Test-side
 `EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` supply
-real ROM-free state and focused setup. Tests remain split by entity family and
-behavior. Room consumers use runtime/frame builders, `EntityPickupFrame`,
+real ROM-free state, explicit service defaults and focused setup. Tests remain
+split by entity family and behavior. Room consumers use runtime/frame builders, `EntityPickupFrame`,
 `EnemyCombatFrame`, `EntitySwordContactFrame` and `FollowingNpcSpawn`; the old
 `from`, `ForTest` and wide operation adapters are removed. Preserve externally
 used signatures when consolidating internal code. Cohesion determines class
@@ -767,7 +809,9 @@ To add an entity type:
 
 1. Add its motion/state owner in `world.entity.motion`, preserving the
    disassembly's initialization, timers, byte arithmetic and RNG ordering.
-   Keep its input values and execution scratch beside the behavior.
+   Keep its input values and execution scratch beside the behavior. Any new
+   service must be required at construction or have a named absent-input policy
+   that reproduces the established ROM-free behavior.
 2. Add its family handler in `world.entity.handler`. Register initialization,
    advance and site/visit hooks with `EntityHandlerRegistry`, acquire the
    motion through the typed registry and emit typed events for external effects.

@@ -255,3 +255,34 @@ whose identity avoids per-frame allocations.
 Also merged `EntityLinkContact` into `EntityCombatResolver`: it was over the
 40-line threshold but still only a continuation of that same combat sequence.
 None of the three removed classes had callers outside `world/entity` main/tests.
+
+## Final verification
+
+The required `LA_ROM`-configured `./gradlew spotlessApply test` suite contains
+2,963 tests, with zero failures/errors and one existing skip (baseline: 2,960;
+three default-contract tests were added). No existing test or fixture was removed
+or weakened. The complete suite ran before each commit.
+
+Allocation guards were also run with temporary Gradle init scripts setting
+`-XX:+DoEscapeAnalysis` and `-XX:-DoEscapeAnalysis`; runner settings are not
+committed. Measurements are steady-state bytes per tick/frame unless noted.
+
+| Guard | EA on | EA off | Budget |
+| --- | ---: | ---: | ---: |
+| Representative six-entity tick, three live inspections | 834.43 | 834.50 | 1,100 |
+| Two-enemy combat | 400 | 400 | 570 |
+| Cached sprite presentation | 0 | 0 | 0 |
+| Repeated Marin presentation | 0 | 0 | 0 |
+| Idle session simulation | 0 | 0 | Existing session guard |
+| Active session simulation | 433 | 433 | Existing session guard |
+
+Cold falling-definition decoding remains 2,480 bytes per first decode; subsequent
+cached reads allocate zero. Immutable changed entities, motion result records
+and emitted events account for the remaining tick allocation. Their ownership
+contracts remain unchanged.
+
+Main Java files: 371 -> 369; real-code-small class files: 88 -> 84; wildcard
+imports: 0 -> 0. Of the 88 reviewed classes, two were merged; others can move
+out of the small-class metric as their responsibilities become explicit. Test
+Java files: 178 -> 179. All edits outside the entity source/test tree are confined
+to the Entity system section of `docs/ARCHITECTURE.md`.
