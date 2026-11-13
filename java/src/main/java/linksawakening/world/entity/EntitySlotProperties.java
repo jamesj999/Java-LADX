@@ -29,6 +29,8 @@ import linksawakening.world.room.ChestContentsTable;
 
 /** ROM per-slot options, sprite definitions and handler metadata. */
 public final class EntitySlotProperties {
+    private final List<BowWowChain.Entry> bowWowEntries = new ArrayList<>();
+    private final List<WingedOctorokOam.Entry> wingedEntries = new ArrayList<>();
     final EntitySlotPresentation state;
     final boolean indoorRoom;
     // Optional ROM data, absent in ROM-free runtimes.
@@ -190,7 +192,8 @@ public final class EntitySlotProperties {
 
     void updateBowWowChain(int frame) {
         var runtime = this;
-        List<BowWowChain.Entry> entries = null;
+        List<BowWowChain.Entry> entries = bowWowEntries;
+        entries.clear();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
         if (runtime.roomVariables.readTransitionSequenceCounter() != 4
@@ -216,7 +219,6 @@ public final class EntitySlotProperties {
                                     .get(BowWowMotion.class, BowWowMotion::new)
                                     .readBowWowState(),
                             moving);
-            if (entries == null) entries = new ArrayList<>();
             entries.addAll(runtime.motions
                     .get(BowWowMotion.class, BowWowMotion::new)
                     .chainEntries(
@@ -226,7 +228,7 @@ public final class EntitySlotProperties {
                                     .readBowWowState(),
                             frame));
         }
-        this.state.writeBowWowChainOam(entries == null ? List.of() : List.copyOf(entries));
+        this.state.writeBowWowChainOam(List.copyOf(entries));
     }
 
     void updatePincerBodyOam() {
@@ -234,12 +236,12 @@ public final class EntitySlotProperties {
     }
 
     void updateWingedOctorokOam() {
-        List<WingedOctorokOam.Entry> entries = null;
+        List<WingedOctorokOam.Entry> entries = wingedEntries;
+        entries.clear();
         for (RoomEntity entity : this.slots) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
-            if (entries == null) entries = new ArrayList<>();
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
                     this.motions
@@ -249,7 +251,7 @@ public final class EntitySlotProperties {
                     entity.y(),
                     entity.z()));
         }
-        state.writeWingedOctorokOam(entries == null ? List.of() : List.copyOf(entries));
+        state.writeWingedOctorokOam(List.copyOf(entries));
     }
 
     public boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {

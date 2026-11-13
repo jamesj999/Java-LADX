@@ -19,6 +19,7 @@ import linksawakening.world.entity.motion.WitchMotion;
 
 /** Queries over ExecuteEntities slot state; snapshot() owns data, view() follows the live room. */
 public final class EntityRoomInspection {
+    static final RoomEntity UNREAD_PRESENTATION = RoomEntity.disabled(0);
     final EntityWarpController warpState;
     final boolean indoorRoom;
     // Optional ROM data, absent in ROM-free runtimes.
@@ -346,13 +347,13 @@ public final class EntityRoomInspection {
     }
 
     public boolean heartPiecePickupActive() {
-        for (var motion : this.pickups.storageHeartPiecePickup()) if (motion != null && motion.active()) return true;
+        for (var motion : this.pickups.storageHeartPiecePickup()) if (motion.active()) return true;
         return false;
     }
 
     public HeartPieceVisual heartPieceVisual() {
         for (var motion : this.pickups.storageHeartPiecePickup())
-            if (motion != null && motion.showMeter())
+            if (motion.showMeter())
                 return new HeartPieceVisual(
                         this.pickups.readHeartPiecesCount(), this.pickups.storageHeartPieceMeterPairs());
         return null;
@@ -598,7 +599,7 @@ public final class EntityRoomInspection {
     }
 
     static RoomEntity entityRoomQueriesPresentedEntity(EntityRoomInspection runtime, int slot) {
-        return entityRoomQueriesPresentedEntity(runtime, slot, null, null);
+        return entityRoomQueriesPresentedEntity(runtime, slot, UNREAD_PRESENTATION, UNREAD_PRESENTATION);
     }
 
     static RoomEntity entityRoomQueriesPresentedEntity(
@@ -613,8 +614,7 @@ public final class EntityRoomInspection {
                         : runtime.pickups.readChestPlayerLevelsKnown() && runtime.pickups.readChestSwordLevel() == 0);
         hidden |= entity.type() == 0x3F && runtime.indoorRoom && entityRoomQueriesIndoorTarinAbsent(runtime);
         if (!hidden || entity.spriteVariant() == -1) return entity;
-        if (entity == previousSource && previousPresentation != null && previousPresentation.spriteVariant() == -1)
-            return previousPresentation;
+        if (entity == previousSource && previousPresentation.spriteVariant() == -1) return previousPresentation;
         return EntitySnapshots.withVariant(entity, -1);
     }
 }

@@ -30,7 +30,12 @@ final class EntityPlayerCommands {
     final RoomEntity[] slots;
     // Marin's eight direction/walk variants repeat during the opening dialog.
     // Cache complete immutable values only while every source field still matches.
+    private static final RoomEntity UNREAD_PRESENTATION = RoomEntity.disabled(0);
     private final RoomEntity[] marinPresentations = new RoomEntity[8];
+
+    {
+        java.util.Arrays.fill(marinPresentations, UNREAD_PRESENTATION);
+    }
 
     EntityPlayerCommands(
             EntityBombState bombInteractions,
@@ -188,9 +193,9 @@ final class EntityPlayerCommands {
 
     private RoomEntity marinPresentation(RoomEntity entity, int x, int y, int variant) {
         if (entity.x() == x && entity.y() == y && entity.spriteVariant() == variant) return entity;
-        RoomEntity cached = variant >= 0 && variant < marinPresentations.length ? marinPresentations[variant] : null;
-        if (cached != null
-                && cached.slot() == entity.slot()
+        RoomEntity cached =
+                variant >= 0 && variant < marinPresentations.length ? marinPresentations[variant] : UNREAD_PRESENTATION;
+        if (cached.slot() == entity.slot()
                 && cached.sourceLoadOrder() == entity.sourceLoadOrder()
                 && cached.type() == entity.type()
                 && cached.x() == x

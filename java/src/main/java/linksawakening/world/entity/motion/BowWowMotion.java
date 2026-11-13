@@ -33,6 +33,11 @@ public final class BowWowMotion {
     static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8};
 
     private final BowWowChain[] chains = new BowWowChain[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] chainAvailable = new boolean[EntityRoomLoader.MAX_ENTITIES];
+
+    {
+        java.util.Arrays.setAll(chains, ignored -> new BowWowChain());
+    }
 
     final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -113,6 +118,7 @@ public final class BowWowMotion {
 
     public void clear(int slot) {
         chains[slot] = new BowWowChain();
+        chainAvailable[slot] = true;
         activeState[slot] = 0;
         selectedVariant[slot] = 0;
         setupComplete[slot] = 0;
@@ -134,12 +140,12 @@ public final class BowWowMotion {
 
     public RoomEntity advanceChain(RoomEntity entity, int questState, boolean linkMoving) {
         int slot = entity.slot();
-        if (chains[slot] == null) chains[slot] = new BowWowChain();
+        chainAvailable[slot] = true;
         return chains[slot].advance(entity, targetX[slot], targetY[slot], questState, linkMoving);
     }
 
     public List<BowWowChain.Entry> chainEntries(int slot, int questState, int frame) {
-        return chains[slot] == null ? List.of() : chains[slot].entries(slot, questState, frame);
+        return !chainAvailable[slot] ? List.of() : chains[slot].entries(slot, questState, frame);
     }
 
     int activeState(int slot) {

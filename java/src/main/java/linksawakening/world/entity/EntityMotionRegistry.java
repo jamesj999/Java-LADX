@@ -7,6 +7,10 @@ import java.util.function.Supplier;
 
 /** One motion instance per type and room, created on its first use. */
 final class EntityMotionRegistry {
+    private enum Entry {
+        UNCREATED
+    }
+
     private final Map<Class<?>, Object> motions = new HashMap<>();
 
     <T> T get(Class<T> type, Supplier<? extends T> factory) {
@@ -14,8 +18,8 @@ final class EntityMotionRegistry {
     }
 
     <T, C> T get(Class<T> type, C context, java.util.function.Function<? super C, ? extends T> factory) {
-        Object motion = motions.get(type);
-        if (motion == null) {
+        Object motion = motions.getOrDefault(type, Entry.UNCREATED);
+        if (motion == Entry.UNCREATED) {
             motion = Objects.requireNonNull(factory.apply(context), "motion");
             motions.put(type, type.cast(motion));
         }

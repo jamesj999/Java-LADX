@@ -31,9 +31,14 @@ public final class EntityPickupController {
     private final RoomEntityRuntime.CommonDroppableUpdate[] commonUpdates =
             new RoomEntityRuntime.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
 
+    {
+        java.util.Arrays.fill(
+                commonUpdates, new RoomEntityRuntime.CommonDroppableUpdate(RoomEntity.disabled(0), false));
+    }
+
     RoomEntityRuntime.CommonDroppableUpdate commonUpdate(RoomEntity entity, boolean hidden) {
         var previous = commonUpdates[entity.slot()];
-        if (previous == null || previous.entity() != entity || previous.hidden() != hidden) {
+        if (previous.entity() != entity || previous.hidden() != hidden) {
             previous = new RoomEntityRuntime.CommonDroppableUpdate(entity, hidden);
             commonUpdates[entity.slot()] = previous;
         }
@@ -496,7 +501,7 @@ public final class EntityPickupController {
     }
 
     public boolean hasHeartPiecePickup(int slot) {
-        return state.readHeartPiecePickup(slot) != null;
+        return state.readHeartPiecePickup(slot).started();
     }
 
     final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep(this);

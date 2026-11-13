@@ -455,7 +455,8 @@ public final class EntityRewardController {
                     || entity.status() != EntityStatus.ACTIVE
                     || !RoomEntityPickupRules.isPickable(entity.type())
                     || (floatingType && !floating)
-                    || (entity.type() == 0x35 && owner.pickups.readHeartPiecePickup(entity.slot()) != null)
+                    || (entity.type() == 0x35
+                            && owner.pickups.readHeartPiecePickup(entity.slot()).started())
                     || owner.state.readPowerUpPickupCountdown(entity.slot()) != 0
                     || owner.bossRewards.readDropPrivateCountdown1(entity.slot()) > 0
                     || (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER

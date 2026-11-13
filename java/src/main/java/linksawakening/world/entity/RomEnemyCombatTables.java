@@ -128,7 +128,17 @@ public final class RomEnemyCombatTables {
         return new SwordDamageResult(entityType & 0xFF, healthGroup, attackType, entry, rawValue);
     }
 
+    private static final SwordDamageResult[] DEFAULT_DAMAGE = new SwordDamageResult[256];
+
+    static {
+        for (int type = 0; type < DEFAULT_DAMAGE.length; type++) {
+            int amount = type == EntityRomConstants.ENTITY_SLIME_EYE ? 1 : RoomEntityCombatRules.basicSwordDamage(type);
+            DEFAULT_DAMAGE[type] = new SwordDamageResult(type, 0, -1, 0, amount);
+        }
+    }
+
     private static SwordDamageResult defaultDamage(int entityType, int healthGroup) {
+        if (healthGroup == 0) return DEFAULT_DAMAGE[entityType & 0xFF];
         int amount = (entityType & 0xFF) == EntityRomConstants.ENTITY_SLIME_EYE
                 ? 1
                 : RoomEntityCombatRules.basicSwordDamage(entityType);

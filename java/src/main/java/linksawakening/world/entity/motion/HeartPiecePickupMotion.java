@@ -4,7 +4,19 @@ import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 
 /** HeartPieceState1..8Handler ($03:5A6D), including the locked meter animation. */
 public final class HeartPiecePickupMotion {
+    private static final int NOT_COLLECTED = 0;
     private int state = 1;
+
+    public static HeartPiecePickupMotion inactive() {
+        HeartPiecePickupMotion motion = new HeartPiecePickupMotion();
+        motion.state = NOT_COLLECTED;
+        return motion;
+    }
+
+    public boolean started() {
+        return state != NOT_COLLECTED;
+    }
+
     private int inertia;
 
     public HeartPiecePickupUpdate advance(int countdown, boolean dialogActive, int pieces) {
@@ -61,6 +73,6 @@ public final class HeartPiecePickupMotion {
     }
 
     public boolean active() {
-        return state < 9;
+        return started() && state < 9;
     }
 }

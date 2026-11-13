@@ -62,15 +62,21 @@ public final class EntityHandlerRegistry {
 
     // Unregistered type entries are absent; supports() distinguishes them from registered no-op hooks.
     private final Binding[] handlers = new Binding[256];
+    private final boolean[] registered = new boolean[256];
+
+    {
+        java.util.Arrays.setAll(handlers, ignored -> new Binding(null));
+    }
 
     void register(int type, EntityHandler handler) {
         Objects.checkIndex(type, handlers.length);
-        if (handlers[type] != null) throw new IllegalArgumentException("Duplicate entity type: " + type);
+        if (registered[type]) throw new IllegalArgumentException("Duplicate entity type: " + type);
         handlers[type] = new Binding(Objects.requireNonNull(handler));
+        registered[type] = true;
     }
 
     boolean supports(int type) {
-        return type >= 0 && type < handlers.length && handlers[type] != null;
+        return type >= 0 && type < handlers.length && registered[type];
     }
 
     void initialize(RoomEntity entity, IntSupplier randomByteSupplier) {
@@ -79,7 +85,7 @@ public final class EntityHandlerRegistry {
 
     private Binding binding(int type) {
         Objects.checkIndex(type, handlers.length);
-        if (handlers[type] == null) handlers[type] = new Binding(null);
+        registered[type] = true;
         return handlers[type];
     }
 
