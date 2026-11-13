@@ -1,8 +1,15 @@
 package linksawakening.audio;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
-import javax.sound.sampled.*;
+import java.util.function.IntConsumer;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import linksawakening.app.GameSession;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.cutscene.CutsceneManager;
@@ -39,7 +46,7 @@ public final class IntroAudioCapture {
             // Decorate the already installed production sink rather than replacing audio routing.
             CutsceneManager cutscene = (CutsceneManager) field(session, "cutsceneManager");
             @SuppressWarnings("unchecked")
-            java.util.function.IntConsumer original = (java.util.function.IntConsumer) field(cutscene, "noiseSound");
+            IntConsumer original = (IntConsumer) field(cutscene, "noiseSound");
             cutscene.setIntroNoiseSound(id -> {
                 trace.printf("{\"frame\":%d,\"noise\":%d}%n", frame[0], id);
                 original.accept(id);

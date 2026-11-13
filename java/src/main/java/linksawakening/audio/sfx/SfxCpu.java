@@ -1,6 +1,10 @@
 package linksawakening.audio.sfx;
 
-import static linksawakening.audio.sfx.RomSoundEffectEngine.*;
+import static linksawakening.audio.sfx.RomSoundEffectEngine.MAX_INSTRUCTIONS_PER_TICK;
+import static linksawakening.audio.sfx.RomSoundEffectEngine.hex16;
+import static linksawakening.audio.sfx.RomSoundEffectEngine.hex8;
+import static linksawakening.audio.sfx.RomSoundEffectEngine.signed8;
+import static linksawakening.audio.sfx.RomSoundEffectEngine.unsigned16;
 
 /** Opcode decoding for the ROM-backed SFX interpreter. */
 final class SfxCpu {

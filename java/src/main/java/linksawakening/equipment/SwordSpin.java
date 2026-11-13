@@ -1,6 +1,9 @@
 package linksawakening.equipment;
 
-import static linksawakening.equipment.Sword.*;
+import static linksawakening.equipment.Sword.STATE_NONE;
+import static linksawakening.equipment.Sword.STATE_SWING_END;
+import static linksawakening.equipment.Sword.STATE_SWING_MIDDLE;
+import static linksawakening.equipment.Sword.STATE_SWING_START;
 
 import linksawakening.rom.SwordTables;
 import linksawakening.state.Direction;

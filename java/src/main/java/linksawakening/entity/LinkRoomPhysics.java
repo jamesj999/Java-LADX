@@ -1,7 +1,7 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
+import static linksawakening.entity.LinkRomConstants.COLLISION_POINTS_X;
+import static linksawakening.entity.LinkRomConstants.COLLISION_POINTS_Y;
 
 import linksawakening.state.Direction;
 import linksawakening.state.LinkMotionState;

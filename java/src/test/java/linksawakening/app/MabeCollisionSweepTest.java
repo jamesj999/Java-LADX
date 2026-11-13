@@ -1,16 +1,23 @@
 package linksawakening.app;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
-import linksawakening.input.*;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
-import linksawakening.rom.*;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomSymbols;
+import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
-import linksawakening.testing.*;
-import linksawakening.world.room.*;
+import linksawakening.testing.RequiresRom;
+import linksawakening.testing.TestRom;
+import linksawakening.world.room.LoadedRoom;
+import linksawakening.world.room.RoomLoader;
+import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
 

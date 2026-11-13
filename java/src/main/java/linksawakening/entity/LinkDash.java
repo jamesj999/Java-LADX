@@ -1,8 +1,11 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
+import static linksawakening.state.Direction.DOWN;
+import static linksawakening.state.Direction.LEFT;
+import static linksawakening.state.Direction.RIGHT;
+import static linksawakening.state.Direction.UP;
 
+import linksawakening.entity.Link.ScreenShakeRequest;
 import linksawakening.state.GroundStatus;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;

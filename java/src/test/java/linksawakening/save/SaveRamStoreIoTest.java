@@ -1,9 +1,12 @@
 package linksawakening.save;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -38,14 +41,14 @@ final class SaveRamStoreIoTest {
     void onlyMissingImagesStartEmptyWhileReadFailuresPropagate() throws Exception {
         Path path = directory.resolve("missing.sav");
         assertThrows(
-                java.nio.file.AccessDeniedException.class,
+                AccessDeniedException.class,
                 () -> SaveRamStore.open(path, p -> {
-                    throw new java.nio.file.AccessDeniedException(p.toString());
+                    throw new AccessDeniedException(p.toString());
                 }));
         assertEquals(
                 0,
                 SaveRamStore.open(path, p -> {
-                            throw new java.nio.file.NoSuchFileException(p.toString());
+                            throw new NoSuchFileException(p.toString());
                         })
                         .saveFilesMask());
     }

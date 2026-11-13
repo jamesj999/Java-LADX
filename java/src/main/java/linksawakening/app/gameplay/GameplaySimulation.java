@@ -1,7 +1,5 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
 import linksawakening.app.audio.MusicDirector;
 import linksawakening.app.gameplay.entity.EntityPhase;

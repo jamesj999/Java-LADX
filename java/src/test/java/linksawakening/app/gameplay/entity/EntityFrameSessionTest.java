@@ -1,14 +1,18 @@
 package linksawakening.app.gameplay.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.*;
-import linksawakening.app.*;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.app.AllocationSessions;
 import linksawakening.app.GameSession;
+import linksawakening.app.SessionTestAccess;
 import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.equipment.Sword;
 import linksawakening.testing.RequiresRom;
-import linksawakening.world.entity.event.*;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom
@@ -18,8 +22,8 @@ class EntityFrameSessionTest {
         var game = new GameSession();
         try (var rom = linksawakening.testing.TestRom.open()) {
             assertTrue(rom.read() >= 0);
-        } catch (java.io.IOException e) {
-            throw new java.io.UncheckedIOException(e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         game.initializeHeadlessNewGame();
         try {
@@ -44,8 +48,8 @@ class EntityFrameSessionTest {
         var game = new GameSession();
         try (var rom = linksawakening.testing.TestRom.open()) {
             assertTrue(rom.read() >= 0);
-        } catch (java.io.IOException e) {
-            throw new java.io.UncheckedIOException(e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         game.initializeHeadlessNewGame();
         try {
@@ -90,8 +94,8 @@ class EntityFrameSessionTest {
         var game = new GameSession();
         try (var rom = linksawakening.testing.TestRom.open()) {
             assertTrue(rom.read() >= 0);
-        } catch (java.io.IOException e) {
-            throw new java.io.UncheckedIOException(e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         game.initializeHeadlessNewGame();
         try {

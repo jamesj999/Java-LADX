@@ -1,7 +1,20 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.EntitySpriteGeometry.*;
-import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
+import static linksawakening.entity.EntitySpriteGeometry.appendDynamicPair;
+import static linksawakening.entity.EntitySpriteGeometry.appendMoblinSwordBody;
+import static linksawakening.entity.EntitySpriteGeometry.isColorShellType;
+import static linksawakening.entity.EntitySpriteGeometry.signedByte;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_BOW_WOW;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_CHEST_WITH_ITEM;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_COLOR_SHELL_RED;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_IRON_MASK;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_MARIN_AT_THE_SHORE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_POKEY;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_STALFOS_EVASIVE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SWORD_SHIELD_PICKUP;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_URCHIN;
 
 import java.util.ArrayList;
 import java.util.List;

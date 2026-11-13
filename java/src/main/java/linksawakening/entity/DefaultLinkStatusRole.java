@@ -1,6 +1,6 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
+import linksawakening.entity.Link.WaterSplash;
 
 /** Delegates status operations to state owners used by ROM {@code ApplyLinkMotionState}. */
 final class DefaultLinkStatusRole implements LinkStatusRole {

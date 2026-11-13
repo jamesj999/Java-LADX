@@ -1,9 +1,14 @@
 package linksawakening.audio.music;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
@@ -47,7 +52,7 @@ class FrameAudioPlayerTest {
             offset += chunk.length;
         }
         assertEquals(result.length, offset);
-        assertTrue(java.util.stream.IntStream.range(0, result.length).anyMatch(i -> result[i] != 0));
+        assertTrue(IntStream.range(0, result.length).anyMatch(i -> result[i] != 0));
         return result;
     }
 

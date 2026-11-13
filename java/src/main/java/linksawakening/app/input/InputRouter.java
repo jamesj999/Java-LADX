@@ -1,8 +1,16 @@
 package linksawakening.app.input;
 
-import static linksawakening.app.input.ApplicationKeys.*;
-import static linksawakening.input.KeyCodes.*;
-import static linksawakening.world.room.RoomConstants.*;
+import static linksawakening.app.input.ApplicationKeys.KEY_F1;
+import static linksawakening.app.input.ApplicationKeys.KEY_F2;
+import static linksawakening.app.input.ApplicationKeys.KEY_F3;
+import static linksawakening.input.KeyCodes.KEY_ENTER;
+import static linksawakening.input.KeyCodes.KEY_ESCAPE;
+import static linksawakening.input.KeyCodes.KEY_LEFT_SHIFT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_SHIFT;
+import static linksawakening.input.KeyCodes.PRESS;
+import static linksawakening.input.KeyCodes.RELEASE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
 
 import java.util.Objects;
 import linksawakening.app.debug.DebugLog;

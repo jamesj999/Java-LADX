@@ -1,7 +1,6 @@
 package linksawakening.state;
 
-import static linksawakening.state.PlayerNumbers.*;
-import static linksawakening.state.PlayerState.*;
+import static linksawakening.state.PlayerNumbers.clamp;
 
 /** Ammunition owns its player-state fields and their update rules. */
 public final class Ammunition {

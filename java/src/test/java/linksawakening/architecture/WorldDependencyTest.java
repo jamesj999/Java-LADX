@@ -3,7 +3,11 @@ package linksawakening.architecture;
 import static linksawakening.architecture.ClassFileReferences.classes;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Modifier;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Collectors;
 import linksawakening.architecture.ClassFileReferences.CompiledType;
 import org.junit.jupiter.api.Test;
 
@@ -162,7 +166,7 @@ class WorldDependencyTest {
     @Test
     void scanIncludesAppFacadesAndInternalImplementationClasses() throws Exception {
         var compiled = classes();
-        Set<String> names = compiled.stream().map(CompiledType::name).collect(java.util.stream.Collectors.toSet());
+        Set<String> names = compiled.stream().map(CompiledType::name).collect(Collectors.toSet());
         assertTrue(names.contains("linksawakening/app/gameplay/entity/EntityPhase"));
         assertTrue(names.contains("linksawakening/world/room/RoomSession"));
         assertTrue(names.contains("linksawakening/world/entity/handler/HinoxHandler"));
@@ -205,13 +209,13 @@ class WorldDependencyTest {
     @Test
     void publicWorldTypesHaveCrossPackageClientsOrAreExplicitValueContracts() throws Exception {
         var main = classes();
-        var all = new java.util.ArrayList<ClassFileReferences.CompiledType>(main);
-        all.addAll(classes(java.nio.file.Path.of("build/classes/java/test/linksawakening")));
+        var all = new ArrayList<ClassFileReferences.CompiledType>(main);
+        all.addAll(classes(Path.of("build/classes/java/test/linksawakening")));
         for (var type : main) {
             if (!type.name().startsWith("linksawakening/world/") || type.name().contains("$")) continue;
             Class<?> javaType = Class.forName(
                     type.name().replace('/', '.'), false, getClass().getClassLoader());
-            if (!java.lang.reflect.Modifier.isPublic(javaType.getModifiers())) continue;
+            if (!Modifier.isPublic(javaType.getModifiers())) continue;
             String shortName = type.name().substring("linksawakening/world/".length());
             if (APP_WORLD_API.contains(shortName)
                     || OTHER_EXTERNAL_WORLD_API.contains(shortName)

@@ -1,7 +1,8 @@
 package linksawakening.app.gameplay.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import linksawakening.app.AllocationSessions;
 import linksawakening.equipment.Sword;
 import linksawakening.testing.AllocationProbe;
@@ -34,7 +35,7 @@ class EntityAllocationTest {
             var c = session.flows().simulation();
             var phase = new EntityPhase(
                     c.roomSession(), c.link(), session.gameplaySounds(), c.transientVfxSystem(), c.musicDirector());
-            var events = java.util.List.<linksawakening.world.entity.event.EntityProjectileEvent>of();
+            var events = List.<linksawakening.world.entity.event.EntityProjectileEvent>of();
             double bytes = AllocationProbe.bytesPerIteration(600, 120, () -> phase.applyResults(c, events));
             System.out.println("Entity results without world tick bytes/frame: " + bytes);
             assertTrue(bytes <= 350, "Entity result application bytes: " + bytes);

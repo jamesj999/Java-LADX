@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay.entity;
 
-import static linksawakening.app.gameplay.GameplaySimulation.*;
+import static linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities;
 
 import java.util.List;
 import java.util.Objects;

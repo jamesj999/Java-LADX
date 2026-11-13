@@ -2,8 +2,13 @@ package linksawakening.audio;
 
 import static linksawakening.audio.TestPcm.renderPcm;
 
-import java.io.*;
-import javax.sound.sampled.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import linksawakening.audio.apu.GameBoyApu;
 
 /** Synthetic CH4 register scenario, independent of ROM/music/session timing. */

@@ -3,12 +3,14 @@ package linksawakening.recording;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import linksawakening.app.debug.DebugLog;
 import linksawakening.gpu.Framebuffer;
 
 /**
@@ -203,7 +205,7 @@ public final class GameplayRecorder implements AutoCloseable {
         var text = new StringBuilder();
         for (String name : List.of("video", "audio", "mux")) {
             try (var input = Files.newInputStream(temporary.resolve(name + ".log"))) {
-                text.append(new String(input.readNBytes(8192), java.nio.charset.StandardCharsets.UTF_8));
+                text.append(new String(input.readNBytes(8192), StandardCharsets.UTF_8));
             } catch (IOException ignored) {
                 // A process that failed to launch may not have created a log.
             }
@@ -226,7 +228,7 @@ public final class GameplayRecorder implements AutoCloseable {
             for (Path path : paths.toList()) Files.deleteIfExists(path);
             Files.deleteIfExists(directory);
         } catch (IOException ignored) {
-            System.err.println("Could not remove recording temporary directory: " + directory);
+            DebugLog.warning("Could not remove recording temporary directory: " + directory);
         }
     }
 }

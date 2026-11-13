@@ -1,8 +1,14 @@
 package linksawakening.entity;
 
-import linksawakening.rom.*;
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.COLOR_DUNGEON;
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.INDOORS_A;
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.INDOORS_B;
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.OVERWORLD;
+
 import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.room.RoomPaletteLoader;
 

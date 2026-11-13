@@ -1,6 +1,7 @@
 package linksawakening.scene;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;

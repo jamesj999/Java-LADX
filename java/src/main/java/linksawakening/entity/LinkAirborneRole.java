@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Airborne operations from LinkMotionDefault and its related ROM routines. */
 public interface LinkAirborneRole {
     void setPitWarpArrival(int z);

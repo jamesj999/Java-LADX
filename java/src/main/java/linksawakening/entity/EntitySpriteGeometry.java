@@ -1,6 +1,7 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_COLOR_SHELL_BLUE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_COLOR_SHELL_RED;
 
 import java.util.List;
 import linksawakening.world.entity.EntityRoomLoader;

@@ -1,6 +1,6 @@
 package linksawakening.app.presentation;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import linksawakening.app.AllocationSessions;
 import linksawakening.render.GameFrameSceneBuilder;

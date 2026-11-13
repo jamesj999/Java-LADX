@@ -1,10 +1,12 @@
 package linksawakening.ui;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
-import linksawakening.gameplay.*;
-import linksawakening.input.*;
+import java.util.List;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
@@ -41,8 +43,7 @@ class GameOverMenuTest {
         menu.tick(input, config, sounds::add);
         assertEquals(0, menu.selected());
         assertEquals(
-                java.util.List.of(
-                        GameplaySoundEvent.MENU_MOVE, GameplaySoundEvent.MENU_MOVE, GameplaySoundEvent.MENU_MOVE),
+                List.of(GameplaySoundEvent.MENU_MOVE, GameplaySoundEvent.MENU_MOVE, GameplaySoundEvent.MENU_MOVE),
                 sounds);
         input.tickEdges();
         input.onKeyEvent(6, 1);

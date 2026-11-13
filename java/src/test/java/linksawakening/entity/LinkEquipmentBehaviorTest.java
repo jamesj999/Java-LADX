@@ -7,6 +7,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicBoolean;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.Shield;
@@ -352,7 +353,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .player(player)
                 .items(new ItemRegistry())
                 .build();
-        java.util.concurrent.atomic.AtomicBoolean dialogue = new java.util.concurrent.atomic.AtomicBoolean(true);
+        AtomicBoolean dialogue = new AtomicBoolean(true);
         link.equipment().setShieldInputAllowed(() -> !dialogue.get());
         int carryingPose = resolvedAnimationState(link);
         input.onKeyEvent(config.bKey(), GLFW_PRESS);

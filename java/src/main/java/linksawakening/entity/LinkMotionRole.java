@@ -1,6 +1,6 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
+import linksawakening.entity.Link.ScreenShakeRequest;
 
 /** Motion operations from LinkMotionDefault and its related ROM routines. */
 public interface LinkMotionRole {

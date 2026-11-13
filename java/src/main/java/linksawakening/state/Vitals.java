@@ -1,7 +1,8 @@
 package linksawakening.state;
 
-import static linksawakening.state.PlayerNumbers.*;
-import static linksawakening.state.PlayerState.*;
+import static linksawakening.state.PlayerNumbers.clamp;
+import static linksawakening.state.PlayerState.HP_PER_HEART;
+import static linksawakening.state.PlayerState.MAX_HEARTS;
 
 /** Hearts, damage and invincibility state used by ROM {@code wHealth}. */
 public final class Vitals {

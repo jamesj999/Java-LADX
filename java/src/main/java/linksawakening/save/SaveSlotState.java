@@ -2,7 +2,11 @@ package linksawakening.save;
 
 import java.util.Arrays;
 import java.util.Objects;
-import linksawakening.save.SaveSlotComponents.*;
+import linksawakening.save.SaveSlotComponents.Ammunition;
+import linksawakening.save.SaveSlotComponents.Inventory;
+import linksawakening.save.SaveSlotComponents.Progression;
+import linksawakening.save.SaveSlotComponents.Resources;
+import linksawakening.save.SaveSlotComponents.Spawn;
 
 /**
  * Immutable view of the currently modeled fields in one raw SRAM slot.

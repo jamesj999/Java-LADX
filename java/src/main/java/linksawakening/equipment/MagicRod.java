@@ -189,10 +189,6 @@ public final class MagicRod implements EquipmentItem {
         }
     }
 
-    int attackStepCountdownForTest() {
-        return attackStepCountdown;
-    }
-
     private static int toRomDirection(int javaDirection) {
         return Direction.fromJava(javaDirection).romIndex();
     }

@@ -2,6 +2,7 @@ package linksawakening.audio.openal;
 
 import java.util.Objects;
 import java.util.function.IntSupplier;
+import linksawakening.app.debug.DebugLog;
 import linksawakening.audio.music.ReusableFramePcmOutput;
 
 /** Native PCM output with queue pressure handling and device recovery. */
@@ -155,8 +156,8 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
         recoveryCount++;
         needsRecovery = true;
         statusMessage = "OpenAL PCM recovering: " + conciseMessage(failure);
-        System.err.println("PCM recovery: " + diagnostics());
-        failure.printStackTrace(System.err);
+        DebugLog.warning("PCM recovery: " + diagnostics());
+        DebugLog.failure("PCM failure", failure);
         tryRecover();
     }
 
@@ -182,7 +183,7 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     private void deviceLost() {
         available = false;
         statusMessage = "OpenAL PCM device disconnected";
-        System.err.println(diagnostics());
+        DebugLog.warning(diagnostics());
     }
 
     private void unqueueProcessedBuffers() {
@@ -218,12 +219,12 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
             device.makeCurrent();
             resetQueue();
         } catch (RuntimeException | LinkageError failure) {
-            System.err.println("PCM cleanup: " + conciseMessage(failure));
+            DebugLog.warning("PCM cleanup: " + conciseMessage(failure));
         } finally {
             try {
                 device.close();
             } catch (RuntimeException | LinkageError failure) {
-                System.err.println("PCM device cleanup: " + conciseMessage(failure));
+                DebugLog.warning("PCM device cleanup: " + conciseMessage(failure));
             }
             allocatedBuffers.clear();
         }

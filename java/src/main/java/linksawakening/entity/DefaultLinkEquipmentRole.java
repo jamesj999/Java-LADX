@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 import java.util.function.BooleanSupplier;
 
 /** Delegates equipment operations to state owners used by ROM {@code CheckItemsToUse}. */

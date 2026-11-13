@@ -1,6 +1,7 @@
 package linksawakening.cutscene;
 
-import static linksawakening.cutscene.IntroPaletteMath.*;
+import static linksawakening.cutscene.IntroPaletteMath.approachPalettes;
+import static linksawakening.cutscene.IntroPaletteMath.brighten;
 
 import java.util.ArrayList;
 import java.util.List;

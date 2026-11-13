@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 import linksawakening.state.Direction;
 
 /** Constants and lookup tables mirroring the ROM Link motion paths. */

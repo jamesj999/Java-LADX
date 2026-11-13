@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+import java.util.Arrays;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -471,8 +472,8 @@ final class LinkAdditionalTest extends LinkFixture {
                     .build();
             link.position().setPixelPosition(c[1], c[2]);
             link.motion().update();
-            assertEquals(c[3], link.position().pixelX(), java.util.Arrays.toString(c));
-            assertEquals(c[4], link.position().pixelY(), java.util.Arrays.toString(c));
+            assertEquals(c[3], link.position().pixelX(), Arrays.toString(c));
+            assertEquals(c[4], link.position().pixelY(), Arrays.toString(c));
         }
     }
 }

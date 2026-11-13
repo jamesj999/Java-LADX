@@ -24,7 +24,7 @@ final class ShovelTest {
         assertEquals(List.of(GameplaySoundEvent.SHOVEL_DIG), sounds.events);
         assertTrue(shovel.blocksMotion());
         assertTrue(shovel.locksFacing());
-        assertEquals(0, shovel.timerForTest());
+        assertEquals(0, EquipmentInspection.timer(shovel));
     }
 
     @Test
@@ -69,7 +69,7 @@ final class ShovelTest {
         assertEquals(0x10, target.advanceTimers.get(15));
         assertEquals(0x18, target.advanceTimers.get(23));
         assertFalse(shovel.blocksMotion());
-        assertEquals(0x18, shovel.timerForTest());
+        assertEquals(0x18, EquipmentInspection.timer(shovel));
     }
 
     @Test

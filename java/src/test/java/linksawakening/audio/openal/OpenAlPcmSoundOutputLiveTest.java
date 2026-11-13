@@ -1,6 +1,7 @@
 package linksawakening.audio.openal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.app.GameSession;
 import linksawakening.gameplay.PcmSoundOutput;

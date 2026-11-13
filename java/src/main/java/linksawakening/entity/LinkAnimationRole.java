@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Animation operations from LinkMotionDefault and its related ROM routines. */
 public interface LinkAnimationRole {
     boolean isTarinShieldPresentationVisible();

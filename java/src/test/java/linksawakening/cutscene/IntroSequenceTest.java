@@ -9,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,7 @@ final class IntroSequenceTest {
     @Test
     void openingLightningRequestsExplosionWithoutBeachWaves() {
         IntroSequence intro = newIntro();
-        java.util.List<Integer> sounds = new java.util.ArrayList<>();
+        List<Integer> sounds = new ArrayList<>();
         intro.setNoiseSound(sounds::add);
         for (int frame = 0; frame < 1040; frame++) intro.tick();
         assertTrue(sounds.size() >= 6);

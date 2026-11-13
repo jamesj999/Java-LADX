@@ -1,8 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
-
 import linksawakening.state.LinkMotionState;
 
 /** Link recovery state and operations used by ROM {@code ApplyLinkMotionState}. */

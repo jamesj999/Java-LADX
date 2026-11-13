@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
@@ -645,7 +646,7 @@ final class SwordTest {
         }
     }
 
-    private static final class SequenceIntSupplier implements java.util.function.IntSupplier {
+    private static final class SequenceIntSupplier implements IntSupplier {
         private final int[] values;
         private int index;
 

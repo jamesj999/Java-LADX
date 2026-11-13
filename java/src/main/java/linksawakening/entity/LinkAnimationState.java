@@ -1,7 +1,14 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_DOWN;
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_LEFT;
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_RIGHT;
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_UP;
+import static linksawakening.entity.LinkRomConstants.WALK_FRAME_TICKS;
+import static linksawakening.state.Direction.DOWN;
+import static linksawakening.state.Direction.LEFT;
+import static linksawakening.state.Direction.RIGHT;
+import static linksawakening.state.Direction.UP;
 
 import linksawakening.state.Direction;
 

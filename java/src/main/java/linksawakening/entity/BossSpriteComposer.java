@@ -1,7 +1,12 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.EntitySpriteGeometry.*;
-import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
+import static linksawakening.entity.EntitySpriteGeometry.appendDynamicPairAtOffset;
+import static linksawakening.entity.EntitySpriteGeometry.appendMoldormTailPair;
+import static linksawakening.entity.EntitySpriteGeometry.appendRectangleSprites;
+import static linksawakening.entity.EntitySpriteGeometry.signedByte;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_MOLDORM;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
 
 import java.util.ArrayList;
 import java.util.List;

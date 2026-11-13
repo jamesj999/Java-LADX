@@ -3,6 +3,7 @@ package linksawakening.render;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -29,7 +30,7 @@ final class IntroEmulatorCapture {
         File outDir = new File(args[0]);
         outDir.mkdirs();
         int count = args.length > 1 ? Integer.parseInt(args[1]) : 3800;
-        try (java.io.PrintWriter metadata = new java.io.PrintWriter(new File(outDir, "frames.jsonl"))) {
+        try (PrintWriter metadata = new PrintWriter(new File(outDir, "frames.jsonl"))) {
             for (int frame = 0; frame < count; frame++) {
                 IntroFrameSnapshot snapshot = sequence.snapshot();
                 if (BackgroundSceneCatalog.requiresTitleTileset(snapshot.sceneId()))

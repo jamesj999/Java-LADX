@@ -1,7 +1,13 @@
 package linksawakening.state;
 
-import static linksawakening.state.PlayerNumbers.*;
-import static linksawakening.state.PlayerState.*;
+import static linksawakening.state.FloatingPickup.HEALTH_18;
+import static linksawakening.state.FloatingPickup.MAGIC_POWDER;
+import static linksawakening.state.FloatingPickup.TEN_ARROWS;
+import static linksawakening.state.FloatingPickup.TEN_BOMBS;
+import static linksawakening.state.FloatingPickup.TEN_RUPEES;
+import static linksawakening.state.PlayerNumbers.incrementByTenUpTo;
+import static linksawakening.state.PlayerNumbers.incrementUpTo;
+import static linksawakening.state.PlayerState.HP_PER_HEART;
 
 /** PlayerRewards owns its player-state fields and their update rules. */
 public final class PlayerRewards {

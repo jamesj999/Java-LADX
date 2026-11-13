@@ -81,8 +81,4 @@ public final class Shovel implements EquipmentItem {
     public int overrideAnimationState(int direction, int walkFrame) {
         return active ? target.shovelAnimationState(direction, timer) : -1;
     }
-
-    int timerForTest() {
-        return timer;
-    }
 }

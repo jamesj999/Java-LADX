@@ -1,7 +1,25 @@
 package linksawakening.ui;
 
-import static linksawakening.ui.InventoryTransition.State.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static linksawakening.ui.InventoryTransition.State.FADE_IN;
+import static linksawakening.ui.InventoryTransition.State.FADE_OUT;
+import static linksawakening.ui.InventoryTransition.State.INITIAL;
+import static linksawakening.ui.InventoryTransition.State.INTERACTIVE;
+import static linksawakening.ui.InventoryTransition.State.LOAD1;
+import static linksawakening.ui.InventoryTransition.State.LOAD2;
+import static linksawakening.ui.InventoryTransition.State.LOAD3;
+import static linksawakening.ui.InventoryTransition.State.LOAD4;
+import static linksawakening.ui.InventoryTransition.State.LOAD5;
+import static linksawakening.ui.InventoryTransition.State.MAP_FADE_OUT;
+import static linksawakening.ui.InventoryTransition.State.WORLD;
+import static linksawakening.ui.InventoryTransition.State.WORLD_BUTTONS;
+import static linksawakening.ui.InventoryTransition.State.WORLD_FADE_IN;
+import static linksawakening.ui.InventoryTransition.State.WORLD_FINISH;
+import static linksawakening.ui.InventoryTransition.State.WORLD_HUD;
+import static linksawakening.ui.InventoryTransition.State.WORLD_TILEMAP;
+import static linksawakening.ui.InventoryTransition.State.WORLD_TILESET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 

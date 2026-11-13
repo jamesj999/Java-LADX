@@ -1,7 +1,14 @@
 package linksawakening.app;
 
-import static linksawakening.input.KeyCodes.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static linksawakening.input.KeyCodes.KEY_F9;
+import static linksawakening.input.KeyCodes.PRESS;
+import static linksawakening.input.KeyCodes.RELEASE;
+import static linksawakening.input.KeyCodes.REPEAT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;

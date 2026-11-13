@@ -1,7 +1,11 @@
 package linksawakening.app;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import linksawakening.app.flow.SaveCoordinator;
 import linksawakening.render.RenderScreen;
@@ -182,7 +186,7 @@ final class SaveRoundTripTest {
 
     private static void playWakeUpPrefix(GameSession game) throws Exception {
         // Existing opening replay through the bed exit (first eight commands).
-        var commands = java.nio.file.Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()
+        var commands = Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()
                 .filter(line -> !line.isBlank() && !line.startsWith("#"))
                 .limit(8)
                 .toList();

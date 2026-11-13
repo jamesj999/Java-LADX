@@ -2,7 +2,14 @@ package linksawakening.save;
 
 import java.util.Arrays;
 import java.util.Objects;
-import linksawakening.save.SaveSlotComponents.*;
+import linksawakening.save.SaveSlotComponents.Ammunition;
+import linksawakening.save.SaveSlotComponents.Inventory;
+import linksawakening.save.SaveSlotComponents.Keys;
+import linksawakening.save.SaveSlotComponents.Progression;
+import linksawakening.save.SaveSlotComponents.Quest;
+import linksawakening.save.SaveSlotComponents.Resources;
+import linksawakening.save.SaveSlotComponents.Songs;
+import linksawakening.save.SaveSlotComponents.Spawn;
 import linksawakening.state.PlayerState;
 
 /** Encodes modeled player fields and decodes source-shaped SRAM slots. */

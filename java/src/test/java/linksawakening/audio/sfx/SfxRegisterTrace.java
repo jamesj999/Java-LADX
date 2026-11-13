@@ -4,6 +4,7 @@ import static linksawakening.audio.TestPcm.renderPcm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
@@ -69,7 +70,7 @@ public final class SfxRegisterTrace {
             rom = stream.readAllBytes();
         }
         var trace = new SfxRegisterTrace(rom);
-        var namespace = SoundEffectNamespace.valueOf(args[0].toUpperCase(java.util.Locale.ROOT));
+        var namespace = SoundEffectNamespace.valueOf(args[0].toUpperCase(Locale.ROOT));
         int id = Integer.decode(args[1]);
         int frames = args.length > 2 ? Integer.parseInt(args[2]) : 60;
         int restartInterval = args.length > 3 ? Integer.parseInt(args[3]) : 0;

@@ -8,8 +8,10 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
-import linksawakening.app.*;
-import linksawakening.app.screen.*;
+import linksawakening.app.GameSession;
+import linksawakening.app.InputRouter;
+import linksawakening.app.ScreenRouter;
+import linksawakening.app.screen.ScreenTestFixtures;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.config.AppConfig;
 import linksawakening.input.InputConfig;

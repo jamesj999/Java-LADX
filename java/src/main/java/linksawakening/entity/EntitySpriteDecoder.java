@@ -1,7 +1,9 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.EntitySpriteGeometry.*;
-import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
+import static linksawakening.entity.EntitySpriteGeometry.signedByte;
+import static linksawakening.entity.EntitySpriteRecipe.Kind.PAIR;
+import static linksawakening.entity.EntitySpriteRecipe.Kind.RECTANGLE;
+import static linksawakening.entity.EntitySpriteRecipe.Kind.SINGLE;
 
 import java.util.ArrayList;
 import java.util.List;

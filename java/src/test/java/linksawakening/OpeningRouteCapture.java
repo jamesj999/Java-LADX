@@ -3,10 +3,10 @@ package linksawakening;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import javax.imageio.ImageIO;
-import linksawakening.app.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
+import linksawakening.app.HeadlessGameDriver;
 
 /** Exercises Main, without scene injection, using the shared button route. */
 public final class OpeningRouteCapture {
@@ -91,8 +91,8 @@ public final class OpeningRouteCapture {
             Files.writeString(out.resolve("java-instrument.tsv"), instrumentTrace);
             Files.writeString(out.resolve("java-king.tsv"), kingTrace);
         }
-        String routeHash = java.util.HexFormat.of()
-                .formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
+        String routeHash =
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
         Files.writeString(
                 out.resolve("java.json"),
                 "{\"route_sha256\":\"" + routeHash + "\",\"checkpoints\":" + segment + ",\"bowwow_state\":"

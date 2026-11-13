@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay.interaction;
 
-import static linksawakening.world.room.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
 
 import java.util.Objects;
 import linksawakening.app.services.PlayerServices;

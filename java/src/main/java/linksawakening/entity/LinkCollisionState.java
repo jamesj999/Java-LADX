@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Probe pixels, collision mask and pending door warp from BackgroundCollisionHandler. */
 final class LinkCollisionState {
 

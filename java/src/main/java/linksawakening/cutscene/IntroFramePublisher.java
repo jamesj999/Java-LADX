@@ -1,11 +1,25 @@
 package linksawakening.cutscene;
 
-import static linksawakening.cutscene.IntroPaletteMath.*;
-import static linksawakening.cutscene.IntroSequence.*;
+import static linksawakening.cutscene.IntroPaletteMath.applyRgb555Modifier;
+import static linksawakening.cutscene.IntroPaletteMath.copyPalettes;
+import static linksawakening.cutscene.IntroPaletteMath.solidPalettes;
+import static linksawakening.cutscene.IntroSequence.LINK_FACE_LIGHTNING_FRAME;
+import static linksawakening.cutscene.IntroSequence.LINK_FACE_SCREAM_FRAME;
+import static linksawakening.cutscene.IntroSequence.Stage.BEACH;
+import static linksawakening.cutscene.IntroSequence.Stage.BEACH_FADE;
+import static linksawakening.cutscene.IntroSequence.Stage.BEACH_LOAD;
+import static linksawakening.cutscene.IntroSequence.Stage.COMPLETE;
+import static linksawakening.cutscene.IntroSequence.Stage.LINK_FACE;
+import static linksawakening.cutscene.IntroSequence.Stage.SEA;
+import static linksawakening.cutscene.IntroSequence.Stage.SEA_FADE;
+import static linksawakening.cutscene.IntroSequence.Stage.TITLE_DX;
+import static linksawakening.cutscene.IntroSequence.Stage.TITLE_REVEAL;
+import static linksawakening.cutscene.IntroSequence.Stage.TITLE_WAIT;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import linksawakening.cutscene.IntroSequence.Stage;
 import linksawakening.scene.BackgroundScene;
 
 /** Owns palette sources, delayed VBlank snapshots and immutable frame publication; reads only phase, video, water and actor components. */

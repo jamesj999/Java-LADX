@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.LinkRomConstants.*;
-
 import java.util.Objects;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.GameplaySoundSink;

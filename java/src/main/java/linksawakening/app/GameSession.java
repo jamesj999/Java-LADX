@@ -1,6 +1,11 @@
 package linksawakening.app;
 
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.UUID;
 import linksawakening.app.debug.DebugLog;
 import linksawakening.app.flow.SaveCoordinator;
 import linksawakening.app.flow.ScreenRouter;
@@ -33,8 +38,7 @@ import linksawakening.world.transition.Warp;
 public class GameSession implements AutoCloseable {
     GameplayRecorder recorder;
     private boolean closed;
-    private RecordingOptions recordingSettings =
-            RecordingOptions.defaults(java.nio.file.Path.of("recordings/gameplay.mp4"));
+    private RecordingOptions recordingSettings = RecordingOptions.defaults(Path.of("recordings/gameplay.mp4"));
 
     /** Toggle from the input callback, between complete simulation frames. */
     void toggleRecording() {
@@ -48,15 +52,14 @@ public class GameSession implements AutoCloseable {
             } else {
                 var directory = recordingSettings.output().toAbsolutePath().getParent();
                 var output = directory.resolve("gameplay-"
-                        + java.time.LocalDateTime.now()
-                                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
-                        + "-" + java.util.UUID.randomUUID() + ".mp4");
+                        + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+                        + "-" + UUID.randomUUID() + ".mp4");
                 recorder = new GameplayRecorder(new RecordingOptions(
                         output, recordingSettings.scale(), recordingSettings.crf(), recordingSettings.ffmpeg()));
                 DebugLog.log("Recording started: " + output);
             }
-        } catch (java.io.UncheckedIOException failure) {
-            System.err.println("Recording failed: " + failure.getMessage() + ": "
+        } catch (UncheckedIOException failure) {
+            DebugLog.warning("Recording failed: " + failure.getMessage() + ": "
                     + failure.getCause().getMessage());
         } finally {
             context.host().recordingStatus(recorder != null);

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.DataInputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ final class GlBoundaryTest {
         try (var files = Files.walk(root)) {
             for (Path file :
                     files.filter(path -> path.toString().endsWith(".class")).toList()) {
-                String pool = new String(Files.readAllBytes(file), java.nio.charset.StandardCharsets.ISO_8859_1);
+                String pool = new String(Files.readAllBytes(file), StandardCharsets.ISO_8859_1);
                 assertFalse(pool.contains("HardwareFrameDiagnostics"), file.toString());
             }
         }

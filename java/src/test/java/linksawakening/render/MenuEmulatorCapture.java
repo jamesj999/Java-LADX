@@ -1,11 +1,15 @@
 package linksawakening.render;
 
-import java.nio.file.*;
-import linksawakening.gpu.*;
-import linksawakening.input.*;
-import linksawakening.scene.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import linksawakening.gpu.GPU;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.scene.BackgroundSceneCatalog;
+import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.testing.TestRoms;
-import linksawakening.ui.*;
+import linksawakening.ui.FileMenuController;
+import linksawakening.ui.FileMenuRomData;
 
 /** Offline screenshots through the production menu controller and framebuffer. */
 @linksawakening.testing.RequiresRom

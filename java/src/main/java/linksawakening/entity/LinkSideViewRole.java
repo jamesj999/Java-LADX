@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Sideview operations from LinkMotionDefault and its related ROM routines. */
 public interface LinkSideViewRole {
     void setSideScrolling(boolean enabled);

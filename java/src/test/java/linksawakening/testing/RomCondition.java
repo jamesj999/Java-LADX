@@ -1,6 +1,8 @@
 package linksawakening.testing;
 
-import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.extension.ConditionEvaluationResult;
+import org.junit.jupiter.api.extension.ExecutionCondition;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /** Skips explicitly marked integration tests when no user ROM is available. */
 public final class RomCondition implements ExecutionCondition {

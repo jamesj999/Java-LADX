@@ -1,8 +1,17 @@
 package linksawakening.render;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static linksawakening.vfx.TransientVfxType.BUSH_LEAVES;
+import static linksawakening.vfx.TransientVfxType.LASER_BEAM;
+import static linksawakening.vfx.TransientVfxType.MOVING_SPARKLE;
+import static linksawakening.vfx.TransientVfxType.SMOKE;
+import static linksawakening.vfx.TransientVfxType.SWORD_BEAM;
+import static linksawakening.vfx.TransientVfxType.SWORD_POKE;
+import static linksawakening.vfx.TransientVfxType.WATER_SPLASH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-import linksawakening.vfx.*;
+import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
 
 final class VfxPoseCacheTest {
