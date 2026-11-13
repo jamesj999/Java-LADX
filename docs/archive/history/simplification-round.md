@@ -98,3 +98,13 @@ in minimal menus and omitted attributes for default palette/flip selection.
 Gameplay absent dialog/event/item/interaction results remain no-action values.
 Equipment allows ROM-free simulation without drawing tables, and unregistered
 inventory items remain absent slots. Input validation checks are retained.
+
+## Test organization
+
+The merged checkout has no numbered test classes or test sources over 800 lines
+outside world. Kept existing behaviour-focused Link tests and shared setup
+builders rather than repartitioning already cohesive tests. Added source hygiene
+guards and a descriptive EquipmentInspection fixture for private timing checks;
+no production timer getter is necessary. World test regrouping belongs to the
+other engineers. Two new architecture tests protect explicit imports and the
+absence of runtime ForTest APIs; existing tests and assertions remain intact.
