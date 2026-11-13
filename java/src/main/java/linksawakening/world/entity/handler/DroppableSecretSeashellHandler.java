@@ -10,8 +10,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.SecretSeashellInteractionFrame;
 import linksawakening.world.entity.motion.SecretSeashellMotion;
+import linksawakening.world.entity.motion.SecretSeashellMotion.SecretSeashellInteractionFrame;
 
 /** ROM handler stages for DroppableSecretSeashell. */
 final class DroppableSecretSeashellHandler {

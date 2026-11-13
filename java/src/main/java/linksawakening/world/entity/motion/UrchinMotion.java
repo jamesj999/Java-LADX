@@ -237,4 +237,16 @@ public final class UrchinMotion {
     }
 
     private record PositionAndCollision(int x, int y, int collisionFlags) {}
+
+    public record UrchinFrame(
+            RoomEntity entity,
+            int frameCounter,
+            int physicsFlags,
+            int linkEntityX,
+            int linkEntityY,
+            int linkDirection,
+            boolean usingShield,
+            boolean swordCollisionActive,
+            boolean linkInteractive,
+            RoomEntityBackgroundInteraction backgroundInteraction) {}
 }

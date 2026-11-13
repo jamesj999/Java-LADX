@@ -11,8 +11,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.WingedOctorokInteractionFrame;
 import linksawakening.world.entity.motion.WingedOctorokMotion;
+import linksawakening.world.entity.motion.WingedOctorokMotion.WingedOctorokInteractionFrame;
 
 /** ROM handler stages for WingedOctorok. */
 final class WingedOctorokHandler {

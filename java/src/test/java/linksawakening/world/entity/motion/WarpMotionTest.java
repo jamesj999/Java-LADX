@@ -8,6 +8,7 @@ import java.io.IOException;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.WarpMotion.WarpFrame;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom

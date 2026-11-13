@@ -10,8 +10,8 @@ import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
-import linksawakening.world.entity.motion.WarpFrame;
 import linksawakening.world.entity.motion.WarpMotion;
+import linksawakening.world.entity.motion.WarpMotion.WarpFrame;
 
 /** ROM handler stages for Warp. */
 final class WarpHandler {

@@ -15,8 +15,8 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.UrchinFrame;
 import linksawakening.world.entity.motion.UrchinMotion;
+import linksawakening.world.entity.motion.UrchinMotion.UrchinFrame;
 
 /** ROM handler stages for Urchin. */
 final class UrchinHandler {
