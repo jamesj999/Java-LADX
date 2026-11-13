@@ -58,7 +58,18 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .build();
         runtime.configuration().setBowWowState(0x80);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0, null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0x88,
+                0x40,
+                1,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                0,
+                0));
 
         assertEquals(1, runtime.inspection().bowWowState());
         assertEquals(0x10, runtime.consumePendingMusicTrack());
@@ -83,7 +94,18 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .build();
         runtime.configuration().setBowWowState(0x80);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0, null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0x88,
+                0x40,
+                1,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                0,
+                0));
 
         RoomEntity rescued = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x05, rescued.spriteDefinition().bank());
@@ -188,7 +210,18 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .build();
         runtime.configuration().setBowWowState(0x80);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 0, () -> 0, null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0x88,
+                0x40,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                0,
+                0));
 
         assertEquals(0x80, runtime.inspection().bowWowState());
         assertEquals(-1, runtime.consumePendingMusicTrack());

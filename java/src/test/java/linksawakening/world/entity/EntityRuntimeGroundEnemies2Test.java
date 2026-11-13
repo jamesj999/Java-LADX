@@ -67,7 +67,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
                 64,
                 64,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0x02, 0, false)));
 
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).armosState(0));
@@ -225,7 +225,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
                 0x50,
                 0x60,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false)));
 
         assertEquals(

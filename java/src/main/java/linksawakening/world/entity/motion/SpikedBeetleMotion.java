@@ -53,6 +53,7 @@ public final class SpikedBeetleMotion {
                     backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(new SpikedBeetleFrame(
                 entity,
                 frameCounter,
@@ -154,15 +155,11 @@ public final class SpikedBeetleMotion {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null
-                && nextX != x
-                && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
+        if (nextX != x && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null
-                && nextY != y
-                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
+        if (nextY != y && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }

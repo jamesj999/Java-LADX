@@ -106,7 +106,7 @@ final class ZombieRuntimeTest {
                 0x50,
                 () -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12,
                 entity -> new RoomEntityObjectSample(0x00, 0x00, 0x40, 0x40),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
                 0));
 
         assertEquals(0, update.state());
@@ -135,22 +135,49 @@ final class ZombieRuntimeTest {
                 .spriteDefinition(definition)
                 .build();
 
-        ZombieMotion.Update emerging =
-                motion.advance(new ZombieFrame(child, 0, 0x00, 0x12, 0x70, 0x50, () -> 0, null, null, 0));
+        ZombieMotion.Update emerging = motion.advance(new ZombieFrame(
+                child,
+                0,
+                0x00,
+                0x12,
+                0x70,
+                0x50,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
         assertEquals(1, emerging.state());
         assertEquals(0x30, emerging.transitionCountdown());
         assertEquals(0, emerging.entity().spriteVariant());
 
-        ZombieMotion.Update visible =
-                motion.advance(new ZombieFrame(emerging.entity(), 0, 0x30, 0x12, 0x70, 0x50, () -> 0, null, null, 0));
+        ZombieMotion.Update visible = motion.advance(new ZombieFrame(
+                emerging.entity(),
+                0,
+                0x30,
+                0x12,
+                0x70,
+                0x50,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
         assertEquals(1, visible.state());
         assertEquals(0x30, visible.transitionCountdown());
         assertEquals(0, visible.entity().spriteVariant());
         assertFalse(motion.allowsEnemyCollision(1));
         assertFalse(visible.appliesBackgroundInteraction());
 
-        ZombieMotion.Update moving =
-                motion.advance(new ZombieFrame(visible.entity(), 0, 0x00, 0x12, 0x70, 0x50, () -> 0, null, null, 0));
+        ZombieMotion.Update moving = motion.advance(new ZombieFrame(
+                visible.entity(),
+                0,
+                0x00,
+                0x12,
+                0x70,
+                0x50,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
         assertEquals(2, moving.state());
         assertEquals(0x70, moving.transitionCountdown());
         assertEquals(1, moving.entity().spriteVariant());
@@ -159,8 +186,17 @@ final class ZombieRuntimeTest {
         assertTrue(motion.allowsEnemyCollision(1));
         assertFalse(moving.appliesBackgroundInteraction());
 
-        ZombieMotion.Update movingFrame =
-                motion.advance(new ZombieFrame(moving.entity(), 0, 0x70, 0x12, 0x70, 0x50, () -> 0, null, null, 0));
+        ZombieMotion.Update movingFrame = motion.advance(new ZombieFrame(
+                moving.entity(),
+                0,
+                0x70,
+                0x12,
+                0x70,
+                0x50,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
         assertTrue(movingFrame.appliesBackgroundInteraction());
         assertEquals(2, movingFrame.entity().spriteVariant());
     }
@@ -177,10 +213,28 @@ final class ZombieRuntimeTest {
                 .spriteDefinition(definition)
                 .build();
 
-        ZombieMotion.Update state0 =
-                motion.advance(new ZombieFrame(child, 0, 0, 0x12, 0x70, 0x50, () -> 0, null, null, 0));
-        ZombieMotion.Update state1 =
-                motion.advance(new ZombieFrame(state0.entity(), 0, 0x00, 0x12, 0x70, 0x50, () -> 0, null, null, 0));
+        ZombieMotion.Update state0 = motion.advance(new ZombieFrame(
+                child,
+                0,
+                0,
+                0x12,
+                0x70,
+                0x50,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
+        ZombieMotion.Update state1 = motion.advance(new ZombieFrame(
+                state0.entity(),
+                0,
+                0x00,
+                0x12,
+                0x70,
+                0x50,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
         ZombieMotion.Update state2 = motion.advance(new ZombieFrame(
                 state1.entity(),
                 0,
@@ -200,8 +254,17 @@ final class ZombieRuntimeTest {
         assertEquals(2, state2.entity().spriteVariant());
         assertTrue(state2.appliesBackgroundInteraction());
 
-        ZombieMotion.Update cleared =
-                motion.advance(new ZombieFrame(state2.entity(), 0, 0, 0x52, 0x70, 0x50, () -> 0, null, null, 0));
+        ZombieMotion.Update cleared = motion.advance(new ZombieFrame(
+                state2.entity(),
+                0,
+                0,
+                0x52,
+                0x70,
+                0x50,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
         assertTrue(cleared.unloadRequested());
         assertFalse(cleared.appliesBackgroundInteraction());
     }
@@ -219,10 +282,28 @@ final class ZombieRuntimeTest {
                 .at(0x40, 0x40)
                 .spriteDefinition(definition)
                 .build();
-        ZombieMotion.Update rising =
-                motion.advance(new ZombieFrame(child, 0, 0, 0x12, linkX, linkY, () -> 0, null, null, 0));
-        ZombieMotion.Update walking =
-                motion.advance(new ZombieFrame(rising.entity(), 0, 0, 0x12, linkX, linkY, () -> 0, null, null, 0));
+        ZombieMotion.Update rising = motion.advance(new ZombieFrame(
+                child,
+                0,
+                0,
+                0x12,
+                linkX,
+                linkY,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
+        ZombieMotion.Update walking = motion.advance(new ZombieFrame(
+                rising.entity(),
+                0,
+                0,
+                0x12,
+                linkX,
+                linkY,
+                () -> 0,
+                null,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0));
         List<Integer> probes = new ArrayList<>();
 
         ZombieMotion.Update blocked = motion.advance(new ZombieFrame(
@@ -267,8 +348,17 @@ final class ZombieRuntimeTest {
         int[] frames = {0, 1, 2, 3, 4, 0, 16, 17, 18, 19, 20, 21};
         int[] variants = {0, 0, 1, 1, 2, 2, 3, 4, 4, 2, 2, 1};
         for (int i = 0; i < countdowns.length; i++) {
-            ZombieMotion.Update update = motion.advance(
-                    new ZombieFrame(child, frames[i], countdowns[i], 0x12, 0x70, 0x50, () -> 0, null, null, 0));
+            ZombieMotion.Update update = motion.advance(new ZombieFrame(
+                    child,
+                    frames[i],
+                    countdowns[i],
+                    0x12,
+                    0x70,
+                    0x50,
+                    () -> 0,
+                    null,
+                    linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                    0));
             child = update.entity();
             assertEquals(variants[i], child.spriteVariant(), "Handler pass " + i);
         }

@@ -32,14 +32,20 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
-                runtime, 0, 0x00, 0x00, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+                runtime,
+                0,
+                0x00,
+                0x00,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
                 1,
                 0x50,
                 0x60,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
 
         assertEquals(
@@ -61,14 +67,20 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
-                runtime, 0, 0x00, 0x00, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+                runtime,
+                0,
+                0x00,
+                0x00,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
                 1,
                 0x50,
                 0x60,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false)));
 
         assertEquals(
@@ -302,7 +314,17 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
         // Java direction 1 is ROM UP, while the freshly initialized Iron Mask
         // is facing ROM RIGHT (direction 0).
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0, null, null, 0, 1, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0xC0,
+                0xC0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                1,
+                0));
         List<EntityCombatEvent> events =
                 runtime.resolveCombat(new EntitySwordContactFrame(0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1));
 

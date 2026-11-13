@@ -30,6 +30,7 @@ public final class HardHatMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -39,7 +40,7 @@ public final class HardHatMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         boolean collidedX = false;
         boolean collidedY = false;
-        if (backgroundCollision != null) {
+        {
             // The background helper tests every nonzero speed, even when the
             // fractional accumulator has not moved a whole pixel yet.
             if (speedX[slot] != 0 && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, y)) {

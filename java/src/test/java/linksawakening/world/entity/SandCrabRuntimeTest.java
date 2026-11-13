@@ -77,7 +77,8 @@ final class SandCrabRuntimeTest {
                 .spriteDefinition(definition)
                 .build();
 
-        SandCrabMotion.Update started = motion.advance(crab, 0, 0x00, sequence(0x7F, 0x02), null);
+        SandCrabMotion.Update started = motion.advance(
+                crab, 0, 0x00, sequence(0x7F, 0x02), linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0xAF, started.transitionCountdown());
         assertEquals(0x00, started.speedX());
         assertEquals(0xFB, started.speedY());
@@ -86,7 +87,12 @@ final class SandCrabRuntimeTest {
         assertEquals(0, started.entity().spriteVariant());
         assertEquals(0, started.collisionFlags());
 
-        SandCrabMotion.Update moved = motion.advance(started.entity(), 8, 0xAE, sequence(0), null);
+        SandCrabMotion.Update moved = motion.advance(
+                started.entity(),
+                8,
+                0xAE,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0x3F, moved.entity().y());
         assertEquals(1, moved.entity().spriteVariant());
     }
@@ -103,7 +109,8 @@ final class SandCrabRuntimeTest {
                 .spriteDefinition(definition)
                 .build();
 
-        SandCrabMotion.Update started = motion.advance(crab, 0, 0x00, sequence(0x00, 0x00), null);
+        SandCrabMotion.Update started = motion.advance(
+                crab, 0, 0x00, sequence(0x00, 0x00), linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         SandCrabMotion.Update blocked = motion.advance(
                 started.entity(),
                 8,
@@ -147,7 +154,7 @@ final class SandCrabRuntimeTest {
                 0x40,
                 0x40,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(
                         0x40, 0x40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 

@@ -71,14 +71,34 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.configuration().setPressedButtonsMask(0x01);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0, null, null, 0, 3, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0x50,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                3,
+                0));
         assertEquals(0x3F, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x02, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x48, runtime.options1(0));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0, null, null, 0, 3, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                1,
+                0x50,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                3,
+                0));
         assertEquals(0x3E, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x08, runtime.options1(0));
 
@@ -108,7 +128,17 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.configuration().setPressedButtonsMask(0x01);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0, null, null, 0, 3, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0x50,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                3,
+                0));
         assertEquals(0x48, runtime.options1(0));
 
         List<EntityCombatEvent> swordHit = runtime.resolveCombat(
@@ -142,8 +172,28 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.configuration().setPressedButtonsMask(0x08);
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x70, () -> 0, null, null, 0, 0, 0));
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x70, () -> 0, null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0x40,
+                0x70,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                0,
+                0));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                1,
+                0x40,
+                0x70,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                null,
+                0,
+                0,
+                0));
         assertEquals(0x08, runtime.options1(0));
 
         RoomEntity maskedMimic = runtime.inspection().snapshot().slots().get(0);

@@ -42,6 +42,7 @@ public final class GoombaMotion {
                     backgroundCollision,
             int transitionCountdown,
             boolean sideScrolling) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         if ((entity.type() & 0xFF) != ENTITY_GOOMBA) {
             throw new IllegalArgumentException(
                     "Unsupported Goomba motion entity type: 0x" + Integer.toHexString(entity.type()));
@@ -173,15 +174,11 @@ public final class GoombaMotion {
         // gravity writes; ApplyEntityInteractionWithBackground then sees the
         // accelerated speed and can clear it on a floor collision.
         speedY[entity.slot()] = (speedY[entity.slot()] + 0x02) & 0xFF;
-        if (backgroundCollision != null
-                && nextX != x
-                && backgroundCollision.blocks(entity, directionForX(speedX[entity.slot()]), nextX, y)) {
+        if (nextX != x && backgroundCollision.blocks(entity, directionForX(speedX[entity.slot()]), nextX, y)) {
             nextX = x;
             speedX[entity.slot()] = negateByte(speedX[entity.slot()]);
         }
-        if (backgroundCollision != null
-                && nextY != y
-                && backgroundCollision.blocks(entity, directionForY(speedY[entity.slot()]), nextX, nextY)) {
+        if (nextY != y && backgroundCollision.blocks(entity, directionForY(speedY[entity.slot()]), nextX, nextY)) {
             nextY = ((nextY & 0xF0) + 0x03) & 0xFF;
             speedY[entity.slot()] = 0;
         }

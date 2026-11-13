@@ -30,11 +30,8 @@ final class BuzzBlobHandler {
                 && !frameInput.creditsGameplay()
                 && timerGates.handlerLinkCollisionEnabled()) {
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction =
-                    state.background().interaction();
-            if (buzzBlobBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                buzzBlobBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             BuzzBlobMotion.Update buzzBlobUpdate = state.motion(BuzzBlobMotion.class, BuzzBlobMotion::new)
                     .advance(
                             slotState.updated(),

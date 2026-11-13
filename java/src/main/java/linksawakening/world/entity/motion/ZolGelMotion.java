@@ -79,6 +79,7 @@ public final class ZolGelMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return ZolGelMotion.advanceBody(
                 this, entity, linkEntityX, linkEntityY, linkEntityZ, randomByteSupplier, backgroundCollision);
     }
@@ -196,8 +197,7 @@ public final class ZolGelMotion {
                     backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter) {
-        if (backgroundInteraction == null) {
-            return;
+        {
         }
         if (speedX[entity.slot()] != 0) {
             backgroundInteraction.probe(
@@ -237,7 +237,7 @@ public final class ZolGelMotion {
         int slot = entity.slot();
         int movedX = ZolGelMotion.addSpeedToPosition(x, this.speedX[slot], this.speedXAccumulator, slot);
         int movedY = ZolGelMotion.addSpeedToPosition(y, this.speedY[slot], this.speedYAccumulator, slot);
-        if (backgroundInteraction != null) {
+        {
             if (movedX != x
                     && backgroundInteraction
                             .probe(
@@ -313,7 +313,7 @@ public final class ZolGelMotion {
                 linkEntityY,
                 linkEntityZ,
                 randomByteSupplier,
-                backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision),
+                RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision),
                 0,
                 0,
                 false));
@@ -362,7 +362,11 @@ public final class ZolGelMotion {
             RoomEntityBackgroundInteraction backgroundInteraction,
             int frameCounter,
             int ignoreHitsCountdown,
-            boolean joypadHeld) {}
+            boolean joypadHeld) {
+        public ZolGelFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 
     static final class ZolGelStep {
         private final linksawakening.world.entity.motion.ZolGelMotion owner;

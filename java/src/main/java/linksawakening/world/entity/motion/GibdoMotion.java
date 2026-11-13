@@ -37,6 +37,7 @@ public final class GibdoMotion {
             IntSupplier
                     randomByteSupplier, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -51,7 +52,7 @@ public final class GibdoMotion {
         // query, so reverse only the axis whose proposed movement is blocked.
         boolean collidedX = false;
         boolean collidedY = false;
-        if (backgroundCollision != null) {
+        {
             if (speedX[slot] != 0
                     && backgroundCollision.blocks(entity, directionForHorizontalSpeed(speedX[slot]), x, y)) {
                 x = entity.x();

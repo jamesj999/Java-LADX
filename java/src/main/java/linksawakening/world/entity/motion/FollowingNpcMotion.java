@@ -69,6 +69,7 @@ public final class FollowingNpcMotion {
             int linkEntityY,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(new FollowingNpcFrame(
                 entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision));
     }
@@ -227,7 +228,7 @@ public final class FollowingNpcMotion {
             RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-        if (backgroundCollision != null && nextX != x) {
+        if (nextX != x) {
             int direction = signedByte(speedX[slot]) < 0 ? 1 : 0;
             if (backgroundCollision.blocks(entity, direction, nextX, y)) {
                 nextX = x;
@@ -235,7 +236,7 @@ public final class FollowingNpcMotion {
             }
         }
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null && nextY != y) {
+        if (nextY != y) {
             int direction = signedByte(speedY[slot]) < 0 ? 2 : 3;
             if (backgroundCollision.blocks(entity, direction, nextX, nextY)) {
                 nextY = y;
@@ -352,5 +353,9 @@ public final class FollowingNpcMotion {
             // Optional room geometry/history; null preserves the path without that room input.
             LinkPositionHistory linkPositionHistory,
             // Optional room geometry/history; null preserves the path without that room input.
-            RoomEntityBackgroundCollision backgroundCollision) {}
+            RoomEntityBackgroundCollision backgroundCollision) {
+        public FollowingNpcFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 }

@@ -74,7 +74,12 @@ final class WitchRatRuntimeTest {
         WitchRatMotion motion = new WitchRatMotion();
         RoomEntity rat = witchRat(loadRom());
 
-        WitchRatMotion.Update started = motion.advance(rat, 0, 0x00, sequence(0x02, 0x00, 0x00), null);
+        WitchRatMotion.Update started = motion.advance(
+                rat,
+                0,
+                0x00,
+                sequence(0x02, 0x00, 0x00),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         assertEquals(1, started.state());
         assertEquals(0x30, started.transitionCountdown());
@@ -93,8 +98,18 @@ final class WitchRatRuntimeTest {
         WitchRatMotion motion = new WitchRatMotion();
         RoomEntity rat = witchRat(loadRom());
 
-        WitchRatMotion.Update started = motion.advance(rat, 0, 0x00, sequence(0x02, 0x00, 0x00), null);
-        WitchRatMotion.Update firstMove = motion.advance(started.entity(), 1, 0x2F, sequence(0), null);
+        WitchRatMotion.Update started = motion.advance(
+                rat,
+                0,
+                0x00,
+                sequence(0x02, 0x00, 0x00),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
+        WitchRatMotion.Update firstMove = motion.advance(
+                started.entity(),
+                1,
+                0x2F,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         assertEquals(0x01, firstMove.state());
         assertEquals(0x08, firstMove.speedZ());
@@ -104,7 +119,8 @@ final class WitchRatRuntimeTest {
         assertTrue(firstMove.appliesBackgroundInteraction());
 
         MotionTestAccess.setStateForTest(motion, 0, 1, 0x00, 0x00, 0x00, 0x00, 0xFE);
-        WitchRatMotion.Update landed = motion.advance(rat, 2, 0x00, sequence(0), null);
+        WitchRatMotion.Update landed = motion.advance(
+                rat, 2, 0x00, sequence(0), linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0, landed.state());
         assertEquals(0x48, landed.transitionCountdown());
         assertEquals(0x00, landed.speedZ());
@@ -116,13 +132,19 @@ final class WitchRatRuntimeTest {
         WitchRatMotion motion = new WitchRatMotion();
         RoomEntity rat = witchRat(loadRom());
 
-        WitchRatMotion.Update flipped = motion.advance(rat, 0, 0x10, sequence(0x00), null);
+        WitchRatMotion.Update flipped = motion.advance(
+                rat, 0, 0x10, sequence(0x00), linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0, flipped.state());
         assertEquals(0x04, flipped.direction());
         assertEquals(0x10, flipped.transitionCountdown());
         assertEquals(2, flipped.entity().spriteVariant());
 
-        WitchRatMotion.Update held = motion.advance(flipped.entity(), 1, 0x0F, sequence(0x00), null);
+        WitchRatMotion.Update held = motion.advance(
+                flipped.entity(),
+                1,
+                0x0F,
+                sequence(0x00),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0x04, held.direction());
         assertEquals(1, held.entity().spriteVariant());
     }
@@ -131,8 +153,18 @@ final class WitchRatRuntimeTest {
     void blockedStateOneMovementPreservesPositionAndReportsRomCollisionFlag() throws IOException {
         WitchRatMotion motion = new WitchRatMotion();
         RoomEntity rat = witchRat(loadRom());
-        WitchRatMotion.Update started = motion.advance(rat, 0, 0x00, sequence(0x02, 0x00, 0x00), null);
-        WitchRatMotion.Update first = motion.advance(started.entity(), 1, 0x2F, sequence(0), null);
+        WitchRatMotion.Update started = motion.advance(
+                rat,
+                0,
+                0x00,
+                sequence(0x02, 0x00, 0x00),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
+        WitchRatMotion.Update first = motion.advance(
+                started.entity(),
+                1,
+                0x2F,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         WitchRatMotion.Update blocked = motion.advance(
                 first.entity(),
                 2,
@@ -169,7 +201,7 @@ final class WitchRatRuntimeTest {
                 0x20,
                 0x20,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).witchRatState(0));

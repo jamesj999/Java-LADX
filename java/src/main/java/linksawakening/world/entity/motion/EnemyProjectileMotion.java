@@ -94,6 +94,7 @@ public final class EnemyProjectileMotion {
     public Update advance(
             RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, backgroundCollision, false);
     }
 
@@ -107,6 +108,7 @@ public final class EnemyProjectileMotion {
             RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision,
             boolean preexistingCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, backgroundCollision, preexistingCollision, 0, 0, false);
     }
 
@@ -118,6 +120,7 @@ public final class EnemyProjectileMotion {
             int frameCounter,
             int groundStatus,
             boolean sideScrolling) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(
                 entity,
                 backgroundCollision,
@@ -139,6 +142,7 @@ public final class EnemyProjectileMotion {
             boolean sideScrolling,
             boolean handlerInteractive,
             boolean timersInteractive) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initializeSpawn(slot, entity.type(), 0);
@@ -176,7 +180,6 @@ public final class EnemyProjectileMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         boolean collidedWithWall = preexistingCollision;
         if (!preexistingCollision
-                && backgroundCollision != null
                 && x != entity.x()
                 && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
             x = entity.x();
@@ -185,7 +188,6 @@ public final class EnemyProjectileMotion {
 
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         if (!preexistingCollision
-                && backgroundCollision != null
                 && y != entity.y()
                 && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
             y = entity.y();

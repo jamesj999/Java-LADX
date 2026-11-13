@@ -133,14 +133,10 @@ public final class CuccoMotion {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null
-                && nextX != x
-                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
+        if (nextX != x && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
             nextX = x;
         }
-        if (backgroundCollision != null
-                && nextY != y
-                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
+        if (nextY != y && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
             nextY = y;
         }
         return new Position(nextX, nextY);
@@ -313,7 +309,11 @@ public final class CuccoMotion {
             boolean indoorRoom,
             boolean marinFollowing,
             int transitionSequenceCounter,
-            boolean angrySpawnSlotAvailable) {}
+            boolean angrySpawnSlotAvailable) {
+        public CuccoInteractionFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     static final class CuccoStep {
         private final linksawakening.world.entity.motion.CuccoMotion owner;
@@ -443,7 +443,7 @@ public final class CuccoMotion {
         }
 
         private boolean advanceState3() {
-            CuccoMotion.Position moved = owner.move(entity, x, y, null);
+            CuccoMotion.Position moved = owner.move(entity, x, y, RoomEntityBackgroundCollision.OPEN);
             x = moved.x();
             y = moved.y();
             if (x >= 0xA9 || ((y - z) & 0xFF) >= 0x91) {

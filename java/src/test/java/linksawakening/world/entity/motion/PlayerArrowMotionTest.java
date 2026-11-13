@@ -27,7 +27,8 @@ final class PlayerArrowMotionTest {
         RoomEntity entity = entity(0x10, 0x20, 0x07, 0);
         motion.initializeSpawn(0, 0);
 
-        PlayerArrowMotion.Update first = motion.advance(entity, null);
+        PlayerArrowMotion.Update first =
+                motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         // initializeSpawn models ShootArrow's post-spawn label_140F table,
         // so the no-Piece-of-Power right speed is $30 (three pixels/frame).
@@ -66,16 +67,22 @@ final class PlayerArrowMotionTest {
         motion.initializeSpawn(0, 0);
         MotionTestFixture.setTransitionForTest(motion, 0, 0x10, 0x00, 0x10);
 
-        PlayerArrowMotion.Update update = motion.advance(entity, null);
+        PlayerArrowMotion.Update update =
+                motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(0x0F, motion.transitionCountdown(0));
         assertEquals(0x01, update.entity().z());
         assertEquals(0x0E, motion.speedZ(0));
         assertEquals(0, update.entity().spriteVariant());
-        assertEquals(3, motion.advance(update.entity(), null).entity().spriteVariant());
+        assertEquals(
+                3,
+                motion.advance(update.entity(), linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                        .entity()
+                        .spriteVariant());
 
         MotionTestFixture.setTransitionForTest(motion, 0, 0x02, 0x07, 0x10);
-        PlayerArrowMotion.Update unload = motion.advance(entity, null);
+        PlayerArrowMotion.Update unload =
+                motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertTrue(unload.unloaded());
         assertEquals(0x01, motion.transitionCountdown(0));
@@ -90,7 +97,8 @@ final class PlayerArrowMotionTest {
         MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
 
         for (int frame = 1; frame <= 9; frame++) {
-            PlayerArrowMotion.Update update = motion.advance(entity, null, frame, 0, true);
+            PlayerArrowMotion.Update update = motion.advance(
+                    entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, frame, 0, true);
             assertFalse(update.unloaded());
             entity = update.entity();
             assertEquals(7, entity.z());
@@ -119,10 +127,12 @@ final class PlayerArrowMotionTest {
         MotionTestFixture.setSpeedForTest(motion, 0, initialX, expectedY - 1, 0x10);
         MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
 
-        PlayerArrowMotion.Update first = motion.advance(entity, null, 7, groundStatus, true);
+        PlayerArrowMotion.Update first = motion.advance(
+                entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, 7, groundStatus, true);
         assertEquals(initialX, motion.speedX(0));
         assertEquals(expectedY, motion.speedY(0));
-        motion.advance(first.entity(), null, 8, groundStatus, true);
+        motion.advance(
+                first.entity(), linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, 8, groundStatus, true);
         assertEquals(expectedX, motion.speedX(0));
         assertEquals(expectedY, motion.speedY(0));
     }
@@ -138,18 +148,24 @@ final class PlayerArrowMotionTest {
         // After impact: direction 0 once, then left for eight frames,
         // down for eight, and right until the countdown-1 unload pass.
         for (int frame = 1; frame <= 22; frame++) {
-            PlayerArrowMotion.Update update = motion.advance(entity, null);
+            PlayerArrowMotion.Update update =
+                    motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             assertFalse(update.unloaded());
             int expected = frame == 1 ? 0 : frame <= 9 ? 1 : frame <= 17 ? 3 : 0;
             assertEquals(expected, update.entity().spriteVariant(), "frame " + frame);
             entity = update.entity();
         }
-        assertTrue(motion.advance(entity, null).unloaded());
+        assertTrue(motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .unloaded());
 
         motion.clear(0);
         motion.initializeSpawn(0, 2);
         MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 0, 0x10);
-        assertEquals(2, motion.advance(entity, null).entity().spriteVariant());
+        assertEquals(
+                2,
+                motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                        .entity()
+                        .spriteVariant());
     }
 
     private static void assertSpawnData(int direction, int speedX, int speedY) {

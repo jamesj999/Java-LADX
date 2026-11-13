@@ -15,7 +15,8 @@ final class ThreeOfAKindMotionTest {
         ThreeOfAKindMotion motion = new ThreeOfAKindMotion();
         RoomEntity card = card(0);
 
-        ThreeOfAKindMotion.Update update = motion.advance(card, 1, 5, 9, () -> 0, null);
+        ThreeOfAKindMotion.Update update =
+                motion.advance(card, 1, 5, 9, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(2, motion.state(0));
         assertEquals(0x40, update.transitionCountdown());

@@ -235,7 +235,13 @@ final class EnemyProjectileCollisionTest {
                 .build();
 
         var rockEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(
-                rockRuntime, 0, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 1, true)));
+                rockRuntime,
+                0,
+                0x40,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                link(0x40, 0x50, 0, 0x00, 1, true)));
 
         assertEquals(1, rockEvents.size());
         assertEquals(
@@ -244,7 +250,13 @@ final class EnemyProjectileCollisionTest {
                 0x18, new EntityEnemyInspectionQueries(rockRuntime.enemies()).enemyProjectileTransitionCountdown(0));
 
         var nextFrameEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(
-                rockRuntime, 1, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 1, true)));
+                rockRuntime,
+                1,
+                0x40,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                link(0x40, 0x50, 0, 0x00, 1, true)));
         assertTrue(nextFrameEvents.isEmpty());
 
         RoomEntityRuntime arrowRuntime = RoomEntityRuntime.builder(snapshot(projectile(0x0C, 0x40, 0x50, 0)))
@@ -252,7 +264,13 @@ final class EnemyProjectileCollisionTest {
                 .randomByteSupplier(() -> 0)
                 .build();
         var arrowEvents = arrowRuntime.tick(EntityTestFrames.projectileFrame(
-                arrowRuntime, 0, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 0, false)));
+                arrowRuntime,
+                0,
+                0x40,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                link(0x40, 0x50, 0, 0x00, 0, false)));
 
         assertEquals(1, arrowEvents.size());
         assertTrue(arrowEvents.getFirst().remove());
@@ -271,7 +289,13 @@ final class EnemyProjectileCollisionTest {
         EntityRuntimeFixture.debug(runtime).setPairoddProjectileForTest(0, 0x10, 0, 0);
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
-                runtime, 0, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 0, false)));
+                runtime,
+                0,
+                0x40,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                link(0x40, 0x50, 0, 0x00, 0, false)));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.getFirst().kind());
@@ -296,7 +320,18 @@ final class EnemyProjectileCollisionTest {
         EntityRuntimeFixture.debug(runtime).setPairoddProjectileForTest(0, 0x60, 0, 0);
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
-                runtime, 0, 0, 0, () -> 0, null, link(0, 0, 0, 0x02, 0, false), true, 0x40, 1, 0x58, 1));
+                runtime,
+                0,
+                0,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                link(0, 0, 0, 0x02, 0, false),
+                true,
+                0x40,
+                1,
+                0x58,
+                1));
 
         assertEquals(1, events.size());
         EntityProjectileEvent event = events.getFirst();
@@ -323,7 +358,18 @@ final class EnemyProjectileCollisionTest {
                 .build();
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
-                runtime, 0, 0x38, 0x50, () -> 0, null, link(0x38, 0x50, 0, 0x00, 0, false), true, 0x40, 1, 0x58, 1));
+                runtime,
+                0,
+                0x38,
+                0x50,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                link(0x38, 0x50, 0, 0x00, 0, false),
+                true,
+                0x40,
+                1,
+                0x58,
+                1));
 
         assertEquals(2, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());

@@ -141,8 +141,22 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         EnemyProjectileCollision.LinkState interactive =
                 new EnemyProjectileCollision.LinkState(120, 120, 0, 0, 0, false);
 
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null, interactive));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null, interactive));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                120,
+                120,
+                sequence(0x00),
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                interactive));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                2,
+                120,
+                120,
+                sequence(0x00),
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                interactive));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());

@@ -42,11 +42,8 @@ final class DogHandler {
                 && !frameInput.creditsGameplay()
                 && timerGates.handlerLinkCollisionEnabled()) {
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction dogBackgroundInteraction =
-                    state.background().interaction();
-            if (dogBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                dogBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction dogBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             DogMotion.Update dogUpdate = state.motion(DogMotion.class, DogMotion::new)
                     .advance(new DogFrame(
                             slotState.updated(),

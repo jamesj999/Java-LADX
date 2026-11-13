@@ -60,6 +60,7 @@ public final class RoamingEnemyMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision, false)
                 .entity();
     }
@@ -72,8 +73,8 @@ public final class RoamingEnemyMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision,
             boolean creditsGameplay) {
-        RoomEntityBackgroundInteraction interaction =
-                backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        RoomEntityBackgroundInteraction interaction = RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
         return advanceInternal(
                 entity, linkEntityX, linkEntityY, randomByteSupplier, interaction, 0, 0, creditsGameplay);
     }
@@ -86,6 +87,7 @@ public final class RoamingEnemyMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
                     backgroundInteraction,
             boolean creditsGameplay) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advanceWithInteraction(
                 entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, 0, creditsGameplay);
     }
@@ -99,6 +101,7 @@ public final class RoamingEnemyMotion {
                     backgroundInteraction,
             int ignoreHitsCountdown,
             boolean creditsGameplay) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advanceWithInteraction(
                 entity,
                 linkEntityX,
@@ -120,6 +123,7 @@ public final class RoamingEnemyMotion {
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advanceInternal(
                 entity,
                 linkEntityX,
@@ -406,7 +410,7 @@ public final class RoamingEnemyMotion {
                 owner.collisionsTable[slot] = 0;
             } else {
                 int nextX = RoamingEnemyMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-                if (nextX != x && backgroundInteraction != null) {
+                if (nextX != x) {
                     EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                             entity, owner.direction[slot], nextX, y, ignoreHitsCountdown, frameCounter);
                     if (result.blocked()) {
@@ -420,7 +424,7 @@ public final class RoamingEnemyMotion {
                 }
 
                 int nextY = RoamingEnemyMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
-                if (nextY != y && backgroundInteraction != null) {
+                if (nextY != y) {
                     EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                             entity, owner.direction[slot], x, nextY, ignoreHitsCountdown, frameCounter);
                     if (result.blocked()) {

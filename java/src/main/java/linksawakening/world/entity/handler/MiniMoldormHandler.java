@@ -42,11 +42,8 @@ final class MiniMoldormHandler {
                     state.background().applyEnemyRecoilIfNeeded(slotState.entity(), frameInput.backgroundCollision());
             slotState.entity(recoil.entity());
             slotState.updated(slotState.entity());
-            RoomEntityBackgroundInteraction miniBackgroundInteraction =
-                    state.background().interaction();
-            if (miniBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                miniBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction miniBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
                 // The common runtime timer has already performed the ROM

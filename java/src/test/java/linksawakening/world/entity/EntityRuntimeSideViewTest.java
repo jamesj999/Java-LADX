@@ -51,7 +51,13 @@ final class EntityRuntimeSideViewTest extends EntityRuntimeTestSupport {
 
         for (int frame = 1; frame <= 9; frame++) {
             runtime.tick(EntityTestFrames.projectileFrame(
-                    runtime, frame, 0, 0, () -> 0, null, EnemyProjectileCollision.LinkState.nonInteractive()));
+                    runtime,
+                    frame,
+                    0,
+                    0,
+                    () -> 0,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                    EnemyProjectileCollision.LinkState.nonInteractive()));
         }
 
         RoomEntity arrow = runtime.inspection().snapshot().slots().get(0);

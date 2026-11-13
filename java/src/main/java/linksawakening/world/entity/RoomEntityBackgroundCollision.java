@@ -8,5 +8,13 @@ package linksawakening.world.entity;
  */
 @FunctionalInterface
 public interface RoomEntityBackgroundCollision {
+    /** Open space: the former absent-collision path never blocks movement. */
+    RoomEntityBackgroundCollision OPEN = (entity, direction, x, y) -> false;
+
+    /** Compatibility boundary for callers predating explicit room defaults. */
+    static RoomEntityBackgroundCollision orOpen(RoomEntityBackgroundCollision value) {
+        return java.util.Objects.requireNonNullElse(value, OPEN);
+    }
+
     boolean blocks(RoomEntity entity, int direction, int nextX, int nextY);
 }

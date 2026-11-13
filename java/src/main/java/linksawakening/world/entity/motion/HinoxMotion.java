@@ -151,7 +151,7 @@ public final class HinoxMotion {
             int slot) {
         this.entityCollisionFlags[slot] = 0;
         int nextX = HinoxMotion.addSpeed(x, this.speedX[slot], this.speedXAccumulator, slot);
-        if (nextX != x && background != null) {
+        if (nextX != x) {
             EntityBackgroundCollisionResult result =
                     background.probe(entity, HinoxMotion.horizontalDirection(this.speedX[slot]), nextX, y);
             if (result.blocked()) {
@@ -160,7 +160,7 @@ public final class HinoxMotion {
             }
         }
         int nextY = HinoxMotion.addSpeed(y, this.speedY[slot], this.speedYAccumulator, slot);
-        if (nextY != y && background != null) {
+        if (nextY != y) {
             EntityBackgroundCollisionResult result =
                     background.probe(entity, HinoxMotion.verticalDirection(this.speedY[slot]), nextX, nextY);
             if (result.blocked()) {
@@ -309,7 +309,11 @@ public final class HinoxMotion {
             // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int entityCollisionFlagsForFrame,
-            int flashCountdown) {}
+            int flashCountdown) {
+        public HinoxFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 
     static final class HinoxStep {
         private final HinoxMotion owner;

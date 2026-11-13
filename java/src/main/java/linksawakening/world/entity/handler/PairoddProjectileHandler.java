@@ -33,8 +33,7 @@ final class PairoddProjectileHandler {
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             slotState.updated(state.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
                     .advance(slotState.entity(), frameInput.frame()));
-            boolean objectCollisionHit = frameInput.objectCollision() != null
-                    && frameInput.objectCollision().collides(slotState.updated());
+            boolean objectCollisionHit = frameInput.objectCollision().collides(slotState.updated());
             boolean removePairoddProjectile = false;
             boolean swordPokeVfxQueued = false;
             var collisionEvent = EnemyProjectileCollision.check(

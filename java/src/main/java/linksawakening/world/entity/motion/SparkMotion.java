@@ -43,6 +43,7 @@ public final class SparkMotion {
             RoomEntity entity,
             int frameCounter, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.type());
@@ -109,8 +110,7 @@ public final class SparkMotion {
     private static int collisionMask(
             RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
-        if (backgroundCollision == null) {
-            return 0;
+        {
         }
         int mask = 0;
         if (backgroundCollision.blocks(entity, 0, entity.x(), entity.y())) {

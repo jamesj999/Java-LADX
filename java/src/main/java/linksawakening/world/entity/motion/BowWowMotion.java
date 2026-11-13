@@ -454,7 +454,11 @@ public final class BowWowMotion {
             RoomEntityBackgroundCollision backgroundCollision,
             java.util.List<RoomEntity> entities,
             java.util.function.IntPredicate canEatEntity,
-            int bowWowState) {}
+            int bowWowState) {
+        public BowWowCollisionFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     record BowWowFrame(
             RoomEntity entity,

@@ -30,11 +30,8 @@ final class WitchRatHandler {
                 && timerGates.handlerLinkCollisionEnabled()) {
 
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction witchRatBackgroundInteraction =
-                    state.background().interaction();
-            if (witchRatBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                witchRatBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction witchRatBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             WitchRatMotion.Update witchRatUpdate = state.motion(WitchRatMotion.class, WitchRatMotion::new)
                     .advance(
                             slotState.updated(),

@@ -58,6 +58,8 @@ public final class UnmaskedIronMaskMotion {
                     backgroundCollision,
             int ignoreHitsCountdown,
             int transitionCountdown) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orBoolean(backgroundInteraction, backgroundCollision);
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initializeFromMasked(slot, 0, 0, 0);
@@ -136,12 +138,11 @@ public final class UnmaskedIronMaskMotion {
                     backgroundCollision,
             int ignoreHitsCountdown,
             int frame) {
-        if (backgroundInteraction != null) {
+        {
             return backgroundInteraction
                     .probe(entity, entityDirection, nextX, nextY, ignoreHitsCountdown, frame)
                     .blocked();
         }
-        return backgroundCollision != null && backgroundCollision.blocks(entity, entityDirection, nextX, nextY);
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {

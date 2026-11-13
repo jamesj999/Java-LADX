@@ -81,8 +81,18 @@ final class DogRuntimeTest {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
 
-        DogMotion.Update update = motion.advance(
-                new DogFrame(dog, 0, 0x00, 0x92, 0x70, 0x40, 0, false, false, sequence(0x00, 0x01, 0x1F), null));
+        DogMotion.Update update = motion.advance(new DogFrame(
+                dog,
+                0,
+                0x00,
+                0x92,
+                0x70,
+                0x40,
+                0,
+                false,
+                false,
+                sequence(0x00, 0x01, 0x1F),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
 
         assertEquals(0x01, update.state());
         assertEquals(0x4F, update.transitionCountdown());
@@ -102,8 +112,18 @@ final class DogRuntimeTest {
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0x00);
 
-        DogMotion.Update moved =
-                motion.advance(new DogFrame(dog, 8, 0x03, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null));
+        DogMotion.Update moved = motion.advance(new DogFrame(
+                dog,
+                8,
+                0x03,
+                0x92,
+                0x70,
+                0x40,
+                0,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
         assertEquals(0x41, moved.entity().x());
         assertEquals(0x40, moved.entity().y());
         assertEquals(0x01, moved.state());
@@ -163,8 +183,18 @@ final class DogRuntimeTest {
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 2, 0, 0x00, 0x00, 0x00);
 
-        DogMotion.Update launched =
-                motion.advance(new DogFrame(dog, 0, 0x00, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null));
+        DogMotion.Update launched = motion.advance(new DogFrame(
+                dog,
+                0,
+                0x00,
+                0x92,
+                0x70,
+                0x40,
+                0,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
         assertEquals(0x03, launched.state());
         assertEquals(0x24, launched.speedX());
         assertEquals(0x00, launched.speedY());
@@ -197,8 +227,18 @@ final class DogRuntimeTest {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 2, 0, 0, 0, 0);
-        DogMotion.Update update =
-                motion.advance(new DogFrame(dog, 0, 0, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null));
+        DogMotion.Update update = motion.advance(new DogFrame(
+                dog,
+                0,
+                0,
+                0x92,
+                0x70,
+                0x40,
+                0,
+                false,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
         for (int frame = 1; frame <= 26; frame++) {
             update = motion.advance(new DogFrame(
                     update.entity(),
@@ -213,7 +253,7 @@ final class DogRuntimeTest {
                     () -> {
                         throw new AssertionError("Charge does not draw RNG");
                     },
-                    null));
+                    linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
             assertEquals(0x40 + (frame * 0x24) / 16, update.entity().x());
             assertEquals(frame == 26 ? 0 : 3, update.state());
         }
@@ -226,8 +266,18 @@ final class DogRuntimeTest {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
 
-        DogMotion.Update update =
-                motion.advance(new DogFrame(dog, 0, 0x20, 0x92, 0x4F, 0x40, 1, true, false, () -> 0, null));
+        DogMotion.Update update = motion.advance(new DogFrame(
+                dog,
+                0,
+                0x20,
+                0x92,
+                0x4F,
+                0x40,
+                1,
+                true,
+                false,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE));
 
         assertTrue(update.dialogRequested());
         assertEquals(0x20, update.dialogLowId());

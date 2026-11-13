@@ -45,6 +45,7 @@ public final class SnakeMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision,
             int transitionCountdown) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return snakeFrameStep.run(
                 entity,
                 frameCounter,
@@ -113,15 +114,11 @@ public final class SnakeMotion {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null
-                && nextX != x
-                && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
+        if (nextX != x && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null
-                && nextY != y
-                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
+        if (nextY != y && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }

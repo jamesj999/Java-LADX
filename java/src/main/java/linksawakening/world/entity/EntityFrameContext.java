@@ -30,6 +30,11 @@ public record EntityFrameContext(
         boolean creditsGameplay,
         boolean handlerLinkCollisionEnabled) {
 
+    public EntityFrameContext {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        objectCollision = RoomEntityObjectCollision.orNone(objectCollision);
+    }
+
     public static EntityFrameContextBuilder builder() {
         return new EntityFrameContextBuilder();
     }

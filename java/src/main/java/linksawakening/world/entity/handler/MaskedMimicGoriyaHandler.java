@@ -29,11 +29,8 @@ final class MaskedMimicGoriyaHandler {
                 && !slotState.wasInitializing()
                 && state.roomInspection().entityMapId() != 0x1F) {
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
-                    state.background().interaction();
-            if (maskedMimicBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                maskedMimicBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             MaskedMimicMotion.Update maskedMimicUpdate = state.motion(MaskedMimicMotion.class, MaskedMimicMotion::new)
                     .advance(new MaskedMimicFrame(
                             slotState.entity(),

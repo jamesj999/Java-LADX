@@ -183,7 +183,7 @@ final class RoomEntityRuntimeHookshotTest {
                 0x40,
                 0x50,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, false)));
 
         assertEquals(1, events.size());

@@ -39,6 +39,7 @@ public final class SpikeTrapMotion {
             int linkEntityX,
             int linkEntityY, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             // A directly-created ACTIVE snapshot has no EntityInitHandler pass.
@@ -186,8 +187,7 @@ public final class SpikeTrapMotion {
             RoomEntity entity,
             int direction, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
-        if (backgroundCollision == null) {
-            return false;
+        {
         }
         // SpikeTrapEntityHandler sets hActiveEntityNoBGCollision. The shared
         // ROM routine still records collision bits, but does not snap the

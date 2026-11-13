@@ -46,11 +46,8 @@ final class ZombieHandler {
                 && !frameInput.creditsGameplay()
                 && timerGates.handlerLinkCollisionEnabled()) {
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction zombieBackgroundInteraction =
-                    state.background().interaction();
-            if (zombieBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                zombieBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction zombieBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             ZombieMotion.Update zombieUpdate = state.motion(ZombieMotion.class, ZombieMotion::new)
                     .advance(new ZombieFrame(
                             slotState.updated(),

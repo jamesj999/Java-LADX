@@ -43,6 +43,7 @@ public final class FishMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return fishFrameStep.run(entity, transitionCountdown, randomByteSupplier, backgroundCollision);
     }
 
@@ -148,7 +149,6 @@ public final class FishMotion {
             x = FishMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot);
             horizontalCollision = false;
             if (owner.speedX[slot] != 0
-                    && backgroundCollision != null
                     && backgroundCollision.blocks(
                             entity, FishMotion.horizontalDirection(owner.speedX[slot]), x, entity.y())) {
                 x = entity.x() & 0xFF;

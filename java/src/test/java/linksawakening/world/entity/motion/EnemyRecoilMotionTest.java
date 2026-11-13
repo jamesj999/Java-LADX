@@ -62,7 +62,9 @@ final class EnemyRecoilMotionTest {
         EnemyRecoilMotion motion = new EnemyRecoilMotion();
         int linkY = (0x50 - z) & 0xFF;
         motion.configure(0, 0x40, 0x50, z, 0x40, linkY, 0x30);
-        RoomEntity result = motion.advance(entity(0, 0x40, 0x50, z), null).entity();
+        RoomEntity result = motion.advance(
+                        entity(0, 0x40, 0x50, z), linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
         assertEquals(0x3D, result.x());
         assertEquals(0x4D, result.y());
         assertEquals(
@@ -75,7 +77,9 @@ final class EnemyRecoilMotionTest {
     void assigningAnotherRecoilVelocityPreservesBothFractionalCoordinates(String source) {
         EnemyRecoilMotion motion = new EnemyRecoilMotion();
         motion.configureFromSpeed(0, 8, 0xF8);
-        RoomEntity first = motion.advance(entity(0, 0x40, 0x50, 0), null).entity();
+        RoomEntity first = motion.advance(
+                        entity(0, 0x40, 0x50, 0), linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
         assertEquals(0x40, first.x());
         assertEquals(0x4F, first.y());
         switch (source) {
@@ -84,7 +88,8 @@ final class EnemyRecoilMotionTest {
             case "bomb" -> motion.configureFromSource(0, 0x20, 0x60, 0, 0x30, 0x50, 8);
             default -> throw new AssertionError(source);
         }
-        RoomEntity second = motion.advance(first, null).entity();
+        RoomEntity second = motion.advance(first, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
         assertEquals(0x41, second.x());
         assertEquals(0x4F, second.y());
     }
@@ -126,9 +131,12 @@ final class EnemyRecoilMotionTest {
 
         motion.configure(0, entity.x(), entity.y(), entity.z(), 0x0A, 0x20, 0x08);
 
-        RoomEntity first = motion.advance(entity, null).entity();
-        RoomEntity second = motion.advance(first, null).entity();
-        RoomEntity third = motion.advance(second, null).entity();
+        RoomEntity first = motion.advance(entity, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
+        RoomEntity second = motion.advance(first, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
+        RoomEntity third = motion.advance(second, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
 
         // A speed of -$08 is -0.5 pixels/frame in the ROM accumulator.
         assertEquals(0x01, first.x());
@@ -138,7 +146,9 @@ final class EnemyRecoilMotionTest {
         assertTrue(motion.isActive(0));
 
         motion.configure(0, 0x00, 0x40, 0, 0x40, 0x40, 0x30);
-        RoomEntity wrapped = motion.advance(entity(0, 0x00, 0x40, 0), null).entity();
+        RoomEntity wrapped = motion.advance(
+                        entity(0, 0x00, 0x40, 0), linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN)
+                .entity();
         assertEquals(0xFD, wrapped.x());
     }
 

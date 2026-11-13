@@ -41,14 +41,16 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x10);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.pickupState().secretSeashellPrivateState3(0));
         assertEquals(0x00, runtime.pickupState().secretSeashellPrivateState4(0));
 
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 1, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         RoomEntity revealed = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0, revealed.spriteVariant());
@@ -80,7 +82,8 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0xDA);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.pickupState().secretSeashellPrivateState3(0));
@@ -106,18 +109,21 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0xA4);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x01, runtime.pickupState().secretSeashellPrivateState3(0));
 
         EntityRuntimeFixture.debug(runtime).setSecretSeashellPegasusCollisionForTest(true, true, 0x90, 0x90);
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 1, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x01, runtime.pickupState().secretSeashellPrivateState3(0));
 
         EntityRuntimeFixture.debug(runtime).setSecretSeashellPegasusCollisionForTest(true, true, 0x48, 0x58);
-        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 2, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0, runtime.pickupState().secretSeashellPrivateState3(0));
@@ -143,7 +149,8 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
         runtime.configuration().setChestPlayerLevels(1, 2, 1);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(
                 EntityStatus.DISABLED,
@@ -166,7 +173,8 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setEntityRoomStatusForTest(0x10);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(
                 EntityStatus.DISABLED,

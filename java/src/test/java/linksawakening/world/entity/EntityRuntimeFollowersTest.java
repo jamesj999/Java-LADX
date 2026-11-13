@@ -52,7 +52,17 @@ final class EntityRuntimeFollowersTest extends EntityRuntimeTestSupport {
         history.fill(0x10, 0x20, 0x01, 0x02);
         history.write(1, 0x30, 0x40, 0x03, 0x01);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x60, () -> 0, null, history, 0x04, 0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                0,
+                0x50,
+                0x60,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                history,
+                0x04,
+                0x00,
+                0x00));
 
         RoomEntity marin = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x30, marin.x());

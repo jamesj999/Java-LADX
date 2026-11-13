@@ -157,15 +157,11 @@ public final class WingedOctorokMotion {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null
-                && nextX != x
-                && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
+        if (nextX != x && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null
-                && nextY != y
-                && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
+        if (nextY != y && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }
@@ -265,7 +261,11 @@ public final class WingedOctorokMotion {
             boolean actionButtonAHeld,
             boolean actionButtonBHeld,
             int linkItemA,
-            int linkItemB) {}
+            int linkItemB) {
+        public WingedOctorokInteractionFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     static final class WingedOctorokStep {
         private final WingedOctorokMotion owner;

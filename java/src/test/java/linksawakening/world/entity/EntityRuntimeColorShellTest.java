@@ -112,7 +112,8 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setColorShellStateForTest(0, 0x08, 1, 0, 0, 0);
         world.objectValue = 0x5E;
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0x00, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x40, 0x40, () -> 0x00, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         RoomEntity shell = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x0C, runtime.pickupState().colorShellState(0));
@@ -136,7 +137,8 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         runtime.configuration().setColorShellWorld(world);
         EntityRuntimeFixture.debug(runtime).setColorShellStateForTest(0, 0x0D, 1, 0, 0, 0);
 
-        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0x00, null));
+        runtime.tick(EntityTestFrames.frame(
+                runtime, 0, 0x40, 0x40, () -> 0x00, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(
                 EntityStatus.DISABLED,

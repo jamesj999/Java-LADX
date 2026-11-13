@@ -165,10 +165,8 @@ final class MoldormHandler {
                 completedResult = false;
                 return false;
             }
-            moldormBackgroundInteraction = state.background().interaction();
-            if (moldormBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                moldormBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            moldormBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
                 // Common countdowns have already ticked before dispatch;

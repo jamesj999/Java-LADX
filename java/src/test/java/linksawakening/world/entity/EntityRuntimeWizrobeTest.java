@@ -101,7 +101,7 @@ final class EntityRuntimeWizrobeTest extends EntityRuntimeTestSupport {
                 0x40,
                 0x50,
                 sequence(0x00),
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00, 0, false)));
 
         assertEquals(1, events.size());

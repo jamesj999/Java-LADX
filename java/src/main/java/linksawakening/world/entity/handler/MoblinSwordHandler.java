@@ -45,11 +45,8 @@ final class MoblinSwordHandler {
                 && state.roomInspection().gameplayWorld()
                 && state.lifecycle().transitionSequenceCounter() == 0x04
                 && !state.roomInspection().witchGotItemPresentationActive()) {
-            RoomEntityBackgroundInteraction swordBackgroundInteraction =
-                    state.background().interaction();
-            if (swordBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                swordBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction swordBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             MoblinSwordMotion.Update moblinSwordUpdate = state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new)
                     .advance(new MoblinSwordFrame(
                             slotState.entity(),

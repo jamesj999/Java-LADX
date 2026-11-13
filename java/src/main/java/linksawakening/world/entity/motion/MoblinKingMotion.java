@@ -167,7 +167,11 @@ public final class MoblinKingMotion {
             java.util.function.IntSupplier randomByteSupplier,
             // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
-            boolean touchingLink) {}
+            boolean touchingLink) {
+        public MoblinKingFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     static final class MoblinKingStep {
         private final MoblinKingMotion owner;
@@ -427,8 +431,7 @@ public final class MoblinKingMotion {
             if (owner.speedX[slot] != 0) {
                 int nextX = MoblinKingMotion.addSpeed(x, owner.speedX[slot], owner.xAccumulator, slot);
                 int collisionDirection = MoblinKingMotion.signedByte(owner.speedX[slot]) < 0 ? 1 : 0;
-                blocked =
-                        backgroundCollision != null && backgroundCollision.blocks(entity, collisionDirection, nextX, y);
+                blocked = backgroundCollision.blocks(entity, collisionDirection, nextX, y);
                 if (!blocked) {
                     x = nextX;
                 }
@@ -436,8 +439,7 @@ public final class MoblinKingMotion {
             if (owner.speedY[slot] != 0) {
                 int nextY = MoblinKingMotion.addSpeed(y, owner.speedY[slot], owner.yAccumulator, slot);
                 int collisionDirection = MoblinKingMotion.signedByte(owner.speedY[slot]) < 0 ? 2 : 3;
-                boolean yBlocked =
-                        backgroundCollision != null && backgroundCollision.blocks(entity, collisionDirection, x, nextY);
+                boolean yBlocked = backgroundCollision.blocks(entity, collisionDirection, x, nextY);
                 blocked |= yBlocked;
                 if (!yBlocked) {
                     y = nextY;

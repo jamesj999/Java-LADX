@@ -27,11 +27,8 @@ final class ArmosStatueHandler {
         var timerGates = state.gates();
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            RoomEntityBackgroundInteraction armosBackgroundInteraction =
-                    state.background().interaction();
-            if (armosBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                armosBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction armosBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             ArmosMotion.Update armosUpdate = state.motion(ArmosMotion.class, ArmosMotion::new)
                     .advance(
                             slotState.entity(),

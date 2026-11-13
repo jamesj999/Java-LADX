@@ -133,7 +133,7 @@ public final class EntityLiftThrowController {
         if (!interactive) return true;
         var update = this.motions
                 .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                .advance(entity, false, null);
+                .advance(entity, false, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         this.slots[entity.slot()] = update.entity().z() == 0 ? RoomEntity.disabled(entity.slot()) : update.entity();
         return true;
     }
@@ -259,6 +259,7 @@ public final class EntityLiftThrowController {
             RoomEntityBackgroundCollision fallback,
             int frame) {
         var runtime = this;
+        fallback = RoomEntityBackgroundCollision.orOpen(fallback);
         int slot = original.slot();
         boolean blocked = false;
         if (runtime.motions.get(SideViewPotMotion.class, SideViewPotMotion::new).speedX(slot) != 0) {
@@ -269,7 +270,7 @@ public final class EntityLiftThrowController {
                             != 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
-            if (runtime.physicsTables.readBackgroundInteraction() != null) {
+            if (runtime.physicsTables.hasRichBackgroundInteraction()) {
                 blocked |= runtime.physicsTables
                         .readBackgroundInteraction()
                         .probe(
@@ -280,7 +281,7 @@ public final class EntityLiftThrowController {
                                 runtime.combatTables.readEnemyIgnoreHitsCountdown(slot),
                                 frame)
                         .blocked();
-            } else if (fallback != null) {
+            } else {
                 blocked |= fallback.blocks(original, direction, moved.x(), original.y());
             }
         }
@@ -292,7 +293,7 @@ public final class EntityLiftThrowController {
                             != 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;
-            if (runtime.physicsTables.readBackgroundInteraction() != null) {
+            if (runtime.physicsTables.hasRichBackgroundInteraction()) {
                 blocked |= runtime.physicsTables
                         .readBackgroundInteraction()
                         .probe(
@@ -303,7 +304,7 @@ public final class EntityLiftThrowController {
                                 runtime.combatTables.readEnemyIgnoreHitsCountdown(slot),
                                 frame)
                         .blocked();
-            } else if (fallback != null) {
+            } else {
                 blocked |= fallback.blocks(original, direction, moved.x(), moved.y());
             }
         }

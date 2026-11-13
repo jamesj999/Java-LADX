@@ -91,6 +91,7 @@ public final class RollingBonesMotion {
             int health,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return rollingBonesFrameStep.run(entity, bar, transitionCountdown, health, backgroundCollision);
     }
 
@@ -98,6 +99,7 @@ public final class RollingBonesMotion {
             RoomEntity entity,
             int frameCounter, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (barTransitionCountdown[slot] > 0) {
             barTransitionCountdown[slot]--;
@@ -196,9 +198,7 @@ public final class RollingBonesMotion {
                     collision) {
         int next = addSpeed(x, speed, accumulators, slot);
         int direction = speed < 0 ? 1 : 0;
-        return collision != null && collision.blocks(entity, direction, next, y)
-                ? new MoveResult(x, true)
-                : new MoveResult(next, false);
+        return collision.blocks(entity, direction, next, y) ? new MoveResult(x, true) : new MoveResult(next, false);
     }
 
     static MoveResult moveY(
@@ -212,9 +212,7 @@ public final class RollingBonesMotion {
                     collision) {
         int next = addSpeed(y, speed, accumulators, slot);
         int direction = speed < 0 ? 2 : 3;
-        return collision != null && collision.blocks(entity, direction, x, next)
-                ? new MoveResult(y, true)
-                : new MoveResult(next, false);
+        return collision.blocks(entity, direction, x, next) ? new MoveResult(y, true) : new MoveResult(next, false);
     }
 
     static int addSpeed(int position, int speed, int[] accumulators, int slot) {

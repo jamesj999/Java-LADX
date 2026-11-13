@@ -34,11 +34,8 @@ final class UrchinHandler {
                 && timerGates.handlerLinkCollisionEnabled()) {
 
             int slot = slotState.entity().slot();
-            RoomEntityBackgroundInteraction urchinBackgroundInteraction =
-                    state.background().interaction();
-            if (urchinBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                urchinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            RoomEntityBackgroundInteraction urchinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             UrchinMotion.Update urchinUpdate = state.motion(UrchinMotion.class, UrchinMotion::new)
                     .advance(new UrchinFrame(
                             slotState.updated(),

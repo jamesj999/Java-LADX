@@ -95,6 +95,7 @@ public final class ThrownEntityMotion {
             boolean
                     sideScrolling, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, sideScrolling, backgroundCollision, 0, 0);
     }
 
@@ -105,6 +106,7 @@ public final class ThrownEntityMotion {
                     backgroundCollision,
             int frameCounter,
             int groundStatus) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         validateSlot(slot);
         if (!active[slot]) {
@@ -127,7 +129,7 @@ public final class ThrownEntityMotion {
         boolean blockedX = false;
         boolean blockedY = false;
         boolean floorCollision = false;
-        if (backgroundCollision != null) {
+        {
             if (speedX[slot] != 0
                     && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x, entity.y())) {
                 x = entity.x();

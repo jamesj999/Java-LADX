@@ -44,6 +44,7 @@ public final class StalfosAggressiveMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return stalfosAggressiveFrameStep.run(
                 entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }

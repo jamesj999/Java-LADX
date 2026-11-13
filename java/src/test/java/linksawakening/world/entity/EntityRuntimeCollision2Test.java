@@ -78,8 +78,22 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         EnemyProjectileCollision.LinkState nonInteractive =
                 new EnemyProjectileCollision.LinkState(120, 120, 0, 0x02, 0, false);
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null, nonInteractive));
-        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null, nonInteractive));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                1,
+                120,
+                120,
+                sequence(0x00),
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                nonInteractive));
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                2,
+                120,
+                120,
+                sequence(0x00),
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                nonInteractive));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
@@ -241,7 +255,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
                 0x40,
                 0x50,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, false)));
 
         assertEquals(1, events.size());

@@ -32,6 +32,7 @@ public final class AntiFairyMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision,
             IntSupplier randomByteSupplier) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, randomByteSupplier);
@@ -42,7 +43,7 @@ public final class AntiFairyMotion {
 
         // ApplyEntityInteractionWithBackground populates directional flags;
         // the handler prioritizes a horizontal collision over a vertical one.
-        if (backgroundCollision != null) {
+        {
             if (x != entity.x()
                     && backgroundCollision.blocks(entity, directionForHorizontalSpeed(speedX[slot]), x, y)) {
                 x = entity.x();

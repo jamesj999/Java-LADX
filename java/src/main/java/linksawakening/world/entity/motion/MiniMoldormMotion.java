@@ -123,6 +123,7 @@ public final class MiniMoldormMotion {
                     backgroundInteraction,
             IntSupplier randomByteSupplier,
             int frameCounter) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return miniMoldormFrameStep.run(
                 entity,
                 transitionCountdown,
@@ -278,7 +279,7 @@ public final class MiniMoldormMotion {
 
             if ((flashCountdown & 0xFF) == 0) {
                 int nextX = MiniMoldormMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-                if (nextX != x && backgroundInteraction != null) {
+                if (nextX != x) {
                     int direction = MiniMoldormMotion.signedByte(owner.speedX[slot]) < 0
                             ? EntityBackgroundCollisionResult.LEFT
                             : EntityBackgroundCollisionResult.RIGHT;
@@ -294,7 +295,7 @@ public final class MiniMoldormMotion {
                 }
 
                 int nextY = MiniMoldormMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
-                if (nextY != y && backgroundInteraction != null) {
+                if (nextY != y) {
                     int direction = MiniMoldormMotion.signedByte(owner.speedY[slot]) < 0
                             ? EntityBackgroundCollisionResult.UP
                             : EntityBackgroundCollisionResult.DOWN;

@@ -166,7 +166,7 @@ final class PlayerProjectilePauseTest {
                 0,
                 0,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0, 0, 0, motionState, 0, false)));
     }
 

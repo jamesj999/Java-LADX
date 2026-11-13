@@ -55,6 +55,7 @@ public final class PeaHatMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -69,7 +70,7 @@ public final class PeaHatMotion {
         int z = entity.z();
         int variant = entity.spriteVariant();
 
-        if (backgroundCollision != null) {
+        {
             if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, y)) {
                 x = entity.x();
             }

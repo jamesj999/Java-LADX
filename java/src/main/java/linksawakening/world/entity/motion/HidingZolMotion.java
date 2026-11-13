@@ -47,8 +47,9 @@ public final class HidingZolMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         RoomEntityBackgroundInteraction backgroundInteraction =
-                backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
+                RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
         return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, 0);
     }
 
@@ -60,6 +61,7 @@ public final class HidingZolMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
                     backgroundInteraction,
             int frameCounter) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return hidingZolStep.run(
                 entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, frameCounter);
     }
@@ -132,7 +134,7 @@ public final class HidingZolMotion {
             int frameCounter,
             int slot) {
         int movedX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-        if (movedX != x && backgroundInteraction != null) {
+        if (movedX != x) {
             EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                     entity, signedByte(speedX[slot]) < 0 ? 1 : 0, movedX, y, 0x03, frameCounter);
             if (result.blocked()) {
@@ -140,7 +142,7 @@ public final class HidingZolMotion {
             }
         }
         int movedY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (movedY != y && backgroundInteraction != null) {
+        if (movedY != y) {
             EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                     entity, signedByte(speedY[slot]) < 0 ? 2 : 3, movedX, movedY, 0x03, frameCounter);
             if (result.blocked()) {

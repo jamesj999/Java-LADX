@@ -261,7 +261,11 @@ public final class ZombieMotion {
             RoomEntityObjectQuery objectQuery,
             // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
-            int ignoreHitsCountdown) {}
+            int ignoreHitsCountdown) {
+        public ZombieFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 
     static final class ZombieStep {
         private final ZombieMotion owner;
@@ -347,14 +351,8 @@ public final class ZombieMotion {
 
         private boolean advanceState2() {
             appliesBackgroundInteraction = true;
-            ZombieMotion.PositionAndCollision moved = backgroundInteraction == null
-                    ? new ZombieMotion.PositionAndCollision(
-                            ZombieMotion.addSpeedToPosition(
-                                    entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot),
-                            ZombieMotion.addSpeedToPosition(
-                                    entity.y(), owner.speedY[slot], owner.speedYAccumulator, slot),
-                            0)
-                    : owner.moveWithBackground(entity, backgroundInteraction, ignoreHitsCountdown, frameCounter);
+            ZombieMotion.PositionAndCollision moved =
+                    owner.moveWithBackground(entity, backgroundInteraction, ignoreHitsCountdown, frameCounter);
             int x = moved.x();
             int y = moved.y();
             int collisionMask = moved.collisionMask();

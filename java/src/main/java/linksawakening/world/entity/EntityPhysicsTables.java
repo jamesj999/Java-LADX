@@ -6,7 +6,7 @@ final class EntityPhysicsTables {
             (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
                     RoomEntityGroundInteraction.Result.unchanged(entity, 0);
     // Optional room geometry/history; null preserves the path without that room input.
-    private RoomEntityBackgroundInteraction backgroundInteraction;
+    private RoomEntityBackgroundInteraction backgroundInteraction = RoomEntityBackgroundInteraction.NONE;
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -42,6 +42,10 @@ final class EntityPhysicsTables {
         return groundInteraction = value;
     }
 
+    boolean hasRichBackgroundInteraction() {
+        return backgroundInteraction != RoomEntityBackgroundInteraction.NONE;
+    }
+
     RoomEntityBackgroundInteraction readBackgroundInteraction() {
         return backgroundInteraction;
     }
@@ -49,7 +53,7 @@ final class EntityPhysicsTables {
     RoomEntityBackgroundInteraction writeBackgroundInteraction(
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
                     value) {
-        return backgroundInteraction = value;
+        return backgroundInteraction = RoomEntityBackgroundInteraction.orNone(value);
     }
 
     int readSlowTransitionCountdown(int slot) {

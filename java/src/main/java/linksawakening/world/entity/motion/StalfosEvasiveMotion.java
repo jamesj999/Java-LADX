@@ -176,7 +176,7 @@ public final class StalfosEvasiveMotion {
             RoomEntityBackgroundCollision backgroundCollision) {
         boolean xBlocked = false;
         boolean yBlocked = false;
-        if (backgroundCollision != null) {
+        {
             if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(x - entity.x()), x, entity.y())) {
                 x = entity.x();
                 xBlocked = true;
@@ -275,7 +275,11 @@ public final class StalfosEvasiveMotion {
             java.util.function.IntSupplier randomByteSupplier,
             // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
-            int mapId) {}
+            int mapId) {
+        public StalfosEvasiveFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     static final class StalfosEvasiveFrameStep {
         private final StalfosEvasiveMotion owner;

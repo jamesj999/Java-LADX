@@ -144,7 +144,7 @@ public final class UrchinMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
-        if (interaction != null && x != entity.x()) {
+        if (x != entity.x()) {
             int movementDirection = signedByte(speedX[slot]) < 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
@@ -155,7 +155,7 @@ public final class UrchinMotion {
                 x = entity.x() & 0xFF;
             }
         }
-        if (interaction != null && y != entity.y()) {
+        if (y != entity.y()) {
             int movementDirection = signedByte(speedY[slot]) < 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;
@@ -252,5 +252,9 @@ public final class UrchinMotion {
             boolean swordCollisionActive,
             boolean linkInteractive,
             // Optional room geometry/history; null preserves the path without that room input.
-            RoomEntityBackgroundInteraction backgroundInteraction) {}
+            RoomEntityBackgroundInteraction backgroundInteraction) {
+        public UrchinFrame {
+            backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+    }
 }

@@ -59,8 +59,7 @@ final class WizrobeProjectileHandler {
                     state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
                             .flipAttribute(frameInput.frame())));
             presentationFlags.preserveWizrobeProjectilePresentation(true);
-            boolean objectCollisionHit = frameInput.objectCollision() != null
-                    && frameInput.objectCollision().collides(slotState.updated());
+            boolean objectCollisionHit = frameInput.objectCollision().collides(slotState.updated());
             if (objectCollisionHit
                     || collisionEvent.map(EntityProjectileEvent::remove).orElse(false)) {
                 state.lifecycle()

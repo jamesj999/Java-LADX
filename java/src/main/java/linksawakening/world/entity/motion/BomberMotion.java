@@ -49,6 +49,7 @@ public final class BomberMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(new BomberFrame(
                 entity,
                 transitionCountdown,
@@ -233,7 +234,7 @@ public final class BomberMotion {
 
             x = BomberMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot);
             y = BomberMotion.addSpeedToPosition(entity.y(), owner.speedY[slot], owner.speedYAccumulator, slot);
-            if (backgroundCollision != null) {
+            {
                 if (x != entity.x()
                         && backgroundCollision.blocks(
                                 entity, BomberMotion.horizontalDirection(owner.speedX[slot]), x, entity.y())) {

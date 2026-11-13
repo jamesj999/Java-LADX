@@ -52,6 +52,7 @@ public final class WitchRatMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
                     backgroundInteraction) {
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return witchRatFrameStep.run(
                 entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
     }
@@ -94,7 +95,7 @@ public final class WitchRatMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
-        if (interaction != null && x != entity.x()) {
+        if (x != entity.x()) {
             int direction = signedByte(speedX[slot]) < 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
@@ -104,7 +105,7 @@ public final class WitchRatMotion {
                 x = entity.x() & 0xFF;
             }
         }
-        if (interaction != null && y != entity.y()) {
+        if (y != entity.y()) {
             int direction = signedByte(speedY[slot]) < 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;

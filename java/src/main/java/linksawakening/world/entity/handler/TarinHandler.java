@@ -85,10 +85,8 @@ final class TarinHandler {
                 return false;
             }
 
-            tarinBackgroundInteraction = state.background().interaction();
-            if (tarinBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                tarinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
-            }
+            tarinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
             tarinUpdate = state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                     .advance(
                             slotState.updated(),

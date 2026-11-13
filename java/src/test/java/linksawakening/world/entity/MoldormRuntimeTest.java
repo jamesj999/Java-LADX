@@ -142,7 +142,15 @@ final class MoldormRuntimeTest {
         MoldormMotion motion = new MoldormMotion();
         RoomEntity moldorm = moldorm(loadRom());
 
-        MoldormMotion.Update started = motion.advance(moldorm, 0, 0x00, 0x00, 0x00, 0x04, sequence(0x00, 0x00), null);
+        MoldormMotion.Update started = motion.advance(
+                moldorm,
+                0,
+                0x00,
+                0x00,
+                0x00,
+                0x04,
+                sequence(0x00, 0x00),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         assertEquals(0x06, started.headSpriteVariant());
         assertEquals(0x10, started.speedX());
@@ -163,9 +171,25 @@ final class MoldormRuntimeTest {
     void activeMotionUsesSixFrameMoldormAngleCadenceAndReportsWallCollision() throws IOException {
         MoldormMotion motion = new MoldormMotion();
         RoomEntity moldorm = moldorm(loadRom());
-        MoldormMotion.Update started = motion.advance(moldorm, 0, 0x10, 0x00, 0x00, 0x04, sequence(0x00), null);
+        MoldormMotion.Update started = motion.advance(
+                moldorm,
+                0,
+                0x10,
+                0x00,
+                0x00,
+                0x04,
+                sequence(0x00),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
-        MoldormMotion.Update moving = motion.advance(started.entity(), 1, 0x0F, 0x00, 0x00, 0x04, sequence(0x00), null);
+        MoldormMotion.Update moving = motion.advance(
+                started.entity(),
+                1,
+                0x0F,
+                0x00,
+                0x00,
+                0x04,
+                sequence(0x00),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(0x41, moving.entity().x());
         assertEquals(0x06, moving.headSpriteVariant());
 
@@ -188,17 +212,40 @@ final class MoldormRuntimeTest {
     void hitCountdownAndLowHealthRunTwoHistoryAndMovementPasses() throws IOException {
         MoldormMotion hitMotion = new MoldormMotion();
         RoomEntity moldorm = moldorm(loadRom());
-        MoldormMotion.Update started = hitMotion.advance(moldorm, 0, 0x10, 0, 0, 4, sequence(0), null);
+        MoldormMotion.Update started = hitMotion.advance(
+                moldorm,
+                0,
+                0x10,
+                0,
+                0,
+                4,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         hitMotion.onSwordHit(0);
-        MoldormMotion.Update hitAccelerated =
-                hitMotion.advance(started.entity(), 1, started.transitionCountdown(), 0, 0, 4, sequence(0), null);
+        MoldormMotion.Update hitAccelerated = hitMotion.advance(
+                started.entity(),
+                1,
+                started.transitionCountdown(),
+                0,
+                0,
+                4,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         assertEquals(3, hitAccelerated.inertia());
         assertEquals(0xC7, hitMotion.privateCountdown2(0));
 
         MoldormMotion lowHealthMotion = new MoldormMotion();
-        MoldormMotion.Update lowHealth = lowHealthMotion.advance(moldorm, 0, 0x10, 0, 0, 1, sequence(0), null);
+        MoldormMotion.Update lowHealth = lowHealthMotion.advance(
+                moldorm,
+                0,
+                0x10,
+                0,
+                0,
+                1,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         assertEquals(2, lowHealth.inertia());
     }
 
@@ -206,7 +253,15 @@ final class MoldormRuntimeTest {
     void flashingSkipsPositionUpdateButStillSteersFromBackgroundCollision() throws IOException {
         MoldormMotion motion = new MoldormMotion();
         RoomEntity moldorm = moldorm(loadRom());
-        MoldormMotion.Update started = motion.advance(moldorm, 0, 0x10, 0, 0, 4, sequence(0), null);
+        MoldormMotion.Update started = motion.advance(
+                moldorm,
+                0,
+                0x10,
+                0,
+                0,
+                4,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         AtomicInteger probes = new AtomicInteger();
         List<MoldormSegmentPosition> probePositions = new ArrayList<>();
 
@@ -234,10 +289,26 @@ final class MoldormRuntimeTest {
     @Test
     void vulnerableTailTracksTheLatestCompletedHistoryUpdate() throws IOException {
         MoldormMotion motion = new MoldormMotion();
-        MoldormMotion.Update update = motion.advance(moldorm(loadRom()), 0, 0x10, 0, 0, 4, sequence(0), null);
+        MoldormMotion.Update update = motion.advance(
+                moldorm(loadRom()),
+                0,
+                0x10,
+                0,
+                0,
+                4,
+                sequence(0),
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         for (int frame = 1; frame <= 64; frame++) {
-            update = motion.advance(update.entity(), frame, update.transitionCountdown(), 0, 0, 4, sequence(0), null);
+            update = motion.advance(
+                    update.entity(),
+                    frame,
+                    update.transitionCountdown(),
+                    0,
+                    0,
+                    4,
+                    sequence(0),
+                    linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         }
 
         assertEquals(update.segments().get(3), motion.vulnerableTail(0));
@@ -290,7 +361,7 @@ final class MoldormRuntimeTest {
                 0x20,
                 0x20,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         assertEquals(0x06, runtime.bosses().moldormHeadSpriteVariant(0));
@@ -331,7 +402,7 @@ final class MoldormRuntimeTest {
                 0x20,
                 0x20,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         RoomEntity rendered = runtime.inspection().snapshot().slots().get(0);
@@ -362,7 +433,7 @@ final class MoldormRuntimeTest {
                 0x20,
                 0x20,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         List<EntityCombatEvent> headClink =
@@ -416,7 +487,7 @@ final class MoldormRuntimeTest {
                 0x20,
                 0x20,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
         EntityRuntimeFixture.debug(runtime).setEnemyHealthForTest(0, 1);
 
@@ -442,7 +513,7 @@ final class MoldormRuntimeTest {
                     0x20,
                     0x20,
                     () -> 0,
-                    null,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
             poofCount += runtime.enemies().transientVfxRequests().stream()
                     .filter(request -> request.type() == TransientVfxType.POOF)
@@ -498,7 +569,7 @@ final class MoldormRuntimeTest {
                     heart.x(),
                     heart.y(),
                     () -> 0,
-                    null,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(heart.x(), heart.y(), 0, 0, 0, false)));
             if (!runtime.consumePendingLinkHeldItemPoseRequests().isEmpty()) {
                 sawHeldItemPose = true;
@@ -537,7 +608,7 @@ final class MoldormRuntimeTest {
                 0x20,
                 0x20,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(
                         0x20, 0x20, 0, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, false)));
 

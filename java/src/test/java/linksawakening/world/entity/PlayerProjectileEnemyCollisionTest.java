@@ -209,7 +209,7 @@ final class PlayerProjectileEnemyCollisionTest {
                     0x40,
                     0x50,
                     () -> 0,
-                    null,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false)));
             runtime.consumePendingEntityEvents();
         }

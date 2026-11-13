@@ -128,6 +128,7 @@ public final class PokeyMotion {
             int transitionCountdown,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         checkType(entity);
         validateByte(inertia, "Pokey segment inertia");
         validateByte(transitionCountdown, "Pokey segment transition countdown");
@@ -207,8 +208,7 @@ public final class PokeyMotion {
     private static int collisionMask(
             RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundCollision backgroundCollision) {
-        if (backgroundCollision == null) {
-            return 0;
+        {
         }
         int mask = 0;
         if (backgroundCollision.blocks(entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y())) {
@@ -332,5 +332,9 @@ public final class PokeyMotion {
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
             // Optional room geometry/history; null preserves the path without that room input.
-            RoomEntityBackgroundCollision backgroundCollision) {}
+            RoomEntityBackgroundCollision backgroundCollision) {
+        public PokeyFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 }

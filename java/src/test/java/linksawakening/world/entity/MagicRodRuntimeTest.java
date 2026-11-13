@@ -218,7 +218,13 @@ final class MagicRodRuntimeTest {
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
         for (int frame = 8; frame <= 9; frame++) {
             runtime.tick(EntityTestFrames.projectileFrame(
-                    runtime, frame, 0, 0, () -> 0, null, EnemyProjectileCollision.LinkState.nonInteractive()));
+                    runtime,
+                    frame,
+                    0,
+                    0,
+                    () -> 0,
+                    linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                    EnemyProjectileCollision.LinkState.nonInteractive()));
             RoomEntity fireball = runtime.inspection().snapshot().slots().get(slot);
             assertEquals(0x44 + 3 * (frame - 7), fireball.x());
             assertEquals(frame == 8 ? 0 : 1, fireball.spriteVariant());
@@ -381,7 +387,7 @@ final class MagicRodRuntimeTest {
                 linkX,
                 linkY,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false)));
     }
 

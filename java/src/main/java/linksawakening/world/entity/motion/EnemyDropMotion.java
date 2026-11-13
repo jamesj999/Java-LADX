@@ -116,7 +116,9 @@ public final class EnemyDropMotion {
                     background,
             int ignoreHitsCountdown,
             int frameCounter) {
-        if (background == null) return moved;
+        background = RoomEntityBackgroundInteraction.orNone(background);
+        {
+        }
         int slot = moved.slot();
         int x = moved.x();
         int y = moved.y();

@@ -7,6 +7,10 @@ package linksawakening.world.entity;
 public record EntityBackgroundCollisionResult(
         boolean blocked, int objectId, int physicsFlag, int direction, int collisionFlag, int sampleX, int sampleY) {
 
+    /** No probe was performed; no collision, object or physics effect is reported. */
+    public static final EntityBackgroundCollisionResult NONE =
+            new EntityBackgroundCollisionResult(false, 0xFF, 0, 0, 0, 0, 0);
+
     public static final int NO_OBJECT = 0xFF;
     public static final int RIGHT = 0;
     public static final int LEFT = 1;

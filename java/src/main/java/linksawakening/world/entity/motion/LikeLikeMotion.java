@@ -76,7 +76,11 @@ public final class LikeLikeMotion {
             int slowTransitionCountdown,
             java.util.function.IntSupplier randomByteSupplier,
             // Optional room geometry/history; null preserves the path without that room input.
-            RoomEntityBackgroundCollision backgroundCollision) {}
+            RoomEntityBackgroundCollision backgroundCollision) {
+        public LikeLikeFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 
     static final class LikeLikeFrameStep {
         private final LikeLikeMotion owner;

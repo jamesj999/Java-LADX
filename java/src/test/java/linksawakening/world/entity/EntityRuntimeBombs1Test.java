@@ -456,7 +456,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 0x48,
                 0x50,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
                 0x10,
                 0xF0));
@@ -503,7 +503,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 0x48,
                 0x50,
                 () -> 0,
-                null,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
                 0x10,
                 0xF0));

@@ -61,6 +61,7 @@ public final class ColorShellMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return ColorShellMotion.advanceBody(
                 this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
@@ -74,6 +75,7 @@ public final class ColorShellMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision,
             int ignoreHitsCountdown) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return ColorShellMotion.advanceBody(
                 this,
                 entity,
@@ -399,14 +401,11 @@ public final class ColorShellMotion {
             int slot) {
         int x = addSpeedToPosition(positionX[slot], speedX[slot], speedXAccumulator, slot);
         if (x != positionX[slot]
-                && backgroundCollision != null
                 && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, positionY[slot])) {
             x = positionX[slot];
         }
         int y = addSpeedToPosition(positionY[slot], speedY[slot], speedYAccumulator, slot);
-        if (y != positionY[slot]
-                && backgroundCollision != null
-                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
+        if (y != positionY[slot] && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
             y = positionY[slot];
         }
         positionX[slot] = clampPosition ? clamp(x, 0x16, 0x89) : x & 0xFF;
@@ -616,5 +615,9 @@ public final class ColorShellMotion {
             int ignoreHitsCountdown,
             // Optional room geometry/history; null preserves the path without that room input.
             ColorShellWorld world,
-            java.util.List<RoomEntity> allEntities) {}
+            java.util.List<RoomEntity> allEntities) {
+        public ColorShellFrame {
+            backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        }
+    }
 }

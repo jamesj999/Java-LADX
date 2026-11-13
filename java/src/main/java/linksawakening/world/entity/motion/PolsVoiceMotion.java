@@ -43,6 +43,7 @@ public final class PolsVoiceMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision,
             int transitionCountdown) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         if ((entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException(
                     "Unsupported Pols Voice entity type: 0x" + Integer.toHexString(entity.type()));
@@ -135,15 +136,11 @@ public final class PolsVoiceMotion {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         boolean collided = false;
-        if (backgroundCollision != null
-                && nextX != x
-                && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
+        if (nextX != x && backgroundCollision.blocks(entity, directionForX(speedX[slot]), nextX, y)) {
             nextX = x;
             collided = true;
         }
-        if (backgroundCollision != null
-                && nextY != y
-                && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
+        if (nextY != y && backgroundCollision.blocks(entity, directionForY(speedY[slot]), nextX, nextY)) {
             nextY = y;
             collided = true;
         }

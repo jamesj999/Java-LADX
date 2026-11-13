@@ -204,9 +204,9 @@ final class HookshotChainHandler {
             }
             collisionResult = null;
 
-            if (state.background().interaction() != null) {
-                collisionResult = state.background()
-                        .interaction()
+            {
+                collisionResult = frameInput
+                        .hinoxBackgroundInteraction()
                         .probe(
                                 slotState.entity(),
                                 hookshotState.direction(),
@@ -215,15 +215,6 @@ final class HookshotChainHandler {
                                 state.slot().ignoreHits(slotState.entity().slot()),
                                 frameInput.frame());
                 blocked = collisionResult.blocked();
-            } else {
-                blocked = frameInput.backgroundCollision() != null
-                        && frameInput
-                                .backgroundCollision()
-                                .blocks(
-                                        slotState.entity(),
-                                        hookshotState.direction(),
-                                        nextPosition.x(),
-                                        nextPosition.y());
             }
             return true;
         }
