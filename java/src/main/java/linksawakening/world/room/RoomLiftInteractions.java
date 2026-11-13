@@ -275,6 +275,7 @@ final class RoomLiftInteractions {
         publishEntityView(loaded);
     }
 
+    /** Statue metadata is absent for ordinary liftable pots/rocks. */
     private record LiftTarget(
             int oppositeButton,
             int touchedLocation,

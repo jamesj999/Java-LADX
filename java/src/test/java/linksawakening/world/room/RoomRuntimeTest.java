@@ -49,6 +49,20 @@ class RoomRuntimeTest {
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
         org.junit.jupiter.api.Assertions.assertFalse(session.hasRoom());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().activeRoomOrNull());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().palettesOrNull());
+        assertThrows(NullPointerException.class, () -> session.rooms().requireActiveRoom());
+        assertThrows(NullPointerException.class, () -> session.rooms().currentRoomId());
+        assertThrows(NullPointerException.class, () -> session.rooms().mapId());
+        assertThrows(NullPointerException.class, () -> session.rooms().mapCategory());
+        assertThrows(NullPointerException.class, () -> session.entityState().entityHealth(0));
+        assertEquals(-1, session.rooms().indoorRoomPositionForSave());
+        org.junit.jupiter.api.Assertions.assertFalse(session.transitions().startOcarina(1, 0, 0));
+        assertThrows(IllegalArgumentException.class, () -> session.transitions().startOcarina(-1, 0, 0));
+        assertEquals(-1, session.transitions().tickDungeonTitleMessage(false, true, 0, false));
+        org.junit.jupiter.api.Assertions.assertNull(session.transitions().consumeManboPondTransitionRequest());
+        org.junit.jupiter.api.Assertions.assertNull(session.transitions().consumeInstrumentTransitionRequest());
+        org.junit.jupiter.api.Assertions.assertNull(session.transitions().pollStaircaseWarp(0, 0, 0, false));
         org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderViewOrNull());
         org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderSnapshotOrNull());
         org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderView());
@@ -138,5 +152,16 @@ class RoomRuntimeTest {
         assertEquals(5, session.components.followers().followingLinkDirection);
         assertEquals(0xE1, session.components.entityFrame().currentLinkMotionState);
         org.junit.jupiter.api.Assertions.assertFalse(session.components.location().shouldGetLostInMysteriousWoods);
+    }
+
+    @Test
+    void disabledPresentationHasNoEffectsAndKeepsTheEntityRequestGateOff() {
+        var session = RoomRenderAllocationTest.room();
+        var effects = session.components.transientVfxSystem();
+        org.junit.jupiter.api.Assertions.assertNotNull(session.components.droppableRupeeSystem());
+        assertEquals(-1, effects.spawn(linksawakening.vfx.TransientVfxType.POOF, 16, 32));
+        assertEquals(0, effects.activeCount());
+        org.junit.jupiter.api.Assertions.assertFalse(
+                session.components.entityEffects().transientVfxEnabled());
     }
 }

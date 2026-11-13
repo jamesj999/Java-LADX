@@ -43,8 +43,7 @@ final class RoomCollisionQueries {
 
     RoomBoundaryState boundaryState(
             RoomRuntime loaded, int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
-        boolean sideViewEntityActive = loaded.room.entityView() != null
-                && !loaded.room.entityView().slots().isEmpty()
+        boolean sideViewEntityActive = !loaded.room.entityView().slots().isEmpty()
                 && loaded.room.entityView().slots().get(0).status() != EntityStatus.DISABLED;
         var active = loaded.room;
         if (loaded.collisions.boundary == null

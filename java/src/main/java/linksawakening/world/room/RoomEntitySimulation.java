@@ -333,7 +333,7 @@ final class RoomEntitySimulation {
             effects.terrain().switchableObjectAnimationStage = 0x01;
         }
         effects.entityFrame().enemyDropCounters = loaded.entities.inspection().enemyDropCounters();
-        if (effects.transientVfxSystem() != null) {
+        if (effects.transientVfxEnabled()) {
             var transientVfxRequests = loaded.entities.enemies().transientVfxRequests();
             for (int requestIndex = 0; requestIndex < transientVfxRequests.size(); requestIndex++) {
                 TransientVfxRequest request = transientVfxRequests.get(requestIndex);
@@ -393,7 +393,8 @@ final class RoomEntitySimulation {
             RoomWorldState roomState,
             RoomObjectMutations roomTileRedraw,
             RoomTransitionController roomTransitionController,
-            TransientVfxSystem transientVfxSystem) {
+            TransientVfxSystem transientVfxSystem,
+            boolean transientVfxEnabled) {
         EffectsDependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");
@@ -408,6 +409,7 @@ final class RoomEntitySimulation {
             java.util.Objects.requireNonNull(roomState, "roomState");
             java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
             java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
         }
     }
 }

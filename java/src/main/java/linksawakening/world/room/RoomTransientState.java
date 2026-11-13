@@ -14,12 +14,10 @@ final class RoomTransientState {
 
     void clearTransientRoomState() {
 
-        if (dependencies.transientVfxSystem() != null) {
-            dependencies.transientVfxSystem().clear();
-        }
-        if (dependencies.droppableRupeeSystem() != null) {
-            dependencies.droppableRupeeSystem().clear();
-        }
+        dependencies.transientVfxSystem().clear();
+
+        dependencies.droppableRupeeSystem().clear();
+
         dependencies.entityRuntimeState().outbox.pendingBombExplosionEvents.clear();
         dependencies.location().pendingDungeonWarp = null;
         dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents.clear();
@@ -94,6 +92,8 @@ final class RoomTransientState {
             RoomEntitySessionState entityRuntimeState,
             TransientVfxSystem transientVfxSystem) {
         Dependencies {
+            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
+            java.util.Objects.requireNonNull(droppableRupeeSystem, "droppableRupeeSystem");
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");

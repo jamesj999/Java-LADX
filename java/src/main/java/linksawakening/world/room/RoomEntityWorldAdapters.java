@@ -64,9 +64,8 @@ final class RoomEntityWorldAdapters {
 
             @Override
             public void spawnPoof(int x, int y) {
-                if (transientVfxSystem != null) {
-                    transientVfxSystem.spawn(TransientVfxType.POOF, x, y);
-                }
+
+                transientVfxSystem.spawn(TransientVfxType.POOF, x, y);
             }
         };
     }

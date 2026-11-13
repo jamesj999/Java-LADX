@@ -18,7 +18,7 @@ final class RoomFollowerSynchronizer {
     }
 
     RoomRuntime synchronizeFollowingNpcEntitiesIfNeeded(RoomRuntime loaded) {
-        if (!dependencies.followers().followingNpcRoomNeedsSync || loaded.room.entityView() == null) {
+        if (!dependencies.followers().followingNpcRoomNeedsSync) {
             return loaded;
         }
         FollowingNpcRoomContext room = new FollowingNpcRoomContext(

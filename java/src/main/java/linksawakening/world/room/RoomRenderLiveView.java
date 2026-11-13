@@ -11,6 +11,7 @@ final class RoomRenderLiveView implements RoomRenderSnapshot.View {
     private final ActiveRoom room;
     private final Visuals visuals;
 
+    // Optional sprite metadata/cache key, including data-only ActiveRoom projections.
     private EntitySpriteSelection paletteSelection;
     private int[][] spritePalettes = EMPTY_PALETTES;
 

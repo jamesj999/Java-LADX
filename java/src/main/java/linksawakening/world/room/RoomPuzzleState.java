@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-/** Across-room puzzle flags plus the current room-load preparation slot. */
+/** ROM puzzle/title/music registers that survive room replacement; PerRoom is owned by RoomContents. */
 final class RoomPuzzleState {
     int switchButtonPressed;
     int dungeonTitleMessageCountdown;

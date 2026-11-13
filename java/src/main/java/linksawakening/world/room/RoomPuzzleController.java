@@ -402,6 +402,7 @@ final class RoomPuzzleController {
             RoomObjectMutations roomTileRedraw,
             TransientVfxSystem transientVfxSystem) {
         Dependencies {
+            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
@@ -421,14 +422,14 @@ final class RoomPuzzleController {
         if (effect == EVENT_EFFECT_REVEAL_CHEST) {
             loaded.contents.puzzles.activeRoomEvent = 0;
             loaded.contents.puzzles.roomEventChestRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
-            if (dependencies.transientVfxSystem() != null) {
-                dependencies
-                        .transientVfxSystem()
-                        .spawn(
-                                TransientVfxType.CHEST_APPEARS,
-                                0x88,
-                                RoomInteractionGeometry.roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
-            }
+
+            dependencies
+                    .transientVfxSystem()
+                    .spawn(
+                            TransientVfxType.CHEST_APPEARS,
+                            0x88,
+                            RoomInteractionGeometry.roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
+
         } else if (effect == EVENT_EFFECT_OPEN_LOCKED_DOORS) {
             this.openActiveRoomShutterDoors(loaded.contents, true);
             loaded.contents.puzzles.activeRoomEvent = 0;
@@ -442,9 +443,9 @@ final class RoomPuzzleController {
             dependencies.roomState().markCompleted(loaded.room);
             loaded.contents.puzzles.activeRoomEvent = 0;
             loaded.contents.puzzles.roomEventStairRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
-            if (dependencies.transientVfxSystem() != null) {
-                dependencies.transientVfxSystem().spawn(TransientVfxType.STAIRS_APPEARS, 0x88, 0x20);
-            }
+
+            dependencies.transientVfxSystem().spawn(TransientVfxType.STAIRS_APPEARS, 0x88, 0x20);
+
         } else if (effect == EVENT_EFFECT_CLEAR_MIDBOSS) {
             this.openActiveRoomShutterDoors(loaded.contents, true);
             if (loaded.contents.puzzles.activeRoomEvent == EVENT_CLEAR_MIDBOSS

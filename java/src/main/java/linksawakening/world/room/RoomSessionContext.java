@@ -30,9 +30,13 @@ final class RoomSessionContext {
         var roomLoader = config.roomLoader();
         var overworldTilesetTable = config.overworldTilesetTable();
         var overworldCollision = config.overworldCollision();
-        var transientVfxSystem = config.presentation().transientVfxSystem();
-        var droppableRupeeSystem = config.presentation().droppableRupeeSystem();
-        var roomLoadListener = config.presentation().roomLoadListener();
+        boolean transientVfxEnabled = config.presentation().transientVfxSystem() != null;
+        var transientVfxSystem = transientVfxEnabled
+                ? config.presentation().transientVfxSystem()
+                : new linksawakening.vfx.TransientVfxSystem(0);
+        var droppableRupeeSystem = config.presentation().droppableRupeeSystem() == null
+                ? new DroppableRupeeSystem(0, () -> 0)
+                : config.presentation().droppableRupeeSystem();
         var randomByteSource = config.randomByteSource();
         values.entityRandomByteSource = java.util.Objects.requireNonNull(randomByteSource);
         values.romData = romData;
@@ -49,7 +53,6 @@ final class RoomSessionContext {
         values.overworldCollision = overworldCollision;
         values.transientVfxSystem = transientVfxSystem;
         values.droppableRupeeSystem = droppableRupeeSystem;
-        values.roomLoadListener = roomLoadListener;
         values.roomTilemapBuilder = new RoomTilemapBuilder(romData);
         values.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
         values.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(values.entitySpriteHandlerCatalog);
@@ -197,15 +200,11 @@ final class RoomSessionContext {
                 values.roomState,
                 values.roomStoryState));
         values.roomTransitionController = new RoomTransitionController(new RoomTransitionController.Dependencies(
-                values.entityFrame,
                 values.followers,
                 values.items,
                 values.location,
-                values.puzzles,
                 values.entityFrame,
-                values.gpu,
                 values.manboWarpResolver,
-                values.romData,
                 values.roomLoadCoordinator,
                 values.roomState,
                 values.scrollNavigation));
@@ -223,7 +222,8 @@ final class RoomSessionContext {
                 values.roomState,
                 values.roomObjectMutations,
                 values.roomTransitionController,
-                values.transientVfxSystem);
+                values.transientVfxSystem,
+                transientVfxEnabled);
         values.entityConfiguration = new RoomEntitySimulation.SetupDependencies(
                 values.entityFrame,
                 values.followers,

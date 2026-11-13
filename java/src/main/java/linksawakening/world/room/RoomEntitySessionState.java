@@ -4,7 +4,7 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EnemyProjectileCollision;
 
-/** Retained room-entity runtime, output queues, drop counters and per-frame gates. */
+/** Session-level entity output queues, drop registers and per-frame gates; no loaded-room alias. */
 final class RoomEntitySessionState {
     final RoomEntityOutbox outbox = new RoomEntityOutbox();
 

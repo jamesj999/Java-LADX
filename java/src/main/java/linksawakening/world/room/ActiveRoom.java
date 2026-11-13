@@ -19,7 +19,9 @@ public final class ActiveRoom {
     private final boolean indoorHasSouthEntrance;
     private final int staircaseLocation;
     private int shutterDoorMask;
+    // Standalone data-only projections may omit entities; installed RoomRuntime validates their presence.
     private RoomEntitySnapshot entities;
+    // Optional cached owned presentation, populated only when a consumer asks for history.
     private RoomEntitySnapshot ownedEntities;
     // NPC direction/walk presentations repeat while gameplay is gated by dialogs.
     private final RoomEntitySnapshot[] recentPresentations = new RoomEntitySnapshot[8];

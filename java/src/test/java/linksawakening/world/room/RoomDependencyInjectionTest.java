@@ -54,4 +54,23 @@ class RoomDependencyInjectionTest {
         for (var constructor : RoomSessionContext.class.getDeclaredConstructors())
             assertTrue(Modifier.isPrivate(constructor.getModifiers()));
     }
+
+    @Test
+    void roomLifetimesHaveNoSessionBagAliasesOrCurrentValueSuppliers() {
+        for (var type : List.of(RoomLocationState.class, RoomEntitySessionState.class)) {
+            for (var field : type.getDeclaredFields()) {
+                assertFalse(
+                        List.of(
+                                        ActiveRoom.class,
+                                        RoomRuntime.class,
+                                        linksawakening.world.entity.RoomEntityRuntime.class)
+                                .contains(field.getType()),
+                        field.toString());
+            }
+        }
+        for (var type : List.of(RoomEntityOutbox.class, RoomRenderLiveView.class, RoomDungeonLiveView.class)) {
+            for (var field : type.getDeclaredFields())
+                assertFalse(java.util.function.Supplier.class.isAssignableFrom(field.getType()), field.toString());
+        }
+    }
 }

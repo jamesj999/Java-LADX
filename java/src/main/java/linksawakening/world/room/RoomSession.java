@@ -989,7 +989,8 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
     }
 
     void resetGuardianAcornCounterOnHurt() {
-        var counters = hasRoom()
+        boolean roomPresent = hasRoom();
+        var counters = roomPresent
                 ? loadedRoom.entities.inspection().enemyDropCounters()
                 : components.entityFrame().enemyDropCounters;
         components.entityFrame().enemyDropCounters =
@@ -1051,13 +1052,55 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
     }
 
     RoomRuntime loadWarpDestination(Warp warp) {
-        return components
-                .roomTransitionController()
-                .loadWarpDestination(
-                        warp,
-                        hasRoom() && loadedRoom.room.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                        indoorRoomPositionForSave(),
-                        previousPalettes());
+        // GameplayWorldLoadRoomHandler ($01:442B) clears $C000..$D2FF,
+        // including the recent-room ring and transient entity-clear masks.
+        // Scrolling between adjacent rooms does not take this path.
+        int category = warp.category();
+        boolean wasIndoor = hasRoom() && loadedRoom.room.mapCategory() != Warp.CATEGORY_OVERWORLD;
+        if (category != Warp.CATEGORY_SIDESCROLL) {
+            Warp spawn = warp;
+            int indoorRoom = wasIndoor ? components.location().indoorMapPosition : -1;
+            if (indoorRoom < 0) indoorRoom = components.location().respawnIndoorRoom;
+            if (warp.category() == Warp.CATEGORY_INDOOR && (warp.destMap() < 0x0A || warp.destMap() == 0xFF)) {
+                var rom = components.romData();
+                var address = new linksawakening.rom.RomAddress(
+                        0x14, warp.destMap() == 0xFF ? 0x4E3C : 0x4DF1 + warp.destMap() * 5);
+                spawn = new Warp(
+                        rom.u8(address),
+                        rom.u8(address.plus(1)),
+                        rom.u8(address.plus(2)),
+                        rom.u8(address.plus(3)),
+                        rom.u8(address.plus(4)),
+                        -1);
+                indoorRoom = warp.destMap() == 0xFF
+                        ? 0x3A
+                        : rom.u8(new linksawakening.rom.RomAddress(0x14, 0x4E41 + warp.destMap()));
+            }
+            components.location().setRespawnPoint(spawn, indoorRoom);
+        }
+        components.entityFrame().recentRoomEntityClears.reset();
+        // hFreeWarpDataAddress is the source wIsIndoor ($00:18AD–18B0).
+        // $00:1904/$00:1952 clear only when destination indoor status differs.
+        if (wasIndoor != (warp.category() != Warp.CATEGORY_OVERWORLD)) {
+            components.location().mapBoundaryWarp.run();
+        }
+        components.puzzles().dungeonTitleMessageCountdown = 0;
+        RoomRuntime loaded;
+        if (warp.category() == Warp.CATEGORY_OVERWORLD) {
+            if (wasIndoor) {
+                components.gpu().loadBaseOverworldTiles(components.romData());
+                components.location().currentOverworldTilesetId = RoomSessionRules.W_TILESET_NO_UPDATE;
+            }
+            loaded = components.roomLoadCoordinator().loadOverworld(warp.destRoom());
+            components.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(warp.destRoom());
+        } else {
+            loaded = components
+                    .roomLoadCoordinator()
+                    .loadIndoor(previousPalettes(), warp.destMap(), warp.destRoom(), warp.category());
+            // $00:194C-1965: old wIsIndoor is hFreeWarpDataAddress.
+            if (!wasIndoor && warp.destMap() < 0x0A) components.puzzles().dungeonTitleMessageCountdown = 0x30;
+        }
+        return loaded;
     }
 
     void startAdjacentOverworldScroll(
@@ -1147,5 +1190,9 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
     void initializeNewGameWorldState() {
         components.roomStoryState().initializeNewGameWorldState();
         if (hasRoom()) components.roomTransientState().clearRoomContents(loadedRoom.contents);
+    }
+
+    ActiveRoom requireActiveRoom() {
+        return java.util.Objects.requireNonNull(loadedRoom).room;
     }
 }

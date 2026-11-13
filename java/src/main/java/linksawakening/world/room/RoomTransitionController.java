@@ -12,10 +12,7 @@ import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_DISCOVERED;
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_ACTIVE;
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_INACTIVE;
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_NONE;
-import static linksawakening.world.room.RoomSessionRules.W_TILESET_NO_UPDATE;
 
-import linksawakening.gpu.GPU;
-import linksawakening.rom.Rom;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.ScrollController;
@@ -27,57 +24,6 @@ final class RoomTransitionController {
 
     RoomTransitionController(Dependencies dependencies) {
         this.dependencies = dependencies;
-    }
-
-    RoomRuntime loadWarpDestination(
-            Warp warp, boolean wasIndoor, int indoorRoom, RoomLoadCoordinator.PreviousPalettes previous) {
-        // GameplayWorldLoadRoomHandler ($01:442B) clears $C000..$D2FF,
-        // including the recent-room ring and transient entity-clear masks.
-        // Scrolling between adjacent rooms does not take this path.
-        if (warp.category() != Warp.CATEGORY_SIDESCROLL) {
-            Warp spawn = warp;
-
-            if (indoorRoom < 0) indoorRoom = dependencies.location().respawnIndoorRoom;
-            if (warp.category() == Warp.CATEGORY_INDOOR && (warp.destMap() < 0x0A || warp.destMap() == 0xFF)) {
-                var rom = dependencies.romData();
-                var address = new linksawakening.rom.RomAddress(
-                        0x14, warp.destMap() == 0xFF ? 0x4E3C : 0x4DF1 + warp.destMap() * 5);
-                spawn = new Warp(
-                        rom.u8(address),
-                        rom.u8(address.plus(1)),
-                        rom.u8(address.plus(2)),
-                        rom.u8(address.plus(3)),
-                        rom.u8(address.plus(4)),
-                        -1);
-                indoorRoom = warp.destMap() == 0xFF
-                        ? 0x3A
-                        : rom.u8(new linksawakening.rom.RomAddress(0x14, 0x4E41 + warp.destMap()));
-            }
-            dependencies.location().setRespawnPoint(spawn, indoorRoom);
-        }
-        dependencies.entityFrame().recentRoomEntityClears.reset();
-        // hFreeWarpDataAddress is the source wIsIndoor ($00:18AD–18B0).
-        // $00:1904/$00:1952 clear only when destination indoor status differs.
-        if (wasIndoor != (warp.category() != Warp.CATEGORY_OVERWORLD)) {
-            dependencies.location().mapBoundaryWarp.run();
-        }
-        dependencies.puzzles().dungeonTitleMessageCountdown = 0;
-        RoomRuntime loaded;
-        if (warp.category() == Warp.CATEGORY_OVERWORLD) {
-            if (wasIndoor) {
-                dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
-                dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-            }
-            loaded = dependencies.roomLoadCoordinator().loadOverworld(warp.destRoom());
-            dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(warp.destRoom());
-        } else {
-            loaded = dependencies
-                    .roomLoadCoordinator()
-                    .loadIndoor(previous, warp.destMap(), warp.destRoom(), warp.category());
-            // $00:194C-1965: old wIsIndoor is hFreeWarpDataAddress.
-            if (!wasIndoor && warp.destMap() < 0x0A) dependencies.puzzles().dungeonTitleMessageCountdown = 0x30;
-        }
-        return loaded;
     }
 
     void startAdjacentOverworldScroll(
@@ -268,28 +214,20 @@ final class RoomTransitionController {
     }
 
     record Dependencies(
-            RoomEntitySessionState entityFrame,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location,
-            RoomPuzzleState puzzles,
             RoomEntitySessionState entityRuntimeState,
-            GPU gpu,
             ManboWarpResolver manboWarpResolver,
-            Rom romData,
             RoomLoadCoordinator roomLoadCoordinator,
             RoomWorldState roomState,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(gpu, "gpu");
             java.util.Objects.requireNonNull(manboWarpResolver, "manboWarpResolver");
-            java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
             java.util.Objects.requireNonNull(roomState, "roomState");
             java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");

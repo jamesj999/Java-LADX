@@ -31,6 +31,7 @@ final class RoomRuntime {
             Objects.requireNonNull(queries);
             Objects.requireNonNull(objects);
             Objects.requireNonNull(frame);
+            Objects.requireNonNull(vfx);
         }
     }
 
@@ -38,6 +39,7 @@ final class RoomRuntime {
         this.contents = Objects.requireNonNull(contents, "contents");
         this.room = contents.room;
         this.entities = Objects.requireNonNull(entities, "entities");
+        Objects.requireNonNull(room.entityView(), "loaded room entity view");
         renderView = RoomRenderLiveView.live(room, entities);
         backgroundCollision = (entity, direction, x, y) ->
                 services.queries().entityBackgroundCollision(this, entity, direction, x, y);

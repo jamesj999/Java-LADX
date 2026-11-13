@@ -14,6 +14,7 @@ public final class GameplayScreen implements Screen {
     private final GameplayScreenDriver driver;
 
     private int[] pendingKeys = new int[16];
+    // Null only while a reentrant key dispatch borrows the spare buffer.
     private int[] reusableKeys = new int[16];
     private int pendingCount;
 

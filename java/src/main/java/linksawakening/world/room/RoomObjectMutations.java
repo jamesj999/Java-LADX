@@ -171,7 +171,7 @@ final class RoomObjectMutations {
     }
 
     void applyBombObjectInteractions(RoomRuntime loaded, List<BombExplosionEvent> events) {
-        if (loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL || events == null || events.isEmpty()) {
+        if (loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL || events.isEmpty()) {
             return;
         }
 
@@ -237,7 +237,7 @@ final class RoomObjectMutations {
     }
 
     void applyBoomerangObjectInteractions(RoomContents contents, List<BoomerangObjectRequest> requests) {
-        if (contents.room.mapCategory() != Warp.CATEGORY_OVERWORLD || requests == null || requests.isEmpty()) {
+        if (contents.room.mapCategory() != Warp.CATEGORY_OVERWORLD || requests.isEmpty()) {
             return;
         }
 
@@ -258,11 +258,11 @@ final class RoomObjectMutations {
             if (!result.changed()) {
                 continue;
             }
-            if (dependencies.transientVfxSystem() != null) {
-                dependencies
-                        .transientVfxSystem()
-                        .spawn(TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
-            }
+
+            dependencies
+                    .transientVfxSystem()
+                    .spawn(TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
+
             dependencies
                     .entityRuntimeState()
                     .outbox
@@ -274,7 +274,7 @@ final class RoomObjectMutations {
     }
 
     void applyMagicRodObjectInteractions(RoomContents contents, List<MagicRodObjectRequest> requests) {
-        if (requests == null || requests.isEmpty()) {
+        if (requests.isEmpty()) {
             return;
         }
 
@@ -316,11 +316,11 @@ final class RoomObjectMutations {
             if (!changed) {
                 continue;
             }
-            if (dependencies.transientVfxSystem() != null) {
-                dependencies
-                        .transientVfxSystem()
-                        .spawn(TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
-            }
+
+            dependencies
+                    .transientVfxSystem()
+                    .spawn(TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
+
             dependencies
                     .entityRuntimeState()
                     .outbox
@@ -334,7 +334,7 @@ final class RoomObjectMutations {
     }
 
     void applyMagicPowderObjectInteractions(RoomContents contents, List<MagicPowderObjectRequest> requests) {
-        if (requests == null || requests.isEmpty()) {
+        if (requests.isEmpty()) {
             return;
         }
 
@@ -667,6 +667,7 @@ final class RoomObjectMutations {
             linksawakening.rom.Rom romData,
             RoomTilemapBuilder roomTilemapBuilder) {
         Dependencies {
+            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(puzzles, "puzzles");
@@ -727,7 +728,7 @@ final class RoomObjectMutations {
     }
 
     void applyHookshotBridgeUpdates(RoomContents contents, List<HookshotBridgeUpdate> updates) {
-        if (updates == null || updates.isEmpty()) {
+        if (updates.isEmpty()) {
             return;
         }
         int[] objects = contents.room.roomObjectsArea();

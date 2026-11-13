@@ -10,6 +10,7 @@ import linksawakening.ui.FileMenuFrameSnapshot;
  * retained for the owning session.
  */
 public final class PassOutController {
+    // Optional identity/sequence state: no death presentation exists before the death trigger.
     private Link owner;
     private LinkPassOutAnimation animation;
     private GameOverPresentation gameOver;

@@ -14,7 +14,7 @@ import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.object.OverworldBushInteraction;
 
-/** Wiring result consumed only by the facade and compatibility adapters. */
+/** Wiring result consumed only by the facade and composed role/output adapters. */
 record RoomSessionComponents(
         RoomLocationState location,
         RoomTerrainState terrain,
@@ -33,7 +33,6 @@ record RoomSessionComponents(
         OverworldCollision overworldCollision,
         TransientVfxSystem transientVfxSystem,
         DroppableRupeeSystem droppableRupeeSystem,
-        RoomLoadListener roomLoadListener,
         RoomTilemapBuilder roomTilemapBuilder,
         RomRandomByteSource entityRandomByteSource,
         EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
@@ -82,7 +81,6 @@ record RoomSessionComponents(
         OverworldCollision overworldCollision;
         TransientVfxSystem transientVfxSystem;
         DroppableRupeeSystem droppableRupeeSystem;
-        RoomLoadListener roomLoadListener;
         RoomTilemapBuilder roomTilemapBuilder;
         RomRandomByteSource entityRandomByteSource;
         EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
@@ -140,7 +138,6 @@ record RoomSessionComponents(
                     overworldCollision,
                     transientVfxSystem,
                     droppableRupeeSystem,
-                    roomLoadListener,
                     roomTilemapBuilder,
                     entityRandomByteSource,
                     entitySpriteHandlerCatalog,

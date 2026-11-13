@@ -170,7 +170,7 @@ render or minimap views. The stable dungeon projection receives map identity at
 facade installation/reset so retained views still follow room changes. Optional
 render signatures now have explicit renderViewOrNull/renderSnapshotOrNull names;
 old names remain compatible. Off-limits hand-off: app/presentation/RenderStateAssembler
-buildReusable -> rooms().renderViewOrNull(); build -> rooms().renderSnapshotOrNull();
+currentReusableGameFrameState -> rooms().renderViewOrNull(); currentGameFrameState -> rooms().renderSnapshotOrNull();
 its activeRoom presence guard can use roomSession.hasRoom().
 World null occurrences: 180 -> 158. Gate: 2966 tests, zero failures/errors, one skip,
 986 identical scenes. Room/runtime aliases remain only for loading/transitions.
@@ -205,3 +205,94 @@ call the canonical raw-value constructors with the same original expressions.
 All eight deprecated enum/dual-value constructors are deleted; the four record
 types each expose only one canonical constructor. Derived enum accessors and
 unknown byte behavior are unchanged. Gate: 2967 tests, zero failures/errors, one skip.
+
+## Final no-room operation matrix
+
+This table covers valid arguments; existing validation preceding an absence
+branch still runs. Overloads share the policy shown. A room-only transient state
+does not exist before load, so counter-reset defaults are observably zero/false.
+
+| Operation | Before the first room load |
+| --- | --- |
+| RoomSession constructor, role accessors, entityFrameResults | Construct/return non-null cached boundaries; no fake room/runtime |
+| hasRoom / rooms.hasActiveRoom | false |
+| rooms.loadInitialOverworld / loadOverworld / all loadIndoor forms | Perform the load and publish a generation |
+| rooms.activeRoom / activeRoomOrNull / palettes / palettesOrNull | null |
+| rooms.renderView / renderViewOrNull / renderSnapshot / renderSnapshotOrNull | null |
+| rooms.requireActiveRoom / currentRoomId / mapCategory / mapId | NullPointerException |
+| rooms.indoorRoomPositionForSave | -1 |
+| rooms.heartPiecePickupActive | false |
+| rooms.instrumentTrace / moblinKingTrace | empty string / "-1" |
+| rooms.liftedEntityState | LiftedEntityState.none() |
+| rooms.musicSelectionIsScroll | Read retained loader selection state |
+| entities.inBossBattle | false |
+| entities.resolveEntityCombat | Empty list, after the original immutable input dereferences |
+| entities.collectEntityIfNeeded | null, after the original immutable input dereferences |
+| entities.tickEntities / tickEntitiesWithProjectileEvents / frame-input tick | Preserve validation, input/cache writes, Link byte-register/history capture and woods-flag reset; return no entity events and do not begin an entity RNG frame |
+| entityState.clearEntity | 0 |
+| entityState.entityHealth | NullPointerException |
+| entityState.gelClingingToLink / deferContactRecoil / gotItemPresentationActive / powerUpPickupSequenceActive / swordPickupSequenceActive | false |
+| entityState.setEntityDialogActive / setEntityTalkState / setEntityActionButtonsHeld / setEntityPowerBraceletButtonHeld / setEntityBombButtonHeld | Validate/cache in the original order; skip runtime writes |
+| entityState.setSecretSeashellPegasusCollisionState / setEntityAttackStepAnimationCountdown | Validate/cache as before; skip runtime writes |
+| entityState.setToadstoolPlayerState / setEntityScreenShakeCountdown | Skip runtime-only writes, retaining the original no-room validation policy |
+| entityState.resetGuardianAcornCounterOnHurt | Reset retained drop counters; skip runtime configuration |
+| entityState.advanceBoomerangSoundClock / tickGameplayVBlank | Advance retained source clocks/switch animation as before |
+| entityState.entityDefaultMusicTrack | Return retained default track |
+| entityState.setColorShellSoundSink | Retain the sink; normalize null to GameplaySoundSink.none() |
+| entityState.consumeLinkAttackClearRequests | Empty list |
+| entityState.consumeSwordPickupRewards / consumeEntityDialogRequests | Drain queued session values; no runtime values |
+| playerItems.throwLiftedEntity / fireHookshot / fireBoomerang / fireSwordBeam / fireMagicRodFireball / sprinkleMagicPowder / placeBomb / shootArrow | false |
+| playerItems.shootArrowResult | ArrowShotResult(false,false) |
+| playerItems.startShovel | Validate the 0..3 ROM direction, then ShovelStartResult(false,true,-1) |
+| playerItems.advanceShovel | No-op |
+| playerItems.shovelAnimationState | Independent ROM lookup and its original argument validation |
+| playerItems.activeProjectileCount | 0 |
+| playerItems.bombActive / hookshotActive / boomerangActive / lastBombPlacementPlayedBump | false |
+| doors.tryOpenChest | ChestOpenResult(false,-1,-1,-1) |
+| doors.tryUnlockIndoorKeyDoor / tryPushIndoorBlock / tryLiftObject / tryLiftIndoorObject / tryInteractWithIndoorBlock / tryUnlockIndoorKeyholeBlock / tryUnlockTailCaveKeyhole / tryUnlockKeyCavernKeyhole | false; absent room-only pull state remains zero |
+| doors.tickTailCaveKeyholeSequence / tailCaveKeyholeSequenceActive | 0 / false |
+| terrain.tickCrackedFloor / tickCrackedFloorOnLanding / breakIndoorSwordCrystal | false |
+| transitions.loadWarpDestination | Perform the load; preserve respawn writes, map-boundary callback order, source indoor flag, palette-history timing and title clock |
+| transitions.startAdjacentOverworldScroll / startAdjacentIndoorScroll | NullPointerException |
+| transitions.tickDungeonTitleMessage | -1 with its ordinary zero clock; original decrement/gate and required-room exception remain for an internally seeded clock |
+| transitions.startOcarina | Validate countdown/song bytes, then false |
+| transitions.ocarinaPlaying / ocarinaAnimationState | false / -1 |
+| transitions.consumeManboPondTransitionRequest / consumeInstrumentTransitionRequest / pollStaircaseWarp | null |
+| RoomTransitionCoordinator boundary handlers | No-op for warp/overworld dispatch; false for pending Manbo/instrument dispatch |
+| story.applyMarinWakeUpPresentation / updateHouseTarinPresentation / setFollowerSpriteOverrides | false / no-op / no-op |
+| story.setBirdKeyOwned / setTailKeyOwned / setBowWowState / setRichardSpokenFlag / setTarinFlag / setHouseNpcTradeItem / setChestPlayerLevels / setEntityDefaultMusicTrack / setFollowingNpcState | Preserve persistent validation/cache writes; skip loaded-room effects |
+| story.followingNpcState / bowWowState / richardSpokenFlag / tarinFlag / shouldGetLostInMysteriousWoods | Read retained state |
+| story.initializeNewGameWorldState / restoreRoomStatuses | Reset/restore persistent/session state with the original validation; no room-only state exists to clear |
+| dungeon.view | Non-null stable read-only view; empty minimap, live persistent progression/item flags |
+| dungeon.dungeonMinimapRoomStatusSnapshot | New owned zeroed 64-byte array |
+| All other dungeon snapshots/restores/debug item setters | Read/copy/update persistent state with original bounds/length checks |
+| progress.onMapBoundaryWarp / setRespawnPoint / clearGameOverPowerCounter / resetGameOverSwitchBlocks | Update persistent/session state; runtime configuration skipped |
+| progress.respawnPoint / respawnIndoorRoom | Read retained optional destination/register |
+| LinkOutputs runtime-backed channels | Empty ordered lists/drains; session motion-block requests still drain |
+| RewardOutputs channels | Drain queued session rewards; heart-piece runtime updates are empty |
+| PresentationOutputs entity/dialog channels | Drain queued session values first/in the original merge order; no runtime events |
+| PresentationOutputs music track / fade countdown | Queued session track if present, otherwise -1 / 0 |
+
+## Null discipline and remaining render hand-off
+
+All remaining comparisons are inventoried with source locations and reasons in
+[room-null-audit.md](room-null-audit.md). World: 328 -> 115 expressions (306 -> 110
+matching lines): 86 optional domain values, 29 public-boundary validations, zero
+leftovers. App: 94 expressions / 91 lines (72 optional, 22 boundary); gameplay:
+22 expressions / 20 lines (5 optional, 17 boundary), unchanged because their
+remaining values are truly optional or null-compatible public boundary inputs.
+The sole loaded-generation presence comparison is confined to RoomSession.
+Session bags contain no room/runtime aliases, enforced by a structural test.
+Disabled VFX/drops/listener become non-null zero-slot/no-op services at wiring;
+a feature bit retains the original skip of owned entity VFX-list production.
+
+The render engineer can make these switches in the off-limits file
+`app/presentation/RenderStateAssembler.java` (old forms remain working):
+
+| Method | Switch |
+| --- | --- |
+| composeFrameBuffer | activeRoom presence guard -> roomSession.hasRoom(); within the guarded branch use rooms().requireActiveRoom() for metadata |
+| currentReusableGameFrameState | rooms().renderView() -> rooms().renderViewOrNull() |
+| currentGameFrameState | rooms().renderSnapshot() -> rooms().renderSnapshotOrNull() |
+
+The four app frame-cache constructor hand-offs are complete; none remain.

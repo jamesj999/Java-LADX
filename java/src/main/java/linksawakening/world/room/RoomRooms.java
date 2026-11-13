@@ -15,7 +15,14 @@ public interface RoomRooms {
 
     void loadIndoor(int mapId, int roomId, int mapCategory);
 
+    /** Compatibility name; returns null before the first room load. */
     ActiveRoom activeRoom();
+
+    /** Current room data, or null before the first room load. */
+    ActiveRoom activeRoomOrNull();
+
+    /** Non-null current room; throws NullPointerException before the first room load. */
+    ActiveRoom requireActiveRoom();
 
     boolean hasActiveRoom();
 
@@ -27,7 +34,11 @@ public interface RoomRooms {
 
     int indoorRoomPositionForSave();
 
+    /** Compatibility name; returns null before the first room load. */
     int[][] palettes();
+
+    /** Current palette plane, or null before the first room load. */
+    int[][] palettesOrNull();
 
     boolean heartPiecePickupActive();
 

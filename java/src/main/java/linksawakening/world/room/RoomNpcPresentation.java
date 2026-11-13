@@ -32,7 +32,7 @@ final class RoomNpcPresentation {
     }
 
     void setFollowerSpriteOverrides(RoomRuntime loaded, Map<Integer, EntitySpriteDefinition> overrides) {
-        if (loaded.room.entityView() == null || loaded.room.entityView().spriteSelection() == null) {
+        if (loaded.room.entityView().spriteSelection() == null) {
             return;
         }
         Map<Integer, EntitySpriteDefinition> merged =

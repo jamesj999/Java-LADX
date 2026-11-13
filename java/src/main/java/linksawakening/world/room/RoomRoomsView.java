@@ -36,7 +36,19 @@ final class RoomRoomsView implements RoomRooms {
     }
 
     public ActiveRoom activeRoom() {
+        return activeRoomOrNull();
+    }
+
+    public ActiveRoom activeRoomOrNull() {
         return session.activeRoom();
+    }
+
+    public ActiveRoom requireActiveRoom() {
+        return session.requireActiveRoom();
+    }
+
+    public int[][] palettesOrNull() {
+        return session.palettes();
     }
 
     public boolean hasActiveRoom() {

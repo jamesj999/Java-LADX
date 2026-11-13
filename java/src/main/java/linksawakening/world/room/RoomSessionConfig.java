@@ -15,7 +15,10 @@ public record RoomSessionConfig(
         OverworldCollision overworldCollision,
         Presentation presentation,
         RomRandomByteSource randomByteSource) {
-    /** Each service is optional for headless/domain-only sessions; null disables that output. */
+    /**
+     * Public optional-output configuration. Null disables that output; eager room wiring replaces it
+     * with a zero-slot effects/drop system or a no-op listener before any frame runs.
+     */
     public record Presentation(
             TransientVfxSystem transientVfxSystem,
             DroppableRupeeSystem droppableRupeeSystem,
