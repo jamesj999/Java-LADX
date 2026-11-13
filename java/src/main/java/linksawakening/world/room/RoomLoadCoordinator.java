@@ -340,7 +340,7 @@ final class RoomLoadCoordinator {
                 dependencies.puzzles().current.pendingShutterCloseMask =
                         dependencies.location().activeRoom.shutterDoorMask();
             } else {
-                dependencies.roomPuzzleController().openActiveRoomShutterDoors();
+                dependencies.roomPuzzleController().openActiveRoomShutterDoors(dependencies.location().contents);
             }
         }
         dependencies
@@ -362,7 +362,7 @@ final class RoomLoadCoordinator {
         if (minibossDefeated && dependencies.puzzles().current.activeRoomEvent == EVENT_CLEAR_MIDBOSS) {
             dependencies.roomState()
                     .dungeonProgressFlags[dependencies.location().activeRoom.mapId()] |= 0x01;
-            dependencies.roomPuzzleController().openActiveRoomShutterDoors();
+            dependencies.roomPuzzleController().openActiveRoomShutterDoors(dependencies.location().contents);
             dependencies.puzzles().current.activeRoomEvent = 0;
         }
     }

@@ -922,14 +922,24 @@ final class RoomRewardLifecycleTest {
         assertTrue(session.doors()
                 .tryUnlockKeyCavernKeyhole(0x5A, 0x4A, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01, 6));
         assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xB5) & 0x10);
-        assertEquals(0xDF, session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest());
+        assertEquals(
+                0xDF,
+                session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents));
         int gateTopLeft = 2 * RoomConstants.ROOM_TILE_WIDTH + 12;
-        while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 0xD8) {
+        while (session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                > 0xD8) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         assertEquals(0x0C, session.rooms().activeRoom().tileIds()[gateTopLeft]);
         assertEquals(0x1C, session.rooms().activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
-        while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 0xC8) {
+        while (session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                > 0xC8) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         assertEquals(0x0C, session.rooms().activeRoom().tileIds()[gateTopLeft]);

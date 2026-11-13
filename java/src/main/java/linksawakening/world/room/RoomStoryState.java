@@ -222,7 +222,6 @@ final class RoomStoryState {
             RoomTerrainState terrain,
             ChestContentsTable chestContentsTable,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
@@ -245,7 +244,6 @@ final class RoomStoryState {
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");

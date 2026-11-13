@@ -564,7 +564,12 @@ final class GameplayRouteScenario {
                         0x01,
                         route.playerState.progression().tailKeyCount() != 0));
         assertEquals(0x10, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0xD3) & 0x10);
-        assertEquals(0xDF, route.session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest());
+        assertEquals(
+                0xDF,
+                route.session
+                        .components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(route.session.loadedRoomOrNull().contents));
         route.rumbleTicks = 0;
         route.shookRight = false;
         route.shookLeft = false;

@@ -151,3 +151,13 @@ the existing lifetime. Terrain role operations preserve unloaded false defaults.
 RoomObjectMutations contains no room/runtime absence checks. Remaining loader
 preparation aliases are temporary for the next collaborator migrations.
 World null occurrences: 222 -> 204. Gate: 2966 tests, zero failures/errors, one skip.
+
+## Doors, lifting and room events
+
+Door/chest/bracelet interactions receive the installed generation. Puzzle/map
+initialization uses RoomContents before runtime construction; runtime-dependent
+room-event effects receive RoomRuntime. Stable door roles route once through
+the facade: unloaded interactions return false, chest results remain
+(false,-1,-1,-1), lifting clears the pull counter, and the keyhole tick returns
+zero/clears its final-block flag. World null occurrences: 204 -> 180.
+Gate: 2966 tests, zero failures/errors, one skip; 986 identical scenes.

@@ -19,6 +19,7 @@ final class RoomLiftInteractions {
     }
 
     boolean tryLiftIndoorObject(
+            RoomRuntime loaded,
             int linkPixelX,
             int linkPixelY,
             Direction linkDirection,
@@ -27,10 +28,11 @@ final class RoomLiftInteractions {
         return dependencies
                 .roomDoorInteractions()
                 .tryLiftIndoorObject(
-                        linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, false);
+                        loaded, linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, false);
     }
 
     boolean tryLiftIndoorObject(
+            RoomRuntime loaded,
             int linkPixelX,
             int linkPixelY,
             Direction linkDirection,
@@ -40,6 +42,7 @@ final class RoomLiftInteractions {
         return dependencies
                 .owner()
                 .tryLiftObject(
+                        loaded,
                         linkPixelX,
                         linkPixelY,
                         linkDirection,
@@ -50,6 +53,7 @@ final class RoomLiftInteractions {
     }
 
     boolean tryLiftObject(
+            RoomRuntime loaded,
             int linkPixelX,
             int linkPixelY,
             Direction linkDirection,
@@ -60,6 +64,7 @@ final class RoomLiftInteractions {
         return dependencies
                 .owner()
                 .tryLiftObject(
+                        loaded,
                         linkPixelX,
                         linkPixelY,
                         linkDirection,
@@ -71,6 +76,7 @@ final class RoomLiftInteractions {
     }
 
     boolean tryLiftObject(
+            RoomRuntime loaded,
             int linkPixelX,
             int linkPixelY,
             Direction linkDirection,
@@ -79,21 +85,15 @@ final class RoomLiftInteractions {
             boolean pieceOfPowerActive,
             int braceletLevel,
             boolean anyPowerUpActive) {
-        if (dependencies.location().activeRoom == null
-                || dependencies.entityRuntimeState().runtime == null
-                || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+        if (loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL
                 || !braceletButtonHeld
-                || dependencies
-                        .entityRuntimeState()
-                        .runtime
-                        .inspection()
-                        .liftedEntityState()
-                        .active()) {
-            dependencies.puzzles().current.indoorPotPullFrames = 0;
+                || loaded.entities.inspection().liftedEntityState().active()) {
+            loaded.contents.puzzles.indoorPotPullFrames = 0;
             return false;
         }
-        var target = probeLiftTarget(linkPixelX, linkPixelY, linkDirection);
+        var target = probeLiftTarget(loaded, linkPixelX, linkPixelY, linkDirection);
         return advanceLift(
+                loaded,
                 new LiftRequest(
                         linkPixelX,
                         linkPixelY,
@@ -105,21 +105,15 @@ final class RoomLiftInteractions {
                 target);
     }
 
-    private void publishEntityView() {
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(
-                        dependencies.entityRuntimeState().runtime.inspection().view());
+    private void publishEntityView(RoomRuntime loaded) {
+        loaded.room.replaceEntities(loaded.entities.inspection().view());
     }
 
     record Dependencies(
             RoomEntitySessionState entityRuntimeState,
             RoomFollowerState followers,
-            RoomLocationState location,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
-            RoomPuzzleState puzzles,
             RoomDoorInteractions roomDoorInteractions,
             RoomObjectMutations roomObjectMutations,
             RoomSessionViews roomSessionViews,
@@ -128,10 +122,8 @@ final class RoomLiftInteractions {
         Dependencies {
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(roomDoorInteractions, "roomDoorInteractions");
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
@@ -140,7 +132,7 @@ final class RoomLiftInteractions {
         }
     }
 
-    private LiftTarget probeLiftTarget(int linkPixelX, int linkPixelY, Direction linkDirection) {
+    private LiftTarget probeLiftTarget(RoomRuntime loaded, int linkPixelX, int linkPixelY, Direction linkDirection) {
         int oppositeButton =
                 switch (linkDirection) {
                     case UP -> 0x08;
@@ -166,17 +158,12 @@ final class RoomLiftInteractions {
         int objectLeft = (linkPixelX + probeOffsetX) & 0xF0;
         int objectTop = (linkPixelY + probeOffsetY) & 0xF0;
         int touchedLocation = objectTop | (objectLeft >>> 4);
-        int touchedObject = dependencies.roomSessionViews().objectAtRoomLocation(touchedLocation);
-        boolean outdoor = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD;
+        int touchedObject = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, touchedLocation);
+        boolean outdoor = loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD;
         // Statue standing handler, $19:4076: asymmetric 32 by 48 contact window.
         linksawakening.world.entity.RoomEntity statue = null;
         if (!outdoor) {
-            for (var entity : dependencies
-                    .entityRuntimeState()
-                    .runtime
-                    .inspection()
-                    .view()
-                    .loadedEntities()) {
+            for (var entity : loaded.entities.inspection().view().loadedEntities()) {
                 if (entity.type() == 0x9D
                         && entity.status() == linksawakening.world.entity.EntityStatus.ACTIVE
                         && (((linkPixelX + 8) - entity.x() + 0x10) & 0xFF) < 0x20
@@ -190,45 +177,44 @@ final class RoomLiftInteractions {
         return new LiftTarget(oppositeButton, touchedLocation, touchedObject, outdoor, statue);
     }
 
-    private boolean advanceLift(LiftRequest request, LiftTarget target) {
+    private boolean advanceLift(RoomRuntime loaded, LiftRequest request, LiftTarget target) {
         if (target.statue() == null
                 && target.touchedObject() != OBJECT_LIFTABLE_POT
                 && !(target.outdoor() && target.touchedObject() == 0x5C)
                 && target.touchedObject() != OBJECT_POT_WITH_SWITCH) {
-            dependencies.puzzles().current.indoorPotPullFrames = 0;
+            loaded.contents.puzzles.indoorPotPullFrames = 0;
             return false;
         }
         if (target.oppositeButton() == 0
                 || (request.pressedButtonsMask() & target.oppositeButton()) == 0
                 || (target.statue() != null && request.braceletLevel() != 2)) {
-            dependencies.puzzles().current.indoorPotPullFrames = 0;
+            loaded.contents.puzzles.indoorPotPullFrames = 0;
             return true;
         }
         dependencies.followers().followingEntityYOffset = request.linkDirection() == Direction.UP ? 4 : 0;
-        dependencies.puzzles().current.indoorPotPullFrames++;
+        loaded.contents.puzzles.indoorPotPullFrames++;
         int pullFrames = (target.statue() != null ? request.anyPowerUpActive() : request.pieceOfPowerActive())
                 ? 0x03
                 : INDOOR_POT_PULL_FRAMES;
-        if (dependencies.puzzles().current.indoorPotPullFrames < pullFrames) {
+        if (loaded.contents.puzzles.indoorPotPullFrames < pullFrames) {
             return true;
         }
-        dependencies.puzzles().current.indoorPotPullFrames = 0;
+        loaded.contents.puzzles.indoorPotPullFrames = 0;
 
         if (target.statue() != null) {
-            completeStatueLift(target.statue(), request.linkDirection());
+            completeStatueLift(loaded, target.statue(), request.linkDirection());
             return true;
         }
-        replaceLiftedObject(target);
-        spawnLiftedObject(request, target);
+        replaceLiftedObject(loaded.contents, target);
+        spawnLiftedObject(loaded, request, target);
         return true;
     }
 
-    private void completeStatueLift(linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
+    private void completeStatueLift(
+            RoomRuntime loaded, linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
 
-        dependencies
-                .entityRuntimeState()
-                .runtime
-                .beginLift(statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
+        loaded.entities.beginLift(
+                statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         dependencies
                 .entityRuntimeState()
                 .outbox
@@ -240,25 +226,25 @@ final class RoomLiftInteractions {
                         false,
                         linksawakening.world.entity.event.EntityCombatEvent.SoundChannel.WAVE,
                         2));
-        publishEntityView();
+        publishEntityView(loaded);
     }
 
-    private void replaceLiftedObject(LiftTarget target) {
+    private void replaceLiftedObject(RoomContents contents, LiftTarget target) {
         if (target.outdoor()) {
             if (target.touchedObject() == 0x5C) {
                 dependencies
                         .overworldBushInteraction()
                         .revealObjectAtLocation(
                                 target.touchedLocation(),
-                                dependencies.location().activeRoom.roomId(),
+                                contents.room.roomId(),
                                 true,
-                                dependencies.location().activeRoom.roomObjectsArea(),
-                                dependencies.location().activeRoom.renderValues(),
-                                dependencies.location().activeRoom.gbcOverlay(),
-                                dependencies.location().activeRoom.tileIds(),
-                                dependencies.location().activeRoom.tileAttrs());
+                                contents.room.roomObjectsArea(),
+                                contents.room.renderValues(),
+                                contents.room.gbcOverlay(),
+                                contents.room.tileIds(),
+                                contents.room.tileAttrs());
             } else {
-                int room = dependencies.location().activeRoom.roomId();
+                int room = contents.room.roomId();
                 int replacement =
                         room < 0x20 || room == 0xE0 || room == 0xE1 || room == 0xE3 || room == 0xE4 || (room == 0x75)
                                 ? 3
@@ -266,36 +252,27 @@ final class RoomLiftInteractions {
                 if (room == 0x52 || room == 0x04) replacement = 0xC6;
                 dependencies
                         .roomObjectMutations()
-                        .writeBombPuzzleObject(dependencies.location().contents, target.touchedLocation(), replacement);
+                        .writeBombPuzzleObject(contents, target.touchedLocation(), replacement);
             }
-            dependencies
-                    .roomObjectMutations()
-                    .refreshOverworldCollisionAfterObjectMutation(dependencies.location().contents);
+            dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation(contents);
         } else {
-            dependencies.location()
-                            .activeRoom
-                            .roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + target.touchedLocation()] =
+            contents.room.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + target.touchedLocation()] =
                     target.touchedObject() == OBJECT_POT_WITH_SWITCH ? OBJECT_SWITCH_BUTTON : 0x0D;
-            dependencies.roomTileRedraw().refreshActiveRoomTilemap(dependencies.location().contents);
-            dependencies
-                    .overworldCollision()
-                    .setRoom(dependencies.location().activeRoom.roomObjectsArea());
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap(contents);
+            dependencies.overworldCollision().setRoom(contents.room.roomObjectsArea());
             dependencies.overworldCollision().setGbcOverlay(null);
         }
     }
 
-    private void spawnLiftedObject(LiftRequest request, LiftTarget target) {
+    private void spawnLiftedObject(RoomRuntime loaded, LiftRequest request, LiftTarget target) {
         int x = request.linkPixelX() + 0x08;
         int y = request.linkPixelY() + 0x10;
-        dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnLiftedRoomObject(
-                        x,
-                        y,
-                        RoomInteractionGeometry.romDirectionForProjectileCollision(request.linkDirection()),
-                        target.touchedObject() == 0x5C ? 1 : 0);
-        publishEntityView();
+        loaded.entities.spawnLiftedRoomObject(
+                x,
+                y,
+                RoomInteractionGeometry.romDirectionForProjectileCollision(request.linkDirection()),
+                target.touchedObject() == 0x5C ? 1 : 0);
+        publishEntityView(loaded);
     }
 
     private record LiftTarget(

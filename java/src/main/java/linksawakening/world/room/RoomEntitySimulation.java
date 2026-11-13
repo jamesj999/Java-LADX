@@ -303,7 +303,7 @@ final class RoomEntitySimulation {
         effects.roomEntityRewards().harvestKeyQuicksandEvents(loaded);
         effects.roomEntityRewards().harvestKeyRewardEvents(loaded);
         effects.roomEntityRewards().harvestSlimeKeyRewardEvents(loaded);
-        effects.roomPuzzleController().harvestThrownRoomEventCollisions();
+        effects.roomPuzzleController().harvestThrownRoomEventCollisions(loaded);
         effects.roomEntityRewards().harvestHeartContainerRewards(loaded);
         RoomEntityOutbox.append(
                 effects.entityBridge().outbox.pendingMadamMeowMeowFullHealRequests,
@@ -375,8 +375,8 @@ final class RoomEntitySimulation {
         // immutable snapshot already contains their final state in that common case.
         if (objectRequests)
             loaded.room.replaceEntities(loaded.entities.inspection().view());
-        effects.roomPuzzleController().tickPushedBlockMotion(linkEntityX, linkEntityY);
-        effects.roomPuzzleController().tickRoomEvent(linkEntityX, linkEntityY);
+        effects.roomPuzzleController().tickPushedBlockMotion(loaded, linkEntityX, linkEntityY);
+        effects.roomPuzzleController().tickRoomEvent(loaded, linkEntityX, linkEntityY);
     }
 
     record EffectsDependencies(

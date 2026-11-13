@@ -204,6 +204,10 @@ final class RoomSessionViews {
         return dependencies.roomState().indoorStatusTableForMap(mapId);
     }
 
+    int activeRoomStatusFlags(ActiveRoom room) {
+        return dependencies.roomState().activeRoomStatusFlags(room);
+    }
+
     int activeRoomStatusFlags() {
         return dependencies.roomState().activeRoomStatusFlags(dependencies.location().activeRoom);
     }

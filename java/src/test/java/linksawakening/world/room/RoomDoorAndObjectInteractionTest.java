@@ -733,11 +733,18 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0x00, session.consumePendingMusicTrack());
         assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xD3) & 0x10);
         assertEquals(0xC2, session.rooms().activeRoom().roomObjectsArea()[gateIndex]);
-        assertEquals(0xDF, session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest());
+        assertEquals(
+                0xDF,
+                session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents));
 
         assertEquals(0, session.doors().tickTailCaveKeyholeSequence());
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
-        while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 0x18) {
+        while (session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                > 0x18) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         int gateTileX = 0x06 * 2;
@@ -745,7 +752,10 @@ final class RoomDoorAndObjectInteractionTest {
         int gateTopLeft = gateTileY * RoomConstants.ROOM_TILE_WIDTH + gateTileX;
         assertEquals(0x0C, session.rooms().activeRoom().tileIds()[gateTopLeft]);
         assertEquals(0x1F, session.rooms().activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
-        while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 0x08) {
+        while (session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                > 0x08) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         assertEquals(0xE3, session.rooms().activeRoom().roomObjectsArea()[gateIndex]);
@@ -824,11 +834,21 @@ final class RoomDoorAndObjectInteractionTest {
                         0x5A, 0x4A, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01, true));
         assertEquals(0x00, session.consumePendingMusicTrack());
 
-        while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 0x0A) {
+        while (session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                > 0x0A) {
             session.doors().tickTailCaveKeyholeSequence();
         }
-        assertEquals(0x50, session.components.roomDoorInteractions().nextWorldMusicTrackCountdownForTest());
-        while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 1) {
+        assertEquals(
+                0x50,
+                session.components
+                        .roomDoorInteractions()
+                        .nextWorldMusicTrackCountdownForTest(session.loadedRoomOrNull().contents));
+        while (session.components
+                        .roomDoorInteractions()
+                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                > 1) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         assertTrue(session.doors().tailCaveKeyholeSequenceActive());
@@ -837,7 +857,9 @@ final class RoomDoorAndObjectInteractionTest {
         session.doors().tickTailCaveKeyholeSequence();
         assertFalse(session.doors().tailCaveKeyholeSequenceActive());
 
-        int remainingMusicFrames = session.components.roomDoorInteractions().nextWorldMusicTrackCountdownForTest();
+        int remainingMusicFrames = session.components
+                .roomDoorInteractions()
+                .nextWorldMusicTrackCountdownForTest(session.loadedRoomOrNull().contents);
         for (int frame = 1; frame < remainingMusicFrames; frame++) {
             session.doors().tickTailCaveKeyholeSequence();
             assertEquals(-1, session.consumePendingMusicTrack());

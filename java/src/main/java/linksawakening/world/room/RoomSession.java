@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.event.DialogRequest;
@@ -89,7 +90,7 @@ public final class RoomSession implements RoomEntityOutputSource {
         components = RoomSessionContext.create(config, this::installRoom);
 
         roles = RoomRoleViews.create(components, this);
-        doors = new RoomDoorsView(components.roomDoorInteractions());
+        doors = new RoomDoorsView(this);
         transitions = new RoomTransitionsView(components.roomTransitionController());
         playerItems = new RoomPlayerItemsView(this);
         story = new RoomStoryView(components.roomStoryState(), this);
@@ -750,5 +751,156 @@ public final class RoomSession implements RoomEntityOutputSource {
 
     boolean breakIndoorSwordCrystal(int location) {
         return hasRoom() && components.roomObjectMutations().breakIndoorSwordCrystal(loadedRoom, location);
+    }
+
+    ChestOpenResult tryOpenChest(
+            int linkPixelX, int linkPixelY, Direction linkDirection, boolean actionPressed, int swordLevel) {
+        if (!hasRoom()) {
+            return new ChestOpenResult(false, -1, -1, -1);
+        }
+        return components
+                .roomDoorInteractions()
+                .tryOpenChest(loadedRoom, linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
+    }
+
+    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        if (!hasRoom()) {
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryUnlockIndoorKeyDoor(loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        if (!hasRoom()) {
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryPushIndoorBlock(loadedRoom, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    boolean tryLiftObject(
+            int x,
+            int y,
+            Direction direction,
+            boolean held,
+            int buttons,
+            boolean power,
+            int level,
+            boolean anyPowerUp) {
+        if (!hasRoom()) {
+            components.puzzles().current.indoorPotPullFrames = 0;
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryLiftObject(loadedRoom, x, y, direction, held, buttons, power, level, anyPowerUp);
+    }
+
+    boolean tryLiftObject(int x, int y, Direction direction, boolean held, int buttons, boolean power, int level) {
+        if (!hasRoom()) {
+            components.puzzles().current.indoorPotPullFrames = 0;
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryLiftObject(loadedRoom, x, y, direction, held, buttons, power, level);
+    }
+
+    boolean tryLiftIndoorObject(
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask) {
+        if (!hasRoom()) {
+            components.puzzles().current.indoorPotPullFrames = 0;
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryLiftIndoorObject(
+                        loadedRoom, linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
+    }
+
+    boolean tryLiftIndoorObject(
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask,
+            boolean pieceOfPowerActive) {
+        if (!hasRoom()) {
+            components.puzzles().current.indoorPotPullFrames = 0;
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryLiftIndoorObject(
+                        loadedRoom,
+                        linkPixelX,
+                        linkPixelY,
+                        linkDirection,
+                        braceletButtonHeld,
+                        pressedButtonsMask,
+                        pieceOfPowerActive);
+    }
+
+    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        if (!hasRoom()) {
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryInteractWithIndoorBlock(loadedRoom, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        if (!hasRoom()) {
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryUnlockIndoorKeyholeBlock(loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    boolean tryUnlockTailCaveKeyhole(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, boolean hasTailKey) {
+        if (!hasRoom()) {
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryUnlockTailCaveKeyhole(
+                        loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
+    }
+
+    boolean tryUnlockKeyCavernKeyhole(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, int goldenLeavesCount) {
+        if (!hasRoom()) {
+            return false;
+        }
+        return components
+                .roomDoorInteractions()
+                .tryUnlockKeyCavernKeyhole(
+                        loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
+    }
+
+    int tickTailCaveKeyholeSequence() {
+        if (!hasRoom()) {
+            components.puzzles().current.tailCaveFinalMotionBlockPending = false;
+            return 0;
+        }
+        return components.roomDoorInteractions().tickTailCaveKeyholeSequence(loadedRoom.contents);
+    }
+
+    boolean tailCaveKeyholeSequenceActive() {
+        if (!hasRoom()) {
+            return components.puzzles().current.tailCaveKeyholeCountdown != 0
+                    || components.puzzles().current.tailCaveFinalMotionBlockPending;
+        }
+        return components.roomDoorInteractions().tailCaveKeyholeSequenceActive(loadedRoom.contents);
     }
 }

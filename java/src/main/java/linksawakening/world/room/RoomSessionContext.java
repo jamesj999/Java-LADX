@@ -112,7 +112,6 @@ final class RoomSessionContext {
                 values.roomObjectMutations));
         values.roomPuzzleController = new RoomPuzzleController(new RoomPuzzleController.Dependencies(
                 values.entityFrame,
-                values.location,
                 values.puzzles,
                 values.entityFrame,
                 values.entityInputs,
@@ -133,7 +132,6 @@ final class RoomSessionContext {
                 values.terrain,
                 values.chestContentsTable,
                 values.enemyCombatTables,
-                values.entityFrame,
                 values.entityInputs,
                 values.entityRandomByteSource,
                 values.entitySpriteHandlerCatalog,
