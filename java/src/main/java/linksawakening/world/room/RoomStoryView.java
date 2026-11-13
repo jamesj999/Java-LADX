@@ -6,19 +6,21 @@ import linksawakening.world.entity.FollowingNpcState;
 
 final class RoomStoryView implements RoomStory {
     private final RoomStoryState delegate;
+    private final RoomSession session;
 
-    RoomStoryView(RoomStoryState delegate) {
+    RoomStoryView(RoomStoryState delegate, RoomSession session) {
         this.delegate = delegate;
+        this.session = session;
     }
 
     @Override
     public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        return delegate.applyMarinWakeUpPresentation(x, y, spriteVariant);
+        return session.applyMarinWakeUpPresentation(x, y, spriteVariant);
     }
 
     @Override
     public void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
-        delegate.updateHouseTarinPresentation(frameCounter, linkX, linkY);
+        session.updateHouseTarinPresentation(frameCounter, linkX, linkY);
     }
 
     @Override
@@ -44,7 +46,7 @@ final class RoomStoryView implements RoomStory {
 
     @Override
     public void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
-        delegate.setFollowerSpriteOverrides(overrides);
+        session.setFollowerSpriteOverrides(overrides);
     }
 
     @Override

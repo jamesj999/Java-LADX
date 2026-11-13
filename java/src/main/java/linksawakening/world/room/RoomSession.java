@@ -69,7 +69,7 @@ public final class RoomSession {
         doors = new RoomDoorsView(components.roomDoorInteractions());
         transitions = new RoomTransitionsView(components.roomTransitionController());
         playerItems = new RoomPlayerItemsView(this);
-        story = new RoomStoryView(components.roomStoryState());
+        story = new RoomStoryView(components.roomStoryState(), this);
         frameInputs = new RoomFrameInputApplier(
                 components.entityInputs(),
                 components.entityBridge(),
@@ -491,5 +491,17 @@ public final class RoomSession {
 
     boolean boomerangActive() {
         return hasRoom() ? components.roomPlayerItemActions().boomerangActive(loadedRoom) : false;
+    }
+
+    boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
+        return hasRoom() && components.roomStoryState().applyMarinWakeUpPresentation(loadedRoom, x, y, spriteVariant);
+    }
+
+    void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
+        if (hasRoom()) components.roomStoryState().updateHouseTarinPresentation(loadedRoom, frameCounter, linkX, linkY);
+    }
+
+    void setFollowerSpriteOverrides(java.util.Map<Integer, linksawakening.entity.EntitySpriteDefinition> overrides) {
+        if (hasRoom()) components.roomStoryState().setFollowerSpriteOverrides(loadedRoom, overrides);
     }
 }

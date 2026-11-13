@@ -92,3 +92,10 @@ ArrowShotResult(false,false), and ShovelStartResult(false,true,-1). Shovel ROM
 direction validation still precedes the no-room branch; animation lookup remains
 a room-independent ROM query. The owned contract test includes null throw facing
 and invalid shovel direction before first load. World null occurrences: 274.
+
+## NPC presentation
+
+Marin/Tarin presentation and sprite-override application receive RoomRuntime.
+The facade retains false/no-op defaults before first load. Missing sprite
+selection and optional override maps remain visual-domain absence, not runtime
+lifecycle checks. World null-comparison occurrences at this slice: 268.

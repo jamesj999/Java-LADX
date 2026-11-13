@@ -25,8 +25,7 @@ final class RoomStoryState {
 
     RoomStoryState(Dependencies dependencies) {
         this.dependencies = dependencies;
-        roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(
-                dependencies.entityRuntimeState(), dependencies.followers(), dependencies.location()));
+        roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(dependencies.followers()));
         roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
                 dependencies.chestContentsTable(),
                 dependencies.colorShellWorld(),
@@ -51,12 +50,12 @@ final class RoomStoryState {
                 dependencies.installRoom()));
     }
 
-    boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        return roomNpcPresentation.applyMarinWakeUpPresentation(x, y, spriteVariant);
+    boolean applyMarinWakeUpPresentation(RoomRuntime loaded, int x, int y, int spriteVariant) {
+        return roomNpcPresentation.applyMarinWakeUpPresentation(loaded, x, y, spriteVariant);
     }
 
-    void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
-        roomNpcPresentation.updateHouseTarinPresentation(frameCounter, linkX, linkY);
+    void updateHouseTarinPresentation(RoomRuntime loaded, int frameCounter, int linkX, int linkY) {
+        roomNpcPresentation.updateHouseTarinPresentation(loaded, frameCounter, linkX, linkY);
     }
 
     void setBirdKeyOwned(boolean owned) {
@@ -120,8 +119,8 @@ final class RoomStoryState {
         }
     }
 
-    void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
-        roomNpcPresentation.setFollowerSpriteOverrides(overrides);
+    void setFollowerSpriteOverrides(RoomRuntime loaded, Map<Integer, EntitySpriteDefinition> overrides) {
+        roomNpcPresentation.setFollowerSpriteOverrides(loaded, overrides);
     }
 
     void setFollowingNpcState(
