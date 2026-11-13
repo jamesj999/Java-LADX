@@ -13,9 +13,44 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.rom.EntityPropertyTables;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.world.entity.event.BombExplosionEvent;
+import linksawakening.world.entity.event.ChestRewardEvent;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.DungeonWarpRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.event.HeartContainerRewardEvent;
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.InstrumentCompletionEvent;
+import linksawakening.world.entity.event.InstrumentRewardEvent;
+import linksawakening.world.entity.event.KeyQuicksandEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
+import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
+import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
+import linksawakening.world.entity.event.OwlEventCompletion;
+import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
+import linksawakening.world.entity.event.RoosterLinkStateRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
+import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+import linksawakening.world.entity.event.WarpLinkStateRequest;
+import linksawakening.world.entity.event.WitchExchangeEvent;
+import linksawakening.world.entity.event.WitchRewardEvent;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WarpMotion;
 import linksawakening.world.room.ChestContentsTable;
@@ -25,8 +60,7 @@ import linksawakening.world.room.ChestContentsTable;
  * Owns shared slot tables, handler services and reusable frame scratch;
  * entity-specific state belongs to motions. Slots remain immutable values.
  */
-public final class RoomEntityRuntime
-        implements EntityRuntimeEffects, EntityRuntimeCombat, EntityRuntimeSpawns, EntityRuntimePlayerCommands {
+public final class RoomEntityRuntime {
     final GenieEntityController.State genieState = new GenieEntityController.State();
     final SlimeEyeController.State slimeEyeState = new SlimeEyeController.State();
     final EntityBombState bombInteractionsState = new EntityBombState();
@@ -533,7 +567,7 @@ public final class RoomEntityRuntime
 
     /** Source-ordered frame gates and descending slot dispatch. */
     private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) {
-        return EntitySlotOrchestrator.advanceFrame(this, context);
+        return EntitySlotPipeline.advanceFrame(this, context);
     }
 
     /** Shared result path of ApplySwordIntersectionWithObjects ($7CAB). */
@@ -621,42 +655,513 @@ public final class RoomEntityRuntime
             boolean unload,
             SlimeKeyRewardEvent reward) {}
 
-    @Override
     public EntityEffectConsumption entityEffects() {
         return effects;
     }
 
-    @Override
     public EntityCombatResolver entityCombat() {
         return combat;
     }
 
-    @Override
     public EntityEnemySpawns entityEnemySpawns() {
         return entityEnemySpawns;
     }
 
-    @Override
     public EntityPlayerSpawns entityPlayerSpawns() {
         return entityPlayerSpawns;
     }
 
-    @Override
     public EntitySlotLifecycle entityLifecycle() {
         return lifecycle;
     }
 
-    @Override
     public EntityPlayerCommands entityPlayerCommands() {
         return playerCommands;
     }
 
-    @Override
     public EntityBackgroundMechanics entityBackground() {
         return backgroundMechanics;
     }
 
     public EntityRewardController entityRewards() {
         return rewards;
+    }
+
+    /**
+     * Runs the room-entity portion of PickableCollectIfNeeded. A non-null
+     * event means the entity completed its pickup collision and its first-eight
+     * persistence bit is ready for the room session to record.
+     */
+    public EntityPickupEvent collectIfNeeded(
+            int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
+        return entityRewards().collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
+    }
+
+    /** Pickup collision with Link's Java direction available for held items. */
+    public EntityPickupEvent collectIfNeeded(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            boolean linkInteractive,
+            int linkDirection) {
+        return entityRewards()
+                .collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
+    }
+
+    /** Pickup collision with Link's ROM-facing Z available for floating items. */
+    public EntityPickupEvent collectIfNeeded(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            boolean linkInteractive,
+            int linkDirection,
+            int linkZ) {
+        return entityRewards()
+                .collectIfNeeded(
+                        frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
+    }
+
+    public EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
+        return entityRewards().collectIfNeeded(inputs);
+    }
+
+    /**
+     * Runs the ported portion of DefaultEnemyDamageCollisionHandler for the
+     * currently supported enemy families. The four sword arguments are the
+     * ROM's wC140..wC143 rectangle; non-positive width/height disables sword
+     * collision for this pass.
+     */
+    public List<EntityCombatEvent> resolveCombat(EntityAttackContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkVerticalVelocity,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                EnemyAttackContext.standard()));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntitySwordContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                0,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                EnemyAttackContext.standard()));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntityVerticalContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        EnemyAttackContext attackContext = inputs.attackContext();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                0,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                attackContext));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
+        return entityCombat().resolveCombat(inputs);
+    }
+
+    public boolean consumePendingSwitchBlockAnimationRequest() {
+        return entityEffects().consumePendingSwitchBlockAnimationRequest();
+    }
+
+    public int consumePendingClearedEntityMask() {
+        return entityEffects().consumePendingClearedEntityMask();
+    }
+
+    public int consumePendingRoomStatusMask() {
+        return entityEffects().consumePendingRoomStatusMask();
+    }
+
+    public List<EntityCombatEvent> consumePendingEntityEvents() {
+        return entityEffects().consumePendingEntityEvents();
+    }
+
+    public List<ThrownBackgroundCollisionEvent> consumePendingThrownBackgroundCollisions() {
+        return entityEffects().consumePendingThrownBackgroundCollisions();
+    }
+
+    public List<DungeonWarpRequest> consumePendingDungeonWarpRequests() {
+        return entityEffects().consumePendingDungeonWarpRequests();
+    }
+
+    public List<WarpLinkStateRequest> consumePendingWarpLinkStateRequests() {
+        return entityEffects().consumePendingWarpLinkStateRequests();
+    }
+
+    public List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() {
+        return entityEffects().consumePendingLinkFinalPositionRequests();
+    }
+
+    public List<RoosterLinkStateRequest> consumePendingRoosterLinkStateRequests() {
+        return entityEffects().consumePendingRoosterLinkStateRequests();
+    }
+
+    public List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() {
+        return entityEffects().consumePendingLinkMotionBlockRequests();
+    }
+
+    public List<SideViewPlatformLinkRequest> consumePendingSideViewPlatformLinkRequests() {
+        return entityEffects().consumePendingSideViewPlatformLinkRequests();
+    }
+
+    public List<SideViewPotLinkRequest> consumePendingSideViewPotLinkRequests() {
+        return entityEffects().consumePendingSideViewPotLinkRequests();
+    }
+
+    public List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() {
+        return entityEffects().consumePendingHinoxLinkEffectRequests();
+    }
+
+    public List<LinkFallenPoseRequest> consumePendingLinkFallenPoseRequests() {
+        return entityEffects().consumePendingLinkFallenPoseRequests();
+    }
+
+    public List<LinkFacingRequest> consumePendingLinkFacingRequests() {
+        return entityEffects().consumePendingLinkFacingRequests();
+    }
+
+    public List<LinkAttackClearRequest> consumePendingLinkAttackClearRequests() {
+        return entityEffects().consumePendingLinkAttackClearRequests();
+    }
+
+    public List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
+        return entityEffects().consumePendingLinkAttackStepRequests();
+    }
+
+    public List<RoomStatusPersistenceRequest> consumePendingRoomStatusPersistenceRequests() {
+        return entityEffects().consumePendingRoomStatusPersistenceRequests();
+    }
+
+    public List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() {
+        return entityEffects().consumePendingLinkHeldItemPoseRequests();
+    }
+
+    public List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
+        return entityEffects().consumePendingLinkSwordSpinPoseRequests();
+    }
+
+    public List<LinkSwordFinalPoseRequest> consumePendingLinkSwordFinalPoseRequests() {
+        return entityEffects().consumePendingLinkSwordFinalPoseRequests();
+    }
+
+    public List<ScreenShakeRequest> consumePendingScreenShakeRequests() {
+        return entityEffects().consumePendingScreenShakeRequests();
+    }
+
+    public List<ChestRewardEvent> consumePendingChestRewardEvents() {
+        return entityEffects().consumePendingChestRewardEvents();
+    }
+
+    public List<KeyRewardEvent> consumePendingKeyRewardEvents() {
+        return entityEffects().consumePendingKeyRewardEvents();
+    }
+
+    public List<SlimeKeyRewardEvent> consumePendingSlimeKeyRewardEvents() {
+        return entityEffects().consumePendingSlimeKeyRewardEvents();
+    }
+
+    public List<KeyQuicksandEvent> consumePendingKeyQuicksandEvents() {
+        return entityEffects().consumePendingKeyQuicksandEvents();
+    }
+
+    public int consumePendingMusicTrack() {
+        return entityEffects().consumePendingMusicTrack();
+    }
+
+    public int consumePendingMusicFadeOutCountdown() {
+        return entityEffects().consumePendingMusicFadeOutCountdown();
+    }
+
+    public List<LikeLikeEvent> consumePendingLikeLikeEvents() {
+        return entityEffects().consumePendingLikeLikeEvents();
+    }
+
+    public List<DialogRequest> consumePendingDialogRequests() {
+        return entityEffects().consumePendingDialogRequests();
+    }
+
+    public List<BombExplosionEvent> consumeBombExplosionEvents() {
+        return entityEffects().consumeBombExplosionEvents();
+    }
+
+    public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
+        return entityEffects().consumeHeartPieceUpdates();
+    }
+
+    public List<HeartContainerRewardEvent> consumePendingHeartContainerRewards() {
+        return entityEffects().consumePendingHeartContainerRewards();
+    }
+
+    public List<MadamMeowMeowFullHealRequest> consumePendingMadamMeowMeowFullHealRequests() {
+        return entityEffects().consumePendingMadamMeowMeowFullHealRequests();
+    }
+
+    public List<SwordPickupRewardEvent> consumePendingSwordPickupRewards() {
+        return entityEffects().consumePendingSwordPickupRewards();
+    }
+
+    public List<ToadstoolRewardEvent> consumePendingToadstoolRewards() {
+        return entityEffects().consumePendingToadstoolRewards();
+    }
+
+    public List<InstrumentRewardEvent> consumePendingInstrumentRewards() {
+        return entityEffects().consumePendingInstrumentRewards();
+    }
+
+    public List<InstrumentCompletionEvent> consumePendingInstrumentCompletions() {
+        return entityEffects().consumePendingInstrumentCompletions();
+    }
+
+    public List<RichardProgressEvent> consumePendingRichardProgressEvents() {
+        return entityEffects().consumePendingRichardProgressEvents();
+    }
+
+    public List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {
+        return entityEffects().consumePendingWitchExchangeEvents();
+    }
+
+    public List<WitchRewardEvent> consumePendingWitchRewardEvents() {
+        return entityEffects().consumePendingWitchRewardEvents();
+    }
+
+    public List<OwlEventCompletion> consumePendingOwlEventCompletions() {
+        return entityEffects().consumePendingOwlEventCompletions();
+    }
+
+    /**
+     * Starts EntityGetLiftedUp's shared state transition. Directions are the
+     * ROM order (right, left, up, down); RoomSession performs the Java-to-ROM
+     * conversion at its boundary.
+     */
+    public boolean beginLift(int slot, int romDirection) {
+        return entityPlayerCommands().beginLift(slot, romDirection);
+    }
+
+    /** Hands the fully held entity to func_014_53A3's generic throw path. */
+    public boolean throwLiftedEntity(int romDirection) {
+        return entityPlayerCommands().throwLiftedEntity(romDirection);
+    }
+
+    /** Applies the position and variant writes made by MarinEntityHandler_Indoor. */
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
+        return entityPlayerCommands().applyMarinWakeUpPresentation(x, y, spriteVariant);
+    }
+
+    public void updateHouseTarinPresentation(int linkX, int linkY) {
+        entityPlayerCommands().updateHouseTarinPresentation(linkX, linkY);
+    }
+
+    /** Bank $15:7C37..7CA5: two death waits, then DidKillEnemy. */
+    public void startSwordPickup(int slot) {
+        entityPlayerCommands().startSwordPickup(slot);
+    }
+
+    public void startToadstoolPickup(int slot) {
+        entityPlayerCommands().startToadstoolPickup(slot);
+    }
+
+    public void presentWitchGotItem(int slot) {
+        entityPlayerCommands().presentWitchGotItem(slot);
+    }
+
+    /** ProcessPowerUp ($03:6400) and ApplyGotItem ($00:1033). */
+    public void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
+        entityPlayerCommands().holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, finalPose);
+    }
+
+    /** Creates the ROM's player-projectile entity type {@code $03}. */
+    public int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return entityPlayerSpawns().spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    }
+
+    /** Spawns bank 3's temporary entity $06 at an indoor object-cell center. */
+    public int spawnPushedBlock(int x, int y) {
+        return entityPlayerSpawns().spawnPushedBlock(x, y);
+    }
+
+    /** Spawns bank 0's temporary type-$05 entity already entering lifted status. */
+    public int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) {
+        return entityPlayerSpawns().spawnLiftedRoomObject(x, y, romDirection, spriteVariant);
+    }
+
+    public void movePushedBlock(int slot, int x, int y) {
+        entityPlayerCommands().movePushedBlock(slot, x, y);
+    }
+
+    /** $03:5269: after block movement, restore Link even during a jump. */
+    public void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
+        entityBackground().resolvePushedBlockLinkContact(slot, linkEntityX, linkEntityY);
+    }
+
+    public void removePushedBlock(int slot) {
+        entityPlayerCommands().removePushedBlock(slot);
+    }
+
+    /** Spawns DropKeyEffectHandler's ordinary dungeon key at ($28,$3C,$70). */
+    public int spawnRoomEventKeyDrop() {
+        return entityPlayerSpawns().spawnRoomEventKeyDrop();
+    }
+
+    /** Creates the ROM's ordinary player-arrow entity type {@code $00}. */
+    public int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return entityPlayerSpawns().spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    }
+
+    public int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+        return entityPlayerSpawns().spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+    }
+
+    /** Creates the ROM's player-boomerang entity type {@code $01}. */
+    public int spawnBoomerang(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
+        return entityPlayerSpawns()
+                .spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
+    }
+
+    /** Creates the ROM's level-two sword-beam entity type {@code $DF}. */
+    public int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return entityPlayerSpawns().spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    }
+
+    /** Creates the ROM's Magic Rod fireball entity type {@code $04}. */
+    public int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return entityPlayerSpawns().spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    }
+
+    public int spawnMagicRodFireball(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+        return entityPlayerSpawns()
+                .spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+    }
+
+    /** Creates the ROM's type-$08 Magic Powder sprinkle entity. */
+    public int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return entityPlayerSpawns().spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    }
+
+    /** Creates the ROM's ordinary player bomb entity type {@code $02}. */
+    public int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return entityPlayerSpawns().spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    }
+
+    /** Creates the source's type-$02 enemy bomb with privateState4 set to $01. */
+    public int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) {
+        return entityEnemySpawns().spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown);
+    }
+
+    /** Creates a Bomber-spawned type-$02 enemy bomb with its source speeds. */
+    public int spawnEnemyBomb(
+            int entityX, int entityY, int entityZ, int transitionCountdown, int speedX, int speedY, int speedZ) {
+        return entityEnemySpawns()
+                .spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ);
+    }
+
+    public int spawnEnemyBomb(EnemyBombSpawn inputs) {
+        int entityX = inputs.entityX();
+        int entityY = inputs.entityY();
+        int entityZ = inputs.entityZ();
+        int transitionCountdown = inputs.transitionCountdown();
+        int speedX = inputs.speedX();
+        int speedY = inputs.speedY();
+        int speedZ = inputs.speedZ();
+        boolean initializeMotion = inputs.initializeMotion();
+        int privateState4 = inputs.privateState4();
+        return entityEnemySpawns()
+                .spawnEnemyBomb(new EnemyBombSpawn(
+                        entityX,
+                        entityY,
+                        entityZ,
+                        transitionCountdown,
+                        speedX,
+                        speedY,
+                        speedZ,
+                        initializeMotion,
+                        privateState4));
+    }
+
+    /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
+    public int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
+        return entityPlayerSpawns().spawnLiftableRockSmash(entityX, entityY, sourceSpriteVariant);
+    }
+
+    /** Creates one of the four silent type-$05 rubble entities from bank-$36. */
+    public int spawnLiftableRockRubble(int entityX, int entityY) {
+        return entityPlayerSpawns().spawnLiftableRockRubble(entityX, entityY);
+    }
+
+    /**
+     * Mirrors the shovel's delayed random reward branch in
+     * {@code label_002_4C92}. The first random byte is consumed even when the
+     * current room is not allowed to produce a reward; the caller supplies
+     * that room-specific restriction explicitly.
+     */
+    public int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY, boolean allowDrop) {
+        return entityPlayerSpawns().spawnShovelDrop(objectLeft, objectTop, linkEntityX, linkEntityY, allowDrop);
+    }
+
+    /**
+     * Mirrors SpawnChestWithItem. The arguments are the intersected object's
+     * unaligned left/top coordinates; the source masks them to a room cell
+     * and places the entity at (+8,+16).
+     */
+    public int spawnChestWithItem(int objectLeft, int objectTop, int itemType) {
+        return entityPlayerSpawns().spawnChestWithItem(objectLeft, objectTop, itemType);
     }
 }

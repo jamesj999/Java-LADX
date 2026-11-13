@@ -17,10 +17,10 @@ import linksawakening.world.entity.motion.RoamingEnemyMotion;
 /** Reused, reentrancy-safe scratch for MoblinKingHandler.phase4MoblinKing; values are assigned in source order. */
 final class MoblinKingHandlerFrameStep {
     private linksawakening.world.entity.EntityFrameExecution state;
-    private linksawakening.world.entity.EntitySlotExecution slotState;
-    private linksawakening.world.entity.EntityFrameInputs frameInput;
-    private linksawakening.world.entity.EntityTimerGates timerGates;
-    private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
+    private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+    private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+    private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+    private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
 
     MoblinKingHandlerFrameStep() {}
 

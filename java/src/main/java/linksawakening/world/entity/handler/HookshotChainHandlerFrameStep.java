@@ -18,9 +18,9 @@ import linksawakening.world.entity.motion.HookshotChainMotion;
 /** Reused, reentrancy-safe scratch for HookshotChainHandler.phase1HookshotChain; values are assigned in source order. */
 final class HookshotChainHandlerFrameStep {
     private linksawakening.world.entity.EntityFrameExecution state;
-    private linksawakening.world.entity.EntitySlotExecution slotState;
-    private linksawakening.world.entity.EntityFrameInputs frameInput;
-    private linksawakening.world.entity.EntityTimerGates timerGates;
+    private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+    private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+    private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
 
     HookshotChainHandlerFrameStep() {}
 
