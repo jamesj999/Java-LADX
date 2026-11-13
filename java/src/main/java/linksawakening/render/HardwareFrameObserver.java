@@ -5,21 +5,23 @@ import linksawakening.gpu.Tile;
 
 /** Optional submission observer; absent in production composition. Implementations own their storage. */
 interface HardwareFrameObserver {
-    void attach(HardwareFrame frame);
+    HardwareFrameObserver NONE = new HardwareFrameObserver() {};
 
-    void reset();
+    default void attach(HardwareFrame frame) {}
 
-    void backgroundPixel(int pixel, String source);
+    default void reset() {}
 
-    void hudPixel(int pixel, int tile, int attributes);
+    default void backgroundPixel(int pixel, String source) {}
 
-    void copiedBackgroundPixel(int pixel, HardwareFrameObserver source, String layer);
+    default void hudPixel(int pixel, int tile, int attributes) {}
 
-    void closedHudTile(Tile tile, int tileId, int attributes, int x, int y);
+    default void copiedBackgroundPixel(int pixel, HardwareFrameObserver source, String layer) {}
 
-    void beforeInventoryHiding(List<OamEntry> entries, int windowY);
+    default void closedHudTile(Tile tile, int tileId, int attributes, int x, int y) {}
 
-    void beginComposition();
+    default void beforeInventoryHiding(List<OamEntry> entries, int windowY) {}
 
-    void objectPixel(int pixel, String source, int flags);
+    default void beginComposition() {}
+
+    default void objectPixel(int pixel, String source, int flags) {}
 }

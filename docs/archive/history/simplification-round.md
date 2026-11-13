@@ -69,3 +69,32 @@ not forwarding slices of an owner's complete state.
 The two obsolete numeric shape assertions now guard the merged responsibilities;
 no gameplay assertion or test case was removed. Numeric limits are explicitly
 superseded by this round's brief.
+
+## Null contracts
+
+Render: optional inspection now uses a no-op HardwareFrameObserver internally;
+legacy inspection access still reports null for no observation. Dialog submission
+uses an explicit ROM painter when no override is configured. GameFrameInputs
+now documents screen-specific absence centrally: a title/file frame has no live
+room/Link, and only the applicable screen snapshot is present. Missing graphics
+planes mean not yet loaded, not an empty world. Cached scratch is lazily allocated.
+
+Entity: LinkServices documents reduced standalone simulation capabilities;
+missing collision, ROM tables, player/inventory and graphics disable those
+capabilities. These existing semantics cannot be changed to fabricated player or
+ROM data. Sound and tunic palettes are validated once. Unregistered sprites,
+missing event requests and unavailable ROM variants remain optional domain data.
+
+App: service records already validate required collaborators at construction.
+Opening-story controllers, saved spawn positions, optional headless PCM and
+frame-input caches have lifecycle absence; nullable cache keys are not nullable
+service dependencies. Recording lifecycle is unchanged.
+
+Audio: the primitive APU tap now normalizes absence to a no-op observer. Device
+and stream handles remain optional before opening and after close; error/recovery
+branches preserve their lifecycle. Cutscene snapshots and wave overlays are
+optional outside their scene. UI allows omitted ROM instrument/dungeon panels
+in minimal menus and omitted attributes for default palette/flip selection.
+Gameplay absent dialog/event/item/interaction results remain no-action values.
+Equipment allows ROM-free simulation without drawing tables, and unregistered
+inventory items remain absent slots. Input validation checks are retained.

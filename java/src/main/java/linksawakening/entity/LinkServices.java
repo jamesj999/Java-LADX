@@ -14,7 +14,14 @@ import linksawakening.rom.RomTables;
 import linksawakening.rom.SwordTables;
 import linksawakening.state.PlayerState;
 
-/** Construction-time services shared by Link components; nullable test collaborators stay explicit. */
+/**
+ * Construction-time capabilities shared by Link components.
+ *
+ * <p>ROM motion/sword tables, collision, sprite sheet, player inventory and item registry may be absent
+ * in standalone motion simulations. Each absent capability disables its corresponding ROM-backed
+ * interaction or drawing branch; it is not a failed dependency lookup. Sound and tunic palettes are
+ * always present and validated once here. Input services follow the construction contract of Link.
+ */
 final class LinkServices {
     final InputState inputState;
     final InputConfig inputConfig;

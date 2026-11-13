@@ -121,7 +121,7 @@ final class ReusableWorldLayers {
     private void addDialog(ReusableGameFrameState state, DialogWindowPainter painter) {
         var data = state.roomInputs;
         if (state.dialogController() != null) {
-            dialog.windowPainter = painter;
+            dialog.windowPainter(painter);
             dialog.configure(
                     state.dialogController(),
                     data.palettes == null ? null : data.palettes[1],
