@@ -48,3 +48,24 @@ Counts include nested packages; world is excluded. Null checks count explicit eq
 | test/testing | 5 | 108 | 3 | 2 | 0 | 2 | 0 | 5 |
 | test/ui | 18 | 1622 | 0 | 11 | 1 | 3 | 0 | 7 |
 | test/vfx | 5 | 425 | 4 | 1 | 0 | 0 | 0 | 3 |
+
+## Responsibility review
+
+Merged sixteen stateless sprite registration family files into their immutable
+registration-data owner; selection order and ROM recipes are unchanged. Kept
+recipe values, ROM decoding and decoded lookup separate: their data ownership
+and lifetimes differ. Merged CombatEquipment and ToolEquipment into
+EquipmentWiring; all three were slices of construction and adapter registration.
+
+Kept Link position, animation, timers/motion, airborne, swimming, damage and
+commands: each represents independent state or a narrow role over those states.
+Kept render layers by pass (background, OAM actors, inventory, dialog, fades,
+warps) because ordering, retained scratch and frame configuration differ.
+Kept player inventory/vitals/ammunition/progression/wallet components because
+save layout and mutations have distinct ownership. Kept ROM table decoders and
+pure pixel/physics algorithms: these implement algorithms with explicit inputs,
+not forwarding slices of an owner's complete state.
+
+The two obsolete numeric shape assertions now guard the merged responsibilities;
+no gameplay assertion or test case was removed. Numeric limits are explicitly
+superseded by this round's brief.

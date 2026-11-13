@@ -78,17 +78,17 @@ final class PlayerWiring {
     }
 
     private static void register(EquipmentInputs c, ItemRegistry registry) {
-        ToolEquipment.ocarina(c, registry);
-        CombatEquipment.sword(c, registry);
-        CombatEquipment.magicRod(c, registry);
-        CombatEquipment.magicPowder(c, registry);
+        EquipmentWiring.ocarina(c, registry);
+        EquipmentWiring.sword(c, registry);
+        EquipmentWiring.magicRod(c, registry);
+        EquipmentWiring.magicPowder(c, registry);
         EquipmentWiring.shield(c, registry);
-        ToolEquipment.shovel(c, registry);
+        EquipmentWiring.shovel(c, registry);
         EquipmentWiring.feather(c, registry);
         EquipmentWiring.bomb(c, registry);
-        CombatEquipment.arrow(c, registry);
-        ToolEquipment.hookshot(c, registry);
-        ToolEquipment.boomerang(c, registry);
+        EquipmentWiring.arrow(c, registry);
+        EquipmentWiring.hookshot(c, registry);
+        EquipmentWiring.boomerang(c, registry);
     }
 
     /** ROM-backed player and equipment graphics loaded during wiring. */
