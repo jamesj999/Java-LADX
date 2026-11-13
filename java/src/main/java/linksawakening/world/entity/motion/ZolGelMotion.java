@@ -15,7 +15,8 @@ public final class ZolGelMotion {
     }
 
     public boolean writeGelClingingToLink(boolean value) {
-        return gelClingingToLink = value;
+        gelClingingToLink = value;
+        return gelClingingToLink;
     }
 
     static final int ENTITY_ZOL = 0x1B;

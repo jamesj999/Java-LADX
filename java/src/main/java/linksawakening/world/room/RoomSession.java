@@ -114,24 +114,13 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
-        int frameCounter = inputs.frameCounter();
+
         int linkEntityX = inputs.position().x();
         int linkEntityY = inputs.position().y();
         int linkEntityZ = inputs.position().z();
-        boolean linkAirborne = inputs.motion().airborne();
+
         int linkMotionState = inputs.motion().rawState();
         int linkDirection = inputs.position().rawDirection();
-        int collisionType = inputs.position().collisionType();
-        boolean usingShield = inputs.motion().shield();
-        int shieldLevel = inputs.shieldLevel();
-        int invincibilityCounter = inputs.motion().invincibility();
-        boolean swordCollisionActive = inputs.sword().active();
-        int swordX = inputs.sword().x();
-        int swordWidth = inputs.sword().width();
-        int swordY = inputs.sword().y();
-        int swordHeight = inputs.sword().height();
-        int linkSpeedX = inputs.motion().speedX();
-        int linkSpeedY = inputs.motion().speedY();
 
         components.followers().followingLinkX = linkEntityX & 0xFF;
         components.followers().followingLinkY = linkEntityY & 0xFF;

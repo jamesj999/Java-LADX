@@ -24,12 +24,6 @@ public final class SwordRngCapture {
         throw new NoSuchFieldException(name);
     }
 
-    private static void set(Object object, String name, Object value) throws Exception {
-        var f = object.getClass().getDeclaredField(name);
-        f.setAccessible(true);
-        f.set(object, value);
-    }
-
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]);
         Files.createDirectories(out);

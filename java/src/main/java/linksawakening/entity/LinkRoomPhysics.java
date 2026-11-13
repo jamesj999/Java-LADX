@@ -16,19 +16,22 @@ final class LinkRoomPhysics {
     }
 
     int physicsModifier(int value) {
-        return physicsModifier = value;
+        physicsModifier = value;
+        return physicsModifier;
     }
 
     private long physicsRoomLoadToken = -1;
 
     long physicsRoomLoadToken(long value) {
-        return physicsRoomLoadToken = value;
+        physicsRoomLoadToken = value;
+        return physicsRoomLoadToken;
     }
 
     private int physicsRoomMapId = -1;
 
     int physicsRoomMapId(int value) {
-        return physicsRoomMapId = value;
+        physicsRoomMapId = value;
+        return physicsRoomMapId;
     }
 
     private int physicsRoomId = -1;
@@ -38,13 +41,15 @@ final class LinkRoomPhysics {
     }
 
     int physicsRoomId(int value) {
-        return physicsRoomId = value;
+        physicsRoomId = value;
+        return physicsRoomId;
     }
 
     private int physicsRoomCategory = -1;
 
     int physicsRoomCategory(int value) {
-        return physicsRoomCategory = value;
+        physicsRoomCategory = value;
+        return physicsRoomCategory;
     }
 
     private final LinkComponentRef<LinkAirborne> linkAirborne;

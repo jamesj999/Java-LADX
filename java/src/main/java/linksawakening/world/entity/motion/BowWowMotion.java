@@ -26,7 +26,8 @@ public final class BowWowMotion {
     }
 
     public int writeBowWowState(int value) {
-        return bowWowState = value;
+        bowWowState = value;
+        return bowWowState;
     }
 
     static final int[] SPEED_X_BY_RANDOM = {0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8, 0xF4, 0xF8};

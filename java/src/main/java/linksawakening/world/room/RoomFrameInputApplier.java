@@ -6,11 +6,11 @@ import linksawakening.world.entity.event.EntityProjectileEvent;
 /** Applies frame inputs in the original setter order. Values remain immutable. */
 final class RoomFrameInputApplier {
     private final RoomEntityInputs entityInputs;
-    private final RoomEntityBridge bridge;
+
     private final RoomEntitySessionState frame;
     private final RoomEntityState entityState;
     private final RoomStory story;
-    private final RoomLoadCoordinator loads;
+
     private final RoomSession session;
 
     RoomFrameInputApplier(
@@ -22,11 +22,11 @@ final class RoomFrameInputApplier {
             RoomLoadCoordinator loads,
             RoomSession session) {
         this.entityInputs = entityInputs;
-        this.bridge = bridge;
+
         this.frame = frame;
         this.entityState = entityState;
         this.story = story;
-        this.loads = loads;
+
         this.session = session;
     }
 

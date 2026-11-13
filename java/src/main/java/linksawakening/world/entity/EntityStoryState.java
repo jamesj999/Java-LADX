@@ -30,7 +30,8 @@ final class EntityStoryState {
     }
 
     boolean writeShouldGetLostInMysteriousWoods(boolean value) {
-        return shouldGetLostInMysteriousWoods = value;
+        shouldGetLostInMysteriousWoods = value;
+        return shouldGetLostInMysteriousWoods;
     }
 
     int readKidPlayTimer(int slot) {
@@ -38,7 +39,8 @@ final class EntityStoryState {
     }
 
     int writeKidPlayTimer(int slot, int value) {
-        return kidPlayTimer[slot] = value;
+        kidPlayTimer[slot] = value;
+        return kidPlayTimer[slot];
     }
 
     int[] storageKidPlayTimer() {
@@ -54,7 +56,8 @@ final class EntityStoryState {
     }
 
     int writeKidPlayState(int slot, int value) {
-        return kidPlayState[slot] = value;
+        kidPlayState[slot] = value;
+        return kidPlayState[slot];
     }
 
     int[] storageKidPlayState() {
@@ -66,7 +69,8 @@ final class EntityStoryState {
     }
 
     int writeKidZSpeed(int slot, int value) {
-        return kidZSpeed[slot] = value;
+        kidZSpeed[slot] = value;
+        return kidZSpeed[slot];
     }
 
     int[] storageKidZSpeed() {
@@ -84,7 +88,8 @@ final class EntityStoryState {
     }
 
     boolean writeKidBall(int slot, boolean value) {
-        return kidBall[slot] = value;
+        kidBall[slot] = value;
+        return kidBall[slot];
     }
 
     boolean[] storageKidBall() {
@@ -102,7 +107,8 @@ final class EntityStoryState {
     }
 
     int writeKidKidnapState(int slot, int value) {
-        return kidKidnapState[slot] = value;
+        kidKidnapState[slot] = value;
+        return kidKidnapState[slot];
     }
 
     int[] storageKidKidnapState() {
@@ -110,7 +116,8 @@ final class EntityStoryState {
     }
 
     int writeKidKidnapDelay(int slot, int value) {
-        return kidKidnapDelay[slot] = value;
+        kidKidnapDelay[slot] = value;
+        return kidKidnapDelay[slot];
     }
 
     int[] storageKidKidnapDelay() {
@@ -122,7 +129,8 @@ final class EntityStoryState {
     }
 
     int writeKidSpeedXAccumulator(int slot, int value) {
-        return kidSpeedXAccumulator[slot] = value;
+        kidSpeedXAccumulator[slot] = value;
+        return kidSpeedXAccumulator[slot];
     }
 
     int[] storageKidSpeedXAccumulator() {
@@ -130,7 +138,8 @@ final class EntityStoryState {
     }
 
     int writeKidSpeedYAccumulator(int slot, int value) {
-        return kidSpeedYAccumulator[slot] = value;
+        kidSpeedYAccumulator[slot] = value;
+        return kidSpeedYAccumulator[slot];
     }
 
     int[] storageKidSpeedYAccumulator() {
@@ -142,7 +151,8 @@ final class EntityStoryState {
     }
 
     int writeRichardState(int slot, int value) {
-        return richardState[slot] = value;
+        richardState[slot] = value;
+        return richardState[slot];
     }
 
     int readRichardDirection(int slot) {
@@ -150,7 +160,8 @@ final class EntityStoryState {
     }
 
     int writeRichardDirection(int slot, int value) {
-        return richardDirection[slot] = value;
+        richardDirection[slot] = value;
+        return richardDirection[slot];
     }
 
     int[] storageRichardXAccumulator() {
@@ -168,7 +179,8 @@ final class EntityStoryState {
     }
 
     boolean writePlayerHasToadstool(boolean value) {
-        return playerHasToadstool = value;
+        playerHasToadstool = value;
+        return playerHasToadstool;
     }
 
     int readPlayerMagicPowderCount() {
@@ -176,7 +188,8 @@ final class EntityStoryState {
     }
 
     int writePlayerMagicPowderCount(int value) {
-        return playerMagicPowderCount = value;
+        playerMagicPowderCount = value;
+        return playerMagicPowderCount;
     }
 
     boolean readPlayerHasTailKey() {
@@ -184,7 +197,8 @@ final class EntityStoryState {
     }
 
     boolean writePlayerHasTailKey(boolean value) {
-        return playerHasTailKey = value;
+        playerHasTailKey = value;
+        return playerHasTailKey;
     }
 
     int readHouseTarinFlag() {
@@ -192,7 +206,8 @@ final class EntityStoryState {
     }
 
     int writeHouseTarinFlag(int value) {
-        return houseTarinFlag = value;
+        houseTarinFlag = value;
+        return houseTarinFlag;
     }
 
     int readHouseTradeItem() {
@@ -200,7 +215,8 @@ final class EntityStoryState {
     }
 
     int writeHouseTradeItem(int value) {
-        return houseTradeItem = value;
+        houseTradeItem = value;
+        return houseTradeItem;
     }
 
     int readHouseInstrument3Flags() {
@@ -208,7 +224,8 @@ final class EntityStoryState {
     }
 
     int writeHouseInstrument3Flags(int value) {
-        return houseInstrument3Flags = value;
+        houseInstrument3Flags = value;
+        return houseInstrument3Flags;
     }
 
     int readHouseWalrusStatus() {
@@ -216,7 +233,8 @@ final class EntityStoryState {
     }
 
     int writeHouseWalrusStatus(int value) {
-        return houseWalrusStatus = value;
+        houseWalrusStatus = value;
+        return houseWalrusStatus;
     }
 
     OwlEventState owlState() {

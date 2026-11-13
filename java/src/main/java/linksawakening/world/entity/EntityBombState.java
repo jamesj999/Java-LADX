@@ -20,7 +20,8 @@ final class EntityBombState {
     }
 
     int writeBombDirection(int slot, int value) {
-        return bombDirection[slot] = value;
+        bombDirection[slot] = value;
+        return bombDirection[slot];
     }
 
     int[] storageBombDirection() {
@@ -32,7 +33,8 @@ final class EntityBombState {
     }
 
     boolean writePlayerArrowBombArrow(int slot, boolean value) {
-        return playerArrowBombArrow[slot] = value;
+        playerArrowBombArrow[slot] = value;
+        return playerArrowBombArrow[slot];
     }
 
     int readBombPrivateCountdown1(int slot) {
@@ -40,7 +42,8 @@ final class EntityBombState {
     }
 
     int writeBombPrivateCountdown1(int slot, int value) {
-        return bombPrivateCountdown1[slot] = value;
+        bombPrivateCountdown1[slot] = value;
+        return bombPrivateCountdown1[slot];
     }
 
     int postBombPrivateCountdown1(int slot, int delta) {
@@ -54,7 +57,8 @@ final class EntityBombState {
     }
 
     int writeBombPrivateCountdown3(int slot, int value) {
-        return bombPrivateCountdown3[slot] = value;
+        bombPrivateCountdown3[slot] = value;
+        return bombPrivateCountdown3[slot];
     }
 
     int postBombPrivateCountdown3(int slot, int delta) {
@@ -68,7 +72,8 @@ final class EntityBombState {
     }
 
     int writeBombPrivateState4(int slot, int value) {
-        return bombPrivateState4[slot] = value;
+        bombPrivateState4[slot] = value;
+        return bombPrivateState4[slot];
     }
 
     boolean readPlacedBombMotionInitialized(int slot) {
@@ -76,7 +81,8 @@ final class EntityBombState {
     }
 
     boolean writePlacedBombMotionInitialized(int slot, boolean value) {
-        return placedBombMotionInitialized[slot] = value;
+        placedBombMotionInitialized[slot] = value;
+        return placedBombMotionInitialized[slot];
     }
 
     boolean readEnemyBombMotionInitialized(int slot) {
@@ -84,7 +90,8 @@ final class EntityBombState {
     }
 
     boolean writeEnemyBombMotionInitialized(int slot, boolean value) {
-        return enemyBombMotionInitialized[slot] = value;
+        enemyBombMotionInitialized[slot] = value;
+        return enemyBombMotionInitialized[slot];
     }
 
     int readBombArrowCooldown() {
@@ -92,7 +99,8 @@ final class EntityBombState {
     }
 
     int writeBombArrowCooldown(int value) {
-        return bombArrowCooldown = value;
+        bombArrowCooldown = value;
+        return bombArrowCooldown;
     }
 
     int postBombArrowCooldown(int delta) {
@@ -106,7 +114,8 @@ final class EntityBombState {
     }
 
     int writeLatestDroppedBombEntityIndex(int value) {
-        return latestDroppedBombEntityIndex = value;
+        latestDroppedBombEntityIndex = value;
+        return latestDroppedBombEntityIndex;
     }
 
     boolean readLastBombPlacementPlayedBump() {
@@ -114,7 +123,8 @@ final class EntityBombState {
     }
 
     boolean writeLastBombPlacementPlayedBump(boolean value) {
-        return lastBombPlacementPlayedBump = value;
+        lastBombPlacementPlayedBump = value;
+        return lastBombPlacementPlayedBump;
     }
 
     boolean bombFinalPresentationPending(int slot) {

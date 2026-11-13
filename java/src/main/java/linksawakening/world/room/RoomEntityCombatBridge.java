@@ -3,7 +3,6 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSessionRules.ENTITY_DROPPABLE_SECRET_SEASHELL;
 
 import java.util.List;
-import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -17,18 +16,6 @@ final class RoomEntityCombatBridge {
     }
 
     List<EntityCombatEvent> resolveEntityCombat(RoomRuntime loaded, EntityCombatInputs inputs) {
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        boolean linkAirborne = inputs.linkAirborne();
-        int linkVerticalVelocity = inputs.linkVerticalVelocity();
-        boolean linkInteractive = inputs.linkInteractive();
-        boolean swordCollisionActive = inputs.sword().active();
-        int swordX = inputs.sword().x();
-        int swordWidth = inputs.sword().width();
-        int swordY = inputs.sword().y();
-        int swordHeight = inputs.sword().height();
-        EnemyAttackContext attackContext = inputs.attackContext();
 
         List<EntityCombatEvent> events = loaded.entities.resolveCombat(inputs);
         loaded.room.replaceEntities(loaded.entities.inspection().view());
@@ -50,18 +37,9 @@ final class RoomEntityCombatBridge {
     }
 
     EntityPickupEvent collectEntityIfNeeded(RoomRuntime loaded, EntityPickupInputs inputs) {
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.link().x();
-        int linkEntityY = inputs.link().y();
-        boolean linkAirborne = inputs.link().airborne();
-        boolean linkInteractive = inputs.link().interactive();
+
         int linkDirection = inputs.link().rawDirection();
         int linkZ = inputs.link().z();
-        boolean swordActive = inputs.sword().active();
-        int swordX = inputs.sword().x();
-        int swordWidth = inputs.sword().width();
-        int swordY = inputs.sword().y();
-        int swordHeight = inputs.sword().height();
 
         dependencies.followers().followingLinkZ = linkZ & 0xFF;
         dependencies.followers().followingLinkDirection = linkDirection & 0xFF;

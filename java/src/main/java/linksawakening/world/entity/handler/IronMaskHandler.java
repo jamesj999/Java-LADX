@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_IRON_MASK;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -13,7 +12,7 @@ import linksawakening.world.entity.motion.RoamingEnemyMotion;
 /** ROM handler stages for IronMask. */
 final class IronMaskHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_IRON_MASK, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_IRON_MASK, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_IRON_MASK, EntityTickStage.PHASE_3_BEFORE_LASER, 2, IronMaskHandler::phase3IronMask);
     }
@@ -37,7 +36,7 @@ final class IronMaskHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(RoamingEnemyMotion.class, RoamingEnemyMotion::new).initialize(entity.slot());
     }
 }

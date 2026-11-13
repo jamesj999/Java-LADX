@@ -195,7 +195,7 @@ final class RoomNavigationFixture {
                 }
             }
         }
-        for (LinkMotionBlockRequest request : session.consumeLinkMotionBlockRequests()) {
+        for (LinkMotionBlockRequest unused : session.consumeLinkMotionBlockRequests()) {
             link.motion().blockNextRomMotionFrame();
         }
         // These Main streams are not emitted by the authored A5/D6 route;

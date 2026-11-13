@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_POKEY;
 
-import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -17,7 +16,7 @@ import linksawakening.world.entity.motion.PokeyMotion.PokeyFrame;
 /** ROM handler stages for Pokey. */
 final class PokeyHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_POKEY, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_POKEY, (entity, random) -> initialize(registry, entity));
         registry.registerTick(ENTITY_POKEY, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 8, PokeyHandler::phase4Pokey);
     }
 
@@ -94,7 +93,7 @@ final class PokeyHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(PokeyMotion.class, PokeyMotion::new).initialize(entity.slot());
     }
 }

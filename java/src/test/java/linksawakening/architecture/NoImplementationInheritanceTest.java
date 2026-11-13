@@ -54,8 +54,12 @@ class NoImplementationInheritanceTest {
 
     private static final class FixtureChild extends FixtureParent {}
 
+    // Loaded by name from class bytes to exercise record superclass metadata.
+    @SuppressWarnings("UnusedNestedClass")
     private record FixtureRecord(int value) {}
 
+    // Loaded by name from class bytes to exercise enum superclass metadata.
+    @SuppressWarnings("UnusedNestedClass")
     private enum FixtureEnum {
         VALUE
     }

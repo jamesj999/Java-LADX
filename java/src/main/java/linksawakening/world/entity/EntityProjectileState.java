@@ -19,7 +19,8 @@ final class EntityProjectileState {
     }
 
     int writeMagicPowderPrivateState4(int slot, int value) {
-        return magicPowderPrivateState4[slot] = value;
+        magicPowderPrivateState4[slot] = value;
+        return magicPowderPrivateState4[slot];
     }
 
     int readLatestShotArrowEntityIndex() {
@@ -27,7 +28,8 @@ final class EntityProjectileState {
     }
 
     int writeLatestShotArrowEntityIndex(int value) {
-        return latestShotArrowEntityIndex = value;
+        latestShotArrowEntityIndex = value;
+        return latestShotArrowEntityIndex;
     }
 
     boolean readLastArrowShotPlayedWhoosh() {
@@ -35,7 +37,8 @@ final class EntityProjectileState {
     }
 
     boolean writeLastArrowShotPlayedWhoosh(boolean value) {
-        return lastArrowShotPlayedWhoosh = value;
+        lastArrowShotPlayedWhoosh = value;
+        return lastArrowShotPlayedWhoosh;
     }
 
     int readMagicPowderState(int slot) {
@@ -43,7 +46,8 @@ final class EntityProjectileState {
     }
 
     int writeMagicPowderState(int slot, int value) {
-        return magicPowderState[slot] = value;
+        magicPowderState[slot] = value;
+        return magicPowderState[slot];
     }
 
     int readTorchPaletteTargetAddress() {
@@ -51,7 +55,8 @@ final class EntityProjectileState {
     }
 
     int writeTorchPaletteTargetAddress(int value) {
-        return torchPaletteTargetAddress = value;
+        torchPaletteTargetAddress = value;
+        return torchPaletteTargetAddress;
     }
 
     boolean readTorchPaletteTransitionActive() {
@@ -59,7 +64,8 @@ final class EntityProjectileState {
     }
 
     boolean writeTorchPaletteTransitionActive(boolean value) {
-        return torchPaletteTransitionActive = value;
+        torchPaletteTransitionActive = value;
+        return torchPaletteTransitionActive;
     }
 
     int readMusicalNoteInertia(int slot) {
@@ -67,7 +73,8 @@ final class EntityProjectileState {
     }
 
     int writeMusicalNoteInertia(int slot, int value) {
-        return musicalNoteInertia[slot] = value;
+        musicalNoteInertia[slot] = value;
+        return musicalNoteInertia[slot];
     }
 
     int readMusicalNoteSpeedX(int slot) {
@@ -75,7 +82,8 @@ final class EntityProjectileState {
     }
 
     int writeMusicalNoteSpeedX(int slot, int value) {
-        return musicalNoteSpeedX[slot] = value;
+        musicalNoteSpeedX[slot] = value;
+        return musicalNoteSpeedX[slot];
     }
 
     int readMusicalNoteSpeedY(int slot) {
@@ -83,7 +91,8 @@ final class EntityProjectileState {
     }
 
     int writeMusicalNoteSpeedY(int slot, int value) {
-        return musicalNoteSpeedY[slot] = value;
+        musicalNoteSpeedY[slot] = value;
+        return musicalNoteSpeedY[slot];
     }
 
     int readBoomerangSfxCounter() {
@@ -91,7 +100,8 @@ final class EntityProjectileState {
     }
 
     int writeBoomerangSfxCounter(int value) {
-        return boomerangSfxCounter = value;
+        boomerangSfxCounter = value;
+        return boomerangSfxCounter;
     }
 
     boolean readBoomerangSoundClockProvided() {
@@ -99,6 +109,7 @@ final class EntityProjectileState {
     }
 
     boolean writeBoomerangSoundClockProvided(boolean value) {
-        return boomerangSoundClockProvided = value;
+        boomerangSoundClockProvided = value;
+        return boomerangSoundClockProvided;
     }
 }

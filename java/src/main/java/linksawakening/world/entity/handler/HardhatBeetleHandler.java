@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HARDHAT_BEETLE;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -13,7 +12,7 @@ import linksawakening.world.entity.motion.HardHatMotion;
 /** ROM handler stages for HardhatBeetle. */
 final class HardhatBeetleHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_HARDHAT_BEETLE, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_HARDHAT_BEETLE, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_HARDHAT_BEETLE,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
@@ -38,7 +37,7 @@ final class HardhatBeetleHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(HardHatMotion.class, HardHatMotion::new).initialize(entity.slot());
     }
 }

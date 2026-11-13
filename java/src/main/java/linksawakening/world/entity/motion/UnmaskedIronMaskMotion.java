@@ -66,27 +66,12 @@ public final class UnmaskedIronMaskMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         if (x != entity.x()
                 && isBlocked(
-                        entity,
-                        direction[slot],
-                        x,
-                        entity.y(),
-                        backgroundInteraction,
-                        backgroundCollision,
-                        ignoreHitsCountdown,
-                        frame)) {
+                        entity, direction[slot], x, entity.y(), backgroundInteraction, ignoreHitsCountdown, frame)) {
             x = entity.x();
         }
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         if (y != entity.y()
-                && isBlocked(
-                        entity,
-                        direction[slot],
-                        x,
-                        y,
-                        backgroundInteraction,
-                        backgroundCollision,
-                        ignoreHitsCountdown,
-                        frame)) {
+                && isBlocked(entity, direction[slot], x, y, backgroundInteraction, ignoreHitsCountdown, frame)) {
             y = entity.y();
         }
 
@@ -131,7 +116,6 @@ public final class UnmaskedIronMaskMotion {
             int nextX,
             int nextY,
             RoomEntityBackgroundInteraction backgroundInteraction,
-            RoomEntityBackgroundCollision backgroundCollision,
             int ignoreHitsCountdown,
             int frame) {
         {

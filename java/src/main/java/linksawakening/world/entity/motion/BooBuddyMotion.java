@@ -14,7 +14,8 @@ public final class BooBuddyMotion {
     }
 
     public int writeBooBuddyTriggerCount(int value) {
-        return booBuddyTriggerCount = value;
+        booBuddyTriggerCount = value;
+        return booBuddyTriggerCount;
     }
 
     public static final int ENTITY_TYPE = 0x50;

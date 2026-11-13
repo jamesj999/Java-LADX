@@ -13,13 +13,15 @@ final class LinkDoorTraversal {
     }
 
     int revolvingDoorFrame(int value) {
-        return revolvingDoorFrame = value;
+        revolvingDoorFrame = value;
+        return revolvingDoorFrame;
     }
 
     private boolean revolvingDoorTransitionPending;
 
     boolean revolvingDoorTransitionPending(boolean value) {
-        return revolvingDoorTransitionPending = value;
+        revolvingDoorTransitionPending = value;
+        return revolvingDoorTransitionPending;
     }
 
     private int revolvingDoorPaletteVariant = -1;
@@ -29,7 +31,8 @@ final class LinkDoorTraversal {
     }
 
     int revolvingDoorPaletteVariant(int value) {
-        return revolvingDoorPaletteVariant = value;
+        revolvingDoorPaletteVariant = value;
+        return revolvingDoorPaletteVariant;
     }
 
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;

@@ -19,7 +19,6 @@ import linksawakening.audio.sfx.SoundEffectPlayer;
 /** Browser transport controls over a pure sample mixer and native stream. */
 public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     private static final int BUFFER_COUNT = 4;
-    private static final int BUFFER_FRAMES = 1024;
 
     private final FrameAudioMixer mixer;
     private final OpenAlStream stream = new OpenAlStream();

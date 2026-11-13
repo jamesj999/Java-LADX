@@ -21,7 +21,8 @@ public final class FollowingNpcMotion {
     }
 
     public FollowingNpcState writeFollowingNpcState(FollowingNpcState value) {
-        return followingNpcState = value;
+        followingNpcState = value;
+        return followingNpcState;
     }
 
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
@@ -33,7 +34,8 @@ public final class FollowingNpcMotion {
     public LinkPositionHistory writeFollowingLinkPositionHistory(
             /* Optional room geometry/history; null preserves the path without that room input. */ LinkPositionHistory
                     value) {
-        return followingLinkPositionHistory = value;
+        followingLinkPositionHistory = value;
+        return followingLinkPositionHistory;
     }
 
     private static final int ENTITY_GHOST = 0xD4;

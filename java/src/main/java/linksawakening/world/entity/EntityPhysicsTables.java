@@ -32,7 +32,8 @@ final class EntityPhysicsTables {
     }
 
     RoomEntityGroundInteraction writeGroundInteraction(RoomEntityGroundInteraction value) {
-        return groundInteraction = java.util.Objects.requireNonNullElse(value, RoomEntityGroundInteraction.NONE);
+        groundInteraction = java.util.Objects.requireNonNullElse(value, RoomEntityGroundInteraction.NONE);
+        return groundInteraction;
     }
 
     boolean hasRichBackgroundInteraction() {
@@ -44,7 +45,8 @@ final class EntityPhysicsTables {
     }
 
     RoomEntityBackgroundInteraction writeBackgroundInteraction(RoomEntityBackgroundInteraction value) {
-        return backgroundInteraction = RoomEntityBackgroundInteraction.orNone(value);
+        backgroundInteraction = RoomEntityBackgroundInteraction.orNone(value);
+        return backgroundInteraction;
     }
 
     int readSlowTransitionCountdown(int slot) {
@@ -52,7 +54,8 @@ final class EntityPhysicsTables {
     }
 
     int writeSlowTransitionCountdown(int slot, int value) {
-        return slowTransitionCountdown[slot] = value;
+        slowTransitionCountdown[slot] = value;
+        return slowTransitionCountdown[slot];
     }
 
     int postSlowTransitionCountdown(int slot, int delta) {
@@ -66,7 +69,8 @@ final class EntityPhysicsTables {
     }
 
     boolean writeSlowTimerInitialized(int slot, boolean value) {
-        return slowTimerInitialized[slot] = value;
+        slowTimerInitialized[slot] = value;
+        return slowTimerInitialized[slot];
     }
 
     int readEnemyTransitionCountdown(int slot) {
@@ -74,7 +78,8 @@ final class EntityPhysicsTables {
     }
 
     int writeEnemyTransitionCountdown(int slot, int value) {
-        return enemyTransitionCountdown[slot] = value;
+        enemyTransitionCountdown[slot] = value;
+        return enemyTransitionCountdown[slot];
     }
 
     int postEnemyTransitionCountdown(int slot, int delta) {
@@ -88,7 +93,8 @@ final class EntityPhysicsTables {
     }
 
     int writeEnemyPhysicsFlags(int slot, int value) {
-        return enemyPhysicsFlags[slot] = value;
+        enemyPhysicsFlags[slot] = value;
+        return enemyPhysicsFlags[slot];
     }
 
     int readEntityGroundStatus(int slot) {
@@ -96,7 +102,8 @@ final class EntityPhysicsTables {
     }
 
     int writeEntityGroundStatus(int slot, int value) {
-        return entityGroundStatus[slot] = value;
+        entityGroundStatus[slot] = value;
+        return entityGroundStatus[slot];
     }
 
     int slotCount() {
@@ -108,7 +115,8 @@ final class EntityPhysicsTables {
     }
 
     int writeFallingTargetX(int slot, int value) {
-        return fallingTargetX[slot] = value;
+        fallingTargetX[slot] = value;
+        return fallingTargetX[slot];
     }
 
     int readFallingTargetY(int slot) {
@@ -116,7 +124,8 @@ final class EntityPhysicsTables {
     }
 
     int writeFallingTargetY(int slot, int value) {
-        return fallingTargetY[slot] = value;
+        fallingTargetY[slot] = value;
+        return fallingTargetY[slot];
     }
 
     int readFallingSpeedX(int slot) {
@@ -124,7 +133,8 @@ final class EntityPhysicsTables {
     }
 
     int writeFallingSpeedX(int slot, int value) {
-        return fallingSpeedX[slot] = value;
+        fallingSpeedX[slot] = value;
+        return fallingSpeedX[slot];
     }
 
     int readFallingSpeedY(int slot) {
@@ -132,11 +142,13 @@ final class EntityPhysicsTables {
     }
 
     int writeFallingSpeedY(int slot, int value) {
-        return fallingSpeedY[slot] = value;
+        fallingSpeedY[slot] = value;
+        return fallingSpeedY[slot];
     }
 
     int writeFallingSpeedXAccumulator(int slot, int value) {
-        return fallingSpeedXAccumulator[slot] = value;
+        fallingSpeedXAccumulator[slot] = value;
+        return fallingSpeedXAccumulator[slot];
     }
 
     int advanceFallingX(int position, int speed, int slot) {
@@ -144,7 +156,8 @@ final class EntityPhysicsTables {
     }
 
     int writeFallingSpeedYAccumulator(int slot, int value) {
-        return fallingSpeedYAccumulator[slot] = value;
+        fallingSpeedYAccumulator[slot] = value;
+        return fallingSpeedYAccumulator[slot];
     }
 
     int advanceFallingY(int position, int speed, int slot) {
@@ -156,7 +169,8 @@ final class EntityPhysicsTables {
     }
 
     int writeFallingVisualYOffset(int slot, int value) {
-        return fallingVisualYOffset[slot] = value;
+        fallingVisualYOffset[slot] = value;
+        return fallingVisualYOffset[slot];
     }
 
     int[] copyFallingVisualYOffset() {
@@ -168,7 +182,8 @@ final class EntityPhysicsTables {
     }
 
     int writeBaseEntityFlipAttribute(int slot, int value) {
-        return baseEntityFlipAttribute[slot] = value;
+        baseEntityFlipAttribute[slot] = value;
+        return baseEntityFlipAttribute[slot];
     }
 
     int readEntityOptions1Override(int slot) {
@@ -176,7 +191,8 @@ final class EntityPhysicsTables {
     }
 
     int writeEntityOptions1Override(int slot, int value) {
-        return entityOptions1Override[slot] = value;
+        entityOptions1Override[slot] = value;
+        return entityOptions1Override[slot];
     }
 
     void resetOptionsOverrides() {
@@ -188,7 +204,8 @@ final class EntityPhysicsTables {
     }
 
     boolean writeEnemyProjectileSpawnedThisFrame(int slot, boolean value) {
-        return enemyProjectileSpawnedThisFrame[slot] = value;
+        enemyProjectileSpawnedThisFrame[slot] = value;
+        return enemyProjectileSpawnedThisFrame[slot];
     }
 
     void clearEnemyProjectileSpawnedThisFrame() {
@@ -200,7 +217,8 @@ final class EntityPhysicsTables {
     }
 
     boolean writeDynamicEntitySpawnedThisFrame(int slot, boolean value) {
-        return dynamicEntitySpawnedThisFrame[slot] = value;
+        dynamicEntitySpawnedThisFrame[slot] = value;
+        return dynamicEntitySpawnedThisFrame[slot];
     }
 
     void clearDynamicEntitySpawnedThisFrame() {
@@ -212,7 +230,8 @@ final class EntityPhysicsTables {
     }
 
     int writeEntityPrivateState4(int slot, int value) {
-        return entityPrivateState4[slot] = value;
+        entityPrivateState4[slot] = value;
+        return entityPrivateState4[slot];
     }
 
     int readEntityInertia(int slot) {
@@ -220,7 +239,8 @@ final class EntityPhysicsTables {
     }
 
     int writeEntityInertia(int slot, int value) {
-        return entityInertia[slot] = value;
+        entityInertia[slot] = value;
+        return entityInertia[slot];
     }
 
     int readEntityUnknownJ(int slot) {
@@ -228,7 +248,8 @@ final class EntityPhysicsTables {
     }
 
     int writeEntityUnknownJ(int slot, int value) {
-        return entityUnknownJ[slot] = value;
+        entityUnknownJ[slot] = value;
+        return entityUnknownJ[slot];
     }
 
     boolean readGroundInteractionSideScrolling() {
@@ -236,7 +257,8 @@ final class EntityPhysicsTables {
     }
 
     boolean writeGroundInteractionSideScrolling(boolean value) {
-        return groundInteractionSideScrolling = value;
+        groundInteractionSideScrolling = value;
+        return groundInteractionSideScrolling;
     }
 
     RoomEntityObjectQuery readObjectQuery() {
@@ -244,7 +266,8 @@ final class EntityPhysicsTables {
     }
 
     RoomEntityObjectQuery writeObjectQuery(RoomEntityObjectQuery value) {
-        return objectQuery = RoomEntityObjectQuery.orNone(value);
+        objectQuery = RoomEntityObjectQuery.orNone(value);
+        return objectQuery;
     }
 
     RoomEntityObjectQuery readObjectIntersectionQuery() {
@@ -252,6 +275,7 @@ final class EntityPhysicsTables {
     }
 
     RoomEntityObjectQuery writeObjectIntersectionQuery(RoomEntityObjectQuery value) {
-        return objectIntersectionQuery = RoomEntityObjectQuery.orNone(value);
+        objectIntersectionQuery = RoomEntityObjectQuery.orNone(value);
+        return objectIntersectionQuery;
     }
 }

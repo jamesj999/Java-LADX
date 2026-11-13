@@ -24,7 +24,8 @@ final class EntityRoomVariables {
     }
 
     boolean writeSwitchBlockAnimationActive(boolean value) {
-        return switchBlockAnimationActive = value;
+        switchBlockAnimationActive = value;
+        return switchBlockAnimationActive;
     }
 
     boolean readPendingSwitchBlockAnimationRequest() {
@@ -32,7 +33,8 @@ final class EntityRoomVariables {
     }
 
     boolean writePendingSwitchBlockAnimationRequest(boolean value) {
-        return pendingSwitchBlockAnimationRequest = value;
+        pendingSwitchBlockAnimationRequest = value;
+        return pendingSwitchBlockAnimationRequest;
     }
 
     int readPendingClearedEntityMask() {
@@ -40,7 +42,8 @@ final class EntityRoomVariables {
     }
 
     int writePendingClearedEntityMask(int value) {
-        return pendingClearedEntityMask = value;
+        pendingClearedEntityMask = value;
+        return pendingClearedEntityMask;
     }
 
     int readPendingRoomStatusMask() {
@@ -48,7 +51,8 @@ final class EntityRoomVariables {
     }
 
     int writePendingRoomStatusMask(int value) {
-        return pendingRoomStatusMask = value;
+        pendingRoomStatusMask = value;
+        return pendingRoomStatusMask;
     }
 
     int readTransitionSequenceCounter() {
@@ -56,7 +60,8 @@ final class EntityRoomVariables {
     }
 
     int writeTransitionSequenceCounter(int value) {
-        return transitionSequenceCounter = value;
+        transitionSequenceCounter = value;
+        return transitionSequenceCounter;
     }
 
     boolean readGameplayWorld() {
@@ -64,7 +69,8 @@ final class EntityRoomVariables {
     }
 
     boolean writeGameplayWorld(boolean value) {
-        return gameplayWorld = value;
+        gameplayWorld = value;
+        return gameplayWorld;
     }
 
     boolean readRoomTransitionActive() {
@@ -72,7 +78,8 @@ final class EntityRoomVariables {
     }
 
     boolean writeRoomTransitionActive(boolean value) {
-        return roomTransitionActive = value;
+        roomTransitionActive = value;
+        return roomTransitionActive;
     }
 
     int readEntityGoldenLeavesCount() {
@@ -80,7 +87,8 @@ final class EntityRoomVariables {
     }
 
     int writeEntityGoldenLeavesCount(int value) {
-        return entityGoldenLeavesCount = value;
+        entityGoldenLeavesCount = value;
+        return entityGoldenLeavesCount;
     }
 
     int readInstrument1Flags() {
@@ -88,7 +96,8 @@ final class EntityRoomVariables {
     }
 
     int writeInstrument1Flags(int value) {
-        return instrument1Flags = value;
+        instrument1Flags = value;
+        return instrument1Flags;
     }
 
     int readInstrument2Flags() {
@@ -96,7 +105,8 @@ final class EntityRoomVariables {
     }
 
     int writeInstrument2Flags(int value) {
-        return instrument2Flags = value;
+        instrument2Flags = value;
+        return instrument2Flags;
     }
 
     int readEntityInteractionCountdown() {
@@ -104,7 +114,8 @@ final class EntityRoomVariables {
     }
 
     int writeEntityInteractionCountdown(int value) {
-        return entityInteractionCountdown = value;
+        entityInteractionCountdown = value;
+        return entityInteractionCountdown;
     }
 
     int postEntityInteractionCountdown(int delta) {
@@ -118,7 +129,8 @@ final class EntityRoomVariables {
     }
 
     boolean writeFreeMovementMode(boolean value) {
-        return freeMovementMode = value;
+        freeMovementMode = value;
+        return freeMovementMode;
     }
 
     int readEntityMapId() {
@@ -126,7 +138,8 @@ final class EntityRoomVariables {
     }
 
     int writeEntityMapId(int value) {
-        return entityMapId = value;
+        entityMapId = value;
+        return entityMapId;
     }
 
     int readEntityRoomId() {
@@ -134,7 +147,8 @@ final class EntityRoomVariables {
     }
 
     int writeEntityRoomId(int value) {
-        return entityRoomId = value;
+        entityRoomId = value;
+        return entityRoomId;
     }
 
     boolean readDungeonMinibossReady() {
@@ -142,7 +156,8 @@ final class EntityRoomVariables {
     }
 
     boolean writeDungeonMinibossReady(boolean value) {
-        return dungeonMinibossReady = value;
+        dungeonMinibossReady = value;
+        return dungeonMinibossReady;
     }
 
     int readEntityRoomStatus() {
@@ -150,6 +165,7 @@ final class EntityRoomVariables {
     }
 
     int writeEntityRoomStatus(int value) {
-        return entityRoomStatus = value;
+        entityRoomStatus = value;
+        return entityRoomStatus;
     }
 }

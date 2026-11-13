@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_CUCCO;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -16,7 +15,7 @@ import linksawakening.world.entity.motion.CuccoMotion.CuccoInteractionFrame;
 /** ROM handler stages for Cucco. */
 final class CuccoHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_CUCCO, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_CUCCO, (entity, random) -> initialize(registry, entity));
         registry.registerTick(ENTITY_CUCCO, EntityTickStage.PHASE_3_AFTER_LASER, 5, CuccoHandler::phase3Cucco);
     }
 
@@ -96,7 +95,7 @@ final class CuccoHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(CuccoMotion.class, CuccoMotion::new).initialize(entity.slot());
     }
 }

@@ -16,7 +16,6 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
 
     private static final String ROM_RESOURCE = "rom/azle.gbc";
 
-    private final GameBoyApu apu;
     private final SoundEffectCatalog catalog;
     private final RomSoundEffectEngine engine;
 
@@ -33,7 +32,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
     }
 
     public SoundEffectPlayer(GameBoyApu apu, Rom romData, SoundEffectCatalog catalog) {
-        this.apu = Objects.requireNonNull(apu, "apu");
+        Objects.requireNonNull(apu, "apu");
         this.catalog = Objects.requireNonNull(catalog, "catalog");
         engine = new RomSoundEffectEngine(Objects.requireNonNull(romData, "romData"), apu);
     }

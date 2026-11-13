@@ -419,7 +419,7 @@ public final class HookshotChainMotion {
     }
 
     static HookshotChainMotion.State copyBody(HookshotChainSnapshot inputs) {
-        HookshotChainMotion.State state = inputs.state();
+
         int x = inputs.x();
         int y = inputs.y();
         int z = inputs.z();

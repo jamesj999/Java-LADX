@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_ZOL;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -15,7 +14,7 @@ import linksawakening.world.entity.motion.HidingZolMotion;
 /** ROM handler stages for HidingZol. */
 final class HidingZolHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_HIDING_ZOL, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_HIDING_ZOL, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_HIDING_ZOL, EntityTickStage.PHASE_3_BEFORE_LASER, 6, HidingZolHandler::phase3HidingZol);
     }
@@ -57,7 +56,7 @@ final class HidingZolHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(HidingZolMotion.class, HidingZolMotion::new).initialize(entity.slot());
     }
 }

@@ -29,7 +29,7 @@ public final class OpenGlFramePresenter {
     private final ResourceScope resources;
     private final long window;
     private final int vao;
-    private final int vbo;
+
     private final GlShader shader;
     private final int texture;
     private final ByteBuffer textureUploadBuffer;
@@ -38,7 +38,7 @@ public final class OpenGlFramePresenter {
         this.resources = resources;
         this.window = window;
         this.vao = vao;
-        this.vbo = vbo;
+
         this.shader = shader;
         this.texture = texture;
         this.textureUploadBuffer = BufferUtils.createByteBuffer(Framebuffer.WIDTH * Framebuffer.HEIGHT * 4);

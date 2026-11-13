@@ -3,7 +3,6 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_LEEVER;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameContext;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -14,7 +13,7 @@ import linksawakening.world.entity.motion.LeeverMotion;
 /** ROM handler stages for Leever. */
 final class LeeverHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_LEEVER, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_LEEVER, (entity, random) -> initialize(registry, entity));
         registry.registerAdvance(ENTITY_LEEVER, (entity, context) -> advance(registry, entity, context));
         registry.registerTick(
                 ENTITY_LEEVER, EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION, 5, LeeverHandler::phase2Leever);
@@ -31,7 +30,7 @@ final class LeeverHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(LeeverMotion.class, LeeverMotion::new).initialize(entity.slot());
     }
 

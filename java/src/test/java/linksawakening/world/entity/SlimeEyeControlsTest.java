@@ -64,7 +64,7 @@ final class SlimeEyeControlsTest {
                     if (stretch > previousBodyStretch) bodyHits++;
                     previousBodyStretch = stretch;
                     if (runtime.slimeEye.state(eye.slot()) >= 2) {
-                        approach(desired, link, eye.x(), eye.y(), frame, true);
+                        approach(desired, link, eye.x(), eye.y());
                         if (stretch == 4) {
                             desired.add("a");
                             desired.add("b");
@@ -84,7 +84,7 @@ final class SlimeEyeControlsTest {
                                 .filter(e -> e.z() < 0x70)
                                 .min(java.util.Comparator.comparingInt(e -> distance(link, e.x(), e.y())))
                                 .orElse(active.getFirst());
-                        if (target.z() < 32) approach(desired, link, target.x(), target.y(), frame, false);
+                        if (target.z() < 32) approach(desired, link, target.x(), target.y());
                         else move(desired, link, 80, 100, -1);
                         if (frame % 24 < 8) desired.add("a");
                     }
@@ -167,7 +167,7 @@ final class SlimeEyeControlsTest {
                 + Math.abs(y - link.position().romEntityY());
     }
 
-    private void approach(Set<String> desired, Link link, int x, int y, int frame, boolean body) {
+    private void approach(Set<String> desired, Link link, int x, int y) {
         // Approach a reachable cardinal sword pose; preserve the chosen side while close.
         int[][] poses = {{x - 16, y, 0}, {x + 16, y, 1}, {x, y + 16, 2}, {x, y - 16, 3}};
         int[] best = null;
@@ -194,12 +194,6 @@ final class SlimeEyeControlsTest {
 
     private int romDirection(int direction) {
         return Direction.fromJavaOrDown(direction).romIndex();
-    }
-
-    private void set(Object object, String name, Object value) throws Exception {
-        var field = object.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(object, value);
     }
 
     private void save(byte[] pixels, Path file) throws Exception {

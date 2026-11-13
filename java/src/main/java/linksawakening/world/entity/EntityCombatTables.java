@@ -16,7 +16,8 @@ final class EntityCombatTables {
     }
 
     int writeEnemyStunnedCountdown(int slot, int value) {
-        return enemyStunnedCountdown[slot] = value;
+        enemyStunnedCountdown[slot] = value;
+        return enemyStunnedCountdown[slot];
     }
 
     int postEnemyStunnedCountdown(int slot, int delta) {
@@ -30,7 +31,8 @@ final class EntityCombatTables {
     }
 
     int writeDyingCountdown(int slot, int value) {
-        return dyingCountdown[slot] = value;
+        dyingCountdown[slot] = value;
+        return dyingCountdown[slot];
     }
 
     int postDyingCountdown(int slot, int delta) {
@@ -44,7 +46,8 @@ final class EntityCombatTables {
     }
 
     boolean writePowerRecoilDeath(int slot, boolean value) {
-        return powerRecoilDeath[slot] = value;
+        powerRecoilDeath[slot] = value;
+        return powerRecoilDeath[slot];
     }
 
     int readEnemyHealthGroup(int slot) {
@@ -52,7 +55,8 @@ final class EntityCombatTables {
     }
 
     int writeEnemyHealthGroup(int slot, int value) {
-        return enemyHealthGroup[slot] = value;
+        enemyHealthGroup[slot] = value;
+        return enemyHealthGroup[slot];
     }
 
     int readEnemyHealth(int slot) {
@@ -60,7 +64,8 @@ final class EntityCombatTables {
     }
 
     int writeEnemyHealth(int slot, int value) {
-        return enemyHealth[slot] = value;
+        enemyHealth[slot] = value;
+        return enemyHealth[slot];
     }
 
     int readEnemyFlashCountdown(int slot) {
@@ -68,7 +73,8 @@ final class EntityCombatTables {
     }
 
     int writeEnemyFlashCountdown(int slot, int value) {
-        return enemyFlashCountdown[slot] = value;
+        enemyFlashCountdown[slot] = value;
+        return enemyFlashCountdown[slot];
     }
 
     int postEnemyFlashCountdown(int slot, int delta) {
@@ -82,7 +88,8 @@ final class EntityCombatTables {
     }
 
     int writeEnemyIgnoreHitsCountdown(int slot, int value) {
-        return enemyIgnoreHitsCountdown[slot] = value;
+        enemyIgnoreHitsCountdown[slot] = value;
+        return enemyIgnoreHitsCountdown[slot];
     }
 
     int postEnemyIgnoreHitsCountdown(int slot, int delta) {
@@ -96,6 +103,7 @@ final class EntityCombatTables {
     }
 
     int writeEnemyHitboxFlags(int slot, int value) {
-        return enemyHitboxFlags[slot] = value;
+        enemyHitboxFlags[slot] = value;
+        return enemyHitboxFlags[slot];
     }
 }

@@ -22,7 +22,7 @@ final class EntityFrameInputsFactory {
                 buildPlayerInputs(c),
                 buildUiInputs(c),
                 buildButtonInputs(c),
-                buildSwordBox(c, b));
+                buildSwordBox(b));
     }
 
     private LinkInputs buildLinkInputs(GameplaySimulation c) {
@@ -109,7 +109,7 @@ final class EntityFrameInputsFactory {
                 lift.isBombButtonHeld());
     }
 
-    private SwordBox buildSwordBox(GameplaySimulation c, Sword.CollisionBox b) {
+    private SwordBox buildSwordBox(Sword.CollisionBox b) {
         return cache.swordBox(b.active(), b.x(), b.width(), b.y(), b.height());
     }
 }

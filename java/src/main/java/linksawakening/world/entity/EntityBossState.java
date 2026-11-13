@@ -32,7 +32,8 @@ final class EntityBossState {
     }
 
     int writeBossAgonySfxCountdown(int value) {
-        return bossAgonySfxCountdown = value;
+        bossAgonySfxCountdown = value;
+        return bossAgonySfxCountdown;
     }
 
     int postBossAgonySfxCountdown(int delta) {
@@ -46,7 +47,8 @@ final class EntityBossState {
     }
 
     int writeBossAgonySourceSlot(int value) {
-        return bossAgonySourceSlot = value;
+        bossAgonySourceSlot = value;
+        return bossAgonySourceSlot;
     }
 
     int readDroppedItemBySlot(int slot) {
@@ -54,7 +56,8 @@ final class EntityBossState {
     }
 
     int writeDroppedItemBySlot(int slot, int value) {
-        return droppedItemBySlot[slot] = value;
+        droppedItemBySlot[slot] = value;
+        return droppedItemBySlot[slot];
     }
 
     int[] storageDroppedItemBySlot() {
@@ -66,7 +69,8 @@ final class EntityBossState {
     }
 
     int writeDropPrivateCountdown1(int slot, int value) {
-        return dropPrivateCountdown1[slot] = value;
+        dropPrivateCountdown1[slot] = value;
+        return dropPrivateCountdown1[slot];
     }
 
     int postDropPrivateCountdown1(int slot, int delta) {
@@ -80,7 +84,8 @@ final class EntityBossState {
     }
 
     int writeDropPrivateCountdown3(int slot, int value) {
-        return dropPrivateCountdown3[slot] = value;
+        dropPrivateCountdown3[slot] = value;
+        return dropPrivateCountdown3[slot];
     }
 
     int postDropPrivateCountdown3(int slot, int delta) {
@@ -94,7 +99,8 @@ final class EntityBossState {
     }
 
     int writeDroppablePrivateState3(int slot, int value) {
-        return droppablePrivateState3[slot] = value;
+        droppablePrivateState3[slot] = value;
+        return droppablePrivateState3[slot];
     }
 
     int readDroppablePrivateState4(int slot) {
@@ -102,7 +108,8 @@ final class EntityBossState {
     }
 
     int writeDroppablePrivateState4(int slot, int value) {
-        return droppablePrivateState4[slot] = value;
+        droppablePrivateState4[slot] = value;
+        return droppablePrivateState4[slot];
     }
 
     boolean readEnemyDropActive(int slot) {
@@ -110,7 +117,8 @@ final class EntityBossState {
     }
 
     boolean writeEnemyDropActive(int slot, boolean value) {
-        return enemyDropActive[slot] = value;
+        enemyDropActive[slot] = value;
+        return enemyDropActive[slot];
     }
 
     int readBossDeathProducerState(int slot) {
@@ -118,7 +126,8 @@ final class EntityBossState {
     }
 
     int writeBossDeathProducerState(int slot, int value) {
-        return bossDeathProducerState[slot] = value;
+        bossDeathProducerState[slot] = value;
+        return bossDeathProducerState[slot];
     }
 
     EnemyDropResolver readEnemyDropResolver() {
@@ -126,7 +135,8 @@ final class EntityBossState {
     }
 
     EnemyDropResolver writeEnemyDropResolver(EnemyDropResolver value) {
-        return enemyDropResolver = java.util.Objects.requireNonNullElse(value, EnemyDropResolver.NONE);
+        enemyDropResolver = java.util.Objects.requireNonNullElse(value, EnemyDropResolver.NONE);
+        return enemyDropResolver;
     }
 
     EnemyDropResolver.CounterState readEnemyDropCounters() {
@@ -134,7 +144,8 @@ final class EntityBossState {
     }
 
     EnemyDropResolver.CounterState writeEnemyDropCounters(EnemyDropResolver.CounterState value) {
-        return enemyDropCounters = value;
+        enemyDropCounters = value;
+        return enemyDropCounters;
     }
 
     int readEnemyDropMaxHearts() {
@@ -142,7 +153,8 @@ final class EntityBossState {
     }
 
     int writeEnemyDropMaxHearts(int value) {
-        return enemyDropMaxHearts = value;
+        enemyDropMaxHearts = value;
+        return enemyDropMaxHearts;
     }
 
     int readEnemyDropHealth() {
@@ -150,7 +162,8 @@ final class EntityBossState {
     }
 
     int writeEnemyDropHealth(int value) {
-        return enemyDropHealth = value;
+        enemyDropHealth = value;
+        return enemyDropHealth;
     }
 
     Boolean readEnemyDropLowHealth() {
@@ -158,7 +171,8 @@ final class EntityBossState {
     }
 
     Boolean writeEnemyDropLowHealth(Boolean value) {
-        return enemyDropLowHealth = value;
+        enemyDropLowHealth = value;
+        return enemyDropLowHealth;
     }
 
     boolean readEnemyDropActivePowerUp() {
@@ -166,7 +180,8 @@ final class EntityBossState {
     }
 
     boolean writeEnemyDropActivePowerUp(boolean value) {
-        return enemyDropActivePowerUp = value;
+        enemyDropActivePowerUp = value;
+        return enemyDropActivePowerUp;
     }
 
     boolean readInBossBattle() {
@@ -174,7 +189,8 @@ final class EntityBossState {
     }
 
     boolean writeInBossBattle(boolean value) {
-        return inBossBattle = value;
+        inBossBattle = value;
+        return inBossBattle;
     }
 
     int readKillCount() {
@@ -182,7 +198,8 @@ final class EntityBossState {
     }
 
     int writeKillCount(int value) {
-        return killCount = value;
+        killCount = value;
+        return killCount;
     }
 
     int readKillOrder(int slot) {
@@ -190,7 +207,8 @@ final class EntityBossState {
     }
 
     int writeKillOrder(int slot, int value) {
-        return killOrder[slot] = value;
+        killOrder[slot] = value;
+        return killOrder[slot];
     }
 
     int[] storageKillOrder() {

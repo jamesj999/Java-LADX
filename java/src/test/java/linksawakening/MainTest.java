@@ -11,7 +11,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.app.GameSession;
 import linksawakening.app.InputRouter;
 import linksawakening.app.ScreenRouter;
 import linksawakening.audio.music.MusicTrackIds;
@@ -30,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class MainTest {
-    private static final GameSession game = new GameSession();
 
     @Test
     void colorDungeonUsesItsOwnRoomPointerTable() {

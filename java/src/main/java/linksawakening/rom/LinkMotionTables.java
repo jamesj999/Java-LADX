@@ -37,8 +37,7 @@ public final class LinkMotionTables {
     // LinkRevolvingDoorAnimation: original loader length.
     private static final int REVOLVING_DOOR_ANIMATION_LENGTH = 7;
     private final int[] revolvingDoorAnimation;
-    // Data_002_4E1C: original loader length.
-    private static final int REVOLVING_DOOR_PALETTES_LENGTH = 8;
+
     private final int[][] revolvingDoorPalettes;
 
     private LinkMotionTables() {

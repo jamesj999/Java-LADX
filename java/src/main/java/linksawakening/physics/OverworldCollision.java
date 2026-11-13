@@ -135,7 +135,7 @@ public final class OverworldCollision {
         }
         int cellX = cellCoordinate(pixelX);
         int cellY = cellCoordinate(pixelY);
-        return isCellBlocking(cellX, cellY, pixelX, pixelY, hasFlippers);
+        return isCellBlocking(cellX, cellY, pixelX, pixelY);
     }
 
     public boolean pointNormalPit(int pixelX, int pixelY) {
@@ -301,7 +301,7 @@ public final class OverworldCollision {
         return sample;
     }
 
-    private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY, boolean hasFlippers) {
+    private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY) {
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             // Off-room cells are the caller's problem - they trigger room scroll,
             // not a collision block. Treat as passable here.

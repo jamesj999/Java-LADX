@@ -13,7 +13,7 @@ final class LinkEntityEffects {
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
     private final LinkComponentRef<LinkAnimator> linkAnimator;
     private final LinkComponentRef<LinkDamage> linkDamage;
-    private final LinkComponentRef<LinkGroundMotion> linkGroundMotion;
+
     private final LinkComponentRef<LinkItemState> linkItemState;
     private final LinkComponentRef<LinkMotion> linkMotion;
     private final LinkComponentRef<LinkServices> linkServices;
@@ -25,7 +25,7 @@ final class LinkEntityEffects {
         linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
         linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
         linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
-        linkGroundMotion = Objects.requireNonNull(dependencies.linkGroundMotion, "linkGroundMotion");
+        Objects.requireNonNull(dependencies.linkGroundMotion, "linkGroundMotion");
         linkItemState = Objects.requireNonNull(dependencies.linkItemState, "linkItemState");
         linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
         linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");

@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_SAND_CRAB;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -14,7 +13,7 @@ import linksawakening.world.entity.motion.SandCrabMotion;
 /** ROM handler stages for SandCrab. */
 final class SandCrabHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_SAND_CRAB, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_SAND_CRAB, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_SAND_CRAB, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 13, SandCrabHandler::phase4SandCrab);
     }
@@ -47,7 +46,7 @@ final class SandCrabHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(SandCrabMotion.class, SandCrabMotion::new).initialize(entity.slot());
     }
 }

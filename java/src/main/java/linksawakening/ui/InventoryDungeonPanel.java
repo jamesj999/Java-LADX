@@ -13,12 +13,11 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
 
     private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
-    private final Rom romData;
     private final linksawakening.rom.Rom data;
     private final GPU tiles = new GPU();
 
     InventoryDungeonPanel(Rom romData) {
-        this.romData = romData;
+
         this.data = romData;
         tiles.loadBaseTiles(romData);
         int items = linksawakening.rom.RomSymbols.InventoryIndoorItemsTiles.withGbcBank()

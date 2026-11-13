@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 final class OverworldBushInteractionTest {
 
     private static final int ROOM_OBJECTS_BASE = 0x11;
-    private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
+
     private static final int ROOM_TILE_WIDTH = 20;
     private static final int ROOM_TILE_HEIGHT = 16;
 

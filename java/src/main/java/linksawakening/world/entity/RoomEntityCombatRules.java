@@ -75,33 +75,29 @@ public final class RoomEntityCombatRules {
     static final int ENTITY_OWL_EVENT = 0x41;
     static final int ENTITY_OWL_STATUE = 0x42;
     static final int ENTITY_TRENDY_GAME_OWNER = 0x4F;
-    private static final int ENTITY_FISHERMAN_FISHING_GAME = 0x54;
-    private static final int ENTITY_GENIE = 0x5C;
-    private static final int ENTITY_RAFT_OWNER = 0x6A;
+
     static final int ENTITY_GRANDPA_ULRIRA = 0x77;
     static final int ENTITY_MADAM_MEOWMEOW = 0x79;
     static final int ENTITY_CRAZY_TRACY = 0x7B;
-    private static final int ENTITY_TURTLE_ROCK_HEAD = 0x7F;
+
     static final int ENTITY_HOLE_FILLER = 0xB1;
     static final int ENTITY_PAPAHL = 0xB6;
-    private static final int ENTITY_MOVING_BLOCK_MOVER = 0x69;
+
     private static final int ENTITY_SMASHABLE_PILLAR = 0xA7;
     private static final int ENTITY_LIFTABLE_STATUE = 0x9D;
     static final int ENTITY_BUNNY_D3 = 0xD3;
     static final int ENTITY_BANANAS_SCHULE_SALE = 0xCD;
-    private static final int ENTITY_THWIMP = 0xD7;
+
     private static final int ENTITY_THWOMP = 0xD8;
     private static final int ENTITY_THWOMP_RAMMABLE = 0xD9;
-    private static final int ENTITY_FLYING_ROOSTER_EVENTS = 0xDC;
-    private static final int ENTITY_COLOR_GUARDIAN_BLUE = 0xF6;
-    private static final int ENTITY_COLOR_GUARDIAN_RED = 0xF7;
+
     static final int ENTITY_PHOTOGRAPHER = 0xFA;
 
     static final int ENTITY_MARIN = 0x3E;
     static final int ENTITY_TARIN = 0x3F;
     static final int ENTITY_WITCH = 0x40;
     static final int ENTITY_SHOP_OWNER = 0x4D;
-    private static final int ENTITY_DOG = 0x6F;
+
     static final int ENTITY_KID_70 = 0x70;
     static final int ENTITY_KID_71 = 0x71;
     static final int ENTITY_KID_72 = 0x72;
@@ -109,10 +105,7 @@ public final class RoomEntityCombatRules {
     static final int ENTITY_PAPAHLS_WIFE = 0x74;
     static final int ENTITY_GRANDMA_ULRIRA = 0x75;
     static final int ENTITY_MR_WRITE = 0x76;
-    private static final int ENTITY_MR_WRITES_BIRD = 0x85;
-    private static final int ENTITY_RICHARD = 0x95;
-    private static final int ENTITY_RICHARD_FROG = 0x96;
-    private static final int ENTITY_KIKI = 0xAD;
+
     static final int ENTITY_TARIN_BEEKEEPER = 0xB4;
     private static final int ENTITY_BEAR = 0xB5;
     static final int ENTITY_MERMAID = 0xB7;
@@ -125,7 +118,7 @@ public final class RoomEntityCombatRules {
     static final int ENTITY_ANIMAL_D0 = 0xD0;
     static final int ENTITY_ANIMAL_D1 = 0xD1;
     static final int ENTITY_ANIMAL_D2 = 0xD2;
-    private static final int ENTITY_GHOST = 0xD4;
+
     static final int ENTITY_ROOSTER = 0xD5;
 
     // HitboxPositions in home/entities.asm:3AAA. The NPC entries are not the

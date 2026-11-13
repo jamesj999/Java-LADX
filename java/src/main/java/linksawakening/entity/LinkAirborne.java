@@ -30,7 +30,8 @@ final class LinkAirborne {
     }
 
     boolean spinningPitWarpArrival(boolean value) {
-        return spinningPitWarpArrival = value;
+        spinningPitWarpArrival = value;
+        return spinningPitWarpArrival;
     }
     /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
     private boolean overworldLedgeFallActive;
@@ -40,7 +41,8 @@ final class LinkAirborne {
     }
 
     boolean overworldLedgeFallActive(boolean value) {
-        return overworldLedgeFallActive = value;
+        overworldLedgeFallActive = value;
+        return overworldLedgeFallActive;
     }
     /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
     private boolean directionalLedgeJumpMotionLocked;
@@ -50,7 +52,8 @@ final class LinkAirborne {
     }
 
     boolean directionalLedgeJumpMotionLocked(boolean value) {
-        return directionalLedgeJumpMotionLocked = value;
+        directionalLedgeJumpMotionLocked = value;
+        return directionalLedgeJumpMotionLocked;
     }
 
     private int directionalLedgeJumpSpeedX;
@@ -60,7 +63,8 @@ final class LinkAirborne {
     }
 
     int directionalLedgeJumpSpeedX(int value) {
-        return directionalLedgeJumpSpeedX = value;
+        directionalLedgeJumpSpeedX = value;
+        return directionalLedgeJumpSpeedX;
     }
 
     private int directionalLedgeJumpSpeedY;
@@ -70,7 +74,8 @@ final class LinkAirborne {
     }
 
     int directionalLedgeJumpSpeedY(int value) {
-        return directionalLedgeJumpSpeedY = value;
+        directionalLedgeJumpSpeedY = value;
+        return directionalLedgeJumpSpeedY;
     }
     /** Mirrors wC191, the collision-probe countdown for directional ledges. */
     private int directionalLedgeCollisionCounter;
@@ -80,7 +85,8 @@ final class LinkAirborne {
     }
 
     int directionalLedgeCollisionCounter(int value) {
-        return directionalLedgeCollisionCounter = value;
+        directionalLedgeCollisionCounter = value;
+        return directionalLedgeCollisionCounter;
     }
 
     private final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;

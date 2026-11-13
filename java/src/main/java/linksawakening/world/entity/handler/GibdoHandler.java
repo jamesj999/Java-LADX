@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_GIBDO;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameContext;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.RoomEntity;
@@ -11,11 +10,11 @@ import linksawakening.world.entity.motion.GibdoMotion;
 /** ROM initialization and motion dispatch. */
 final class GibdoHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_GIBDO, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_GIBDO, (entity, random) -> initialize(registry, entity));
         registry.registerAdvance(ENTITY_GIBDO, (entity, context) -> advance(registry, entity, context));
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(GibdoMotion.class, GibdoMotion::new).initialize(entity.slot());
     }
 

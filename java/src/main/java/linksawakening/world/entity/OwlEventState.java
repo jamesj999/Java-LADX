@@ -24,7 +24,8 @@ final class OwlEventState {
     }
 
     int writeOwlEventState(int slot, int value) {
-        return owlEventState[slot] = value;
+        owlEventState[slot] = value;
+        return owlEventState[slot];
     }
 
     int readOwlPrivateCountdown1(int slot) {
@@ -32,7 +33,8 @@ final class OwlEventState {
     }
 
     int writeOwlPrivateCountdown1(int slot, int value) {
-        return owlPrivateCountdown1[slot] = value;
+        owlPrivateCountdown1[slot] = value;
+        return owlPrivateCountdown1[slot];
     }
 
     int postOwlPrivateCountdown1(int slot, int delta) {
@@ -46,7 +48,8 @@ final class OwlEventState {
     }
 
     int writeOwlSpeedX(int slot, int value) {
-        return owlSpeedX[slot] = value;
+        owlSpeedX[slot] = value;
+        return owlSpeedX[slot];
     }
 
     int readOwlSpeedY(int slot) {
@@ -54,7 +57,8 @@ final class OwlEventState {
     }
 
     int writeOwlSpeedY(int slot, int value) {
-        return owlSpeedY[slot] = value;
+        owlSpeedY[slot] = value;
+        return owlSpeedY[slot];
     }
 
     int readOwlSpeedZ(int slot) {
@@ -62,7 +66,8 @@ final class OwlEventState {
     }
 
     int writeOwlSpeedZ(int slot, int value) {
-        return owlSpeedZ[slot] = value;
+        owlSpeedZ[slot] = value;
+        return owlSpeedZ[slot];
     }
 
     int[] storageOwlXAccumulator() {
@@ -82,7 +87,8 @@ final class OwlEventState {
     }
 
     int writeOwlBoomerangSfxCounter(int slot, int value) {
-        return owlBoomerangSfxCounter[slot] = value;
+        owlBoomerangSfxCounter[slot] = value;
+        return owlBoomerangSfxCounter[slot];
     }
 
     int postOwlBoomerangSfxCounter(int slot, int delta) {
@@ -96,7 +102,8 @@ final class OwlEventState {
     }
 
     int writeOwlPreviousMusicTrack(int slot, int value) {
-        return owlPreviousMusicTrack[slot] = value;
+        owlPreviousMusicTrack[slot] = value;
+        return owlPreviousMusicTrack[slot];
     }
 
     boolean readOwlCompletionEmitted(int slot) {
@@ -104,7 +111,8 @@ final class OwlEventState {
     }
 
     boolean writeOwlCompletionEmitted(int slot, boolean value) {
-        return owlCompletionEmitted[slot] = value;
+        owlCompletionEmitted[slot] = value;
+        return owlCompletionEmitted[slot];
     }
 
     IntUnaryOperator readOwlDialogResolver() {
@@ -112,7 +120,8 @@ final class OwlEventState {
     }
 
     IntUnaryOperator writeOwlDialogResolver(IntUnaryOperator value) {
-        return owlDialogResolver = value;
+        owlDialogResolver = value;
+        return owlDialogResolver;
     }
 
     int readOwlStatueDialogId() {
@@ -120,7 +129,8 @@ final class OwlEventState {
     }
 
     int writeOwlStatueDialogId(int value) {
-        return owlStatueDialogId = value;
+        owlStatueDialogId = value;
+        return owlStatueDialogId;
     }
 
     IntUnaryOperator readOwlDefaultMusicResolver() {
@@ -128,6 +138,7 @@ final class OwlEventState {
     }
 
     IntUnaryOperator writeOwlDefaultMusicResolver(IntUnaryOperator value) {
-        return owlDefaultMusicResolver = value;
+        owlDefaultMusicResolver = value;
+        return owlDefaultMusicResolver;
     }
 }

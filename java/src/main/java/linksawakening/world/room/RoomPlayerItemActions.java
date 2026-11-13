@@ -6,11 +6,11 @@ import linksawakening.world.object.OverworldBushInteraction;
 
 /** ApplyLinkMotionState player-item dispatch; lift, chest and shovel routines retain their own action state. */
 final class RoomPlayerItemActions {
-    private final Dependencies dependencies;
+
     private final RoomShovelActions roomShovelActions;
 
     RoomPlayerItemActions(Dependencies dependencies) {
-        this.dependencies = dependencies;
+
         roomShovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
                 dependencies.entityRuntimeState(),
                 dependencies.followers(),

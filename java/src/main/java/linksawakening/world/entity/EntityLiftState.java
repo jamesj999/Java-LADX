@@ -21,7 +21,8 @@ final class EntityLiftState {
     }
 
     int writeLiftedPhase(int slot, int value) {
-        return liftedPhase[slot] = value;
+        liftedPhase[slot] = value;
+        return liftedPhase[slot];
     }
 
     int readLiftedSourceDirection(int slot) {
@@ -29,7 +30,8 @@ final class EntityLiftState {
     }
 
     int writeLiftedSourceDirection(int slot, int value) {
-        return liftedSourceDirection[slot] = value;
+        liftedSourceDirection[slot] = value;
+        return liftedSourceDirection[slot];
     }
 
     boolean readLiftedStateInitialized(int slot) {
@@ -37,7 +39,8 @@ final class EntityLiftState {
     }
 
     boolean writeLiftedStateInitialized(int slot, boolean value) {
-        return liftedStateInitialized[slot] = value;
+        liftedStateInitialized[slot] = value;
+        return liftedStateInitialized[slot];
     }
 
     int readLiftableRockSmashCountdown(int slot) {
@@ -45,7 +48,8 @@ final class EntityLiftState {
     }
 
     int writeLiftableRockSmashCountdown(int slot, int value) {
-        return liftableRockSmashCountdown[slot] = value;
+        liftableRockSmashCountdown[slot] = value;
+        return liftableRockSmashCountdown[slot];
     }
 
     int postLiftableRockSmashCountdown(int slot, int delta) {
@@ -59,7 +63,8 @@ final class EntityLiftState {
     }
 
     int writeLiftableRockSmashSourceVariant(int slot, int value) {
-        return liftableRockSmashSourceVariant[slot] = value;
+        liftableRockSmashSourceVariant[slot] = value;
+        return liftableRockSmashSourceVariant[slot];
     }
 
     boolean readLiftableRockSmashActive(int slot) {
@@ -67,7 +72,8 @@ final class EntityLiftState {
     }
 
     boolean writeLiftableRockSmashActive(int slot, boolean value) {
-        return liftableRockSmashActive[slot] = value;
+        liftableRockSmashActive[slot] = value;
+        return liftableRockSmashActive[slot];
     }
 
     int readThrownDirection(int slot) {
@@ -75,7 +81,8 @@ final class EntityLiftState {
     }
 
     int writeThrownDirection(int slot, int value) {
-        return thrownDirection[slot] = value;
+        thrownDirection[slot] = value;
+        return thrownDirection[slot];
     }
 
     int[] storageThrownDirection() {
@@ -87,7 +94,8 @@ final class EntityLiftState {
     }
 
     int writeLedgeTransitionTimer(int slot, int value) {
-        return ledgeTransitionTimer[slot] = value;
+        ledgeTransitionTimer[slot] = value;
+        return ledgeTransitionTimer[slot];
     }
 
     boolean readThrownMotionInitialized(int slot) {
@@ -95,7 +103,8 @@ final class EntityLiftState {
     }
 
     boolean writeThrownMotionInitialized(int slot, boolean value) {
-        return thrownMotionInitialized[slot] = value;
+        thrownMotionInitialized[slot] = value;
+        return thrownMotionInitialized[slot];
     }
 
     int readLiftedEntitySlot() {
@@ -103,7 +112,8 @@ final class EntityLiftState {
     }
 
     int writeLiftedEntitySlot(int value) {
-        return liftedEntitySlot = value;
+        liftedEntitySlot = value;
+        return liftedEntitySlot;
     }
 
     int readLiftedCarryState() {
@@ -111,7 +121,8 @@ final class EntityLiftState {
     }
 
     int writeLiftedCarryState(int value) {
-        return liftedCarryState = value;
+        liftedCarryState = value;
+        return liftedCarryState;
     }
 
     int readLiftedEffectiveDirection() {
@@ -119,7 +130,8 @@ final class EntityLiftState {
     }
 
     int writeLiftedEffectiveDirection(int value) {
-        return liftedEffectiveDirection = value;
+        liftedEffectiveDirection = value;
+        return liftedEffectiveDirection;
     }
 
     int readLiftedLinkC13B() {
@@ -127,6 +139,7 @@ final class EntityLiftState {
     }
 
     int writeLiftedLinkC13B(int value) {
-        return liftedLinkC13B = value;
+        liftedLinkC13B = value;
+        return liftedLinkC13B;
     }
 }

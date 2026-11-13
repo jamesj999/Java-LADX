@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_STALFOS_EVASIVE;
 
-import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityFrameExecution;
@@ -18,7 +17,7 @@ import linksawakening.world.entity.motion.StalfosEvasiveMotion.StalfosEvasiveFra
 /** ROM handler stages for StalfosEvasive. */
 final class StalfosEvasiveHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_STALFOS_EVASIVE, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_STALFOS_EVASIVE, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_STALFOS_EVASIVE,
                 EntityTickStage.PHASE_3_AFTER_LASER,
@@ -81,7 +80,7 @@ final class StalfosEvasiveHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new).initialize(entity.slot());
     }
 }

@@ -26,7 +26,8 @@ final class LinkDash {
     }
 
     int pegasusBootsCollisionCountdown(int value) {
-        return pegasusBootsCollisionCountdown = value;
+        pegasusBootsCollisionCountdown = value;
+        return pegasusBootsCollisionCountdown;
     }
 
     private int pegasusBootsCollisionPosX;

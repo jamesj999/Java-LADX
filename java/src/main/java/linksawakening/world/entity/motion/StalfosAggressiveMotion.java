@@ -142,9 +142,7 @@ public final class StalfosAggressiveMotion {
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
-        // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
-        private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
+
         private int slot;
         private int frame;
         private int x;
@@ -289,16 +287,14 @@ public final class StalfosAggressiveMotion {
             this.frameCounter = frameCounter;
             this.linkEntityX = linkEntityX;
             this.linkEntityY = linkEntityY;
-            this.randomByteSupplier = randomByteSupplier;
-            this.backgroundCollision = backgroundCollision;
+
             try {
                 return run();
             } finally {
                 inUse = false;
 
                 this.entity = null;
-                this.randomByteSupplier = null;
-                this.backgroundCollision = null;
+
                 this.completedResult = null;
             }
         }
