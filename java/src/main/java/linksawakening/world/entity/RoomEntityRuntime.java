@@ -44,12 +44,10 @@ public final class RoomEntityRuntime
     final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(EntitySlotLifecycleServices.bind(this));
     final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(EntityEnemySpawnsServices.bind(this));
     final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(EntityPlayerSpawnsServices.bind(this));
-    private final EntityEffectConsumption effects =
-            new EntityEffectConsumption(EntityEffectConsumptionServices.bind(this));
+    private final EntityEffectConsumption effects;
     private final EntityRuntimeConfiguration entityRuntimeConfiguration =
             new EntityRuntimeConfiguration(EntityRuntimeConfigurationServices.bind(this));
-    final EntityDebugConfiguration entityDebugConfiguration =
-            new EntityDebugConfiguration(EntityDebugConfigurationServices.bind(this));
+    final EntityDebugConfiguration entityDebugConfiguration;
     final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
     final EntityRewardController rewards = new EntityRewardController(EntityRewardControllerServices.bind(this));
     final EntityStoryController story = new EntityStoryController(EntityStoryControllerServices.bind(this));
@@ -63,11 +61,9 @@ public final class RoomEntityRuntime
     private final EntityCombatResolver combat = new EntityCombatResolver(EntityCombatResolverServices.bind(this));
     final EntityBossRewards bossRewards = new EntityBossRewards(EntityBossRewardsServices.bind(this));
     final EntityRoomInspection roomInspection = new EntityRoomInspection(EntityRoomInspectionServices.bind(this));
-    final EntityBossInspection bossInspection = new EntityBossInspection(EntityBossInspectionServices.bind(this));
-    final EntityFlyingEnemyInspection flyingEnemyInspection =
-            new EntityFlyingEnemyInspection(EntityFlyingEnemyInspectionServices.bind(this));
-    final EntityPickupInspection pickupInspection =
-            new EntityPickupInspection(EntityPickupInspectionServices.bind(this));
+    final EntityBossInspection bossInspection;
+    final EntityFlyingEnemyInspection flyingEnemyInspection;
+    final EntityPickupInspection pickupInspection;
     final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(EntityEnemyInspectionServices.bind(this));
 
     final RoomEntity[] slots;
@@ -121,6 +117,14 @@ public final class RoomEntityRuntime
     }
 
     RoomEntityRuntime(RoomEntityRuntimeBuilder builder) {
+        this.entityDebugConfiguration = new EntityDebugConfiguration(entityState.combatTables, entityState.motions);
+        this.effects = new EntityEffectConsumption(
+                entityState.events, entityState.presentationState, entityState.roomVariables);
+        this.flyingEnemyInspection = new EntityFlyingEnemyInspection(entityState.motions, entityState.physicsTables);
+        this.pickupInspection =
+                new EntityPickupInspection(bombInteractions, entityState.motions, entityState.physicsTables);
+        this.bossInspection =
+                new EntityBossInspection(bossRewards, enemyInspection, entityState.motions, entityState.physicsTables);
         RoomEntitySnapshot initial = builder.initial();
         boolean indoorRoom = builder.indoorRoom();
         IntSupplier defaultRandomByteSupplier = builder.randomByteSupplier();
