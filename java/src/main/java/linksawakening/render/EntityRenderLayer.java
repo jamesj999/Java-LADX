@@ -27,7 +27,8 @@ final class EntityRenderLayer implements HardwareRenderLayer {
     private ScrollController scrollController;
     private int frameCounter;
     private final EntitySpritePainter painter;
-    private EntitySelectionSprites currentSprites, previousSprites;
+    private final EntitySelectionSprites currentSprites = new EntitySelectionSprites(),
+            previousSprites = new EntitySelectionSprites();
     private EntitySelectionSprites activeSprites;
     private final Offset currentOffset = new Offset(0, 0), previousOffset = new Offset(0, 0);
 
@@ -85,13 +86,11 @@ final class EntityRenderLayer implements HardwareRenderLayer {
         if (context == null || context.buffer() == null || context.gpu() == null) {
             throw new IllegalArgumentException("Entity render context cannot be null");
         }
-        if (currentSprites == null) currentSprites = new EntitySelectionSprites();
         if (scrollController.isActive()) {
             var previousRoom = scrollController.previousRoom();
             if (previousRoom != null
                     && previousRoom.entities() != null
                     && previousRoom.entities().spriteSelection() != null) {
-                if (previousSprites == null) previousSprites = new EntitySelectionSprites();
                 renderSnapshot(
                         context,
                         previousRoom.entities(),

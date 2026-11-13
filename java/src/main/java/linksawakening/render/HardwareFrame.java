@@ -81,7 +81,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     }
 
     HardwareFrameObserver observer() {
-        return observer == HardwareFrameObserver.NONE ? null : observer;
+        return observer;
     }
 
     void submittingLayer(String name) {

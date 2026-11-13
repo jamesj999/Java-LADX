@@ -8,15 +8,16 @@ public final class FrameScene {
     private static final FrameScene EMPTY = new FrameScene(List.of());
 
     private final List<RenderLayer> layers;
-    private HardwareFrame reusableFrame;
+    private final HardwareFrame reusableFrame;
 
-    private FrameDrawObserver observer;
+    private FrameDrawObserver observer = FrameDrawObserver.NONE;
 
     private FrameScene(List<RenderLayer> layers) {
-        this(layers, false);
+        this(layers, false, new HardwareFrame(true));
     }
 
-    private FrameScene(List<RenderLayer> layers, boolean borrowed) {
+    private FrameScene(List<RenderLayer> layers, boolean borrowed, HardwareFrame frame) {
+        reusableFrame = frame;
         this.layers = borrowed ? layers : List.copyOf(layers);
     }
 
@@ -37,7 +38,7 @@ public final class FrameScene {
 
     void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
         hardwareFrame(gpu).compose(buffer);
-        if (observer != null) observer.drawn(this, buffer, gpu);
+        observer.drawn(this, buffer, gpu);
     }
 
     List<RenderLayer> layersForComparison() {
@@ -58,13 +59,13 @@ public final class FrameScene {
         HardwareFrame frame;
         if (suppliedFrame != null) frame = suppliedFrame;
         else {
-            if (reusableFrame == null) reusableFrame = new HardwareFrame(true);
             frame = reusableFrame;
             frame.reset();
         }
         for (int layerIndex = 0; layerIndex < layers.size(); layerIndex++) {
             RenderLayer layer = layers.get(layerIndex);
-            if (frame.observer() != null) frame.submittingLayer(layer.getClass().getSimpleName());
+            if (frame.observer() != HardwareFrameObserver.NONE)
+                frame.submittingLayer(layer.getClass().getSimpleName());
             else frame.objectVisibilitySource(layer);
             ((HardwareRenderLayer) layer).submit(frame, gpu);
         }
@@ -72,19 +73,15 @@ public final class FrameScene {
     }
 
     static FrameScene borrowed(List<RenderLayer> layers, HardwareFrame frame) {
-        FrameScene scene = new FrameScene(layers, true);
-        scene.reusableFrame = frame;
-        return scene;
+        return new FrameScene(layers, true, frame);
     }
 
     static FrameScene of(List<RenderLayer> layers, HardwareFrame frame) {
-        FrameScene scene = new FrameScene(layers);
-        scene.reusableFrame = frame;
-        return scene;
+        return new FrameScene(layers, false, frame);
     }
 
     FrameScene observedBy(FrameDrawObserver observer) {
-        this.observer = observer;
+        this.observer = observer == null ? FrameDrawObserver.NONE : observer;
         return this;
     }
 

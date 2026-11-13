@@ -48,8 +48,9 @@ public final class TransitionController {
 
     private State state = State.IDLE;
     private int frameInPhase;
-    /** Optional midpoint action; a fade without a room load deliberately supplies no callback. */
-    private Runnable pendingLoad;
+    private static final Runnable NO_LOAD = () -> {};
+    /** A fade without a room load executes the explicit no-op action. */
+    private Runnable pendingLoad = NO_LOAD;
     /** Optional decoded ROM data; ROM-free fades have no Manbo scanline wave table. */
     private ManboTransitionWave manboTransitionWave;
 
@@ -75,7 +76,7 @@ public final class TransitionController {
         }
         state = State.FADING_OUT;
         frameInPhase = 0;
-        pendingLoad = loadNewRoom;
+        pendingLoad = loadNewRoom == null ? NO_LOAD : loadNewRoom;
     }
 
     /** Starts the source's non-interactive 0xC0-frame Manbo entry effect. */
@@ -85,7 +86,7 @@ public final class TransitionController {
         }
         state = State.MANBO_IN;
         frameInPhase = 0;
-        pendingLoad = onComplete;
+        pendingLoad = onComplete == null ? NO_LOAD : onComplete;
         return true;
     }
 
@@ -95,20 +96,16 @@ public final class TransitionController {
         }
         frameInPhase++;
         if (state == State.MANBO_IN && frameInPhase >= MANBO_TRANSITION_FRAMES) {
-            if (pendingLoad != null) {
-                pendingLoad.run();
-                pendingLoad = null;
-            }
+            pendingLoad.run();
+            pendingLoad = NO_LOAD;
             state = State.MANBO_OUT;
             frameInPhase = MANBO_OUT_INITIAL_FRAME;
         } else if (state == State.MANBO_OUT && frameInPhase >= MANBO_TRANSITION_FRAMES) {
             state = State.IDLE;
             frameInPhase = 0;
         } else if (state == State.FADING_OUT && frameInPhase >= FADE_FRAMES) {
-            if (pendingLoad != null) {
-                pendingLoad.run();
-                pendingLoad = null;
-            }
+            pendingLoad.run();
+            pendingLoad = NO_LOAD;
             state = State.FADING_IN;
             frameInPhase = 0;
         } else if (state == State.FADING_IN && frameInPhase >= FADE_FRAMES) {
