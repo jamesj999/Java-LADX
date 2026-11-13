@@ -45,8 +45,7 @@ public final class RoomEntityRuntime
     final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(EntityEnemySpawnsServices.bind(this));
     final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(EntityPlayerSpawnsServices.bind(this));
     private final EntityEffectConsumption effects;
-    private final EntityRuntimeConfiguration entityRuntimeConfiguration =
-            new EntityRuntimeConfiguration(EntityRuntimeConfigurationServices.bind(this));
+    private final EntityRuntimeConfiguration entityRuntimeConfiguration;
     final EntityDebugConfiguration entityDebugConfiguration;
     final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
     final EntityRewardController rewards = new EntityRewardController(EntityRewardControllerServices.bind(this));
@@ -149,6 +148,21 @@ public final class RoomEntityRuntime
         slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
+        this.entityRuntimeConfiguration = new EntityRuntimeConfiguration(
+                spriteHandlers,
+                bossRewards,
+                liftThrow,
+                entityState.linkState,
+                entityState.motions,
+                entityState.physicsTables,
+                pickups,
+                entityState.presentationState,
+                projectiles,
+                entityState.roomVariables,
+                story,
+                slots,
+                slimeEye,
+                slotProperties.spriteViews());
         resetRoomVariables();
         roomInitialization.initializeRoomSlots(initial);
     }
