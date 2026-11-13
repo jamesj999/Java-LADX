@@ -90,11 +90,7 @@ public final class EntityRuntimeConfiguration {
     public void setGroundInteraction(
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityGroundInteraction
                     groundInteraction) {
-        this.physicsTables.writeGroundInteraction(
-                groundInteraction == null
-                        ? (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
-                                RoomEntityGroundInteraction.Result.unchanged(entity, 0)
-                        : groundInteraction);
+        this.physicsTables.writeGroundInteraction(groundInteraction);
     }
 
     public void setBackgroundInteraction(

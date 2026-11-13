@@ -2,9 +2,7 @@ package linksawakening.world.entity;
 
 /** Owned PhysicsTables storage; preserves ROM slot indexing. */
 final class EntityPhysicsTables {
-    private RoomEntityGroundInteraction groundInteraction =
-            (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
-                    RoomEntityGroundInteraction.Result.unchanged(entity, 0);
+    private RoomEntityGroundInteraction groundInteraction = RoomEntityGroundInteraction.NONE;
     // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityBackgroundInteraction backgroundInteraction = RoomEntityBackgroundInteraction.NONE;
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -28,9 +26,9 @@ final class EntityPhysicsTables {
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean groundInteractionSideScrolling;
     // Optional room geometry/history; null preserves the path without that room input.
-    private RoomEntityObjectQuery objectQuery;
+    private RoomEntityObjectQuery objectQuery = RoomEntityObjectQuery.NONE;
     // Optional room geometry/history; null preserves the path without that room input.
-    private RoomEntityObjectQuery objectIntersectionQuery;
+    private RoomEntityObjectQuery objectIntersectionQuery = RoomEntityObjectQuery.NONE;
 
     RoomEntityGroundInteraction readGroundInteraction() {
         return groundInteraction;
@@ -39,7 +37,7 @@ final class EntityPhysicsTables {
     RoomEntityGroundInteraction writeGroundInteraction(
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityGroundInteraction
                     value) {
-        return groundInteraction = value;
+        return groundInteraction = java.util.Objects.requireNonNullElse(value, RoomEntityGroundInteraction.NONE);
     }
 
     boolean hasRichBackgroundInteraction() {
@@ -255,16 +253,16 @@ final class EntityPhysicsTables {
     RoomEntityObjectQuery writeObjectQuery(
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
                     value) {
-        return objectQuery = value;
+        return objectQuery = RoomEntityObjectQuery.orNone(value);
     }
 
     RoomEntityObjectQuery readObjectIntersectionQuery() {
-        return objectIntersectionQuery;
+        return objectIntersectionQuery == RoomEntityObjectQuery.NONE ? objectQuery : objectIntersectionQuery;
     }
 
     RoomEntityObjectQuery writeObjectIntersectionQuery(
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
                     value) {
-        return objectIntersectionQuery = value;
+        return objectIntersectionQuery = RoomEntityObjectQuery.orNone(value);
     }
 }

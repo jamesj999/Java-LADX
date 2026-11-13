@@ -46,7 +46,7 @@ public final class SlimeEyeController {
     final RoomEntity[] slots;
     final State encounter;
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
-    private final Rom rom;
+    private final java.util.function.ToIntFunction<RomAddress> readByte;
     int screenShakeCountdown;
 
     SlimeEyeController(
@@ -68,7 +68,11 @@ public final class SlimeEyeController {
                     enemyCombatTables,
             RoomEntity[] slots,
             /* Optional encounter tables; absent in ROM-free runtimes. */ Rom rom) {
-        this.rom = rom;
+        this.readByte = rom == null
+                ? address -> {
+                    throw new IllegalStateException("Slime Eye requires ROM encounter tables");
+                }
+                : rom::u8;
         this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
         this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -136,8 +140,7 @@ public final class SlimeEyeController {
     }
 
     int read(RomAddress table, int index) {
-        if (rom == null) throw new IllegalStateException("Slime Eye requires ROM encounter tables");
-        return rom.u8(table.plus(index));
+        return readByte.applyAsInt(table.plus(index));
     }
 
     public void advance(EntityFrameExecution frame) {
@@ -339,7 +342,7 @@ public final class SlimeEyeController {
         encounter.accX[s] = x & 15;
         encounter.accY[s] = y & 15;
         int nx = (e.x() + (x >> 4)) & 255, ny = (e.y() + (y >> 4)) & 255;
-        if (collision != null) {
+        {
             if (collision.blocks(e, (byte) encounter.speedX[s] < 0 ? 1 : 0, nx, e.y())) {
                 nx = e.x();
                 encounter.speedX[s] = (-encounter.speedX[s]) & 255;

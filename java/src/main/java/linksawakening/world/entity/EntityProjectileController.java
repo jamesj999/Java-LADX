@@ -145,11 +145,9 @@ public final class EntityProjectileController {
         ProjectileEntityCollision entityCollision = this.collideSwordBeamWithEntities(entity, frame);
         RoomEntity moved =
                 runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).advancePosition(entity);
-        RoomEntityObjectQuery intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery() != null
-                ? runtime.physicsTables.readObjectIntersectionQuery()
-                : runtime.physicsTables.readObjectQuery();
-        RoomEntityObjectSample object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
-        ProjectileObjectCollision objectCollision = object == null
+        RoomEntityObjectQuery intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery();
+        RoomEntityObjectSample object = intersectionQuery.sampleOrAbsent(moved);
+        ProjectileObjectCollision objectCollision = !object.sampled()
                 ? ProjectileObjectCollision.NONE
                 : this.projectileObjectCollision(moved, object, frame, slot);
         if (entityCollision.unload()
@@ -179,7 +177,7 @@ public final class EntityProjectileController {
     }
 
     boolean isMagicRodBurnableObject(RoomEntityObjectSample object) {
-        if (object == null) {
+        if (!object.sampled()) {
             return false;
         }
         int objectId = object.objectId() & 0xFF;
@@ -762,13 +760,11 @@ public final class EntityProjectileController {
             moved = owner.motions
                     .get(BoomerangMotion.class, BoomerangMotion::new)
                     .advancePosition(entity);
-            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery() != null
-                    ? owner.physicsTables.readObjectIntersectionQuery()
-                    : owner.physicsTables.readObjectQuery();
-            object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
-            objectCollision = object != null
+            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
+            object = intersectionQuery.sampleOrAbsent(moved);
+            objectCollision = object.sampled()
                     && owner.projectileObjectCollision(moved, object, frame, slot) == ProjectileObjectCollision.BLOCKED;
-            bushCollision = object != null
+            bushCollision = object.sampled()
                     && !owner.indoorRoom
                     && (object.objectId() == EntityRomConstants.OBJECT_BUSH
                             || object.objectId() == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS);
@@ -979,19 +975,13 @@ public final class EntityProjectileController {
                 return false;
             }
 
-            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery() != null
-                    ? owner.physicsTables.readObjectIntersectionQuery()
-                    : owner.physicsTables.readObjectQuery();
-            object = intersectionQuery == null
-                    // The shared query samples (X, Y-8). Powder's $797E-$7997
-                    // formula instead samples (X-1, Y-9), including byte wrapping.
-                    ? null
-                    : intersectionQuery.sample(withPositionAndVariant(
-                            entity, (entity.x() - 1) & 0xFF, (entity.y() - 1) & 0xFF, entity.spriteVariant()));
+            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
+            object = intersectionQuery.sampleOrAbsent(withPositionAndVariant(
+                    entity, (entity.x() - 1) & 0xFF, (entity.y() - 1) & 0xFF, entity.spriteVariant()));
             objectLeft = EntityMotionMath.magicPowderObjectLeft(entity);
             objectTop = EntityMotionMath.magicPowderObjectTop(entity);
             location = (objectTop | (objectLeft >>> 4)) & 0xFF;
-            objectId = object == null ? 0xFF : object.objectId() & 0xFF;
+            objectId = !object.sampled() ? 0xFF : object.objectId() & 0xFF;
 
             if (!owner.indoorRoom
                     && (objectId == EntityRomConstants.OBJECT_BUSH
@@ -1175,16 +1165,14 @@ public final class EntityProjectileController {
             moved = owner.motions
                     .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                     .advancePosition(entity);
-            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery() != null
-                    ? owner.physicsTables.readObjectIntersectionQuery()
-                    : owner.physicsTables.readObjectQuery();
-            object = intersectionQuery == null ? null : intersectionQuery.sample(moved);
+            intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
+            object = intersectionQuery.sampleOrAbsent(moved);
             return true;
         }
 
         private boolean resolveObjectCollision() {
 
-            objectCollision = object == null
+            objectCollision = !object.sampled()
                     ? ProjectileObjectCollision.NONE
                     : owner.projectileObjectCollision(moved, object, frame, slot);
             if (objectCollision == ProjectileObjectCollision.UNLOAD) {

@@ -41,7 +41,7 @@ public final class EntityPlayerSpawns {
     final EntitySlotProperties slotProperties;
     final RoomEntity[] slots;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final linksawakening.world.room.ChestContentsTable chestContentsTable;
+    final EntityChestContents chestContentsTable;
     final EntityPlayerCommands playerCommands;
 
     EntityPlayerSpawns(
@@ -68,8 +68,7 @@ public final class EntityPlayerSpawns {
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             RoomEntity[] slots,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .room.ChestContentsTable
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntityChestContents
                     chestContentsTable,
             EntityPlayerCommands playerCommands) {
         this.indoorRoom = indoorRoom;
@@ -92,7 +91,7 @@ public final class EntityPlayerSpawns {
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.chestContentsTable = chestContentsTable;
+        this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
         this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
@@ -754,9 +753,7 @@ public final class EntityPlayerSpawns {
     }
 
     int spawnChestWithItem(int objectLeft, int objectTop, int itemType) {
-        if (this.chestContentsTable == null) {
-            throw new IllegalStateException("ROM chest contents table is not configured");
-        }
+        this.chestContentsTable.requireSpawnTable();
         EntitySlotValidation.validateByte(objectLeft, "Chest object left");
         EntitySlotValidation.validateByte(objectTop, "Chest object top");
         if (itemType < 0 || itemType > ChestContentsTable.CHEST_ZOL) {

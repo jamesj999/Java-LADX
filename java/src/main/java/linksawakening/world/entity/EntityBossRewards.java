@@ -116,7 +116,8 @@ public final class EntityBossRewards {
             runtime.roomVariables.writePendingRoomStatusMask(
                     runtime.roomVariables.readPendingRoomStatusMask() | (0x20));
         }
-        if (entity.sourceLoadOrder() < 0 || (this.state.readEnemyDropResolver() == null && !swallowedShield)) {
+        if (entity.sourceLoadOrder() < 0
+                || (!this.state.readEnemyDropResolver().recordsDefeats() && !swallowedShield)) {
             if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 runtime.roomVariables.writePendingClearedEntityMask(
                         runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(entity)));
@@ -174,7 +175,7 @@ public final class EntityBossRewards {
         if (countdown == 0) {
             // $06:6CC1 calls DidKillEnemy, including SpawnEnemyDrop. The
             // ROM health-group tables select the miniboss healing fairy.
-            if (this.state.readEnemyDropResolver() != null) {
+            if (this.state.readEnemyDropResolver().recordsDefeats()) {
                 EnemyDropResolver.Result drop = this.resolveDrop(new EnemyDropResolver.Context(
                         entity.type(),
                         runtime.roomInspection.enemyDropHealthGroup(entity.slot()),

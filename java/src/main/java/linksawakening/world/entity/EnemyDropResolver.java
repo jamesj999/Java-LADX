@@ -29,6 +29,21 @@ public final class EnemyDropResolver {
     private static final int PIECE_OF_POWER_COUNTER_MAX_MEDIUM_MAX_HEALTH = 0x23;
     private static final int PIECE_OF_POWER_COUNTER_MAX_HIGH_MAX_HEALTH = 0x28;
 
+    /** Explicit policy for rooms without drop rules: do not record a defeat or consume RNG. */
+    public static final EnemyDropResolver NONE = new EnemyDropResolver();
+
+    private final boolean recordsDefeats;
+
+    private EnemyDropResolver() {
+        recordsDefeats = false;
+        destroyedHealthGroupOffsets = dropTableByIndex = randomDropChanceTable =
+                randomDropChanceTableLowHealth = dropTableRandom = thresholdLowHealthTable = new int[0];
+    }
+
+    public boolean recordsDefeats() {
+        return recordsDefeats;
+    }
+
     private final int[] destroyedHealthGroupOffsets;
     private final int[] dropTableByIndex;
     private final int[] randomDropChanceTable;
@@ -38,6 +53,7 @@ public final class EnemyDropResolver {
 
     public EnemyDropResolver(Rom romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
+        recordsDefeats = true;
         destroyedHealthGroupOffsets = loadTable(
                 romData,
                 RomSymbols.DestroyedEntityHealthGroupOffsetTable,
@@ -113,12 +129,14 @@ public final class EnemyDropResolver {
 
     /** Resolves one enemy death while preserving the source routine's branch order. */
     public Result resolve(Context context) {
+        if (!recordsDefeats) return noItem(context.counters(), 0);
         Objects.requireNonNull(context, "Context cannot be null");
         return resolve(context, isLowHealth(context.maxHearts(), context.health()));
     }
 
     /** Uses the UpdateHealth latch supplied by the gameplay frame. */
     public Result resolve(Context context, boolean lowHealth) {
+        if (!recordsDefeats) return noItem(context.counters(), 0);
         Objects.requireNonNull(context, "Context cannot be null");
 
         int droppedItem = context.droppedItem();

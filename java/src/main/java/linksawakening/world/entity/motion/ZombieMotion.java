@@ -386,7 +386,7 @@ public final class ZombieMotion {
             linkEntityX = inputs.linkEntityX();
             linkEntityY = inputs.linkEntityY();
             randomByteSupplier = inputs.randomByteSupplier();
-            objectQuery = inputs.objectQuery();
+            objectQuery = RoomEntityObjectQuery.orNone(inputs.objectQuery());
             backgroundInteraction = inputs.backgroundInteraction();
             ignoreHitsCountdown = inputs.ignoreHitsCountdown();
             ZombieMotion.checkType(entity);
@@ -422,8 +422,8 @@ public final class ZombieMotion {
                     int x = ZombieMotion.SPAWN_X[index];
                     int y = ZombieMotion.SPAWN_Y[index];
                     updated = ZombieMotion.withPositionAndVariant(entity, x, y, variant);
-                    RoomEntityObjectSample object = objectQuery == null ? null : objectQuery.sample(updated);
-                    if (object != null && ZombieMotion.isAllowedSpawnPhysics(object.physicsFlag())) {
+                    RoomEntityObjectSample object = objectQuery.sampleOrAbsent(updated);
+                    if (object.sampled() && ZombieMotion.isAllowedSpawnPhysics(object.physicsFlag())) {
                         countdown = (randomByteSupplier.getAsInt() & 0x3F) + 0x40;
                         spawnRequest = new ZombieMotion.SpawnRequest(x, y);
                     }

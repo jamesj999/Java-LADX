@@ -77,8 +77,8 @@ public final class RoomEntityRuntimeBuilder {
         return this;
     }
 
-    ChestContentsTable chestContentsTable() {
-        return chestContentsTable;
+    EntityChestContents chestContentsTable() {
+        return EntityChestContents.from(chestContentsTable);
     }
 
     public RoomEntityRuntimeBuilder chestContentsTable(
@@ -98,6 +98,14 @@ public final class RoomEntityRuntimeBuilder {
         romTables = value;
         romTablesSupplied = true;
         return this;
+    }
+
+    boolean hasRom() {
+        return romDataSupplied;
+    }
+
+    java.util.function.IntUnaryOperator entityOptionsLookup() {
+        return romTablesSupplied ? romTables.entityPropertyTables()::entityOptions1 : ignored -> 0;
     }
 
     Rom rom() {

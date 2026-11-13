@@ -117,10 +117,8 @@ public final class EntityBackgroundMechanics {
                 .advance(entity.slot());
         RoomEntity moved =
                 withPositionAndVariant(entity, step.state().x(), step.state().y(), entity.spriteVariant());
-        RoomEntityObjectSample object = runtime.physicsTables.readObjectQuery() == null
-                ? null
-                : runtime.physicsTables.readObjectQuery().sample(moved);
-        boolean clear = object != null
+        RoomEntityObjectSample object = runtime.physicsTables.readObjectQuery().sampleOrAbsent(moved);
+        boolean clear = object.sampled()
                 && object.objectId() != EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
                 && object.physicsFlag() == 0;
         runtime.events.hookshotBridgeUpdates.add(

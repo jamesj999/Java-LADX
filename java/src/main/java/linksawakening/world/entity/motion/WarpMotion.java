@@ -20,6 +20,17 @@ public final class WarpMotion {
     public static final int STATE_TRANSITION = 3;
     static final int DUNGEON_WARP_PAIR_COUNT = 8;
 
+    /** ROM-free rooms have no dungeon warp destinations or handler effects. */
+    public static final WarpMotion DISABLED = new WarpMotion();
+
+    private WarpMotion() {
+        dungeonWarps = new int[0];
+    }
+
+    public boolean available() {
+        return dungeonWarps.length != 0;
+    }
+
     private final int[] dungeonWarps;
 
     public WarpMotion(Rom romData) {

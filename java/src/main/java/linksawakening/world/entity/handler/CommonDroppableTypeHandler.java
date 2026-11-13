@@ -116,9 +116,7 @@ final class CommonDroppableTypeHandler {
                             slotState.entity(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
-                            state.background().objectQuery() == null
-                                    ? null
-                                    : state.background().objectQuery().sample(slotState.entity()));
+                            state.background().objectQuery().sampleOrAbsent(slotState.entity()));
             slotState.updated(droppableUpdate.entity());
             if (droppableUpdate.hidden()) {
                 // DroppableRevealOrReturnIfNeeded returns past the caller's

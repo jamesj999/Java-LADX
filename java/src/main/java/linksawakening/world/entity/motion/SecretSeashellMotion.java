@@ -147,7 +147,7 @@ public final class SecretSeashellMotion {
         int pegasusCollisionY = inputs.pegasusCollisionY();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
-        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
+        RoomEntityObjectSample objectUnderEntity = RoomEntityObjectSample.orAbsent(inputs.objectUnderEntity());
         if (entity == null) {
             throw new IllegalArgumentException("Secret seashell entity cannot be null");
         }
@@ -200,7 +200,7 @@ public final class SecretSeashellMotion {
     }
 
     boolean shouldRevealFromObject(int roomId, RoomEntityObjectSample object, int slot) {
-        if (object == null) {
+        if (!object.sampled()) {
             return false;
         }
         int objectId = object.objectId() & 0xFF;
@@ -392,7 +392,7 @@ public final class SecretSeashellMotion {
         boolean pegasusCollisionActive = inputs.pegasusCollisionActive();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
-        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
+        RoomEntityObjectSample objectUnderEntity = RoomEntityObjectSample.orAbsent(inputs.objectUnderEntity());
         return owner.advanceInternal(new SecretSeashellInteractionFrame(
                 entity,
                 roomId,
@@ -419,7 +419,7 @@ public final class SecretSeashellMotion {
         int pegasusCollisionY = inputs.pegasusCollisionY();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
-        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
+        RoomEntityObjectSample objectUnderEntity = RoomEntityObjectSample.orAbsent(inputs.objectUnderEntity());
         return owner.advanceInternal(new SecretSeashellInteractionFrame(
                 entity,
                 roomId,
@@ -447,7 +447,7 @@ public final class SecretSeashellMotion {
         int pegasusCollisionY = inputs.pegasusCollisionY();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
-        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
+        RoomEntityObjectSample objectUnderEntity = RoomEntityObjectSample.orAbsent(inputs.objectUnderEntity());
         return owner.advanceInternal(new SecretSeashellInteractionFrame(
                 entity,
                 roomId,

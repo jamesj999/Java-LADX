@@ -6,7 +6,6 @@ import static linksawakening.world.entity.EntitySlotValidation.validateEntitySlo
 import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
-import linksawakening.rom.EntityPropertyTables;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.event.BombExplosionEvent;
@@ -49,7 +48,6 @@ import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
 import linksawakening.world.entity.motion.WarpMotion;
 import linksawakening.world.entity.motion.ZolGelMotion;
-import linksawakening.world.room.ChestContentsTable;
 
 /**
  * Per-room composition root for ExecuteEntities and EntityInitHandler.
@@ -106,7 +104,7 @@ public final class RoomEntityRuntime {
     final EntitySpriteTileSnapshot spriteTiles;
     final boolean indoorRoom;
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
-    private final EntityPropertyTables entityProperties;
+    private final java.util.function.IntUnaryOperator entityProperties;
     // Optional RNG override; null selects the room-owned ROM-compatible source.
     final IntSupplier defaultRandomByteSupplier;
     private final EntityFrameRandom frameRandom;
@@ -115,7 +113,7 @@ public final class RoomEntityRuntime {
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final RomEnemyCombatTables enemyCombatTables;
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
-    final ChestContentsTable chestContentsTable;
+    final EntityChestContents chestContentsTable;
 
     public boolean gelClingingToLink() {
         return entityState.motions.get(ZolGelMotion.class, ZolGelMotion::new).readGelClingingToLink();
@@ -163,7 +161,7 @@ public final class RoomEntityRuntime {
         IntSupplier defaultRandomByteSupplier = frameRandom.spawnSource();
         EntitySpriteViews spriteHandlers = builder.spriteHandlers();
         RomEnemyCombatTables enemyCombatTables = builder.enemyCombatTables();
-        ChestContentsTable chestContentsTable = builder.chestContentsTable();
+        EntityChestContents chestContentsTable = builder.chestContentsTable();
         RomTables romTables = builder.romTables();
         Rom romData = builder.rom();
 
@@ -177,8 +175,8 @@ public final class RoomEntityRuntime {
 
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.enemyCombatTables = enemyCombatTables;
-        this.chestContentsTable = chestContentsTable;
-        this.entityProperties = romTables == null ? null : romTables.entityPropertyTables();
+        this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
+        this.entityProperties = builder.entityOptionsLookup();
         this.slotPropertiesState = new EntitySlotPresentation(spriteHandlers);
         this.entityDebugConfiguration = new EntityDebugConfiguration(entityState.combatTables, entityState.motions);
         this.effects = new EntityEffectConsumption(
@@ -518,8 +516,8 @@ public final class RoomEntityRuntime {
                 lifecycle);
 
         this.entityHandlers = roomInitialization.createEntityHandlers();
-        roomInitialization.initializeRomPresentation(romData);
-        this.warpMotion = romData == null ? null : new WarpMotion(romData);
+        if (builder.hasRom()) roomInitialization.initializeRomPresentation(romData);
+        this.warpMotion = builder.hasRom() ? new WarpMotion(romData) : WarpMotion.DISABLED;
 
         resetRoomVariables();
         roomInitialization.initializeRoomSlots(initial);

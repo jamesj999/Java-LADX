@@ -102,7 +102,7 @@ final class EntityRoomInitialization {
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.rom
                             .Rom
                     romData) {
-        if (romData != null) {
+        {
             for (int i = 0; i < this.pickups.storageHeartPieceMeterPairs().length; i++)
                 this.pickups.writeHeartPieceMeterPairs(
                         i, romData.u8(ENTITYPRESENTATIONROM_HEART_PIECE_VARIANTS.plus(i)));

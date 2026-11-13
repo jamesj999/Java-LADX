@@ -244,16 +244,14 @@ final class HookshotChainHandler {
                 return false;
             }
 
-            if (state.roomInspection().indoorRoom()
-                    && hookshotState.speedY() != 0
-                    && state.background().objectQuery() != null) {
+            if (state.roomInspection().indoorRoom() && hookshotState.speedY() != 0) {
                 RoomEntity movedChain = withPositionAndVariant(
                         slotState.entity(),
                         step.state().x(),
                         step.state().y(),
                         slotState.entity().spriteVariant());
-                RoomEntityObjectSample object = state.background().objectQuery().sample(movedChain);
-                if (object != null) {
+                RoomEntityObjectSample object = state.background().objectQuery().sampleOrAbsent(movedChain);
+                if (object.sampled()) {
                     int bridgeObject = (hookshotState.speedY() & 0x80) != 0
                             ? OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
                             : OBJECT_HOOKSHOT_BRIDGE_PULL_UP;

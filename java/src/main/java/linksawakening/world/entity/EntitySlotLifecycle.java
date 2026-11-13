@@ -111,7 +111,7 @@ public final class EntitySlotLifecycle {
     final RoomEntity[] slots;
     final SlimeEyeController.State slimeEye;
     // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.rom.EntityPropertyTables entityProperties;
+    final java.util.function.IntUnaryOperator entityProperties;
 
     final EntityRoomInspection inspection;
     final EntitySlotPresentation slotPresentation;
@@ -138,8 +138,8 @@ public final class EntitySlotLifecycle {
                     enemyCombatTables,
             RoomEntity[] slots,
             SlimeEyeController.State slimeEye,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.rom
-                            .EntityPropertyTables
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ java.util.function
+                            .IntUnaryOperator
                     entityProperties,
             EntityRoomInspection inspection,
             EntitySlotPresentation slotPresentation) {
@@ -166,13 +166,13 @@ public final class EntitySlotLifecycle {
         this.enemyCombatTables = enemyCombatTables;
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
-        this.entityProperties = entityProperties;
+        this.entityProperties = java.util.Objects.requireNonNull(entityProperties, "entity options");
     }
 
     boolean initializeBossBattle(RoomEntity entity) {
         int options = this.physicsTables.readEntityOptions1Override(entity.slot()) >= 0
                 ? this.physicsTables.readEntityOptions1Override(entity.slot())
-                : entityProperties == null ? 0 : entityProperties.entityOptions1(entity.type());
+                : entityProperties.applyAsInt(entity.type());
         return initializeBossBattle(entity, options);
     }
 
@@ -192,9 +192,7 @@ public final class EntitySlotLifecycle {
         // Active spawns bypass the INIT dispatch; use their fresh ROM options,
         // not an override remaining from the previous occupant of this slot.
         if (this.slots[slot].status() == EntityStatus.ACTIVE) {
-            initializeBossBattle(
-                    this.slots[slot],
-                    entityProperties == null ? 0 : entityProperties.entityOptions1(this.slots[slot].type()));
+            initializeBossBattle(this.slots[slot], entityProperties.applyAsInt(this.slots[slot].type()));
         }
         this.combatTables.writeEnemyHealthGroup(slot, this.enemyCombatTables.healthGroup(this.slots[slot].type()));
     }

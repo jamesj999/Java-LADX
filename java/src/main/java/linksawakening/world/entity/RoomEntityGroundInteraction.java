@@ -7,6 +7,8 @@ package linksawakening.world.entity;
  */
 @FunctionalInterface
 public interface RoomEntityGroundInteraction {
+    RoomEntityGroundInteraction NONE = (entity, frame, previous, speedZ, sideScrolling) -> Result.unchanged(entity, 0);
+
     Result apply(RoomEntity entity, int frameCounter, int previousGroundStatus, int speedZ, boolean sideScrolling);
 
     public record PitTransition(int targetX, int targetY) {

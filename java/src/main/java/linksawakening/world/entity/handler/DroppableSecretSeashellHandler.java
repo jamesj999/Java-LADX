@@ -39,9 +39,8 @@ final class DroppableSecretSeashellHandler {
                         .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
-            RoomEntityObjectSample objectUnderEntity = state.background().objectQuery() == null
-                    ? null
-                    : state.background().objectQuery().sample(slotState.entity());
+            RoomEntityObjectSample objectUnderEntity =
+                    state.background().objectQuery().sampleOrAbsent(slotState.entity());
             SecretSeashellMotion.Update shellUpdate = state.motion(
                             SecretSeashellMotion.class, SecretSeashellMotion::new)
                     .advance(new SecretSeashellInteractionFrame(
