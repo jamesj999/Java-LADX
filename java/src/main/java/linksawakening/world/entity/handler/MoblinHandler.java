@@ -4,13 +4,13 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_OCTOROK;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for Moblin. */
 final class MoblinHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(ENTITY_OCTOROK, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 0, MoblinHandler::phase2Moblin);
         registry.registerTick(ENTITY_MOBLIN, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 0, MoblinHandler::phase2Moblin);
     }

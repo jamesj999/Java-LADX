@@ -9,7 +9,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -18,7 +18,7 @@ import linksawakening.world.entity.motion.MadBomberMotion;
 
 /** ROM handler stages for MadBomber. */
 final class MadBomberHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_MAD_BOMBER, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_MAD_BOMBER, EntityTickStage.PHASE_2_AFTER_LEEVER_CONTACT, 1, MadBomberHandler::phase2MadBomber);
@@ -69,7 +69,7 @@ final class MadBomberHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(MadBomberMotion.class, MadBomberMotion::new).initialize(entity.slot());
     }
 }

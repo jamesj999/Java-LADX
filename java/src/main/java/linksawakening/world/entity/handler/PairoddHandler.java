@@ -6,7 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_PAIRODD;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -15,7 +15,7 @@ import linksawakening.world.entity.motion.PairoddMotion;
 
 /** ROM handler stages for Pairodd. */
 final class PairoddHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_PAIRODD, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_PAIRODD, EntityTickStage.PHASE_3_BEFORE_LASER, 8, PairoddHandler::phase3Pairodd);
     }
@@ -51,7 +51,7 @@ final class PairoddHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(PairoddMotion.class, PairoddMotion::new).initialize(entity.slot(), random);
     }
 }

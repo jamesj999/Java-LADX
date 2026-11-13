@@ -2,13 +2,13 @@ package linksawakening.world.entity.handler;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
 /** ROM handler stages for InstrumentOfTheSirens. */
 final class InstrumentOfTheSirensHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS,
                 EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,

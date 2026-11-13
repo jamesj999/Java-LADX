@@ -4,7 +4,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARROW;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -13,7 +13,7 @@ import linksawakening.world.entity.motion.PlayerArrowMotion;
 
 /** ROM handler stages for Arrow. */
 final class ArrowHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_ARROW, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 12, ArrowHandler::phase1Arrow);
     }

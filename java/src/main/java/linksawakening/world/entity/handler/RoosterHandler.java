@@ -4,7 +4,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROOSTER;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.RoosterMotion;
 
 /** ROM handler stages for Rooster. */
 final class RoosterHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_ROOSTER, EntityTickStage.PHASE_2_LIFTED_FOLLOWER, 0, RoosterHandler::phase2Rooster);
         registry.registerTick(ENTITY_ROOSTER, EntityTickStage.PHASE_5_BEFORE_COMMIT, 0, RoosterHandler::phase5Rooster);

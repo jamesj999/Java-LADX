@@ -3,14 +3,14 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.motion.BombMotion;
 
 /** ROM handler stages for Bomb. */
 final class BombHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_BOMB, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 11, BombHandler::advanceActiveBomb);
         registry.registerTick(ENTITY_BOMB, EntityTickStage.PHASE_2_THROWN, 0, BombHandler::advanceBombPresentation);

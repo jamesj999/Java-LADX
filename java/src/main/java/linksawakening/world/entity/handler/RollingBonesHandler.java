@@ -4,7 +4,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONE
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.RollingBonesMotion;
 
 /** ROM handler stages for RollingBones. */
 final class RollingBonesHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_ROLLING_BONES, EntityTickStage.PHASE_2_DYING, 2, RollingBonesHandler::phase2RollingBones);
         registry.registerTick(

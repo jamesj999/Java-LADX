@@ -4,14 +4,14 @@ import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityTypeRules.isHidingGhiniType;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for GhiniType. */
 final class GhiniTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_HIDING_GHINI, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 8, GhiniTypeHandler::phase2GhiniType);
         registry.registerTick(

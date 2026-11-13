@@ -3,7 +3,7 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
@@ -12,7 +12,7 @@ import linksawakening.world.entity.motion.GiantGopongaMotion;
 
 /** ROM handler stages for GiantGopongaFlower. */
 final class GiantGopongaFlowerHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_GIANT_GOPONGA_FLOWER,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,

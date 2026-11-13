@@ -7,12 +7,11 @@ import linksawakening.world.entity.motion.*;
 
 /** ROM initialization and motion dispatch. */
 final class ButterflyHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerAdvance(ENTITY_BUTTERFLY, (entity, context) -> advance(registry, entity, context));
     }
 
-    private static RoomEntity advance(
-            EntityHandlerRegistration registry, RoomEntity entity, EntityFrameContext context) {
+    private static RoomEntity advance(EntityHandlerRegistry registry, RoomEntity entity, EntityFrameContext context) {
         return registry.motion(ButterflyMotion.class, ButterflyMotion::new)
                 .advance(
                         entity,

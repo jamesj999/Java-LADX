@@ -3,7 +3,7 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.DungeonWarpRequest;
@@ -15,7 +15,7 @@ import linksawakening.world.entity.motion.WarpMotion.WarpFrame;
 
 /** ROM handler stages for Warp. */
 final class WarpHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 WarpMotion.ENTITY_TYPE, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 5, WarpHandler::phase1Type);
     }

@@ -4,7 +4,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_SIDE_VIEW_PO
 import static linksawakening.world.entity.EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
@@ -15,7 +15,7 @@ import linksawakening.world.entity.motion.SideViewPotMotion;
 
 /** ROM handler stages for SideViewPot. */
 final class SideViewPotHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_SIDE_VIEW_POT,
                 EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,

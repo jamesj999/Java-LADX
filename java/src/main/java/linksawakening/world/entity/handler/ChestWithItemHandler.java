@@ -4,13 +4,13 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_CHEST_WITH_I
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
 /** ROM handler stages for ChestWithItem. */
 final class ChestWithItemHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_CHEST_WITH_ITEM,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL,

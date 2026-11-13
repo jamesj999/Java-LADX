@@ -7,7 +7,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.LikeLikeEvent;
@@ -17,7 +17,7 @@ import linksawakening.world.entity.motion.LikeLikeMotion.LikeLikeFrame;
 
 /** ROM handler stages for LikeLike. */
 final class LikeLikeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_LIKE_LIKE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_LIKE_LIKE, EntityTickStage.PHASE_3_AFTER_LASER, 11, LikeLikeHandler::phase3LikeLike);
@@ -60,7 +60,7 @@ final class LikeLikeHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(LikeLikeMotion.class, LikeLikeMotion::new).initialize(entity.slot());
     }
 }

@@ -2,11 +2,11 @@ package linksawakening.world.entity.handler;
 
 import java.util.List;
 import java.util.function.Consumer;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 
 /** Ordered family registration; the slot phases establish tick execution order. */
 public final class EntityHandlerFamilies {
-    private static final List<Consumer<EntityHandlerRegistration>> INSTALLERS = List.of(
+    private static final List<Consumer<EntityHandlerRegistry>> INSTALLERS = List.of(
             KanaletBombableWallHandler::install,
             TarinHandler::install,
             MarinIndoorHandler::install,
@@ -114,7 +114,7 @@ public final class EntityHandlerFamilies {
             GibdoHandler::install,
             ButterflyHandler::install);
 
-    public static void install(EntityHandlerRegistration registry) {
+    public static void install(EntityHandlerRegistry registry) {
         for (var installer : INSTALLERS) installer.accept(registry);
     }
 }

@@ -4,13 +4,13 @@ import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOW_WOW;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for FollowingNpcType. */
 final class FollowingNpcTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_BOW_WOW,
                 EntityTickStage.PHASE_2_AFTER_INITIALIZE,

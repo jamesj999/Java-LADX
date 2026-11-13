@@ -10,7 +10,7 @@ import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
-final class EntityHandlerRegistry implements EntityHandlerRegistration {
+public final class EntityHandlerRegistry {
     private static final class Binding implements EntityHandler {
         private EntityHandler initializer;
         private BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance;
@@ -21,12 +21,10 @@ final class EntityHandlerRegistry implements EntityHandlerRegistration {
             this.initializer = initializer;
         }
 
-        @Override
         public void initialize(RoomEntity entity, IntSupplier random) {
             if (initializer != null) initializer.initialize(entity, random);
         }
 
-        @Override
         public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
             if (advance != null) return advance.apply(entity, context);
             return initializer == null ? entity : initializer.advance(entity, context);
@@ -50,12 +48,10 @@ final class EntityHandlerRegistry implements EntityHandlerRegistration {
         this.motions = motions;
     }
 
-    @Override
     public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {
         return motions.get(type, factory);
     }
 
-    @Override
     public void registerInitializer(int type, java.util.function.BiConsumer<RoomEntity, IntSupplier> initializer) {
         Objects.requireNonNull(initializer);
         Binding binding = binding(type);
@@ -123,5 +119,10 @@ final class EntityHandlerRegistry implements EntityHandlerRegistration {
             if (supports(type) && !handlers[type].tickVisit(stage, visit, frame)) return false;
         }
         return true;
+    }
+
+    public void registerTick(
+            int type, EntityTickStage stage, java.util.function.Predicate<EntityFrameExecution> callback) {
+        registerTick(type, stage, 0, callback);
     }
 }

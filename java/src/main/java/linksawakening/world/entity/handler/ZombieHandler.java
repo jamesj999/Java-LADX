@@ -7,7 +7,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
@@ -17,7 +17,7 @@ import linksawakening.world.entity.motion.ZombieMotion.ZombieFrame;
 
 /** ROM handler stages for Zombie. */
 final class ZombieHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_ZOMBIE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_ZOMBIE, EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION, 0, ZombieHandler::phase2Zombie);
@@ -81,7 +81,7 @@ final class ZombieHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(ZombieMotion.class, ZombieMotion::new).initialize(entity.slot());
     }
 }

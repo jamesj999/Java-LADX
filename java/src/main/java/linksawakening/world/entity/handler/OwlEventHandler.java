@@ -3,13 +3,13 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_OWL_EVENT;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
 /** ROM handler stages for OwlEvent. */
 final class OwlEventHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_OWL_EVENT, EntityTickStage.PHASE_1_AFTER_INSTRUMENT_PICKUP, 1, OwlEventHandler::phase1OwlEvent);
     }

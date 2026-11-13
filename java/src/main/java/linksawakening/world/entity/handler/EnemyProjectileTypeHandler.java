@@ -4,7 +4,7 @@ import static linksawakening.world.entity.EntityRomConstants.*;
 
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.EnemyProjectileMotion;
 
 /** ROM handler stages for EnemyProjectileType. */
 final class EnemyProjectileTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_OCTOROK_ROCK,
                 EntityTickStage.PHASE_3_AFTER_LASER,

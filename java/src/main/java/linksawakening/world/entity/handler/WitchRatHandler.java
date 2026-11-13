@@ -6,7 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_WITCH_RAT;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
@@ -15,7 +15,7 @@ import linksawakening.world.entity.motion.WitchRatMotion;
 
 /** ROM handler stages for WitchRat. */
 final class WitchRatHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_WITCH_RAT, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_WITCH_RAT, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 18, WitchRatHandler::phase4WitchRat);
@@ -52,7 +52,7 @@ final class WitchRatHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(WitchRatMotion.class, WitchRatMotion::new).initialize(entity.slot());
     }
 }

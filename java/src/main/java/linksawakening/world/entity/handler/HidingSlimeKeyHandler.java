@@ -3,7 +3,7 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime.SlimeKeyTransitionUpdate;
@@ -11,7 +11,7 @@ import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for HidingSlimeKey. */
 final class HidingSlimeKeyHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_HIDING_SLIME_KEY,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,

@@ -6,7 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_SNAKE;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.motion.*;
@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.SnakeMotion;
 
 /** ROM handler stages for Snake. */
 final class SnakeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_SNAKE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_SNAKE, EntityTickStage.PHASE_3_AFTER_LASER, 13, SnakeHandler::phase3Snake);
     }
@@ -41,7 +41,7 @@ final class SnakeHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(SnakeMotion.class, SnakeMotion::new).initialize(entity.slot());
     }
 }
