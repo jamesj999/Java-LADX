@@ -12,6 +12,7 @@ import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.ColorShellMotion;
 
 /** Queries over ExecuteEntities slot state; snapshot() owns data, view() follows the live room. */
 public final class EntityRoomInspection {
@@ -89,7 +90,7 @@ public final class EntityRoomInspection {
     }
 
     public LiftedEntityState liftedEntityState() {
-        return EntityRoomQueries.liftedEntityState(this);
+        return EntityRoomInspection.entityRoomQueriesLiftedEntityState(this);
     }
 
     int initialHealth(int type) {
@@ -105,7 +106,7 @@ public final class EntityRoomInspection {
     }
 
     public int activeProjectileCount() {
-        return EntityRoomQueries.activeProjectileCount(this);
+        return EntityRoomInspection.entityRoomQueriesActiveProjectileCount(this);
     }
 
     public boolean boomerangActive() {
@@ -190,16 +191,16 @@ public final class EntityRoomInspection {
 
     /** MarinEntityHandler $05:4E6A and MarinEntityHandler_Indoor $05:51CE. */
     public boolean indoorMarinAbsent() {
-        return EntityRoomQueries.indoorMarinAbsent(this);
+        return EntityRoomInspection.entityRoomQueriesIndoorMarinAbsent(this);
     }
 
     /** TarinIndoorsHandler $05:4BF1-4C11, before any sprite rendering. */
     public boolean indoorTarinAbsent() {
-        return EntityRoomQueries.indoorTarinAbsent(this);
+        return EntityRoomInspection.entityRoomQueriesIndoorTarinAbsent(this);
     }
 
     public RoomEntitySnapshot snapshot() {
-        return EntityRoomQueries.snapshot(this);
+        return EntityRoomInspection.entityRoomQueriesSnapshot(this);
     }
 
     public int groundStatus(int slot) {
@@ -267,7 +268,7 @@ public final class EntityRoomInspection {
             int linkVerticalVelocity,
             boolean linkInteractive,
             int frameCounter) {
-        return EntityRoomQueries.canGoombaStomp(
+        return EntityRoomInspection.entityRoomQueriesCanGoombaStomp(
                 this,
                 entity,
                 linkEntityX,
@@ -279,15 +280,16 @@ public final class EntityRoomInspection {
     }
 
     boolean hasNoGroundInteractionOverride(int slot) {
-        return EntityRoomQueries.hasNoGroundInteractionOverride(this, slot);
+        return EntityRoomInspection.entityRoomQueriesHasNoGroundInteractionOverride(this, slot);
     }
 
     boolean hasNoGroundInteraction(RoomEntity entity) {
-        return EntityRoomQueries.hasNoGroundInteraction(this, entity);
+        return EntityRoomInspection.entityRoomQueriesHasNoGroundInteraction(this, entity);
     }
 
     boolean sourceNpcInteractionAllowed(int xDistance, int yDistance, boolean linkAirborne, int entityDirection) {
-        return EntityRoomQueries.sourceNpcInteractionAllowed(this, xDistance, yDistance, linkAirborne, entityDirection);
+        return EntityRoomInspection.entityRoomQueriesSourceNpcInteractionAllowed(
+                this, xDistance, yDistance, linkAirborne, entityDirection);
     }
 
     public boolean heartPiecePickupActive() {
@@ -304,15 +306,15 @@ public final class EntityRoomInspection {
     }
 
     public String instrumentTrace() {
-        return EntityRoomQueries.instrumentTrace(this);
+        return EntityRoomInspection.entityRoomQueriesInstrumentTrace(this);
     }
 
     public String moblinKingTrace() {
-        return EntityRoomQueries.moblinKingTrace(this);
+        return EntityRoomInspection.entityRoomQueriesMoblinKingTrace(this);
     }
 
     public InstrumentWarpVisual instrumentWarpVisual() {
-        return EntityRoomQueries.instrumentWarpVisual(this);
+        return EntityRoomInspection.entityRoomQueriesInstrumentWarpVisual(this);
     }
 
     RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
@@ -331,7 +333,7 @@ public final class EntityRoomInspection {
     }
 
     EntitySpriteDefinition spriteDefinitionFor(int entityType) {
-        return EntityRoomQueries.spriteDefinitionFor(this, entityType);
+        return EntityRoomInspection.entityRoomQueriesSpriteDefinitionFor(this, entityType);
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int disguiseState) {
@@ -353,7 +355,7 @@ public final class EntityRoomInspection {
     }
 
     EntityRoomLoader.RoomTable spriteRoomTable() {
-        return EntityRoomQueries.spriteRoomTable(this);
+        return EntityRoomInspection.entityRoomQueriesSpriteRoomTable(this);
     }
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int evadeState) {
@@ -363,7 +365,7 @@ public final class EntityRoomInspection {
     }
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
-        return EntityRoomQueries.refreshColorShellDisplay(this, entity, status);
+        return EntityRoomInspection.entityRoomQueriesRefreshColorShellDisplay(this, entity, status);
     }
 
     public int killOrderAt(int index) {
@@ -438,5 +440,258 @@ public final class EntityRoomInspection {
     /** Reusable read-only view for immediate consumption; use snapshot() to retain owned frame data. */
     public RoomEntitySnapshot view() {
         return liveView;
+    }
+
+    static EntityRoomLoader.RoomTable entityRoomQueriesSpriteRoomTable(EntityRoomInspection runtime) {
+        return runtime.presentationState.readSpriteSelection() == null
+                ? (runtime.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
+                : runtime.presentationState.readSpriteSelection().roomTable();
+    }
+
+    static LiftedEntityState entityRoomQueriesLiftedEntityState(EntityRoomInspection runtime) {
+        if (runtime.liftThrow.readLiftedEntitySlot() < 0
+                || runtime.liftThrow.readLiftedEntitySlot() >= runtime.slots.length) {
+            return LiftedEntityState.none();
+        }
+        RoomEntity entity = runtime.slots[runtime.liftThrow.readLiftedEntitySlot()];
+        if (!entity.loaded() || entity.status() != EntityStatus.LIFTED) {
+            return LiftedEntityState.none();
+        }
+        return new LiftedEntityState(
+                runtime.liftThrow.readLiftedEntitySlot(),
+                entity.type(),
+                runtime.liftThrow.readLiftedPhase(runtime.liftThrow.readLiftedEntitySlot()),
+                runtime.physicsTables.readEnemyTransitionCountdown(runtime.liftThrow.readLiftedEntitySlot()),
+                runtime.liftThrow.readLiftedCarryState(),
+                runtime.liftThrow.readLiftedSourceDirection(runtime.liftThrow.readLiftedEntitySlot()),
+                runtime.liftThrow.readLiftedEffectiveDirection());
+    }
+
+    static int entityRoomQueriesActiveProjectileCount(EntityRoomInspection runtime) {
+        int count = 0;
+        for (RoomEntity entity : runtime.slots) {
+            if (!entity.loaded()) {
+                continue;
+            }
+            int type = entity.type() & 0xFF;
+            if (type == EntityRomConstants.ENTITY_ARROW
+                    || type == EntityRomConstants.ENTITY_BOOMERANG
+                    || type == EntityRomConstants.ENTITY_MAGIC_ROD_FIREBALL
+                    || type == EntityRomConstants.ENTITY_SWORD_BEAM) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    static boolean entityRoomQueriesIndoorMarinAbsent(EntityRoomInspection runtime) {
+        if (runtime.motions
+                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                .readFollowingNpcState()
+                .marinFollowing()) return true;
+        if (runtime.story.readHouseTradeItem() >= 7) return (runtime.story.readHouseWalrusStatus() & 0x30) != 0;
+        return runtime.pickups.readChestPlayerLevelsKnown() && runtime.pickups.readChestSwordLevel() != 0;
+    }
+
+    static boolean entityRoomQueriesIndoorTarinAbsent(EntityRoomInspection runtime) {
+        if (!runtime.motions
+                        .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                        .readFollowingNpcState()
+                        .marinFollowing()
+                && ((runtime.story.readHouseInstrument3Flags() & 2) != 0 || runtime.story.readHouseTradeItem() >= 4))
+            return true;
+        return runtime.story.readHouseTarinFlag() == 0
+                && runtime.pickups.readChestPlayerLevelsKnown()
+                && runtime.pickups.readChestSwordLevel() != 0;
+    }
+
+    static RoomEntitySnapshot entityRoomQueriesSnapshot(EntityRoomInspection runtime) {
+        // These handlers test story state before drawing ($05:4E78,
+        // $05:51CE, $05:4BF1). Apply the same gates to pre-tick snapshots,
+        // including room transitions which pause entity advancement.
+        var presentedSlots = new java.util.ArrayList<RoomEntity>(runtime.slots.length);
+        for (int slot = 0; slot < runtime.slots.length; slot++)
+            presentedSlots.add(entityRoomQueriesPresentedEntity(runtime, slot));
+        return new RoomEntitySnapshot(
+                presentedSlots,
+                runtime.presentationState.readSpriteSelection(),
+                runtime.spriteTiles,
+                runtime.physicsTables.readGroundInteractionSideScrolling(),
+                runtime.slotProperties.readHookshotChainOam(),
+                runtime.slotProperties.readPincerBodyOam(),
+                runtime.slotProperties.readWingedOctorokOam(),
+                runtime.physicsTables.copyFallingVisualYOffset(),
+                runtime.slotProperties.readBowWowChainOam());
+    }
+
+    static boolean entityRoomQueriesCanGoombaStomp(
+            EntityRoomInspection runtime,
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            int linkVerticalVelocity,
+            boolean linkInteractive,
+            int frameCounter) {
+        if (entity.type() != EntityRomConstants.ENTITY_GOOMBA
+                || !linkAirborne
+                || !linkInteractive
+                || !RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
+                || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+            return false;
+        }
+
+        // Top-down hLinkVelocityZ is negative while descending. The side-view
+        // branch instead tests hLinkSpeedY, where a non-negative value means
+        // Link is moving downward onto the Goomba.
+        return runtime.physicsTables.readGroundInteractionSideScrolling()
+                ? (linkVerticalVelocity & 0x80) == 0
+                : (linkVerticalVelocity & 0x80) != 0;
+    }
+
+    static boolean entityRoomQueriesHasNoGroundInteractionOverride(EntityRoomInspection runtime, int slot) {
+        return runtime.physicsTables.readEntityOptions1Override(slot) >= 0
+                && (runtime.physicsTables.readEntityOptions1Override(slot)
+                                & EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION)
+                        != 0;
+    }
+
+    static boolean entityRoomQueriesHasNoGroundInteraction(EntityRoomInspection runtime, RoomEntity entity) {
+        return isGhiniType(entity.type())
+                || entity.type() == EntityRomConstants.ENTITY_MAD_BOMBER
+                || entity.type() == EntityRomConstants.ENTITY_WIZROBE_PROJECTILE
+                || entity.type() == EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER
+                || entity.type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE
+                || entity.type() == EntityRomConstants.ENTITY_BOO_BUDDY
+                || entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY
+                || entity.type() == EntityRomConstants.ENTITY_PINCER
+                || entity.type() == EntityRomConstants.ENTITY_MOLDORM
+                || entityRoomQueriesHasNoGroundInteractionOverride(runtime, entity.slot());
+    }
+
+    static boolean entityRoomQueriesSourceNpcInteractionAllowed(
+            EntityRoomInspection runtime, int xDistance, int yDistance, boolean linkAirborne, int entityDirection) {
+        return runtime.linkState.actionButtonAHeld
+                && ((yDistance + 0x14) & 0xFF) < 0x28
+                && ((xDistance + 0x10) & 0xFF) < 0x20
+                && (runtime.linkState.lastRomLinkDirection ^ 0x01) == entityDirection
+                && !runtime.linkState.dialogActive
+                && !runtime.linkState.inventoryAppearing
+                && !linkAirborne
+                && runtime.linkState.dialogCooldown == 0
+                && runtime.linkState.windowY == 0x80;
+    }
+
+    static String entityRoomQueriesInstrumentTrace(EntityRoomInspection runtime) {
+        StringBuilder trace = new StringBuilder().append(runtime.presentationState.readActiveMusic() ? 1 : 0);
+        for (RoomEntity entity : runtime.slots) {
+            if (entity.loaded()
+                    && entity.type() == 0x39
+                    && runtime.rewards.readInstrumentParticleKind(entity.slot()) == 0) {
+                int slot = entity.slot();
+                trace.append(';')
+                        .append(slot)
+                        .append(',')
+                        .append(runtime.rewards.readInstrumentPickupState(slot))
+                        .append(',')
+                        .append(runtime.physicsTables.readEnemyTransitionCountdown(slot))
+                        .append(',')
+                        .append(runtime.physicsTables.readSlowTransitionCountdown(slot));
+            }
+        }
+        return trace.toString();
+    }
+
+    static String entityRoomQueriesMoblinKingTrace(EntityRoomInspection runtime) {
+        for (RoomEntity entity : runtime.slots)
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
+                int slot = entity.slot();
+                return "%d,%d,%d,%d,%d,%d,%d"
+                        .formatted(
+                                runtime.motions
+                                        .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                                        .state(slot),
+                                entity.x(),
+                                entity.y(),
+                                entity.z(),
+                                runtime.combatTables.readEnemyHealth(slot),
+                                runtime.physicsTables.readEnemyTransitionCountdown(slot),
+                                runtime.physicsTables.readSlowTransitionCountdown(slot));
+            }
+        return "-1";
+    }
+
+    static InstrumentWarpVisual entityRoomQueriesInstrumentWarpVisual(EntityRoomInspection runtime) {
+        for (int slot = 0; slot < runtime.rewards.storageInstrumentPickupState().length; slot++) {
+            // The ROM leaves the white BG/palettes in VRAM after the controller
+            // finishes. Keep them until the destination room replaces this runtime.
+            if (runtime.rewards.readInstrumentPickupState(slot) == 3
+                    || runtime.rewards.readInstrumentPickupState(slot) == 4) {
+                return new InstrumentWarpVisual(
+                        runtime.rewards.readInstrumentBackgroundFade(slot),
+                        runtime.rewards.readInstrumentObjectFade(slot),
+                        runtime.rewards.readInstrumentHintBatches(slot),
+                        runtime.rewards.storageInstrumentHintTiles(),
+                        runtime.rewards.storageInstrumentHintAttributes(),
+                        runtime.rewards.readInstrumentWarpX(slot),
+                        runtime.rewards.readInstrumentWarpY(slot),
+                        runtime.rewards.storageInstrumentWarpSprites());
+            }
+        }
+        return null;
+    }
+
+    static EntitySpriteDefinition entityRoomQueriesSpriteDefinitionFor(EntityRoomInspection runtime, int entityType) {
+        if (runtime.spriteHandlers == null) {
+            return runtime.slotProperties
+                    .spriteViews()
+                    .forEntityType(entityType, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        }
+        EntityRoomLoader.RoomTable table = runtime.presentationState.readSpriteSelection() == null
+                ? (runtime.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
+                : runtime.presentationState.readSpriteSelection().roomTable();
+        int mapId = runtime.presentationState.readSpriteSelection() == null
+                ? -1
+                : runtime.presentationState.readSpriteSelection().roomId();
+        return runtime.slotProperties.spriteViews().forEntityType(entityType, table, mapId);
+    }
+
+    static RoomEntity entityRoomQueriesRefreshColorShellDisplay(
+            EntityRoomInspection runtime, RoomEntity entity, EntityStatus status) {
+        if (!ColorShellMotion.isColorShellType(entity.type()) || runtime.spriteHandlers == null) {
+            return entity;
+        }
+        EntitySpriteDefinition definition = runtime.slotProperties
+                .spriteViews()
+                .forColorShellState(
+                        entity.type(),
+                        runtime.motions
+                                .get(ColorShellMotion.class, ColorShellMotion::new)
+                                .state(entity.slot()),
+                        status);
+        return withDefinition(
+                entity,
+                definition,
+                runtime.motions
+                        .get(ColorShellMotion.class, ColorShellMotion::new)
+                        .spriteVariant(entity.slot()));
+    }
+
+    static RoomEntity entityRoomQueriesPresentedEntity(EntityRoomInspection runtime, int slot) {
+        return entityRoomQueriesPresentedEntity(runtime, slot, null, null);
+    }
+
+    static RoomEntity entityRoomQueriesPresentedEntity(
+            EntityRoomInspection runtime, int slot, RoomEntity previousSource, RoomEntity previousPresentation) {
+        RoomEntity entity = runtime.slots[slot];
+        boolean hidden = entity.type() == 0x3E
+                && (runtime.indoorRoom
+                        ? entityRoomQueriesIndoorMarinAbsent(runtime) || runtime.story.readHouseTradeItem() >= 7
+                        : runtime.pickups.readChestPlayerLevelsKnown() && runtime.pickups.readChestSwordLevel() == 0);
+        hidden |= entity.type() == 0x3F && runtime.indoorRoom && entityRoomQueriesIndoorTarinAbsent(runtime);
+        if (!hidden || entity.spriteVariant() == -1) return entity;
+        if (entity == previousSource && previousPresentation != null && previousPresentation.spriteVariant() == -1)
+            return previousPresentation;
+        return EntitySnapshots.withVariant(entity, -1);
     }
 }

@@ -35,7 +35,8 @@ final class EntityLiveSlotList extends AbstractList<RoomEntity> implements Rando
     }
 
     private RoomEntity presented(int slot) {
-        RoomEntity result = EntityRoomQueries.presentedEntity(runtime, slot, sources[slot], presentations[slot]);
+        RoomEntity result = EntityRoomInspection.entityRoomQueriesPresentedEntity(
+                runtime, slot, sources[slot], presentations[slot]);
         sources[slot] = runtime.slots[slot];
         presentations[slot] = result;
         return result;

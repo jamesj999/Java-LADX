@@ -6,6 +6,8 @@ import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
 import java.util.Arrays;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.handler.EntityHandlerFamilies;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.GenieMotion;
@@ -71,7 +73,7 @@ final class EntityRoomInitialization {
     }
 
     void initializeRomPresentation(linksawakening.rom.Rom romData) {
-        EntityPresentationRom.initialize(this, romData);
+        EntityRoomInitialization.entityPresentationRomInitialize(this, romData);
     }
 
     void initializeRoomSlots(RoomEntitySnapshot initial) {
@@ -243,6 +245,42 @@ final class EntityRoomInitialization {
         }
         if (entity.status() == EntityStatus.THROWN) {
             this.liftThrow.writeThrownDirection(entity.slot(), ThrownEntityMotion.ROM_DIRECTION_DOWN);
+        }
+    }
+
+    // These symbols are not yet in the shared generated RomSymbols allowlist.
+    private static final RomAddress ENTITYPRESENTATIONROM_HEART_PIECE_VARIANTS =
+            new RomAddress(0x03, 0x5B17); // HeartPieceSpriteVariants
+    private static final RomAddress ENTITYPRESENTATIONROM_INSTRUMENT_PALETTE =
+            new RomAddress(0x36, 0x7096); // InstrumentPalette
+    private static final RomAddress ENTITYPRESENTATIONROM_INSTRUMENT_WARP_SPRITES =
+            new RomAddress(0x06, 0x773C); // Data_006_773C
+    private static final RomAddress ENTITYPRESENTATIONROM_HINT_TILES = new RomAddress(0x07, 0x6493); // Data_007_6493
+    private static final RomAddress ENTITYPRESENTATIONROM_HINT_ATTRIBUTES =
+            new RomAddress(0x07, 0x64DB); // Data_007_64F6, unpatched ROM
+
+    static void entityPresentationRomInitialize(EntityRoomInitialization runtime, Rom romData) {
+        if (romData != null) {
+            for (int i = 0; i < runtime.pickups.storageHeartPieceMeterPairs().length; i++)
+                runtime.pickups.writeHeartPieceMeterPairs(
+                        i, romData.u8(ENTITYPRESENTATIONROM_HEART_PIECE_VARIANTS.plus(i)));
+            for (int i = 0; i < runtime.rewards.storageInstrumentPaletteCycle().length; i++) {
+                int rgb555 = romData.u16le(ENTITYPRESENTATIONROM_INSTRUMENT_PALETTE.plus(i * 2));
+                runtime.rewards.writeInstrumentPaletteCycle(i, linksawakening.rom.RomBank.decodeRgb555(rgb555));
+            }
+            for (int i = 0; i < runtime.rewards.storageInstrumentWarpSprites().length; i++) {
+                runtime.rewards.writeInstrumentWarpSprites(
+                        i, romData.u8(ENTITYPRESENTATIONROM_INSTRUMENT_WARP_SPRITES.plus(i)));
+            }
+            // Eighteen fixed repeat commands, two rows per controller frame.
+            // Shipped ROM symbols: Data_007_6493=$6493, Data_007_64F6=$64DB.
+            for (int row = 0; row < 18; row++) {
+                int tile = romData.u8(ENTITYPRESENTATIONROM_HINT_TILES.plus(row * 4 + 3));
+                int attr = romData.u8(ENTITYPRESENTATIONROM_HINT_ATTRIBUTES.plus(row * 4 + 3));
+                java.util.Arrays.fill(runtime.rewards.storageInstrumentHintTiles(), row * 20, (row + 1) * 20, tile);
+                java.util.Arrays.fill(
+                        runtime.rewards.storageInstrumentHintAttributes(), row * 20, (row + 1) * 20, attr);
+            }
         }
     }
 }

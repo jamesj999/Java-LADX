@@ -772,7 +772,7 @@ public final class EntityProjectileController {
 
     static final class BoomerangStep {
         private linksawakening.world.entity.EntityProjectileController owner;
-        private linksawakening.world.entity.BoomerangFrame inputs;
+        private linksawakening.world.entity.EntityProjectileController.BoomerangFrame inputs;
         private linksawakening.world.entity.EntityProjectileController runtime;
         private int index;
         private linksawakening.world.entity.RoomEntity entity;
@@ -921,7 +921,7 @@ public final class EntityProjectileController {
 
         void run(
                 linksawakening.world.entity.EntityProjectileController owner,
-                linksawakening.world.entity.BoomerangFrame inputs) {
+                linksawakening.world.entity.EntityProjectileController.BoomerangFrame inputs) {
             if (inUse) {
                 new BoomerangStep().run(owner, inputs);
                 return;
@@ -1487,4 +1487,15 @@ public final class EntityProjectileController {
             }
         }
     }
+
+    public record BoomerangFrame(
+            int index,
+            RoomEntity entity,
+            int frame,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int linkMotionState,
+            boolean handlerInteractive,
+            boolean timersInteractive) {}
 }
