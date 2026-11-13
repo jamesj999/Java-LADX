@@ -182,7 +182,7 @@ final class RoomObjectParser {
             int baseIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
             for (int half = 0; half < 2; half++) {
                 int tableIndex = direction + half * 4;
-                int targetIndex = baseIndex + (readRomByte(offsetsOffset + tableIndex));
+                int targetIndex = baseIndex + readRomByte(offsetsOffset + tableIndex);
                 targetRoomObjectsArea[targetIndex] = readRomByte(idsOffset + tableIndex);
             }
         }

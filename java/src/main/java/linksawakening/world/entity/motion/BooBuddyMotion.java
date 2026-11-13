@@ -251,7 +251,7 @@ public final class BooBuddyMotion {
     }
 
     static int negate(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     private static int signedByte(int value) {

@@ -56,26 +56,32 @@ public final class TransientVfxSystem {
             this.variant = variant & 0xFF;
         }
 
+        @Override
         public int slotIndex() {
             return slotIndex;
         }
 
+        @Override
         public TransientVfxType type() {
             return type;
         }
 
+        @Override
         public int countdown() {
             return countdown;
         }
 
+        @Override
         public int worldX() {
             return worldX;
         }
 
+        @Override
         public int worldY() {
             return worldY;
         }
 
+        @Override
         public int variant() {
             return variant;
         }
@@ -95,6 +101,7 @@ public final class TransientVfxSystem {
             this.slots = slots;
         }
 
+        @Override
         public SlotView get(int index) {
             if (index >= 0) {
                 for (MutableSlot slot : slots) {
@@ -104,6 +111,7 @@ public final class TransientVfxSystem {
             throw new IndexOutOfBoundsException();
         }
 
+        @Override
         public int size() {
             int size = 0;
             for (MutableSlot slot : slots) if (slot.active) size++;

@@ -395,7 +395,7 @@ public final class EntitySlotLifecycle {
     }
 
     public void requestPersistentClearMask(int mask) {
-        this.roomVariables.writePendingClearedEntityMask(this.roomVariables.readPendingClearedEntityMask() | (mask));
+        this.roomVariables.writePendingClearedEntityMask(this.roomVariables.readPendingClearedEntityMask() | mask);
     }
 
     public void delayInteractions(int countdown) {
@@ -406,7 +406,7 @@ public final class EntitySlotLifecycle {
         this.motions
                 .get(ZolGelMotion.class, ZolGelMotion::new)
                 .writeGelClingingToLink(
-                        this.motions.get(ZolGelMotion.class, ZolGelMotion::new).readGelClingingToLink() | (clinging));
+                        this.motions.get(ZolGelMotion.class, ZolGelMotion::new).readGelClingingToLink() | clinging);
     }
 
     public void setDroppedItemBySlot(int slot, int value) {

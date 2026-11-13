@@ -32,7 +32,6 @@ public final class TitleScreen implements Screen {
     public void tick() {
         dependencies.cutsceneManager().tick();
         dependencies.inputState().tickEdges();
-        return;
     }
 
     @Override

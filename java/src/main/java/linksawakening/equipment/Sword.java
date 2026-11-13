@@ -298,6 +298,7 @@ public final class Sword implements EquipmentItem {
                 offsetY);
     }
 
+    @Override
     public void submitOam(linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY) {
         if (state == STATE_NONE && !spinAttackActive()) return;
         renderer.submitOam(
@@ -362,6 +363,7 @@ public final class Sword implements EquipmentItem {
      * in bank2.asm. The rectangle is independent from the visual blade OAM
      * bounds and is therefore kept as a separate ROM-table lookup.
      */
+    @Override
     public Sword.CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection) {
         return enemyCollisionBox(linkEntityX, linkEntityY, linkDirection, false);
     }

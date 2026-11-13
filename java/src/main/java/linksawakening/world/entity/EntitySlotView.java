@@ -35,7 +35,7 @@ public final class EntitySlotView {
     }
 
     public void shiftIgnoreHitsRight(int slot, int distance) {
-        combat.writeEnemyIgnoreHitsCountdown(slot, combat.readEnemyIgnoreHitsCountdown(slot) >>> (distance));
+        combat.writeEnemyIgnoreHitsCountdown(slot, combat.readEnemyIgnoreHitsCountdown(slot) >>> distance);
     }
 
     public int physicsFlags(int slot) {
@@ -47,11 +47,11 @@ public final class EntitySlotView {
     }
 
     public void andPhysicsFlags(int slot, int mask) {
-        physics.writeEnemyPhysicsFlags(slot, physics.readEnemyPhysicsFlags(slot) & (mask));
+        physics.writeEnemyPhysicsFlags(slot, physics.readEnemyPhysicsFlags(slot) & mask);
     }
 
     public void orPhysicsFlags(int slot, int mask) {
-        physics.writeEnemyPhysicsFlags(slot, physics.readEnemyPhysicsFlags(slot) | (mask));
+        physics.writeEnemyPhysicsFlags(slot, physics.readEnemyPhysicsFlags(slot) | mask);
     }
 
     public int flashCountdown(int slot) {

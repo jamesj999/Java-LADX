@@ -337,11 +337,11 @@ public final class SlimeEyeController {
         {
             if (collision.blocks(e, (byte) encounter.speedX[s] < 0 ? 1 : 0, nx, e.y())) {
                 nx = e.x();
-                encounter.speedX[s] = (-encounter.speedX[s]) & 255;
+                encounter.speedX[s] = -encounter.speedX[s] & 255;
             }
             if (collision.blocks(e, (byte) encounter.speedY[s] < 0 ? 2 : 3, nx, ny)) {
                 ny = e.y();
-                encounter.speedY[s] = (-encounter.speedY[s]) & 255;
+                encounter.speedY[s] = -encounter.speedY[s] & 255;
             }
         }
         return withPositionAndVariant(e, nx, ny, e.spriteVariant());
@@ -592,8 +592,8 @@ public final class SlimeEyeController {
                                             && owner.physicsTables.readEnemyTransitionCountdown(s) != 0))))
                 return false;
             if (owner.encounter.splitting[s] != 0
-                    || owner.combatTables.readEnemyFlashCountdown(s) > 0
-                            && owner.combatTables.readEnemyFlashCountdown(s) < 0x18) return false;
+                    || (owner.combatTables.readEnemyFlashCountdown(s) > 0
+                            && owner.combatTables.readEnemyFlashCountdown(s) < 0x18)) return false;
             hitbox = isHalf ? 24 : 20;
             hit = sword && owner.overlaps(e, hitbox, sx, sw, sy, sh);
             return true;
@@ -797,8 +797,8 @@ public final class SlimeEyeController {
                 if ((f.inputs().randomByteSupplier().getAsInt() & 3) == 0) {
                     EntityMotionMath.Vector v = EntityMotionMath.vectorAwayFromLink(
                             e.x(), e.y(), f.inputs().linkEntityX(), f.inputs().linkEntityY(), 0x18);
-                    owner.encounter.speedX[s] = (-v.x()) & 255;
-                    owner.encounter.speedY[s] = (-v.y()) & 255;
+                    owner.encounter.speedX[s] = -v.x() & 255;
+                    owner.encounter.speedY[s] = -v.y() & 255;
                 }
                 owner.encounter.speedZ[s] = (f.inputs().randomByteSupplier().getAsInt() & 15) + 8;
                 owner.encounter.state[s] = 1;

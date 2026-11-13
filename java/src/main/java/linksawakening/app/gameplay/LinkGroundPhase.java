@@ -25,8 +25,8 @@ final class LinkGroundPhase {
      * sequence (UseMagicPowder $00:149E) and the witch presentation
      * ($05:4834, $05:48DB). */
     static boolean dialogGotItemActive(GameplaySimulation context) {
-        return (context.link().animation().dialogGotItemActive())
-                || (context.roomSession().entityState().gotItemPresentationActive());
+        return context.link().animation().dialogGotItemActive()
+                || context.roomSession().entityState().gotItemPresentationActive();
     }
 
     static LinkGroundFrame groundFrame(GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {

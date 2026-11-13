@@ -188,6 +188,7 @@ public final class InputRouter implements DebugScroll {
         }
     }
 
+    @Override
     public boolean tryDebugScreenScroll() {
         if (!input.inputState().isDown(KEY_LEFT_SHIFT) && !input.inputState().isDown(KEY_RIGHT_SHIFT)) {
             return false;
@@ -272,11 +273,11 @@ public final class InputRouter implements DebugScroll {
     }
 
     public boolean canPresentFileSave() {
-        return (!player.link().status().recoveryBlocksInput())
+        return !player.link().status().recoveryBlocksInput()
                 && !world.scrollController().isActive()
                 && !world.transitionController().isInputBlocked()
-                && (!ui.inventoryController().shouldBlockOverworldInput())
-                && (!GameplayDialogInput.blocksGameplay(ui.dialogController()));
+                && !ui.inventoryController().shouldBlockOverworldInput()
+                && !GameplayDialogInput.blocksGameplay(ui.dialogController());
     }
 
     public void headlessButton(String button, boolean pressed) {

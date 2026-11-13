@@ -240,7 +240,7 @@ public final class OpeningStory implements OpeningRestoration {
         if (update.playObtainItemMusic()) {
             playDirectMusic(MusicTrackIds.MUSIC_OBTAIN_ITEM);
         }
-        if (update.dialogLowId() >= 0 && (!ui.dialogController().isActive())) {
+        if (update.dialogLowId() >= 0 && !ui.dialogController().isActive()) {
             ui.dialogController()
                     .openPreformattedForLinkY(
                             ui.dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
@@ -262,14 +262,17 @@ public final class OpeningStory implements OpeningRestoration {
         return MusicTrackIds.MUSIC_INTRO_WAKE_UP;
     }
 
+    @Override
     public void restoreWake(MarinWakeUpMotion motion) {
         state.opening().wakeUp(motion);
     }
 
+    @Override
     public void restoreShield(TarinShieldMotion motion) {
         state.opening().shield(motion);
     }
 
+    @Override
     public void refreshPresentation() {
         updateNewGameMarinPresentation();
     }

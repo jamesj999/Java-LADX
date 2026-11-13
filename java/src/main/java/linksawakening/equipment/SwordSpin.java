@@ -93,7 +93,7 @@ final class SwordSpin {
             return direction;
         }
         int baseDirection = Direction.fromJavaOrDown(spinBaseDirection).romIndex();
-        return Direction.fromRom((swordTables.swordSpinAbsoluteDirection(baseDirection, spinSector())) & 0x03)
+        return Direction.fromRom(swordTables.swordSpinAbsoluteDirection(baseDirection, spinSector()) & 0x03)
                 .javaIndex();
     }
 

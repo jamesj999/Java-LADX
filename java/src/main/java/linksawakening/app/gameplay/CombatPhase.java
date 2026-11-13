@@ -79,7 +79,7 @@ final class CombatPhase {
     private static void applyEvent(GameplaySimulation context, EntityCombatEvent event) {
         if (event.linkDamage() > 0
                 && context.playerState().vitals().invincibilityCounter() == 0
-                && (!context.link().status().isCollisionDamageImmune())) {
+                && !context.link().status().isCollisionDamageImmune()) {
             int previousPowerUp = context.playerState().equipmentLevels().activePowerUp();
             context.playerState().vitals().applyRomEnemyDamage(event.linkDamage());
             if (previousPowerUp != PowerUp.NONE.romValue()

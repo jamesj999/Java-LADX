@@ -26,11 +26,11 @@ final class IntroWater {
         this.fraction5(this.fraction5() + (slow ? 0x2C : 0x58));
         fractionD = fractionD + (slow ? 0x58 : 0xB0);
         sectionScrollOffsets[1] += this.fraction4() >>> 8;
-        this.fraction4(this.fraction4() & (255));
+        this.fraction4(this.fraction4() & 255);
         sectionScrollOffsets[2] += this.fraction5() >>> 8;
-        this.fraction5(this.fraction5() & (255));
+        this.fraction5(this.fraction5() & 255);
         sectionScrollOffsets[3] += fractionD >>> 8;
-        fractionD = fractionD & (255);
+        fractionD = fractionD & 255;
         animateWaves(true);
     }
 
@@ -52,9 +52,9 @@ final class IntroWater {
         if ((clockState.clock() & 0x1F) == 0) {
             sectionScrollOffsets[2]++;
         }
-        this.fraction4(this.fraction4() + (0x28));
+        this.fraction4(this.fraction4() + 0x28);
         sectionScrollOffsets[4] += this.fraction4() >>> 8;
-        this.fraction4(this.fraction4() & (255));
+        this.fraction4(this.fraction4() & 255);
         int waveIndex = ((clockState.clock() + 0xFC) >>> 4) & 0x07;
         verticalWaveOffset = -verticalOffsets[waveIndex];
     }

@@ -271,50 +271,62 @@ public final class OpenGlFramePresenter {
     }
 
     private static final class LwjglShaderApi implements ShaderApi {
+        @Override
         public int createShader(int kind) {
             return GL20.glCreateShader(kind);
         }
 
+        @Override
         public void source(int shader, String source) {
             GL20.glShaderSource(shader, source);
         }
 
+        @Override
         public void compile(int shader) {
             GL20.glCompileShader(shader);
         }
 
+        @Override
         public boolean compiled(int shader) {
             return GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) != GL20.GL_FALSE;
         }
 
+        @Override
         public String shaderLog(int shader) {
             return GL20.glGetShaderInfoLog(shader);
         }
 
+        @Override
         public void deleteShader(int shader) {
             GL20.glDeleteShader(shader);
         }
 
+        @Override
         public int createProgram() {
             return GL20.glCreateProgram();
         }
 
+        @Override
         public void attach(int program, int shader) {
             GL20.glAttachShader(program, shader);
         }
 
+        @Override
         public void link(int program) {
             GL20.glLinkProgram(program);
         }
 
+        @Override
         public boolean linked(int program) {
             return GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) != GL20.GL_FALSE;
         }
 
+        @Override
         public String programLog(int program) {
             return GL20.glGetProgramInfoLog(program);
         }
 
+        @Override
         public void deleteProgram(int program) {
             GL20.glDeleteProgram(program);
         }
@@ -336,6 +348,7 @@ public final class OpenGlFramePresenter {
             }
         }
 
+        @Override
         public void close() {
             if (closed) return;
             closed = true;

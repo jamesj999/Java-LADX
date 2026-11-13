@@ -130,7 +130,7 @@ public final class OpeningRouteCapture {
                     default -> throw new IllegalArgumentException(condition);
                 };
         if (!parts[0].equals("x") && !parts[0].equals("y")) return value == target;
-        return button.startsWith("left") || button.startsWith("up") ? value <= target : value >= target;
+        return (button.startsWith("left") || button.startsWith("up")) ? value <= target : value >= target;
     }
 
     private static void appendTrace(StringBuilder trace, int frame) {

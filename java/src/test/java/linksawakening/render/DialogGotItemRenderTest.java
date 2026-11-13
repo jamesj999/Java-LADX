@@ -42,6 +42,6 @@ final class DialogGotItemRenderTest {
 
     private static int pixel(byte[] buffer, int x, int y) {
         int offset = (y * Framebuffer.WIDTH + x) * 4;
-        return (buffer[offset] & 255) << 16 | (buffer[offset + 1] & 255) << 8 | buffer[offset + 2] & 255;
+        return (buffer[offset] & 255) << 16 | (buffer[offset + 1] & 255) << 8 | (buffer[offset + 2] & 255);
     }
 }

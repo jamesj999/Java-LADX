@@ -64,7 +64,7 @@ final class EntitySlotPipeline {
             if (!advanceSlotStatus(state)) continue;
             if (!advanceLaserSite(state)) continue;
             if (!advanceFollowersAndMotion(state)) continue;
-            if (!applyGroundAndCommitSlot(state)) continue;
+            applyGroundAndCommitSlot(state);
         }
         if (state.gates().threeOfAKindInteractive()) {
             state.slotProperties().resolveThreeOfAKindPuzzle();
@@ -315,12 +315,12 @@ final class EntitySlotPipeline {
             return false;
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_AFTER_SPAWN_GUARD, state)) return false;
-        slotState.kanaletLeafProducer(slotState.entity().type() == EntityRomConstants.ENTITY_CROW
+        slotState.kanaletLeafProducer((slotState.entity().type() == EntityRomConstants.ENTITY_CROW
                         && !state.runtime().indoorRoom
-                        && state.roomVariables().readEntityRoomId() == 0x58
+                        && state.roomVariables().readEntityRoomId() == 0x58)
                 || slotState.entity().type() == EntityRomConstants.ENTITY_MAD_BOMBER
-                || slotState.entity().type() == EntityRomConstants.ENTITY_KNIGHT
-                        && state.roomVariables().readEntityMapId() >= 0x14);
+                || (slotState.entity().type() == EntityRomConstants.ENTITY_KNIGHT
+                        && state.roomVariables().readEntityMapId() >= 0x14));
         if (slotState.kanaletLeafProducer()) {
             if (!state.handlers().tick(EntityTickStage.PHASE_1_LEAF_PRODUCER, state)) return false;
             if ((state.roomVariables().readEntityRoomStatus() & 0x10) != 0) {

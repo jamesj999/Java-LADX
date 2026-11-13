@@ -57,19 +57,23 @@ class EntityFrameSessionTest {
             linksawakening.world.room.RoomFrameTestAccess.music(c.roomSession(), 0x18);
             var calls = new ArrayList<String>();
             var routing = new EntityDialogRouting() {
+                @Override
                 public void music(GameplaySimulation c, int track) {
                     assertEquals(0x18, track);
                     calls.add("music");
                 }
 
+                @Override
                 public void dialogs(GameplaySimulation c) {
                     calls.add("dialogs");
                 }
 
+                @Override
                 public void manbo(GameplaySimulation c) {
                     calls.add("manbo");
                 }
 
+                @Override
                 public void instrument(GameplaySimulation c) {
                     calls.add("instrument");
                 }

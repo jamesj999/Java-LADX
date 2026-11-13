@@ -36,6 +36,7 @@ public final class MusicDirector implements MusicRequests {
                 roomSession.entities().inBossBattle(), roomSession.entityState().entityDefaultMusicTrack());
     }
 
+    @Override
     public void playDirectMusic(int trackId) {
         gameplayMusicController.playDirect(trackId);
     }

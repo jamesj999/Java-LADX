@@ -230,7 +230,7 @@ public final class HookshotChainMotion {
         validateByte(linkX, "linkX");
         validateByte(linkY, "linkY");
         Vector vector = vectorTowardsLink(state.x(), state.y(), state.z(), linkX, linkY, HOOKSHOT_SPEED);
-        return new PullSpeed((-vector.x()) & 0xFF, (-vector.y()) & 0xFF);
+        return new PullSpeed(-vector.x() & 0xFF, -vector.y() & 0xFF);
     }
 
     /**

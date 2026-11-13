@@ -52,6 +52,7 @@ class FileMenuBehaviorTest {
             for (int i = 0; i < count; i++) game.stepWithoutRender();
         }
 
+        @Override
         public void close() {
             game.cleanup();
         }
@@ -195,15 +196,18 @@ class FileMenuBehaviorTest {
                     .story()
                     .restoreNewGameHouseRuntimeIfNeeded(
                             store.readSlot(0), new linksawakening.app.story.OpeningRestoration() {
+                                @Override
                                 public void restoreWake(linksawakening.startup.MarinWakeUpMotion m) {
                                     assertTrue(m.complete());
                                     calls.add("wake");
                                 }
 
+                                @Override
                                 public void restoreShield(linksawakening.startup.TarinShieldMotion m) {
                                     calls.add("shield");
                                 }
 
+                                @Override
                                 public void refreshPresentation() {
                                     calls.add("presentation");
                                 }

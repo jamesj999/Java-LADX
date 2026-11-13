@@ -138,12 +138,12 @@ final class ActiveLinkPhase {
                 && !context.link().actions().isCarryingLiftedObject()
                 && !context.link().sideView().romItemAnimationFrameBlocked()) {
             if (context.link().airborne().romMotionState() == 0x05
-                    || (context.roomSession().entityState().gelClingingToLink())) {
+                    || context.roomSession().entityState().gelClingingToLink()) {
                 context.equipmentController().tickEquippedItemsWithoutInput(context.frameCounter());
             } else {
                 if (!swordPickupSequenceActive
-                        && ((!context.roomSession().entityState().powerUpPickupSequenceActive()
-                                && !context.roomSession().rooms().heartPiecePickupActive())))
+                        && (!context.roomSession().entityState().powerUpPickupSequenceActive()
+                                && !context.roomSession().rooms().heartPiecePickupActive()))
                     context.equipmentController().dispatchButtonEdges();
                 context.equipmentController().tickEquippedItems(context.frameCounter());
             }

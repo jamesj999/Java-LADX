@@ -91,7 +91,7 @@ public final class FishMotion {
     }
 
     static int negate(int speed) {
-        return (-signedByte(speed)) & 0xFF;
+        return -signedByte(speed) & 0xFF;
     }
 
     static int arithmeticShiftRight(int speed) {

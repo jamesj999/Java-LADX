@@ -21,6 +21,7 @@ public final class RoomMusicSelection implements RoomLoadListener {
         this.rooms = Objects.requireNonNull(rooms);
     }
 
+    @Override
     public void roomLoaded(ActiveRoom room) {
         music.selectMusicForLoadedRoom(room, player, rooms);
     }

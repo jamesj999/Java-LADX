@@ -61,8 +61,8 @@ final class LinkDamage {
         if (linkServices.get().playerState.vitals().invincibilityCounter() != 0) return;
         if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
                 instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
-        linkMotion.get().position().lastRomSpeedX((-linkMotion.get().position().lastRomSpeedX()) & 0xFF);
-        linkMotion.get().position().lastRomSpeedY((-linkMotion.get().position().lastRomSpeedY()) & 0xFF);
+        linkMotion.get().position().lastRomSpeedX(-linkMotion.get().position().lastRomSpeedX() & 0xFF);
+        linkMotion.get().position().lastRomSpeedY(-linkMotion.get().position().lastRomSpeedY() & 0xFF);
         linkAirborne.get().elevation().airborne(true);
         if (!linkSideView.get().sideScrolling) {
             linkAirborne.get().elevation().zVelocity(0x10);

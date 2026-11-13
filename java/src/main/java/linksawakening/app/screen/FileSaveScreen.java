@@ -48,7 +48,6 @@ public final class FileSaveScreen implements Screen {
             dependencies.navigator().startFileSelection();
         }
         dependencies.completeInput().complete();
-        return;
     }
 
     @Override

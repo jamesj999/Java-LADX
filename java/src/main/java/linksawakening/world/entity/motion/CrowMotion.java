@@ -171,7 +171,7 @@ public final class CrowMotion {
     }
 
     static int negate(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     static int signedByte(int value) {
@@ -277,11 +277,11 @@ public final class CrowMotion {
             int distanceX = CrowMotion.signedByte((linkEntityX - x) & 0xFF);
             int distanceY = CrowMotion.signedByte((linkEntityY - y) & 0xFF);
             if (externalTakeoffTrigger
-                    || allowLinkProximityTrigger
+                    || (allowLinkProximityTrigger
                             && distanceX >= -0x18
                             && distanceX < 0x18
                             && distanceY >= -0x30
-                            && distanceY < 0x30) {
+                            && distanceY < 0x30)) {
                 owner.physicsFlags[slot] = CrowMotion.ACTIVE_PHYSICS_FLAGS;
                 countdown = 0x22;
                 owner.state[slot] = 1;

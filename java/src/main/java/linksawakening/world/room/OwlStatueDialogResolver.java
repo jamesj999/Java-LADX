@@ -17,7 +17,7 @@ final class OwlStatueDialogResolver {
     }
 
     public int globalDialogId(int mapId, int roomId, boolean hasStoneBeak) {
-        if ((roomId & ~0xFF) != 0 || !(mapId >= 0 && mapId < 8 || mapId == 0xFF)) {
+        if ((roomId & ~0xFF) != 0 || !((mapId >= 0 && mapId < 8) || mapId == 0xFF)) {
             throw new IllegalArgumentException("Owl hint requires a dungeon map and byte room id");
         }
         if (!hasStoneBeak) return 0x110;

@@ -18,6 +18,7 @@ public final class FrameInputCompletion implements InputCompletion {
         this.gameplay = Objects.requireNonNull(gameplay);
     }
 
+    @Override
     public void complete() {
         input.tickEdges();
         gameplay.complete();

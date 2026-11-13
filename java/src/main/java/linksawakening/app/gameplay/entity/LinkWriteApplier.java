@@ -41,6 +41,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
         }
     }
 
+    @Override
     public void platform(SideViewPlatformLinkRequest request) {
         var c = current;
         if (request.standing()) {
@@ -52,18 +53,22 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
         }
     }
 
+    @Override
     public void position(LinkFinalPositionRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }
 
+    @Override
     public void pot(SideViewPotLinkRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }
 
+    @Override
     public void clear(LinkAttackClearRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }
 
+    @Override
     public void step(LinkAttackStepRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }

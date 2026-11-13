@@ -124,8 +124,8 @@ final class LinkDash {
             return;
         }
 
-        int reflectedSpeedX = (-Link.signedByte(linkMotion.get().position().lastRomSpeedX())) >> 2;
-        int reflectedSpeedY = (-Link.signedByte(linkMotion.get().position().lastRomSpeedY())) >> 2;
+        int reflectedSpeedX = -Link.signedByte(linkMotion.get().position().lastRomSpeedX()) >> 2;
+        int reflectedSpeedY = -Link.signedByte(linkMotion.get().position().lastRomSpeedY()) >> 2;
         resetPegasusBoots();
         linkMotion.get().position().forcedSpeedX(reflectedSpeedX);
         linkMotion.get().position().forcedSpeedY(reflectedSpeedY);

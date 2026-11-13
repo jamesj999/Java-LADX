@@ -45,42 +45,52 @@ public final class SessionDiagnosticSnapshot implements SessionDiagnostics {
         this.link = context.services().player().link();
     }
 
+    @Override
     public GPU gpu() {
         return gpu;
     }
 
+    @Override
     public RoomSession roomSession() {
         return roomSession;
     }
 
+    @Override
     public TransitionController transitionController() {
         return transitionController;
     }
 
+    @Override
     public int frameCounter() {
         return frameCounter;
     }
 
+    @Override
     public ScrollController scrollController() {
         return scrollController;
     }
 
+    @Override
     public PlayerState playerState() {
         return playerState;
     }
 
+    @Override
     public InventoryMenu inventoryMenu() {
         return inventoryMenu;
     }
 
+    @Override
     public DialogController dialogController() {
         return dialogController;
     }
 
+    @Override
     public EquipmentController equipmentController() {
         return equipmentController;
     }
 
+    @Override
     public Link link() {
         return link;
     }
@@ -124,6 +134,7 @@ public final class SessionDiagnosticSnapshot implements SessionDiagnostics {
                 + dialogController + ", equipmentController=" + equipmentController + ", link=" + link + "]";
     }
 
+    @Override
     public boolean headlessHasInventoryItem(int item) {
         if (playerState.inventory().itemA() == item || playerState.inventory().itemB() == item) return true;
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
@@ -132,19 +143,23 @@ public final class SessionDiagnosticSnapshot implements SessionDiagnostics {
         return false;
     }
 
+    @Override
     public String headlessInstrumentTrace() {
         return roomSession.rooms().instrumentTrace();
     }
 
+    @Override
     public String headlessMoblinKingTrace() {
         return roomSession.rooms().moblinKingTrace() + ","
                 + playerState.equipmentLevels().activePowerUp();
     }
 
+    @Override
     public int headlessBowWowState() {
         return roomSession.story().bowWowState();
     }
 
+    @Override
     public String headlessCombatTrace() {
         Sword sword = equipmentController.activeSword();
         Sword.CollisionBox box = sword == null
@@ -173,12 +188,14 @@ public final class SessionDiagnosticSnapshot implements SessionDiagnostics {
                                 .collect(Collectors.joining(";")));
     }
 
+    @Override
     public String headlessEntityPositions() {
         return roomSession.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .map(e -> "%02X:%s@%d,%d".formatted(e.type(), e.status(), e.x(), e.y()))
                 .collect(Collectors.joining(" "));
     }
 
+    @Override
     public HeadlessGameDriver.State headlessState() {
         return new HeadlessGameDriver.State(this);
     }

@@ -44,10 +44,12 @@ public final class FileMenuState {
             Objects.requireNonNull(controller);
         }
 
+        @Override
         public FileMenuAction tick(InputState input, InputConfig config) {
             return controller.tick(input, config);
         }
 
+        @Override
         public FileMenuFrameSnapshot snapshotOrNull() {
             return controller.snapshot();
         }
@@ -56,14 +58,17 @@ public final class FileMenuState {
     private enum Inactive implements Operation {
         INSTANCE;
 
+        @Override
         public FileMenuController controller() {
             throw new IllegalStateException("File menu controller is not initialized");
         }
 
+        @Override
         public FileMenuAction tick(InputState input, InputConfig config) {
             return controller().tick(input, config);
         }
 
+        @Override
         public FileMenuFrameSnapshot snapshotOrNull() {
             return null;
         }

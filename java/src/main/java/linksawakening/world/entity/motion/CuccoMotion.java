@@ -199,7 +199,7 @@ public final class CuccoMotion {
     }
 
     static int negate(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     private static int horizontalDirection(int speed) {

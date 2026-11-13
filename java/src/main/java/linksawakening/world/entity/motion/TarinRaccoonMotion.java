@@ -454,11 +454,11 @@ public final class TarinRaccoonMotion {
             }
 
             if ((collisionFlags & 0x03) != 0) {
-                owner.speedX[slot] = (-TarinRaccoonMotion.signedByte(owner.speedX[slot])) & 0xFF;
+                owner.speedX[slot] = -TarinRaccoonMotion.signedByte(owner.speedX[slot]) & 0xFF;
                 soundId = 0x09;
             }
             if ((collisionFlags & 0x0C) != 0) {
-                owner.speedY[slot] = (-TarinRaccoonMotion.signedByte(owner.speedY[slot])) & 0xFF;
+                owner.speedY[slot] = -TarinRaccoonMotion.signedByte(owner.speedY[slot]) & 0xFF;
                 soundId = 0x09;
             }
             if (slowCountdown < 0x60 && (input.frameCounter() & 3) == 0) {

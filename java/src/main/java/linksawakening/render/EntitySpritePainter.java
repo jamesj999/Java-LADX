@@ -384,7 +384,7 @@ final class EntitySpritePainter {
     /** HideSpritesUnderDialog ($01:5F6A) removes whole OAM entries, not pixels. */
     final boolean hiddenUnderDialog(int screenY) {
         int rawY = (screenY + OAM_Y_SCREEN_ORIGIN) & 0xFF;
-        return dialogPosition == DialogController.BoxPosition.TOP && rawY < 0x3E
-                || dialogPosition == DialogController.BoxPosition.BOTTOM && rawY >= 0x58;
+        return (dialogPosition == DialogController.BoxPosition.TOP && rawY < 0x3E)
+                || (dialogPosition == DialogController.BoxPosition.BOTTOM && rawY >= 0x58);
     }
 }

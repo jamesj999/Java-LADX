@@ -91,138 +91,172 @@ public final class ReplayCheckpoint implements HeadlessState {
         this.instrument1Flags = snapshot.roomSession().dungeon().dungeonProgressFlagsSnapshot()[0] & 0xFF;
     }
 
+    @Override
     public int frame() {
         return frame;
     }
 
+    @Override
     public int map() {
         return map;
     }
 
+    @Override
     public int room() {
         return room;
     }
 
+    @Override
     public int x() {
         return x;
     }
 
+    @Override
     public int y() {
         return y;
     }
 
+    @Override
     public boolean dialog() {
         return dialog;
     }
 
+    @Override
     public boolean pageWait() {
         return pageWait;
     }
 
+    @Override
     public String text() {
         return text;
     }
 
+    @Override
     public int shield() {
         return shield;
     }
 
+    @Override
     public int health() {
         return health;
     }
 
+    @Override
     public int sword() {
         return sword;
     }
 
+    @Override
     public int urchins() {
         return urchins;
     }
 
+    @Override
     public boolean toadstool() {
         return toadstool;
     }
 
+    @Override
     public int powder() {
         return powder;
     }
 
+    @Override
     public int inventoryTick() {
         return inventoryTick;
     }
 
+    @Override
     public int tarinX() {
         return tarinX;
     }
 
+    @Override
     public int tarinY() {
         return tarinY;
     }
 
+    @Override
     public boolean forestCleared() {
         return forestCleared;
     }
 
+    @Override
     public int tailKey() {
         return tailKey;
     }
 
+    @Override
     public int bgTick() {
         return bgTick;
     }
 
+    @Override
     public int smallKeys() {
         return smallKeys;
     }
 
+    @Override
     public int compass() {
         return compass;
     }
 
+    @Override
     public int dungeonMap() {
         return dungeonMap;
     }
 
+    @Override
     public int nightmareKey() {
         return nightmareKey;
     }
 
+    @Override
     public int animation() {
         return animation;
     }
 
+    @Override
     public int direction() {
         return direction;
     }
 
+    @Override
     public int swordAnimation() {
         return swordAnimation;
     }
 
+    @Override
     public int z() {
         return z;
     }
 
+    @Override
     public int velocityZ() {
         return velocityZ;
     }
 
+    @Override
     public int speedX() {
         return speedX;
     }
 
+    @Override
     public int speedY() {
         return speedY;
     }
 
+    @Override
     public boolean loading() {
         return loading;
     }
 
+    @Override
     public int maxHearts() {
         return maxHearts;
     }
 
+    @Override
     public int instrument1Flags() {
         return instrument1Flags;
     }

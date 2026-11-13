@@ -16,6 +16,7 @@ public final class SessionDialogSounds implements DialogSoundRouting {
         this.sink = Objects.requireNonNull(sink);
     }
 
+    @Override
     public void route() {
         DialogSoundRouter.routePending(dialog, sink);
     }

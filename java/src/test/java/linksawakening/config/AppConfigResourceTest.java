@@ -28,10 +28,12 @@ final class AppConfigResourceTest {
             @Override
             public InputStream getResourceAsStream(String name) {
                 return new InputStream() {
+                    @Override
                     public int read() throws IOException {
                         throw new IOException("fake read failure");
                     }
 
+                    @Override
                     public void close() {
                         closed[0] = true;
                     }

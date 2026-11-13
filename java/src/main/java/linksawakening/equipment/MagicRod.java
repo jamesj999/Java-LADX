@@ -162,6 +162,7 @@ public final class MagicRod implements EquipmentItem {
         }
     }
 
+    @Override
     public void submitOam(
             linksawakening.render.OamSink sink,
             int linkPixelX,

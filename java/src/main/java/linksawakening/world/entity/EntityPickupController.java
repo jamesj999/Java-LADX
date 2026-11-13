@@ -550,7 +550,7 @@ public final class EntityPickupController {
                             && (!owner.motions
                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                             .readSecretSeashellPegasusCollisionCoordinatesKnown()
-                                    || withinUnsignedWindow(
+                                    || (withinUnsignedWindow(
                                                     entity.x() + 0x08,
                                                     owner.motions
                                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
@@ -561,7 +561,7 @@ public final class EntityPickupController {
                                                     owner.motions
                                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                                             .readSecretSeashellPegasusCollisionY(),
-                                                    0x10));
+                                                    0x10)));
                 }
 
                 if (!reveal) {

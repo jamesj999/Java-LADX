@@ -67,6 +67,7 @@ final class EntityRewardApplier implements RoomFrameDrain<EntityRequest> {
         rewards.drainWitchRewardEvents(this);
     }
 
+    @Override
     public void accept(List<? extends EntityRequest> events) {
         for (int i = 0; i < events.size(); i++) apply(events.get(i));
     }

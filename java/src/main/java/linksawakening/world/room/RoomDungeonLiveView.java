@@ -22,26 +22,32 @@ final class RoomDungeonLiveView implements RoomDungeon.View {
         roomMapId = mapId;
     }
 
+    @Override
     public int progressFlagCount() {
         return 8;
     }
 
+    @Override
     public int progressFlag(int index) {
         return Byte.toUnsignedInt(world.dungeonProgressFlags[Objects.checkIndex(index, progressFlagCount())]);
     }
 
+    @Override
     public int currentItemFlagCount() {
         return DungeonItemState.ITEM_FLAG_SIZE;
     }
 
+    @Override
     public int currentItemFlag(int index) {
         return world.dungeonItemState.currentFlag(index);
     }
 
+    @Override
     public int minimapSize() {
         return minimapRooms.length;
     }
 
+    @Override
     public int minimapStatus(int index) {
         Objects.checkIndex(index, minimapRooms.length);
         refreshMap();

@@ -82,14 +82,17 @@ class RoomLinkWritesTest {
     void directVisitorsPreserveTiePrecedenceAndStreamOrderWithoutWrapperLists() {
         var calls = new java.util.ArrayList<String>();
         var target = new LinkWriteSink.Positions() {
+            @Override
             public void platform(SideViewPlatformLinkRequest r) {
                 calls.add("platform" + r.sourceSlot());
             }
 
+            @Override
             public void pot(SideViewPotLinkRequest r) {
                 calls.add("pot" + r.sourceSlot());
             }
 
+            @Override
             public void position(LinkFinalPositionRequest r) {
                 calls.add("position" + r.sourceSlot());
             }
@@ -105,10 +108,12 @@ class RoomLinkWritesTest {
                 List.of(new LinkAttackClearRequest(5), new LinkAttackClearRequest(1)),
                 List.of(new LinkAttackStepRequest(5)),
                 new LinkWriteSink.Attacks() {
+                    @Override
                     public void clear(LinkAttackClearRequest r) {
                         calls.add("clear" + r.sourceSlot());
                     }
 
+                    @Override
                     public void step(LinkAttackStepRequest r) {
                         calls.add("step" + r.sourceSlot());
                     }

@@ -61,6 +61,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     }
 
     /** Returns whether the ROM music driver still has an active channel. */
+    @Override
     public boolean isMusicPlaying() {
         return isAvailable() && driver.isPlaying();
     }
@@ -159,6 +160,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         }
     }
 
+    @Override
     public void update() {
         if (!isAvailable() || paused) {
             return;

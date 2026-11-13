@@ -51,42 +51,52 @@ public record RoomRenderSnapshot(
         entities = entities == null ? null : entities.ownedCopy();
     }
 
+    @Override
     public int tileCount() {
         return tileIds.length;
     }
 
+    @Override
     public int tileId(int index) {
         return tileIds[index];
     }
 
+    @Override
     public int attributeCount() {
         return tileAttrs.length;
     }
 
+    @Override
     public int tileAttribute(int index) {
         return tileAttrs[index];
     }
 
+    @Override
     public int paletteCount() {
         return palettes.length;
     }
 
+    @Override
     public int colorCount(int palette) {
         return palettes[palette].length;
     }
 
+    @Override
     public int paletteColor(int palette, int color) {
         return palettes[palette][color];
     }
 
+    @Override
     public int spritePaletteCount() {
         return entityPalettes().length;
     }
 
+    @Override
     public int spriteColorCount(int palette) {
         return entityPalettes()[palette].length;
     }
 
+    @Override
     public int spritePaletteColor(int palette, int color) {
         return entityPalettes()[palette][color];
     }

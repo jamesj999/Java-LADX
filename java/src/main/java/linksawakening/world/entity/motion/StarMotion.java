@@ -100,7 +100,7 @@ public final class StarMotion {
     }
 
     private static int negateByte(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     private static int directionForHorizontalSpeed(int speed) {

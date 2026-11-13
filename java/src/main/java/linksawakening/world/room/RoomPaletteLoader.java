@@ -111,9 +111,9 @@ public final class RoomPaletteLoader {
         int records = RomSymbols.IndoorSpritePaletteIndexData.offset();
         for (int recordIndex = 0; recordIndex < TRANSITION_RECORD_COUNT; recordIndex++) {
             int record = records + recordIndex * TRANSITION_RECORD_BYTES;
-            if ((readRomByte(record)) != mapId
-                    || (readRomByte(record + 1)) != roomId
-                    || (readRomByte(record + 2)) != direction) continue;
+            if (readRomByte(record) != mapId
+                    || readRomByte(record + 1) != roomId
+                    || readRomByte(record + 2) != direction) continue;
             int selector = readRomByte(record + 3);
             if ((selector & TRANSITION_SELECTOR_VALID) == 0) break;
             int pointer =
@@ -209,7 +209,7 @@ public final class RoomPaletteLoader {
     }
 
     private static boolean usesTurtleRockSideScrollPalette(int roomId) {
-        return roomId >= 0x64 && roomId <= 0x67 || roomId == 0x6A || roomId == 0x6B;
+        return (roomId >= 0x64 && roomId <= 0x67) || roomId == 0x6A || roomId == 0x6B;
     }
 
     private int[][] composeObjectPalettes(int roomPaletteOffset) {

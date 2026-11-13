@@ -41,7 +41,7 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
         if ((base == 0xED || base == 0xEE) && !compass) base = 0xEF;
         if (!map && !((base == 0xED || base == 0xEE) && compass)) return 0x7D;
         if ((status & 0x80) == 0) return base;
-        if (base == 0xED && (status & 0x10) == 0 || base == 0xEE && (status & 0x20) == 0) return base;
+        if ((base == 0xED && (status & 0x10) == 0) || (base == 0xEE && (status & 0x20) == 0)) return base;
         return map
                 ? 0xD0
                         + read(

@@ -24,7 +24,7 @@ class MarinPresentationAllocationTest {
         assertEquals(57, runtime.slots[0].x());
         assertEquals(56, first.x());
         int[] frame = {0};
-        Runnable repeat = () -> runtime.applyMarinWakeUpPresentation(56, 56, (frame[0]++) & 7);
+        Runnable repeat = () -> runtime.applyMarinWakeUpPresentation(56, 56, frame[0]++ & 7);
         assertEquals(0.0, AllocationProbe.bytesPerIteration(4000, 1000, repeat));
     }
 }

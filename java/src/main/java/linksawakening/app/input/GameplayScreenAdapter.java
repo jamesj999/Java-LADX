@@ -18,18 +18,22 @@ public final class GameplayScreenAdapter implements GameplayScreenDriver {
         this.passOut = Objects.requireNonNull(passOut);
     }
 
+    @Override
     public boolean interceptFrameInput() {
         return input.tryPresentFileSave();
     }
 
+    @Override
     public void onKey(int key, int action) {
         input.gameplayKey(key, action);
     }
 
+    @Override
     public void tick() {
         frame.tick();
     }
 
+    @Override
     public FileMenuFrameSnapshot gameOver() {
         return passOut.snapshot();
     }

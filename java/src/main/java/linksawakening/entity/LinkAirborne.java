@@ -148,15 +148,15 @@ final class LinkAirborne {
                 && !spinningPitWarpArrival
                 && !linkEntityEffects.get().marinBedJumpMotionLocked
                 && !swordSuppressesJumpAnimation()) tickJumpAnimation();
-        elevation.zSubPixels(elevation.zSubPixels() + (elevation.zVelocity()));
-        elevation.zVelocity(elevation.zVelocity() - (2));
+        elevation.zSubPixels(elevation.zSubPixels() + elevation.zVelocity());
+        elevation.zVelocity(elevation.zVelocity() - 2);
         // $02:4523–4561 changes only axes with held input. With no
         // input, momentum is retained; reversing takes 32 speed steps.
         if (!spinningPitWarpArrival
                 && !linkSideView.get().sideScrolling
                 && !linkEntityEffects.get().marinBedJumpMotionLocked
                 && !directionalLedgeJumpMotionLocked
-                && (!linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())) {
+                && !linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()) {
             int mask = linkControls.get().accessBuildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
                 int target = linkServices.get().linkMotionTables.airSpeedX(mask & 3);

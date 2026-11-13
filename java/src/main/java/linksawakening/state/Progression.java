@@ -121,7 +121,7 @@ public final class Progression {
     }
 
     public int deathCountBcd() {
-        return (deathCount / 100 << 8) | (deathCount / 10 % 10 << 4) | deathCount % 10;
+        return ((deathCount / 100) << 8) | (deathCount / 10 % 10 << 4) | deathCount % 10;
     }
 
     public int chestItemCount(int chestItem) {

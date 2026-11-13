@@ -202,9 +202,9 @@ final class RoomTilemapBuilder {
                 if (roomObjectsArea != null && areaIndex < roomObjectsArea.length) {
                     int objectId = roomObjectsArea[areaIndex];
                     boolean persistentReplacement =
-                            objectId == OBJECT_ROCKY_CAVE_DOOR && renderValue == OBJECT_BOMBABLE_CAVE_DOOR
-                                    || objectId == OBJECT_CAVE_DOOR && renderValue == OBJECT_CLOSED_GATE
-                                    || objectId == 0xA1 && renderValue == 0xA0;
+                            (objectId == OBJECT_ROCKY_CAVE_DOOR && renderValue == OBJECT_BOMBABLE_CAVE_DOOR)
+                                    || (objectId == OBJECT_CAVE_DOOR && renderValue == OBJECT_CLOSED_GATE)
+                                    || (objectId == 0xA1 && renderValue == 0xA0);
                     if (persistentReplacement) {
                         renderValue = objectId;
                         gbcOverlay[overlayIndex] = renderValue;

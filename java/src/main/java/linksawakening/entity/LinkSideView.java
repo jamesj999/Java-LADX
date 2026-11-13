@@ -162,8 +162,8 @@ final class LinkSideView {
     void moveSideViewAndCollide(int speedX, int speedY, int mask) {
         int oldX = linkMotion.get().position().subX(),
                 oldY = linkMotion.get().position().subY();
-        linkMotion.get().position().subX(linkMotion.get().position().subX() + (speedX));
-        linkMotion.get().position().subY(linkMotion.get().position().subY() + (speedY));
+        linkMotion.get().position().subX(linkMotion.get().position().subX() + speedX);
+        linkMotion.get().position().subY(linkMotion.get().position().subY() + speedY);
         sideViewGrounded = standingOnSideViewEntity;
         if (linkMotion.get().position().romEntityX() < 4
                 || linkMotion.get().position().romEntityX() >= 156
@@ -198,13 +198,13 @@ final class LinkSideView {
                 linkMotion
                         .get()
                         .collisionState()
-                        .romCollisionType(linkMotion.get().collisionState().romCollisionType() | (8));
+                        .romCollisionType(linkMotion.get().collisionState().romCollisionType() | 8);
             } else {
                 linkMotion.get().position().subY(oldY);
                 linkMotion
                         .get()
                         .collisionState()
-                        .romCollisionType(linkMotion.get().collisionState().romCollisionType() | (4));
+                        .romCollisionType(linkMotion.get().collisionState().romCollisionType() | 4);
             }
         }
     }

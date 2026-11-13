@@ -52,6 +52,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         return catalog.find(effect.namespace(), effect.id()).isPresent();
     }
 
+    @Override
     public void play(SoundEffect effect) {
         Objects.requireNonNull(effect, "effect");
         if (!supports(effect)) {
@@ -66,6 +67,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         }
     }
 
+    @Override
     public void tick60Hz() {
         if (!isPlaying()) {
             return;
@@ -76,6 +78,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         }
     }
 
+    @Override
     public boolean isPlaying() {
         return effectSelected && engine.isPlaying();
     }
@@ -92,6 +95,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         return engine.takeWaveRestoreRequest();
     }
 
+    @Override
     public void stop() {
         effectSelected = false;
         engine.stop();

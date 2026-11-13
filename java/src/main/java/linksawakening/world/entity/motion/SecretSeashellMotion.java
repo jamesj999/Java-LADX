@@ -220,8 +220,8 @@ public final class SecretSeashellMotion {
         privateCountdown1[slot] = REVEAL_COUNTDOWN;
         slowTransitionCountdown[slot] = REVEAL_SLOW_COUNTDOWN;
         Vector towardLink = vectorTowardsLink(entityX, entityY, linkEntityX, linkEntityY, REVEAL_VECTOR_LENGTH);
-        speedX[slot] = (-towardLink.x()) & 0xFF;
-        speedY[slot] = (-towardLink.y()) & 0xFF;
+        speedX[slot] = -towardLink.x() & 0xFF;
+        speedY[slot] = -towardLink.y() & 0xFF;
         speedZ[slot] = REVEAL_SPEED_Z;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;

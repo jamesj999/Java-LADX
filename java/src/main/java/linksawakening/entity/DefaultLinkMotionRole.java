@@ -35,67 +35,83 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
         this.linkSignals = assembly.linkSignals.get();
     }
 
+    @Override
     public boolean debugNoClip() {
         return linkStateMachine.status().accessDebugNoClip();
     }
 
+    @Override
     public boolean isSwimming() {
         return linkStateMachine.status().accessIsSwimming();
     }
 
+    @Override
     public boolean isDiving() {
         return linkStateMachine.accessIsDiving();
     }
 
+    @Override
     public int romPhysicsModifier() {
         return linkStateMachine.roomPhysics().accessRomPhysicsModifier();
     }
 
+    @Override
     public int pegasusBootsChargeMeter() {
         return linkStateMachine.dash().accessPegasusBootsChargeMeter();
     }
 
+    @Override
     public int pegasusBootsCollisionCountdown() {
         return linkStateMachine.dash().accessPegasusBootsCollisionCountdown();
     }
 
+    @Override
     public int pegasusBootsCollisionPosX() {
         return linkStateMachine.dash().accessPegasusBootsCollisionPosX();
     }
 
+    @Override
     public int pegasusBootsCollisionPosY() {
         return linkStateMachine.dash().accessPegasusBootsCollisionPosY();
     }
 
+    @Override
     public void setGelClinging(boolean clinging, int worldFrame) {
         linkStateMachine.accessSetGelClinging(clinging, worldFrame);
     }
 
+    @Override
     public void update() {
         linkGroundMotion.accessUpdate();
     }
 
+    @Override
     public boolean grassGroundEffectActive() {
         return linkGroundMotion.accessGrassGroundEffectActive();
     }
 
+    @Override
     public void clearGroundEffects() {
         linkGroundMotion.accessClearGroundEffects();
     }
 
+    @Override
     public boolean consumeRevolvingDoorTransition() {
         return linkStateMachine.door().accessConsumeRevolvingDoorTransition();
     }
 
+    @Override
     public boolean shouldApplyGroundMotion() {
         return linkGroundMotion.accessShouldApplyGroundMotion();
     }
 
+    @Override
     public void setDebugNoClip(boolean enabled) {
         linkStateMachine.setDebugNoClip(enabled);
     }
 
     /** Clears scripted presentation/capture state before a debug game reset. */
+    @Override
     public void resetTransientStateForDebug() {
         dialogGotItemSequence.reset();
         linkStateMachine.status().debugNoClip(false);
@@ -152,46 +168,57 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
         linkAnimationState.walkFrame = 0;
     }
 
+    @Override
     public void finishRoomScroll(boolean downward) {
         linkStateMachine.roomPhysics().finishRoomScroll(downward);
     }
 
+    @Override
     public void writeRomInteractiveMotionBlock(int value) {
         linkStateMachine.status().writeRomInteractiveMotionBlock(value);
     }
 
+    @Override
     public int romInteractiveMotionBlockValue() {
         return linkStateMachine.status().romInteractiveMotionBlockValue();
     }
 
+    @Override
     public int romSlowWalkingSpeed() {
         return linkStateMachine.status().slowWalkingSpeed();
     }
 
+    @Override
     public int romItemUsageContext() {
         return linkStateMachine.status().itemUsageContext();
     }
 
+    @Override
     public void blockNextRomMotionFrame() {
         linkStateMachine.status().blockNextRomMotionFrame();
     }
 
+    @Override
     public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
         linkStateMachine.roomPhysics().initializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
     }
 
+    @Override
     public void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
         linkStateMachine.roomPhysics().setRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
     }
 
+    @Override
     public void setRomPhysicsModifier(int modifier) {
         linkStateMachine.roomPhysics().setRomPhysicsModifier(modifier);
     }
 
+    @Override
     public ScreenShakeRequest consumePegasusScreenShakeRequest() {
         return linkStateMachine.dash().consumePegasusScreenShakeRequest();
     }
 
+    @Override
     public void resetPegasusBoots() {
         linkStateMachine.dash().resetPegasusBoots();
     }

@@ -12,6 +12,7 @@ public final class RunState implements SessionLifecycle {
         return running;
     }
 
+    @Override
     public void requestStop() {
         running = false;
     }

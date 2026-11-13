@@ -198,7 +198,7 @@ final class LinkSwimming {
             linkStateMachine
                     .get()
                     .roomPhysics()
-                    .physicsModifier(linkStateMachine.get().roomPhysics().physicsModifier() ^ (1));
+                    .physicsModifier(linkStateMachine.get().roomPhysics().physicsModifier() ^ 1);
             divingCountdown = linkStateMachine.get().roomPhysics().physicsModifier() == 0 ? 0 : 0xA0;
         }
         if (linkControls

@@ -28,11 +28,13 @@ class LinkMotionCaptureTest {
             var c = SessionTestAccess.context(game).runtime().flows().simulation();
             var order = new ArrayList<String>();
             var driver = new LinkMotionDriver() {
+                @Override
                 public void capture(Link l) {
                     order.add("capture");
                     LinkMotionDriver.DIRECT.capture(l);
                 }
 
+                @Override
                 public void update(Link l) {
                     assertEquals(List.of("capture"), order);
                     order.add("update");

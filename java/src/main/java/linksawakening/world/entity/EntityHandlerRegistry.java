@@ -30,10 +30,12 @@ public final class EntityHandlerRegistry {
             initializerRegistered = true;
         }
 
+        @Override
         public void initialize(RoomEntity entity, IntSupplier random) {
             initializer.initialize(entity, random);
         }
 
+        @Override
         public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
             if (advanceRegistered) return advance.apply(entity, context);
             return initializer.advance(entity, context);

@@ -109,7 +109,7 @@ final class SfxCpu {
             case 0x2C -> l = inc8(l);
             case 0x2D -> l = dec8(l);
             case 0x2E -> l = next8();
-            case 0x2F -> a = (~a) & 0xFF;
+            case 0x2F -> a = ~a & 0xFF;
             case 0x30 -> jr(!flagC);
             case 0x31 -> next16();
             case 0x32 -> {

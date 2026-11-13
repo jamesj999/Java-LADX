@@ -75,7 +75,7 @@ public final class EntityMotionMath {
         if (distanceY < 0) {
             towardY = -towardY;
         }
-        return new Vector((-towardX) & 0xFF, (-towardY) & 0xFF);
+        return new Vector(-towardX & 0xFF, -towardY & 0xFF);
     }
 
     static int divideVectorComponent(int smaller, int larger, int length) {

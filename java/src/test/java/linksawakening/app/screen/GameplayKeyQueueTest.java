@@ -45,19 +45,23 @@ class GameplayKeyQueueTest {
         private boolean intercept;
         private int ticks;
 
+        @Override
         public boolean interceptFrameInput() {
             return intercept;
         }
 
+        @Override
         public void onKey(int key, int action) {
             keys.add(key + ":" + action);
             if (key == 0) screen.onKey(99, 1);
         }
 
+        @Override
         public void tick() {
             ticks++;
         }
 
+        @Override
         public FileMenuFrameSnapshot gameOver() {
             return null;
         }

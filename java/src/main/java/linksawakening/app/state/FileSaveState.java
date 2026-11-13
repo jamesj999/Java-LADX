@@ -44,10 +44,12 @@ public final class FileSaveState {
             Objects.requireNonNull(controller);
         }
 
+        @Override
         public FileSaveAction tick(InputState input, InputConfig config) {
             return controller.tick(input, config);
         }
 
+        @Override
         public FileMenuFrameSnapshot snapshotOrNull() {
             return controller.snapshot();
         }
@@ -56,14 +58,17 @@ public final class FileSaveState {
     private enum Inactive implements Operation {
         INSTANCE;
 
+        @Override
         public FileSaveController controller() {
             throw new IllegalStateException("File save controller is not initialized");
         }
 
+        @Override
         public FileSaveAction tick(InputState input, InputConfig config) {
             return controller().tick(input, config);
         }
 
+        @Override
         public FileMenuFrameSnapshot snapshotOrNull() {
             return null;
         }

@@ -70,7 +70,6 @@ public final class FileMenuScreen implements Screen {
                             dependencies.saves().saveRamStore.copySlot(action.selectedSlot(), action.targetSlot()));
         }
         dependencies.completeInput().complete();
-        return;
     }
 
     @Override

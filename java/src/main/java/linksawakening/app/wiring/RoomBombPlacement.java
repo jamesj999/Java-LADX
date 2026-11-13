@@ -20,6 +20,7 @@ final class RoomBombPlacement implements Bomb.PlacementTarget {
         this.items = Objects.requireNonNull(items);
     }
 
+    @Override
     public boolean placeBomb() {
         boolean placed = items.placeBomb(
                 link.position().romEntityX(),
@@ -31,10 +32,12 @@ final class RoomBombPlacement implements Bomb.PlacementTarget {
         return placed;
     }
 
+    @Override
     public boolean playBumpForLastPlacement() {
         return bump;
     }
 
+    @Override
     public boolean bombActive() {
         return items.bombActive();
     }

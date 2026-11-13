@@ -155,12 +155,12 @@ final class LinkAnimator {
     void cachePushingAnimation() {
         pushingAnimationState = -1;
         if (linkItemState.get().accessIsRomLinkPushing()
-                && (!linkServices
+                && !linkServices
                         .get()
                         .collision
                         .linkOnSlowGround(
                                 linkMotion.get().position().pixelX(),
-                                linkMotion.get().position().pixelY()))) {
+                                linkMotion.get().position().pixelY())) {
             int frame = (linkAnimationState.get().romConsecutiveStepsCount >> 3) & 1;
             pushingAnimationState = linkServices
                     .get()

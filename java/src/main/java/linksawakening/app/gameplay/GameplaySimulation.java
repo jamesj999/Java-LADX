@@ -67,34 +67,42 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
     private final GameplayControl control;
 
     private final SimulationStages stages = new SimulationStages() {
+        @Override
         public boolean dialogStory() {
             return dialogStoryPhase.tick(GameplaySimulation.this);
         }
 
+        @Override
         public boolean dialogBlocks() {
             return dialogBlockers().current().pausesGameplay();
         }
 
+        @Override
         public void linkEquipment(boolean blocked, boolean inventory) {
             linkEquipmentPhase.tick(GameplaySimulation.this, blocked, inventory);
         }
 
+        @Override
         public boolean passingOut() {
             return link().status().isPassingOut() || passOutController().handledFrame();
         }
 
+        @Override
         public Sword.CollisionBox combat(boolean blocked) {
             return combatPhase.tick(GameplaySimulation.this, blocked);
         }
 
+        @Override
         public void entities(Sword.CollisionBox sword) {
             entityPhase.tick(GameplaySimulation.this, sword);
         }
 
+        @Override
         public void completeInput() {
             completeGameplayFrame(dialogController());
         }
 
+        @Override
         public void animatedTiles(boolean blocked) {
             animatedTilesPhase.tick(GameplaySimulation.this, blocked);
         }
@@ -254,6 +262,7 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
     }
 
     /** The simulation's strict per-frame order, including opening-story gates. */
+    @Override
     public void tick() {
         // GAMEPLAY_INVENTORY has its own handler ($00:0EA1/$20:5904):
         // world resources, effects, Link and entities do not advance behind it.

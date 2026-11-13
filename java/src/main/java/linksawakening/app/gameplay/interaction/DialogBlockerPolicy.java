@@ -33,6 +33,7 @@ public final class DialogBlockerPolicy implements DialogBlockers {
         this.input = Objects.requireNonNull(input);
     }
 
+    @Override
     public OverworldDialogBlockers current() {
         return OverworldDialogBlockers.of(
                 inventory.shouldBlockOverworldInput(),
