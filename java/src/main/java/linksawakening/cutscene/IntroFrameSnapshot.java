@@ -22,6 +22,22 @@ public record IntroFrameSnapshot(
         byte[] animatedTiles,
         int animatedTilesDestination) {
 
+    private static final IntroFrameSnapshot EMPTY = new Builder()
+            .sceneId("")
+            .substate("")
+            .tilemap(new int[0])
+            .attrmap(new int[0])
+            .bgPalettes(new int[0][])
+            .objPalettes(new int[0][])
+            .sprites(List.of())
+            .titleRevealRows(7)
+            .build();
+
+    /** Empty presentation before a sequence has published its initial frame. */
+    static IntroFrameSnapshot empty() {
+        return EMPTY;
+    }
+
     /** @deprecated Use {@link Builder} for named construction. */
     @Deprecated(forRemoval = true)
     public IntroFrameSnapshot {

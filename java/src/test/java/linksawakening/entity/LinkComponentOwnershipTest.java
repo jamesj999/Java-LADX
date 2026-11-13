@@ -10,6 +10,15 @@ import org.junit.jupiter.api.Test;
 
 class LinkComponentOwnershipTest {
     @Test
+    void unboundAssemblyCellCannotLeakAComponent() {
+        var reference = new LinkComponentRef<Object>();
+        assertThrows(IllegalStateException.class, reference::get);
+        Object component = new Object();
+        reference.bind(component);
+        assertSame(component, reference.get());
+    }
+
+    @Test
     void behaviorsNeverRetainTheLinkFacade() {
         for (Class<?> component : List.of(
                 LinkAnimator.class,

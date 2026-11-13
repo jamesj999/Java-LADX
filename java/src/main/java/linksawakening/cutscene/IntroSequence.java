@@ -103,7 +103,7 @@ public final class IntroSequence {
         frames.setScene(IntroCutsceneScript.SCENE_SEA);
         water.waveTiles(rom.tileBytes(0x4100, 128));
         spriteComposer.beginFrame(0);
-        frames.refreshSnapshot(shipX, shipY, seaFadeTimer, lightning, clockState.clock());
+        frames.initializeFrame(shipX, shipY, seaFadeTimer, lightning, clockState.clock());
     }
 
     public IntroSequence(DefaultResources resources) {
@@ -219,7 +219,7 @@ public final class IntroSequence {
     }
 
     public int scrollXForLine(int screenY) {
-        int[] lineScroll = frames.snapshot() == null ? null : frames.snapshot().lineScrollX();
+        int[] lineScroll = frames.snapshot().lineScrollX();
         if (lineScroll == null || lineScroll.length == 0) {
             return scrollX();
         }
@@ -227,7 +227,7 @@ public final class IntroSequence {
     }
 
     public int[] lineScrollX(int height) {
-        int[] lineScroll = frames.snapshot() == null ? null : frames.snapshot().lineScrollX();
+        int[] lineScroll = frames.snapshot().lineScrollX();
         if (lineScroll == null) {
             return null;
         }

@@ -38,7 +38,7 @@ final class IntroFramePublisher {
     private int[][] objPalettes;
     private List<IntroSprite> sprites = List.of();
     private List<IntroSprite> pendingSprites;
-    private IntroFrameSnapshot snapshot;
+    private IntroFrameSnapshot snapshot = IntroFrameSnapshot.empty();
     private IntroFrameSnapshot transitionFrame;
 
     private final IntroRomData rom;
@@ -74,8 +74,13 @@ final class IntroFramePublisher {
         return phase.sceneId().equals(IntroCutsceneScript.SCENE_BEACH) ? video.beachScrollX() : video.scrollX();
     }
 
+    /** Construction-time publication after the scene and wave tables are loaded. */
+    void initializeFrame(int shipX, int shipY, int seaFadeTimer, List<IntroSequence.Lightning> lightning, int clock) {
+        sprites = renderSprites(shipX, shipY, seaFadeTimer, lightning, clock);
+        refreshSnapshot(shipX, shipY, seaFadeTimer, lightning, clock);
+    }
+
     void refreshSnapshot(int shipX, int shipY, int seaFadeTimer, List<IntroSequence.Lightning> lightning, int clock) {
-        if (snapshot == null) sprites = renderSprites(shipX, shipY, seaFadeTimer, lightning, clock);
         boolean previousScene = phase.stageFrame() == 0
                 && transitionFrame != null
                 && (phase.stage() == Stage.LINK_FACE || phase.stage() == Stage.BEACH_LOAD);

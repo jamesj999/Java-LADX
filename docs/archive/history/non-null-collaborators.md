@@ -375,3 +375,11 @@ External tests still using Link's compatibility constructors can adopt `testing.
 - `render/MarinWakeUpBedRenderLayerTest.java`
 - `render/SceneConstructionFixture.java`
 - `render/TarinShieldRenderLayerTest.java`
+
+## Step 3: construction and loading phases
+
+Null comparisons: **200 → 183**. All nine originally classified lazy comparisons are removed. Glyph bytes are decoded at font construction; palette and native PCM scratch start with allocated storage and resize only for capacity changes; collision caches start with immutable empty samples and refresh on value/coordinate changes. Link assembly has an explicit unbound sentinel, rejects use before binding, and binds once.
+
+`IntroPlayback` owns explicit unloaded/running phases. The unloaded phase supplies an empty presentation and no work; a running phase owns its sequence and last snapshot. `CutsceneManager.frameSnapshot()` preserves its nullable external contract at one boundary. Initial intro-frame publication is a construction-time operation rather than a first-call null cache. Two snapshot checks after `IntroSequence` construction were redundant and removed. The original ledger's `IntroFramePublisher.snapshot` check was another initialization check rather than a domain value; it is also gone.
+
+Validation: 2,965 tests, zero failures; no assertions removed. New checks cover unloaded playback without a ROM and read-before-bind rejection.

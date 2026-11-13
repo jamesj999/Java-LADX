@@ -12,7 +12,7 @@ final class InventoryInstrumentPanel implements InventoryGraphics.Instruments {
 
     private final int[] attributeScratch = new int[4];
     private final int[][][] instrumentTiles = new int[8][2][];
-    private int[][] paletteScratch;
+    private int[][] paletteScratch = new int[8][];
     private final int[] cyclingPalette = new int[4];
     private final int[] positions = new int[8];
     private final int[][] cycleColors = new int[16][2];
@@ -61,7 +61,7 @@ final class InventoryInstrumentPanel implements InventoryGraphics.Instruments {
     /** Borrowed palette rows, consumed synchronously by render/submit before the next call. */
     @Override
     public int[][] framePalettes(int[][] base, int frame) {
-        if (paletteScratch == null || paletteScratch.length != base.length) paletteScratch = new int[base.length][];
+        if (paletteScratch.length != base.length) paletteScratch = new int[base.length][];
         System.arraycopy(base, 0, paletteScratch, 0, base.length);
         System.arraycopy(base[7], 0, cyclingPalette, 0, 4);
         int phase = (frame >>> 3) & 15;

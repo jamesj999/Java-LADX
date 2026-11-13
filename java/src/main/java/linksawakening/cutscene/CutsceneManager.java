@@ -15,67 +15,50 @@ public final class CutsceneManager implements CutsceneContext {
     private final DialogController dialogController;
     private final Consumer<String> sceneLoader;
     private final CutsceneController controller;
-    private IntroSequence introSequence;
+    private final IntroPlayback playback;
     private IntConsumer noiseSound = id -> {};
 
     public void setIntroNoiseSound(IntConsumer sink) {
         noiseSound = Objects.requireNonNull(sink);
-        if (introSequence != null) introSequence.setNoiseSound(noiseSound);
+        playback.setNoiseSound(noiseSound);
     }
 
-    private IntroFrameSnapshot frameSnapshot;
     private String currentScene = "";
 
     public CutsceneManager(DialogController dialogController, Consumer<String> sceneLoader) {
         this.dialogController = Objects.requireNonNull(dialogController);
         this.sceneLoader = Objects.requireNonNull(sceneLoader);
         this.controller = new CutsceneController(this);
+        playback = new IntroPlayback(this::setScene);
     }
 
     public void startIntro() {
-        introSequence = new IntroSequence();
-        introSequence.setNoiseSound(noiseSound);
-        frameSnapshot = introSequence.snapshot();
+        IntroSequence introSequence = new IntroSequence();
+        playback.start(introSequence, noiseSound);
         controller.start(CutsceneScript.of());
         setScene(introSequence.sceneId());
     }
 
     public void startIntro(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
-        introSequence = new IntroSequence(romData, backgroundProvider);
-        introSequence.setNoiseSound(noiseSound);
-        frameSnapshot = introSequence.snapshot();
+        IntroSequence introSequence = new IntroSequence(romData, backgroundProvider);
+        playback.start(introSequence, noiseSound);
         controller.start(CutsceneScript.of());
         setScene(introSequence.sceneId());
     }
 
     public void tick() {
-        if (introSequence != null) {
-            String previousScene = introSequence.sceneId();
-            introSequence.tick();
-            frameSnapshot = introSequence.snapshot();
-            String nextScene = introSequence.sceneId();
-            if (!nextScene.equals(previousScene)) {
-                setScene(nextScene);
-            }
-            return;
-        }
+        if (playback.tick()) return;
         if (controller.isActive()) {
             controller.tick();
         }
     }
 
     public boolean isActive() {
-        return (introSequence != null && introSequence.isActive()) || controller.isActive();
+        return playback.active() || controller.isActive();
     }
 
     public boolean skipIntroToTitle() {
-        if (introSequence == null || !introSequence.isActive()) {
-            return false;
-        }
-        introSequence.skipToTitle();
-        frameSnapshot = introSequence.snapshot();
-        setScene(introSequence.sceneId());
-        return true;
+        return playback.skip();
     }
 
     public boolean isShowingTitleScene() {
@@ -83,27 +66,27 @@ public final class CutsceneManager implements CutsceneContext {
     }
 
     public int scrollX() {
-        return frameSnapshot != null ? frameSnapshot.scrollX() : 0;
+        return playback.frame().scrollX();
     }
 
     public int scrollY() {
-        return frameSnapshot != null ? frameSnapshot.scrollY() : 0;
+        return playback.frame().scrollY();
     }
 
     public int[] lineScrollX(int height) {
-        return frameSnapshot != null ? resizeLineScroll(frameSnapshot.lineScrollX(), height) : null;
+        return resizeLineScroll(playback.frame().lineScrollX(), height);
     }
 
     public List<IntroSprite> sprites() {
-        return frameSnapshot != null ? frameSnapshot.sprites() : List.of();
+        return playback.frame().sprites();
     }
 
     public int titleRevealRows() {
-        return frameSnapshot != null ? frameSnapshot.titleRevealRows() : 7;
+        return playback.frame().titleRevealRows();
     }
 
     public IntroFrameSnapshot frameSnapshot() {
-        return frameSnapshot;
+        return playback.snapshotOrNull();
     }
 
     @Override

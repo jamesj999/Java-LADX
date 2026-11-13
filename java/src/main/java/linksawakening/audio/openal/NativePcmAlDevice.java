@@ -12,7 +12,7 @@ import org.lwjgl.openal.EXTDisconnect;
 import org.lwjgl.system.MemoryUtil;
 
 final class NativePcmAlDevice implements PcmAlDevice {
-    private ShortBuffer pcmStorage;
+    private ShortBuffer pcmStorage = BufferUtils.createShortBuffer(0);
     private long device;
     private long context;
     private int source;
@@ -67,8 +67,7 @@ final class NativePcmAlDevice implements PcmAlDevice {
         int buffer = AL10.alGenBuffers();
         try {
             check("create PCM buffer");
-            if (pcmStorage == null || pcmStorage.capacity() < pcm.length)
-                pcmStorage = BufferUtils.createShortBuffer(pcm.length);
+            if (pcmStorage.capacity() < pcm.length) pcmStorage = BufferUtils.createShortBuffer(pcm.length);
             var data = pcmStorage;
             data.clear();
             data.put(pcm).flip();

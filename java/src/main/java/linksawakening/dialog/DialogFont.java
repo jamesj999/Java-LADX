@@ -26,6 +26,10 @@ final class DialogFont {
     private DialogFont(byte[] fontTiles, int[] codepointToTile) {
         this.fontTiles = fontTiles;
         this.codepointToTile = codepointToTile;
+        for (int tile = 0; tile < FONT_TILE_COUNT; tile++) {
+            glyphTiles[tile] = new byte[TILE_SIZE_BYTES];
+            System.arraycopy(fontTiles, tile * TILE_SIZE_BYTES, glyphTiles[tile], 0, TILE_SIZE_BYTES);
+        }
     }
 
     static DialogFont loadDefault() {
@@ -73,11 +77,7 @@ final class DialogFont {
             throw new IllegalArgumentException("CodepointToTileMap entry 0x" + Integer.toHexString(tableIndex)
                     + " points outside FontTiles: tile 0x" + Integer.toHexString(tileIndex));
         }
-        if (glyphTiles[tileIndex] != null) return glyphTiles[tileIndex];
-        byte[] tile = new byte[TILE_SIZE_BYTES];
-        System.arraycopy(fontTiles, offset, tile, 0, tile.length);
-        glyphTiles[tileIndex] = tile;
-        return tile;
+        return glyphTiles[tileIndex];
     }
 
     private static void requireRange(Rom romData, int offset, int length, String label) {

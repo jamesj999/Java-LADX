@@ -1,5 +1,6 @@
 package linksawakening.physics;
 
+import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.rom.CollisionTables;
 import linksawakening.rom.PhysicsTables;
@@ -53,6 +54,7 @@ public final class OverworldCollision {
     public OverworldCollision(PhysicsTables physicsTables, CollisionTables collisionTables) {
         this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
         this.collisionTables = Objects.requireNonNull(collisionTables, "collisionTables");
+        Arrays.fill(groundSamples, EMPTY_SAMPLE);
     }
 
     public void setRoom(int[] roomObjectsArea) {
@@ -276,7 +278,10 @@ public final class OverworldCollision {
         int objectId = inBounds ? roomObjectsArea[areaIndex] & 0xFF : 0xFF;
         int physicsFlag = inBounds ? physicsTables.objectPhysicsFlag(physicsTableIndex, objectId) : PhysicsFlags.NONE;
         GroundInteractionSample sample = groundSamples[cell];
-        if (sample == null || sample.objectId() != objectId || sample.physicsFlag() != physicsFlag) {
+        if (sample.objectId() != objectId
+                || sample.physicsFlag() != physicsFlag
+                || sample.objectLeft() != objectLeft
+                || sample.objectTop() != objectTop) {
             sample = new GroundInteractionSample(objectId, physicsFlag, objectLeft, objectTop);
             groundSamples[cell] = sample;
         }
