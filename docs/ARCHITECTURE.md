@@ -43,12 +43,35 @@ responsibilities and measured before/after sizes are recorded in
 [composition-redesign.md](archive/history/composition-redesign.md).
 
 Use explicit imports in main and tests, and import JDK types instead of inline
-fully-qualified names. Required collaborators are non-null by construction;
-normalize optional observers/sinks at configuration. Document genuine domain
-absence (unloaded scenes, optional effects, unavailable ROM capabilities).
-Diagnostics use DebugLog; direct console output is reserved for CLI usage.
-Test-only inspection belongs in test fixtures. OwnedSourceHygieneTest protects
-explicit imports and the absence of runtime ForTest hooks.
+fully-qualified names. Diagnostics use DebugLog; direct console output is reserved
+for CLI usage. Test-only inspection belongs in test fixtures.
+OwnedSourceHygieneTest protects explicit imports and the absence of runtime
+ForTest hooks.
+
+Required collaborator fields are final and non-null. Validate them once with
+`Objects.requireNonNull` at construction; update and render paths must not check
+those dependencies again. Choose explicit no-op services or inert data at wiring
+time for disabled audio, open-world collision, empty equipment and overlay-only
+presentation. Missing player state, input, ROM tables or renderers are not domain
+states. Test builders such as `testing.TestLinks` supply real lightweight services
+or those same explicit no-op configurations, rather than passing null.
+
+When an external caller still needs a legacy nullable constructor, retain a thin
+adapter that selects defaults once and delegates to the validated form. Do not
+store nullable services or spread compatibility branches through frame methods.
+Runtime observer subscriptions and selected playback identities are mutable
+configuration/domain data, separate from the required service graph.
+
+Represent genuine domain absence with a named empty value, a presence flag or a
+named predicate, and document it on the field or value type. Examples include an
+unbound room, an inactive effect slot, a scene without per-line scroll, and a save
+image without a disk destination. Preserve nullable public data accessors only
+where external callers still depend on that contract; keep the translation at
+that boundary. Do not introduce `Optional` or allocating wrappers in per-frame
+paths. Initialize caches during construction where order permits; otherwise model
+loading/publication phases explicitly, as with unloaded/running intro playback.
+See [the non-null collaborator audit](archive/history/non-null-collaborators.md)
+for remaining domain/boundary checks and constructor hand-offs.
 
 ## Package map
 

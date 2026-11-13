@@ -646,3 +646,9 @@ All allocation guard tests pass with and without escape analysis. The EA-off arg
 | Reusable render assembly + scene | 0 | 0 |
 
 Walking's remaining whole-frame allocations are outside the changed collaborator setup; its 747 B guard remains unchanged. Owned per-frame measurements remain zero. Full default suite: **2,970 tests, zero failures/errors, one pre-existing skip**, versus 2,960 at the merged baseline. Off-limits source files, fixtures and build files were not edited.
+
+## Step 7: architecture rule
+
+The architecture design rules now require final, constructor-validated collaborators, explicit no-op wiring, non-null test builders, named domain absence, and explicit loading phases. They distinguish mutable diagnostic subscriptions from required services and keep legacy nullable data translations at public boundaries. Cohesion and the no-implementation-inheritance rule remain unchanged.
+
+The final documentation commit was preceded by `LA_ROM`-configured `./gradlew spotlessApply test`: 2,970 tests, zero failures/errors, one pre-existing skip. No off-limits files or fixtures changed across this round.
