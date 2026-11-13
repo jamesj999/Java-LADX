@@ -20,7 +20,7 @@ final class RoomPlayerItemActions {
                 dependencies.overworldCollision(),
                 dependencies.romTables(),
                 dependencies.roomObjectMutations(),
-                dependencies.roomPlayerItemActions(),
+                () -> this,
                 dependencies.roomSessionViews(),
                 dependencies.roomTileRedraw()));
     }
@@ -94,10 +94,7 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return dependencies
-                .roomPlayerItemActions()
-                .get()
-                .fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return this.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     boolean fireMagicRodFireball(
@@ -172,18 +169,12 @@ final class RoomPlayerItemActions {
     }
 
     boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return dependencies
-                .roomPlayerItemActions()
-                .get()
-                .shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
+        return this.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
                 .spawned();
     }
 
     ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return dependencies
-                .roomPlayerItemActions()
-                .get()
-                .shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return this.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     ArrowShotResult shootArrowResult(
@@ -242,7 +233,6 @@ final class RoomPlayerItemActions {
             OverworldCollision overworldCollision,
             RomTables romTables,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomPlayerItemActions> roomPlayerItemActions,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
         Dependencies {
@@ -254,7 +244,6 @@ final class RoomPlayerItemActions {
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romTables, "romTables");
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomPlayerItemActions, "roomPlayerItemActions");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }

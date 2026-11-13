@@ -72,11 +72,11 @@ final class RoomPuzzleController {
     }
 
     void tickRoomEvent(int linkEntityX, int linkEntityY) {
-        dependencies.roomPuzzleController().get().tickIndoorKeyDoorAnimation();
-        if (dependencies.roomPuzzleController().get().tickShutterClosing()) return;
-        dependencies.roomPuzzleController().get().tickSwitchButton(linkEntityX, linkEntityY);
-        dependencies.roomPuzzleController().get().tickRoomEventChestReveal(linkEntityX, linkEntityY);
-        dependencies.roomPuzzleController().get().tickRoomEventStairReveal();
+        this.tickIndoorKeyDoorAnimation();
+        if (this.tickShutterClosing()) return;
+        this.tickSwitchButton(linkEntityX, linkEntityY);
+        this.tickRoomEventChestReveal(linkEntityX, linkEntityY);
+        this.tickRoomEventStairReveal();
         if (dependencies.puzzles().pushedBlocksTriggerEffectPending) {
             dependencies.puzzles().pushedBlocksTriggerEffectPending = false;
             return;
@@ -96,8 +96,7 @@ final class RoomPuzzleController {
         }
         int trigger = dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK;
         if (!dependencies.puzzles().roomEventEffectExecuted
-                && ((trigger == EVENT_TRIGGER_KILL_ALL_ENEMIES
-                                && dependencies.roomPuzzleController().get().killAllEnemiesTriggerResolved())
+                && ((trigger == EVENT_TRIGGER_KILL_ALL_ENEMIES && this.killAllEnemiesTriggerResolved())
                         || (trigger == EVENT_TRIGGER_STEP_ON_BUTTON && dependencies.puzzles().switchButtonPressed != 0)
                         || (trigger == EVENT_TRIGGER_LIGHT_TORCHES && dependencies.puzzles().roomTriggerCount == 0x02)
                         || (trigger == EVENT_TRIGGER_THROW_AT_DOOR
@@ -133,7 +132,7 @@ final class RoomPuzzleController {
                     && ((linkEntityY - 0x16) & 255) < 0x5E) {
                 dependencies.puzzles().shutterCloseStarted = true;
                 dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_CLOSED);
-                dependencies.roomPuzzleController().get().tickShutterClosing();
+                this.tickShutterClosing();
             }
             return;
         }
@@ -228,16 +227,10 @@ final class RoomPuzzleController {
         int direction = dependencies.puzzles().indoorKeyDoorDirection;
         dependencies.puzzles().indoorKeyDoorDirection = -1;
         if (dependencies.puzzles().indoorBossDoorOpening) {
-            dependencies
-                    .roomPuzzleController()
-                    .get()
-                    .replaceBossDoorObjects(dependencies.puzzles().indoorKeyDoorLocation);
+            this.replaceBossDoorObjects(dependencies.puzzles().indoorKeyDoorLocation);
             dependencies.puzzles().indoorBossDoorOpening = false;
         } else {
-            dependencies
-                    .roomPuzzleController()
-                    .get()
-                    .replaceKeyDoorObjects(direction, dependencies.puzzles().indoorKeyDoorLocation);
+            this.replaceKeyDoorObjects(direction, dependencies.puzzles().indoorKeyDoorLocation);
         }
         dependencies.puzzles().indoorKeyDoorLocation = -1;
         byte[] status = dependencies
@@ -410,7 +403,7 @@ final class RoomPuzzleController {
     }
 
     void openActiveRoomShutterDoors() {
-        dependencies.roomPuzzleController().get().openActiveRoomShutterDoors(false);
+        this.openActiveRoomShutterDoors(false);
     }
 
     void openActiveRoomShutterDoors(boolean persistDirectionalStatus) {
@@ -467,7 +460,6 @@ final class RoomPuzzleController {
             Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomPuzzleController> roomPuzzleController,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
             java.util.function.Supplier<RoomStoryState> roomStoryState,
@@ -485,7 +477,6 @@ final class RoomPuzzleController {
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
             java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
@@ -507,7 +498,7 @@ final class RoomPuzzleController {
                                 RoomInteractionGeometry.roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
             }
         } else if (effect == EVENT_EFFECT_OPEN_LOCKED_DOORS) {
-            dependencies.roomPuzzleController().get().openActiveRoomShutterDoors(true);
+            this.openActiveRoomShutterDoors(true);
             dependencies.puzzles().activeRoomEvent = 0;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         } else if (effect == EVENT_EFFECT_DROP_KEY) {
@@ -531,7 +522,7 @@ final class RoomPuzzleController {
                 dependencies.transientVfxSystem().spawn(TransientVfxType.STAIRS_APPEARS, 0x88, 0x20);
             }
         } else if (effect == EVENT_EFFECT_CLEAR_MIDBOSS) {
-            dependencies.roomPuzzleController().get().openActiveRoomShutterDoors(true);
+            this.openActiveRoomShutterDoors(true);
             if (dependencies.puzzles().activeRoomEvent == EVENT_CLEAR_MIDBOSS
                     && dependencies.location().activeRoom.mapId() >= 0
                     && dependencies.location().activeRoom.mapId()
@@ -582,7 +573,7 @@ final class RoomPuzzleController {
             dependencies.puzzles().roomEventEffectExecuted = true;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         } else if ((dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_BLOCKS
-                && dependencies.roomPuzzleController().get().pushedBlocksTriggerResolved()) {
+                && this.pushedBlocksTriggerResolved()) {
             dependencies.puzzles().roomEventEffectExecuted = true;
             dependencies.puzzles().pushedBlocksTriggerEffectPending = true;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);

@@ -144,7 +144,6 @@ final class RoomSessionContext {
                 values.terrain,
                 values.romData,
                 () -> values.roomObjectMutations,
-                () -> values.roomTileRedraw,
                 values.roomTilemapBuilder));
         values.roomCollisionQueries = new RoomCollisionQueries(new RoomCollisionQueries.Dependencies(
                 values.entityFrame,
@@ -155,8 +154,7 @@ final class RoomSessionContext {
                 values.entityFrame,
                 values.entityCollisionPointProbe,
                 values.overworldCollision,
-                values.romTables,
-                () -> values.roomCollisionQueries));
+                values.romTables));
         values.roomPlayerItemActions = new RoomPlayerItemActions(new RoomPlayerItemActions.Dependencies(
                 values.followers,
                 values.items,
@@ -166,7 +164,6 @@ final class RoomSessionContext {
                 values.overworldCollision,
                 values.romTables,
                 () -> values.roomObjectMutations,
-                () -> values.roomPlayerItemActions,
                 () -> values.roomSessionViews,
                 () -> values.roomTileRedraw));
     }
@@ -184,7 +181,6 @@ final class RoomSessionContext {
                 values.romData,
                 values.romTables,
                 () -> values.roomObjectMutations,
-                () -> values.roomPuzzleController,
                 () -> values.roomSessionViews,
                 values.roomState,
                 () -> values.roomStoryState,
@@ -214,7 +210,6 @@ final class RoomSessionContext {
                 () -> values.roomLoadCoordinator,
                 () -> values.roomSessionViews,
                 values.roomState,
-                () -> values.roomStoryState,
                 () -> values.roomTransientState));
     }
 
@@ -230,7 +225,6 @@ final class RoomSessionContext {
                 values.overworldBushInteraction,
                 values.overworldCollision,
                 values.romData,
-                () -> values.roomDoorInteractions,
                 () -> values.roomObjectMutations,
                 () -> values.roomSessionViews,
                 values.roomState,
@@ -245,7 +239,6 @@ final class RoomSessionContext {
                 values.overworldBushInteraction,
                 values.overworldCollision,
                 values.romTables,
-                () -> values.roomObjectMutations,
                 () -> values.roomPlayerItemActions,
                 () -> values.roomSessionViews,
                 values.roomState,
@@ -264,7 +257,6 @@ final class RoomSessionContext {
                 () -> values.roomLoadCoordinator,
                 () -> values.roomSessionViews,
                 values.roomState,
-                () -> values.roomTransitionController,
                 values.scrollNavigation));
     }
 
@@ -294,7 +286,6 @@ final class RoomSessionContext {
                 values.romData,
                 values.romTables,
                 () -> values.roomCollisionQueries,
-                () -> values.roomLoadCoordinator,
                 values.roomLoadListener,
                 values.roomLoader,
                 () -> values.roomObjectMutations,

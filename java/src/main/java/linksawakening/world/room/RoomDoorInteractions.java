@@ -60,7 +60,7 @@ final class RoomDoorInteractions {
                 dependencies.overworldBushInteraction(),
                 dependencies.overworldCollision(),
                 dependencies.puzzles(),
-                dependencies.roomDoorInteractions(),
+                () -> this,
                 dependencies.roomObjectMutations(),
                 dependencies.roomSessionViews(),
                 dependencies.roomTileRedraw(),
@@ -278,16 +278,10 @@ final class RoomDoorInteractions {
     }
 
     boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
-        if (dependencies
-                .roomDoorInteractions()
-                .get()
-                .tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType)) {
+        if (this.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType)) {
             return true;
         }
-        return dependencies
-                .roomDoorInteractions()
-                .get()
-                .tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
+        return this.tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
@@ -347,32 +341,26 @@ final class RoomDoorInteractions {
 
     boolean tryUnlockTailCaveKeyhole(
             int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, boolean hasTailKey) {
-        return dependencies
-                .roomDoorInteractions()
-                .get()
-                .tryUnlockOverworldDungeonKeyhole(
-                        linkPixelX,
-                        linkPixelY,
-                        linkDirection,
-                        collisionType,
-                        ROOM_OW_TAIL_CAVE_ENTRANCE,
-                        hasTailKey,
-                        TAIL_KEYHOLE_DIALOG_ID);
+        return this.tryUnlockOverworldDungeonKeyhole(
+                linkPixelX,
+                linkPixelY,
+                linkDirection,
+                collisionType,
+                ROOM_OW_TAIL_CAVE_ENTRANCE,
+                hasTailKey,
+                TAIL_KEYHOLE_DIALOG_ID);
     }
 
     boolean tryUnlockKeyCavernKeyhole(
             int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, int goldenLeavesCount) {
-        return dependencies
-                .roomDoorInteractions()
-                .get()
-                .tryUnlockOverworldDungeonKeyhole(
-                        linkPixelX,
-                        linkPixelY,
-                        linkDirection,
-                        collisionType,
-                        ROOM_OW_KEY_CAVERN_ENTRANCE,
-                        (goldenLeavesCount & 0xFF) == 0x06,
-                        SLIME_KEYHOLE_DIALOG_ID);
+        return this.tryUnlockOverworldDungeonKeyhole(
+                linkPixelX,
+                linkPixelY,
+                linkDirection,
+                collisionType,
+                ROOM_OW_KEY_CAVERN_ENTRANCE,
+                (goldenLeavesCount & 0xFF) == 0x06,
+                SLIME_KEYHOLE_DIALOG_ID);
     }
 
     boolean tryUnlockOverworldDungeonKeyhole(
@@ -419,7 +407,7 @@ final class RoomDoorInteractions {
     }
 
     int tickTailCaveKeyholeSequence() {
-        dependencies.roomDoorInteractions().get().tickNextWorldMusicTrackCountdown();
+        this.tickNextWorldMusicTrackCountdown();
         if (dependencies.puzzles().tailCaveKeyholeCountdown == 0) {
             dependencies.puzzles().tailCaveFinalMotionBlockPending = false;
             return 0;
@@ -433,7 +421,7 @@ final class RoomDoorInteractions {
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.OPEN_KEY_CAVERN);
         }
         if (countdown < 0x20 && (countdown & 0x0F) == 0x08) {
-            dependencies.roomDoorInteractions().get().writeTailCaveGateAnimationFrame(countdown);
+            this.writeTailCaveGateAnimationFrame(countdown);
         }
         if (countdown == TAIL_CAVE_RUMBLE_GATE_FRAME) {
             int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + TAIL_CAVE_GATE_LOCATION;
@@ -516,7 +504,6 @@ final class RoomDoorInteractions {
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
             Rom romData,
-            java.util.function.Supplier<RoomDoorInteractions> roomDoorInteractions,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
@@ -531,7 +518,6 @@ final class RoomDoorInteractions {
             java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(roomDoorInteractions, "roomDoorInteractions");
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");

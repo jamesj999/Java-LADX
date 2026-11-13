@@ -88,7 +88,7 @@ final class RoomTransitionController {
     void startAdjacentOverworldScroll(
             ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
         RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
-        int nextRoomId = dependencies.roomTransitionController().get().adjacentOverworldRoomId(direction);
+        int nextRoomId = this.adjacentOverworldRoomId(direction);
         boolean discoveredTailKeyRoom = nextRoomId == ROOM_OW_TAIL_KEY_CHEST
                 && direction == ScrollController.UP
                 && (dependencies.roomState().overworldRoomStatus[nextRoomId] & ROOM_STATUS_DISCOVERED) == 0;
@@ -128,8 +128,7 @@ final class RoomTransitionController {
 
     void startAdjacentIndoorScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
         RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
-        RoomScrollNavigation.IndoorRoomDestination destination =
-                dependencies.roomTransitionController().get().adjacentIndoorRoom(direction);
+        RoomScrollNavigation.IndoorRoomDestination destination = this.adjacentIndoorRoom(direction);
         dependencies
                 .roomLoadCoordinator()
                 .get()
@@ -179,7 +178,7 @@ final class RoomTransitionController {
     }
 
     int ocarinaAnimationState() {
-        if (!dependencies.roomTransitionController().get().ocarinaPlaying()) {
+        if (!this.ocarinaPlaying()) {
             return -1;
         }
         return dependencies.items().ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
@@ -238,7 +237,7 @@ final class RoomTransitionController {
     }
 
     void tickOcarinaAnimationHandler() {
-        if (!dependencies.roomTransitionController().get().ocarinaPlaying()) {
+        if (!this.ocarinaPlaying()) {
             return;
         }
         dependencies.items().ocarinaAnimationCounter++;
@@ -310,7 +309,6 @@ final class RoomTransitionController {
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTransitionController> roomTransitionController,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
@@ -325,7 +323,6 @@ final class RoomTransitionController {
             java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
             java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");
         }
     }

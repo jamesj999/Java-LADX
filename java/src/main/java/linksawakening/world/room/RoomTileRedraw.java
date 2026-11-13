@@ -31,10 +31,10 @@ final class RoomTileRedraw {
                                 dependencies.location().activeRoom.roomId(),
                                 dependencies.location().activeRoom.roomObjectsArea());
         dependencies.location().activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
-        dependencies.roomTileRedraw().get().applyHookshotBridgeTileOverrides();
-        dependencies.roomTileRedraw().get().applyBombedWallTileOverrides();
-        dependencies.roomTileRedraw().get().applyBombedBlockTileOverrides();
-        dependencies.roomTileRedraw().get().applyBombedCaveDoorTileOverrides();
+        this.applyHookshotBridgeTileOverrides();
+        this.applyBombedWallTileOverrides();
+        this.applyBombedBlockTileOverrides();
+        this.applyBombedCaveDoorTileOverrides();
         dependencies.roomObjectMutations().get().applyRetainedTorchTiles();
         dependencies
                 .puzzles()
@@ -61,7 +61,7 @@ final class RoomTileRedraw {
             }
         }
         if (changed) {
-            dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
+            this.refreshActiveRoomTilemap();
         }
     }
 
@@ -190,7 +190,6 @@ final class RoomTileRedraw {
             RoomTerrainState terrain,
             Rom romData,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             RoomTilemapBuilder roomTilemapBuilder) {
         Dependencies {
             java.util.Objects.requireNonNull(location, "location");
@@ -198,7 +197,6 @@ final class RoomTileRedraw {
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
             java.util.Objects.requireNonNull(roomTilemapBuilder, "roomTilemapBuilder");
         }
     }

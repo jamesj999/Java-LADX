@@ -38,11 +38,11 @@ final class RoomCollisionQueries {
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY) {
-        return dependencies.roomCollisionQueries().get().boundaryState(linkX, linkY, false);
+        return this.boundaryState(linkX, linkY, false);
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
-        return dependencies.roomCollisionQueries().get().boundaryState(linkX, linkY, linkAirborne, 0);
+        return this.boundaryState(linkX, linkY, linkAirborne, 0);
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
@@ -110,10 +110,7 @@ final class RoomCollisionQueries {
     }
 
     boolean entityBackgroundCollision(RoomEntity entity, int direction, int nextX, int nextY) {
-        return dependencies
-                .roomCollisionQueries()
-                .get()
-                .entityBackgroundCollisionResult(entity, direction, nextX, nextY)
+        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY)
                 .blocked();
     }
 
@@ -122,18 +119,12 @@ final class RoomCollisionQueries {
         int ignoreHitsCountdown = dependencies.entityRuntimeState().runtime == null
                 ? 0
                 : dependencies.entityRuntimeState().runtime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return dependencies
-                .roomCollisionQueries()
-                .get()
-                .entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-        return dependencies
-                .roomCollisionQueries()
-                .get()
-                .entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
@@ -176,10 +167,7 @@ final class RoomCollisionQueries {
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
             RoomEntity entity, int direction, int nextX, int nextY) {
-        return dependencies
-                .roomCollisionQueries()
-                .get()
-                .entityBackgroundCollisionResult(entity, direction, nextX, nextY);
+        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
@@ -187,10 +175,7 @@ final class RoomCollisionQueries {
         int ignoreHitsCountdown = dependencies.entityRuntimeState().runtime == null
                 ? 0
                 : dependencies.entityRuntimeState().runtime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return dependencies
-                .roomCollisionQueries()
-                .get()
-                .entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
+        return this.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
     }
 
     RoomEntityGroundInteraction.Result entityGroundInteraction(
@@ -265,8 +250,7 @@ final class RoomCollisionQueries {
             RoomEntityFrameState entityRuntimeState,
             EntityCollisionPointProbe entityCollisionPointProbe,
             OverworldCollision overworldCollision,
-            RomTables romTables,
-            java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries) {
+            RomTables romTables) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(location, "location");
@@ -277,7 +261,6 @@ final class RoomCollisionQueries {
             java.util.Objects.requireNonNull(entityCollisionPointProbe, "entityCollisionPointProbe");
             java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
             java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
         }
     }
 }

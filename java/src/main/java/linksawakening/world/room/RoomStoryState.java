@@ -138,7 +138,7 @@ final class RoomStoryState {
             dependencies.followers().followingNpcRoomNeedsSync = true;
         }
         dependencies.followers().followingNpcState = state;
-        dependencies.roomStoryState().get().synchronizeFollowingNpcEntitiesIfNeeded();
+        this.synchronizeFollowingNpcEntitiesIfNeeded();
     }
 
     FollowingNpcState followingNpcState() {
@@ -233,7 +233,7 @@ final class RoomStoryState {
             throw new IllegalArgumentException("Default music track must be an unsigned byte");
         }
         dependencies.followers().entityDefaultMusicTrack = trackId;
-        dependencies.roomStoryState().get().updateWitchEnvironment();
+        this.updateWitchEnvironment();
     }
 
     void updateWitchEnvironment() {
@@ -310,7 +310,6 @@ final class RoomStoryState {
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> roomStoryState,
             java.util.function.Supplier<RoomTransientState> roomTransientState) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
@@ -335,7 +334,6 @@ final class RoomStoryState {
             java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
             java.util.Objects.requireNonNull(roomTransientState, "roomTransientState");
         }
     }

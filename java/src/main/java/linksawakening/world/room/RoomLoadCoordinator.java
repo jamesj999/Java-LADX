@@ -39,7 +39,7 @@ final class RoomLoadCoordinator {
                 dependencies.romData(),
                 dependencies.romTables(),
                 dependencies.roomCollisionQueries(),
-                dependencies.roomLoadCoordinator(),
+                () -> this,
                 dependencies.roomLoadListener(),
                 dependencies.roomPuzzleController(),
                 dependencies.roomSessionViews(),
@@ -50,8 +50,8 @@ final class RoomLoadCoordinator {
 
     void loadInitialOverworld(int roomId) {
         dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
-        dependencies.roomLoadCoordinator().get().loadRoomSpecificTilesIfNeeded(roomId);
-        dependencies.roomLoadCoordinator().get().loadOverworld(roomId);
+        this.loadRoomSpecificTilesIfNeeded(roomId);
+        this.loadOverworld(roomId);
     }
 
     void loadOverworld(int roomId) {
@@ -72,7 +72,7 @@ final class RoomLoadCoordinator {
                         dependencies.entityFrame().recentRoomEntityClears.mask(roomId),
                         dependencies.roomState().overworldRoomStatus);
         dependencies.gpu().loadAnimatedTilesGroup(dependencies.romData(), room.animatedTilesGroup());
-        dependencies.roomLoadCoordinator().get().setActiveRoom(room);
+        this.setActiveRoom(room);
         dependencies.roomStoryState().get().updateWitchEnvironment();
         dependencies
                 .overworldCollision()
@@ -81,20 +81,20 @@ final class RoomLoadCoordinator {
                 .overworldCollision()
                 .setGbcOverlay(dependencies.location().activeRoom.gbcOverlay());
         dependencies.overworldCollision().setPhysicsTable(RomTables.PHYSICS_TABLE_OVERWORLD);
-        dependencies.roomLoadCoordinator().get().synchronizeSwitchBlockCollisionState();
+        this.synchronizeSwitchBlockCollisionState();
     }
 
     void loadIndoor(int mapId, int roomId) {
-        dependencies.roomLoadCoordinator().get().loadIndoor(mapId, roomId, Warp.CATEGORY_INDOOR);
+        this.loadIndoor(mapId, roomId, Warp.CATEGORY_INDOOR);
     }
 
     void loadIndoorFromSavedPosition(int mapId, int roomId, int savedIndoorMapPosition) {
-        dependencies.roomLoadCoordinator().get().loadIndoor(mapId, roomId, Warp.CATEGORY_INDOOR);
+        this.loadIndoor(mapId, roomId, Warp.CATEGORY_INDOOR);
         dependencies.location().indoorMapPosition = savedIndoorMapPosition & 0xFF;
     }
 
     void loadIndoor(int mapId, int roomId, int mapCategory) {
-        dependencies.roomLoadCoordinator().get().loadIndoor(mapId, roomId, mapCategory, 4);
+        this.loadIndoor(mapId, roomId, mapCategory, 4);
     }
 
     void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) {
@@ -144,7 +144,7 @@ final class RoomLoadCoordinator {
                                 ? null
                                 : dependencies.location().activeRoom.palettes(),
                         oldSelection == null ? null : oldSelection.objectPalettes());
-        dependencies.roomLoadCoordinator().get().setActiveRoom(room, palettes.objects());
+        this.setActiveRoom(room, palettes.objects());
         for (int row = 0; row < 8; row++)
             System.arraycopy(
                     palettes.background()[row],
@@ -152,7 +152,7 @@ final class RoomLoadCoordinator {
                     dependencies.location().activeRoom.palettes()[row],
                     0,
                     4);
-        dependencies.roomLoadCoordinator().get().initializeSwitchBlockTiles();
+        this.initializeSwitchBlockTiles();
         dependencies
                 .indoorTorchPaletteEffect()
                 .reset(
@@ -165,7 +165,7 @@ final class RoomLoadCoordinator {
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
         dependencies.overworldCollision().setGbcOverlay(null);
         dependencies.overworldCollision().setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
-        dependencies.roomLoadCoordinator().get().synchronizeSwitchBlockCollisionState();
+        this.synchronizeSwitchBlockCollisionState();
     }
 
     void setActiveRoom(LoadedRoom room) {
@@ -279,7 +279,6 @@ final class RoomLoadCoordinator {
             Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
-            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
             RoomLoadListener roomLoadListener,
             RoomLoader roomLoader,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
@@ -314,7 +313,6 @@ final class RoomLoadCoordinator {
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");
             java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
-            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
             java.util.Objects.requireNonNull(roomLoader, "roomLoader");
             java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
             java.util.Objects.requireNonNull(roomPaletteLoader, "roomPaletteLoader");
