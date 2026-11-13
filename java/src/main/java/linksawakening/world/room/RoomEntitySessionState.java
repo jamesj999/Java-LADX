@@ -11,7 +11,7 @@ final class RoomEntitySessionState {
     /** Absent until LoadRoomEntities installs the current room runtime. */
     linksawakening.world.entity.RoomEntityRuntime runtime;
 
-    final RoomEntityOutbox outbox = new RoomEntityOutbox(() -> runtime);
+    final RoomEntityOutbox outbox = new RoomEntityOutbox();
 
     boolean hookshotActive() {
         return runtime != null && runtime.inspection().hookshotActive();

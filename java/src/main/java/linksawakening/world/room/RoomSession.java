@@ -1,12 +1,30 @@
 package linksawakening.world.room;
 
+import java.util.ArrayList;
 import java.util.List;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.FollowingNpcState;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
+import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
+import linksawakening.world.entity.event.RoosterLinkStateRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
 
 /** Public room API delegating to room-scoped collaborators. */
-public final class RoomSession {
+public final class RoomSession implements RoomEntityOutputSource {
 
     /** Applies the live frame inputs in source order before ticking slots. */
     public List<EntityProjectileEvent> tickEntities(EntityFrameInputs inputs) {
@@ -84,9 +102,9 @@ public final class RoomSession {
                 components.roomLoadCoordinator(),
                 this);
         frameResults = new EntityFrameResults(
-                new LinkOutputs(components.linkOutputsDependencies()),
+                new LinkOutputs(components.linkOutputsDependencies(), this),
                 new RewardOutputs(components.rewardOutputsDependencies()),
-                new PresentationOutputs(components.presentationOutputsDependencies()));
+                new PresentationOutputs(components.presentationOutputsDependencies(), this));
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
@@ -560,5 +578,161 @@ public final class RoomSession {
     void setEnemyDropPlayerState(int maxHearts, int health, boolean power) {
         components.entityBridge().setEnemyDropPlayerState(maxHearts, health, power);
         configureEnemyDropRuntime();
+    }
+
+    @Override
+    public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
+        var events = !hasRoom() ? List.<EntityCombatEvent>of() : loadedRoom.entities.consumePendingEntityEvents();
+        components
+                .entityFrame()
+                .outbox
+                .combatDrain
+                .drain(events, components.entityFrame().outbox.pendingRoomEntityEvents, target);
+    }
+
+    @Override
+    public DialogRequest consumeFirstEntityDialogRequest() {
+        DialogRequest first = components
+                        .entityFrame()
+                        .outbox
+                        .pendingRoomDialogRequests
+                        .isEmpty()
+                ? null
+                : components.entityFrame().outbox.pendingRoomDialogRequests.getFirst();
+        components.entityFrame().outbox.pendingRoomDialogRequests.clear();
+        var events = !hasRoom() ? List.<DialogRequest>of() : loadedRoom.entities.consumePendingDialogRequests();
+        return first != null || events.isEmpty() ? first : events.getFirst();
+    }
+
+    @Override
+    public List<EntityCombatEvent> consumeEntityEvents() {
+        var entityEvents = !hasRoom() ? List.<EntityCombatEvent>of() : loadedRoom.entities.consumePendingEntityEvents();
+        if (components.entityFrame().outbox.pendingRoomEntityEvents.isEmpty()) return entityEvents;
+        List<EntityCombatEvent> events = new ArrayList<>(entityEvents.size()
+                + components.entityFrame().outbox.pendingRoomEntityEvents.size());
+        events.addAll(entityEvents);
+        events.addAll(components.entityFrame().outbox.pendingRoomEntityEvents);
+        components.entityFrame().outbox.pendingRoomEntityEvents.clear();
+        return List.copyOf(events);
+    }
+
+    @Override
+    public List<LinkFinalPositionRequest> consumeLinkFinalPositionRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkFinalPositionRequests();
+    }
+
+    @Override
+    public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingRoosterLinkStateRequests();
+    }
+
+    @Override
+    public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkMotionBlockRequests();
+    }
+
+    @Override
+    public List<SideViewPlatformLinkRequest> consumeSideViewPlatformLinkRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingSideViewPlatformLinkRequests();
+    }
+
+    @Override
+    public List<SideViewPotLinkRequest> consumeSideViewPotLinkRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingSideViewPotLinkRequests();
+    }
+
+    @Override
+    public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingHinoxLinkEffectRequests();
+    }
+
+    @Override
+    public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkFallenPoseRequests();
+    }
+
+    void setFreeMovementMode(boolean enabled) {
+        if (hasRoom()) loadedRoom.entities.setFreeMovementMode(enabled);
+    }
+
+    @Override
+    public List<LinkFacingRequest> consumeLinkFacingRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkFacingRequests();
+    }
+
+    @Override
+    public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkAttackClearRequests();
+    }
+
+    @Override
+    public List<LinkAttackStepRequest> consumeLinkAttackStepRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkAttackStepRequests();
+    }
+
+    @Override
+    public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkHeldItemPoseRequests();
+    }
+
+    boolean gotItemPresentationActive() {
+        return hasRoom() && loadedRoom.entities.inspection().witchGotItemPresentationActive();
+    }
+
+    boolean powerUpPickupSequenceActive() {
+        return hasRoom() && loadedRoom.entities.inspection().powerUpPickupSequenceActive();
+    }
+
+    boolean swordPickupSequenceActive() {
+        return hasRoom() && loadedRoom.entities.inspection().swordPickupSequenceActive();
+    }
+
+    @Override
+    public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkSwordSpinPoseRequests();
+    }
+
+    @Override
+    public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkSwordFinalPoseRequests();
+    }
+
+    @Override
+    public List<ScreenShakeRequest> consumeScreenShakeRequests() {
+        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingScreenShakeRequests();
+    }
+
+    @Override
+    public int consumePendingMusicTrack() {
+        if (components.entityFrame().outbox.pendingRoomMusicTrack >= 0) {
+            int pending = components.entityFrame().outbox.pendingRoomMusicTrack;
+            components.entityFrame().outbox.pendingRoomMusicTrack = -1;
+            return pending;
+        }
+        return !hasRoom() ? -1 : loadedRoom.entities.consumePendingMusicTrack();
+    }
+
+    @Override
+    public int consumePendingMusicFadeOutCountdown() {
+        return !hasRoom() ? 0 : loadedRoom.entities.consumePendingMusicFadeOutCountdown();
+    }
+
+    @Override
+    public List<LikeLikeEvent> consumeLikeLikeEvents() {
+        if (!hasRoom()) {
+            return List.of();
+        }
+        return loadedRoom.entities.consumePendingLikeLikeEvents();
+    }
+
+    List<DialogRequest> consumeEntityDialogRequests() {
+        if (components.entityFrame().outbox.pendingRoomDialogRequests.isEmpty())
+            return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingDialogRequests();
+        List<DialogRequest> requests = new ArrayList<>(components.entityFrame().outbox.pendingRoomDialogRequests);
+        components.entityFrame().outbox.pendingRoomDialogRequests.clear();
+        if (hasRoom()) {
+            requests.addAll(loadedRoom.entities.consumePendingDialogRequests());
+        }
+        return List.copyOf(requests);
     }
 }

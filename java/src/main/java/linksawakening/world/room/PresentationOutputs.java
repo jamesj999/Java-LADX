@@ -6,38 +6,40 @@ import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 
 public final class PresentationOutputs {
+    private final RoomEntityOutputSource session;
     private final Dependencies dependencies;
 
-    PresentationOutputs(Dependencies dependencies) {
+    PresentationOutputs(Dependencies dependencies, RoomEntityOutputSource session) {
         this.dependencies = dependencies;
+        this.session = java.util.Objects.requireNonNull(session);
     }
 
     public List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return dependencies.entityRuntimeState().outbox.consumeScreenShakeRequests();
+        return session.consumeScreenShakeRequests();
     }
 
     public List<EntityCombatEvent> consumeEntityEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeEntityEvents();
+        return session.consumeEntityEvents();
     }
 
     public int consumePendingMusicFadeOutCountdown() {
-        return dependencies.entityRuntimeState().outbox.consumePendingMusicFadeOutCountdown();
+        return session.consumePendingMusicFadeOutCountdown();
     }
 
     public int consumePendingMusicTrack() {
-        return dependencies.entityRuntimeState().outbox.consumePendingMusicTrack();
+        return session.consumePendingMusicTrack();
     }
 
     public List<LikeLikeEvent> consumeLikeLikeEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeLikeLikeEvents();
+        return session.consumeLikeLikeEvents();
     }
 
     public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
-        dependencies.entityRuntimeState().outbox.drainEntityEvents(target);
+        session.drainEntityEvents(target);
     }
 
     public linksawakening.world.entity.event.DialogRequest consumeFirstEntityDialogRequest() {
-        return dependencies.entityRuntimeState().outbox.consumeFirstEntityDialogRequest();
+        return session.consumeFirstEntityDialogRequest();
     }
 
     record Dependencies(RoomEntitySessionState entityRuntimeState) {

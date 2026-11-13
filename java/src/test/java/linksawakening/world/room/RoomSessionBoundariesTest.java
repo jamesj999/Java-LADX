@@ -85,7 +85,7 @@ final class RoomSessionBoundariesTest {
         assertFalse(session.transitions().ocarinaPlaying());
         assertEquals(
                 0x13,
-                session.components.entityBridge().outbox.consumeEntityEvents().stream()
+                session.consumeEntityEvents().stream()
                         .filter(event -> event.type() == 0x18)
                         .findFirst()
                         .orElseThrow()
@@ -126,7 +126,7 @@ final class RoomSessionBoundariesTest {
         assertEquals(0x04, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.rooms().activeRoom().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x04
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                         && event.soundId() == 0x13));
@@ -154,7 +154,7 @@ final class RoomSessionBoundariesTest {
         assertEquals(0x04, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.rooms().activeRoom().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x08
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
                         && event.soundId() == 0x2F));

@@ -40,28 +40,16 @@ final class RoomDoorAndObjectInteractionTest {
         session.entities().tickEntities(0, 0x38, 0x53, 0, Direction.UP.javaIndex());
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntitiesWithProjectileEvents(1, 0x38, 0x4A, 0, 0, Direction.UP.javaIndex(), false);
-        var pushes = session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
+        var pushes = session.consumeLinkFinalPositionRequests();
         assertEquals(1, pushes.size());
         assertTrue(pushes.getFirst().resetPegasusBoots());
         assertTrue(pushes.getFirst().resetHookshotChain());
         session.entities().tickEntitiesWithProjectileEvents(2, 0x38, 0x4B, 0, 0, Direction.UP.javaIndex(), false);
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkFinalPositionRequests()
-                .isEmpty());
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
         session.entities().tickEntitiesWithProjectileEvents(3, 0x38, 0x4A, 1, 0, Direction.UP.javaIndex(), false);
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkFinalPositionRequests()
-                .isEmpty());
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
         session.entities().tickEntitiesWithProjectileEvents(4, 0x38, 0x4A, 0, 2, Direction.UP.javaIndex(), false);
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkFinalPositionRequests()
-                .isEmpty());
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
     }
 
     @Test
@@ -282,25 +270,17 @@ final class RoomDoorAndObjectInteractionTest {
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
         session.entities().tickEntitiesWithProjectileEvents(0, 0x1B, 0x40, 12, 0, Direction.RIGHT.javaIndex(), false);
-        var requests = session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
+        var requests = session.consumeLinkFinalPositionRequests();
         assertEquals(1, requests.size());
         assertTrue(requests.getFirst().markLinkPushing());
         assertFalse(requests.getFirst().clearLinkPositionIncrement());
         assertFalse(requests.getFirst().resetPegasusBoots());
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntitiesWithProjectileEvents(1, 0x28, 0x40, 0, 0, Direction.RIGHT.javaIndex(), false);
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkFinalPositionRequests()
-                .isEmpty());
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
         session.entityState().setEntityDialogActive(false);
         session.entities().tickEntitiesWithProjectileEvents(2, 0x80, 0x70, 0, 0, Direction.RIGHT.javaIndex(), false);
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkFinalPositionRequests()
-                .isEmpty());
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
     }
 
     @Test
@@ -480,7 +460,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0, session.rooms().activeRoom().shutterDoorMask());
         assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertEquals(0x20, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x00, 0x11) & 0x20);
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x1B));
 
@@ -750,7 +730,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertTrue(session.doors()
                 .tryUnlockTailCaveKeyhole(
                         0x5A, 0x4A, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01, true));
-        assertEquals(0x00, session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x00, session.consumePendingMusicTrack());
         assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xD3) & 0x10);
         assertEquals(0xC2, session.rooms().activeRoom().roomObjectsArea()[gateIndex]);
         assertEquals(0xDF, session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest());
@@ -842,7 +822,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertTrue(session.doors()
                 .tryUnlockTailCaveKeyhole(
                         0x5A, 0x4A, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01, true));
-        assertEquals(0x00, session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x00, session.consumePendingMusicTrack());
 
         while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 0x0A) {
             session.doors().tickTailCaveKeyholeSequence();
@@ -860,10 +840,10 @@ final class RoomDoorAndObjectInteractionTest {
         int remainingMusicFrames = session.components.roomDoorInteractions().nextWorldMusicTrackCountdownForTest();
         for (int frame = 1; frame < remainingMusicFrames; frame++) {
             session.doors().tickTailCaveKeyholeSequence();
-            assertEquals(-1, session.components.entityBridge().outbox.consumePendingMusicTrack());
+            assertEquals(-1, session.consumePendingMusicTrack());
         }
         session.doors().tickTailCaveKeyholeSequence();
-        assertEquals(0x05, session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x05, session.consumePendingMusicTrack());
     }
 
     @Test
@@ -879,7 +859,7 @@ final class RoomDoorAndObjectInteractionTest {
         session.entities().tickEntitiesWithProjectileEvents(0, 0x20, 0x28, 0, 0, 0, false);
 
         assertEquals(0x04, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x04 && event.soundId() == 0x13));
     }
 
@@ -899,7 +879,7 @@ final class RoomDoorAndObjectInteractionTest {
 
         assertEquals(0xAC, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(1, RoomDebugFixture.of(session).roomTriggerCountForTest());
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x08
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                         && event.soundId() == 0x12));
@@ -974,8 +954,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0x64, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
         assertEquals(0x66, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
 
-        List<EntityCombatEvent> events =
-                session.components.entityBridge().outbox.consumeEntityEvents();
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x02, events.getFirst().soundId());
@@ -1010,8 +989,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0x3D, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x06, 0x18) & 0x04);
         assertEquals(0x08, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x06, 0x14));
-        List<EntityCombatEvent> events =
-                session.components.entityBridge().outbox.consumeEntityEvents();
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x02, events.getFirst().soundId());
@@ -1495,7 +1473,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0x0D, session.rooms().activeRoom().roomObjectsArea()[index]);
         assertFalse(session.terrain().breakIndoorSwordCrystal(0x33));
         session.entities().tickEntities(0, 8, 16);
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(session.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x09));
         assertTrue(session.rooms().activeRoom().entities().slots().stream()

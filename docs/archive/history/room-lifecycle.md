@@ -130,3 +130,14 @@ and resume-music state retain their original across-room lifetimes. A reload
 regression checks both fresh room state and retained registers. Preparation
 aliases remain transitional until the door/map/load collaborators migrate.
 Gate: 2965 tests, 0 failures/errors, one existing skip; 986 identical scenes.
+
+## Output boundary
+
+The session facade now decides unloaded output defaults; RoomEntityOutbox owns
+only session queues and staging, without a runtime supplier. LinkOutputs and
+PresentationOutputs consume a narrow drain-only operation port implemented by
+the facade, with no current-room getter. The compatibility guard now permits
+exactly that interface and an added test prohibits room/runtime access through
+it; the no-superclass/no-deprecated-bridge guarantees remain. Ordered queue
+draining and immutable ownership tests remain unchanged in intent.
+World null occurrences: 248 -> 222. Gate: 2966 tests, zero failures/errors, one skip.

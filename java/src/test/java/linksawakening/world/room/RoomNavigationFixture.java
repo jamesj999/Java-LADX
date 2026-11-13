@@ -129,12 +129,9 @@ final class RoomNavigationFixture {
         // applying the current descending-slot platform requests.
         link.sideView().clearStandingOnSideViewEntity();
 
-        List<SideViewPlatformLinkRequest> platforms =
-                session.components.entityBridge().outbox.consumeSideViewPlatformLinkRequests();
-        List<SideViewPotLinkRequest> pots =
-                session.components.entityBridge().outbox.consumeSideViewPotLinkRequests();
-        List<LinkFinalPositionRequest> finalPositions =
-                session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
+        List<SideViewPlatformLinkRequest> platforms = session.consumeSideViewPlatformLinkRequests();
+        List<SideViewPotLinkRequest> pots = session.consumeSideViewPotLinkRequests();
+        List<LinkFinalPositionRequest> finalPositions = session.consumeLinkFinalPositionRequests();
         int platformIndex = 0;
         int potIndex = 0;
         int finalPositionIndex = 0;
@@ -198,8 +195,7 @@ final class RoomNavigationFixture {
                 }
             }
         }
-        for (LinkMotionBlockRequest request :
-                session.components.entityBridge().outbox.consumeLinkMotionBlockRequests()) {
+        for (LinkMotionBlockRequest request : session.consumeLinkMotionBlockRequests()) {
             link.motion().blockNextRomMotionFrame();
         }
         // These Main streams are not emitted by the authored A5/D6 route;
@@ -207,19 +203,10 @@ final class RoomNavigationFixture {
         assertTrue(
                 session.components.entityBridge().consumeWarpLinkStateRequests().isEmpty());
         assertFalse(session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkFallenPoseRequests()
-                .isEmpty());
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkFacingRequests()
-                .isEmpty());
+        assertTrue(session.consumeLinkFallenPoseRequests().isEmpty());
+        assertTrue(session.consumeLinkFacingRequests().isEmpty());
         List<LinkAttackClearRequest> attackClears = session.entityState().consumeLinkAttackClearRequests();
-        List<LinkAttackStepRequest> attackSteps =
-                session.components.entityBridge().outbox.consumeLinkAttackStepRequests();
+        List<LinkAttackStepRequest> attackSteps = session.consumeLinkAttackStepRequests();
         int attackClearIndex = 0;
         int attackStepIndex = 0;
         while (attackClearIndex < attackClears.size() || attackStepIndex < attackSteps.size()) {
@@ -237,21 +224,9 @@ final class RoomNavigationFixture {
                 link.equipment().startRomItemAttackStep();
             }
         }
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkHeldItemPoseRequests()
-                .isEmpty());
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkSwordSpinPoseRequests()
-                .isEmpty());
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeLinkSwordFinalPoseRequests()
-                .isEmpty());
+        assertTrue(session.consumeLinkHeldItemPoseRequests().isEmpty());
+        assertTrue(session.consumeLinkSwordSpinPoseRequests().isEmpty());
+        assertTrue(session.consumeLinkSwordFinalPoseRequests().isEmpty());
         LiftedEntityState lifted = session.rooms().liftedEntityState();
         if (lifted.active()) {
             link.actions().setCarryingLiftedObjectState(lifted.carryState(), lifted.effectiveRomDirection());
@@ -268,7 +243,7 @@ final class RoomNavigationFixture {
                                         link.animation().direction());
                             });
         }
-        return session.components.entityBridge().outbox.consumeEntityEvents();
+        return session.consumeEntityEvents();
     }
 
     static int letBowWowEatAllGoponga(RoomSession session, OverworldCollision collision, Link link, int frame) {
@@ -295,7 +270,7 @@ final class RoomNavigationFixture {
                         frame++,
                         link.position().romEntityX(),
                         link.position().romEntityY());
-                session.components.entityBridge().outbox.consumeEntityEvents();
+                session.consumeEntityEvents();
                 bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x6D)
                         .findFirst()
@@ -313,7 +288,7 @@ final class RoomNavigationFixture {
                     frame++,
                     link.position().romEntityX(),
                     link.position().romEntityY());
-            session.components.entityBridge().outbox.consumeEntityEvents();
+            session.consumeEntityEvents();
             List<int[]> path = reachableEntityWindowPath(
                     collision, link.position().pixelX(), link.position().pixelY(), target);
             assertNotNull(
@@ -328,14 +303,14 @@ final class RoomNavigationFixture {
                         frame++,
                         link.position().romEntityX(),
                         link.position().romEntityY());
-                session.components.entityBridge().outbox.consumeEntityEvents();
+                session.consumeEntityEvents();
                 while (bowWowOutsideLeash(session, link) && frame < deadline) {
                     tickInteractiveEntities(
                             session,
                             frame++,
                             link.position().romEntityX(),
                             link.position().romEntityY());
-                    session.components.entityBridge().outbox.consumeEntityEvents();
+                    session.consumeEntityEvents();
                 }
             }
             while (session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -347,7 +322,7 @@ final class RoomNavigationFixture {
                         frame++,
                         link.position().romEntityX(),
                         link.position().romEntityY());
-                session.components.entityBridge().outbox.consumeEntityEvents();
+                session.consumeEntityEvents();
             }
         }
         assertFalse(

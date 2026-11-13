@@ -67,12 +67,8 @@ final class RoomSessionProjectilesTest {
 
         assertEquals(
                 List.of(new SideViewPlatformLinkRequest(0, 0, 0x40, 0x02, true, true)),
-                session.components.entityBridge().outbox.consumeSideViewPlatformLinkRequests());
-        assertTrue(session.components
-                .entityBridge()
-                .outbox
-                .consumeSideViewPlatformLinkRequests()
-                .isEmpty());
+                session.consumeSideViewPlatformLinkRequests());
+        assertTrue(session.consumeSideViewPlatformLinkRequests().isEmpty());
     }
 
     @Test
@@ -274,8 +270,7 @@ final class RoomSessionProjectilesTest {
             assertEquals(0x19, entity.spriteDefinition().bank());
             assertEquals(0x7B50, entity.spriteDefinition().address());
         }
-        List<EntityCombatEvent> events =
-                session.components.entityBridge().outbox.consumeEntityEvents();
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x02, events.getFirst().soundId());
@@ -389,11 +384,11 @@ final class RoomSessionProjectilesTest {
         assertEquals(0xD8, warp.destRoom());
         assertEquals(0x88, warp.destX());
         assertEquals(0x70, warp.destY());
-        assertEquals(0x30, session.components.entityBridge().outbox.consumePendingMusicFadeOutCountdown());
+        assertEquals(0x30, session.consumePendingMusicFadeOutCountdown());
         assertEquals(
                 List.of(new EntityCombatEvent(
                         richard.slot(), 0x95, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x06)),
-                session.components.entityBridge().outbox.consumeEntityEvents());
+                session.consumeEntityEvents());
     }
 
     @Test
@@ -414,14 +409,14 @@ final class RoomSessionProjectilesTest {
             session.entityState().advanceBoomerangSoundClock(false);
         }
         assertTrue(session.playerItems().fireBoomerang(0x40, 0x50, 0, 0, 0));
-        session.components.entityBridge().outbox.consumeEntityEvents();
+        session.consumeEntityEvents();
         session.entityState().advanceBoomerangSoundClock(true);
         session.entities().tickEntities(0, 0, 0);
-        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
-                .anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
+        assertTrue(
+                session.consumeEntityEvents().stream().anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
         session.entityState().advanceBoomerangSoundClock(true);
         session.entities().tickEntities(1, 0, 0);
-        assertFalse(session.components.entityBridge().outbox.consumeEntityEvents().stream()
-                .anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
+        assertFalse(
+                session.consumeEntityEvents().stream().anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
     }
 }

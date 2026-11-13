@@ -100,7 +100,7 @@ final class RoomSessionStoryTest {
 
         tickInteractive(session, 0, 0x50, 0x50);
         tickInteractive(session, 1, 0x50, 0x50);
-        assertEquals(0x22, session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x22, session.consumePendingMusicTrack());
         int frame = 2;
         boolean dialogOpened = false;
         while (!dialogOpened && frame < 0x300) {
@@ -119,7 +119,7 @@ final class RoomSessionStoryTest {
                         .anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x500) {
             tickInteractive(session, frame++, 0x50, 0x50);
-            restoredMusic |= session.components.entityBridge().outbox.consumePendingMusicTrack() == 0x09;
+            restoredMusic |= session.consumePendingMusicTrack() == 0x09;
         }
         assertTrue(restoredMusic);
 
@@ -141,7 +141,7 @@ final class RoomSessionStoryTest {
                         .anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x500) {
             tickInteractive(session, frame++, 0x50, 0x50);
-            restoredPowerMusic |= session.components.entityBridge().outbox.consumePendingMusicTrack() == 0x49;
+            restoredPowerMusic |= session.consumePendingMusicTrack() == 0x49;
             session.entityState().consumeEntityDialogRequests();
         }
 
@@ -238,7 +238,7 @@ final class RoomSessionStoryTest {
 
         session.entities().tickEntities(0, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         session.entities().tickEntities(1, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
-        assertEquals(0x40, session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x40, session.consumePendingMusicTrack());
         session.entityState().setEntityActionButtonsHeld(true, false);
         session.entities().tickEntities(2, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 

@@ -177,7 +177,7 @@ final class GameplayRouteScenario {
                         route.playerState.equipmentLevels().powerBraceletLevel());
         tickInteractiveEntities(route.session, 0, 0x3F, 0x44);
         tickInteractiveEntities(route.session, 1, 0x40, 0x44);
-        assertEquals(0x22, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x22, route.session.consumePendingMusicTrack());
 
         route.frame = 2;
         route.owlDialogOpened = false;
@@ -244,7 +244,7 @@ final class GameplayRouteScenario {
 
         tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
-        assertEquals(0x22, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x22, route.session.consumePendingMusicTrack());
         route.forestOwlDialogOpened = false;
         while (!route.forestOwlDialogOpened && route.frame < route.pickupFrame + 0x600) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
@@ -483,7 +483,7 @@ final class GameplayRouteScenario {
                 route.session, route.coordinator, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x41, route.session.rooms().currentRoomId());
         assertEquals(0x40, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x41) & 0x40);
-        assertTrue(route.session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(route.session.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
 
@@ -1426,7 +1426,7 @@ final class GameplayRouteScenario {
                         true,
                         Direction.DOWN.javaIndex(),
                         0));
-        assertEquals(0x1B, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x1B, route.session.consumePendingMusicTrack());
         for (int performance = 1; performance <= 88; performance++) {
             route.session
                     .entities()
@@ -1454,7 +1454,7 @@ final class GameplayRouteScenario {
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
-        assertEquals(0x20, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x20, route.session.consumePendingMusicTrack());
         route.ticksToWarpJingle = 0;
         route.heardWarpJingle = false;
         while (!route.heardWarpJingle && route.ticksToWarpJingle < 0x100) {
@@ -1463,7 +1463,7 @@ final class GameplayRouteScenario {
                     .tickEntitiesWithProjectileEvents(
                             route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
             route.ticksToWarpJingle++;
-            route.heardWarpJingle = route.session.components.entityBridge().outbox.consumeEntityEvents().stream()
+            route.heardWarpJingle = route.session.consumeEntityEvents().stream()
                     .anyMatch(event ->
                             event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x2B);
         }
@@ -1548,7 +1548,7 @@ final class GameplayRouteScenario {
                 .orElseThrow();
         route.session.entities().tickEntities(route.frame++, 0x10, 0x10);
         route.session.entities().tickEntities(route.frame++, 0x10, 0x10);
-        assertEquals(0x0E, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x0E, route.session.consumePendingMusicTrack());
         route.session.entities().tickEntities(route.frame++, route.warningKid.x(), route.warningKid.y());
         assertEquals(
                 0x220,
@@ -1806,7 +1806,7 @@ final class GameplayRouteScenario {
                     new SwordBox(false, 0, 0, 0, 0)));
         }
         assertEquals(0x01, route.session.story().bowWowState());
-        assertEquals(0x10, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
+        assertEquals(0x10, route.session.consumePendingMusicTrack());
         assertTrue(route.session.entityState().consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x16C));
 
@@ -2348,7 +2348,7 @@ final class GameplayRouteScenario {
                 route.link.position().romEntityX(),
                 route.link.position().romEntityY());
         assertEquals(0x01, RoomDebugFixture.of(route.session).switchableObjectAnimationStageForTest());
-        assertTrue(route.session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(route.session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x66
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
                         && event.soundId() == 0x0E));
@@ -2612,7 +2612,7 @@ final class GameplayRouteScenario {
                 route.link.position().romEntityX(),
                 route.link.position().romEntityY());
         assertEquals(0x01, RoomDebugFixture.of(route.session).switchableObjectAnimationStageForTest());
-        assertTrue(route.session.components.entityBridge().outbox.consumeEntityEvents().stream()
+        assertTrue(route.session.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x66
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
                         && event.soundId() == 0x0E));

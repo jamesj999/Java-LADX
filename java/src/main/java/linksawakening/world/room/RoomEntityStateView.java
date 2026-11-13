@@ -81,19 +81,19 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return dependencies.entityBridge().outbox.consumeLinkAttackClearRequests();
+        return dependencies.session().consumeLinkAttackClearRequests();
     }
 
     public boolean gotItemPresentationActive() {
-        return dependencies.entityBridge().outbox.gotItemPresentationActive();
+        return dependencies.session().gotItemPresentationActive();
     }
 
     public boolean powerUpPickupSequenceActive() {
-        return dependencies.entityBridge().outbox.powerUpPickupSequenceActive();
+        return dependencies.session().powerUpPickupSequenceActive();
     }
 
     public boolean swordPickupSequenceActive() {
-        return dependencies.entityBridge().outbox.swordPickupSequenceActive();
+        return dependencies.session().swordPickupSequenceActive();
     }
 
     public List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
@@ -101,7 +101,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public List<DialogRequest> consumeEntityDialogRequests() {
-        return dependencies.entityBridge().outbox.consumeEntityDialogRequests();
+        return dependencies.session().consumeEntityDialogRequests();
     }
 
     public void tickGameplayVBlank() {
