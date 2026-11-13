@@ -1,7 +1,11 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.LinkGroundPhase.*;
-import static linksawakening.world.room.RoomConstants.*;
+import static linksawakening.app.gameplay.LinkGroundPhase.dialogGotItemActive;
+import static linksawakening.app.gameplay.LinkGroundPhase.groundFrame;
+import static linksawakening.app.gameplay.LinkGroundPhase.tickCrackedFloor;
+import static linksawakening.state.Direction.LEFT;
+import static linksawakening.state.Direction.RIGHT;
+import static linksawakening.state.Direction.UP;
 
 import java.util.Objects;
 import linksawakening.entity.Link;

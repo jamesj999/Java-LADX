@@ -1,9 +1,17 @@
 package linksawakening.app;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.app.flow.SessionContext;
 import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.render.RenderScreen;
@@ -22,8 +30,8 @@ class FileMenuBehaviorTest {
         Scenario() {
             try (var rom = linksawakening.testing.TestRom.open()) {
                 assertTrue(rom.read() >= 0);
-            } catch (java.io.IOException e) {
-                throw new java.io.UncheckedIOException(e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
             game.initializeHeadlessNewGame();
             c = game.context;

@@ -1,13 +1,20 @@
 package linksawakening.architecture;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import linksawakening.Main;
 import linksawakening.app.GameSession;
-import linksawakening.app.screen.*;
+import linksawakening.app.screen.CutsceneScreen;
+import linksawakening.app.screen.FileMenuScreen;
+import linksawakening.app.screen.FileSaveScreen;
+import linksawakening.app.screen.GameplayScreen;
+import linksawakening.app.screen.Screen;
+import linksawakening.app.screen.TitleScreen;
 import linksawakening.world.room.RoomPlayerItems;
 import org.junit.jupiter.api.Test;
 

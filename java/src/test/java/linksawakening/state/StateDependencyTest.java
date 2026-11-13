@@ -1,9 +1,11 @@
 package linksawakening.state;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +20,7 @@ class StateDependencyTest {
                 var matcher = dependency.matcher(source);
                 while (matcher.find()) {
                     assertTrue(
-                            java.util.Set.of("state", "rom", "save").contains(matcher.group(1)),
+                            Set.of("state", "rom", "save").contains(matcher.group(1)),
                             file + " depends on " + matcher.group());
                 }
             }

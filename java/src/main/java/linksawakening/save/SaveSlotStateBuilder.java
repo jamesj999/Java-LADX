@@ -1,6 +1,10 @@
 package linksawakening.save;
 
-import linksawakening.save.SaveSlotComponents.*;
+import linksawakening.save.SaveSlotComponents.Ammunition;
+import linksawakening.save.SaveSlotComponents.Inventory;
+import linksawakening.save.SaveSlotComponents.Progression;
+import linksawakening.save.SaveSlotComponents.Resources;
+import linksawakening.save.SaveSlotComponents.Spawn;
 
 /** Builds a slot from explicit cohesive component groups, retaining raw SRAM bytes. */
 public final class SaveSlotStateBuilder {

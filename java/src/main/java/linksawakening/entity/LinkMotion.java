@@ -1,6 +1,9 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
+import static linksawakening.state.Direction.DOWN;
+import static linksawakening.state.Direction.LEFT;
+import static linksawakening.state.Direction.RIGHT;
+import static linksawakening.state.Direction.UP;
 
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.PhysicsFlags;

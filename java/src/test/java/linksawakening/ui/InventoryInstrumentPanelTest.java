@@ -1,7 +1,10 @@
 package linksawakening.ui;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.util.Arrays;
 import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;
 import linksawakening.state.PlayerState;
@@ -53,7 +56,7 @@ final class InventoryInstrumentPanelTest {
         var base = InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).palettes();
         assertEquals(linksawakening.rom.RomBank.decodeRgb555(0x2680), panel.palettes(base, 0)[7][1]);
         assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 7)[7]);
-        assertFalse(java.util.Arrays.equals(panel.palettes(base, 7)[7], panel.palettes(base, 8)[7]));
+        assertFalse(Arrays.equals(panel.palettes(base, 7)[7], panel.palettes(base, 8)[7]));
         assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 128)[7]);
         assertArrayEquals(base[0], panel.palettes(base, 8)[0]);
         assertEquals(
@@ -83,7 +86,7 @@ final class InventoryInstrumentPanelTest {
         assertArrayEquals(empty, owned, "Caller mutation is observed only when context is refreshed");
         menu.setWorldContext(true, 0x0E, flags);
         menu.render(owned, gpu);
-        assertFalse(java.util.Arrays.equals(empty, owned));
+        assertFalse(Arrays.equals(empty, owned));
         for (int map : new int[] {0, 7, 0xFF}) {
             menu.setWorldContext(true, map, new byte[8]);
             menu.render(empty, gpu);

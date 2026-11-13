@@ -1,12 +1,14 @@
 package linksawakening.app.gameplay.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.*;
-import linksawakening.app.*;
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
-import linksawakening.world.entity.event.*;
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
 import org.junit.jupiter.api.Test;
 
 class EntityBoundaryBehaviorTest {

@@ -1,7 +1,5 @@
 package linksawakening.app.flow;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
 import linksawakening.app.audio.MusicDirector;
 import linksawakening.app.debug.DebugLog;
@@ -175,7 +173,7 @@ public final class ScreenRouter {
         actions.navigator().show(ScreenKind.GAMEPLAY);
         applyConfiguredItemProfile(state.options().config(), player.playerState());
         if (state.options().config().playIntroStory()) {
-            System.err.println("Intro story startup is not implemented yet; spawning at start location");
+            DebugLog.warning("Intro story startup is not implemented yet; spawning at start location");
         }
         loadOverworldScreen();
     }

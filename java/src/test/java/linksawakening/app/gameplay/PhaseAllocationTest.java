@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.app.AllocationSessions;
 import linksawakening.testing.AllocationProbe;

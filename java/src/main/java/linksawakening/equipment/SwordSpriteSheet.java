@@ -1,8 +1,10 @@
 package linksawakening.equipment;
 
 import linksawakening.gpu.Tile;
-import linksawakening.rom.*;
+import linksawakening.rom.GbcBanks;
 import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 /**
  * Sword blade OAM tiles, sourced from {@code LinkCharacterTiles} (bank $0C /

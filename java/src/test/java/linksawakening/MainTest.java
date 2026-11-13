@@ -11,10 +11,9 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.app.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
+import linksawakening.app.GameSession;
+import linksawakening.app.InputRouter;
+import linksawakening.app.ScreenRouter;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;

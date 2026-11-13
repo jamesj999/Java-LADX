@@ -1,7 +1,12 @@
 package linksawakening.app.gameplay.recovery;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
+import java.util.List;
 import linksawakening.app.GameSession;
 import linksawakening.rom.Rom;
 import linksawakening.testing.RequiresRom;
@@ -97,7 +102,7 @@ class PassOutSessionTest {
                     "Save-menu VRAM byte " + i);
         }
         int[] initialTiles = new int[1024], initialAttrs = new int[1024];
-        java.util.Arrays.fill(initialAttrs, 5);
+        Arrays.fill(initialAttrs, 5);
         for (int yTile = 0; yTile < 32; yTile++)
             for (int xTile = 0; xTile < 20; xTile++) {
                 initialTiles[yTile * 32 + xTile] = 0xAE + ((xTile ^ yTile) & 1);
@@ -117,7 +122,7 @@ class PassOutSessionTest {
                         rom, new linksawakening.rom.RomAddress(0x24, 0x61E5), initialAttrs))
                 .bgPalettes(room.palettes())
                 .objectPalettes(room.entities().spriteSelection().objectPalettes())
-                .sprites(java.util.List.of(new linksawakening.ui.GameOverMenu(rom).cursor()))
+                .sprites(List.of(new linksawakening.ui.GameOverMenu(rom).cursor()))
                 .build();
         byte[] expectedFrame = new byte[actual.length];
         new linksawakening.render.GameFrameSceneBuilder()

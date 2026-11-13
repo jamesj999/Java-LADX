@@ -1,8 +1,5 @@
 package linksawakening.state;
 
-import static linksawakening.state.PlayerNumbers.*;
-import static linksawakening.state.PlayerState.*;
-
 /** PlayerResources owns its player-state fields and their update rules. */
 public final class PlayerResources {
 

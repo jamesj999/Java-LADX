@@ -1,6 +1,9 @@
 package linksawakening.audio.openal;
 
-import static linksawakening.audio.openal.OpenAlStream.*;
+import static linksawakening.audio.openal.OpenAlStream.checkAlError;
+import static linksawakening.audio.openal.OpenAlStream.combine;
+import static linksawakening.audio.openal.OpenAlStream.conciseMessage;
+import static linksawakening.audio.openal.OpenAlStream.rememberFailure;
 
 import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;

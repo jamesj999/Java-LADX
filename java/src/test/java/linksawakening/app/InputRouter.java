@@ -1,8 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
-
 import linksawakening.app.screen.Screen;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;

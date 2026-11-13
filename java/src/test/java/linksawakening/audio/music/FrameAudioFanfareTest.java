@@ -1,6 +1,7 @@
 package linksawakening.audio.music;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;

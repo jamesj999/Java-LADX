@@ -1,6 +1,7 @@
 package linksawakening.app.screen;
 
-import static linksawakening.input.KeyCodes.*;
+import static linksawakening.input.KeyCodes.KEY_ENTER;
+import static linksawakening.input.KeyCodes.PRESS;
 
 import java.util.Objects;
 import linksawakening.app.audio.MusicDirector;

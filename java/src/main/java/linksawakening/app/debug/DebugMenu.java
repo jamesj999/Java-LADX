@@ -1,7 +1,22 @@
 package linksawakening.app.debug;
 
-import static linksawakening.app.input.ApplicationKeys.*;
-import static linksawakening.input.KeyCodes.*;
+import static linksawakening.app.input.ApplicationKeys.KEY_END;
+import static linksawakening.app.input.ApplicationKeys.KEY_F4;
+import static linksawakening.app.input.ApplicationKeys.KEY_HOME;
+import static linksawakening.app.input.ApplicationKeys.KEY_PAGE_DOWN;
+import static linksawakening.app.input.ApplicationKeys.KEY_PAGE_UP;
+import static linksawakening.input.KeyCodes.KEY_DOWN;
+import static linksawakening.input.KeyCodes.KEY_ENTER;
+import static linksawakening.input.KeyCodes.KEY_ESCAPE;
+import static linksawakening.input.KeyCodes.KEY_LEFT;
+import static linksawakening.input.KeyCodes.KEY_LEFT_SHIFT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_SHIFT;
+import static linksawakening.input.KeyCodes.KEY_TAB;
+import static linksawakening.input.KeyCodes.KEY_UP;
+import static linksawakening.input.KeyCodes.PRESS;
+import static linksawakening.input.KeyCodes.RELEASE;
+import static linksawakening.input.KeyCodes.REPEAT;
 
 import java.util.ArrayList;
 import java.util.List;

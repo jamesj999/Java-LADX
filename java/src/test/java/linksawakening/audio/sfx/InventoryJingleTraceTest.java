@@ -1,7 +1,11 @@
 package linksawakening.audio.sfx;
 
-import static linksawakening.audio.sfx.SfxRegisterTrace.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static linksawakening.audio.sfx.SfxRegisterTrace.add;
+import static linksawakening.audio.sfx.SfxRegisterTrace.put;
+import static linksawakening.audio.sfx.SfxRegisterTrace.varying;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import linksawakening.audio.music.MusicDriver;

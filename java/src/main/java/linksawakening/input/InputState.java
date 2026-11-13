@@ -1,6 +1,7 @@
 package linksawakening.input;
 
-import static linksawakening.input.KeyCodes.*;
+import static linksawakening.input.KeyCodes.PRESS;
+import static linksawakening.input.KeyCodes.RELEASE;
 
 import java.util.Arrays;
 

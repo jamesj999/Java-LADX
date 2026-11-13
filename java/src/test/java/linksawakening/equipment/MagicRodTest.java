@@ -22,7 +22,7 @@ final class MagicRodTest {
 
         assertEquals(1, target.attackStepRequests);
         assertEquals(0, target.fireRequests);
-        assertEquals(MagicRod.ATTACK_STEP_MAGIC_ROD, rod.attackStepCountdownForTest());
+        assertEquals(MagicRod.ATTACK_STEP_MAGIC_ROD, EquipmentInspection.attackStepCountdown(rod));
         assertTrue(rod.blocksMotion());
         assertTrue(rod.locksFacing());
         assertEquals(List.of(), sounds.events);
@@ -37,13 +37,13 @@ final class MagicRodTest {
         rod.onPress();
         rod.tick(false, 0);
 
-        assertEquals(0x8D, rod.attackStepCountdownForTest());
+        assertEquals(0x8D, EquipmentInspection.attackStepCountdown(rod));
         assertEquals(0, target.fireRequests);
 
         rod.tick(false, 1);
 
         assertEquals(1, target.fireRequests);
-        assertEquals(0x8C, rod.attackStepCountdownForTest());
+        assertEquals(0x8C, EquipmentInspection.attackStepCountdown(rod));
         assertEquals(List.of(GameplaySoundEvent.MAGIC_ROD), sounds.events);
     }
 

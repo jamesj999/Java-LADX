@@ -1,7 +1,8 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
+import static linksawakening.entity.LinkRomConstants.ATTACK_STEP_DURATION_MASK;
+import static linksawakening.entity.LinkRomConstants.JOYPAD_TO_DIRECTION;
+import static linksawakening.entity.LinkRomConstants.ROM_ITEM_ATTACK_STEP_COUNTDOWN;
 
 import java.util.Objects;
 import java.util.function.BooleanSupplier;

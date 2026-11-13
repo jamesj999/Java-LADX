@@ -13,7 +13,15 @@ import linksawakening.world.room.RoomRenderView;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** Read-only frame inputs; implementations may be owned snapshots or same-thread reusable state. */
+/**
+ * Read-only frame inputs; owned snapshots or same-thread reusable state.
+ *
+ * <p>Screen-specific optional data: room, Link and world controllers are absent on title/file screens;
+ * introFrameSnapshot and fileMenuFrame exist only on their respective screens. Tile/attribute/palette
+ * planes may be absent before a scene is loaded. VFX producer/renderer/palette and inventory/dialog
+ * controllers may be omitted in focused captures. Layer assembly checks these capabilities before
+ * submitting the corresponding pass; absence must not manufacture gameplay state.
+ */
 interface GameFrameInputs {
     RenderScreen screen();
 

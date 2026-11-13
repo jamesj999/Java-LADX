@@ -5,7 +5,11 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.function.LongSupplier;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.openal.*;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.system.MemoryUtil;
 
 /** Owns the browser's native device, context, source and buffer pool. */

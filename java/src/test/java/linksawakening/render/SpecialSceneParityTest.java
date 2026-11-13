@@ -1,6 +1,7 @@
 package linksawakening.render;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.List;
 import linksawakening.cutscene.IntroSprite;

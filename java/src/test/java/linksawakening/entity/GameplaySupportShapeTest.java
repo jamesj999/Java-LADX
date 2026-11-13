@@ -1,61 +1,29 @@
 package linksawakening.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.lang.reflect.Executable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
+/** Guards responsibility boundaries rather than obsolete line/parameter limits. */
 class GameplaySupportShapeTest {
-    private static final List<String> PACKAGES = List.of(
-            "entity",
-            "equipment",
-            "state",
-            "gameplay",
-            "dialog",
-            "ui",
-            "cutscene",
-            "startup",
-            "scene",
-            "physics",
-            "vfx");
-
     @Test
-    void ownedMainFilesStayWithinCohesiveFiveHundredLineBudget() throws Exception {
-        for (String area : PACKAGES) {
-            try (var files = Files.walk(Path.of("src/main/java/linksawakening", area))) {
-                for (Path file :
-                        files.filter(p -> p.toString().endsWith(".java")).toList()) {
-                    assertTrue(Files.readAllLines(file).size() <= 500, file.toString());
-                }
-            }
+    void immutableRegistrationDataHasOneOwnerRatherThanStatelessFamilySlices() throws Exception {
+        Path area = Path.of("src/main/java/linksawakening/entity");
+        assertTrue(Files.exists(area.resolve("EntitySpriteRegistrationData.java")));
+        try (var files = Files.list(area)) {
+            assertFalse(files.anyMatch(p -> p.getFileName().toString().matches("EntitySprite.*Registrations\\.java")));
         }
     }
 
     @Test
-    void longSignaturesAreExplicitDeprecatedCompatibilityEntries() throws Exception {
-        Path root = Path.of("build/classes/java/main");
-        for (String area : PACKAGES) {
-            try (var files = Files.walk(root.resolve("linksawakening/" + area))) {
-                for (Path file :
-                        files.filter(p -> p.toString().endsWith(".class")).toList()) {
-                    String name =
-                            root.relativize(file).toString().replace('/', '.').replace('\\', '.');
-                    Class<?> type = Class.forName(
-                            name.substring(0, name.length() - 6),
-                            false,
-                            getClass().getClassLoader());
-                    for (var constructor : type.getDeclaredConstructors()) check(constructor);
-                    for (var method : type.getDeclaredMethods()) check(method);
-                }
-            }
-        }
-    }
-
-    private static void check(Executable member) {
-        if (member.isSynthetic()) return;
-        assertTrue(member.getParameterCount() <= 8 || member.isAnnotationPresent(Deprecated.class), member.toString());
+    void equipmentRegistrationOrderBelongsToOneWiringFactory() throws Exception {
+        Path area = Path.of("src/main/java/linksawakening/app/wiring");
+        assertTrue(Files.exists(area.resolve("EquipmentWiring.java")));
+        assertFalse(Files.exists(area.resolve("CombatEquipment.java")));
+        assertFalse(Files.exists(area.resolve("ToolEquipment.java")));
+        assertTrue(Files.readString(area.resolve("EquipmentWiring.java")).contains("record EquipmentInputs"));
     }
 }

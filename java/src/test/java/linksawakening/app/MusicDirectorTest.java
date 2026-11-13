@@ -4,7 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.app.audio.MusicDirector;
-import linksawakening.audio.music.*;
+import linksawakening.audio.music.AreaMusicResolver;
+import linksawakening.audio.music.FrameAudioPlayer;
+import linksawakening.audio.music.GameplayMusicController;
+import linksawakening.audio.music.MusicCatalog;
+import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import linksawakening.world.room.RoomSession;

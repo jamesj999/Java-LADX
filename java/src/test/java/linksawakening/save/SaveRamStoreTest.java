@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -116,7 +117,7 @@ final class SaveRamStoreTest {
         Files.createDirectory(path);
         Path marker = path.resolve("keep.txt");
         Files.writeString(marker, "unchanged");
-        assertThrows(java.io.IOException.class, store::flush);
+        assertThrows(IOException.class, store::flush);
         assertEquals("unchanged", Files.readString(marker));
         try (var files = Files.list(tempDir)) {
             assertEquals(1, files.count());

@@ -1,7 +1,6 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
+import linksawakening.entity.Link.WaterSplash;
 
 /** Link signals state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkSignals {

@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Delegates airborne operations to state owners used by ROM {@code ApplyLinkMotionState}. */
 final class DefaultLinkAirborneRole implements LinkAirborneRole {
     private final LinkAirborne linkAirborne;

@@ -1,6 +1,9 @@
 package linksawakening.render;
 
-import static linksawakening.render.EntityRenderTestSupport.*;
+import static linksawakening.render.EntityRenderTestSupport.pixelColor;
+import static linksawakening.render.EntityRenderTestSupport.snapshot;
+import static linksawakening.render.EntityRenderTestSupport.writePatternTile;
+import static linksawakening.render.EntityRenderTestSupport.writeSolidTile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;

@@ -1,7 +1,17 @@
 package linksawakening.cutscene;
 
-import static linksawakening.cutscene.IntroPaletteMath.*;
-import static linksawakening.cutscene.IntroSequence.*;
+import static linksawakening.cutscene.IntroSequence.Stage.BEACH;
+import static linksawakening.cutscene.IntroSequence.Stage.BEACH_FADE;
+import static linksawakening.cutscene.IntroSequence.Stage.BEACH_LOAD;
+import static linksawakening.cutscene.IntroSequence.Stage.COMPLETE;
+import static linksawakening.cutscene.IntroSequence.Stage.LINK_FACE;
+import static linksawakening.cutscene.IntroSequence.Stage.SEA;
+import static linksawakening.cutscene.IntroSequence.Stage.SEA_FADE;
+import static linksawakening.cutscene.IntroSequence.Stage.TITLE_DX;
+import static linksawakening.cutscene.IntroSequence.Stage.TITLE_REVEAL;
+import static linksawakening.cutscene.IntroSequence.Stage.TITLE_WAIT;
+
+import linksawakening.cutscene.IntroSequence.Stage;
 
 /** Explicit intro stage and presentation counters shared with delayed frame publication. */
 final class IntroPhaseState {

@@ -1,7 +1,6 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
+import linksawakening.entity.Link.ScreenShakeRequest;
 import linksawakening.state.GroundStatus;
 import linksawakening.state.LinkMotionState;
 

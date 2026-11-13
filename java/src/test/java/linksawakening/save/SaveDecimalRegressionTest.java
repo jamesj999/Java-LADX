@@ -1,6 +1,6 @@
 package linksawakening.save;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,8 @@
 package linksawakening.cutscene;
 
-import static linksawakening.cutscene.IntroSequence.*;
+import static linksawakening.cutscene.IntroSequence.BEACH_LINK_START_X;
+import static linksawakening.cutscene.IntroSequence.BEACH_LINK_Y;
+import static linksawakening.cutscene.IntroSequence.BEACH_MARIN_START_X;
 
 /** Marin and inert Link actor state machines from IntroHandler; owns actor positions, counters and animation variants. */
 final class IntroBeachActors {

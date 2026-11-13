@@ -1,8 +1,19 @@
 package linksawakening.app;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F4;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+import java.util.Arrays;
 import linksawakening.app.debug.DebugMenu;
 import linksawakening.config.AppConfig;
 import linksawakening.testing.RequiresRom;
@@ -74,7 +85,7 @@ class DebugMenuIntegrationTest {
         byte[] first = game.headlessFrame();
         game.onKeyEvent(GLFW_KEY_DOWN, GLFW_PRESS);
         assertEquals(1, menu(game).selected());
-        assertFalse(java.util.Arrays.equals(first, game.headlessFrame()));
+        assertFalse(Arrays.equals(first, game.headlessFrame()));
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
         assertEquals("DEBUG 2/5 INVENTORY", menu(game).title());
         game.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);

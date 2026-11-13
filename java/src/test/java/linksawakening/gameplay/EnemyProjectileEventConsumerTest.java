@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
@@ -24,8 +26,7 @@ final class EnemyProjectileEventConsumerTest {
     void acceptedProjectileHurtResetsOnlyAcornCounterAndRejectedHitDoesNotReset() {
         PlayerState player = new PlayerState();
         player.vitals().setHealth(16);
-        var counters = new java.util.concurrent.atomic.AtomicReference<>(
-                new linksawakening.world.entity.EnemyDropResolver.CounterState(11, 23));
+        var counters = new AtomicReference<>(new linksawakening.world.entity.EnemyDropResolver.CounterState(11, 23));
         var event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE)
                 .collisionValue(0xFF)
                 .linkDamage(8)
@@ -291,7 +292,7 @@ final class EnemyProjectileEventConsumerTest {
 
     private static int[] emptyRoomObjectsArea() {
         int[] roomObjectsArea = new int[0x100];
-        java.util.Arrays.fill(roomObjectsArea, 0xFF);
+        Arrays.fill(roomObjectsArea, 0xFF);
         return roomObjectsArea;
     }
 }

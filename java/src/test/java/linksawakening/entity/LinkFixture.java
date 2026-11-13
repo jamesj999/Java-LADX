@@ -8,6 +8,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.equipment.Hookshot;
@@ -220,7 +221,7 @@ abstract class LinkFixture {
 
     protected static int[] emptyRoomObjectsArea() {
         int[] roomObjectsArea = new int[0x100];
-        java.util.Arrays.fill(roomObjectsArea, 0xFF);
+        Arrays.fill(roomObjectsArea, 0xFF);
         return roomObjectsArea;
     }
 

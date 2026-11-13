@@ -1,6 +1,9 @@
 package linksawakening.recording;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
@@ -8,6 +11,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -53,7 +57,7 @@ class GameplayRecorderTest {
                     tone[i * 2 + 1] = sample;
                 }
                 if (frame < 60) recorder.captureAudio(tone, 48000);
-                java.util.Arrays.fill(tone, (short) 0); // Borrowed storage may immediately be reused.
+                Arrays.fill(tone, (short) 0); // Borrowed storage may immediately be reused.
                 for (int i = 0; i < pixels.length; i += 4) {
                     pixels[i] = (byte) (frame < 45 ? 240 : 16);
                     pixels[i + 1] = 32;

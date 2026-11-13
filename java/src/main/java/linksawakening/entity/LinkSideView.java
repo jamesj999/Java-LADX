@@ -1,8 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
-
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;

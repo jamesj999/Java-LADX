@@ -1,7 +1,5 @@
 package linksawakening.cutscene;
 
-import static linksawakening.cutscene.IntroSequence.*;
-
 /** Explicit shared intro map/scroll writes consumed at the original VBlank boundary. */
 final class IntroVideoMemory {
 

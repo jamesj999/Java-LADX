@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Delegates actions operations to state owners used by ROM {@code ApplyLinkMotionState}. */
 final class DefaultLinkActionsRole implements LinkActionsRole {
     private final LinkEntityEffects linkEntityEffects;

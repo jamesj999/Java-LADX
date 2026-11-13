@@ -1,7 +1,9 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
+import static linksawakening.entity.LinkRomConstants.JOY_DOWN;
+import static linksawakening.entity.LinkRomConstants.JOY_LEFT;
+import static linksawakening.entity.LinkRomConstants.JOY_RIGHT;
+import static linksawakening.entity.LinkRomConstants.JOY_UP;
 
 /** Link controls state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkControls {

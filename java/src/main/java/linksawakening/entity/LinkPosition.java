@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Owns subpixel coordinates, speeds and shadows for ComputeLinkPosition / UpdateFinalLinkPosition. */
 final class LinkPosition {
 

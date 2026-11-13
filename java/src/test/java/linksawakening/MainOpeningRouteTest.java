@@ -1,14 +1,13 @@
 package linksawakening;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import linksawakening.app.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
+import linksawakening.app.HeadlessGameDriver;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 

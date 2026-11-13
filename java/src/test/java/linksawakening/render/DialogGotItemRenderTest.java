@@ -1,6 +1,6 @@
 package linksawakening.render;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;

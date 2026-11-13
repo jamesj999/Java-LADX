@@ -1,7 +1,6 @@
 package linksawakening.state;
 
-import static linksawakening.state.PlayerNumbers.*;
-import static linksawakening.state.PlayerState.*;
+import static linksawakening.state.PlayerState.SUBSCREEN_SLOT_COUNT;
 
 import java.util.Objects;
 

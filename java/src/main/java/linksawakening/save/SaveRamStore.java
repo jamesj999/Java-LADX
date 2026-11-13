@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
+import linksawakening.app.debug.DebugLog;
 import linksawakening.state.PlayerState;
 
 /** Host persistence adapter for the source-shaped SRAM image. */
@@ -51,7 +52,7 @@ public final class SaveRamStore {
             String timestamp = Instant.now().toString().replace(':', '-');
             backup = path.resolveSibling(path.getFileName() + ".corrupt-" + timestamp);
             Files.copy(path, backup);
-            System.err.println("Wrong-sized save preserved at " + backup);
+            DebugLog.warning("Wrong-sized save preserved at " + backup);
             image = SaveRamImage.empty();
         }
         image.initializeInvalidSlots();

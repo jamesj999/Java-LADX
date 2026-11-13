@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import linksawakening.app.debug.DebugLog;
 import linksawakening.input.InputConfig;
 
 /** Launch preferences and key bindings loaded from a strict JSON object. */
@@ -104,12 +105,12 @@ public final class AppConfig {
     static AppConfig loadFromResources(ClassLoader loader) {
         try (InputStream stream = loader.getResourceAsStream(RESOURCE_PATH)) {
             if (stream == null) {
-                System.err.println("App config not found at " + RESOURCE_PATH + "; using defaults");
+                DebugLog.warning("App config not found at " + RESOURCE_PATH + "; using defaults");
                 return defaults();
             }
             return parse(new String(stream.readAllBytes(), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            System.err.println("Failed to read app config: " + e.getMessage());
+            DebugLog.warning("Failed to read app config: " + e.getMessage());
             return defaults();
         }
     }
@@ -140,7 +141,7 @@ public final class AppConfig {
         try {
             return StartMode.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            System.err.println("Unknown start mode: " + value + " (falling back to " + fallback + ")");
+            DebugLog.warning("Unknown start mode: " + value + " (falling back to " + fallback + ")");
             return fallback;
         }
     }
@@ -159,7 +160,7 @@ public final class AppConfig {
         try {
             return StartLocationType.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            System.err.println("Unknown start location type: " + value + " (falling back to " + fallback + ")");
+            DebugLog.warning("Unknown start location type: " + value + " (falling back to " + fallback + ")");
             return fallback;
         }
     }
@@ -175,7 +176,7 @@ public final class AppConfig {
             }
             return Integer.parseInt(normalized) & 0xFF;
         } catch (NumberFormatException e) {
-            System.err.println(
+            DebugLog.warning(
                     "Invalid start room id: " + value + " (falling back to " + String.format("0x%02X", fallback) + ")");
             return fallback;
         }
@@ -188,7 +189,7 @@ public final class AppConfig {
         try {
             return ItemProfile.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            System.err.println("Unknown item profile: " + value + " (falling back to DEBUG_ALL_ITEMS)");
+            DebugLog.warning("Unknown item profile: " + value + " (falling back to DEBUG_ALL_ITEMS)");
             return ItemProfile.DEBUG_ALL_ITEMS;
         }
     }

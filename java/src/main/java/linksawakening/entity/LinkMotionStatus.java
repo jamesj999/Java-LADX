@@ -1,8 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
-
 import linksawakening.state.LinkMotionState;
 
 /** Explicit motion-mode, recovery and per-frame gates from ApplyLinkMotionState. */

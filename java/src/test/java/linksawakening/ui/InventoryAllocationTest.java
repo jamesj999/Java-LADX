@@ -1,6 +1,7 @@
 package linksawakening.ui;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.gpu.GPU;
 import linksawakening.render.HardwareFrame;

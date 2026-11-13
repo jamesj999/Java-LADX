@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.config.AppConfig;
 import linksawakening.state.PlayerState;
 

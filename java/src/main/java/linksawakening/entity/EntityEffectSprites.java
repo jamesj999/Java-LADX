@@ -1,7 +1,15 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.EntitySpriteGeometry.*;
-import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
+import static linksawakening.entity.EntitySpriteGeometry.appendDynamicPair;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ARROW;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_BOMB;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_FLOATING_ITEM;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_FLOATING_ITEM_2;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_LIFTABLE_ROCK;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_MAGIC_POWDER_SPRINKLE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_MAGIC_ROD_FIREBALL;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.LIFTABLE_ROCK_INTACT_BUSH_VARIANT;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.LIFTABLE_ROCK_INTACT_ROCK_VARIANT;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,7 @@
 package linksawakening.render;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +63,7 @@ public final class DialogEmulatorCapture {
                         }
                     try {
                         ImageIO.write(image, "png", folder.resolve(name).toFile());
-                    } catch (java.io.IOException e) {
+                    } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }
                 });

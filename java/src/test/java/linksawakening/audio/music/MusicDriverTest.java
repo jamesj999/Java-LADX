@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
@@ -373,7 +376,7 @@ final class MusicDriverTest {
         MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
         driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.setSoundEffectState(channel -> channel == 1, () -> false);
-        java.util.List<Integer> writes = new java.util.ArrayList<>();
+        List<Integer> writes = new ArrayList<>();
         apu.setPrimitiveRegisterObserver((register, value) -> writes.add(register));
         for (int i = 0; i < 32 && driver.isPlaying(); i++) driver.tick60Hz();
         org.junit.jupiter.api.Assertions.assertFalse(driver.isPlaying());
@@ -388,8 +391,8 @@ final class MusicDriverTest {
         MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
         driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
-        java.util.concurrent.atomic.AtomicBoolean owned = new java.util.concurrent.atomic.AtomicBoolean(true);
-        java.util.concurrent.atomic.AtomicBoolean restore = new java.util.concurrent.atomic.AtomicBoolean(true);
+        AtomicBoolean owned = new AtomicBoolean(true);
+        AtomicBoolean restore = new AtomicBoolean(true);
         driver.setSoundEffectState(channel -> channel == 3 && owned.get(), () -> restore.getAndSet(false));
         for (int i = 0; i < 16; i++) apu.writeWaveRam(i, 0xFF);
         owned.set(false);

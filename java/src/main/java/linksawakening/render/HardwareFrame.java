@@ -51,8 +51,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     }
 
     HardwareFrame(boolean backgroundPriorityEnabled, HardwareFrameObserver observer) {
-        this.observer = observer;
-        if (observer != null) observer.attach(this);
+        this.observer = observer == null ? HardwareFrameObserver.NONE : observer;
+        this.observer.attach(this);
         this.backgroundPriorityEnabled = backgroundPriorityEnabled;
         transforms.add(IDENTITY);
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
@@ -77,11 +77,11 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         inventoryCutoffY = -1;
         oam.clear();
         nextEntry = 0;
-        if (observer != null) observer.reset();
+        observer.reset();
     }
 
     HardwareFrameObserver observer() {
-        return observer;
+        return observer == HardwareFrameObserver.NONE ? null : observer;
     }
 
     void submittingLayer(String name) {
@@ -107,7 +107,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void backgroundPixel(int x, int y, int index, int[] palette, boolean priority) {
         if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) return;
         int pixel = y * WIDTH + x;
-        if (observer != null) observer.backgroundPixel(pixel, submittingLayer);
+        observer.backgroundPixel(pixel, submittingLayer);
         backgroundIndex[pixel] = (byte) index;
         backgroundPalettes[pixel] = palette;
         bgTransforms[pixel] = paletteTransform;
@@ -117,14 +117,14 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void backgroundPixel(int x, int y, int index, int[] palette, int tile, int attr) {
         backgroundPixel(x, y, index, palette, (attr & 128) != 0);
         if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) return;
-        if (observer != null) observer.hudPixel(y * WIDTH + x, tile, attr);
+        observer.hudPixel(y * WIDTH + x, tile, attr);
     }
 
     /** Retains provenance for the empirically verified closed-HUD fidelity correction. */
     public void closedHudTile(Tile tile, int tileId, int attributes, int x, int y, int[] palette) {
         closedWindowY = Math.min(closedWindowY, y);
         backgroundTile(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, palette, (attributes & 128) != 0);
-        if (tile == null || observer == null) return;
+        if (tile == null) return;
         observer.closedHudTile(tile, tileId, attributes, x, y);
     }
 
@@ -138,7 +138,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     /** bank1.asm $5F51-$5F67: hide a whole OAM entry when raw Y >= WY+8. */
     public void hideGameplayObjectsUnderWindow(int windowY) {
         inventoryCutoffY = windowY;
-        if (observer != null) observer.beforeInventoryHiding(oam, windowY);
+        observer.beforeInventoryHiding(oam, windowY);
         for (int i = oam.size() - 1; i >= 0; i--) {
             if (((oam.get(i).entryY() + 16) & 255) >= windowY + 8) oam.remove(i);
         }
@@ -219,7 +219,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
             backgroundPalettes[pixel] = source.backgroundPalettes[pixel];
             backgroundIndex[pixel] = source.backgroundIndex[pixel];
             backgroundPriority[pixel] = source.backgroundPriority[pixel];
-            if (observer != null) observer.copiedBackgroundPixel(pixel, source.observer, submittingLayer);
+            observer.copiedBackgroundPixel(pixel, source.observer(), submittingLayer);
             bgTransforms[pixel] = copiedTransforms[source.bgTransforms[pixel]];
         }
     }
@@ -287,7 +287,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     private void compose(byte[] buffer, boolean overlay) {
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
-        if (observer != null) observer.beginComposition();
+        observer.beginComposition();
         for (int i = 0; i < oam.size(); i++) rasterizeObject(oam.get(i));
         int pixels = overlay ? Math.min(backgroundIndex.length, buffer.length / 4) : backgroundIndex.length;
         for (int pixel = 0; pixel < pixels; pixel++) {
@@ -316,7 +316,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
                 objects[pixel] = entry.transform.applyAsInt(entry.palette[index]);
                 objectOrder[pixel] = entry.order;
                 objectBehind[pixel] = entry.behind;
-                if (observer != null) {
+                {
                     observer.objectPixel(
                             pixel,
                             entry.source,

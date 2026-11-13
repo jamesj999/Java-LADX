@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.GameplaySimulation.*;
+import static linksawakening.app.gameplay.GameplaySimulation.completeGameplayFrame;
 
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;

@@ -1,13 +1,14 @@
 package linksawakening.app.screen;
 
-import linksawakening.app.*;
 import linksawakening.app.flow.SessionNavigator;
 import linksawakening.app.state.SaveState;
 import linksawakening.app.state.ScreenState;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
-import linksawakening.input.*;
-import linksawakening.save.*;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.save.SaveRamStore;
+import linksawakening.save.SaveSlotState;
 import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** ROM-free screen instances for boundary/type assertions. Unexpected lifecycle work fails. */

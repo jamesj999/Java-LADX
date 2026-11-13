@@ -1,7 +1,7 @@
 package linksawakening.audio.music;
 
 import static linksawakening.audio.TestPcm.renderPcm;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;

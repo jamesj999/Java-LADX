@@ -70,17 +70,18 @@ public final class GameBoyApu {
         return sampleRate;
     }
 
-    private RegisterObserver registerObserver;
+    private static final RegisterObserver NO_OBSERVER = (register, value) -> {};
+    private RegisterObserver registerObserver = NO_OBSERVER;
 
     /** Primitive diagnostic tap; null disables observation. */
     public void setPrimitiveRegisterObserver(RegisterObserver observer) {
-        registerObserver = observer;
+        registerObserver = observer == null ? NO_OBSERVER : observer;
     }
 
     public void writeRegister(int register, int value) {
         validateRegister(register);
         int unsignedValue = value & 0xFF;
-        if (registerObserver != null) registerObserver.accept(register, unsignedValue);
+        registerObserver.accept(register, unsignedValue);
         if (register == NR52) {
             if ((unsignedValue & 0x80) == 0) {
                 Arrays.fill(registers, 0);

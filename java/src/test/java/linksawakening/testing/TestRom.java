@@ -1,6 +1,7 @@
 package linksawakening.testing;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 /** Single entry point for test ROM reads, including standalone capture tools. */
 public final class TestRom {
@@ -21,8 +22,7 @@ public final class TestRom {
     }
 
     private static boolean isTestClass(Class<?> type) {
-        return java.util.Arrays.stream(type.getDeclaredMethods()).anyMatch(method -> java.util.Arrays.stream(
-                        method.getAnnotations())
+        return Arrays.stream(type.getDeclaredMethods()).anyMatch(method -> Arrays.stream(method.getAnnotations())
                 .anyMatch(annotation -> annotation.annotationType().getName().startsWith("org.junit.jupiter.")));
     }
 

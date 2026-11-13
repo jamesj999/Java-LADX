@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 import java.util.function.BooleanSupplier;
 
 /** Equipment operations from LinkMotionDefault and its related ROM routines. */

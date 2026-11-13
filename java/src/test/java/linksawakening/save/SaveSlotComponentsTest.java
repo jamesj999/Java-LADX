@@ -1,8 +1,17 @@
 package linksawakening.save;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import linksawakening.save.SaveSlotComponents.*;
+import linksawakening.save.SaveSlotComponents.Ammunition;
+import linksawakening.save.SaveSlotComponents.Inventory;
+import linksawakening.save.SaveSlotComponents.Keys;
+import linksawakening.save.SaveSlotComponents.Progression;
+import linksawakening.save.SaveSlotComponents.Quest;
+import linksawakening.save.SaveSlotComponents.Resources;
+import linksawakening.save.SaveSlotComponents.Songs;
+import linksawakening.save.SaveSlotComponents.Spawn;
 import org.junit.jupiter.api.Test;
 
 final class SaveSlotComponentsTest {

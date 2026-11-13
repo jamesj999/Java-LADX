@@ -1,9 +1,13 @@
 package linksawakening.app.wiring;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.world.room.RoomPlayerItems;
 import org.junit.jupiter.api.Test;

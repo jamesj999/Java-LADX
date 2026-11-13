@@ -1,8 +1,11 @@
 package linksawakening.app.gameplay;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.equipment.Sword;
 import org.junit.jupiter.api.Test;
 

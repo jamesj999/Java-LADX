@@ -1,7 +1,5 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
-
 /** Delegates sideView operations to state owners used by ROM {@code ApplyLinkMotionState}. */
 final class DefaultLinkSideViewRole implements LinkSideViewRole {
     private final LinkSideView linkSideView;

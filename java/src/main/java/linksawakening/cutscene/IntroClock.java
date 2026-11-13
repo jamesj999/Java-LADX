@@ -1,7 +1,5 @@
 package linksawakening.cutscene;
 
-import static linksawakening.cutscene.IntroSequence.*;
-
 /** The intro handler clock shared by actor and water motion; independent of presentation frame count. */
 final class IntroClock {
 

@@ -1,5 +1,6 @@
 package linksawakening.app.wiring;
 
+import java.util.function.UnaryOperator;
 import linksawakening.app.audio.RoomMusicSelection;
 import linksawakening.app.debug.DebugTeleporter;
 import linksawakening.app.debug.DebugTools;
@@ -49,8 +50,7 @@ public final class SessionWiring {
             OpeningStoryState opening,
             GameplaySounds sounds,
             boolean headless) {
-        return build(
-                random, headlessPcm, clock, opening, sounds, headless, java.util.function.UnaryOperator.identity());
+        return build(random, headlessPcm, clock, opening, sounds, headless, UnaryOperator.identity());
     }
 
     public static SessionContext build(
@@ -60,7 +60,7 @@ public final class SessionWiring {
             OpeningStoryState opening,
             GameplaySounds sounds,
             boolean headless,
-            java.util.function.UnaryOperator<Host> decorateHost) {
+            UnaryOperator<Host> decorateHost) {
         var screens = new ScreenState();
         var navigator = new SessionNavigator(screens);
         Host host = headless

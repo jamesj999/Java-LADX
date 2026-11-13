@@ -1,6 +1,6 @@
 package linksawakening.entity;
 
-import static linksawakening.entity.Link.*;
+import linksawakening.entity.Link.WaterSplash;
 
 /** Status operations from LinkMotionDefault and its related ROM routines. */
 public interface LinkStatusRole {

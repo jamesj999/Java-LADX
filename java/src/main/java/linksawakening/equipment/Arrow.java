@@ -69,8 +69,4 @@ public final class Arrow implements EquipmentItem {
             shootingCountdown--;
         }
     }
-
-    int shootingCountdownForTest() {
-        return shootingCountdown;
-    }
 }

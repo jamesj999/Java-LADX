@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.LinkGroundPhase.*;
+import static linksawakening.app.gameplay.LinkGroundPhase.tickCrackedFloor;
 
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.LinkDialogPosition;

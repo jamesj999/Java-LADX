@@ -1,8 +1,10 @@
 package linksawakening.entity;
 
 import linksawakening.gpu.Tile;
-import linksawakening.rom.*;
+import linksawakening.rom.GbcBanks;
 import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 /**
  * Link's OAM sprite sheet, sourced from {@code LinkCharacter2Tiles} (base bank

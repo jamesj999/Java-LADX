@@ -4,7 +4,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +101,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
     @Override
     public void beforeTestExecution(ExtensionContext context) throws Exception {
         var builders = new ArrayList<GameFrameSceneBuilder>();
-        var visited = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
+        var visited = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
         attach(context.getRequiredTestInstance(), builders, visited, 0);
         context.getStore(KEY).put("builders", builders);
     }

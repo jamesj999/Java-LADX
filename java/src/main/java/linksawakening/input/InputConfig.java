@@ -1,9 +1,28 @@
 package linksawakening.input;
 
-import static linksawakening.input.KeyCodes.*;
+import static linksawakening.input.KeyCodes.KEY_0;
+import static linksawakening.input.KeyCodes.KEY_A;
+import static linksawakening.input.KeyCodes.KEY_BACKSPACE;
+import static linksawakening.input.KeyCodes.KEY_DOWN;
+import static linksawakening.input.KeyCodes.KEY_ENTER;
+import static linksawakening.input.KeyCodes.KEY_ESCAPE;
+import static linksawakening.input.KeyCodes.KEY_F9;
+import static linksawakening.input.KeyCodes.KEY_LEFT;
+import static linksawakening.input.KeyCodes.KEY_LEFT_ALT;
+import static linksawakening.input.KeyCodes.KEY_LEFT_CONTROL;
+import static linksawakening.input.KeyCodes.KEY_LEFT_SHIFT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_ALT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_CONTROL;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_SHIFT;
+import static linksawakening.input.KeyCodes.KEY_SPACE;
+import static linksawakening.input.KeyCodes.KEY_TAB;
+import static linksawakening.input.KeyCodes.KEY_UP;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import linksawakening.app.debug.DebugLog;
 import linksawakening.config.AppConfig;
 
 /** Configurable engine key bindings with the legacy numeric key namespace. */
@@ -100,17 +119,17 @@ public final class InputConfig {
         int aKey = resolveKey(entries.getOrDefault("aKey", "Z"));
         int bKey = resolveKey(entries.getOrDefault("bKey", "X"));
         int selectKey = resolveKey(entries.getOrDefault("selectKey", "TAB"));
-        String recordingName = entries.getOrDefault("recordingKey", "F9").toUpperCase(java.util.Locale.ROOT);
+        String recordingName = entries.getOrDefault("recordingKey", "F9").toUpperCase(Locale.ROOT);
         int recordingKey = KEY_NAME_TO_CODE.getOrDefault(recordingName, KEY_F9);
         if (!KEY_NAME_TO_CODE.containsKey(recordingName))
-            System.err.println("Unknown recording key: " + recordingName + " (falling back to F9)");
+            DebugLog.warning("Unknown recording key: " + recordingName + " (falling back to F9)");
         return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, recordingKey);
     }
 
     private static int resolveKey(String name) {
         Integer glfwKey = KEY_NAME_TO_CODE.get(name.toUpperCase());
         if (glfwKey == null) {
-            System.err.println("Unknown key name in input config: " + name + " (falling back to ENTER)");
+            DebugLog.warning("Unknown key name in input config: " + name + " (falling back to ENTER)");
             return KEY_ENTER;
         }
         return glfwKey;

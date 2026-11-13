@@ -82,7 +82,7 @@ public final class GameFrameSceneBuilder {
                     : state.room().entities().spriteSelection().objectPalettes();
             var dialog = new DialogRenderLayer(
                     state.dialogController(), dialogPalette, dialogObjectPalettes, state.frameCounter());
-            dialog.windowPainter = dialogWindowPainter;
+            dialog.windowPainter(dialogWindowPainter);
             layers.add(dialog);
         }
         if (state.room() != null

@@ -1,7 +1,5 @@
 package linksawakening.cutscene;
 
-import static linksawakening.cutscene.IntroSequence.*;
-
 /** IntroHandler water scroll fractions and animated tile buffer; receives only video write gates and the source clock. */
 final class IntroWater {
 

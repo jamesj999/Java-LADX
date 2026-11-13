@@ -3,6 +3,7 @@ package linksawakening.architecture;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -119,7 +120,7 @@ final class ClassFileReferences {
         return result;
     }
 
-    private static void skipMembers(DataInputStream input) throws java.io.IOException {
+    private static void skipMembers(DataInputStream input) throws IOException {
         int count = input.readUnsignedShort();
         for (int i = 0; i < count; i++) {
             input.skipNBytes(6); // access, name, descriptor

@@ -1,7 +1,6 @@
 package linksawakening.state;
 
-import static linksawakening.state.PlayerNumbers.*;
-import static linksawakening.state.PlayerState.*;
+import static linksawakening.state.PlayerNumbers.clamp;
 
 /** Persistent quest, collectible and song state used by ROM {@code wTradeSequenceItem}. */
 public final class Progression {

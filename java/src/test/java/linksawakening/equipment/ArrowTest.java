@@ -64,7 +64,7 @@ final class ArrowTest {
         assertEquals(1, player.ammunition().arrowCount());
         assertEquals(1, target.shotRequests);
         assertEquals(1, target.countObservedAtShot);
-        assertEquals(0x10, arrow.shootingCountdownForTest());
+        assertEquals(0x10, EquipmentInspection.shootingCountdown(arrow));
         assertEquals(List.of(GameplaySoundEvent.ARROW_SHOT), sounds.events);
     }
 

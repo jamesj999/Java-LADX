@@ -1,6 +1,6 @@
 package linksawakening.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import linksawakening.equipment.ItemRegistry;

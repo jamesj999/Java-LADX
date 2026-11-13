@@ -1,6 +1,7 @@
 package linksawakening.gpu;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /** Owns the native RGBA presentation buffer and clipped tile writes. */
 public class Framebuffer {
@@ -12,7 +13,7 @@ public class Framebuffer {
     private ByteBuffer buffer;
 
     public Framebuffer() {
-        buffer = ByteBuffer.allocateDirect(WIDTH * HEIGHT * 4).order(java.nio.ByteOrder.nativeOrder());
+        buffer = ByteBuffer.allocateDirect(WIDTH * HEIGHT * 4).order(ByteOrder.nativeOrder());
     }
 
     public void clear(int r, int g, int b) {

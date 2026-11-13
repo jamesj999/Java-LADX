@@ -1,6 +1,6 @@
 package linksawakening.render;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.cutscene.IntroFrameSnapshot;
