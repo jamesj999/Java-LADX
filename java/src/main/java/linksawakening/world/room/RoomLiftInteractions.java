@@ -89,7 +89,7 @@ final class RoomLiftInteractions {
                         .inspection()
                         .liftedEntityState()
                         .active()) {
-            dependencies.puzzles().indoorPotPullFrames = 0;
+            dependencies.puzzles().current.indoorPotPullFrames = 0;
             return false;
         }
         var target = probeLiftTarget(linkPixelX, linkPixelY, linkDirection);
@@ -195,24 +195,24 @@ final class RoomLiftInteractions {
                 && target.touchedObject() != OBJECT_LIFTABLE_POT
                 && !(target.outdoor() && target.touchedObject() == 0x5C)
                 && target.touchedObject() != OBJECT_POT_WITH_SWITCH) {
-            dependencies.puzzles().indoorPotPullFrames = 0;
+            dependencies.puzzles().current.indoorPotPullFrames = 0;
             return false;
         }
         if (target.oppositeButton() == 0
                 || (request.pressedButtonsMask() & target.oppositeButton()) == 0
                 || (target.statue() != null && request.braceletLevel() != 2)) {
-            dependencies.puzzles().indoorPotPullFrames = 0;
+            dependencies.puzzles().current.indoorPotPullFrames = 0;
             return true;
         }
         dependencies.followers().followingEntityYOffset = request.linkDirection() == Direction.UP ? 4 : 0;
-        dependencies.puzzles().indoorPotPullFrames++;
+        dependencies.puzzles().current.indoorPotPullFrames++;
         int pullFrames = (target.statue() != null ? request.anyPowerUpActive() : request.pieceOfPowerActive())
                 ? 0x03
                 : INDOOR_POT_PULL_FRAMES;
-        if (dependencies.puzzles().indoorPotPullFrames < pullFrames) {
+        if (dependencies.puzzles().current.indoorPotPullFrames < pullFrames) {
             return true;
         }
-        dependencies.puzzles().indoorPotPullFrames = 0;
+        dependencies.puzzles().current.indoorPotPullFrames = 0;
 
         if (target.statue() != null) {
             completeStatueLift(target.statue(), request.linkDirection());

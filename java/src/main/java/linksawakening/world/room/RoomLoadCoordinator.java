@@ -45,6 +45,8 @@ final class RoomLoadCoordinator {
         dependencies.location().roomLoadSerial++;
         dependencies.location().indoorMapPosition = -1;
         dependencies.roomTransientState().clearTransientRoomState();
+        dependencies.puzzles().beginRoom();
+        dependencies.terrain().beginRoom();
         dependencies.indoorTorchPaletteEffect().clear();
         dependencies.entityFrame().recentRoomEntityClears.visit(roomId);
         LoadedRoom room = dependencies
@@ -85,12 +87,14 @@ final class RoomLoadCoordinator {
         dependencies.location().indoorMapPosition =
                 dependencies.roomSessionViews().findIndoorMapPosition(mapId, roomId);
         dependencies.roomTransientState().clearTransientRoomState();
+        dependencies.puzzles().beginRoom();
+        dependencies.terrain().beginRoom();
         dependencies.entityFrame().recentRoomEntityClears.visit(roomId);
         dependencies.roomState().dungeonItemState.loadForMap(mapId, true);
         // LoadRoom $00:3162: side-view passages do not mark the map visited.
         if (mapCategory != Warp.CATEGORY_SIDESCROLL)
             dependencies.roomSessionViews().indoorStatusTableForMap(mapId)[roomId] |= (byte) 0x80;
-        dependencies.puzzles().activeRoomEvent =
+        dependencies.puzzles().current.activeRoomEvent =
                 dependencies.dungeonRoomEventTable().eventFor(mapId, roomId);
         dependencies
                 .gpu()
@@ -325,12 +329,13 @@ final class RoomLoadCoordinator {
     private void configureDoorAndEventState() {
         if (dependencies.location().activeRoom.shutterDoorMask() != 0
                 && dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            boolean ordinaryEventPending = dependencies.puzzles().activeRoomEvent != 0
-                    && ((dependencies.puzzles().activeRoomEvent & EVENT_EFFECT_MASK) == EVENT_EFFECT_OPEN_LOCKED_DOORS
+            boolean ordinaryEventPending = dependencies.puzzles().current.activeRoomEvent != 0
+                    && ((dependencies.puzzles().current.activeRoomEvent & EVENT_EFFECT_MASK)
+                                    == EVENT_EFFECT_OPEN_LOCKED_DOORS
                             || (dependencies.roomSessionViews().activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) == 0);
             if (ordinaryEventPending) {
                 // $02:5E7B keeps entry doors open until Link is inside the room.
-                dependencies.puzzles().pendingShutterCloseMask =
+                dependencies.puzzles().current.pendingShutterCloseMask =
                         dependencies.location().activeRoom.shutterDoorMask();
             } else {
                 dependencies.roomPuzzleController().openActiveRoomShutterDoors();
@@ -338,6 +343,7 @@ final class RoomLoadCoordinator {
         }
         dependencies
                 .puzzles()
+                .current
                 .configureStaircase(dependencies.location().activeRoom.staircaseLocation());
         boolean minibossDefeated = dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                 && dependencies.location().activeRoom.mapId() >= 0
@@ -351,18 +357,18 @@ final class RoomLoadCoordinator {
                                         & 0x01)
                                 != 0
                         || (dependencies.roomSessionViews().activeRoomStatusFlags() & ROOM_STATUS_EVENT_2) != 0);
-        if (minibossDefeated && dependencies.puzzles().activeRoomEvent == EVENT_CLEAR_MIDBOSS) {
+        if (minibossDefeated && dependencies.puzzles().current.activeRoomEvent == EVENT_CLEAR_MIDBOSS) {
             dependencies.roomState()
                     .dungeonProgressFlags[dependencies.location().activeRoom.mapId()] |= 0x01;
             dependencies.roomPuzzleController().openActiveRoomShutterDoors();
-            dependencies.puzzles().activeRoomEvent = 0;
+            dependencies.puzzles().current.activeRoomEvent = 0;
         }
     }
 
     private void configureRuntimeWorld() {
         var configuration = dependencies.entityRuntimeState().runtime.configuration();
 
-        configuration.setBooBuddyTriggerCount(dependencies.puzzles().roomTriggerCount);
+        configuration.setBooBuddyTriggerCount(dependencies.puzzles().current.roomTriggerCount);
         configuration.setColorShellWorld(dependencies.entityRuntimeState().loaded.colorShellWorld);
         configuration.setFollowingNpcState(dependencies.followers().followingNpcState);
         configuration.setEntityMapId(dependencies.location().activeRoom.mapId());

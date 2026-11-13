@@ -247,33 +247,34 @@ final class RoomTransitionController {
     }
 
     Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject) {
-        if (dependencies.puzzles().staircaseState == STAIRCASE_NONE || dependencies.location().activeRoom == null) {
+        if (dependencies.puzzles().current.staircaseState == STAIRCASE_NONE
+                || dependencies.location().activeRoom == null) {
             return null;
         }
-        if (dependencies.puzzles().staircaseState == STAIRCASE_INACTIVE) {
+        if (dependencies.puzzles().current.staircaseState == STAIRCASE_INACTIVE) {
             if (!RoomInteractionGeometry.withinUnsignedByteRange(
-                            linkEntityX, dependencies.puzzles().staircaseX, 0x06, 0x0C)
+                            linkEntityX, dependencies.puzzles().current.staircaseX, 0x06, 0x0C)
                     || !RoomInteractionGeometry.withinUnsignedByteRange(
-                            linkEntityY, dependencies.puzzles().staircaseY, 0x06, 0x0C)) {
-                dependencies.puzzles().staircaseState = STAIRCASE_ACTIVE;
+                            linkEntityY, dependencies.puzzles().current.staircaseY, 0x06, 0x0C)) {
+                dependencies.puzzles().current.staircaseState = STAIRCASE_ACTIVE;
             }
             return null;
         }
         if (linkZ != 0
                 || carryingObject
                 || !RoomInteractionGeometry.withinUnsignedByteRange(
-                        linkEntityX, dependencies.puzzles().staircaseX, 0x05, 0x0A)
+                        linkEntityX, dependencies.puzzles().current.staircaseX, 0x05, 0x0A)
                 || !RoomInteractionGeometry.withinUnsignedByteRange(
-                        linkEntityY, dependencies.puzzles().staircaseY, 0x05, 0x0A)
+                        linkEntityY, dependencies.puzzles().current.staircaseY, 0x05, 0x0A)
                 || !dependencies.location().activeRoom.hasWarps()) {
             return null;
         }
-        dependencies.puzzles().staircaseState = STAIRCASE_NONE;
+        dependencies.puzzles().current.staircaseState = STAIRCASE_NONE;
         return dependencies.location().activeRoom.firstWarp();
     }
 
     void configureStaircase(int location) {
-        dependencies.puzzles().configureStaircase(location);
+        dependencies.puzzles().current.configureStaircase(location);
     }
 
     int adjacentOverworldRoomId(int direction) {

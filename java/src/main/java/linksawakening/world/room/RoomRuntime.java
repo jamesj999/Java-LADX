@@ -10,6 +10,7 @@ import linksawakening.world.transition.RoomBoundaryInputs;
 /** One loaded-room generation. Never represents absence; borrowed only until room replacement. */
 final class RoomRuntime {
     final ActiveRoom room;
+    final RoomContents contents;
     final RoomEntityRuntime entities;
     final CollisionCache collisions = new CollisionCache();
     final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
@@ -24,7 +25,9 @@ final class RoomRuntime {
             RoomCollisionQueries queries,
             RoomObjectMutations objects,
             RoomEntitySessionState frame,
-            linksawakening.vfx.TransientVfxSystem vfx) {
+            linksawakening.vfx.TransientVfxSystem vfx,
+            RoomPuzzleState puzzles,
+            RoomTerrainState terrain) {
         Services {
             Objects.requireNonNull(queries);
             Objects.requireNonNull(objects);
@@ -35,6 +38,7 @@ final class RoomRuntime {
     RoomRuntime(ActiveRoom room, RoomEntityRuntime entities, Services services) {
         this.room = Objects.requireNonNull(room, "room");
         this.entities = Objects.requireNonNull(entities, "entities");
+        contents = new RoomContents(room, services.puzzles().current, services.terrain().overrides);
         backgroundCollision = (entity, direction, x, y) ->
                 services.queries().entityBackgroundCollision(this, entity, direction, x, y);
         objectCollision = entity -> services.queries().pairoddProjectileObjectCollision(this, entity);

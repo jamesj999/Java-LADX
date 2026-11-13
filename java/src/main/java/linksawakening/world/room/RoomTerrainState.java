@@ -6,23 +6,27 @@ import java.util.Map;
 import java.util.Set;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 
+/** Link ground registers and switch state persist across room changes. */
 final class RoomTerrainState {
     int crackedFloorCounter;
     int linkGroundRoomPosition;
     int linkGroundFinalRoomPosition;
     int linkGroundObjectUnderEntity;
     int linkGroundObjectPhysics;
-    final Map<Integer, HookshotBridgeUpdate> hookshotBridgeTileOverrides = new HashMap<>();
-    /** Immediate bomb-wall draw commands use a different tile order than the room object table. */
-    final Map<Integer, Integer> bombedWallTileOverrides = new HashMap<>();
-    /** The basic A9 breakable path also draws floor tiles in source command order. */
-    final Set<Integer> bombedBlockTileOverrides = new HashSet<>();
-    /** Bombed overworld cave doors use the dedicated GBC redraw tile order. */
-    final Set<Integer> bombedCaveDoorTileOverrides = new HashSet<>();
-
-    final Map<Integer, int[]> retainedTorchTiles = new HashMap<>();
-    /** WRAM wSwitchBlocksState; the source reset value is zero. */
     int switchBlocksState;
-    /** WRAM wSwitchableObjectAnimationStage; zero means no update is active. */
     int switchableObjectAnimationStage;
+    // Preparation alias only; installed generations own the actual override maps.
+    Overrides overrides = new Overrides();
+
+    void beginRoom() {
+        overrides = new Overrides();
+    }
+
+    static final class Overrides {
+        final Map<Integer, HookshotBridgeUpdate> hookshotBridgeTileOverrides = new HashMap<>();
+        final Map<Integer, Integer> bombedWallTileOverrides = new HashMap<>();
+        final Set<Integer> bombedBlockTileOverrides = new HashSet<>();
+        final Set<Integer> bombedCaveDoorTileOverrides = new HashSet<>();
+        final Map<Integer, int[]> retainedTorchTiles = new HashMap<>();
+    }
 }

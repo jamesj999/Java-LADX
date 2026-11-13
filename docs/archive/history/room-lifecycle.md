@@ -119,3 +119,14 @@ source order. A follower rebuild takes the installed generation, publishes its
 replacement, and configures that replacement. Drop setup receives a generation;
 the frame's default and explicit-low-health configuration writes stay in order.
 No room/runtime absence checks remain in story or follower collaborators.
+
+## Owned room data and transient parts
+
+RoomRuntime now owns RoomContents (the mutable map and per-room puzzle/override
+parts) as well as collision scratch. Room preparation creates fresh parts after
+the original transient reset; follower runtime replacement retains those parts.
+The cracked-floor and Link position registers, switch-block state, title clock,
+and resume-music state retain their original across-room lifetimes. A reload
+regression checks both fresh room state and retained registers. Preparation
+aliases remain transitional until the door/map/load collaborators migrate.
+Gate: 2965 tests, 0 failures/errors, one existing skip; 986 identical scenes.

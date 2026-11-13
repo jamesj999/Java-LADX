@@ -76,7 +76,7 @@ final class RoomDoorInteractions {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-                || dependencies.puzzles().indoorKeyDoorAnimationCountdown != 0) {
+                || dependencies.puzzles().current.indoorKeyDoorAnimationCountdown != 0) {
             return false;
         }
         int doorDirection = RoomInteractionGeometry.keyDoorDirectionIndex(linkDirection);
@@ -116,10 +116,10 @@ final class RoomDoorInteractions {
                         .add(new DialogRequest(0, 0x07));
                 return true;
             }
-            dependencies.puzzles().indoorBossDoorOpening = true;
-            dependencies.puzzles().indoorKeyDoorDirection = 0;
-            dependencies.puzzles().indoorKeyDoorLocation = touchedLocation - objectOffset;
-            dependencies.puzzles().indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
+            dependencies.puzzles().current.indoorBossDoorOpening = true;
+            dependencies.puzzles().current.indoorKeyDoorDirection = 0;
+            dependencies.puzzles().current.indoorKeyDoorLocation = touchedLocation - objectOffset;
+            dependencies.puzzles().current.indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
             return true;
         }
@@ -133,9 +133,9 @@ final class RoomDoorInteractions {
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
                 (byte) INDOOR_ROOM_STATUS_EVENT_3;
-        dependencies.puzzles().indoorKeyDoorDirection = doorDirection;
-        dependencies.puzzles().indoorKeyDoorLocation = doorLocation;
-        dependencies.puzzles().indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
+        dependencies.puzzles().current.indoorKeyDoorDirection = doorDirection;
+        dependencies.puzzles().current.indoorKeyDoorLocation = doorLocation;
+        dependencies.puzzles().current.indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
         dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         return true;
     }
@@ -144,13 +144,13 @@ final class RoomDoorInteractions {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-                || dependencies.puzzles().pushedBlockMotionFrames != 0) {
-            dependencies.puzzles().pushBlockContactTicks = 0;
+                || dependencies.puzzles().current.pushedBlockMotionFrames != 0) {
+            dependencies.puzzles().current.pushBlockContactTicks = 0;
             return false;
         }
         int direction = RoomInteractionGeometry.keyDoorDirectionIndex(linkDirection);
         if (direction < 0 || (collisionType & RoomInteractionGeometry.keyDoorCollisionBit(direction)) == 0) {
-            dependencies.puzzles().pushBlockContactTicks = 0;
+            dependencies.puzzles().current.pushBlockContactTicks = 0;
             return false;
         }
         var contact = probePushableBlockContact(linkPixelX, linkPixelY, direction);
@@ -158,15 +158,15 @@ final class RoomDoorInteractions {
         boolean keyholeBlockContact = contact.keyhole();
         if (touchedLocation < 0) {
             if (!keyholeBlockContact) {
-                dependencies.puzzles().pushBlockContactTicks = 0;
+                dependencies.puzzles().current.pushBlockContactTicks = 0;
             }
             return false;
         }
-        dependencies.puzzles().pushBlockContactTicks++;
-        if (dependencies.puzzles().pushBlockContactTicks < PUSH_BLOCK_CONTACT_TICKS) {
+        dependencies.puzzles().current.pushBlockContactTicks++;
+        if (dependencies.puzzles().current.pushBlockContactTicks < PUSH_BLOCK_CONTACT_TICKS) {
             return true;
         }
-        dependencies.puzzles().pushBlockContactTicks = 0;
+        dependencies.puzzles().current.pushBlockContactTicks = 0;
         int destination = touchedLocation
                 + switch (direction) {
                     case 0 -> -0x10;
@@ -193,11 +193,11 @@ final class RoomDoorInteractions {
         // EntityInitPushedBlock $03:5198-519A, after collision/allocation succeed.
         dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.BLOCK_PUSH);
         dependencies.location().activeRoom.roomObjectsArea()[sourceIndex] = OBJECT_FLOOR_OD;
-        dependencies.puzzles().pushedBlockSourceLocation = touchedLocation;
-        dependencies.puzzles().pushedBlockDestinationLocation = destination;
-        dependencies.puzzles().pushedBlockDirection = direction;
-        dependencies.puzzles().pushedBlockMotionFrames = PUSHED_BLOCK_MOTION_FRAMES;
-        dependencies.puzzles().pushedBlockEntitySlot = spawnedSlot;
+        dependencies.puzzles().current.pushedBlockSourceLocation = touchedLocation;
+        dependencies.puzzles().current.pushedBlockDestinationLocation = destination;
+        dependencies.puzzles().current.pushedBlockDirection = direction;
+        dependencies.puzzles().current.pushedBlockMotionFrames = PUSHED_BLOCK_MOTION_FRAMES;
+        dependencies.puzzles().current.pushedBlockEntitySlot = spawnedSlot;
         dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
@@ -286,12 +286,12 @@ final class RoomDoorInteractions {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
-            dependencies.puzzles().pushBlockContactTicks = 0;
+            dependencies.puzzles().current.pushBlockContactTicks = 0;
             return false;
         }
         int direction = RoomInteractionGeometry.keyDoorDirectionIndex(linkDirection);
         if (direction < 0 || (collisionType & RoomInteractionGeometry.keyDoorCollisionBit(direction)) == 0) {
-            dependencies.puzzles().pushBlockContactTicks = 0;
+            dependencies.puzzles().current.pushBlockContactTicks = 0;
             return false;
         }
         int touchedLocation = -1;
@@ -305,19 +305,19 @@ final class RoomDoorInteractions {
             }
         }
         if (touchedLocation < 0) {
-            dependencies.puzzles().pushBlockContactTicks = 0;
+            dependencies.puzzles().current.pushBlockContactTicks = 0;
             return false;
         }
         if (dependencies.roomState().dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
-            dependencies.puzzles().pushBlockContactTicks = 0;
+            dependencies.puzzles().current.pushBlockContactTicks = 0;
             dependencies.entityRuntimeState().outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
             return true;
         }
-        dependencies.puzzles().pushBlockContactTicks++;
-        if (dependencies.puzzles().pushBlockContactTicks < KEYHOLE_BLOCK_CONTACT_TICKS) {
+        dependencies.puzzles().current.pushBlockContactTicks++;
+        if (dependencies.puzzles().current.pushBlockContactTicks < KEYHOLE_BLOCK_CONTACT_TICKS) {
             return true;
         }
-        dependencies.puzzles().pushBlockContactTicks = 0;
+        dependencies.puzzles().current.pushBlockContactTicks = 0;
         dependencies.roomState().dungeonItemState.consumeSmallKey();
 
         dependencies.roomObjectMutations().writeBombPuzzleObject(touchedLocation, OBJECT_FLOOR_OD);
@@ -396,7 +396,7 @@ final class RoomDoorInteractions {
         }
 
         dependencies.roomState().overworldRoomStatus[roomId] |= (byte) ROOM_STATUS_EVENT_1;
-        dependencies.puzzles().tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
+        dependencies.puzzles().current.tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
         dependencies.puzzles().tailCaveResumeMusicTrack = dependencies.followers().entityDefaultMusicTrack;
         dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack = 0x00;
         return true;
@@ -404,12 +404,13 @@ final class RoomDoorInteractions {
 
     int tickTailCaveKeyholeSequence() {
         this.tickNextWorldMusicTrackCountdown();
-        if (dependencies.puzzles().tailCaveKeyholeCountdown == 0) {
-            dependencies.puzzles().tailCaveFinalMotionBlockPending = false;
+        if (dependencies.puzzles().current.tailCaveKeyholeCountdown == 0) {
+            dependencies.puzzles().current.tailCaveFinalMotionBlockPending = false;
             return 0;
         }
-        dependencies.puzzles().tailCaveKeyholeCountdown = (dependencies.puzzles().tailCaveKeyholeCountdown - 1) & 0xFF;
-        int countdown = dependencies.puzzles().tailCaveKeyholeCountdown;
+        dependencies.puzzles().current.tailCaveKeyholeCountdown =
+                (dependencies.puzzles().current.tailCaveKeyholeCountdown - 1) & 0xFF;
+        int countdown = dependencies.puzzles().current.tailCaveKeyholeCountdown;
         if (countdown == 0xDE) {
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         }
@@ -435,10 +436,10 @@ final class RoomDoorInteractions {
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
         }
         if (countdown == 0x0A) {
-            dependencies.puzzles().nextWorldMusicTrackCountdown = 0x50;
+            dependencies.puzzles().current.nextWorldMusicTrackCountdown = 0x50;
         }
         if (countdown == 0) {
-            dependencies.puzzles().tailCaveFinalMotionBlockPending = true;
+            dependencies.puzzles().current.tailCaveFinalMotionBlockPending = true;
         }
         if (countdown < 0x20 || countdown >= 0x9C) {
             return 0;
@@ -447,16 +448,16 @@ final class RoomDoorInteractions {
     }
 
     boolean tailCaveKeyholeSequenceActive() {
-        return dependencies.puzzles().tailCaveKeyholeCountdown != 0
-                || dependencies.puzzles().tailCaveFinalMotionBlockPending;
+        return dependencies.puzzles().current.tailCaveKeyholeCountdown != 0
+                || dependencies.puzzles().current.tailCaveFinalMotionBlockPending;
     }
 
     int tailCaveKeyholeCountdownForTest() {
-        return dependencies.puzzles().tailCaveKeyholeCountdown;
+        return dependencies.puzzles().current.tailCaveKeyholeCountdown;
     }
 
     int nextWorldMusicTrackCountdownForTest() {
-        return dependencies.puzzles().nextWorldMusicTrackCountdown;
+        return dependencies.puzzles().current.nextWorldMusicTrackCountdown;
     }
 
     void writeTailCaveGateAnimationFrame(int countdown) {
@@ -480,11 +481,11 @@ final class RoomDoorInteractions {
     }
 
     void tickNextWorldMusicTrackCountdown() {
-        if (dependencies.puzzles().nextWorldMusicTrackCountdown == 0) {
+        if (dependencies.puzzles().current.nextWorldMusicTrackCountdown == 0) {
             return;
         }
-        dependencies.puzzles().nextWorldMusicTrackCountdown--;
-        if (dependencies.puzzles().nextWorldMusicTrackCountdown == 0) {
+        dependencies.puzzles().current.nextWorldMusicTrackCountdown--;
+        if (dependencies.puzzles().current.nextWorldMusicTrackCountdown == 0) {
             dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack =
                     dependencies.puzzles().tailCaveResumeMusicTrack;
         }

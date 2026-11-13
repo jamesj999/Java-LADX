@@ -52,14 +52,14 @@ final class RoomCollisionQueries {
                 || loaded.collisions.boundary.roomId() != active.roomId()
                 || loaded.collisions.boundary.indoorHasSouthEntrance() != active.indoorHasSouthEntrance()
                 || loaded.collisions.boundary.hasWarps() != active.hasWarps()
-                || loaded.collisions.boundary.shutterDoorMask() != dependencies.puzzles().closedShutterMask
+                || loaded.collisions.boundary.shutterDoorMask() != loaded.contents.puzzles.closedShutterMask
                 || loaded.collisions.boundary.mapId() != active.mapId())
             loaded.collisions.boundary = new linksawakening.world.transition.RoomBoundaryInputs.Room(
                     loaded.room.mapCategory(),
                     loaded.room.roomId(),
                     loaded.room.indoorHasSouthEntrance(),
                     loaded.room.hasWarps(),
-                    dependencies.puzzles().closedShutterMask,
+                    loaded.contents.puzzles.closedShutterMask,
                     loaded.room.mapId());
         return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
                 loaded.collisions.boundary,

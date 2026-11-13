@@ -46,6 +46,8 @@ public final class RoomSession {
         components.location().activeRoom = room.room;
         components.entityFrame().runtime = room.entities;
         components.entityFrame().loaded = room;
+        components.puzzles().current = room.contents.puzzles;
+        components.terrain().overrides = room.contents.overrides;
         loadedRoom = room;
     }
 

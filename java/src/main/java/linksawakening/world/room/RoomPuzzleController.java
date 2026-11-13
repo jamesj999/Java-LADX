@@ -63,10 +63,10 @@ final class RoomPuzzleController {
         for (int i = 0; i < collisions.size(); i++) {
             var collision = collisions.get(i);
             int objectId = collision.objectId();
-            if ((dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_THROW_AT_DOOR
+            if ((dependencies.puzzles().current.activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_THROW_AT_DOOR
                     && objectId >= 0x35
                     && objectId < 0x3D) {
-                dependencies.puzzles().thrownAtDoorTriggerResolved = true;
+                dependencies.puzzles().current.thrownAtDoorTriggerResolved = true;
             }
         }
     }
@@ -77,16 +77,16 @@ final class RoomPuzzleController {
         this.tickSwitchButton(linkEntityX, linkEntityY);
         this.tickRoomEventChestReveal(linkEntityX, linkEntityY);
         this.tickRoomEventStairReveal();
-        if (dependencies.puzzles().pushedBlocksTriggerEffectPending) {
-            dependencies.puzzles().pushedBlocksTriggerEffectPending = false;
+        if (dependencies.puzzles().current.pushedBlocksTriggerEffectPending) {
+            dependencies.puzzles().current.pushedBlocksTriggerEffectPending = false;
             return;
         }
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-                || dependencies.puzzles().activeRoomEvent == 0) {
+                || dependencies.puzzles().current.activeRoomEvent == 0) {
             return;
         }
-        int effect = dependencies.puzzles().activeRoomEvent & EVENT_EFFECT_MASK;
+        int effect = dependencies.puzzles().current.activeRoomEvent & EVENT_EFFECT_MASK;
         // OpenLockedDoorsEffectHandler does not call EventEffectGuard:
         // opening a chest sets bit $10 too, but must not cancel the shutters.
         if (effect != EVENT_EFFECT_OPEN_LOCKED_DOORS
@@ -94,13 +94,14 @@ final class RoomPuzzleController {
                 && (dependencies.roomSessionViews().activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) != 0) {
             return;
         }
-        int trigger = dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK;
-        if (!dependencies.puzzles().roomEventEffectExecuted
+        int trigger = dependencies.puzzles().current.activeRoomEvent & EVENT_TRIGGER_MASK;
+        if (!dependencies.puzzles().current.roomEventEffectExecuted
                 && ((trigger == EVENT_TRIGGER_KILL_ALL_ENEMIES && this.killAllEnemiesTriggerResolved())
                         || (trigger == EVENT_TRIGGER_STEP_ON_BUTTON && dependencies.puzzles().switchButtonPressed != 0)
-                        || (trigger == EVENT_TRIGGER_LIGHT_TORCHES && dependencies.puzzles().roomTriggerCount == 0x02)
+                        || (trigger == EVENT_TRIGGER_LIGHT_TORCHES
+                                && dependencies.puzzles().current.roomTriggerCount == 0x02)
                         || (trigger == EVENT_TRIGGER_THROW_AT_DOOR
-                                && dependencies.puzzles().thrownAtDoorTriggerResolved)
+                                && dependencies.puzzles().current.thrownAtDoorTriggerResolved)
                         || (trigger == EVENT_TRIGGER_KILL_IN_ORDER
                                 && dependencies.entityRuntimeState().runtime != null
                                 && dependencies
@@ -121,16 +122,16 @@ final class RoomPuzzleController {
                                                 .inspection()
                                                 .killOrderAt(2)
                                         == 2))) {
-            dependencies.puzzles().roomEventEffectExecuted = true;
+            dependencies.puzzles().current.roomEventEffectExecuted = true;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         }
-        if (!dependencies.puzzles().roomEventEffectExecuted) {
+        if (!dependencies.puzzles().current.roomEventEffectExecuted) {
             if ((effect == EVENT_EFFECT_OPEN_LOCKED_DOORS || effect == EVENT_EFFECT_CLEAR_MIDBOSS)
-                    && !dependencies.puzzles().shutterCloseStarted
-                    && dependencies.puzzles().pendingShutterCloseMask != 0
+                    && !dependencies.puzzles().current.shutterCloseStarted
+                    && dependencies.puzzles().current.pendingShutterCloseMask != 0
                     && ((linkEntityX - 0x11) & 255) < 0x7E
                     && ((linkEntityY - 0x16) & 255) < 0x5E) {
-                dependencies.puzzles().shutterCloseStarted = true;
+                dependencies.puzzles().current.shutterCloseStarted = true;
                 dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_CLOSED);
                 this.tickShutterClosing();
             }
@@ -140,7 +141,7 @@ final class RoomPuzzleController {
     }
 
     void tickPushedBlockMotion(int linkEntityX, int linkEntityY) {
-        if (dependencies.puzzles().pushedBlockMotionFrames == 0 || dependencies.location().activeRoom == null) {
+        if (dependencies.puzzles().current.pushedBlockMotionFrames == 0 || dependencies.location().activeRoom == null) {
             return;
         }
         if (dependencies.entityInputs().entityDialogActive
@@ -148,20 +149,20 @@ final class RoomPuzzleController {
                 || dependencies.entityInputs().entityDialogCooldown != 0) {
             return;
         }
-        dependencies.puzzles().pushedBlockMotionFrames--;
-        int elapsedFrames = PUSHED_BLOCK_MOTION_FRAMES - dependencies.puzzles().pushedBlockMotionFrames;
+        dependencies.puzzles().current.pushedBlockMotionFrames--;
+        int elapsedFrames = PUSHED_BLOCK_MOTION_FRAMES - dependencies.puzzles().current.pushedBlockMotionFrames;
         int distance = elapsedFrames >>> 1;
-        int sourceX = ((dependencies.puzzles().pushedBlockSourceLocation & 0x0F) << 4) + 0x08;
-        int sourceY = (dependencies.puzzles().pushedBlockSourceLocation & 0xF0) + 0x10;
+        int sourceX = ((dependencies.puzzles().current.pushedBlockSourceLocation & 0x0F) << 4) + 0x08;
+        int sourceY = (dependencies.puzzles().current.pushedBlockSourceLocation & 0xF0) + 0x10;
         int x = sourceX;
         int y = sourceY;
-        switch (dependencies.puzzles().pushedBlockDirection) {
+        switch (dependencies.puzzles().current.pushedBlockDirection) {
             case 0 -> y -= distance;
             case 1 -> y += distance;
             case 2 -> x -= distance;
             case 3 -> x += distance;
             default -> {
-                dependencies.puzzles().pushedBlockMotionFrames = 0;
+                dependencies.puzzles().current.pushedBlockMotionFrames = 0;
                 return;
             }
         }
@@ -169,14 +170,14 @@ final class RoomPuzzleController {
             dependencies
                     .entityRuntimeState()
                     .runtime
-                    .movePushedBlock(dependencies.puzzles().pushedBlockEntitySlot, x, y);
+                    .movePushedBlock(dependencies.puzzles().current.pushedBlockEntitySlot, x, y);
             if (dependencies.entityFrame().currentLinkMotionState
                     < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
                 dependencies
                         .entityRuntimeState()
                         .runtime
                         .resolvePushedBlockLinkContact(
-                                dependencies.puzzles().pushedBlockEntitySlot, linkEntityX, linkEntityY);
+                                dependencies.puzzles().current.pushedBlockEntitySlot, linkEntityX, linkEntityY);
             }
             dependencies
                     .location()
@@ -187,22 +188,23 @@ final class RoomPuzzleController {
                             .inspection()
                             .view());
         }
-        if (dependencies.puzzles().pushedBlockMotionFrames != 0) {
+        if (dependencies.puzzles().current.pushedBlockMotionFrames != 0) {
             return;
         }
         finishPushedBlock();
     }
 
     boolean pushedBlocksTriggerResolved() {
-        if (dependencies.location().activeRoom == null || dependencies.puzzles().pushedBlockDestinationLocation < 0) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.puzzles().current.pushedBlockDestinationLocation < 0) {
             return false;
         }
         int neighborLocation =
-                switch (dependencies.puzzles().pushedBlockDirection) {
+                switch (dependencies.puzzles().current.pushedBlockDirection) {
                         // The source checks the object collided with on the block's
                         // movement-facing side; only horizontal pushes can satisfy $07.
-                    case 2 -> dependencies.puzzles().pushedBlockDestinationLocation - 1;
-                    case 3 -> dependencies.puzzles().pushedBlockDestinationLocation + 1;
+                    case 2 -> dependencies.puzzles().current.pushedBlockDestinationLocation - 1;
+                    case 3 -> dependencies.puzzles().current.pushedBlockDestinationLocation + 1;
                     default -> -1;
                 };
         if (neighborLocation < 0) {
@@ -213,26 +215,26 @@ final class RoomPuzzleController {
     }
 
     void tickIndoorKeyDoorAnimation() {
-        if (dependencies.puzzles().indoorKeyDoorAnimationCountdown == 0
-                || dependencies.puzzles().indoorKeyDoorDirection < 0
+        if (dependencies.puzzles().current.indoorKeyDoorAnimationCountdown == 0
+                || dependencies.puzzles().current.indoorKeyDoorDirection < 0
                 || dependencies.location().activeRoom == null) {
             return;
         }
         dependencies.entityFrame().worldLinkMotionBlockPending = true;
-        dependencies.puzzles().indoorKeyDoorAnimationCountdown--;
-        if (dependencies.puzzles().indoorKeyDoorAnimationCountdown != 0) {
+        dependencies.puzzles().current.indoorKeyDoorAnimationCountdown--;
+        if (dependencies.puzzles().current.indoorKeyDoorAnimationCountdown != 0) {
             return;
         }
 
-        int direction = dependencies.puzzles().indoorKeyDoorDirection;
-        dependencies.puzzles().indoorKeyDoorDirection = -1;
-        if (dependencies.puzzles().indoorBossDoorOpening) {
-            this.replaceBossDoorObjects(dependencies.puzzles().indoorKeyDoorLocation);
-            dependencies.puzzles().indoorBossDoorOpening = false;
+        int direction = dependencies.puzzles().current.indoorKeyDoorDirection;
+        dependencies.puzzles().current.indoorKeyDoorDirection = -1;
+        if (dependencies.puzzles().current.indoorBossDoorOpening) {
+            this.replaceBossDoorObjects(dependencies.puzzles().current.indoorKeyDoorLocation);
+            dependencies.puzzles().current.indoorBossDoorOpening = false;
         } else {
-            this.replaceKeyDoorObjects(direction, dependencies.puzzles().indoorKeyDoorLocation);
+            this.replaceKeyDoorObjects(direction, dependencies.puzzles().current.indoorKeyDoorLocation);
         }
-        dependencies.puzzles().indoorKeyDoorLocation = -1;
+        dependencies.puzzles().current.indoorKeyDoorLocation = -1;
         byte[] status = dependencies
                 .roomSessionViews()
                 .indoorStatusTableForMap(dependencies.location().activeRoom.mapId());
@@ -302,11 +304,12 @@ final class RoomPuzzleController {
                 .groundInteractionSample(linkEntityX, linkEntityY)
                 .objectId();
         if (objectUnderLink != OBJECT_SWITCH_BUTTON) {
-            dependencies.puzzles().switchButtonPressCounter = 0;
+            dependencies.puzzles().current.switchButtonPressCounter = 0;
             return;
         }
-        dependencies.puzzles().switchButtonPressCounter = (dependencies.puzzles().switchButtonPressCounter + 1) & 0xFF;
-        if (dependencies.puzzles().switchButtonPressCounter == SWITCH_BUTTON_PRESS_FRAMES) {
+        dependencies.puzzles().current.switchButtonPressCounter =
+                (dependencies.puzzles().current.switchButtonPressCounter + 1) & 0xFF;
+        if (dependencies.puzzles().current.switchButtonPressCounter == SWITCH_BUTTON_PRESS_FRAMES) {
             dependencies.puzzles().switchButtonPressed = SWITCH_BUTTON_PRESSED;
             dependencies.gpu().copyPressedFloorSwitchTiles(dependencies.romData());
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.FLOOR_SWITCH);
@@ -314,11 +317,11 @@ final class RoomPuzzleController {
     }
 
     void tickRoomEventChestReveal(int linkEntityX, int linkEntityY) {
-        if (dependencies.puzzles().roomEventChestRevealCountdown == 0) {
+        if (dependencies.puzzles().current.roomEventChestRevealCountdown == 0) {
             return;
         }
-        dependencies.puzzles().roomEventChestRevealCountdown--;
-        if (dependencies.puzzles().roomEventChestRevealCountdown != ROOM_EVENT_CHEST_WRITE_COUNTDOWN) {
+        dependencies.puzzles().current.roomEventChestRevealCountdown--;
+        if (dependencies.puzzles().current.roomEventChestRevealCountdown != ROOM_EVENT_CHEST_WRITE_COUNTDOWN) {
             return;
         }
         int location = RoomInteractionGeometry.roomEventChestTop(linkEntityX, linkEntityY) | 0x08;
@@ -330,16 +333,16 @@ final class RoomPuzzleController {
     }
 
     void tickRoomEventStairReveal() {
-        if (dependencies.puzzles().roomEventStairRevealCountdown == 0) {
+        if (dependencies.puzzles().current.roomEventStairRevealCountdown == 0) {
             return;
         }
-        dependencies.puzzles().roomEventStairRevealCountdown--;
-        if (dependencies.puzzles().roomEventStairRevealCountdown != ROOM_EVENT_CHEST_WRITE_COUNTDOWN) {
+        dependencies.puzzles().current.roomEventStairRevealCountdown--;
+        if (dependencies.puzzles().current.roomEventStairRevealCountdown != ROOM_EVENT_CHEST_WRITE_COUNTDOWN) {
             return;
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + EVENT_STAIRWAY_LOCATION;
         dependencies.location().activeRoom.roomObjectsArea()[areaIndex] = OBJECT_STAIRS_DOWN;
-        dependencies.puzzles().configureStaircase(EVENT_STAIRWAY_LOCATION);
+        dependencies.puzzles().current.configureStaircase(EVENT_STAIRWAY_LOCATION);
         dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
@@ -348,25 +351,27 @@ final class RoomPuzzleController {
     }
 
     boolean tickShutterClosing() {
-        if (!dependencies.puzzles().shutterCloseStarted || dependencies.location().activeRoom == null) return false;
-        if (dependencies.puzzles().shutterCloseDirection < 0) {
-            if (dependencies.puzzles().pendingShutterCloseMask == 0) return false;
-            dependencies.puzzles().shutterCloseDirection =
-                    Integer.numberOfTrailingZeros(dependencies.puzzles().pendingShutterCloseMask);
-            dependencies.puzzles().pendingShutterCloseMask &= ~(1 << dependencies.puzzles().shutterCloseDirection);
-            dependencies.puzzles().shutterCloseLocation = new RoomObjectParser(dependencies.romData())
+        if (!dependencies.puzzles().current.shutterCloseStarted || dependencies.location().activeRoom == null)
+            return false;
+        if (dependencies.puzzles().current.shutterCloseDirection < 0) {
+            if (dependencies.puzzles().current.pendingShutterCloseMask == 0) return false;
+            dependencies.puzzles().current.shutterCloseDirection =
+                    Integer.numberOfTrailingZeros(dependencies.puzzles().current.pendingShutterCloseMask);
+            dependencies.puzzles().current.pendingShutterCloseMask &=
+                    ~(1 << dependencies.puzzles().current.shutterCloseDirection);
+            dependencies.puzzles().current.shutterCloseLocation = new RoomObjectParser(dependencies.romData())
                     .indoorShutterLocation(
                             dependencies.location().activeRoom.roomObjectsArea(),
-                            dependencies.puzzles().shutterCloseDirection);
-            dependencies.puzzles().shutterCloseTicks = 0;
+                            dependencies.puzzles().current.shutterCloseDirection);
+            dependencies.puzzles().current.shutterCloseTicks = 0;
             return true;
         }
         dependencies.entityFrame().worldLinkMotionBlockPending = true;
-        if (dependencies.puzzles().shutterCloseLocation >= 0) {
-            int direction = dependencies.puzzles().shutterCloseDirection;
-            int left = (dependencies.puzzles().shutterCloseLocation & 15) * 16
+        if (dependencies.puzzles().current.shutterCloseLocation >= 0) {
+            int direction = dependencies.puzzles().current.shutterCloseDirection;
+            int left = (dependencies.puzzles().current.shutterCloseLocation & 15) * 16
                     + dependencies.romData().u8(RomAddress.fromOffset(RomBank.romOffset(2, 0x5BE0 + direction + 4)));
-            int top = (dependencies.puzzles().shutterCloseLocation >>> 4) * 16;
+            int top = (dependencies.puzzles().current.shutterCloseLocation >>> 4) * 16;
             int source = RomBank.romOffset(2, 0x5BC4 + direction * 4);
             int rowOffset = RomBank.romOffset(2, 0x5BE8 + direction + 4);
             for (int row = 0; row < 2; row++) {
@@ -376,24 +381,24 @@ final class RoomPuzzleController {
                     int tile = dependencies.romData().u8(RomAddress.fromOffset(source + row * 2 + col));
                     if (index + col < dependencies.location().activeRoom.tileIds().length) {
                         dependencies.location().activeRoom.tileIds()[index + col] = tile;
-                        dependencies.puzzles().shutterTileOverrides.put(index + col, tile);
+                        dependencies.puzzles().current.shutterTileOverrides.put(index + col, tile);
                     }
                 }
             }
         }
-        if (++dependencies.puzzles().shutterCloseTicks < 8) return true;
-        int direction = dependencies.puzzles().shutterCloseDirection;
-        dependencies.puzzles().shutterTileOverrides.clear();
+        if (++dependencies.puzzles().current.shutterCloseTicks < 8) return true;
+        int direction = dependencies.puzzles().current.shutterCloseDirection;
+        dependencies.puzzles().current.shutterTileOverrides.clear();
         new RoomObjectParser(dependencies.romData())
                 .applyIndoorShutterClosedState(
                         dependencies.location().activeRoom.roomObjectsArea(), 1 << direction);
-        dependencies.puzzles().closedShutterMask |= 1 << direction;
+        dependencies.puzzles().current.closedShutterMask |= 1 << direction;
         // $02:5D21 uses indoor A even for indoor B (the original's bank selection).
         byte[] status = dependencies.location().activeRoom.mapId() == 0xFF
                 ? dependencies.roomState().colorDungeonRoomStatus
                 : dependencies.roomState().indoorARoomStatus;
         status[dependencies.location().activeRoom.roomId()] &= (byte) ~KEY_DOOR_CURRENT_STATUS[direction];
-        dependencies.puzzles().shutterCloseDirection = dependencies.puzzles().shutterCloseLocation = -1;
+        dependencies.puzzles().current.shutterCloseDirection = dependencies.puzzles().current.shutterCloseLocation = -1;
         dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
@@ -406,9 +411,9 @@ final class RoomPuzzleController {
     }
 
     void openActiveRoomShutterDoors(boolean persistDirectionalStatus) {
-        dependencies.puzzles().pendingShutterCloseMask = dependencies.puzzles().closedShutterMask = 0;
-        dependencies.puzzles().shutterCloseDirection = dependencies.puzzles().shutterCloseLocation = -1;
-        dependencies.puzzles().shutterTileOverrides.clear();
+        dependencies.puzzles().current.pendingShutterCloseMask = dependencies.puzzles().current.closedShutterMask = 0;
+        dependencies.puzzles().current.shutterCloseDirection = dependencies.puzzles().current.shutterCloseLocation = -1;
+        dependencies.puzzles().current.shutterTileOverrides.clear();
         if (dependencies.location().activeRoom == null) {
             return;
         }
@@ -480,8 +485,8 @@ final class RoomPuzzleController {
 
     private void applyRoomEventEffect(int effect, int linkEntityX, int linkEntityY) {
         if (effect == EVENT_EFFECT_REVEAL_CHEST) {
-            dependencies.puzzles().activeRoomEvent = 0;
-            dependencies.puzzles().roomEventChestRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
+            dependencies.puzzles().current.activeRoomEvent = 0;
+            dependencies.puzzles().current.roomEventChestRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
             if (dependencies.transientVfxSystem() != null) {
                 dependencies
                         .transientVfxSystem()
@@ -492,7 +497,7 @@ final class RoomPuzzleController {
             }
         } else if (effect == EVENT_EFFECT_OPEN_LOCKED_DOORS) {
             this.openActiveRoomShutterDoors(true);
-            dependencies.puzzles().activeRoomEvent = 0;
+            dependencies.puzzles().current.activeRoomEvent = 0;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         } else if (effect == EVENT_EFFECT_DROP_KEY) {
             if (dependencies.entityRuntimeState().runtime != null
@@ -506,17 +511,17 @@ final class RoomPuzzleController {
                                 .inspection()
                                 .view());
             }
-            dependencies.puzzles().activeRoomEvent = 0;
+            dependencies.puzzles().current.activeRoomEvent = 0;
         } else if (effect == EVENT_EFFECT_REVEAL_STAIRWAY) {
             dependencies.roomState().markCompleted(dependencies.location().activeRoom);
-            dependencies.puzzles().activeRoomEvent = 0;
-            dependencies.puzzles().roomEventStairRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
+            dependencies.puzzles().current.activeRoomEvent = 0;
+            dependencies.puzzles().current.roomEventStairRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
             if (dependencies.transientVfxSystem() != null) {
                 dependencies.transientVfxSystem().spawn(TransientVfxType.STAIRS_APPEARS, 0x88, 0x20);
             }
         } else if (effect == EVENT_EFFECT_CLEAR_MIDBOSS) {
             this.openActiveRoomShutterDoors(true);
-            if (dependencies.puzzles().activeRoomEvent == EVENT_CLEAR_MIDBOSS
+            if (dependencies.puzzles().current.activeRoomEvent == EVENT_CLEAR_MIDBOSS
                     && dependencies.location().activeRoom.mapId() >= 0
                     && dependencies.location().activeRoom.mapId()
                             < dependencies.roomState().dungeonProgressFlags.length) {
@@ -533,18 +538,22 @@ final class RoomPuzzleController {
                         .pendingRoomEntityEvents
                         .add(new EntityCombatEvent(0, 0x61, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1B));
             }
-            dependencies.puzzles().activeRoomEvent = 0;
+            dependencies.puzzles().current.activeRoomEvent = 0;
         }
     }
 
     private void finishPushedBlock() {
-        int destinationIndex = RoomConstants.ROOM_OBJECTS_BASE + dependencies.puzzles().pushedBlockDestinationLocation;
+        int destinationIndex =
+                RoomConstants.ROOM_OBJECTS_BASE + dependencies.puzzles().current.pushedBlockDestinationLocation;
         if (destinationIndex >= 0
                 && destinationIndex < dependencies.location().activeRoom.roomObjectsArea().length) {
             dependencies.location().activeRoom.roomObjectsArea()[destinationIndex] = OBJECT_SETTLED_PUSHED_BLOCK;
         }
         if (dependencies.entityRuntimeState().runtime != null) {
-            dependencies.entityRuntimeState().runtime.removePushedBlock(dependencies.puzzles().pushedBlockEntitySlot);
+            dependencies
+                    .entityRuntimeState()
+                    .runtime
+                    .removePushedBlock(dependencies.puzzles().current.pushedBlockEntitySlot);
             dependencies
                     .location()
                     .activeRoom
@@ -554,19 +563,19 @@ final class RoomPuzzleController {
                             .inspection()
                             .view());
         }
-        dependencies.puzzles().pushedBlockEntitySlot = -1;
+        dependencies.puzzles().current.pushedBlockEntitySlot = -1;
         dependencies.roomTileRedraw().refreshActiveRoomTilemap();
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
         dependencies.overworldCollision().setGbcOverlay(null);
-        if ((dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_SINGLE_BLOCK) {
-            dependencies.puzzles().roomEventEffectExecuted = true;
+        if ((dependencies.puzzles().current.activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_SINGLE_BLOCK) {
+            dependencies.puzzles().current.roomEventEffectExecuted = true;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
-        } else if ((dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_BLOCKS
+        } else if ((dependencies.puzzles().current.activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_BLOCKS
                 && this.pushedBlocksTriggerResolved()) {
-            dependencies.puzzles().roomEventEffectExecuted = true;
-            dependencies.puzzles().pushedBlocksTriggerEffectPending = true;
+            dependencies.puzzles().current.roomEventEffectExecuted = true;
+            dependencies.puzzles().current.pushedBlocksTriggerEffectPending = true;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         }
     }

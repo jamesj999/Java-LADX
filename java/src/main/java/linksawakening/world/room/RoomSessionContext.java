@@ -94,7 +94,12 @@ final class RoomSessionContext {
                 values.roomTilemapBuilder));
         values.entityInputs = new RoomEntityInputs();
         values.roomRuntimeServices = new RoomRuntime.Services(
-                values.roomCollisionQueries, values.roomObjectMutations, values.entityFrame, transientVfxSystem);
+                values.roomCollisionQueries,
+                values.roomObjectMutations,
+                values.entityFrame,
+                transientVfxSystem,
+                values.puzzles,
+                values.terrain);
         values.roomPlayerItemActions = new RoomPlayerItemActions(new RoomPlayerItemActions.Dependencies(
                 values.followers,
                 values.items,

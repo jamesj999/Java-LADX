@@ -183,7 +183,7 @@ final class RoomEntitySimulation {
         loaded.entities.configuration().setPowerBraceletButtonHeld(setup.entityInputs().powerBraceletButtonHeld);
         loaded.entities.configuration().setBombButtonHeld(setup.entityInputs().bombButtonHeld);
         loaded.entities.configuration().setLiftedLinkC13B(setup.followers().followingEntityYOffset);
-        loaded.entities.configuration().setBooBuddyTriggerCount(setup.puzzles().roomTriggerCount);
+        loaded.entities.configuration().setBooBuddyTriggerCount(loaded.contents.puzzles.roomTriggerCount);
     }
 
     private void configureItems(RoomRuntime loaded) {

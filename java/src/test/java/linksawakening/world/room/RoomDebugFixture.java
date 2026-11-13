@@ -139,11 +139,11 @@ final class RoomDebugFixture {
     }
 
     int roomTriggerCountForTest() {
-        return session.components.puzzles().roomTriggerCount & 0xFF;
+        return session.components.puzzles().current.roomTriggerCount & 0xFF;
     }
 
     int activeRoomEventForTest() {
-        return session.components.puzzles().activeRoomEvent & 0xFF;
+        return session.components.puzzles().current.activeRoomEvent & 0xFF;
     }
 
     boolean hasDungeonInstrumentForTest(int mapId) {
@@ -164,7 +164,7 @@ final class RoomDebugFixture {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException("Room trigger count must be an unsigned byte");
         }
-        session.components.puzzles().roomTriggerCount = value;
+        session.components.puzzles().current.roomTriggerCount = value;
     }
 
     int entityDropSpeedXForTest(int slot) {

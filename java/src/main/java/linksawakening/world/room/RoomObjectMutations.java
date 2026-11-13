@@ -369,11 +369,13 @@ final class RoomObjectMutations {
                 continue;
             }
             if (request.action() == MagicPowderObjectAction.IGNITE_TORCH) {
-                dependencies.puzzles().roomTriggerCount = (dependencies.puzzles().roomTriggerCount + 1) & 0xFF;
+                dependencies.puzzles().current.roomTriggerCount =
+                        (dependencies.puzzles().current.roomTriggerCount + 1) & 0xFF;
                 dependencies.indoorTorchPaletteEffect().igniteTorch();
             } else if (request.action() == MagicPowderObjectAction.EXTINGUISH_TORCH
                     && dependencies.location().activeRoom.roomId() != 0x74) {
-                dependencies.puzzles().roomTriggerCount = (dependencies.puzzles().roomTriggerCount - 1) & 0xFF;
+                dependencies.puzzles().current.roomTriggerCount =
+                        (dependencies.puzzles().current.roomTriggerCount - 1) & 0xFF;
                 dependencies
                         .indoorTorchPaletteEffect()
                         .extinguishTorch(dependencies.entityFrame().currentLinkMotionState != 0x05);
@@ -400,7 +402,7 @@ final class RoomObjectMutations {
             return false;
         }
         if (redraw) {
-            dependencies.terrain().retainedTorchTiles.remove(areaIndex);
+            dependencies.terrain().overrides.retainedTorchTiles.remove(areaIndex);
         } else {
             this.retainTorchTiles(areaIndex);
         }
@@ -425,17 +427,18 @@ final class RoomObjectMutations {
             saved[tile] = dependencies.location().activeRoom.tileIds()[index];
             saved[tile + 4] = dependencies.location().activeRoom.tileAttrs()[index];
         }
-        dependencies.terrain().retainedTorchTiles.putIfAbsent(areaIndex, saved);
+        dependencies.terrain().overrides.retainedTorchTiles.putIfAbsent(areaIndex, saved);
     }
 
     void applyRetainedTorchTiles() {
         dependencies
                 .terrain()
+                .overrides
                 .retainedTorchTiles
                 .keySet()
                 .removeIf(areaIndex -> dependencies.location().activeRoom.roomObjectsArea()[areaIndex] != 0xAB);
         for (Map.Entry<Integer, int[]> entry :
-                dependencies.terrain().retainedTorchTiles.entrySet()) {
+                dependencies.terrain().overrides.retainedTorchTiles.entrySet()) {
             int location = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
             int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH + (location & 0x0F) * 2;
             int[] saved = entry.getValue();
@@ -540,7 +543,7 @@ final class RoomObjectMutations {
         }
 
         this.writeBombPuzzleObject(candidate.location(), OBJECT_ROCKY_CAVE_DOOR);
-        dependencies.terrain().bombedCaveDoorTileOverrides.add(areaIndex);
+        dependencies.terrain().overrides.bombedCaveDoorTileOverrides.add(areaIndex);
         dependencies.roomState()
                 .overworldRoomStatus[dependencies.location().activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
         this.queuePuzzleSolvedJingle(sourceSlot);
@@ -623,7 +626,7 @@ final class RoomObjectMutations {
         int adjacentRoom = dependencies.roomSessionViews().adjacentIndoorRoomIdForBombWall(wallIndex);
         status[dependencies.location().activeRoom.roomId()] |= (byte) currentStatus;
         status[adjacentRoom] |= (byte) adjacentStatus;
-        dependencies.terrain().bombedWallTileOverrides.put(areaIndex, wallIndex < 2 ? 0 : 1);
+        dependencies.terrain().overrides.bombedWallTileOverrides.put(areaIndex, wallIndex < 2 ? 0 : 1);
         this.queuePuzzleSolvedJingle(sourceSlot);
 
         this.refreshActiveRoomTilemap();
@@ -661,7 +664,7 @@ final class RoomObjectMutations {
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
                 (byte) INDOOR_ROOM_STATUS_EVENT_3;
-        dependencies.terrain().bombedBlockTileOverrides.add(areaIndex);
+        dependencies.terrain().overrides.bombedBlockTileOverrides.add(areaIndex);
 
         if (dependencies.entityRuntimeState().runtime != null) {
             dependencies
@@ -777,6 +780,7 @@ final class RoomObjectMutations {
         this.applyRetainedTorchTiles();
         dependencies
                 .puzzles()
+                .current
                 .shutterTileOverrides
                 .forEach((index, tile) -> dependencies.location().activeRoom.tileIds()[index] = tile);
     }
@@ -793,7 +797,7 @@ final class RoomObjectMutations {
                 continue;
             }
             HookshotBridgeUpdate previous =
-                    dependencies.terrain().hookshotBridgeTileOverrides.put(areaIndex, update);
+                    dependencies.terrain().overrides.hookshotBridgeTileOverrides.put(areaIndex, update);
             if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
                 objects[areaIndex] = 0x9D;
                 changed = true;
@@ -806,12 +810,12 @@ final class RoomObjectMutations {
 
     void applyHookshotBridgeTileOverrides() {
         if (dependencies.location().activeRoom == null
-                || dependencies.terrain().hookshotBridgeTileOverrides.isEmpty()) {
+                || dependencies.terrain().overrides.hookshotBridgeTileOverrides.isEmpty()) {
             return;
         }
         int[] tileIds = dependencies.location().activeRoom.tileIds();
         for (HookshotBridgeUpdate update :
-                dependencies.terrain().hookshotBridgeTileOverrides.values()) {
+                dependencies.terrain().overrides.hookshotBridgeTileOverrides.values()) {
             int tileX = (update.objectLeft() & 0xFF) >>> 3;
             int tileY = (update.objectTop() & 0xFF) >>> 3;
             if (tileX < 0
@@ -838,12 +842,12 @@ final class RoomObjectMutations {
 
     void applyBombedWallTileOverrides() {
         if (dependencies.location().activeRoom == null
-                || dependencies.terrain().bombedWallTileOverrides.isEmpty()) {
+                || dependencies.terrain().overrides.bombedWallTileOverrides.isEmpty()) {
             return;
         }
         int[] tileIds = dependencies.location().activeRoom.tileIds();
         for (Map.Entry<Integer, Integer> entry :
-                dependencies.terrain().bombedWallTileOverrides.entrySet()) {
+                dependencies.terrain().overrides.bombedWallTileOverrides.entrySet()) {
             int areaOffset = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
@@ -868,11 +872,11 @@ final class RoomObjectMutations {
 
     void applyBombedBlockTileOverrides() {
         if (dependencies.location().activeRoom == null
-                || dependencies.terrain().bombedBlockTileOverrides.isEmpty()) {
+                || dependencies.terrain().overrides.bombedBlockTileOverrides.isEmpty()) {
             return;
         }
         int[] tileIds = dependencies.location().activeRoom.tileIds();
-        for (int areaIndex : dependencies.terrain().bombedBlockTileOverrides) {
+        for (int areaIndex : dependencies.terrain().overrides.bombedBlockTileOverrides) {
             int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
@@ -895,11 +899,11 @@ final class RoomObjectMutations {
 
     void applyBombedCaveDoorTileOverrides() {
         if (dependencies.location().activeRoom == null
-                || dependencies.terrain().bombedCaveDoorTileOverrides.isEmpty()) {
+                || dependencies.terrain().overrides.bombedCaveDoorTileOverrides.isEmpty()) {
             return;
         }
         int[] tileIds = dependencies.location().activeRoom.tileIds();
-        for (int areaIndex : dependencies.terrain().bombedCaveDoorTileOverrides) {
+        for (int areaIndex : dependencies.terrain().overrides.bombedCaveDoorTileOverrides) {
             int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
