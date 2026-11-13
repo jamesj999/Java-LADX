@@ -39,7 +39,7 @@ public final class ZombieMotion {
             int physicsFlags,
             int speedX,
             int speedY,
-            SpawnRequest spawnRequest,
+            /* Optional emitted spawn request; absent when no spawn is due. */ SpawnRequest spawnRequest,
             boolean unloadRequested,
             boolean appliesBackgroundInteraction) {}
 
@@ -112,10 +112,7 @@ public final class ZombieMotion {
     }
 
     PositionAndCollision moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int ignoreHitsCountdown,
-            int frameCounter) {
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int ignoreHitsCountdown, int frameCounter) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -257,9 +254,7 @@ public final class ZombieMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityObjectQuery objectQuery,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {
         public ZombieFrame {
@@ -279,9 +274,7 @@ public final class ZombieMotion {
         private int linkEntityX;
         private int linkEntityY;
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
         private int slot;
@@ -292,7 +285,9 @@ public final class ZombieMotion {
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.ZombieMotion.SpawnRequest spawnRequest;
+        /* Optional emitted spawn request; absent when no spawn is due. */ private linksawakening.world.entity.motion
+                        .ZombieMotion.SpawnRequest
+                spawnRequest;
         private boolean unloadRequested;
         private boolean appliesBackgroundInteraction;
         private int renderedVariant;

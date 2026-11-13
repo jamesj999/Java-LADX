@@ -106,7 +106,6 @@ public final class EntitySlotLifecycle {
     final EntityRoomVariables roomVariables;
     final EntityStoryState story;
     final GenieEntityController.State genie;
-    // Optional ROM data, absent in ROM-free runtimes.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final SlimeEyeController.State slimeEye;
@@ -134,8 +133,7 @@ public final class EntitySlotLifecycle {
             EntityRoomVariables roomVariables,
             EntityStoryState story,
             GenieEntityController.State genie,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             SlimeEyeController.State slimeEye,
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ java.util.function
@@ -163,7 +161,7 @@ public final class EntitySlotLifecycle {
         this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
         this.story = java.util.Objects.requireNonNull(story, "story");
         this.genie = java.util.Objects.requireNonNull(genie, "genie");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
         this.entityProperties = java.util.Objects.requireNonNull(entityProperties, "entity options");

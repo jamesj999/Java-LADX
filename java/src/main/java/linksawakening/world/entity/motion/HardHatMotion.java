@@ -28,8 +28,7 @@ public final class HardHatMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {

@@ -48,8 +48,8 @@ public final class GenieMotion {
 
     public record Update(
             JarState jar,
-            BodySpawnRequest bodySpawn,
-            RockSpawnRequest rockSpawn,
+            /* Optional Genie body spawn; absent outside the jar-release transition. */ BodySpawnRequest bodySpawn,
+            /* Optional emitted rock; absent when this visit does not launch one. */ RockSpawnRequest rockSpawn,
             boolean rockSpawnSucceeded,
             boolean jarSmashed,
             boolean sourceUnloaded,

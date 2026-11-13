@@ -89,16 +89,13 @@ public final class RollingBonesMotion {
             RoomEntity bar,
             int transitionCountdown,
             int health,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return rollingBonesFrameStep.run(entity, bar, transitionCountdown, health, backgroundCollision);
     }
 
     public BarUpdate advanceBar(
-            RoomEntity entity,
-            int frameCounter, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity, int frameCounter, RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (barTransitionCountdown[slot] > 0) {
@@ -194,8 +191,7 @@ public final class RollingBonesMotion {
             int speed,
             int[] accumulators,
             int slot,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    collision) {
+            RoomEntityBackgroundCollision collision) {
         int next = addSpeed(x, speed, accumulators, slot);
         int direction = speed < 0 ? 1 : 0;
         return collision.blocks(entity, direction, next, y) ? new MoveResult(x, true) : new MoveResult(next, false);
@@ -208,8 +204,7 @@ public final class RollingBonesMotion {
             int speed,
             int[] accumulators,
             int slot,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    collision) {
+            RoomEntityBackgroundCollision collision) {
         int next = addSpeed(y, speed, accumulators, slot);
         int direction = speed < 0 ? 2 : 3;
         return collision.blocks(entity, direction, x, next) ? new MoveResult(y, true) : new MoveResult(next, false);
@@ -242,7 +237,6 @@ public final class RollingBonesMotion {
         private linksawakening.world.entity.RoomEntity bar;
         private int transitionCountdown;
         private int health;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
@@ -395,9 +389,7 @@ public final class RollingBonesMotion {
                 linksawakening.world.entity.RoomEntity bar,
                 int transitionCountdown,
                 int health,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundCollision
-                        backgroundCollision) {
+                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
             if (inUse) {
                 return new RollingBonesFrameStep(owner)
                         .run(entity, bar, transitionCountdown, health, backgroundCollision);

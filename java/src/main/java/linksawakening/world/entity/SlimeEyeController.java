@@ -30,7 +30,6 @@ public final class SlimeEyeController {
     private static final RomAddress HALF_SPEED_Y = RomSymbols.Data_004_4E9C; // ROM Data_004_4E9C
 
     final java.util.List<RoomEntity> slotEntities;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBossRewards bossRewards;
@@ -41,7 +40,6 @@ public final class SlimeEyeController {
     final EntityRoomVariables roomVariables;
     final EntitySlotLifecycle lifecycle;
     final EntitySlotProperties slotProperties;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final State encounter;
@@ -52,9 +50,7 @@ public final class SlimeEyeController {
     SlimeEyeController(
             State encounter,
             java.util.List<RoomEntity> slotEntities,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossRewards bossRewards,
             EntityCombatTables combatTables,
@@ -64,8 +60,7 @@ public final class SlimeEyeController {
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             /* Optional encounter tables; absent in ROM-free runtimes. */ Rom rom) {
         this.readByte = rom == null
@@ -85,7 +80,7 @@ public final class SlimeEyeController {
         this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
     }
 
@@ -333,9 +328,7 @@ public final class SlimeEyeController {
         return withZ(e, (e.z() + (value >> 4)) & 255);
     }
 
-    RoomEntity integrateXY(
-            RoomEntity e, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision collision) {
+    RoomEntity integrateXY(RoomEntity e, RoomEntityBackgroundCollision collision) {
         int s = e.slot(),
                 x = encounter.accX[s] + (byte) encounter.speedX[s],
                 y = encounter.accY[s] + (byte) encounter.speedY[s];

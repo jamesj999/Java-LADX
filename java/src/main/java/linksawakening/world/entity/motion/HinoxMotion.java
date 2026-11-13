@@ -60,7 +60,7 @@ public final class HinoxMotion {
             boolean dustRequested,
             boolean heldLinkPositionWritten,
             boolean applyHeldLinkPose,
-            BombSpawn bombSpawn) {}
+            /* Optional emitted bomb; absent when this visit does not spawn one. */ BombSpawn bombSpawn) {}
 
     public void initialize(int slot) {
         validateSlot(slot);
@@ -143,12 +143,7 @@ public final class HinoxMotion {
                 bomb);
     }
 
-    Position move(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction background,
-            int slot) {
+    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundInteraction background, int slot) {
         this.entityCollisionFlags[slot] = 0;
         int nextX = HinoxMotion.addSpeed(x, this.speedX[slot], this.speedXAccumulator, slot);
         if (nextX != x) {
@@ -306,7 +301,6 @@ public final class HinoxMotion {
             int linkZ,
             int linkMotionState,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int entityCollisionFlagsForFrame,
             int flashCountdown) {
@@ -329,7 +323,6 @@ public final class HinoxMotion {
         private int linkMotionState;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int entityCollisionFlagsForFrame;
         private int flashCountdown;

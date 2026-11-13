@@ -87,10 +87,7 @@ public final class DogMotion {
         return direction[slot] == 0 ? animation + 2 : animation;
     }
 
-    PositionAndCollision moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int slot) {
+    PositionAndCollision moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
@@ -284,7 +281,6 @@ public final class DogMotion {
             boolean actionButtonAHeld,
             boolean dialogActive,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction) {
         public DogFrame {
             backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
@@ -306,7 +302,6 @@ public final class DogMotion {
         private boolean actionButtonAHeld;
         private boolean dialogActive;
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int countdown;

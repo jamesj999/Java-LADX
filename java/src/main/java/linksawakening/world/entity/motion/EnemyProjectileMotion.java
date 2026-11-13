@@ -91,9 +91,7 @@ public final class EnemyProjectileMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, backgroundCollision, false);
     }
@@ -105,17 +103,14 @@ public final class EnemyProjectileMotion {
      * transition without restoring either coordinate.
      */
     public Update advance(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision,
-            boolean preexistingCollision) {
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean preexistingCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, backgroundCollision, preexistingCollision, 0, 0, false);
     }
 
     public Update advance(
             RoomEntity entity,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             boolean preexistingCollision,
             int frameCounter,
             int groundStatus,
@@ -134,8 +129,7 @@ public final class EnemyProjectileMotion {
 
     public Update advance(
             RoomEntity entity,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             boolean preexistingCollision,
             int frameCounter,
             int groundStatus,

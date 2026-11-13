@@ -73,13 +73,23 @@ public final class EntityRoomLoader {
     }
 
     /** Loads a room while applying the source EntityInit room-status gates. */
-    public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId, byte[] roomStatusTable) {
+    public RoomEntitySnapshot load(
+            RoomTable table,
+            int roomId,
+            int clearedMask,
+            int mapId, /* Optional saved-room flags; absence bypasses persistence unload rules. */
+            byte[] roomStatusTable) {
         return load(table, roomId, clearedMask, mapId, roomStatusTable, false);
     }
 
     /** Loads a room with the patched inventory-state init gates enabled. */
     public RoomEntitySnapshot load(
-            RoomTable table, int roomId, int clearedMask, int mapId, byte[] roomStatusTable, boolean hasBirdKey) {
+            RoomTable table,
+            int roomId,
+            int clearedMask,
+            int mapId, /* Optional saved-room flags; absence bypasses persistence unload rules. */
+            byte[] roomStatusTable,
+            boolean hasBirdKey) {
         if (table == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -155,7 +165,11 @@ public final class EntityRoomLoader {
     }
 
     private static boolean shouldUnloadAtInit(
-            RoomTable table, int roomId, int type, byte[] roomStatusTable, boolean hasBirdKey) {
+            RoomTable table,
+            int roomId,
+            int type, /* Optional saved-room flags; absence bypasses persistence unload rules. */
+            byte[] roomStatusTable,
+            boolean hasBirdKey) {
         if (type == ENTITY_KEY_DROP_POINT) {
             return shouldUnloadKeyAtInit(table, roomId, roomStatusTable, hasBirdKey);
         }
@@ -173,7 +187,10 @@ public final class EntityRoomLoader {
     }
 
     private static boolean shouldUnloadKeyAtInit(
-            RoomTable table, int roomId, byte[] roomStatusTable, boolean hasBirdKey) {
+            RoomTable table,
+            int roomId, /* Optional saved-room flags; absence bypasses persistence unload rules. */
+            byte[] roomStatusTable,
+            boolean hasBirdKey) {
         if (roomStatusTable == null) {
             return false;
         }
@@ -191,7 +208,9 @@ public final class EntityRoomLoader {
         return false;
     }
 
-    private static int roomStatusAt(byte[] roomStatusTable, int roomId) {
+    private static int roomStatusAt(
+            /* Optional saved-room flags; absence bypasses persistence unload rules. */ byte[] roomStatusTable,
+            int roomId) {
         return roomId >= 0 && roomId < roomStatusTable.length ? Byte.toUnsignedInt(roomStatusTable[roomId]) : 0;
     }
 

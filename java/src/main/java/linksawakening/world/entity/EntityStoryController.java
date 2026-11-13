@@ -29,7 +29,6 @@ import linksawakening.world.entity.motion.WitchMotion;
 public final class EntityStoryController {
     final EntityStoryState state;
     final EntityMotionRegistry motions;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBossState bossRewards;
@@ -50,9 +49,7 @@ public final class EntityStoryController {
     EntityStoryController(
             EntityStoryState state,
             EntityMotionRegistry motions,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,

@@ -33,7 +33,6 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 /** ArrowEntityHandler, BoomerangEntityHandler and MagicRodFireballEntityHandler collision/object effects. */
 public final class EntityProjectileController {
     final boolean indoorRoom;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombState bombInteractions;
     final EntityCombatTables combatTables;
@@ -45,16 +44,13 @@ public final class EntityProjectileController {
     final EntityRoomVariables roomVariables;
     final EntitySlotLifecycle lifecycle;
     final EntitySlotProperties slotProperties;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final EntityProjectileState state;
 
     EntityProjectileController(
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombState bombInteractions,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -65,8 +61,7 @@ public final class EntityProjectileController {
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             EntityProjectileState state) {
         this.indoorRoom = indoorRoom;
@@ -81,7 +76,7 @@ public final class EntityProjectileController {
         this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.state = java.util.Objects.requireNonNull(state, "state");
     }
@@ -709,7 +704,6 @@ public final class EntityProjectileController {
         private int variant;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery intersectionQuery;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample object;
@@ -898,7 +892,6 @@ public final class EntityProjectileController {
         private boolean timersInteractive;
         private int slot;
         private int transitionCountdown;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery intersectionQuery;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample object;
@@ -1104,7 +1097,6 @@ public final class EntityProjectileController {
         private int variant;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityObjectQuery intersectionQuery;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample object;

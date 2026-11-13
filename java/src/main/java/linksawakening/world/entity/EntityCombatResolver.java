@@ -65,9 +65,7 @@ final class EntityCombatResolver {
     final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
 
     EntityCombatResolver(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBombInteractions bombInteractions,
             EntityBossRewards bossRewards,
@@ -78,8 +76,7 @@ final class EntityCombatResolver {
             EntityPhysicsTables physicsTables,
             EntityRoomInspection roomInspection,
             EntitySlotProperties slotProperties,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             SlimeEyeController slimeEye,
             EntityFrameRandom frameRandom) {
@@ -94,7 +91,7 @@ final class EntityCombatResolver {
         this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
         this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
         this.frameRandom = java.util.Objects.requireNonNull(frameRandom, "frameRandom");

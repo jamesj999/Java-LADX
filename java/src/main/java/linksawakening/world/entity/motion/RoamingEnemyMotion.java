@@ -58,8 +58,7 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision, false)
                 .entity();
@@ -70,8 +69,7 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             boolean creditsGameplay) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         RoomEntityBackgroundInteraction interaction = RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
@@ -84,8 +82,7 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             boolean creditsGameplay) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return advanceWithInteraction(
@@ -97,8 +94,7 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             boolean creditsGameplay) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
@@ -118,8 +114,7 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
@@ -140,8 +135,7 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
@@ -292,7 +286,9 @@ public final class RoamingEnemyMotion {
         return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
-    public record Update(RoomEntity entity, LaunchRequest launchRequest) {}
+    public record Update(
+            RoomEntity entity, /* Optional launch request; absent when the firing gate is closed. */
+            LaunchRequest launchRequest) {}
 
     public record LaunchRequest(int sourceSlot, int sourceType, int projectileType)
             implements linksawakening.world.entity.event.EntityRequestBridge {}
@@ -304,7 +300,6 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
@@ -320,7 +315,6 @@ public final class RoamingEnemyMotion {
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
         private int frameCounter;

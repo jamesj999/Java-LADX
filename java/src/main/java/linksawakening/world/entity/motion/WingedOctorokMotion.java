@@ -42,7 +42,7 @@ public final class WingedOctorokMotion {
             RoomEntity entity,
             int state,
             int transitionCountdown,
-            RockSpawn rockSpawn,
+            /* Optional emitted rock; absent when this visit does not launch one. */ RockSpawn rockSpawn,
             boolean jumped,
             boolean skippedDefaultCollision) {}
 
@@ -148,11 +148,7 @@ public final class WingedOctorokMotion {
         return (linkItemA & 0xFF) == ENTITY_SWORD && actionButtonAHeld;
     }
 
-    Position move(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -240,7 +236,6 @@ public final class WingedOctorokMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown,
@@ -254,7 +249,6 @@ public final class WingedOctorokMotion {
             int linkEntityX,
             int linkEntityY,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown,
@@ -278,7 +272,6 @@ public final class WingedOctorokMotion {
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int ignoreHitsCountdown;
@@ -298,7 +291,9 @@ public final class WingedOctorokMotion {
         private boolean landed;
         private boolean stateTwoHandler;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.WingedOctorokMotion.RockSpawn rockSpawn;
+        /* Optional emitted rock; absent when this visit does not launch one. */ private linksawakening.world.entity
+                        .motion.WingedOctorokMotion.RockSpawn
+                rockSpawn;
         private boolean jumped;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;

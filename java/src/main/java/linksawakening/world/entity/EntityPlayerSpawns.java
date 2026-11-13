@@ -49,9 +49,7 @@ public final class EntityPlayerSpawns {
             /* Optional RNG override; null selects the room-owned ROM-compatible source. */ java.util.function
                             .IntSupplier
                     defaultRandomByteSupplier,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombInteractions bombInteractions,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
@@ -68,8 +66,7 @@ public final class EntityPlayerSpawns {
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             RoomEntity[] slots,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntityChestContents
-                    chestContentsTable,
+            EntityChestContents chestContentsTable,
             EntityPlayerCommands playerCommands) {
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier =

@@ -39,7 +39,7 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 public final class EntityBackgroundMechanics {
     /** Completed EntityFallHandler visit; callers consume only the disabled status. */
     private static final RoomEntity FINISHED_FALL = RoomEntity.disabled(0);
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
+
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
@@ -54,9 +54,7 @@ public final class EntityBackgroundMechanics {
     final EntitySlotLifecycle lifecycle;
 
     EntityBackgroundMechanics(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
@@ -348,7 +346,9 @@ public final class EntityBackgroundMechanics {
         requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
     }
 
-    public void requestLinkPush(RoomEntity entity, EntityLinkCollisionRules.LinkPushPolicy policy) {
+    public void requestLinkPush(
+            /* Optional source actor; absence emits no push. */ RoomEntity entity,
+            /* Optional push outcome; absence emits no push. */ EntityLinkCollisionRules.LinkPushPolicy policy) {
         if (entity == null || policy == null || !policy.restoreFinalPosition()) {
             return;
         }
@@ -397,8 +397,7 @@ public final class EntityBackgroundMechanics {
     }
 
     public EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         var runtime = this;
         int slot = entity.slot();
         if (!runtime.motions

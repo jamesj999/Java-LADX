@@ -23,7 +23,11 @@ public final class GiantGopongaMotion {
     /** The request made by SpawnNewEntity plus ApplyVectorTowardsLink. */
     public record ProjectileSpawn(int x, int y, int speedX, int speedY) {}
 
-    public record Update(RoomEntity entity, int state, int transitionCountdown, ProjectileSpawn projectileSpawn) {}
+    public record Update(
+            RoomEntity entity,
+            int state,
+            int transitionCountdown, /* Optional emitted projectile; absent when this visit does not fire. */
+            ProjectileSpawn projectileSpawn) {}
 
     public Update advance(
             RoomEntity entity, int frameCounter, int transitionCountdown, int linkEntityX, int linkEntityY) {

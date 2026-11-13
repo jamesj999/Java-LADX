@@ -19,8 +19,9 @@ public final class ArmosKnightMotion {
             int options1,
             int jingleId,
             boolean linkMotionBlocked,
-            ScreenShakeRequest screenShakeRequest,
-            RubbleRequest rubbleRequest) {}
+            /* Optional screen-shake effect; absent when this visit does not request it. */ ScreenShakeRequest
+                    screenShakeRequest,
+            /* Optional rubble effect; absent outside the landing transition. */ RubbleRequest rubbleRequest) {}
 
     static final int STATE_WAKE = 0;
     static final int STATE_CHARGE = 1;
@@ -184,9 +185,13 @@ public final class ArmosKnightMotion {
         private boolean landed;
         private int variant;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.ArmosKnightMotion.RubbleRequest rubbleRequest;
+        /* Optional rubble effect; absent outside the landing transition. */ private linksawakening.world.entity.motion
+                        .ArmosKnightMotion.RubbleRequest
+                rubbleRequest;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.ArmosKnightMotion.ScreenShakeRequest screenShakeRequest;
+        /* Optional screen-shake effect; absent when this visit does not request it. */ private linksawakening.world
+                        .entity.motion.ArmosKnightMotion.ScreenShakeRequest
+                screenShakeRequest;
         private int jingleId;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity updated;

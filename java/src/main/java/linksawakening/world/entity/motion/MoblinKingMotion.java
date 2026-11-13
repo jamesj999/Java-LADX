@@ -24,7 +24,7 @@ public final class MoblinKingMotion {
             RoomEntity entity,
             int transitionCountdown,
             int slowTransitionCountdown,
-            ArrowRequest arrowRequest,
+            /* Optional arrow request; absent when this visit does not fire. */ ArrowRequest arrowRequest,
             boolean openIntroDialog,
             int jingleId,
             boolean strongBump,
@@ -165,7 +165,6 @@ public final class MoblinKingMotion {
             int slowTransitionCountdown,
             int frameCounter,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             boolean touchingLink) {
         public MoblinKingFrame {
@@ -186,7 +185,6 @@ public final class MoblinKingMotion {
         private int frameCounter;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityBackgroundCollision backgroundCollision;
         private boolean touchingLink;
         private int slot;

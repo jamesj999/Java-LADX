@@ -42,8 +42,7 @@ public final class SandCrabMotion {
             int frameCounter,
             int transitionCountdown,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         checkType(entity);
         validateByte(transitionCountdown, "Sand Crab transition countdown");
@@ -83,9 +82,7 @@ public final class SandCrabMotion {
     }
 
     private PositionAndCollision moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int slot) {
+            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;

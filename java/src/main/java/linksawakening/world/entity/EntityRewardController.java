@@ -37,7 +37,6 @@ import linksawakening.world.room.ChestContentsTable;
 public final class EntityRewardController {
     final EntityRewardState state;
     final EntityMotionRegistry motions;
-    // Optional ROM data, absent in ROM-free runtimes.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -57,9 +56,7 @@ public final class EntityRewardController {
     EntityRewardController(
             EntityRewardState state,
             EntityMotionRegistry motions,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,

@@ -45,8 +45,7 @@ public final class HidingZolMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         RoomEntityBackgroundInteraction backgroundInteraction =
                 RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
@@ -58,8 +57,7 @@ public final class HidingZolMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int frameCounter) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return hidingZolStep.run(
@@ -129,8 +127,7 @@ public final class HidingZolMotion {
             RoomEntity entity,
             int x,
             int y,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int frameCounter,
             int slot) {
         int movedX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
@@ -220,7 +217,6 @@ public final class HidingZolMotion {
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int frameCounter;
         private int slot;
@@ -422,9 +418,7 @@ public final class HidingZolMotion {
                 int linkEntityX,
                 int linkEntityY,
                 java.util.function.IntSupplier randomByteSupplier,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundInteraction
-                        backgroundInteraction,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
                 int frameCounter) {
             if (inUse) {
                 return new HidingZolStep(owner)

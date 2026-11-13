@@ -18,6 +18,14 @@ public final class EntitySpriteViews {
     private final EntitySpriteDefinition[] definitions = new EntitySpriteDefinition[CAPACITY];
     private int size, next;
 
+    static EntitySpriteViews unsupported() {
+        return new EntitySpriteViews(UnsupportedSource.INSTANCE);
+    }
+
+    private EntitySpriteViews(Source source) {
+        this.source = java.util.Objects.requireNonNull(source);
+    }
+
     EntitySpriteViews(
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteHandlerCatalog
                     catalog) {

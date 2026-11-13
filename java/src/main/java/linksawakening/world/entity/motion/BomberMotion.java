@@ -26,7 +26,11 @@ public final class BomberMotion {
 
     public record BombSpawn(int x, int y, int z, int speedX, int speedY, int speedZ, int transitionCountdown) {}
 
-    public record Update(RoomEntity entity, int transitionCountdown, BombSpawn bombSpawn, boolean playJingle) {}
+    public record Update(
+            RoomEntity entity,
+            int transitionCountdown, /* Optional emitted bomb; absent when this visit does not spawn one. */
+            BombSpawn bombSpawn,
+            boolean playJingle) {}
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -47,8 +51,7 @@ public final class BomberMotion {
             int romLinkDirection,
             boolean swordAnimationActive,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return advance(new BomberFrame(
                 entity,
@@ -183,7 +186,6 @@ public final class BomberMotion {
             int romLinkDirection,
             boolean swordAnimationActive,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {}
 
     static final class BomberFrameStep {
@@ -199,7 +201,6 @@ public final class BomberMotion {
         private boolean swordAnimationActive;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
@@ -210,7 +211,9 @@ public final class BomberMotion {
         private int nextTransitionCountdown;
         private int oldInertia;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.BomberMotion.BombSpawn bombSpawn;
+        /* Optional emitted bomb; absent when this visit does not spawn one. */ private linksawakening.world.entity
+                        .motion.BomberMotion.BombSpawn
+                bombSpawn;
         private boolean playJingle;
 
         BomberFrameStep(BomberMotion owner) {

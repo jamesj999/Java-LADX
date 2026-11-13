@@ -28,8 +28,7 @@ public final class WaterTektiteMotion {
             RoomEntity entity,
             int frameCounter,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {

@@ -23,7 +23,6 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 /** ROM bomb explosion, damage and delayed presentation ordering. */
 public final class EntityBombInteractions {
     final EntityBombState state;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityCombatTables combatTables;
@@ -33,16 +32,13 @@ public final class EntityBombInteractions {
     final EntityMotionRegistry motions;
     final EntityPhysicsTables physicsTables;
     final EntitySlotProperties slotProperties;
-    // Optional ROM data; ROM-free runtimes retain the existing fallback behavior.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final EntitySlotLifecycle lifecycle;
 
     EntityBombInteractions(
             EntityBombState state,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityCombatTables combatTables,
             EntityEventChannels events,
@@ -51,8 +47,7 @@ public final class EntityBombInteractions {
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables,
             EntitySlotProperties slotProperties,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots,
             EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
@@ -65,7 +60,7 @@ public final class EntityBombInteractions {
         this.motions = java.util.Objects.requireNonNull(motions, "motions");
         this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
     }
@@ -317,9 +312,7 @@ public final class EntityBombInteractions {
     }
 
     public RoomEntity applyBombStunnedPostActiveWork(
-            RoomEntity stunned, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision,
-            int frame) {
+            RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         var runtime = this;
         int slot = stunned.slot();
         RoomEntity moved = stunned;

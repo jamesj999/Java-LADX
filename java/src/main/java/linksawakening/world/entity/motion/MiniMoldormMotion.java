@@ -119,8 +119,7 @@ public final class MiniMoldormMotion {
             int transitionCountdown,
             int ignoreHitsCountdown,
             int flashCountdown,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             IntSupplier randomByteSupplier,
             int frameCounter) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
@@ -213,7 +212,6 @@ public final class MiniMoldormMotion {
         private int transitionCountdown;
         private int ignoreHitsCountdown;
         private int flashCountdown;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
@@ -352,9 +350,7 @@ public final class MiniMoldormMotion {
                 int transitionCountdown,
                 int ignoreHitsCountdown,
                 int flashCountdown,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundInteraction
-                        backgroundInteraction,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
                 java.util.function.IntSupplier randomByteSupplier,
                 int frameCounter) {
             if (inUse) {

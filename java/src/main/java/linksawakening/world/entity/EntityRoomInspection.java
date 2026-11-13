@@ -22,7 +22,6 @@ public final class EntityRoomInspection {
     static final RoomEntity UNREAD_PRESENTATION = RoomEntity.disabled(0);
     final EntityWarpController warpState;
     final boolean indoorRoom;
-    // Optional ROM data, absent in ROM-free runtimes.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     // Optional ROM data, absent in ROM-free runtimes.
     final linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles;
@@ -41,7 +40,6 @@ public final class EntityRoomInspection {
     final EntityRoomVariables roomVariables;
     final EntitySlotPresentation slotProperties;
     final EntityStoryState story;
-    // Optional ROM data, absent in ROM-free runtimes.
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
 
@@ -50,9 +48,7 @@ public final class EntityRoomInspection {
     EntityRoomInspection(
             EntityWarpController warpState,
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.gpu
                             .EntitySpriteTileSnapshot
                     spriteTiles,
@@ -71,8 +67,7 @@ public final class EntityRoomInspection {
             EntityRoomVariables roomVariables,
             EntitySlotPresentation slotProperties,
             EntityStoryState story,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
-                    enemyCombatTables,
+            RomEnemyCombatTables enemyCombatTables,
             RoomEntity[] slots) {
         this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
@@ -93,7 +88,7 @@ public final class EntityRoomInspection {
         this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
         this.story = java.util.Objects.requireNonNull(story, "story");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
         this.liveView = RoomEntitySnapshot.liveView(this);
     }
@@ -604,9 +599,9 @@ public final class EntityRoomInspection {
 
     static RoomEntity entityRoomQueriesPresentedEntity(
             EntityRoomInspection runtime,
-            int slot, /* Optional cached source; null means this slot has not been read. */
+            int slot, /* Source identity of the cached projection, or UNREAD_PRESENTATION. */
             RoomEntity previousSource,
-            /* Optional cached projection; null means no presentation is cached. */ RoomEntity previousPresentation) {
+            /* Immutable cached projection, seeded with UNREAD_PRESENTATION. */ RoomEntity previousPresentation) {
         RoomEntity entity = runtime.slots[slot];
         boolean hidden = entity.type() == 0x3E
                 && (runtime.indoorRoom

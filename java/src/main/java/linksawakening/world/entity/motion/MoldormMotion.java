@@ -57,6 +57,7 @@ public final class MoldormMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] noiseCadence = new int[EntityRoomLoader.MAX_ENTITIES];
+    // No vulnerable tail exists before initialization or after this slot is cleared.
     private final MoldormSegmentPosition[] vulnerableTail = new MoldormSegmentPosition[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -138,8 +139,7 @@ public final class MoldormMotion {
             int flashCountdown,
             int health,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -239,8 +239,7 @@ public final class MoldormMotion {
             int ignoreHitsCountdown,
             int flashCountdown,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         int slot = entity.slot();
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
@@ -323,8 +322,7 @@ public final class MoldormMotion {
             int y,
             int ignoreHitsCountdown,
             int frameCounter,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         {
         }
         int collisionFlags = 0;

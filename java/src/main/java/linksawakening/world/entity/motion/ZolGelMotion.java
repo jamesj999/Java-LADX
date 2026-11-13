@@ -77,8 +77,7 @@ public final class ZolGelMotion {
             int linkEntityY,
             int linkEntityZ,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return ZolGelMotion.advanceBody(
                 this, entity, linkEntityX, linkEntityY, linkEntityZ, randomByteSupplier, backgroundCollision);
@@ -175,11 +174,7 @@ public final class ZolGelMotion {
     }
 
     int[] physics(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            int frameCounter) {
+            RoomEntity entity, int x, int y, RoomEntityBackgroundInteraction backgroundInteraction, int frameCounter) {
         // ZolGelPhysics still updates position while private countdown 1 is
         // active, but the ROM skips its background helper for that frame. When
         // it does call the helper, it temporarily exposes ignore-hits value
@@ -193,8 +188,7 @@ public final class ZolGelMotion {
             RoomEntity entity,
             int x,
             int y,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter) {
         {
@@ -230,8 +224,7 @@ public final class ZolGelMotion {
             RoomEntity entity,
             int x,
             int y,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
+            RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter) {
         int slot = entity.slot();
@@ -290,7 +283,10 @@ public final class ZolGelMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    public record Update(RoomEntity entity, Split split, boolean clinging) {}
+    public record Update(
+            RoomEntity entity, /* Optional split outcome; absent until the Zol transforms into Gel. */
+            Split split,
+            boolean clinging) {}
 
     public record Split(int originalX, int originalY, int originalZ) {}
 
@@ -305,8 +301,7 @@ public final class ZolGelMotion {
             int linkEntityY,
             int linkEntityZ,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision) {
+            RoomEntityBackgroundCollision backgroundCollision) {
         return owner.advance(new ZolGelFrame(
                 entity,
                 linkEntityX,
@@ -358,7 +353,6 @@ public final class ZolGelMotion {
             int linkEntityY,
             int linkEntityZ,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int frameCounter,
             int ignoreHitsCountdown,
@@ -379,7 +373,6 @@ public final class ZolGelMotion {
         private int linkEntityZ;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int frameCounter;
         private int ignoreHitsCountdown;
@@ -389,7 +382,9 @@ public final class ZolGelMotion {
         private boolean hitGround;
         private int type;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.ZolGelMotion.Split split;
+        /* Optional split outcome; absent until the Zol transforms into Gel. */ private linksawakening.world.entity
+                        .motion.ZolGelMotion.Split
+                split;
         private int x;
         private int y;
         private boolean clinging;

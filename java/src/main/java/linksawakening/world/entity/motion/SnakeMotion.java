@@ -42,8 +42,7 @@ public final class SnakeMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         return snakeFrameStep.run(
@@ -105,11 +104,7 @@ public final class SnakeMotion {
         // the state-2 dash window.
     }
 
-    Position move(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -199,7 +194,6 @@ public final class SnakeMotion {
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int slot;
@@ -323,9 +317,7 @@ public final class SnakeMotion {
                 int linkEntityX,
                 int linkEntityY,
                 java.util.function.IntSupplier randomByteSupplier,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundCollision
-                        backgroundCollision,
+                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision,
                 int transitionCountdown) {
             if (inUse) {
                 return new SnakeFrameStep(owner)

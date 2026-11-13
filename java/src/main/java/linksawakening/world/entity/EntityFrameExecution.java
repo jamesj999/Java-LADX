@@ -334,7 +334,8 @@ public final class EntityFrameExecution {
         private EntityStatus status;
         private boolean keyDropTransitionActive;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private RoomEntityGroundInteraction.Result preAppliedGroundResult;
+        /* Optional result of a ground pass already performed by the current handler. */ private
+        RoomEntityGroundInteraction.Result preAppliedGroundResult;
         private boolean applyGenericGroundInteraction;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private RoomEntity updated;
@@ -532,9 +533,7 @@ public final class EntityFrameExecution {
         private int collisionType;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityBackgroundCollision backgroundCollision;
-        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityObjectCollision objectCollision;
         // Optional room geometry/history; null preserves the path without that room input.
         private LinkPositionHistory linkPositionHistory;
@@ -552,7 +551,6 @@ public final class EntityFrameExecution {
         private int swordHeight;
         private int frame;
         private int romCollisionType;
-        // Optional room geometry/history; null preserves the path without that room input.
         private RoomEntityBackgroundInteraction hinoxBackgroundInteraction;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private List<EntityProjectileEvent> projectileEvents;
@@ -602,9 +600,7 @@ public final class EntityFrameExecution {
             return backgroundCollision;
         }
 
-        public RoomEntityBackgroundCollision backgroundCollision(
-                /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                        value) {
+        public RoomEntityBackgroundCollision backgroundCollision(RoomEntityBackgroundCollision value) {
             return backgroundCollision = value;
         }
 
@@ -612,9 +608,7 @@ public final class EntityFrameExecution {
             return objectCollision;
         }
 
-        public RoomEntityObjectCollision objectCollision(
-                /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectCollision
-                        value) {
+        public RoomEntityObjectCollision objectCollision(RoomEntityObjectCollision value) {
             return objectCollision = value;
         }
 
@@ -736,9 +730,7 @@ public final class EntityFrameExecution {
             return hinoxBackgroundInteraction;
         }
 
-        public RoomEntityBackgroundInteraction hinoxBackgroundInteraction(
-                /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                        value) {
+        public RoomEntityBackgroundInteraction hinoxBackgroundInteraction(RoomEntityBackgroundInteraction value) {
             return hinoxBackgroundInteraction = value;
         }
 

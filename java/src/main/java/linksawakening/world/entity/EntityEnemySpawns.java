@@ -40,9 +40,7 @@ public final class EntityEnemySpawns {
     final EntitySlotLifecycle lifecycle;
 
     EntityEnemySpawns(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,

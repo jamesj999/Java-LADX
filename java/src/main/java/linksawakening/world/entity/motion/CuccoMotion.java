@@ -60,7 +60,7 @@ public final class CuccoMotion {
             int waveSoundId,
             int dialogTableId,
             int dialogLowId,
-            SpawnRequest spawnRequest) {}
+            /* Optional emitted spawn request; absent when no spawn is due. */ SpawnRequest spawnRequest) {}
 
     public void initialize(int slot) {
         clear(slot);
@@ -125,11 +125,7 @@ public final class CuccoMotion {
         return speedZ[slot] & 0xFF;
     }
 
-    Position move(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -286,7 +282,6 @@ public final class CuccoMotion {
             boolean powerBraceletHeld,
             boolean linkAttackStepActive,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             boolean indoorRoom,
             boolean marinFollowing,
@@ -304,7 +299,6 @@ public final class CuccoMotion {
             boolean powerBraceletHeld,
             boolean linkAttackStepActive,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision,
             boolean indoorRoom,
             boolean marinFollowing,
@@ -332,7 +326,6 @@ public final class CuccoMotion {
         private boolean linkAttackStepActive;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private boolean indoorRoom;
         private boolean marinFollowing;
@@ -353,7 +346,9 @@ public final class CuccoMotion {
         private int dialogTableId;
         private int dialogLowId;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.CuccoMotion.SpawnRequest spawnRequest;
+        /* Optional emitted spawn request; absent when no spawn is due. */ private linksawakening.world.entity.motion
+                        .CuccoMotion.SpawnRequest
+                spawnRequest;
         private boolean landed;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity collisionEntity;

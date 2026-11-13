@@ -75,7 +75,6 @@ public final class LikeLikeMotion {
             int shieldLevel,
             int slowTransitionCountdown,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision) {
         public LikeLikeFrame {
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
@@ -100,7 +99,6 @@ public final class LikeLikeMotion {
         private int slowTransitionCountdown;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int renderedVariant;

@@ -108,11 +108,8 @@ public final class RoomEntityRuntime {
     // Optional RNG override; null selects the room-owned ROM-compatible source.
     final IntSupplier defaultRandomByteSupplier;
     private final EntityFrameRandom frameRandom;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final EntitySpriteViews spriteHandlers;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final RomEnemyCombatTables enemyCombatTables;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final EntityChestContents chestContentsTable;
 
     public boolean gelClingingToLink() {
@@ -174,7 +171,7 @@ public final class RoomEntityRuntime {
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
 
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.enemyCombatTables = enemyCombatTables;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
         this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
         this.entityProperties = builder.entityOptionsLookup();
         this.slotPropertiesState = new EntitySlotPresentation(spriteHandlers);

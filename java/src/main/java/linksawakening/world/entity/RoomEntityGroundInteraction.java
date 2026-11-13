@@ -19,7 +19,11 @@ public interface RoomEntityGroundInteraction {
     }
 
     public record Result(
-            RoomEntity entity, int groundStatus, PitTransition pitTransition, boolean unloaded, boolean waterSplash) {
+            RoomEntity entity,
+            int groundStatus, /* Optional pit destination; absent when ground handling keeps the entity in place. */
+            PitTransition pitTransition,
+            boolean unloaded,
+            boolean waterSplash) {
         public static Result unchanged(RoomEntity entity, int groundStatus) {
             return new Result(entity, groundStatus, null, false, false);
         }

@@ -188,7 +188,6 @@ public final class BombiteMotion {
             int enemyIgnoreHitsCountdown,
             boolean runningWithPegasusBoots,
             java.util.function.IntSupplier randomByteSupplier,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundCollision backgroundCollision) {
         public BombiteFrame {
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
@@ -211,7 +210,6 @@ public final class BombiteMotion {
         private boolean runningWithPegasusBoots;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int nextTransition;

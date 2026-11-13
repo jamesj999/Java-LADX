@@ -7,7 +7,7 @@ import linksawakening.world.entity.event.MoldormSegmentPosition;
 
 /** Immutable projections of Moldorm's four history taps ($0C, $18, $24, $2E). */
 final class MoldormTailSnapshots {
-    // Unread slots have no cached immutable tail projection.
+    // Each slot starts with its own immutable zero-history projection.
     private final List<List<MoldormSegmentPosition>> snapshots = new ArrayList<>(EntityRoomLoader.MAX_ENTITIES);
 
     MoldormTailSnapshots() {
@@ -36,11 +36,7 @@ final class MoldormTailSnapshots {
     }
 
     private static MoldormSegmentPosition segment(
-            /* Optional previous projection; null on the first read. */ List<MoldormSegmentPosition> previous,
-            int segment,
-            int index,
-            int[] historyX,
-            int[] historyY) {
+            List<MoldormSegmentPosition> previous, int segment, int index, int[] historyX, int[] historyY) {
         int x = historyX[index], y = historyY[index];
         {
             MoldormSegmentPosition value = previous.get(segment);

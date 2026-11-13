@@ -31,9 +31,7 @@ public final class EntityRuntimeConfiguration {
     private final EntitySpriteViews spriteViews;
 
     EntityRuntimeConfiguration(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
@@ -87,27 +85,19 @@ public final class EntityRuntimeConfiguration {
         this.presentationState.writeSpriteSelection(selection);
     }
 
-    public void setGroundInteraction(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityGroundInteraction
-                    groundInteraction) {
+    public void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) {
         this.physicsTables.writeGroundInteraction(groundInteraction);
     }
 
-    public void setBackgroundInteraction(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+    public void setBackgroundInteraction(RoomEntityBackgroundInteraction backgroundInteraction) {
         this.physicsTables.writeBackgroundInteraction(backgroundInteraction);
     }
 
-    public void setObjectQuery(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
-                    objectQuery) {
+    public void setObjectQuery(RoomEntityObjectQuery objectQuery) {
         this.physicsTables.writeObjectQuery(objectQuery);
     }
 
-    public void setObjectIntersectionQuery(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
-                    objectIntersectionQuery) {
+    public void setObjectIntersectionQuery(RoomEntityObjectQuery objectIntersectionQuery) {
         this.physicsTables.writeObjectIntersectionQuery(objectIntersectionQuery);
     }
 
@@ -329,9 +319,7 @@ public final class EntityRuntimeConfiguration {
             this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(1);
     }
 
-    public void setColorShellWorld(
-            /* Optional room geometry/history; null preserves the path without that room input. */ ColorShellWorld
-                    world) {
+    public void setColorShellWorld(ColorShellWorld world) {
         this.motions
                 .get(ColorShellMotion.class, ColorShellMotion::new)
                 .writeColorShellWorld(java.util.Objects.requireNonNullElse(world, ColorShellWorld.none()));

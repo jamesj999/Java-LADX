@@ -33,7 +33,6 @@ public final class EntitySlotProperties {
     private final List<WingedOctorokOam.Entry> wingedEntries = new ArrayList<>();
     final EntitySlotPresentation state;
     final boolean indoorRoom;
-    // Optional ROM data, absent in ROM-free runtimes.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
     final EntityCombatTables combatTables;
@@ -53,9 +52,7 @@ public final class EntitySlotProperties {
     EntitySlotProperties(
             EntitySlotPresentation state,
             boolean indoorRoom,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
             EntityCombatTables combatTables,
             EntityEventChannels events,

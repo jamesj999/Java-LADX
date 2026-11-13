@@ -12,6 +12,7 @@ public final class HookshotBridgeMotion {
     public static final int SPEED_DOWN = 0x30;
     public static final int SPEED_UP = 0xD0;
 
+    // No active chain/bridge occupies a slot until its spawn installs a State.
     private final State[] states = new State[EntityRoomLoader.MAX_ENTITIES];
 
     public record State(int x, int y, int direction, int speedY, int speedAccumulator) {

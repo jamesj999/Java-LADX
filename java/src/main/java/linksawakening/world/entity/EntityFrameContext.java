@@ -9,9 +9,7 @@ public record EntityFrameContext(
         int linkEntityY,
         int collisionType,
         IntSupplier randomByteSupplier,
-        // Optional room geometry/history; null preserves the path without that room input.
         RoomEntityBackgroundCollision backgroundCollision,
-        // Optional room geometry/history; null preserves the path without that room input.
         RoomEntityObjectCollision objectCollision,
         // Optional room geometry/history; null preserves the path without that room input.
         LinkPositionHistory linkPositionHistory,
@@ -67,11 +65,7 @@ public record EntityFrameContext(
                 .handlerLinkCollisionEnabled(handlerLinkCollisionEnabled);
     }
 
-    EntityFrameContext withRuntimeInputs(
-            int frame,
-            int linkX,
-            int linkY, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision collision) {
+    EntityFrameContext withRuntimeInputs(int frame, int linkX, int linkY, RoomEntityBackgroundCollision collision) {
         return toBuilder()
                 .frameCounter(frame)
                 .linkEntityX(linkX)

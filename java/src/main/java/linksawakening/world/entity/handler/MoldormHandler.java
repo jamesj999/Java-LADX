@@ -117,7 +117,6 @@ final class MoldormHandler {
         }
 
         private int slot;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction moldormBackgroundInteraction;
         private int transitionForMotion;
         // Absent before initialization or while this reusable execution scratch is inactive.

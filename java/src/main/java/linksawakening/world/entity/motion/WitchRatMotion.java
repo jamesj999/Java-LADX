@@ -50,8 +50,7 @@ public final class WitchRatMotion {
             int frameCounter,
             int transitionCountdown,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction) {
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         return witchRatFrameStep.run(
                 entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
@@ -88,10 +87,7 @@ public final class WitchRatMotion {
         initialized[slot] = false;
     }
 
-    PositionAndCollision moveWithBackground(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int slot) {
+    PositionAndCollision moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
@@ -190,7 +186,6 @@ public final class WitchRatMotion {
         private int frameCounter;
         private int transitionCountdown;
         private java.util.function.IntSupplier randomByteSupplier;
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int countdown;
@@ -314,9 +309,7 @@ public final class WitchRatMotion {
                 int frameCounter,
                 int transitionCountdown,
                 java.util.function.IntSupplier randomByteSupplier,
-                /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
-                                .world.entity.RoomEntityBackgroundInteraction
-                        backgroundInteraction) {
+                linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
             if (inUse) {
                 return new WitchRatFrameStep(owner)
                         .run(entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);

@@ -201,7 +201,6 @@ public final class MaskedMimicMotion {
             int romLinkDirection,
             int pressedButtonsMask,
             int collisionType,
-            // Optional room geometry/history; null preserves the path without that room input.
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int currentFrame) {

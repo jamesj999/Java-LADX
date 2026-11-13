@@ -36,8 +36,7 @@ public final class ThreeOfAKindMotion {
             int transitionCountdown,
             int ignoreHitsCountdown,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    collision) {
+            RoomEntityBackgroundCollision collision) {
         collision = RoomEntityBackgroundCollision.orOpen(collision);
         int slot = entity.slot();
         int x = move(entity, true, collision);
@@ -157,10 +156,7 @@ public final class ThreeOfAKindMotion {
         accumulatorY[slot] = 0;
     }
 
-    private int move(
-            RoomEntity entity,
-            boolean horizontal, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision collision) {
+    private int move(RoomEntity entity, boolean horizontal, RoomEntityBackgroundCollision collision) {
         int slot = entity.slot();
         int speed = horizontal ? speedX[slot] : speedY[slot];
         int[] accumulator = horizontal ? accumulatorX : accumulatorY;

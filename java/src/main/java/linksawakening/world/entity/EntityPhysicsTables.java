@@ -3,7 +3,6 @@ package linksawakening.world.entity;
 /** Owned PhysicsTables storage; preserves ROM slot indexing. */
 final class EntityPhysicsTables {
     private RoomEntityGroundInteraction groundInteraction = RoomEntityGroundInteraction.NONE;
-    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityBackgroundInteraction backgroundInteraction = RoomEntityBackgroundInteraction.NONE;
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -25,18 +24,14 @@ final class EntityPhysicsTables {
     private final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean groundInteractionSideScrolling;
-    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityObjectQuery objectQuery = RoomEntityObjectQuery.NONE;
-    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityObjectQuery objectIntersectionQuery = RoomEntityObjectQuery.NONE;
 
     RoomEntityGroundInteraction readGroundInteraction() {
         return groundInteraction;
     }
 
-    RoomEntityGroundInteraction writeGroundInteraction(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityGroundInteraction
-                    value) {
+    RoomEntityGroundInteraction writeGroundInteraction(RoomEntityGroundInteraction value) {
         return groundInteraction = java.util.Objects.requireNonNullElse(value, RoomEntityGroundInteraction.NONE);
     }
 
@@ -48,9 +43,7 @@ final class EntityPhysicsTables {
         return backgroundInteraction;
     }
 
-    RoomEntityBackgroundInteraction writeBackgroundInteraction(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    value) {
+    RoomEntityBackgroundInteraction writeBackgroundInteraction(RoomEntityBackgroundInteraction value) {
         return backgroundInteraction = RoomEntityBackgroundInteraction.orNone(value);
     }
 
@@ -250,9 +243,7 @@ final class EntityPhysicsTables {
         return objectQuery;
     }
 
-    RoomEntityObjectQuery writeObjectQuery(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
-                    value) {
+    RoomEntityObjectQuery writeObjectQuery(RoomEntityObjectQuery value) {
         return objectQuery = RoomEntityObjectQuery.orNone(value);
     }
 
@@ -260,9 +251,7 @@ final class EntityPhysicsTables {
         return objectIntersectionQuery == RoomEntityObjectQuery.NONE ? objectQuery : objectIntersectionQuery;
     }
 
-    RoomEntityObjectQuery writeObjectIntersectionQuery(
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
-                    value) {
+    RoomEntityObjectQuery writeObjectIntersectionQuery(RoomEntityObjectQuery value) {
         return objectIntersectionQuery = RoomEntityObjectQuery.orNone(value);
     }
 }

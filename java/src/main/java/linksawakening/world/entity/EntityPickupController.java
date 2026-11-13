@@ -59,7 +59,6 @@ public final class EntityPickupController {
     final EntitySlotProperties slotProperties;
     final EntityStoryState story;
     final RoomEntity[] slots;
-    // Optional ROM data, absent in ROM-free runtimes.
     final EntityChestContents chestContentsTable;
 
     EntityPickupController(
@@ -77,8 +76,7 @@ public final class EntityPickupController {
             EntitySlotProperties slotProperties,
             EntityStoryState story,
             RoomEntity[] slots,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntityChestContents
-                    chestContentsTable) {
+            EntityChestContents chestContentsTable) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");

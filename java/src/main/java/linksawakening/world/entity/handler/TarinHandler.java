@@ -61,7 +61,6 @@ final class TarinHandler {
             return true;
         }
 
-        // Optional room geometry/history; null preserves the path without that room input.
         private linksawakening.world.entity.RoomEntityBackgroundInteraction tarinBackgroundInteraction;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.motion.TarinRaccoonMotion.Update tarinUpdate;

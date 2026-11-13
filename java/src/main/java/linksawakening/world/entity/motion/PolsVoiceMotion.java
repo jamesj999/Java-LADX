@@ -40,8 +40,7 @@ public final class PolsVoiceMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+            RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         if ((entity.type() & 0xFF) != ENTITY_TYPE) {
@@ -127,11 +126,7 @@ public final class PolsVoiceMotion {
         speedY[slot] = 0;
     }
 
-    private Position move(
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);

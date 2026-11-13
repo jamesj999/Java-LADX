@@ -31,7 +31,7 @@ public final class ZoraMotion {
             int state,
             int transitionCountdown,
             int physicsFlags,
-            ProjectileSpawn projectileSpawn,
+            /* Optional emitted projectile; absent when this visit does not fire. */ ProjectileSpawn projectileSpawn,
             boolean splash) {}
 
     public void initialize(int slot) {
@@ -47,8 +47,7 @@ public final class ZoraMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectQuery
-                    objectQuery) {
+            RoomEntityObjectQuery objectQuery) {
         objectQuery = RoomEntityObjectQuery.orNone(objectQuery);
         checkType(entity);
         Objects.requireNonNull(randomByteSupplier, "Zora random-byte supplier");

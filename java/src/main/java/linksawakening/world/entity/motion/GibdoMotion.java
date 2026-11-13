@@ -33,10 +33,7 @@ public final class GibdoMotion {
     }
 
     public RoomEntity advance(
-            RoomEntity entity,
-            IntSupplier
-                    randomByteSupplier, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity, IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {

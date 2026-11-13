@@ -36,7 +36,6 @@ public final class EntityBossRewards {
     }
 
     final EntityBossState state;
-    // Optional ROM data, absent in ROM-free runtimes.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityCombatTables combatTables;
@@ -54,9 +53,7 @@ public final class EntityBossRewards {
 
     EntityBossRewards(
             EntityBossState state,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.world
-                            .entity.EntitySpriteViews
-                    spriteHandlers,
+            linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityCombatTables combatTables,
             EntityEventChannels events,

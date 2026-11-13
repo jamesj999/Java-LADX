@@ -115,7 +115,11 @@ public final class LaserMotion {
     }
 
     public SensorUpdate advanceSensor(
-            RoomEntity sensor, RoomEntity parent, int linkX, int linkY, int invincibilityCounter) {
+            RoomEntity sensor, /* Optional parent; absence retires the sensor after its initialization step. */
+            RoomEntity parent,
+            int linkX,
+            int linkY,
+            int invincibilityCounter) {
         int slot = sensor.slot();
         if (!isSensor(slot)) {
             initializeSensor(slot, parent == null ? 0 : parent.slot(), 0);
@@ -149,9 +153,7 @@ public final class LaserMotion {
         return new SensorUpdate(withPosition(sensor, x, y), false, false);
     }
 
-    public BeamUpdate advanceBeam(
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public BeamUpdate advanceBeam(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!isBeam(slot)) {
