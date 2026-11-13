@@ -44,7 +44,7 @@ final class RoomLoadCoordinator {
         musicSelectionIsScroll = scrolling;
         dependencies.location().roomLoadSerial++;
         dependencies.location().indoorMapPosition = -1;
-        dependencies.roomTransientState().clearTransientRoomState();
+        dependencies.resetRoomTransients().run();
         var puzzles = new RoomPuzzleState.PerRoom();
         var overrides = new RoomTerrainState.Overrides();
         dependencies.indoorTorchPaletteEffect().clear();
@@ -85,7 +85,7 @@ final class RoomLoadCoordinator {
         dependencies.location().roomLoadSerial++;
         dependencies.location().indoorMapPosition =
                 dependencies.roomSessionViews().findIndoorMapPosition(mapId, roomId);
-        dependencies.roomTransientState().clearTransientRoomState();
+        dependencies.resetRoomTransients().run();
         var puzzles = new RoomPuzzleState.PerRoom();
         var overrides = new RoomTerrainState.Overrides();
         dependencies.entityFrame().recentRoomEntityClears.visit(roomId);
@@ -237,7 +237,7 @@ final class RoomLoadCoordinator {
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
             RoomStoryState roomStoryState,
-            RoomTransientState roomTransientState,
+            Runnable resetRoomTransients,
             java.util.function.Consumer<RoomRuntime> installRoom,
             RoomRuntime.Services roomRuntimeServices) {
         Dependencies {
@@ -266,7 +266,7 @@ final class RoomLoadCoordinator {
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
             java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
-            java.util.Objects.requireNonNull(roomTransientState, "roomTransientState");
+            java.util.Objects.requireNonNull(resetRoomTransients, "resetRoomTransients");
             java.util.Objects.requireNonNull(installRoom, "installRoom");
             java.util.Objects.requireNonNull(roomLoaded, "roomLoaded");
             java.util.Objects.requireNonNull(roomRuntimeServices, "roomRuntimeServices");

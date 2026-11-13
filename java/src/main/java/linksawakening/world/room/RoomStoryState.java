@@ -90,7 +90,6 @@ final class RoomStoryState {
         dependencies.terrain().switchableObjectAnimationStage = 0;
         dependencies.puzzles().switchButtonPressed = 0;
         dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-        dependencies.roomTransientState().clearTransientRoomState();
     }
 
     void restoreRoomStatuses(
@@ -233,7 +232,6 @@ final class RoomStoryState {
             linksawakening.world.entity.EnemyDropResolver dropResolver,
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            RoomTransientState roomTransientState,
             java.util.function.Consumer<RoomRuntime> installRoom,
             RoomRuntime.Services roomRuntimeServices) {
         Dependencies {
@@ -255,7 +253,6 @@ final class RoomStoryState {
             java.util.Objects.requireNonNull(dropResolver, "dropResolver");
             java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomTransientState, "roomTransientState");
         }
     }
 

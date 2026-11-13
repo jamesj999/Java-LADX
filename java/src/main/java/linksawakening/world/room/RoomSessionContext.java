@@ -16,14 +16,16 @@ final class RoomSessionContext {
     static RoomSessionComponents create(
             RoomSessionConfig config,
             java.util.function.Consumer<RoomRuntime> installRoom,
-            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
-        return new RoomSessionContext(config, installRoom, roomLoaded).values.build();
+            java.util.function.UnaryOperator<RoomRuntime> roomLoaded,
+            Runnable resetRoomTransients) {
+        return new RoomSessionContext(config, installRoom, roomLoaded, resetRoomTransients).values.build();
     }
 
     private RoomSessionContext(
             RoomSessionConfig config,
             java.util.function.Consumer<RoomRuntime> installRoom,
-            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
+            java.util.function.UnaryOperator<RoomRuntime> roomLoaded,
+            Runnable resetRoomTransients) {
 
         var romData = config.romData();
         var gpu = config.gpu();
@@ -144,7 +146,6 @@ final class RoomSessionContext {
                 values.enemyDropResolver,
                 values.roomSessionViews,
                 values.roomState,
-                values.roomTransientState,
                 installRoom,
                 values.roomRuntimeServices));
         values.roomDoorInteractions = new RoomDoorInteractions(new RoomDoorInteractions.Dependencies(
@@ -188,7 +189,7 @@ final class RoomSessionContext {
                 values.roomSessionViews,
                 values.roomState,
                 values.roomStoryState,
-                values.roomTransientState,
+                resetRoomTransients,
                 installRoom,
                 values.roomRuntimeServices));
         values.roomEntityRewards = new RoomEntityRewards(new RoomEntityRewards.Dependencies(

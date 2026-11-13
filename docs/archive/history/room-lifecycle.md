@@ -233,7 +233,8 @@ does not exist before load, so counter-reset defaults are observably zero/false.
 | entityState.entityHealth | NullPointerException |
 | entityState.gelClingingToLink / deferContactRecoil / gotItemPresentationActive / powerUpPickupSequenceActive / swordPickupSequenceActive | false |
 | entityState.setEntityDialogActive / setEntityTalkState / setEntityActionButtonsHeld / setEntityPowerBraceletButtonHeld / setEntityBombButtonHeld | Validate/cache in the original order; skip runtime writes |
-| entityState.setSecretSeashellPegasusCollisionState / setEntityAttackStepAnimationCountdown | Validate/cache as before; skip runtime writes |
+| entityState.setSecretSeashellPegasusCollisionState | Validate/cache as before; skip runtime writes |
+| entityState.setEntityAttackStepAnimationCountdown | Validate the unsigned countdown; skip runtime-only write (no cached countdown) |
 | entityState.setToadstoolPlayerState / setEntityScreenShakeCountdown | Skip runtime-only writes, retaining the original no-room validation policy |
 | entityState.resetGuardianAcornCounterOnHurt | Reset retained drop counters; skip runtime configuration |
 | entityState.advanceBoomerangSoundClock / tickGameplayVBlank | Advance retained source clocks/switch animation as before |
@@ -302,3 +303,38 @@ construction boundary; optional presentation settings retain their disabled
 forms. The now-empty PresentationOutputs dependency record and its wiring slot
 were removed. Null-comparison metrics remain unchanged. The gate remains 2969
 tests, zero failures/errors, one existing skip, and 986 identical scenes.
+
+## Allocation verification
+
+Room generations, their prepared contents, callback bindings and collision scratch
+are created only on room load or follower-runtime replacement. Existing guard
+budgets were not relaxed. EA-off was selected only with an untracked temporary
+Gradle init script; no JVM/build option was committed.
+
+| Guard | EA on, B/frame or tick | EA off, B/frame or tick | Existing budget |
+| --- | --- | --- | --- |
+| Whole frame: opening-dialog idle | 0 | 0 | 0 |
+| Whole frame: walking with entities | 532.3 | 581.1 | 747 |
+| Whole frame: inventory open | 0 | 0 | 0 |
+| Simulation: idle | 0 | 0 | 0 |
+| Simulation: active | 433 | 433 | 542 |
+| Room render/inventory live views | 0 | 0 | less than 256 |
+| Empty room/entity outbox drains and ordered merges | 0 | 0 | 0 |
+| Entity mixed tick (unchanged off-limits implementation) | about 835 | about 835 | unchanged entity guard |
+
+Owned room/inventory history snapshots still allocate about 10.5 KB per owned
+capture by design; the per-frame live path does not. All measured paths and the
+EA-off whole-frame assertions pass with their existing budgets.
+
+## Error-path reset ordering
+
+Final review also retained ResetRoomVariables timing when acquisition fails.
+A constructor-injected reset action calls the facade at the original load phase;
+it passes the current contents to the ordered loaded reset, or clears session
+state alone before the first load. Loaded resets preserve the source's exact
+interleaving of puzzle, VFX/drop, override, queue and item-register clears.
+The failed-acquisition regression checks the retained generation, cleared old
+transients and advanced load serial after an invalid room-id error. The nested
+load regression uses a distinct callback-time map mutation to verify collision
+continuation against the replacement. Gate: 2970 tests, zero failures/errors,
+one existing skip, 986 identical scenes. Null metrics remain unchanged.

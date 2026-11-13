@@ -46,17 +46,41 @@ final class RoomTransientState {
         dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack = -1;
     }
 
-    void clearRoomContents(RoomContents contents) {
+    void clearTransientRoomState(RoomContents contents) {
         contents.puzzles.pendingShutterCloseMask =
                 contents.puzzles.closedShutterMask = contents.puzzles.shutterCloseTicks = 0;
         contents.puzzles.shutterCloseDirection = contents.puzzles.shutterCloseLocation = -1;
         contents.puzzles.shutterCloseStarted = false;
         contents.puzzles.shutterTileOverrides.clear();
+        dependencies.transientVfxSystem().clear();
+        dependencies.droppableRupeeSystem().clear();
         contents.overrides.hookshotBridgeTileOverrides.clear();
         contents.overrides.bombedWallTileOverrides.clear();
         contents.overrides.bombedBlockTileOverrides.clear();
         contents.overrides.bombedCaveDoorTileOverrides.clear();
         contents.overrides.retainedTorchTiles.clear();
+        dependencies.entityRuntimeState().outbox.pendingBombExplosionEvents.clear();
+        dependencies.location().pendingDungeonWarp = null;
+        dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingChestRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingKeyRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingSlimeKeyRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingHeartContainerRewards.clear();
+        dependencies
+                .entityRuntimeState()
+                .outbox
+                .pendingMadamMeowMeowFullHealRequests
+                .clear();
+        dependencies.entityRuntimeState().outbox.pendingRichardProgressEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingSwordPickupRewards.clear();
+        dependencies.entityRuntimeState().outbox.pendingToadstoolRewards.clear();
+        dependencies.entityRuntimeState().outbox.pendingWitchExchangeEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingWitchRewardEvents.clear();
+        dependencies.entityRuntimeState().outbox.pendingRoomDialogRequests.clear();
+        dependencies.items().pendingManboTransition = false;
+        dependencies.items().pendingInstrumentTransition = false;
+        dependencies.items().pendingShovelDrop = null;
+        dependencies.items().shovelUseState = 0;
         contents.puzzles.roomTriggerCount = 0;
         contents.puzzles.activeRoomEvent = 0;
         contents.puzzles.roomEventEffectExecuted = false;
@@ -71,6 +95,8 @@ final class RoomTransientState {
         contents.puzzles.indoorKeyDoorDirection = -1;
         contents.puzzles.indoorKeyDoorLocation = -1;
         contents.puzzles.indoorBossDoorOpening = false;
+        // ResetRoomVariables ($20:4CA3-4CE3) does not clear wC1C9 or
+        // hLinkRoomPosition/hLinkFinalRoomPosition; transitions retain them.
         contents.puzzles.pushBlockContactTicks = 0;
         contents.puzzles.indoorPotPullFrames = 0;
         contents.puzzles.pushedBlockMotionFrames = 0;
@@ -79,9 +105,11 @@ final class RoomTransientState {
         contents.puzzles.pushedBlockDirection = -1;
         contents.puzzles.pushedBlockEntitySlot = -1;
         contents.puzzles.pushedBlocksTriggerEffectPending = false;
+        dependencies.entityFrame().worldLinkMotionBlockPending = false;
         contents.puzzles.tailCaveKeyholeCountdown = 0;
         contents.puzzles.tailCaveFinalMotionBlockPending = false;
         contents.puzzles.nextWorldMusicTrackCountdown = 0;
+        dependencies.entityRuntimeState().outbox.pendingRoomMusicTrack = -1;
     }
 
     record Dependencies(

@@ -91,7 +91,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         roomLoadListener = config.presentation().roomLoadListener() == null
                 ? room -> {}
                 : config.presentation().roomLoadListener();
-        components = RoomSessionContext.create(config, this::installRoom, this::roomLoaded);
+        components = RoomSessionContext.create(config, this::installRoom, this::roomLoaded, this::resetRoomTransients);
 
         dungeonView = new RoomDungeonLiveView(components.roomState(), -1);
         roles = RoomRoleViews.create(components, this);
@@ -1189,10 +1189,16 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
 
     void initializeNewGameWorldState() {
         components.roomStoryState().initializeNewGameWorldState();
-        if (hasRoom()) components.roomTransientState().clearRoomContents(loadedRoom.contents);
+        resetRoomTransients();
     }
 
     ActiveRoom requireActiveRoom() {
         return java.util.Objects.requireNonNull(loadedRoom).room;
+    }
+
+    /** ResetRoomVariables runs even when subsequent room acquisition fails. */
+    void resetRoomTransients() {
+        if (hasRoom()) components.roomTransientState().clearTransientRoomState(loadedRoom.contents);
+        else components.roomTransientState().clearTransientRoomState();
     }
 }

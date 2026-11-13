@@ -47,15 +47,16 @@ class RoomLifecycleLoadTest {
             org.junit.jupiter.api.Assertions.assertSame(room, holder[0].rooms().activeRoom());
             observed.add(room.roomId());
             if (room.roomId() == 0xA2) holder[0].rooms().loadOverworld(0xA3);
+            if (room.roomId() == 0xA3) room.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE] = 0xE7;
         });
         var session = holder[0];
         session.rooms().loadInitialOverworld(0xA2);
         assertEquals(java.util.List.of(0xA2, 0xA3), observed);
         assertEquals(0xA3, session.rooms().currentRoomId());
         var active = session.rooms().activeRoom();
-        assertEquals(
-                active.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE],
-                session.components.overworldCollision().objectIdAtPoint(0, 0));
+        // A distinct callback-time mutation proves the outer continuation uses the replacement map.
+        assertEquals(0xE7, active.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE]);
+        assertEquals(0xE7, session.components.overworldCollision().objectIdAtPoint(0, 0));
         assertEquals(
                 active.roomId(),
                 session.loadedRoomOrNull()
@@ -64,5 +65,21 @@ class RoomLifecycleLoadTest {
                         .view()
                         .spriteSelection()
                         .roomId());
+    }
+
+    @Test
+    void failedRoomAcquisitionStillClearsThePreviousTransientStateBeforeTheError() {
+        var session = newSession();
+        session.rooms().loadInitialOverworld(0xA2);
+        var previous = session.loadedRoomOrNull();
+        previous.contents.puzzles.pushedBlockMotionFrames = 7;
+        previous.contents.overrides.bombedBlockTileOverrides.add(1);
+        long serial = session.components.roomSessionViews().roomLoadSerial();
+        org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class, () -> session.rooms().loadOverworld(0x100));
+        org.junit.jupiter.api.Assertions.assertSame(previous, session.loadedRoomOrNull());
+        assertEquals(0, previous.contents.puzzles.pushedBlockMotionFrames);
+        org.junit.jupiter.api.Assertions.assertTrue(previous.contents.overrides.bombedBlockTileOverrides.isEmpty());
+        assertEquals(serial + 1, session.components.roomSessionViews().roomLoadSerial());
     }
 }
