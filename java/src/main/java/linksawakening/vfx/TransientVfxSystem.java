@@ -2,7 +2,6 @@ package linksawakening.vfx;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
@@ -36,14 +35,20 @@ public final class TransientVfxSystem {
 
     private static final class MutableSlot implements SlotView {
         private final int slotIndex;
-        private TransientVfxType type;
+        // An inactive slot has no effect. Its retained values are ignored until activate().
+        private boolean active;
+        private TransientVfxType type = TransientVfxType.POOF;
         private int countdown;
         private int worldX;
         private int worldY;
         private int variant;
 
-        private MutableSlot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY, int variant) {
+        private MutableSlot(int slotIndex) {
             this.slotIndex = slotIndex;
+        }
+
+        private void activate(TransientVfxType type, int countdown, int worldX, int worldY, int variant) {
+            active = true;
             this.type = type;
             this.countdown = countdown;
             this.worldX = worldX;
@@ -93,7 +98,7 @@ public final class TransientVfxSystem {
         public SlotView get(int index) {
             if (index >= 0) {
                 for (MutableSlot slot : slots) {
-                    if (slot != null && index-- == 0) return slot;
+                    if (slot.active && index-- == 0) return slot;
                 }
             }
             throw new IndexOutOfBoundsException();
@@ -101,7 +106,7 @@ public final class TransientVfxSystem {
 
         public int size() {
             int size = 0;
-            for (MutableSlot slot : slots) if (slot != null) size++;
+            for (MutableSlot slot : slots) if (slot.active) size++;
             return size;
         }
     }
@@ -111,6 +116,7 @@ public final class TransientVfxSystem {
             throw new IllegalArgumentException("capacity must be >= 0");
         }
         this.slots = new MutableSlot[capacity];
+        for (int i = 0; i < capacity; i++) slots[i] = new MutableSlot(i);
         this.liveSlots = Collections.unmodifiableList(new LiveSlots(slots));
     }
 
@@ -125,8 +131,8 @@ public final class TransientVfxSystem {
         }
 
         for (int i = 0; i < slots.length; i++) {
-            if (slots[i] == null) {
-                slots[i] = new MutableSlot(i, type, type.defaultCountdown(), worldX, worldY, variant);
+            if (!slots[i].active) {
+                slots[i].activate(type, type.defaultCountdown(), worldX, worldY, variant);
                 return i;
             }
         }
@@ -136,11 +142,11 @@ public final class TransientVfxSystem {
     public void tick() {
         for (int i = 0; i < slots.length; i++) {
             MutableSlot slot = slots[i];
-            if (slot == null) {
+            if (!slot.active) {
                 continue;
             }
             if (slot.countdown <= 1) {
-                slots[i] = null;
+                slot.active = false;
             } else {
                 slot.countdown--;
             }
@@ -148,13 +154,13 @@ public final class TransientVfxSystem {
     }
 
     public void clear() {
-        Arrays.fill(slots, null);
+        for (MutableSlot slot : slots) slot.active = false;
     }
 
     public int activeCount() {
         int count = 0;
         for (MutableSlot slot : slots) {
-            if (slot != null) {
+            if (slot.active) {
                 count++;
             }
         }
@@ -173,7 +179,7 @@ public final class TransientVfxSystem {
     public List<Slot> activeSlots() {
         List<Slot> active = new ArrayList<>(slots.length);
         for (MutableSlot slot : slots) {
-            if (slot != null) active.add(slot.snapshot());
+            if (slot.active) active.add(slot.snapshot());
         }
         return List.copyOf(active);
     }

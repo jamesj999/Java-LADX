@@ -383,3 +383,13 @@ Null comparisons: **200 → 183**. All nine originally classified lazy compariso
 `IntroPlayback` owns explicit unloaded/running phases. The unloaded phase supplies an empty presentation and no work; a running phase owns its sequence and last snapshot. `CutsceneManager.frameSnapshot()` preserves its nullable external contract at one boundary. Initial intro-frame publication is a construction-time operation rather than a first-call null cache. Two snapshot checks after `IntroSequence` construction were redundant and removed. The original ledger's `IntroFramePublisher.snapshot` check was another initialization check rather than a domain value; it is also gone.
 
 Validation: 2,965 tests, zero failures; no assertions removed. New checks cover unloaded playback without a ROM and read-before-bind rejection.
+
+## Step 4: explicit domain absence
+
+Null comparisons: **183 → 131**. No-room collision uses an identity sentinel and `hasRoom()`; caller-supplied empty buffers remain distinct. VFX slots are preallocated and carry an active bit; clearing/reusing a slot preserves immutable historical snapshots. Intro VBlank maps, wave uploads and palettes have named unlatched sentinels; pending sprites and scene-transition snapshots have presence flags. Track/effect selection has explicit presence state. Tarin's absent presentation palette has a named empty sentinel. Single-column entity sprites expose `hasSecond()`.
+
+Optional snapshot scroll/upload values remain nullable at the existing render boundary, with `hasLineScrollX/hasLineScrollY/hasAnimatedTiles` predicates and documented semantics. A missing scroll map remains different from a supplied empty map. Line sampling can now read immutable snapshot values without cloning an array. Optional text/palette inputs normalize to their existing empty/default values at their boundaries.
+
+Intentional optional values retained: Swing selections, resource/property/map lookup results, exception/cleanup diagnostics, save destinations/backups, alternate sprite definitions, palette rows in legacy frame snapshots, and externally consumed event results. These are domain data rather than services. Save persistence and diagnostic failure state have named predicates; field/record documentation identifies absence. Standard-library query results and argument validation remain checked locally, preserving exception and fallback behavior.
+
+Validation: 2,967 tests, zero failures. Added absence-versus-empty scroll checks and room bind/unbind checks; existing scene, sprite, VFX retention and save tests unchanged.

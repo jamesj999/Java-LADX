@@ -119,7 +119,7 @@ final class EntityEffectSprites {
                     false));
             sprites.add(new EntitySpriteDefinition.DynamicSprite(
                     0, 0, arrowVariant.first(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
-            if (arrowVariant.second() != null) {
+            if (arrowVariant.hasSecond()) {
                 sprites.add(new EntitySpriteDefinition.DynamicSprite(
                         0,
                         0x08,
@@ -162,7 +162,7 @@ final class EntityEffectSprites {
     }
 
     List<EntitySpriteDefinition.DynamicSprite> dynamicPair(EntitySpriteDefinition.Variant pair) {
-        if (pair.second() == null) {
+        if (!pair.hasSecond()) {
             throw new IllegalArgumentException("Liftable-rock pair must contain two OAM entries");
         }
         return List.of(

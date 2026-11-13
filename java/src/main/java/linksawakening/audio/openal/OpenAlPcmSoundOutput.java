@@ -17,6 +17,7 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     private long backpressureCount;
     private long recoveryCount;
     private boolean needsRecovery;
+    // Absent until an actual device/playback failure; retained for diagnostics, never a service.
     private Throwable lastFailure;
     private final DialogPcmBufferQueue allocatedBuffers = new DialogPcmBufferQueue(MAX_BUFFERS);
 
@@ -59,6 +60,10 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
         return recoveryCount;
     }
 
+    public boolean hasFailure() {
+        return lastFailure != null;
+    }
+
     public Throwable lastFailure() {
         return lastFailure;
     }
@@ -81,7 +86,7 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
                 querySafely(() -> device.processed()),
                 bufferQueue.queuedFrames(),
                 Thread.currentThread().isInterrupted(),
-                lastFailure == null ? "none" : conciseMessage(lastFailure));
+                !hasFailure() ? "none" : conciseMessage(lastFailure));
     }
 
     private int querySafely(IntSupplier query) {
@@ -234,6 +239,8 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
 
     private static String conciseMessage(Throwable failure) {
         String message = failure.getMessage();
-        return message == null || message.isBlank() ? failure.getClass().getSimpleName() : message;
+        return Objects.requireNonNullElse(message, "").isBlank()
+                ? failure.getClass().getSimpleName()
+                : message;
     }
 }

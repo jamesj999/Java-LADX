@@ -1,5 +1,6 @@
 package linksawakening.dialog;
 
+import java.util.Objects;
 import linksawakening.gpu.Framebuffer;
 
 /** Java pixel adapter for the tile rows published by DialogDrawNextCharacterHandler. */
@@ -93,7 +94,7 @@ public final class DialogRenderer {
     public static void submitWindow(
             linksawakening.render.HardwareFrame frame, DialogController dialog, int[] suppliedPalette) {
         if (!dialog.isActive()) return;
-        int[] palette = suppliedPalette == null ? DEFAULT_PALETTE : suppliedPalette;
+        int[] palette = Objects.requireNonNullElse(suppliedPalette, DEFAULT_PALETTE);
         int boxY = dialog.boxY();
         for (int row = 0; row < BOX_HEIGHT / CELL_SIZE; row++) {
             if (!dialog.isBoxRowVisible(row)) continue;

@@ -26,7 +26,14 @@ public final class OverworldCollision {
 
     private final PhysicsTables physicsTables;
     private final CollisionTables collisionTables;
-    private int[] roomObjectsArea;
+    // Identity sentinel: no room is bound. A caller-supplied empty buffer remains a distinct room.
+    private static final int[] NO_ROOM = new int[0];
+    private int[] roomObjectsArea = NO_ROOM;
+
+    public boolean hasRoom() {
+        return roomObjectsArea != NO_ROOM;
+    }
+
     private int physicsTableIndex = RomTables.PHYSICS_TABLE_OVERWORLD;
     private int switchBlocksState;
     private boolean linkStandingOnSwitchBlock;
@@ -58,7 +65,7 @@ public final class OverworldCollision {
     }
 
     public void setRoom(int[] roomObjectsArea) {
-        this.roomObjectsArea = roomObjectsArea;
+        this.roomObjectsArea = Objects.requireNonNullElse(roomObjectsArea, NO_ROOM);
         linkStandingOnSwitchBlock = false;
     }
 
@@ -117,7 +124,7 @@ public final class OverworldCollision {
      * ground physics handles their consequences ($02:7461).
      */
     public boolean pointBlockedForLink(int pixelX, int pixelY, boolean hasFlippers) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return false;
         }
         int cellX = cellCoordinate(pixelX);
@@ -126,7 +133,7 @@ public final class OverworldCollision {
     }
 
     public boolean pointNormalPit(int pixelX, int pixelY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return false;
         }
         int cellX = cellCoordinate(pixelX);
@@ -139,7 +146,7 @@ public final class OverworldCollision {
      * collision point. The padded room-object border contains object $FF.
      */
     public int objectPhysicsFlagAtPoint(int pixelX, int pixelY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return PhysicsFlags.NONE;
         }
         int cellX = cellCoordinate(pixelX);
@@ -153,7 +160,7 @@ public final class OverworldCollision {
 
     /** Returns the raw room object sampled at an entity collision point. */
     public int objectIdAtPoint(int pixelX, int pixelY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return 0xFF;
         }
         int cellX = cellCoordinate(pixelX);
@@ -239,7 +246,7 @@ public final class OverworldCollision {
      * for status, splash, conveyor, and (later) pit handling.
      */
     public GroundInteractionSample groundInteractionSample(int entityX, int entityY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return EMPTY_SAMPLE;
         }
         int sampleX = (entityX - 1) & 0xFF;
@@ -261,7 +268,7 @@ public final class OverworldCollision {
 
     /** Complete padded-buffer sample used by ApplySwordIntersectionWithObjects. */
     public GroundInteractionSample entityInteractionSample(int entityX, int entityY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return EMPTY_SAMPLE;
         }
         int x = entityX & 0xFF;
@@ -335,11 +342,7 @@ public final class OverworldCollision {
     }
 
     private int objectIdAtCell(int cellX, int cellY) {
-        if (roomObjectsArea == null
-                || cellX < 0
-                || cellX >= OBJECTS_PER_ROW
-                || cellY < 0
-                || cellY >= OBJECTS_PER_COLUMN) {
+        if (!hasRoom() || cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             return 0xFF;
         }
         int areaIndex = ROOM_OBJECTS_BASE + cellY * ROOM_OBJECT_ROW_STRIDE + cellX;

@@ -31,7 +31,9 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     private boolean closed;
     private boolean paused;
     private float volume = 1.0f;
+    // The selected music identity is absent while stopped or auditioning an SFX.
     private MusicTrack currentTrack;
+    private boolean trackSelected;
 
     public OpenAlMusicPlayer(MusicDriver driver, GameBoyApu apu) {
         this(driver, apu, SoundEffectPlayback.none());
@@ -75,6 +77,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
             stopPlayback(true);
             apu.reset();
             currentTrack = track;
+            trackSelected = true;
             mixer.setTrack(track);
             driver.start(track);
             driver.tick60Hz();
@@ -106,7 +109,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         if (stream.queuedBuffers > 0) {
             stream.play();
         }
-        stream.statusMessage = currentTrack == null ? "OpenAL ready" : "Playing " + currentTrack.name();
+        stream.statusMessage = !trackSelected ? "OpenAL ready" : "Playing " + currentTrack.name();
     }
 
     @Override
@@ -116,7 +119,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         }
         stream.makeContextCurrent();
         stopPlayback(true);
-        currentTrack = null;
+        trackSelected = false;
         mixer.setTrack(null);
         stream.statusMessage = "Stopped";
     }
@@ -134,7 +137,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         try {
             stream.makeContextCurrent();
             stopPlayback(true);
-            currentTrack = null;
+            trackSelected = false;
             mixer.setTrack(null);
             short[] pcm = SoundEffectPcmRenderer.renderOneShot(apu, soundEffectPlayer, effect);
             queueOneShotPcm(pcm);
@@ -186,7 +189,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         } finally {
             cleanupFailure = combine(cleanupFailure, stream.releaseNativeResources());
             stream.available = false;
-            if (stream.statusMessage == null || !stream.statusMessage.startsWith("OpenAL unavailable:")) {
+            if (!stream.statusMessage.startsWith("OpenAL unavailable:")) {
                 stream.statusMessage = cleanupFailure == null
                         ? "Closed"
                         : "Closed after cleanup warning: " + conciseMessage(cleanupFailure);

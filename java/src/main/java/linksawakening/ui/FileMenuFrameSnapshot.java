@@ -5,6 +5,8 @@ import linksawakening.cutscene.IntroSprite;
 
 /**
  * Immutable render state for one file-selection or New Game frame.
+ * Palette sets and individual rows may be absent in a presentation that inherits renderer colors;
+ * defensive copies preserve that optional value for the external render package.
  */
 public record FileMenuFrameSnapshot(
         String sceneId,

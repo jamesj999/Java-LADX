@@ -159,7 +159,7 @@ public final class IntroSequence {
         frames.visibleObj(frames.dynamicObjPalettes());
         frames.visibleWave(water.waveTiles().clone());
         frames.sprites(
-                frames.pendingSprites() == null || phase.stage() == Stage.TITLE_DX || phase.stage() == Stage.COMPLETE
+                !frames.hasPendingSprites() || phase.stage() == Stage.TITLE_DX || phase.stage() == Stage.COMPLETE
                         ? frames.renderSprites(shipX, shipY, seaFadeTimer, lightning, clockState.clock())
                         : frames.pendingSprites());
         frames.pendingSprites(frames.renderSprites(shipX, shipY, seaFadeTimer, lightning, clockState.clock()));
@@ -198,7 +198,7 @@ public final class IntroSequence {
         phase.stage(Stage.COMPLETE);
         phase.skipped(true);
         frames.visibleScrollY(0);
-        frames.visibleBg(frames.visibleObj(null));
+        frames.clearVisiblePalettes();
         water.verticalWaveOffset(0);
         phase.stageFrame(0);
         video.scrollX(0);
@@ -219,11 +219,7 @@ public final class IntroSequence {
     }
 
     public int scrollXForLine(int screenY) {
-        int[] lineScroll = frames.snapshot().lineScrollX();
-        if (lineScroll == null || lineScroll.length == 0) {
-            return scrollX();
-        }
-        return lineScroll[Math.max(0, Math.min(screenY, lineScroll.length - 1))];
+        return frames.snapshot().scrollXAt(screenY, scrollX());
     }
 
     public int[] lineScrollX(int height) {

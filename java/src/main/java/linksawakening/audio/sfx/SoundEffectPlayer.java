@@ -20,7 +20,9 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
     private final SoundEffectCatalog catalog;
     private final RomSoundEffectEngine engine;
 
+    // Last requested identity; only observable while effectSelected and the engine is playing.
     private SoundEffect currentEffect;
+    private boolean effectSelected;
 
     public SoundEffectPlayer(GameBoyApu apu) {
         this(apu, loadRomResource());
@@ -57,9 +59,10 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         }
 
         currentEffect = effect;
+        effectSelected = true;
         engine.start(effect);
         if (!engine.isPlaying()) {
-            currentEffect = null;
+            effectSelected = false;
         }
     }
 
@@ -69,12 +72,12 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         }
         engine.tick60Hz();
         if (!engine.isPlaying()) {
-            currentEffect = null;
+            effectSelected = false;
         }
     }
 
     public boolean isPlaying() {
-        return currentEffect != null && engine.isPlaying();
+        return effectSelected && engine.isPlaying();
     }
 
     public SoundEffect currentEffect() {
@@ -90,7 +93,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
     }
 
     public void stop() {
-        currentEffect = null;
+        effectSelected = false;
         engine.stop();
     }
 

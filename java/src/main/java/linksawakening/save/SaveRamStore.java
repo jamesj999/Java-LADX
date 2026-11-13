@@ -18,7 +18,9 @@ import linksawakening.state.PlayerState;
 /** Host persistence adapter for the source-shaped SRAM image. */
 public final class SaveRamStore {
 
+    // A missing destination denotes an explicitly in-memory save image (see inMemory()).
     private final Path path;
+    // No backup path until an existing corrupt image is moved aside during open().
     private Path corruptBackup;
     private final SaveRamImage image;
 
@@ -149,8 +151,13 @@ public final class SaveRamStore {
         image.writePlayerState(slot, playerState);
     }
 
+    /** Whether this image has a disk destination; in-memory saves never touch the filesystem. */
+    public boolean persistent() {
+        return path != null;
+    }
+
     public void flush() throws IOException {
-        if (path == null) {
+        if (!persistent()) {
             return;
         }
         Path absolutePath = path.toAbsolutePath();

@@ -19,6 +19,7 @@ final class LinkSignals {
     }
 
     boolean pitWarpPending;
+    // At most one queued splash value; consume returns null when the event slot is empty.
     WaterSplash pendingWaterSplash;
 
     boolean accessRecoveryBlocksInput() {

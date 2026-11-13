@@ -1,5 +1,7 @@
 package linksawakening.dialog;
 
+import java.util.Objects;
+
 /** ROM dialog name tokens, terminators and width-dependent text preparation, independent of frame timing. */
 final class DialogText {
 
@@ -32,7 +34,7 @@ final class DialogText {
     }
 
     public void setPlayerName(String playerName) {
-        this.playerName = playerName == null || playerName.isBlank() ? DEFAULT_PLAYER_NAME : playerName;
+        this.playerName = Objects.requireNonNullElse(playerName, "").isBlank() ? DEFAULT_PLAYER_NAME : playerName;
     }
 
     String wrap(String value) {

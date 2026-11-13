@@ -15,6 +15,8 @@ public final class EntitySpriteSelection {
     private final int[][] objectPalettes;
     private final Map<Integer, EntitySpriteDefinition> spriteOverrides;
     private final Map<Integer, EntitySpriteDefinition> spriteOverlays;
+    // Optional alternate display lists: null means the room provides no such effect.
+    // This is sprite data, not a decoder/render collaborator; external world callers retain it.
     private final EntitySpriteDefinition burningSpriteDefinition;
     private final EntitySpriteDefinition deathSpriteDefinition;
     private final EntitySpriteDefinition powerRecoilDeathSpriteDefinition;

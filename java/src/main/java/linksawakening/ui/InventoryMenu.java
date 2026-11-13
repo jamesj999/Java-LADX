@@ -277,7 +277,7 @@ public final class InventoryMenu {
                 gpu,
                 tilemap,
                 attrmap,
-                windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
+                windowY() == 128 ? Objects.requireNonNullElse(roomPalettes, inventoryPalettes) : inventoryPalettes,
                 tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (showInstruments && windowY() == 0) {
@@ -324,7 +324,10 @@ public final class InventoryMenu {
         HudOverlay.apply(tiles, attributes, playerState);
         InventorySubscreenOverlay.apply(tiles, attributes, playerState, cursorSlot, false);
         return new ClosedWindow(
-                tiles, attributes, roomPalettes == null ? tilemapLoader.palettes() : roomPalettes, displayedWindowY());
+                tiles,
+                attributes,
+                Objects.requireNonNullElse(roomPalettes, tilemapLoader.palettes()),
+                displayedWindowY());
     }
 
     public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
@@ -352,7 +355,7 @@ public final class InventoryMenu {
                 gpu,
                 tilemap,
                 attrmap,
-                windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
+                windowY() == 128 ? Objects.requireNonNullElse(roomPalettes, inventoryPalettes) : inventoryPalettes,
                 tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (showInstruments && windowY() == 0) {

@@ -27,6 +27,7 @@ import linksawakening.config.AppConfig;
 
 /** Configurable engine key bindings with the legacy numeric key namespace. */
 public final class InputConfig {
+    private static final int UNKNOWN_KEY = -1;
 
     private static final Map<String, Integer> KEY_NAME_TO_CODE = buildKeyTable();
 
@@ -127,8 +128,8 @@ public final class InputConfig {
     }
 
     private static int resolveKey(String name) {
-        Integer glfwKey = KEY_NAME_TO_CODE.get(name.toUpperCase());
-        if (glfwKey == null) {
+        int glfwKey = KEY_NAME_TO_CODE.getOrDefault(name.toUpperCase(), UNKNOWN_KEY);
+        if (glfwKey == UNKNOWN_KEY) {
             DebugLog.warning("Unknown key name in input config: " + name + " (falling back to ENTER)");
             return KEY_ENTER;
         }

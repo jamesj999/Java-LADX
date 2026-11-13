@@ -5,6 +5,7 @@ import static linksawakening.world.entity.EntityRoomLoader.RoomTable.INDOORS_A;
 import static linksawakening.world.entity.EntityRoomLoader.RoomTable.INDOORS_B;
 import static linksawakening.world.entity.EntityRoomLoader.RoomTable.OVERWORLD;
 
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
@@ -14,6 +15,7 @@ import linksawakening.world.room.RoomPaletteLoader;
 
 /** Reads room sprite groups, sheet selectors, and object palettes from the ROM. */
 public final class EntitySpriteCatalog {
+    private static final byte[] NO_ROOM_STATUS = new byte[0];
 
     public static final int ENTITY_SHEET_SLOT_COUNT = 4;
     public static final int OBJECT_PALETTE_COUNT = 6;
@@ -100,7 +102,8 @@ public final class EntitySpriteCatalog {
         if (mapId < -1 || mapId > 0xFF) {
             throw new IllegalArgumentException("Map id out of range: " + mapId);
         }
-        if (overworldRoomStatus != null && overworldRoomStatus.length > 0x100) {
+        overworldRoomStatus = Objects.requireNonNullElse(overworldRoomStatus, NO_ROOM_STATUS);
+        if (overworldRoomStatus.length > 0x100) {
             throw new IllegalArgumentException("Overworld room status table is too large");
         }
 
@@ -174,8 +177,7 @@ public final class EntitySpriteCatalog {
     }
 
     private static boolean roomStatus(byte[] overworldRoomStatus, int roomId) {
-        return overworldRoomStatus != null
-                && roomId < overworldRoomStatus.length
+        return roomId < overworldRoomStatus.length
                 && (Byte.toUnsignedInt(overworldRoomStatus[roomId]) & OW_ROOM_STATUS_OWL_TALKED) != 0;
     }
 

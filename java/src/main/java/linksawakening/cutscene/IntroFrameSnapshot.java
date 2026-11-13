@@ -3,7 +3,12 @@ package linksawakening.cutscene;
 import java.util.List;
 import java.util.Objects;
 
-/** Immutable render state published by one opening-sequence frame. */
+/**
+ * Immutable render state published by one opening-sequence frame.
+ * Line-scroll arrays are absent when the scene uses uniform scroll; animated tiles are absent
+ * when the frame performs no VRAM upload. The has* predicates expose those domain states while
+ * the nullable array accessors retain the existing renderer contract.
+ */
 public record IntroFrameSnapshot(
         String sceneId,
         String substate,
@@ -47,25 +52,51 @@ public record IntroFrameSnapshot(
         attrmap = attrmap.clone();
         bgPalettes = copyPalettes(bgPalettes);
         objPalettes = copyPalettes(objPalettes);
-        lineScrollX = lineScrollX == null ? null : lineScrollX.clone();
+        lineScrollX = copyScroll(lineScrollX);
         sprites = List.copyOf(sprites);
-        lineScrollY = lineScrollY == null ? null : lineScrollY.clone();
-        animatedTiles = animatedTiles == null ? null : animatedTiles.clone();
+        lineScrollY = copyScroll(lineScrollY);
+        animatedTiles = copyAnimatedTiles(animatedTiles);
+    }
+
+    public boolean hasLineScrollX() {
+        return lineScrollX != null;
+    }
+
+    public boolean hasLineScrollY() {
+        return lineScrollY != null;
+    }
+
+    public boolean hasAnimatedTiles() {
+        return animatedTiles != null;
+    }
+
+    /** Reads a line without allocating a defensive array copy; empty scroll maps use fallback. */
+    public int scrollXAt(int screenY, int fallback) {
+        if (!hasLineScrollX() || lineScrollX.length == 0) return fallback;
+        return lineScrollX[Math.max(0, Math.min(screenY, lineScrollX.length - 1))];
+    }
+
+    private static int[] copyScroll(int[] scroll) {
+        return scroll == null ? null : scroll.clone();
+    }
+
+    private static byte[] copyAnimatedTiles(byte[] tiles) {
+        return tiles == null ? null : tiles.clone();
     }
 
     @Override
     public int[] lineScrollX() {
-        return lineScrollX == null ? null : lineScrollX.clone();
+        return copyScroll(lineScrollX);
     }
 
     @Override
     public int[] lineScrollY() {
-        return lineScrollY == null ? null : lineScrollY.clone();
+        return copyScroll(lineScrollY);
     }
 
     @Override
     public byte[] animatedTiles() {
-        return animatedTiles == null ? null : animatedTiles.clone();
+        return copyAnimatedTiles(animatedTiles);
     }
 
     @Override

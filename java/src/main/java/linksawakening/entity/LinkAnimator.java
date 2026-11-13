@@ -36,7 +36,9 @@ final class LinkAnimator {
     }
 
     private boolean tarinShieldPresentation;
-    private int[] tarinShieldPalette;
+    // No shield presentation until Tarin supplies the got-item palette.
+    private static final int[] NO_TARIN_SHIELD_PALETTE = new int[0];
+    private int[] tarinShieldPalette = NO_TARIN_SHIELD_PALETTE;
     private int romAnimationStateOverride = -1;
     private int swordAcquisitionBaseRomDirection = -1;
     private int swordAcquisitionAnimationState = -1;
@@ -287,7 +289,7 @@ final class LinkAnimator {
     }
 
     int[] accessTarinShieldPalette() {
-        return this.tarinShieldPalette == null ? null : this.tarinShieldPalette.clone();
+        return this.tarinShieldPalette == NO_TARIN_SHIELD_PALETTE ? null : this.tarinShieldPalette.clone();
     }
 
     boolean accessIsMarinWakeUpBedVisible() {
@@ -328,7 +330,8 @@ final class LinkAnimator {
     }
 
     int[] tarinShieldPalette(int[] value) {
-        return tarinShieldPalette = value;
+        tarinShieldPalette = Objects.requireNonNullElse(value, NO_TARIN_SHIELD_PALETTE);
+        return value;
     }
 
     int romAnimationStateOverride(int value) {

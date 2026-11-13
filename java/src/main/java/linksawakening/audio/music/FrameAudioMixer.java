@@ -15,7 +15,9 @@ public final class FrameAudioMixer {
     private int samplesUntilNextTick;
     private int tickSampleRemainder;
     private boolean loopEnabled;
+    // No selected track until setTrack; trackSelected is the presence bit used by the sample clock.
     private MusicTrack currentTrack;
+    private boolean trackSelected;
 
     public FrameAudioMixer(MusicDriver driver, GameBoyApu apu, SoundEffectPlayback effects) {
         this.driver = Objects.requireNonNull(driver, "driver");
@@ -27,6 +29,7 @@ public final class FrameAudioMixer {
 
     public void setTrack(MusicTrack track) {
         currentTrack = track;
+        trackSelected = track != null;
     }
 
     public void setLoopEnabled(boolean enabled) {
@@ -62,7 +65,7 @@ public final class FrameAudioMixer {
         if (isSoundEffectPlaying()) {
             return true;
         }
-        if (!loopEnabled || currentTrack == null) {
+        if (!loopEnabled || !trackSelected) {
             return false;
         }
         driver.start(currentTrack);
@@ -74,7 +77,7 @@ public final class FrameAudioMixer {
     private void tick60HzClients() {
         if (driver.isPlaying()) {
             driver.tick60Hz();
-        } else if (loopEnabled && currentTrack != null) {
+        } else if (loopEnabled && trackSelected) {
             ensureAudioPlaying();
         }
         if (isSoundEffectPlaying()) {
