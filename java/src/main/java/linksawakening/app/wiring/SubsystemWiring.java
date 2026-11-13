@@ -53,7 +53,7 @@ final class SubsystemWiring {
         var ui = UiWiring.build(rom, playerState, input, audio, navigator);
         var tables = RomTables.load(rom);
         var romServices = new RomServices(rom, tables, config, gpu, graphics.backgrounds());
-        var collision = new OverworldCollision(tables);
+        var collision = new OverworldCollision(tables.physicsTables(), tables.collisionTables());
         var bushes = new OverworldBushInteraction(rom, tables);
         var playerGraphics = PlayerWiring.graphics(rom);
         var visual = WorldWiring.visuals(rom, random, graphics.framebuffer());

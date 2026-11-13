@@ -80,8 +80,9 @@ final class EquipmentWiring {
         registry.register(
                 InventoryItem.SWORD.romValue(),
                 new Sword(
-                        inputs.romTables(),
-                        inputs.graphics().swordSpriteSheet(),
+                        new Sword.Assets(
+                                inputs.romTables().swordTables(),
+                                inputs.graphics().swordSpriteSheet()),
                         inputs.gameplaySoundSink(),
                         inputs.random(),
                         inputs.graphics().swordPalette(),

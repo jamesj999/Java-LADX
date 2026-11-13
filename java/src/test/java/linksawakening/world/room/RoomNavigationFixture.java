@@ -635,7 +635,7 @@ final class RoomNavigationFixture {
                 setDirectionalInput(inputState, inputConfig, firstMask, GLFW_PRESS);
                 int jumpStartX = link.position().pixelX();
                 int jumpStartY = link.position().pixelY();
-                itemRegistry.lookup(playerState.inventory().itemA()).onPress();
+                itemRegistry.item(playerState.inventory().itemA()).onPress();
                 assertTrue(
                         link.airborne().isAirborne(),
                         "Feather did not start at (" + jumpStartX + "," + jumpStartY + ")");
@@ -700,7 +700,7 @@ final class RoomNavigationFixture {
             PlayerState playerState,
             int joypadMask) {
         setDirectionalInput(inputState, inputConfig, joypadMask, GLFW_PRESS);
-        itemRegistry.lookup(playerState.inventory().itemA()).onPress();
+        itemRegistry.item(playerState.inventory().itemA()).onPress();
         assertTrue(link.airborne().isAirborne());
         boolean crossedPit = false;
         int deadline = 0x40;
@@ -918,7 +918,8 @@ final class RoomNavigationFixture {
 
     static SwordApproach reachableSwordContactPath(
             OverworldCollision collision, int startX, int startY, RoomEntity entity, RomTables romTables) {
-        Sword sword = new Sword(romTables, null);
+        Sword sword = new Sword(
+                new Sword.Assets(romTables.swordTables(), linksawakening.equipment.SwordSpriteSheet.invisible()));
         sword.onPress();
         for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
             sword.tick(false);
@@ -940,7 +941,8 @@ final class RoomNavigationFixture {
 
     static SwordApproach reachableSwordContactPathWithFeather(
             OverworldCollision collision, RomTables romTables, int startX, int startY, RoomEntity entity) {
-        Sword sword = new Sword(romTables, null);
+        Sword sword = new Sword(
+                new Sword.Assets(romTables.swordTables(), linksawakening.equipment.SwordSpriteSheet.invisible()));
         sword.onPress();
         for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
             sword.tick(false);
