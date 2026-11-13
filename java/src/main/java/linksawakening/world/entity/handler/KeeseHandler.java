@@ -1,10 +1,12 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_KEESE;
 
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.*;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.EntityFrameContext;
+import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.motion.KeeseMotion;
 
 /** ROM initialization and motion dispatch. */
 final class KeeseHandler {

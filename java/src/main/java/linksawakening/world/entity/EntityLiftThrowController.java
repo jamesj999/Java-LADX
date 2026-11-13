@@ -1,17 +1,23 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.byteValue;
+import static linksawakening.world.entity.EntityMotionMath.unsignedByteAbs;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withType;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
+import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
+import linksawakening.world.entity.motion.BushCrawlerMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.LiftedEntityMotion;
 import linksawakening.world.entity.motion.LiftedEntityMotion.LiftedEntityFrame;
+import linksawakening.world.entity.motion.SideViewPotMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** ROM lift, carry and throw mechanics, sharing the owning room slot table. */

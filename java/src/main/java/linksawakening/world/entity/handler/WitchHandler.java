@@ -11,7 +11,6 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WitchMotion;
 
 /** ROM handler stages for Witch. */

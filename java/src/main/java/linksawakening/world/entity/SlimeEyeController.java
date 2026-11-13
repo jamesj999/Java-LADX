@@ -1,12 +1,20 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntitySnapshots.*;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withFlipAttribute;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
 
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
-import linksawakening.world.entity.event.*;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.SlimeEyeHalfMotion;

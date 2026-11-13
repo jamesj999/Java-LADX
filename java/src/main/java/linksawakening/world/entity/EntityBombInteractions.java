@@ -1,18 +1,24 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.bombArrowXOffset;
+import static linksawakening.world.entity.EntityMotionMath.bombArrowYOffset;
+import static linksawakening.world.entity.EntityMotionMath.isWithinBombExplosionWindow;
+import static linksawakening.world.entity.EntitySnapshots.withDeathPresentation;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.MoblinSwordMotion;
+import linksawakening.world.entity.motion.PlayerArrowMotion;
+import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** ROM bomb explosion, damage and delayed presentation ordering. */
 public final class EntityBombInteractions {

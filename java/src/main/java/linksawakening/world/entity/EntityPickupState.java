@@ -1,6 +1,6 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 
 /** Shared pickups slot state, independent of behavior dispatch and construction order. */
 final class EntityPickupState {

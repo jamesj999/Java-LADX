@@ -1,20 +1,18 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_URCHIN;
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.UrchinMotion;
 import linksawakening.world.entity.motion.UrchinMotion.UrchinFrame;
 

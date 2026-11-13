@@ -1,16 +1,17 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.signedByte;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntityTypeRules.isBombiteType;
+import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.BowWowMotion;
 import linksawakening.world.entity.motion.BuzzBlobMotion;
 import linksawakening.world.entity.motion.GiantGopongaMotion;
 import linksawakening.world.entity.motion.GopongaFlowerMotion;
@@ -20,6 +21,7 @@ import linksawakening.world.entity.motion.PokeyMotion;
 import linksawakening.world.entity.motion.SandCrabMotion;
 import linksawakening.world.entity.motion.ThreeOfAKindMotion;
 import linksawakening.world.entity.motion.UrchinMotion;
+import linksawakening.world.entity.motion.WingedOctorokMotion;
 import linksawakening.world.entity.motion.WitchRatMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;

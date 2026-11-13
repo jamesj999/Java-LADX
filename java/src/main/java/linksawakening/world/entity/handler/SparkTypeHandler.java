@@ -1,12 +1,13 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SPARK_CLOCKWISE;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SPARK_COUNTER_CLOCKWISE;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.SparkMotion;
 
 /** ROM handler stages for SparkType. */
 final class SparkTypeHandler {

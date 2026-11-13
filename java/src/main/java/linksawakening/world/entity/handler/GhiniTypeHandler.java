@@ -1,13 +1,15 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_GHINI;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_GIANT_GHINI;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_GHINI;
 import static linksawakening.world.entity.EntityTypeRules.isHidingGhiniType;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.GhiniMotion;
 
 /** ROM handler stages for GhiniType. */
 final class GhiniTypeHandler {

@@ -1,6 +1,8 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.FairyMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
 
 /** Shared bossRewards slot state, independent of behavior dispatch and construction order. */
 final class EntityBossState {

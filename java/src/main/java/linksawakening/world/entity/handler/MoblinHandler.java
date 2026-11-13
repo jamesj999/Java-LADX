@@ -6,7 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_OCTOROK;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
 
 /** ROM handler stages for Moblin. */
 final class MoblinHandler {

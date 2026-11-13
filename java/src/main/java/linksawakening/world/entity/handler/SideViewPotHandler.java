@@ -10,7 +10,6 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.SideViewPotContact;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.SideViewPotMotion;
 
 /** ROM handler stages for SideViewPot. */

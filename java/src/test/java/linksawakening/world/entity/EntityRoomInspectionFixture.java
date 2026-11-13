@@ -1,11 +1,9 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.SideViewPlatformMotion;
+import linksawakening.world.entity.motion.TarinRaccoonMotion;
+import linksawakening.world.entity.motion.ThreeOfAKindMotion;
 
 final class EntityRoomInspectionFixture {
     private final RoomEntityRuntime runtime;

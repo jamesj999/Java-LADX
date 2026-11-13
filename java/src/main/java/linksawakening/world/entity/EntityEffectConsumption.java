@@ -1,10 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.world.entity.event.BombExplosionEvent;

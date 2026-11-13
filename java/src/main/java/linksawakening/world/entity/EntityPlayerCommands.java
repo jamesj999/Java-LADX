@@ -1,17 +1,19 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
 
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
+import linksawakening.world.entity.motion.SideViewPotMotion;
+import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** Player lift, throw, block movement and held-item presentation commands. */
 final class EntityPlayerCommands {

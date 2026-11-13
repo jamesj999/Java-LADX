@@ -1,16 +1,44 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.byteValue;
+import static linksawakening.world.entity.EntitySnapshots.withDeathPresentation;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
+import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
+import static linksawakening.world.entity.EntityTypeRules.usesSharedRecoil;
 
 import java.util.List;
 import linksawakening.world.entity.SlimeEyeController.SlimeEyeCombatFrame;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.ArmosMotion;
+import linksawakening.world.entity.motion.BombiteMotion;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.CrowMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.GhiniMotion;
+import linksawakening.world.entity.motion.GoombaMotion;
+import linksawakening.world.entity.motion.HidingZolMotion;
 import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.LeeverMotion;
+import linksawakening.world.entity.motion.LikeLikeMotion;
+import linksawakening.world.entity.motion.MoblinKingMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+import linksawakening.world.entity.motion.PairoddMotion;
+import linksawakening.world.entity.motion.PeaHatMotion;
+import linksawakening.world.entity.motion.PiranhaMotion;
+import linksawakening.world.entity.motion.PokeyMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.RollingBonesMotion;
+import linksawakening.world.entity.motion.SpikedBeetleMotion;
+import linksawakening.world.entity.motion.StalfosEvasiveMotion;
+import linksawakening.world.entity.motion.ThreeOfAKindMotion;
+import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
+import linksawakening.world.entity.motion.WingedOctorokMotion;
+import linksawakening.world.entity.motion.WizrobeMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
+import linksawakening.world.entity.motion.ZombieMotion;
 
 /** ROM sword and contact combat resolution, sharing the owning room slot table. */
 final class EntityCombatResolver {

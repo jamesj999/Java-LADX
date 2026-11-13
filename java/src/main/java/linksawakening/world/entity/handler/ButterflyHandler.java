@@ -1,9 +1,11 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUTTERFLY;
 
-import linksawakening.world.entity.*;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.EntityFrameContext;
+import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.motion.ButterflyMotion;
 
 /** ROM initialization and motion dispatch. */
 final class ButterflyHandler {

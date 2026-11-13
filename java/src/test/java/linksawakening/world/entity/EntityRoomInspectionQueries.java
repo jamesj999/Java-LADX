@@ -1,14 +1,20 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
 import java.util.List;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BoomerangMotion;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.BushCrawlerMotion;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.FairyMotion;
 import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.LikeLikeMotion;
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import linksawakening.world.entity.motion.MoblinKingMotion;
+import linksawakening.world.entity.motion.PlayerArrowMotion;
+import linksawakening.world.entity.motion.PokeyMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.SwordBeamMotion;
+import linksawakening.world.entity.motion.WingedOctorokMotion;
 
 /** Test-side queries over the production inspector's exact service bindings. */
 final class EntityRoomInspectionQueries {

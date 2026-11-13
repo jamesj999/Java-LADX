@@ -1,15 +1,21 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
+import linksawakening.world.entity.motion.BoomerangMotion;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
 import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import linksawakening.world.entity.motion.PlayerArrowMotion;
+import linksawakening.world.entity.motion.SwordBeamMotion;
+import linksawakening.world.entity.motion.ThrownEntityMotion;
+import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 import linksawakening.world.room.ChestContentsTable;
 
 /** ROM slot allocation and player-created entity spawning. */

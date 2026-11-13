@@ -1,10 +1,7 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySlotValidation.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySlotValidation.validateByte;
+import static linksawakening.world.entity.EntitySlotValidation.validateEntitySlot;
 
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -51,8 +48,8 @@ import linksawakening.world.entity.event.ToadstoolRewardEvent;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WarpMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.room.ChestContentsTable;
 
 /**

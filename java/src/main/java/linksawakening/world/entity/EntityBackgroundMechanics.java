@@ -1,19 +1,40 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.FallingVector;
+import static linksawakening.world.entity.EntityMotionMath.vectorTowardsTarget;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntityTypeRules.isEnemyProjectileType;
+import static linksawakening.world.entity.EntityTypeRules.isRoamingEnemyType;
+import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
 
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.CrowMotion;
+import linksawakening.world.entity.motion.CuccoMotion;
+import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.EnemyProjectileMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.HidingZolMotion;
 import linksawakening.world.entity.motion.HookshotBridgeMotion;
 import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.MoblinSwordMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+import linksawakening.world.entity.motion.PlayerArrowMotion;
+import linksawakening.world.entity.motion.PolsVoiceMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.SecretSeashellMotion;
+import linksawakening.world.entity.motion.SpikedBeetleMotion;
+import linksawakening.world.entity.motion.StalfosAggressiveMotion;
+import linksawakening.world.entity.motion.StalfosEvasiveMotion;
+import linksawakening.world.entity.motion.TektiteMotion;
+import linksawakening.world.entity.motion.WingedOctorokMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ROM background collision, falling, recoil and Link push glue. */
 public final class EntityBackgroundMechanics {

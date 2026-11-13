@@ -1,6 +1,9 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.entity.event.EntityCombatEvent.*;
+import linksawakening.world.entity.event.EntityCombatEvent.LinkAction;
+import linksawakening.world.entity.event.EntityCombatEvent.LinkCollisionResponse;
+import linksawakening.world.entity.event.EntityCombatEvent.SoundChannel;
+import linksawakening.world.entity.event.EntityCombatEvent.SwordPokeVfx;
 
 /** Named construction; validation occurs when the immutable event is built. */
 public final class EntityCombatEventBuilder {

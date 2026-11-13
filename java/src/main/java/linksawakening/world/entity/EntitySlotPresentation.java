@@ -2,7 +2,7 @@ package linksawakening.world.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.PincerMotion;
 
 /** Shared slotProperties slot state, independent of behavior dispatch and construction order. */
 final class EntitySlotPresentation {

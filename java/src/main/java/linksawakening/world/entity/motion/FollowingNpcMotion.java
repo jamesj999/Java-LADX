@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
+import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;

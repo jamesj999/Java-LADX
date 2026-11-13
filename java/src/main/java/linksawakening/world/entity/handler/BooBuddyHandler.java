@@ -1,17 +1,16 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOO_BUDDY;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 /** ROM handler stages for BooBuddy. */
 final class BooBuddyHandler {

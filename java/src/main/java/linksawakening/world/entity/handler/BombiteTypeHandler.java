@@ -1,10 +1,10 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.BOMBITE_EXPLOSION_COUNTDOWN;
 import static linksawakening.world.entity.EntityRomConstants.BOMBITE_EXPLOSION_SOUND_ID;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOUNCING_BOMBITE;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_TIMER_BOMBITE;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
@@ -12,7 +12,6 @@ import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombiteMotion;
 import linksawakening.world.entity.motion.BombiteMotion.BombiteFrame;
 

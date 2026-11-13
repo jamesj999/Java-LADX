@@ -1,10 +1,17 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySlotValidation.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.romDirectionForJavaDirection;
+import static linksawakening.world.entity.EntitySnapshots.withDeathPresentation;
+import static linksawakening.world.entity.EntitySnapshots.withPresentation;
+import static linksawakening.world.entity.EntitySnapshots.withSourceLoadOrder;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
+import static linksawakening.world.entity.EntityTypeRules.isBossKeyDropProducer;
+import static linksawakening.world.entity.EntityTypeRules.isDynamicFollowingNpc;
+import static linksawakening.world.entity.EntityTypeRules.isLiftableEntity;
+import static linksawakening.world.entity.EntityTypeRules.isRuntimeFloatingItem;
+import static linksawakening.world.entity.EntityTypeRules.usesSharedRecoil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,14 +20,20 @@ import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BowWowMotion;
 import linksawakening.world.entity.motion.BowWowMotion.BowWowCollisionFrame;
 import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.EnemyDropMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.FloatingItemMotion;
+import linksawakening.world.entity.motion.FollowingNpcMotion;
 import linksawakening.world.entity.motion.FollowingNpcMotion.FollowingNpcFrame;
 import linksawakening.world.entity.motion.LaserMotion;
+import linksawakening.world.entity.motion.MoblinSwordMotion;
+import linksawakening.world.entity.motion.PokeyMotion;
+import linksawakening.world.entity.motion.RollingBonesMotion;
+import linksawakening.world.entity.motion.TarinRaccoonMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ExecuteEntities: prepare one frame, visit slots in descending order, then commit room presentation. */
 final class EntitySlotPipeline {

@@ -1,6 +1,7 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_ARROW;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_OCTOROK_ROCK;
 
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityFrameExecution;
@@ -9,7 +10,6 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyProjectileMotion;
 
 /** ROM handler stages for EnemyProjectileType. */

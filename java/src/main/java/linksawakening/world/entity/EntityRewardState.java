@@ -1,7 +1,5 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.motion.*;
-
 /** Shared rewards slot state, independent of behavior dispatch and construction order. */
 final class EntityRewardState {
     private final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];

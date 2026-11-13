@@ -1,6 +1,6 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 
 /** Composes cross-cutting state; type-specific state belongs to its controller. */
 final class EntityRuntimeState {

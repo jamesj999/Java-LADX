@@ -1,9 +1,15 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.addFallingSpeedToPosition;
+import static linksawakening.world.entity.EntityMotionMath.romDirectionForJavaDirection;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
+import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
+import static linksawakening.world.entity.EntityTypeRules.isRuntimeFloatingItem;
+import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
+import static linksawakening.world.entity.EntityTypeRules.requiresHeldPickupTransition;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -21,10 +27,10 @@ import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
 import linksawakening.world.entity.event.ToadstoolRewardEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.FloatingItemMotion;
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 import linksawakening.world.entity.motion.KeyDropPointMotion;
+import linksawakening.world.entity.motion.SecretSeashellMotion;
 import linksawakening.world.room.ChestContentsTable;
 
 /** SirensInstrumentEntityHandler and SwordShieldPickableEntityHandler pickup sequences and owned state. */

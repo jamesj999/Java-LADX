@@ -1,9 +1,9 @@
 package linksawakening.world.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.GhiniMotion;
 import org.junit.jupiter.api.Test;
 
 class GhiniDeathCascadeTest {

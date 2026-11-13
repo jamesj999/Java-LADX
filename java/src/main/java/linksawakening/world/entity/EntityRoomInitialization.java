@@ -1,19 +1,46 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
+import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
+import static linksawakening.world.entity.EntityTypeRules.isBombiteType;
+import static linksawakening.world.entity.EntityTypeRules.isFollowingNpcType;
+import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
+import static linksawakening.world.entity.EntityTypeRules.isLaserType;
 
 import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.handler.EntityHandlerFamilies;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BombiteMotion;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.BushCrawlerMotion;
+import linksawakening.world.entity.motion.BuzzBlobMotion;
+import linksawakening.world.entity.motion.CrowMotion;
+import linksawakening.world.entity.motion.CuccoMotion;
+import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.FairyMotion;
+import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.FollowingNpcMotion;
 import linksawakening.world.entity.motion.GenieMotion;
+import linksawakening.world.entity.motion.GhiniMotion;
+import linksawakening.world.entity.motion.LaserMotion;
 import linksawakening.world.entity.motion.LiftedEntityMotion;
+import linksawakening.world.entity.motion.LikeLikeMotion;
+import linksawakening.world.entity.motion.MaskedMimicMotion;
+import linksawakening.world.entity.motion.MimicMotion;
+import linksawakening.world.entity.motion.MiniMoldormMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+import linksawakening.world.entity.motion.PincerMotion;
+import linksawakening.world.entity.motion.PolsVoiceMotion;
+import linksawakening.world.entity.motion.RollingBonesMotion;
+import linksawakening.world.entity.motion.SandCrabMotion;
+import linksawakening.world.entity.motion.SpikedBeetleMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
+import linksawakening.world.entity.motion.UrchinMotion;
 import linksawakening.world.entity.motion.WarpMotion;
+import linksawakening.world.entity.motion.WitchRatMotion;
 
 /** ROM presentation loading and initial room slot setup in source order. */
 final class EntityRoomInitialization {

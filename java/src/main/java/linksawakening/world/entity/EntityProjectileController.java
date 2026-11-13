@@ -1,9 +1,11 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withDeathPresentation;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
@@ -15,10 +17,18 @@ import linksawakening.world.entity.event.MagicPowderObjectAction;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BombiteMotion;
 import linksawakening.world.entity.motion.BoomerangMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import linksawakening.world.entity.motion.MoblinSwordMotion;
+import linksawakening.world.entity.motion.PlayerArrowMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.SwordBeamMotion;
+import linksawakening.world.entity.motion.TarinRaccoonMotion;
+import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ROM player-projectile collision and object effects, sharing the owning room slot table. */
 public final class EntityProjectileController {

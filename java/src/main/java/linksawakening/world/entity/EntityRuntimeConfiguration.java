@@ -1,15 +1,16 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.Objects;
 import java.util.function.IntUnaryOperator;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteSelection;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.FollowingNpcMotion;
+import linksawakening.world.entity.motion.SecretSeashellMotion;
 
 /** Room entity configuration preserving source-shaped handler inputs. */
 public final class EntityRuntimeConfiguration {

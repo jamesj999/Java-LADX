@@ -1,11 +1,11 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.CrowMotion;
+import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.KeeseMotion;
+import linksawakening.world.entity.motion.PairoddMotion;
+import linksawakening.world.entity.motion.PairoddProjectileMotion;
 
 /** Read-only inspection for FlyingEnemy. */
 final class EntityFlyingEnemyInspection {

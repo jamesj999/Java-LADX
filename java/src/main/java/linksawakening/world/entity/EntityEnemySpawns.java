@@ -1,21 +1,25 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.byteValue;
+import static linksawakening.world.entity.EntityMotionMath.signedByte;
+import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
+import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.CuccoMotion;
 import linksawakening.world.entity.motion.EnemyProjectileMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.GiantGopongaMotion;
 import linksawakening.world.entity.motion.GopongaProjectileMotion;
+import linksawakening.world.entity.motion.LaserMotion;
+import linksawakening.world.entity.motion.PairoddProjectileMotion;
 import linksawakening.world.entity.motion.PokeyMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.StalfosEvasiveMotion;
+import linksawakening.world.entity.motion.ThrownEntityMotion;
 import linksawakening.world.entity.motion.WizrobeMotion;
+import linksawakening.world.entity.motion.WizrobeProjectileMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 

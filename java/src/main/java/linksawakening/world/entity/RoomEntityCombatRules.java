@@ -1,7 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.RoomEntityCombatRules.*;
-
 /** CheckLinkCollisionWithEnemy and DefaultEnemyDamageCollisionHandler hitbox policies. */
 public final class RoomEntityCombatRules {
     static final int ENTITY_PUSHED_BLOCK = 0x06;

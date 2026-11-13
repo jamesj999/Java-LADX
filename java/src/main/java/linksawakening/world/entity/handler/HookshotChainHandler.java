@@ -16,7 +16,6 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.HookshotChainMotion;
 
 /** ROM handler stages for HookshotChain. */

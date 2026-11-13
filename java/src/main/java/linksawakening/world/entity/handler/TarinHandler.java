@@ -14,7 +14,6 @@ import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.TarinRaccoonMotion;
 
 /** ROM handler stages for Tarin. */

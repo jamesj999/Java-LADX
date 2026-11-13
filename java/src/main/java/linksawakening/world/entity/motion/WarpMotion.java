@@ -2,7 +2,6 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.WarpDestination;
 

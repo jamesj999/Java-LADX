@@ -13,7 +13,7 @@ import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.MoblinKingMotion;
 import linksawakening.world.entity.motion.MoblinKingMotion.MoblinKingFrame;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;

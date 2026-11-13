@@ -1,6 +1,12 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_ARROWS;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_BOMBS;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_FAIRY;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_HEART;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_MAGIC_POWDER;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_RUPEE;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 

@@ -1,9 +1,14 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.Vector;
+import static linksawakening.world.entity.EntityMotionMath.addFallingSpeedToPosition;
+import static linksawakening.world.entity.EntityMotionMath.vectorAwayFromLink;
+import static linksawakening.world.entity.EntityMotionMath.withinUnsignedWindow;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
+import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
+import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
@@ -14,7 +19,11 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.FairyMotion;
+import linksawakening.world.entity.motion.SecretSeashellMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.room.ChestContentsTable;
 
 /** ROM pickup, reveal and drop mechanics, sharing the owning room slot table. */

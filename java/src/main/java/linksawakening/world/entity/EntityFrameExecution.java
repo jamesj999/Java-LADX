@@ -1,10 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
 import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.event.DialogRequest;
@@ -28,7 +23,6 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.WarpMotion;
 

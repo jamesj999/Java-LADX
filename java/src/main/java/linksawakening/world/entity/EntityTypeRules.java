@@ -1,6 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ARMOS_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.entity.EntityRomConstants.ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS;
 import static linksawakening.world.entity.EntityRomConstants.ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
@@ -18,6 +17,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOO_BUDDY;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOUNCING_BOMBITE;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOW_WOW;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUTTERFLY;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUZZ_BLOB;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_CHEST_WITH_ITEM;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_CROW;
@@ -75,6 +75,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_PEAHAT;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_GRABBABLE;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_SHADOW;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_PIECE_OF_POWER;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PINCER;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PIRANHA_PLANT;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_POKEY;

@@ -1,9 +1,16 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntityMotionMath.addFallingSpeedToPosition;
+import static linksawakening.world.entity.EntityMotionMath.approachSignedByteZero;
+import static linksawakening.world.entity.EntityMotionMath.directionFromLinkToEntity;
+import static linksawakening.world.entity.EntityMotionMath.directionToLink;
+import static linksawakening.world.entity.EntityMotionMath.signedByte;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
 
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.DungeonWarpRequest;
@@ -13,8 +20,11 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
 import linksawakening.world.entity.event.OwlEventCompletion;
 import linksawakening.world.entity.event.RichardProgressEvent;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.BowWowMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.FollowingNpcMotion;
+import linksawakening.world.entity.motion.WitchMotion;
 
 /** ROM story and NPC presentation sequences, sharing the owning room slot table. */
 public final class EntityStoryController {
