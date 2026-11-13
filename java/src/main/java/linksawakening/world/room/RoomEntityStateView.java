@@ -24,7 +24,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
-        dependencies.entityInputs().setEntityActionButtonsHeld(actionButtonsHeld);
+        dependencies.session().setEntityActionButtonsHeld(actionButtonsHeld);
     }
 
     public boolean gelClingingToLink() {
@@ -33,19 +33,19 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void setEntityDialogActive(boolean active) {
-        dependencies.entityInputs().setEntityDialogActive(active);
+        dependencies.session().setEntityDialogActive(active);
     }
 
     public void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        dependencies.entityInputs().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
+        dependencies.session().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
     }
 
     public void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        dependencies.entityInputs().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        dependencies.session().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
     }
 
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        dependencies.entityInputs().setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        dependencies.session().setToadstoolPlayerState(hasToadstool, magicPowderCount);
     }
 
     public void setEntityScreenShakeCountdown(int countdown) {
@@ -61,15 +61,15 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
-        dependencies.entityInputs().setEntityPowerBraceletButtonHeld(buttonHeld);
+        dependencies.session().setEntityPowerBraceletButtonHeld(buttonHeld);
     }
 
     public void setEntityBombButtonHeld(boolean buttonHeld) {
-        dependencies.entityInputs().setEntityBombButtonHeld(buttonHeld);
+        dependencies.session().setEntityBombButtonHeld(buttonHeld);
     }
 
     public void setEntityAttackStepAnimationCountdown(int countdown) {
-        dependencies.entityInputs().setEntityAttackStepAnimationCountdown(countdown);
+        dependencies.session().setEntityAttackStepAnimationCountdown(countdown);
     }
 
     public void advanceBoomerangSoundClock(boolean worldGameplay) {

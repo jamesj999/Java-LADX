@@ -186,7 +186,7 @@ final class RoomSessionStoryTest {
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x58);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
-        session.components.entityInputs().setEntityGoldenLeavesCount(4);
+        session.setEntityGoldenLeavesCount(4);
 
         session.entities().tickEntities(0, 0x20, 0x30);
         session.entities().tickEntities(1, 0x40, 0x50);
@@ -290,7 +290,7 @@ final class RoomSessionStoryTest {
         session.entityState().setEntityActionButtonsHeld(false, false);
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntities(3, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
-        session.components.entityInputs().setEntityDialogAskSelectionIndex(1);
+        session.setEntityDialogAskSelectionIndex(1);
         session.entityState().setEntityDialogActive(false);
         session.entities().tickEntities(4, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 

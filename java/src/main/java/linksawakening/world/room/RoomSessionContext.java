@@ -94,7 +94,7 @@ final class RoomSessionContext {
                 values.transientVfxSystem,
                 values.romData,
                 values.roomTilemapBuilder));
-        values.entityInputs = new RoomEntityInputs(values.entityFrame);
+        values.entityInputs = new RoomEntityInputs();
         values.entityBackgroundInteraction = RoomEntityWorldAdapters.background(values.roomCollisionQueries);
         values.colorShellWorld =
                 RoomEntityWorldAdapters.colorShell(values.roomObjectMutations, values.entityFrame, transientVfxSystem);

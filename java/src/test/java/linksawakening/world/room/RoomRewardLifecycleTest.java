@@ -183,7 +183,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(0x04, RoomDebugFixture.of(session).indoorTorchPaletteEffectAddressForTest());
 
         session.entityState().setToadstoolPlayerState(true, 0);
-        session.components.entityInputs().setEntityInventorySlots(0, 0x0C);
+        session.setEntityInventorySlots(0, 0x0C);
         session.entityState().setEntityActionButtonsHeld(false, true);
         session.story().setEntityDefaultMusicTrack(0x0C);
         tickInteractive(session, 0, witch);
@@ -371,7 +371,7 @@ final class RoomRewardLifecycleTest {
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xC6);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
-        session.components.entityInputs().setEntityGoldenLeavesCount(5);
+        session.setEntityGoldenLeavesCount(5);
 
         session.entities().tickEntities(0, 0x20, 0x30);
         session.entities().tickEntities(1, 0x20, 0x30);
@@ -620,7 +620,7 @@ final class RoomRewardLifecycleTest {
                 0x100,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
 
-        session.components.entityInputs().setEntityMusicActive(true);
+        session.setEntityMusicActive(true);
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntities(89, 0x50, 0x60);
         assertEquals(-1, session.components.entityBridge().outbox.consumePendingMusicTrack());
@@ -629,7 +629,7 @@ final class RoomRewardLifecycleTest {
         session.entities().tickEntities(90, 0x50, 0x60);
         assertEquals(-1, session.components.entityBridge().outbox.consumePendingMusicTrack());
 
-        session.components.entityInputs().setEntityMusicActive(false);
+        session.setEntityMusicActive(false);
         session.entities().tickEntities(91, 0x50, 0x60);
 
         assertEquals(0x20, session.components.entityBridge().outbox.consumePendingMusicTrack());

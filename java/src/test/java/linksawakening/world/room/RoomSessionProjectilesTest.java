@@ -353,7 +353,7 @@ final class RoomSessionProjectilesTest {
         byte[] indoorB = new byte[0x100];
         indoorB[0xC7] = 0x10;
         session.story().restoreRoomStatuses(new byte[0x100], new byte[0x100], indoorB, new byte[0x20]);
-        session.components.entityInputs().setEntityGoldenLeavesCount(5);
+        session.setEntityGoldenLeavesCount(5);
         session.rooms().loadIndoor(0x10, 0xC7);
         RoomEntity richard = session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)

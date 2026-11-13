@@ -76,7 +76,8 @@ public final class RoomSession {
                 components.roomSessionViews(),
                 roles.entityState(),
                 story,
-                components.roomLoadCoordinator());
+                components.roomLoadCoordinator(),
+                this);
         frameResults = new EntityFrameResults(
                 new LinkOutputs(components.linkOutputsDependencies()),
                 new RewardOutputs(components.rewardOutputsDependencies()),
@@ -160,5 +161,93 @@ public final class RoomSession {
                 frame,
                 new EntityPickupInputs.Link(x, y, airborne, interactive, direction, z),
                 new SwordBox(false, 0, 0, 0, 0)));
+    }
+
+    void setEntityDialogActive(boolean active) {
+        components.entityInputs().setEntityDialogActive(active);
+        if (hasRoom()) components.entityInputs().applyDialogActive(loadedRoom, active);
+    }
+
+    void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
+        components.entityInputs().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
+        if (hasRoom())
+            components.entityInputs().applyTalkState(loadedRoom, inventoryAppearing, dialogCooldown, windowY);
+    }
+
+    void setEntityDialogAskSelectionIndex(int selectionIndex) {
+        components.entityInputs().setEntityDialogAskSelectionIndex(selectionIndex);
+        if (hasRoom()) components.entityInputs().applyDialogAskSelectionIndex(loadedRoom, selectionIndex);
+    }
+
+    void setEntityMusicActive(boolean active) {
+        components.entityInputs().setEntityMusicActive(active);
+        if (hasRoom()) components.entityInputs().applyMusicActive(loadedRoom, active);
+    }
+
+    void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
+        components.entityInputs().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        if (hasRoom())
+            components.entityInputs().applyActionButtonsHeld(loadedRoom, actionButtonAHeld, actionButtonBHeld);
+    }
+
+    void setEntityJoypadHeld(boolean joypadHeld) {
+        components.entityInputs().setEntityJoypadHeld(joypadHeld);
+        if (hasRoom()) components.entityInputs().applyJoypadHeld(loadedRoom, joypadHeld);
+    }
+
+    void setEntityPressedButtonsMask(int pressedButtonsMask) {
+        components.entityInputs().setEntityPressedButtonsMask(pressedButtonsMask);
+        if (hasRoom()) components.entityInputs().applyPressedButtonsMask(loadedRoom, pressedButtonsMask);
+    }
+
+    void setEntityInventorySlots(int itemA, int itemB) {
+        components.entityInputs().setEntityInventorySlots(itemA, itemB);
+        if (hasRoom()) components.entityInputs().applyInventorySlots(loadedRoom, itemA, itemB);
+    }
+
+    void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
+        components.entityInputs().setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        if (hasRoom()) components.entityInputs().applyToadstoolPlayerState(loadedRoom, hasToadstool, magicPowderCount);
+    }
+
+    void setEntityGoldenLeavesCount(int goldenLeavesCount) {
+        components.entityInputs().setEntityGoldenLeavesCount(goldenLeavesCount);
+        if (hasRoom()) components.entityInputs().applyGoldenLeavesCount(loadedRoom, goldenLeavesCount);
+    }
+
+    void setSecretSeashellPegasusCollisionState(
+            boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
+        components
+                .entityInputs()
+                .setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY);
+        if (hasRoom())
+            components
+                    .entityInputs()
+                    .applySecretSeashellPegasusCollisionState(
+                            loadedRoom, screenShakeActive, collisionActive, collisionX, collisionY);
+    }
+
+    void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
+        components.entityInputs().setEntityPowerBraceletButtonHeld(buttonHeld);
+        if (hasRoom()) components.entityInputs().applyPowerBraceletButtonHeld(loadedRoom, buttonHeld);
+    }
+
+    void setEntityBombButtonHeld(boolean buttonHeld) {
+        components.entityInputs().setEntityBombButtonHeld(buttonHeld);
+        if (hasRoom()) components.entityInputs().applyBombButtonHeld(loadedRoom, buttonHeld);
+    }
+
+    void setEntityAttackStepAnimationCountdown(int countdown) {
+        components.entityInputs().setEntityAttackStepAnimationCountdown(countdown);
+        if (hasRoom()) components.entityInputs().applyAttackStepAnimationCountdown(loadedRoom, countdown);
+    }
+
+    void setEntityFinalPositionX(int positionX) {
+        components.entityInputs().setEntityFinalPositionX(positionX);
+        if (hasRoom()) components.entityInputs().applyFinalPositionX(loadedRoom, positionX);
+    }
+
+    void setEntityActionButtonsHeld(boolean held) {
+        setEntityActionButtonsHeld(held, held);
     }
 }

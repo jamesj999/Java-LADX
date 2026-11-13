@@ -73,4 +73,25 @@ class RoomRuntimeTest {
         assertSame(role, session.entities());
         org.junit.jupiter.api.Assertions.assertTrue(session.hasRoom());
     }
+
+    @Test
+    void cachedInputsStillValidateAndPersistBeforeTheFirstLoad() {
+        var rom = linksawakening.testing.TestRoms.partial(new byte[0x100000]);
+        var session = new RoomSession(new RoomSessionConfig(
+                rom,
+                new linksawakening.gpu.GPU(),
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                new linksawakening.physics.OverworldCollision(linksawakening.rom.RomTables.load(rom)),
+                new RoomSessionConfig.Presentation(null, null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
+        session.entityState().setEntityDialogActive(true);
+        session.entityState().setEntityTalkState(true, 7, 0x80);
+        org.junit.jupiter.api.Assertions.assertTrue(session.components.entityInputs().entityDialogActive);
+        assertEquals(7, session.components.entityInputs().entityDialogCooldown);
+        assertThrows(IllegalArgumentException.class, () -> session.entityState().setEntityTalkState(false, 256, 0));
+        assertEquals(7, session.components.entityInputs().entityDialogCooldown);
+        org.junit.jupiter.api.Assertions.assertTrue(session.components.entityInputs().entityInventoryAppearing);
+        org.junit.jupiter.api.Assertions.assertFalse(session.hasRoom());
+    }
 }

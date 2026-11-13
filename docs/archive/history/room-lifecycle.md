@@ -63,3 +63,13 @@ optional domain result. Stable role objects survive replacement. Test fixtures
 that replace a runtime install a generation instead of bypassing publication.
 Legacy internal room/runtime fields are transitional aliases until the remaining
 collaborators migrate; they are not the final model.
+
+## Cached entity inputs
+
+RoomEntityInputs now owns only cached inputs, their validation and loaded-runtime
+application methods receiving RoomRuntime. No runtime-presence question remains
+in that collaborator. Facade operations validate/store first, then apply to a
+loaded generation. Frame-only channels use the same facade policy in the same
+setter order. Tests that formerly bypassed the facade now invoke that boundary;
+their source-order and reward assertions are unchanged. Null comparison
+occurrences in world/room+transition+object: 328 -> 311 at this slice.
