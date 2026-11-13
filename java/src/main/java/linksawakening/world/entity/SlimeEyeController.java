@@ -17,7 +17,6 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
-import linksawakening.world.entity.motion.SlimeEyeHalfMotion;
 
 /** Bank-$04 SlimeEyeEntityHandler and label_004_496F child spawning ($496F–$504B). */
 public final class SlimeEyeController {
@@ -43,7 +42,7 @@ public final class SlimeEyeController {
     final RomEnemyCombatTables enemyCombatTables;
     final RoomEntity[] slots;
     final State encounter;
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
+    // The ROM-free reader retains the original encounter-table precondition.
     private final java.util.function.ToIntFunction<RomAddress> readByte;
     int screenShakeCountdown;
 
@@ -837,7 +836,7 @@ public final class SlimeEyeController {
             owner.encounter.speedZ[s] = 0x60;
             e = owner.integrateZ(e);
             owner.slots[s] = e;
-            SlimeEyeHalfMotion.Update result = SlimeEyeHalfMotion.rise(
+            HalfUpdate result = riseHalf(
                     e.z(),
                     owner.physicsTables.readEnemyTransitionCountdown(s),
                     owner.encounter.variant[s],
@@ -851,7 +850,7 @@ public final class SlimeEyeController {
         }
 
         private boolean advanceState3() {
-            SlimeEyeHalfMotion.Update result = SlimeEyeHalfMotion.waitAbove(
+            HalfUpdate result = waitAboveHalf(
                     owner.physicsTables.readEnemyTransitionCountdown(s),
                     owner.encounter.speedZ[s],
                     owner.encounter.dropping[s],
@@ -862,7 +861,7 @@ public final class SlimeEyeController {
             owner.encounter.state[s] = result.state();
             owner.encounter.speedZ[s] = result.speedZ();
             owner.encounter.variant[s] = result.spriteVariant();
-            owner.encounter.dropping[s] = result.privateState4();
+            owner.encounter.dropping[s] = result.dropping();
             owner.physicsTables.writeEnemyTransitionCountdown(s, result.countdown());
             owner.slots[s] = withPositionAndVariant(e, result.x(), result.y(), e.spriteVariant());
             if (result.jingle() >= 0) owner.sound(s, result.jingle());
@@ -893,5 +892,31 @@ public final class SlimeEyeController {
                 this.e = null;
             }
         }
+    }
+
+    // Bank 04:4F65–4FAD. Countdown ticking and Z integration remain at the caller's original sites.
+    public record HalfUpdate(
+            int state, int countdown, int speedZ, int spriteVariant, int dropping, int x, int y, int jingle) {}
+
+    /** Apply state 2 after AddEntityZSpeedToPos, using its resulting byte Z. */
+    public static HalfUpdate riseHalf(int integratedZ, int countdown, int spriteVariant, int dropping, int x, int y) {
+        return new HalfUpdate(
+                (integratedZ & 0xFF) < 0x70 ? 2 : 3,
+                (integratedZ & 0xFF) < 0x70 ? countdown : 0x30,
+                0x60,
+                spriteVariant,
+                dropping,
+                x,
+                y,
+                -1);
+    }
+
+    /** State 3 hides the half, then drops it at Link's current coordinates. */
+    public static HalfUpdate waitAboveHalf(
+            int countdown, int speedZ, int dropping, int x, int y, int linkX, int linkY) {
+        if (countdown != 0) {
+            return new HalfUpdate(3, countdown, speedZ, 0xFF, dropping, x, y, -1);
+        }
+        return new HalfUpdate(1, 0x18, 0xC0, 0xFF, 1, linkX & 0xFF, linkY & 0xFF, 0x08);
     }
 }

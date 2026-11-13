@@ -125,9 +125,7 @@ final class EntityBossState {
         return enemyDropResolver;
     }
 
-    EnemyDropResolver writeEnemyDropResolver(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EnemyDropResolver
-                    value) {
+    EnemyDropResolver writeEnemyDropResolver(EnemyDropResolver value) {
         return enemyDropResolver = java.util.Objects.requireNonNullElse(value, EnemyDropResolver.NONE);
     }
 

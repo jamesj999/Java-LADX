@@ -256,11 +256,7 @@ public final class EnemyDropResolver {
         return new Result(ENTITY_NONE, counters, randomReads);
     }
 
-    private static int[] loadTable(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ Rom romData,
-            RomAddress address,
-            int length,
-            String tableName) {
+    private static int[] loadTable(Rom romData, RomAddress address, int length, String tableName) {
         int offset = address.offset();
         if (offset < 0 || length < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException("ROM table is truncated: " + tableName);

@@ -28,7 +28,6 @@ public final class FollowingNpcEntitySpawner {
     static final int ROOM_SECTION_OW_GHOST_TRIGGER = 0x40;
     static final int ROOM_INDOOR_B_MRS_MEOW_MEOW = 0xA7;
 
-    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     final EntitySpriteHandlerCatalog spriteHandlers;
 
     public FollowingNpcEntitySpawner(EntitySpriteHandlerCatalog spriteHandlers) {
@@ -143,7 +142,7 @@ public final class FollowingNpcEntitySpawner {
         private int linkZ;
         private int entityYOffset;
         private int linkDirection;
-        // Optional room geometry/history; null preserves the path without that room input.
+        // Absent only while scratch is inactive; synchronization requires position history.
         private linksawakening.world.entity.LinkPositionHistory history;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private java.util.List<linksawakening.world.entity.RoomEntity> slots;

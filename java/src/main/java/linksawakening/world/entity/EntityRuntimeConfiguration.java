@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.SecretSeashellMotion;
 
 /** Room entity configuration preserving source-shaped handler inputs. */
 public final class EntityRuntimeConfiguration {
-    // Absent for ROM-free runtimes; sword pickup presentation then retains its supplied definition.
+    // The ROM-free source retains the supplied sword-pickup definition.
     private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     private final EntityBossState bossRewards;
     private final EntityLiftState liftThrow;

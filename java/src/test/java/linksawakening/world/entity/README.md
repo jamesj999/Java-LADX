@@ -126,5 +126,132 @@ They normalize an omitted legacy input once when installed, not on every use.
 | --- | --- | --- |
 | `RoomEntityRuntimeBuilder.spriteHandlers(EntitySpriteHandlerCatalog)` | `EntitySpriteViews` ROM or unsupported source | None; the external final catalog needs no new API |
 | `RoomEntityRuntimeBuilder.chestContentsTable(ChestContentsTable)` | `EntityChestContents.RomContents` or `Empty` | None; the external final table needs no new API |
-| Existing `from(...)` overloads and frame/motion overloads | Named policies selected by builder or input normalization | Existing earlier-round migration shims remain source-compatible |
+| Existing frame/motion overloads | Named policies selected by builder or input normalization | No new migration required; old `from` / `ForTest` adapters were already removed before this round |
 | Snapshot sprite selection / tiles | Nullable owned presentation metadata | Kept because absence is domain data used by external callers |
+
+## Review of the 88 baseline small classes
+
+The earlier metric counted Java files declaring a **class** with fewer than
+40 real-code lines (excluding comments, imports, package and brace-only lines).
+It excluded files declaring only a record, event record or interface. The list
+below preserves that exact baseline inventory rather than silently changing the
+metric to include those value types.
+
+### Value / presentation projections: 3 retained
+
+These construct immutable OAM values for distinct sprite layouts. They keep the
+projection arithmetic together; standalone event/value records are also retained
+but were not among the 88 classes counted by the original metric.
+
+- `HookshotChainOam` (27 baseline code lines).
+- `PincerBodyOam` (24 baseline code lines).
+- `WingedOctorokOam` (16 baseline code lines).
+
+### Real small collaborators and complete entity routines: 83 retained
+
+The handlers below each own a complete type/family registration and its callback,
+rather than a fragment of another handler. Motions own a complete ROM algorithm
+or state. Slot allocation/validation, collision algorithms, seeded RNG, motion
+registry, runtime state, live projections and stable probe adapters are shared
+responsibilities with real consumers. `EntityDebugConfiguration` is an externally
+used configuration API, including `world/room/RoomDebugFixture`. Moldorm history
+remains separate because it owns the tail projection cache; screen shake owns
+its countdown and phase. `EntityFrameCollision` owns stable callback adapters
+whose identity avoids per-frame allocations.
+
+- `ColorShellWorld` (22 baseline code lines).
+- `EntityCollisionPointProbe` (15 baseline code lines).
+- `EntityDebugConfiguration` (13 baseline code lines).
+- `EntityFrameCollision` (31 baseline code lines).
+- `EntityFrameRandom` (10 baseline code lines).
+- `EntityLinkCollisionRules` (39 baseline code lines).
+- `EntityLinkState` (35 baseline code lines).
+- `EntityLiveSlotList` (27 baseline code lines).
+- `EntityMotionRegistry` (10 baseline code lines).
+- `EntityPresentationState` (38 baseline code lines).
+- `EntityRuntimeState` (11 baseline code lines).
+- `EntitySideViewGravity` (20 baseline code lines).
+- `EntitySlotAllocator` (9 baseline code lines).
+- `EntitySlotValidation` (19 baseline code lines).
+- `EntityWarpController` (11 baseline code lines).
+- `PairoddProjectileObjectCollision` (17 baseline code lines).
+- `PlayerProjectileLaunchSpeed` (8 baseline code lines).
+- `RomRandomByteSource` (34 baseline code lines).
+- `handler/AntiFairyHandler` (9 baseline code lines).
+- `handler/ArmosStatueHandler` (37 baseline code lines).
+- `handler/BoomerangHandler` (22 baseline code lines).
+- `handler/ButterflyHandler` (11 baseline code lines).
+- `handler/BuzzBlobHandler` (33 baseline code lines).
+- `handler/ChestWithItemHandler` (29 baseline code lines).
+- `handler/CrowHandler` (35 baseline code lines).
+- `handler/CrystalSwitchHandler` (24 baseline code lines).
+- `handler/DroppableFairyHandler` (25 baseline code lines).
+- `handler/FishHandler` (32 baseline code lines).
+- `handler/FollowingNpcTypeHandler` (31 baseline code lines).
+- `handler/GhiniTypeHandler` (38 baseline code lines).
+- `handler/GiantGopongaFlowerHandler` (32 baseline code lines).
+- `handler/GibdoHandler` (9 baseline code lines).
+- `handler/GoombaHandler` (29 baseline code lines).
+- `handler/GopongaFlowerHandler` (22 baseline code lines).
+- `handler/GopongaFlowerProjectileHandler` (31 baseline code lines).
+- `handler/HardhatBeetleHandler` (23 baseline code lines).
+- `handler/HeartContainerHandler` (17 baseline code lines).
+- `handler/HidingZolHandler` (37 baseline code lines).
+- `handler/HookshotBridgeHandler` (13 baseline code lines).
+- `handler/InstrumentOfTheSirensHandler` (35 baseline code lines).
+- `handler/IronMaskHandler` (21 baseline code lines).
+- `handler/KanaletBombableWallHandler` (19 baseline code lines).
+- `handler/KeeseHandler` (14 baseline code lines).
+- `handler/KidHandler` (15 baseline code lines).
+- `handler/LeeverHandler` (22 baseline code lines).
+- `handler/LiftableRockHandler` (15 baseline code lines).
+- `handler/LikeLikeHandler` (37 baseline code lines).
+- `handler/MadamMeowmeowHandler` (20 baseline code lines).
+- `handler/MagicPowderSprinkleHandler` (22 baseline code lines).
+- `handler/MagicRodFireballHandler` (21 baseline code lines).
+- `handler/MarinIndoorHandler` (13 baseline code lines).
+- `handler/MaskedMimicGoriyaHandler` (34 baseline code lines).
+- `handler/MimicHandler` (26 baseline code lines).
+- `handler/MoblinHandler` (9 baseline code lines).
+- `handler/MusicalNoteHandler` (16 baseline code lines).
+- `handler/OwlEventHandler` (18 baseline code lines).
+- `handler/PairoddHandler` (31 baseline code lines).
+- `handler/PeahatHandler` (17 baseline code lines).
+- `handler/PincerHandler` (27 baseline code lines).
+- `handler/PiranhaPlantHandler` (31 baseline code lines).
+- `handler/RichardHandler` (17 baseline code lines).
+- `handler/SandCrabHandler` (33 baseline code lines).
+- `handler/SleepyToadstoolHandler` (26 baseline code lines).
+- `handler/SlimeEyeHandler` (6 baseline code lines).
+- `handler/SnakeHandler` (24 baseline code lines).
+- `handler/SpikeTrapHandler` (27 baseline code lines).
+- `handler/SpikedBeetleHandler` (32 baseline code lines).
+- `handler/StalfosAggressiveHandler` (25 baseline code lines).
+- `handler/StarHandler` (27 baseline code lines).
+- `handler/SwordBeamHandler` (23 baseline code lines).
+- `handler/SwordShieldPickupHandler` (27 baseline code lines).
+- `handler/TektiteHandler` (14 baseline code lines).
+- `handler/ThreeOfAKindHandler` (28 baseline code lines).
+- `handler/Type0X35Handler` (21 baseline code lines).
+- `handler/Type0X39Handler` (10 baseline code lines).
+- `handler/Type0X42Handler` (20 baseline code lines).
+- `handler/WaterTektiteHandler` (18 baseline code lines).
+- `handler/WitchRatHandler` (32 baseline code lines).
+- `motion/BombMotion` (38 baseline code lines).
+- `motion/GopongaFlowerMotion` (10 baseline code lines).
+- `motion/KeyDropPointMotion` (34 baseline code lines).
+- `motion/MoldormTailSnapshots` (28 baseline code lines).
+- `motion/ScreenShakeMotion` (27 baseline code lines).
+
+### Remaining slices: 2 merged
+
+- `EntitySlotCombat` (16 baseline code lines) is now the private ordered combat
+  sequence in `EntityCombatResolver`; it had no independent state or policy.
+- `motion/SlimeEyeHalfMotion` (18 baseline code lines) is now the half-state
+  transition methods and `HalfUpdate` value in `SlimeEyeController`. Its byte
+  arithmetic and integration/timer call sites are unchanged; all existing tests
+  remain and now call the owning controller.
+
+Also merged `EntityLinkContact` into `EntityCombatResolver`: it was over the
+40-line threshold but still only a continuation of that same combat sequence.
+None of the three removed classes had callers outside `world/entity` main/tests.

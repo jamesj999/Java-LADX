@@ -100,9 +100,7 @@ public final class RomEnemyCombatTables {
     }
 
     /** Mirrors the two table lookups in ApplySwordDamagesToEnemy. */
-    public SwordDamageResult resolveSwordDamage(
-            int entityType, /* Optional attack details; null selects the existing default attack context. */
-            EnemyAttackContext attackContext) {
+    public SwordDamageResult resolveSwordDamage(int entityType, EnemyAttackContext attackContext) {
         return resolveSwordDamage(entityType, healthGroup(entityType), attackContext);
     }
 
@@ -182,10 +180,7 @@ public final class RomEnemyCombatTables {
         }
     }
 
-    private static int[] loadUnsigned(
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ Rom romData,
-            RomAddress address,
-            int length) {
+    private static int[] loadUnsigned(Rom romData, RomAddress address, int length) {
         int offset = address.offset();
         if (offset < 0 || length < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException("ROM table is truncated at bank $" + Integer.toHexString(address.bank())

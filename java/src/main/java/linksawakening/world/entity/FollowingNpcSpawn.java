@@ -10,5 +10,5 @@ public record FollowingNpcSpawn(
         int linkZ,
         int entityYOffset,
         int linkDirection,
-        // Optional room geometry/history; null preserves the path without that room input.
+        // Required by synchronization; following motion uses the recorded Link positions.
         LinkPositionHistory history) {}

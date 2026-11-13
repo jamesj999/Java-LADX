@@ -174,7 +174,7 @@ final class EntityCombatResolver {
         try {
             for (int index = runtime.slots.length - 1; index >= 0; index--) {
                 slot.reset(inputs, events, runtime.slots[index]);
-                EntitySlotCombat.resolve(slot);
+                resolveSlotCombat(slot);
             }
         } finally {
             this.releaseSlot(slot);
@@ -916,5 +916,110 @@ final class EntityCombatResolver {
             this.swordDamage = 0;
             this.swordResultApplied = false;
         }
+    }
+
+    private static boolean resolveSlotCombat(EntityCombatSlot slot) {
+        if (!entityCombatGatesAcceptInitialStatus(slot)) return false;
+        if (!entityCombatGatesAcceptOrdinaryCollision(slot)) return false;
+        if (!entityCombatGatesAcceptHandlerCollision(slot)) return false;
+        if (!entityCombatGatesAcceptMovementState(slot)) return false;
+        if (!entityCombatGatesAcceptDamageCountdowns(slot)) return false;
+        if (!entityCombatOverlapProbeBodyAndSword(slot)) return false;
+        if (!entityCombatOverlapApplyShieldContact(slot)) return false;
+        if (!entityCombatOverlapAcceptContactOrStomp(slot)) return false;
+        if (!entitySwordImpactPrepare(slot)) return false;
+        if (!entitySwordImpactApply(slot)) return false;
+        if (!prepareLinkContact(slot)) return false;
+        if (!applyLinkContactRecoil(slot)) return false;
+        if (!emitLinkContactOutcome(slot)) return false;
+        return true;
+    }
+
+    private static boolean prepareLinkContact(EntityCombatSlot slot) {
+        var runtime = slot.runtime;
+
+        if (slot.linkCollision && slot.entity.type() == EntityRomConstants.ENTITY_GEL) {
+            runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).onLinkCollision(slot.entity.slot());
+        }
+        // ApplyLinkCollisionWithEnemy's Gel branch ($03:6D3D) returns
+        // immediately after starting the cling, before damage/recoil.
+        slot.linkDamage = slot.linkCollision && slot.entity.type() != EntityRomConstants.ENTITY_GEL
+                ? runtime.slotProperties.contactDamage(slot.entity.slot())
+                : 0;
+        if ((runtime.physicsTables.readEnemyPhysicsFlags(slot.entity.slot())
+                        & EntityRomConstants.ENTITY_PHYSICS_HARMLESS)
+                != 0) {
+            // func_003_6CC0 keeps CheckLinkCollisionWithEnemy's carry
+            // result for harmless entities but suppresses Link damage.
+            slot.linkDamage = 0;
+        }
+        slot.linkCollisionResponse = EntityCombatEvent.LinkCollisionResponse.NONE;
+        // AnimateRoamingEnemy calls the body collision before the sword
+        // pass ($03:585B/$6E28). Hitting a plain roaming enemy does not
+        // cancel the recoil that its body contact already wrote.
+        slot.bodyRecoilBeforeSword = slot.entity.type() == EntityRomConstants.ENTITY_OCTOROK
+                || slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN;
+        return true;
+    }
+
+    private static boolean applyLinkContactRecoil(EntityCombatSlot slot) {
+        var runtime = slot.runtime;
+        var frame = slot.inputs;
+
+        if (slot.linkDamage > 0
+                && (!slot.swordHit || slot.bodyRecoilBeforeSword)
+                && RoomEntityCombatRules.usesStandardLinkContactResponse(slot.entity.type())) {
+            if (slot.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
+                // $03:6DE9-6DED / $03:6FA7-6FB8: horizontal only.
+                int speedX = ((frame.linkEntityX() - slot.entity.x()) & 0xFF) < 0x80 ? 0x18 : 0xE8;
+                slot.linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(speedX, 0, 0x10);
+            } else {
+                // $03:6DFA-6E02 selects the magnitude of Link's recoil.
+                int speed = slot.entity.type() == EntityRomConstants.ENTITY_MOLDORM ? 0x18 : 0x14;
+                EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                        slot.entity.x(),
+                        slot.entity.y(),
+                        slot.entity.z(),
+                        frame.linkEntityX(),
+                        frame.linkEntityY(),
+                        speed);
+                slot.linkCollisionResponse =
+                        new EntityCombatEvent.LinkCollisionResponse(vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+            }
+        }
+        if (slot.linkDamage > 0
+                && !slot.swordHit
+                && slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING
+                && runtime.motions
+                                .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                                .state(slot.entity.slot())
+                        == 9
+                && runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()) == 0x60) {
+            slot.linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
+                    runtime.motions
+                            .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                            .speedX(slot.entity.slot()),
+                    0,
+                    0x28,
+                    0x40);
+        }
+        return true;
+    }
+
+    private static boolean emitLinkContactOutcome(EntityCombatSlot slot) {
+        slot.events.add(
+                linksawakening.world.entity.event.EntityCombatEvent.builder(slot.entity.slot(), slot.entity.type())
+                        .linkDamage(slot.linkDamage)
+                        .swordHit(slot.swordHit)
+                        .enemyDamage(slot.enemyDamage)
+                        .enemySpecialAction(slot.enemySpecialAction)
+                        .soundChannel(slot.soundChannel)
+                        .soundId(slot.soundId)
+                        .secondarySoundChannel(slot.secondarySoundChannel)
+                        .secondarySoundId(slot.secondarySoundId)
+                        .swordPokeVfx(slot.swordPokeVfx)
+                        .linkCollisionResponse(slot.linkCollisionResponse)
+                        .build());
+        return true;
     }
 }
