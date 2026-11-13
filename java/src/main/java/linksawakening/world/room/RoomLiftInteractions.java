@@ -1,6 +1,9 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.INDOOR_POT_PULL_FRAMES;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_LIFTABLE_POT;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_POT_WITH_SWITCH;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SWITCH_BUTTON;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.state.Direction;

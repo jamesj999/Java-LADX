@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import java.util.List;
 import java.util.Map;
 import linksawakening.rom.Rom;

@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.state.Direction;
 
 public interface RoomDoors {

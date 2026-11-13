@@ -1,6 +1,8 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.OW_ROOM_STATUS_FLAG_CHANGED;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_2;
 
 import java.util.List;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;

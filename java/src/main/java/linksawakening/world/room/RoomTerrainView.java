@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 final class RoomTerrainView implements RoomTerrain {
     private final Dependencies dependencies;
 

@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import java.util.HashMap;
 import java.util.Map;
 import linksawakening.entity.EntitySpriteDefinition;

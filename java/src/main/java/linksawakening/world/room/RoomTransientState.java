@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.STAIRCASE_NONE;
 
 import linksawakening.vfx.TransientVfxSystem;
 

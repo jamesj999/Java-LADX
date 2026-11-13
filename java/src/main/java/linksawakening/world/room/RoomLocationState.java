@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.W_TILESET_NO_UPDATE;
 
 import linksawakening.world.transition.Warp;
 

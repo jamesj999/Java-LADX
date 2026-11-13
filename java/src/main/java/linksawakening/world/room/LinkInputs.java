@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 public record LinkInputs(
         LinkPosition position,
         LinkMotion motion,

@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.EnemyDropResolver;

@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 final class RoomPuzzleState {
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     int roomTriggerCount;

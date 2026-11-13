@@ -14,8 +14,6 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.testing.TestRoms;
-import linksawakening.world.entity.*;
-import linksawakening.world.room.*;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom

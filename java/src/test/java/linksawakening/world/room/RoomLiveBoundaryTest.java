@@ -1,10 +1,13 @@
 package linksawakening.world.room;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.*;
+import java.util.List;
 import linksawakening.testing.AllocationProbe;
-import linksawakening.world.entity.*;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.TestEntities;
 import org.junit.jupiter.api.Test;
 
 class RoomLiveBoundaryTest {

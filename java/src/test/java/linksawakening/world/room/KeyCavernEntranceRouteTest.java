@@ -1,6 +1,12 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomNavigationFixture.*;
+import static linksawakening.world.room.RoomNavigationFixture.collisionGrid;
+import static linksawakening.world.room.RoomNavigationFixture.loadRom;
+import static linksawakening.world.room.RoomNavigationFixture.newSession;
+import static linksawakening.world.room.RoomNavigationFixture.objectAt;
+import static linksawakening.world.room.RoomNavigationFixture.reachablePositionPath;
+import static linksawakening.world.room.RoomNavigationFixture.tickInteractiveEntities;
+import static linksawakening.world.room.RoomNavigationFixture.walkToAndCrossIndoorBoundary;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

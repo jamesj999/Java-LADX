@@ -1,7 +1,6 @@
 package linksawakening.world.room;
 
 import linksawakening.state.Direction;
-import linksawakening.world.room.RoomSession.*;
 
 final class RoomDoorsView implements RoomDoors {
     private final RoomDoorInteractions delegate;

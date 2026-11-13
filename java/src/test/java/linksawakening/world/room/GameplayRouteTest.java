@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomNavigationFixture.*;
-
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom

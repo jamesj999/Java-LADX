@@ -3,7 +3,6 @@ package linksawakening.world.room;
 import java.util.Map;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.FollowingNpcState;
-import linksawakening.world.room.RoomSession.*;
 
 final class RoomStoryView implements RoomStory {
     private final RoomStoryState delegate;

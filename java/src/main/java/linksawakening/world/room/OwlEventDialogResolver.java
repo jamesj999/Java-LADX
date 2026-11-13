@@ -1,9 +1,9 @@
 package linksawakening.world.room;
 
-import linksawakening.rom.*;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
 /** Resolves label_2A07's two-stage overworld-room to owl-dialog lookup. */
 public final class OwlEventDialogResolver {

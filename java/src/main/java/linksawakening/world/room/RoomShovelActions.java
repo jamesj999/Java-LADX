@@ -1,6 +1,18 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_BLOCKER_A;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_BLOCKER_B;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_BLOCKER_C;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_HOLE;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_SHOVEL_INDOOR_DIGGABLE;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_DIALOG_ID;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_DIALOG_TABLE;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_DIG_TIMER;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_FINISH_TIMER;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_STATE_ACTIVE;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_STATE_DUG;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_TARGET_X;
+import static linksawakening.world.room.RoomSessionRules.SHOVEL_TARGET_Y;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;

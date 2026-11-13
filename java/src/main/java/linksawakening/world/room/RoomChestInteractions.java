@@ -2,7 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_CHEST_OPEN;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;

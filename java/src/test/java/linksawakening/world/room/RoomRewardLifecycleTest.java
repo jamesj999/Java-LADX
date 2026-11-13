@@ -1,6 +1,10 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionTestSupport.*;
+import static linksawakening.world.room.RoomSessionTestSupport.fillActiveObjects;
+import static linksawakening.world.room.RoomSessionTestSupport.loadRom;
+import static linksawakening.world.room.RoomSessionTestSupport.newSession;
+import static linksawakening.world.room.RoomSessionTestSupport.runtimeWithKillOrder;
+import static linksawakening.world.room.RoomSessionTestSupport.tickInteractive;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

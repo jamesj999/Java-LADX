@@ -1,6 +1,13 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_BOW_WOW;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_CONVEYOR_MOVEMENT_X;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_CONVEYOR_MOVEMENT_Y;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_FISH;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_MARIN_AT_THE_SHORE;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_OPT1_NO_GROUND_INTERACTION;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_PEAHAT;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_ROOSTER;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;

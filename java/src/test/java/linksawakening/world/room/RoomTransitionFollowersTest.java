@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomNavigationFixture.*;
+import static linksawakening.world.room.RoomNavigationFixture.loadRom;
+import static linksawakening.world.room.RoomNavigationFixture.newSession;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.physics.OverworldCollision;

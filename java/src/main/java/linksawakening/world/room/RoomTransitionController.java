@@ -1,6 +1,18 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_OWL_EVENT;
+import static linksawakening.world.room.RoomSessionRules.ENTITY_TARIN;
+import static linksawakening.world.room.RoomSessionRules.OCARINA_MARIN_DIALOG_ID;
+import static linksawakening.world.room.RoomSessionRules.OCARINA_MARIN_DIALOG_TABLE;
+import static linksawakening.world.room.RoomSessionRules.OCARINA_NO_SONG_DIALOG_ID;
+import static linksawakening.world.room.RoomSessionRules.OCARINA_NO_SONG_DIALOG_TABLE;
+import static linksawakening.world.room.RoomSessionRules.ROOM_OW_MYSTERIOUS_WOODS_LOST;
+import static linksawakening.world.room.RoomSessionRules.ROOM_OW_TAIL_KEY_CHEST;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_DISCOVERED;
+import static linksawakening.world.room.RoomSessionRules.STAIRCASE_ACTIVE;
+import static linksawakening.world.room.RoomSessionRules.STAIRCASE_INACTIVE;
+import static linksawakening.world.room.RoomSessionRules.STAIRCASE_NONE;
+import static linksawakening.world.room.RoomSessionRules.W_TILESET_NO_UPDATE;
 
 import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;

@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 final class RoomDungeonView implements RoomDungeon {
     private final Dependencies dependencies;
     private final RoomDungeon.View view;

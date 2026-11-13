@@ -1,6 +1,27 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.INDOOR_ROOM_STATUS_EVENT_3;
+import static linksawakening.world.room.RoomSessionRules.KEYHOLE_BLOCK_CONTACT_TICKS;
+import static linksawakening.world.room.RoomSessionRules.KEYHOLE_DIALOG_TABLE;
+import static linksawakening.world.room.RoomSessionRules.KEY_DOOR_ANIMATION_FRAMES;
+import static linksawakening.world.room.RoomSessionRules.KEY_DOOR_CLOSED_OBJECTS;
+import static linksawakening.world.room.RoomSessionRules.KEY_DOOR_PHYSICS_BASE;
+import static linksawakening.world.room.RoomSessionRules.LINK_COLLISION_TYPE_UP;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_CAVE_DOOR;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_CLOSED_GATE;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_FLOOR_OD;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_KEYHOLE_BLOCK;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_PUSHABLE_BLOCK;
+import static linksawakening.world.room.RoomSessionRules.PUSHED_BLOCK_MOTION_FRAMES;
+import static linksawakening.world.room.RoomSessionRules.PUSH_BLOCK_CONTACT_TICKS;
+import static linksawakening.world.room.RoomSessionRules.ROOM_OW_KEY_CAVERN_ENTRANCE;
+import static linksawakening.world.room.RoomSessionRules.ROOM_OW_TAIL_CAVE_ENTRANCE;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
+import static linksawakening.world.room.RoomSessionRules.SLIME_KEYHOLE_DIALOG_ID;
+import static linksawakening.world.room.RoomSessionRules.TAIL_CAVE_GATE_LOCATION;
+import static linksawakening.world.room.RoomSessionRules.TAIL_CAVE_RUMBLE_GATE_FRAME;
+import static linksawakening.world.room.RoomSessionRules.TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
+import static linksawakening.world.room.RoomSessionRules.TAIL_KEYHOLE_DIALOG_ID;
 
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;

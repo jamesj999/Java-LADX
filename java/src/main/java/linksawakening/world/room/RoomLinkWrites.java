@@ -2,7 +2,11 @@ package linksawakening.world.room;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.world.entity.event.*;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
 
 /** Stable head merges: preserve each stream's order and the source tie precedence. */
 final class RoomLinkWrites {

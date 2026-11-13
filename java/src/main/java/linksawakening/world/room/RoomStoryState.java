@@ -1,6 +1,8 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
+import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_2;
+import static linksawakening.world.room.RoomSessionRules.W_TILESET_NO_UPDATE;
 
 import java.util.Arrays;
 import java.util.Map;

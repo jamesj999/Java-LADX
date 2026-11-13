@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EnemyProjectileCollision;

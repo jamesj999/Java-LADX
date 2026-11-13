@@ -1,6 +1,17 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import static linksawakening.world.room.RoomSessionRules.BOMBABLE_WALL_PHYSICS_BASE;
+import static linksawakening.world.room.RoomSessionRules.INDOOR_ROOM_STATUS_EVENT_3;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_BOMBABLE_BLOCK;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_BOMBABLE_CAVE_DOOR;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_BOMBED_PASSAGE_HORIZONTAL;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_BOMBED_PASSAGE_VERTICAL;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_FLOOR_OD;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_GIANT_SKULL_BOTTOM_RIGHT;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_GIANT_SKULL_TOP_LEFT;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_ROCKY_CAVE_DOOR;
+import static linksawakening.world.room.RoomSessionRules.OBJECT_ROCKY_GROUND;
+import static linksawakening.world.room.RoomSessionRules.OW_ROOM_STATUS_OPENED;
 
 import java.util.List;
 import java.util.Map;

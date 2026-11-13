@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import java.util.List;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;

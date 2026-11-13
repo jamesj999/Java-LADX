@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
-
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.LinkPositionHistory;
 

@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomNavigationFixture.*;
+import static linksawakening.world.room.RoomNavigationFixture.PowderApproach;
+import static linksawakening.world.room.RoomNavigationFixture.SwordApproach;
 
 import java.util.List;
 import linksawakening.entity.Link;
