@@ -6,6 +6,7 @@ import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
 import java.util.List;
+import linksawakening.world.entity.SlimeEyeController.SlimeEyeCombatFrame;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
