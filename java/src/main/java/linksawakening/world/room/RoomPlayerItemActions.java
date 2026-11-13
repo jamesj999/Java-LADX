@@ -25,202 +25,175 @@ final class RoomPlayerItemActions {
                 dependencies.roomTileRedraw()));
     }
 
-    boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
-        if (dependencies.entityRuntimeState().runtime == null) {
-            return false;
-        }
-        boolean thrown = dependencies
-                .entityRuntimeState()
-                .runtime
-                .throwLiftedEntity(RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
+    boolean throwLiftedEntity(RoomRuntime loaded, linksawakening.state.Direction linkDirection) {
+
+        boolean thrown = loaded.entities.throwLiftedEntity(
+                RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
-            publishEntityView();
+            publishEntityView(loaded);
         }
         return thrown;
     }
 
     boolean fireHookshot(
+            RoomRuntime loaded,
             int linkEntityX,
             int linkEntityY,
             int linkEntityZ,
             int romDirection,
             boolean linkAirborne,
             boolean linkPushing) {
-        if (linkAirborne
-                || linkPushing
-                || dependencies.location().activeRoom == null
-                || dependencies.entityRuntimeState().runtime == null) {
+        if (linkAirborne || linkPushing) {
             return false;
         }
-        int slot = dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities.spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        publishEntityView();
+        publishEntityView(loaded);
         return true;
     }
 
-    boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
-        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
-            return false;
-        }
-        int slot = dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
+    boolean fireBoomerang(
+            RoomRuntime loaded,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int romDirection,
+            int pressedButtonsMask) {
+
+        int slot =
+                loaded.entities.spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
         if (slot < 0) {
             return false;
         }
-        publishEntityView();
+        publishEntityView(loaded);
         return true;
     }
 
-    boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
-            return false;
-        }
-        int slot = dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    boolean fireSwordBeam(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+
+        int slot = loaded.entities.spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        publishEntityView();
+        publishEntityView(loaded);
         return true;
-    }
-
-    boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return this.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     boolean fireMagicRodFireball(
-            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
-            return false;
-        }
-        int slot = dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+            RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return this.fireMagicRodFireball(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+    }
+
+    boolean fireMagicRodFireball(
+            RoomRuntime loaded,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int romDirection,
+            boolean pieceOfPower) {
+
+        int slot = loaded.entities.spawnMagicRodFireball(
+                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return false;
         }
-        publishEntityView();
+        publishEntityView(loaded);
         return true;
     }
 
-    boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
-            return false;
-        }
-        int slot = dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    boolean sprinkleMagicPowder(
+            RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+
+        int slot = loaded.entities.spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        publishEntityView();
+        publishEntityView(loaded);
         return true;
     }
 
-    ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) {
-        return roomShovelActions.startShovel(linkEntityX, linkEntityY, romDirection, linkAirborne);
+    ShovelStartResult startShovel(
+            RoomRuntime loaded, int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) {
+        return roomShovelActions.startShovel(loaded, linkEntityX, linkEntityY, romDirection, linkAirborne);
     }
 
-    void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) {
-        roomShovelActions.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
+    void advanceShovel(RoomRuntime loaded, int linkEntityX, int linkEntityY, int romDirection, int timer) {
+        roomShovelActions.advanceShovel(loaded, linkEntityX, linkEntityY, romDirection, timer);
     }
 
     int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
         return roomShovelActions.shovelAnimationState(javaDirection, timer);
     }
 
-    ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) {
-        return roomShovelActions.probeShovel(linkEntityX, linkEntityY, romDirection);
+    ShovelProbe probeShovel(RoomRuntime loaded, int linkEntityX, int linkEntityY, int romDirection) {
+        return roomShovelActions.probeShovel(loaded, linkEntityX, linkEntityY, romDirection);
     }
 
-    void writeShovelHole(ShovelProbe probe) {
-        roomShovelActions.writeShovelHole(probe);
+    void writeShovelHole(RoomRuntime loaded, ShovelProbe probe) {
+        roomShovelActions.writeShovelHole(loaded, probe);
     }
 
-    boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
-            return false;
-        }
-        int slot = dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    boolean placeBomb(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+
+        int slot = loaded.entities.spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
-        publishEntityView();
+        publishEntityView(loaded);
         return true;
     }
 
-    boolean lastBombPlacementPlayedBump() {
-        return dependencies.entityRuntimeState().runtime != null
-                && dependencies.entityRuntimeState().runtime.inspection().lastBombPlacementPlayedBump();
+    boolean lastBombPlacementPlayedBump(RoomRuntime loaded) {
+        return loaded.entities.inspection().lastBombPlacementPlayedBump();
     }
 
-    boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return this.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
+    boolean shootArrow(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return this.shootArrowResult(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
                 .spawned();
     }
 
-    ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return this.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+    ArrowShotResult shootArrowResult(
+            RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return this.shootArrowResult(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     ArrowShotResult shootArrowResult(
-            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        if (dependencies.location().activeRoom == null || dependencies.entityRuntimeState().runtime == null) {
-            return new ArrowShotResult(false, false);
-        }
-        int slot = dependencies
-                .entityRuntimeState()
-                .runtime
-                .spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+            RoomRuntime loaded,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int romDirection,
+            boolean pieceOfPower) {
+
+        int slot = loaded.entities.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }
-        boolean playWhoosh =
-                dependencies.entityRuntimeState().runtime.inspection().lastArrowShotPlayedWhoosh();
-        publishEntityView();
+        boolean playWhoosh = loaded.entities.inspection().lastArrowShotPlayedWhoosh();
+        publishEntityView(loaded);
         return new ArrowShotResult(true, playWhoosh);
     }
 
-    int activeProjectileCount() {
-        return dependencies.entityRuntimeState().runtime == null
-                ? 0
-                : dependencies.entityRuntimeState().runtime.inspection().activeProjectileCount();
+    int activeProjectileCount(RoomRuntime loaded) {
+        return loaded.entities.inspection().activeProjectileCount();
     }
 
-    boolean bombActive() {
-        return dependencies.entityRuntimeState().runtime != null
-                && dependencies.entityRuntimeState().runtime.inspection().bombActive();
+    boolean bombActive(RoomRuntime loaded) {
+        return loaded.entities.inspection().bombActive();
     }
 
-    boolean hookshotActive() {
-        return dependencies.entityRuntimeState().hookshotActive();
+    boolean hookshotActive(RoomRuntime loaded) {
+        return loaded.entities.inspection().hookshotActive();
     }
 
-    boolean boomerangActive() {
-        return dependencies.entityRuntimeState().runtime != null
-                && dependencies.entityRuntimeState().runtime.inspection().boomerangActive();
+    boolean boomerangActive(RoomRuntime loaded) {
+        return loaded.entities.inspection().boomerangActive();
     }
 
-    private void publishEntityView() {
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(
-                        dependencies.entityRuntimeState().runtime.inspection().view());
+    private void publishEntityView(RoomRuntime loaded) {
+        loaded.room.replaceEntities(loaded.entities.inspection().view());
     }
 
     record Dependencies(

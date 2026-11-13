@@ -68,7 +68,7 @@ public final class RoomSession {
         roles = RoomRoleViews.create(components, this);
         doors = new RoomDoorsView(components.roomDoorInteractions());
         transitions = new RoomTransitionsView(components.roomTransitionController());
-        playerItems = new RoomPlayerItemsView(components.roomPlayerItemActions());
+        playerItems = new RoomPlayerItemsView(this);
         story = new RoomStoryView(components.roomStoryState());
         frameInputs = new RoomFrameInputApplier(
                 components.entityInputs(),
@@ -351,5 +351,145 @@ public final class RoomSession {
                 new LinkMotion(linkAirborne, linkMotionState, usingShield, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
+    }
+
+    boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
+        return hasRoom() ? components.roomPlayerItemActions().throwLiftedEntity(loadedRoom, linkDirection) : false;
+    }
+
+    boolean fireHookshot(
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int romDirection,
+            boolean linkAirborne,
+            boolean linkPushing) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .fireHookshot(
+                                loadedRoom,
+                                linkEntityX,
+                                linkEntityY,
+                                linkEntityZ,
+                                romDirection,
+                                linkAirborne,
+                                linkPushing)
+                : false;
+    }
+
+    boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .fireBoomerang(
+                                loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask)
+                : false;
+    }
+
+    boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .fireSwordBeam(loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : false;
+    }
+
+    boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .fireMagicRodFireball(loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : false;
+    }
+
+    boolean fireMagicRodFireball(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .fireMagicRodFireball(
+                                loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower)
+                : false;
+    }
+
+    boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .sprinkleMagicPowder(loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : false;
+    }
+
+    ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) {
+        if (romDirection < 0 || romDirection > 3)
+            throw new IllegalArgumentException("ROM shovel direction out of range: " + romDirection);
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .startShovel(loadedRoom, linkEntityX, linkEntityY, romDirection, linkAirborne)
+                : new ShovelStartResult(false, true, -1);
+    }
+
+    void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) {
+        if (hasRoom())
+            components.roomPlayerItemActions().advanceShovel(loadedRoom, linkEntityX, linkEntityY, romDirection, timer);
+    }
+
+    int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
+        return components.roomPlayerItemActions().shovelAnimationState(javaDirection, timer);
+    }
+
+    boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .placeBomb(loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : false;
+    }
+
+    boolean lastBombPlacementPlayedBump() {
+        return hasRoom() ? components.roomPlayerItemActions().lastBombPlacementPlayedBump(loadedRoom) : false;
+    }
+
+    boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .shootArrow(loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : false;
+    }
+
+    ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .shootArrowResult(loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : new ArrowShotResult(false, false);
+    }
+
+    ArrowShotResult shootArrowResult(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+        return hasRoom()
+                ? components
+                        .roomPlayerItemActions()
+                        .shootArrowResult(loadedRoom, linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower)
+                : new ArrowShotResult(false, false);
+    }
+
+    int activeProjectileCount() {
+        return hasRoom() ? components.roomPlayerItemActions().activeProjectileCount(loadedRoom) : 0;
+    }
+
+    boolean bombActive() {
+        return hasRoom() ? components.roomPlayerItemActions().bombActive(loadedRoom) : false;
+    }
+
+    boolean hookshotActive() {
+        return hasRoom() ? components.roomPlayerItemActions().hookshotActive(loadedRoom) : false;
+    }
+
+    boolean boomerangActive() {
+        return hasRoom() ? components.roomPlayerItemActions().boomerangActive(loadedRoom) : false;
     }
 }

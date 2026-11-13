@@ -83,3 +83,12 @@ Default positional tick entry points assemble inputs at that same boundary.
 RoomEntitySimulation and RoomEntityRewards receive RoomRuntime explicitly through
 configuration, ticking and ordered effects; neither asks whether a room/runtime
 exists. No new per-frame callback or holder is constructed by this migration.
+
+## Player items
+
+Loaded player-item/shovel methods receive RoomRuntime. The facade preserves
+false for unloaded projectile/lifted-throw operations, zero projectile count,
+ArrowShotResult(false,false), and ShovelStartResult(false,true,-1). Shovel ROM
+direction validation still precedes the no-room branch; animation lookup remains
+a room-independent ROM query. The owned contract test includes null throw facing
+and invalid shovel direction before first load. World null occurrences: 274.
