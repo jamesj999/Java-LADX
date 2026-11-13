@@ -15,3 +15,9 @@ count predates the integration pass; this audit uses a reproducible source count
 The live assembler uses the retained inputs and build overload. Both immutable
 and mutable overloads of app.screen.Screen are migration seams. Layer-level
 regression tests are independent consumers and must retain their assertions.
+
+Unified pipeline verification (EA disabled): assembly/scene construction 0 B,
+composition 0 B, representative active-VFX scene 264 B/frame, intro and inventory
+0 B/frame. Whole-frame idle/inventory 0 B; walking 596.53 B/frame (existing guard).
+No budgets or fixtures changed. FrameSnapshots is test-only; production returns
+borrowed inputs. Section reset/capture ownership tests were added.
