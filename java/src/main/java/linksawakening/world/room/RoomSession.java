@@ -8,7 +8,9 @@ import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
@@ -23,6 +25,7 @@ import linksawakening.world.entity.event.RoosterLinkStateRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.transition.Warp;
 
 /** Public room API delegating to room-scoped collaborators. */
 public final class RoomSession implements RoomEntityOutputSource {
@@ -69,6 +72,7 @@ public final class RoomSession implements RoomEntityOutputSource {
         components.puzzles().current = room.contents.puzzles;
         components.terrain().overrides = room.contents.overrides;
         loadedRoom = room;
+        dungeonView.setRoomMap(room.room.mapId());
     }
 
     public boolean hasRoom() {
@@ -83,12 +87,14 @@ public final class RoomSession implements RoomEntityOutputSource {
     private final RoomTransitions transitions;
     private final RoomPlayerItems playerItems;
     private final RoomStory story;
+    private final RoomDungeonLiveView dungeonView;
 
     static long nextRoomSessionId;
 
     public RoomSession(RoomSessionConfig config) {
         components = RoomSessionContext.create(config, this::installRoom);
 
+        dungeonView = new RoomDungeonLiveView(components.roomState(), -1);
         roles = RoomRoleViews.create(components, this);
         doors = new RoomDoorsView(this);
         transitions = new RoomTransitionsView(components.roomTransitionController());
@@ -98,14 +104,13 @@ public final class RoomSession implements RoomEntityOutputSource {
                 components.entityInputs(),
                 components.entityBridge(),
                 components.entityFrame(),
-                components.roomSessionViews(),
                 roles.entityState(),
                 story,
                 components.roomLoadCoordinator(),
                 this);
         frameResults = new EntityFrameResults(
                 new LinkOutputs(components.linkOutputsDependencies(), this),
-                new RewardOutputs(components.rewardOutputsDependencies()),
+                new RewardOutputs(components.rewardOutputsDependencies(), this),
                 new PresentationOutputs(components.presentationOutputsDependencies(), this));
     }
 
@@ -902,5 +907,127 @@ public final class RoomSession implements RoomEntityOutputSource {
                     || components.puzzles().current.tailCaveFinalMotionBlockPending;
         }
         return components.roomDoorInteractions().tailCaveKeyholeSequenceActive(loadedRoom.contents);
+    }
+
+    int entityHealth(int slot) {
+        return loadedRoom.entities.enemies().enemyHealth(slot);
+    }
+
+    ActiveRoom activeRoom() {
+        return hasRoom() ? loadedRoom.room : null;
+    }
+
+    boolean hasActiveRoom() {
+        return hasRoom();
+    }
+
+    int currentRoomId() {
+        return java.util.Objects.requireNonNull(loadedRoom).room.roomId();
+    }
+
+    int mapCategory() {
+        return java.util.Objects.requireNonNull(loadedRoom).room.mapCategory();
+    }
+
+    int mapId() {
+        return java.util.Objects.requireNonNull(loadedRoom).room.mapId();
+    }
+
+    int indoorRoomPositionForSave() {
+        if (!hasRoom() || activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            return -1;
+        }
+        return components.location().indoorMapPosition;
+    }
+
+    int[][] palettes() {
+        return !hasRoom() ? null : activeRoom().palettes();
+    }
+
+    boolean heartPiecePickupActive() {
+        return hasRoom() && loadedRoom.entities.inspection().heartPiecePickupActive();
+    }
+
+    @Override
+    public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
+        if (!hasRoom()) return List.of();
+        var updates = loadedRoom.entities.consumeHeartPieceUpdates();
+        for (int i = 0; i < updates.size(); i++) {
+            if (updates.get(i).complete()) {
+                components.roomState().markCompleted(activeRoom());
+                break;
+            }
+        }
+        return updates;
+    }
+
+    String instrumentTrace() {
+        return !hasRoom() ? "" : loadedRoom.entities.inspection().instrumentTrace();
+    }
+
+    String moblinKingTrace() {
+        return !hasRoom() ? "-1" : loadedRoom.entities.inspection().moblinKingTrace();
+    }
+
+    RoomRenderSnapshot.View renderView() {
+        return hasRoom() ? loadedRoom.renderView : null;
+    }
+
+    RoomRenderSnapshot renderSnapshot() {
+        if (!hasRoom()) return null;
+        RoomRenderSnapshot snapshot = activeRoom().renderSnapshot();
+        return new RoomRenderSnapshot(
+                snapshot.tileIds(),
+                snapshot.tileAttrs(),
+                snapshot.palettes(),
+                snapshot.entities(),
+                !hasRoom() ? null : loadedRoom.entities.inspection().instrumentWarpVisual(),
+                !hasRoom() ? null : loadedRoom.entities.inspection().heartPieceVisual(),
+                snapshot.linkGrassPalette());
+    }
+
+    LiftedEntityState liftedEntityState() {
+        return !hasRoom()
+                ? LiftedEntityState.none()
+                : loadedRoom.entities.inspection().liftedEntityState();
+    }
+
+    void setHeartPiecesCount(int count) {
+        if (hasRoom()) loadedRoom.entities.setHeartPiecesCount(count);
+    }
+
+    RoomDungeon.View dungeonView() {
+        return dungeonView;
+    }
+
+    byte[] dungeonMinimapRoomStatusSnapshot() {
+        return hasRoom() ? components.roomState().dungeonMinimapRoomStatusSnapshot(loadedRoom.room) : new byte[64];
+    }
+
+    void resetGuardianAcornCounterOnHurt() {
+        var counters = hasRoom()
+                ? loadedRoom.entities.inspection().enemyDropCounters()
+                : components.entityFrame().enemyDropCounters;
+        components.entityFrame().enemyDropCounters =
+                linksawakening.world.entity.EnemyDropResolver.resetGuardianAcornCounter(counters);
+        if (hasRoom())
+            loadedRoom.entities.configuration().setEnemyDropCounters(components.entityFrame().enemyDropCounters);
+    }
+
+    boolean gelClingingToLink() {
+        return hasRoom() && loadedRoom.entities.gelClingingToLink();
+    }
+
+    void setEntityScreenShakeCountdown(int countdown) {
+        if (hasRoom()) loadedRoom.entities.configuration().setScreenShakeCountdown(countdown);
+    }
+
+    /** Explicit lifecycle reset; no room-only collaborator accepts an absent generation. */
+    void clearRoom() {
+        loadedRoom = null;
+        components.location().activeRoom = null;
+        components.entityFrame().runtime = null;
+        components.entityFrame().loaded = null;
+        dungeonView.setRoomMap(-1);
     }
 }

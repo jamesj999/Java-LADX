@@ -8,7 +8,6 @@ final class RoomFrameInputApplier {
     private final RoomEntityInputs entityInputs;
     private final RoomEntityBridge bridge;
     private final RoomEntitySessionState frame;
-    private final RoomSessionViews views;
     private final RoomEntityState entityState;
     private final RoomStory story;
     private final RoomLoadCoordinator loads;
@@ -18,7 +17,6 @@ final class RoomFrameInputApplier {
             RoomEntityInputs entityInputs,
             RoomEntityBridge bridge,
             RoomEntitySessionState frame,
-            RoomSessionViews views,
             RoomEntityState entityState,
             RoomStory story,
             RoomLoadCoordinator loads,
@@ -26,7 +24,6 @@ final class RoomFrameInputApplier {
         this.entityInputs = entityInputs;
         this.bridge = bridge;
         this.frame = frame;
-        this.views = views;
         this.entityState = entityState;
         this.story = story;
         this.loads = loads;
@@ -40,7 +37,7 @@ final class RoomFrameInputApplier {
                 inputs.ui().dialogCooldown(),
                 inputs.ui().windowY());
         session.setEntityDialogAskSelectionIndex(inputs.ui().selectionIndex());
-        views.setHeartPiecesCount(inputs.player().progress().heartPieces());
+        session.setHeartPiecesCount(inputs.player().progress().heartPieces());
         session.setEntityMusicActive(inputs.ui().musicActive());
         entityState.setEntityActionButtonsHeld(
                 inputs.buttons().aHeld(), inputs.buttons().bHeld());

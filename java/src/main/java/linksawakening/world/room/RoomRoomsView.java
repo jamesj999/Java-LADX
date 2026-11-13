@@ -4,9 +4,11 @@ import linksawakening.world.entity.event.LiftedEntityState;
 
 final class RoomRoomsView implements RoomRooms {
     private final Dependencies dependencies;
+    private final RoomSession session;
 
-    RoomRoomsView(Dependencies dependencies) {
+    RoomRoomsView(Dependencies dependencies, RoomSession session) {
         this.dependencies = dependencies;
+        this.session = java.util.Objects.requireNonNull(session);
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -34,55 +36,63 @@ final class RoomRoomsView implements RoomRooms {
     }
 
     public ActiveRoom activeRoom() {
-        return dependencies.roomSessionViews().activeRoom();
+        return session.activeRoom();
     }
 
     public boolean hasActiveRoom() {
-        return dependencies.roomSessionViews().hasActiveRoom();
+        return session.hasActiveRoom();
     }
 
     public int currentRoomId() {
-        return dependencies.roomSessionViews().currentRoomId();
+        return session.currentRoomId();
     }
 
     public int mapCategory() {
-        return dependencies.roomSessionViews().mapCategory();
+        return session.mapCategory();
     }
 
     public int mapId() {
-        return dependencies.roomSessionViews().mapId();
+        return session.mapId();
     }
 
     public int indoorRoomPositionForSave() {
-        return dependencies.roomSessionViews().indoorRoomPositionForSave();
+        return session.indoorRoomPositionForSave();
     }
 
     public int[][] palettes() {
-        return dependencies.roomSessionViews().palettes();
+        return session.palettes();
     }
 
     public boolean heartPiecePickupActive() {
-        return dependencies.roomSessionViews().heartPiecePickupActive();
+        return session.heartPiecePickupActive();
     }
 
     public String instrumentTrace() {
-        return dependencies.roomSessionViews().instrumentTrace();
+        return session.instrumentTrace();
     }
 
     public String moblinKingTrace() {
-        return dependencies.roomSessionViews().moblinKingTrace();
+        return session.moblinKingTrace();
+    }
+
+    public RoomRenderSnapshot.View renderViewOrNull() {
+        return session.renderView();
+    }
+
+    public RoomRenderSnapshot renderSnapshotOrNull() {
+        return session.renderSnapshot();
     }
 
     public RoomRenderSnapshot.View renderView() {
-        return dependencies.roomSessionViews().renderView();
+        return session.renderView();
     }
 
     public RoomRenderSnapshot renderSnapshot() {
-        return dependencies.roomSessionViews().renderSnapshot();
+        return session.renderSnapshot();
     }
 
     public LiftedEntityState liftedEntityState() {
-        return dependencies.roomSessionViews().liftedEntityState();
+        return session.liftedEntityState();
     }
 
     record Dependencies(RoomLoadCoordinator roomLoadCoordinator, RoomSessionViews roomSessionViews) {

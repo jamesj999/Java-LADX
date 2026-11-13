@@ -1,21 +1,25 @@
 package linksawakening.world.room;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 
 /** Indexed inventory reads; map layout is immutable ROM, statuses remain live WRAM. */
 final class RoomDungeonLiveView implements RoomDungeon.View {
     private final RoomWorldState world;
-    private final Supplier<ActiveRoom> room;
+    private int roomMapId;
     private final int[] minimapRooms = new int[64];
     private boolean initialized;
     private int mapId;
     private int towerLayout;
-    private byte[] statuses;
+    private byte[] statuses = NO_STATUSES;
+    private static final byte[] NO_STATUSES = new byte[0];
 
-    RoomDungeonLiveView(RoomWorldState world, Supplier<ActiveRoom> room) {
+    RoomDungeonLiveView(RoomWorldState world, int mapId) {
         this.world = java.util.Objects.requireNonNull(world);
-        this.room = java.util.Objects.requireNonNull(room);
+        this.roomMapId = mapId;
+    }
+
+    void setRoomMap(int mapId) {
+        roomMapId = mapId;
     }
 
     public int progressFlagCount() {
@@ -42,21 +46,20 @@ final class RoomDungeonLiveView implements RoomDungeon.View {
         Objects.checkIndex(index, minimapRooms.length);
         refreshMap();
         int roomId = minimapRooms[index];
-        return statuses == null || roomId >= statuses.length ? 0 : Byte.toUnsignedInt(statuses[roomId]);
+        return roomId >= statuses.length ? 0 : Byte.toUnsignedInt(statuses[roomId]);
     }
 
     private void refreshMap() {
-        ActiveRoom active = room.get();
-        int currentMap = active == null ? -1 : active.mapId();
+        int currentMap = roomMapId;
         int currentTowerLayout = world.dungeonProgressFlags[6] & 4;
         if (initialized && mapId == currentMap && towerLayout == currentTowerLayout) return;
-        int offset = active == null ? -1 : world.indoorMapLayoutOffset(currentMap);
+        int offset = currentMap < 0 ? -1 : world.indoorMapLayoutOffset(currentMap);
         if (offset >= 0) {
             for (int index = 0; index < minimapRooms.length; index++) {
                 minimapRooms[index] = world.minimapRoomAtOffset(offset + index);
             }
         }
-        statuses = offset < 0 ? null : world.indoorStatusTableForMap(currentMap);
+        statuses = offset < 0 ? NO_STATUSES : world.indoorStatusTableForMap(currentMap);
         mapId = currentMap;
         towerLayout = currentTowerLayout;
         initialized = true;

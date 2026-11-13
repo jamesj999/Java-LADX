@@ -2,7 +2,6 @@ package linksawakening.world.room;
 
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
@@ -15,12 +14,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void resetGuardianAcornCounterOnHurt() {
-        var runtime = dependencies.entityBridge().runtime();
-        var counters = runtime == null
-                ? dependencies.entityFrame().enemyDropCounters
-                : runtime.inspection().enemyDropCounters();
-        dependencies.entityFrame().enemyDropCounters = EnemyDropResolver.resetGuardianAcornCounter(counters);
-        if (runtime != null) runtime.configuration().setEnemyDropCounters(dependencies.entityFrame().enemyDropCounters);
+        dependencies.session().resetGuardianAcornCounterOnHurt();
     }
 
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
@@ -28,8 +22,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public boolean gelClingingToLink() {
-        return dependencies.entityBridge().runtime() != null
-                && dependencies.entityBridge().runtime().gelClingingToLink();
+        return dependencies.session().gelClingingToLink();
     }
 
     public void setEntityDialogActive(boolean active) {
@@ -49,8 +42,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public void setEntityScreenShakeCountdown(int countdown) {
-        if (dependencies.entityBridge().runtime() != null)
-            dependencies.entityBridge().runtime().configuration().setScreenShakeCountdown(countdown);
+        dependencies.session().setEntityScreenShakeCountdown(countdown);
     }
 
     public void setSecretSeashellPegasusCollisionState(
@@ -117,7 +109,7 @@ final class RoomEntityStateView implements RoomEntityState {
     }
 
     public int entityHealth(int slot) {
-        return dependencies.roomSessionViews().entityHealth(slot);
+        return dependencies.session().entityHealth(slot);
     }
 
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {

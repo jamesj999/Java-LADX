@@ -24,7 +24,7 @@ public final class ActiveRoom {
     // NPC direction/walk presentations repeat while gameplay is gated by dialogs.
     private final RoomEntitySnapshot[] recentPresentations = new RoomEntitySnapshot[8];
     private int nextPresentation;
-    private final RoomRenderSnapshot.View renderView = new RoomRenderLiveView(() -> this, null);
+    private final RoomRenderSnapshot.View renderView = RoomRenderLiveView.snapshot(this);
 
     private ActiveRoom(LoadedRoom room) {
         this(room, room.entities());

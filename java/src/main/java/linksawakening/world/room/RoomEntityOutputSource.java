@@ -21,6 +21,8 @@ import linksawakening.world.entity.event.SideViewPotLinkRequest;
 
 /** Narrow event-drain port; the session decides unloaded defaults before accessing a runtime. */
 interface RoomEntityOutputSource {
+    java.util.List<linksawakening.world.entity.event.HeartPiecePickupUpdate> consumeHeartPieceUpdates();
+
     void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target);
 
     DialogRequest consumeFirstEntityDialogRequest();

@@ -637,10 +637,10 @@ final class RoomRewardLifecycleTest {
         int pieces = 0;
         boolean completed = false, dialogOpened = false;
         for (int frame = 1; frame < 220 && !completed; frame++) {
-            session.components.roomSessionViews().setHeartPiecesCount(pieces);
+            session.setHeartPiecesCount(pieces);
             session.entities().tickEntities(frame, 72, 80);
             assertFalse(session.rooms().liftedEntityState().active());
-            for (var update : session.components.roomSessionViews().consumeHeartPieceUpdates()) {
+            for (var update : session.consumeHeartPieceUpdates()) {
                 if (update.dialogId() == 0x4F) {
                     dialogOpened = true;
                     session.entityState().setEntityDialogActive(true);

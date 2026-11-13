@@ -136,7 +136,6 @@ final class RoomWorldState {
 
     byte[] dungeonMinimapRoomStatusSnapshot(ActiveRoom activeRoom) {
         byte[] result = new byte[64];
-        if (activeRoom == null) return result;
         int offset = indoorMapLayoutOffset(activeRoom.mapId());
         if (offset < 0) return result;
         byte[] status = indoorStatusTableForMap(activeRoom.mapId());
@@ -148,9 +147,6 @@ final class RoomWorldState {
     }
 
     int activeRoomStatusFlags(ActiveRoom activeRoom) {
-        if (activeRoom == null) {
-            return 0;
-        }
         byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? overworldRoomStatus
                 : indoorStatusTableForMap(activeRoom.mapId());
@@ -171,7 +167,6 @@ final class RoomWorldState {
     }
 
     void markCompleted(ActiveRoom room) {
-        if (room == null) return;
         byte[] status = room.mapCategory() == linksawakening.world.transition.Warp.CATEGORY_OVERWORLD
                 ? overworldRoomStatus
                 : indoorStatusTableForMap(room.mapId());

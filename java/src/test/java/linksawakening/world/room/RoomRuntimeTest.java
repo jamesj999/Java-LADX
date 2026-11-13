@@ -46,6 +46,12 @@ class RoomRuntimeTest {
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
         org.junit.jupiter.api.Assertions.assertFalse(session.hasRoom());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderViewOrNull());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderSnapshotOrNull());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderView());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderSnapshot());
+        for (int i = 0; i < session.dungeon().view().minimapSize(); i++)
+            assertEquals(0, session.dungeon().view().minimapStatus(i));
         org.junit.jupiter.api.Assertions.assertFalse(session.entities().inBossBattle());
         org.junit.jupiter.api.Assertions.assertTrue(session.entities()
                 .resolveEntityCombat(new EntityCombatInputs(

@@ -35,11 +35,18 @@ public interface RoomRooms {
 
     String moblinKingTrace();
 
+    /** Owned snapshot, or null before the first room load. */
+    RoomRenderSnapshot renderSnapshotOrNull();
+
+    /** Compatibility name; prefer renderSnapshotOrNull(). */
     RoomRenderSnapshot renderSnapshot();
 
     /** Reused read-only render projection, valid until the next tick or room change. */
     /** Nullable until the first room load; otherwise a same-thread view valid until the next tick. */
     RoomRenderSnapshot.View renderView();
+
+    /** Borrowed until next tick/room change; null before the first room load. */
+    RoomRenderSnapshot.View renderViewOrNull();
 
     LiftedEntityState liftedEntityState();
 }

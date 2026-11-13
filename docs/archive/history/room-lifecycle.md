@@ -161,3 +161,16 @@ the facade: unloaded interactions return false, chest results remain
 (false,-1,-1,-1), lifting clears the pull counter, and the keyhole tick returns
 zero/clears its final-block flag. World null occurrences: 204 -> 180.
 Gate: 2966 tests, zero failures/errors, one skip; 986 identical scenes.
+
+## Projection boundaries
+
+Loaded render views bind directly to final room/runtime data; standalone room
+projections use an explicit no-visuals port. No room/runtime supplier remains in
+render or minimap views. The stable dungeon projection receives map identity at
+facade installation/reset so retained views still follow room changes. Optional
+render signatures now have explicit renderViewOrNull/renderSnapshotOrNull names;
+old names remain compatible. Off-limits hand-off: app/presentation/RenderStateAssembler
+buildReusable -> rooms().renderViewOrNull(); build -> rooms().renderSnapshotOrNull();
+its activeRoom presence guard can use roomSession.hasRoom().
+World null occurrences: 180 -> 158. Gate: 2966 tests, zero failures/errors, one skip,
+986 identical scenes. Room/runtime aliases remain only for loading/transitions.

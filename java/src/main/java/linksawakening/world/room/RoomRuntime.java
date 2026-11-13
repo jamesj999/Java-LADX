@@ -12,6 +12,7 @@ final class RoomRuntime {
     final ActiveRoom room;
     final RoomContents contents;
     final RoomEntityRuntime entities;
+    final RoomRenderSnapshot.View renderView;
     final CollisionCache collisions = new CollisionCache();
     final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
     final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
@@ -40,6 +41,7 @@ final class RoomRuntime {
     RoomRuntime(ActiveRoom room, RoomEntityRuntime entities, Services services) {
         this.room = Objects.requireNonNull(room, "room");
         this.entities = Objects.requireNonNull(entities, "entities");
+        renderView = RoomRenderLiveView.live(room, entities);
         contents = new RoomContents(room, services.puzzles().current, services.terrain().overrides);
         backgroundCollision = (entity, direction, x, y) ->
                 services.queries().entityBackgroundCollision(this, entity, direction, x, y);
