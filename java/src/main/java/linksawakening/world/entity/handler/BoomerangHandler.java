@@ -2,15 +2,15 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOOMERANG;
 
-import linksawakening.world.entity.BoomerangFrame;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityProjectileController.BoomerangFrame;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
 /** ROM handler stages for Boomerang. */
 final class BoomerangHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_BOOMERANG, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 6, BoomerangHandler::phase1Boomerang);
     }

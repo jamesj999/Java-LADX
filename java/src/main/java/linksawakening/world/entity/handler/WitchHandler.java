@@ -3,7 +3,7 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_WITCH;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.DialogRequest;
@@ -11,12 +11,11 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WitchMotion;
 
 /** ROM handler stages for Witch. */
 final class WitchHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(ENTITY_WITCH, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 16, WitchHandler::phase4Witch);
     }
 

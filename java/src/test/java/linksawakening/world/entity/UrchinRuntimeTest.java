@@ -12,8 +12,8 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
-import linksawakening.world.entity.motion.UrchinFrame;
 import linksawakening.world.entity.motion.UrchinMotion;
+import linksawakening.world.entity.motion.UrchinMotion.UrchinFrame;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom

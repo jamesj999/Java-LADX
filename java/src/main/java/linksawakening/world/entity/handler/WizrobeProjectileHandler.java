@@ -5,15 +5,15 @@ import static linksawakening.world.entity.EntitySnapshots.withFlipAttribute;
 
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.WizrobeProjectileMotion;
 
 /** ROM handler stages for WizrobeProjectile. */
 final class WizrobeProjectileHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_WIZROBE_PROJECTILE,
                 EntityTickStage.PHASE_2_AFTER_INITIALIZE,

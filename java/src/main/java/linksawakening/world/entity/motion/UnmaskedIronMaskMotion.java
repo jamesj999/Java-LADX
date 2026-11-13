@@ -52,8 +52,10 @@ public final class UnmaskedIronMaskMotion {
             RoomEntity entity,
             int frame,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int ignoreHitsCountdown,
             int transitionCountdown) {
         int slot = entity.slot();
@@ -128,8 +130,10 @@ public final class UnmaskedIronMaskMotion {
             int entityDirection,
             int nextX,
             int nextY,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int ignoreHitsCountdown,
             int frame) {
         if (backgroundInteraction != null) {

@@ -9,9 +9,9 @@ public final class EntitySlotView {
     private final UnmaskedIronMaskMotion ironMask;
 
     EntitySlotView(EntityCombatTables combat, EntityPhysicsTables physics, UnmaskedIronMaskMotion ironMask) {
-        this.combat = combat;
-        this.physics = physics;
-        this.ironMask = ironMask;
+        this.combat = java.util.Objects.requireNonNull(combat, "combat");
+        this.physics = java.util.Objects.requireNonNull(physics, "physics");
+        this.ironMask = java.util.Objects.requireNonNull(ironMask, "ironMask");
     }
 
     public int transitionCountdown(int slot) {

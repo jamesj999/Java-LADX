@@ -1,6 +1,7 @@
 package linksawakening.world.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.stream.IntStream;
@@ -32,7 +33,7 @@ class EntityHealthGroupTest {
                 .spriteHandlers(null)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
-        runtime.bossRewards.writeEnemyDropResolver(
+        runtime.bossRewards.state.writeEnemyDropResolver(
                 new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         return runtime;
     }

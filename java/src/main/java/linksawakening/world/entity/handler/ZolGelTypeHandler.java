@@ -1,19 +1,19 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_GEL;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ZOL;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ZolGelFrame;
 import linksawakening.world.entity.motion.ZolGelMotion;
+import linksawakening.world.entity.motion.ZolGelMotion.ZolGelFrame;
 
 /** ROM handler stages for ZolGelType. */
 final class ZolGelTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_ZOL, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 3, ZolGelTypeHandler::phase2ZolGelType);
         registry.registerTick(

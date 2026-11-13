@@ -4,6 +4,7 @@ import linksawakening.entity.EntitySpriteSelection;
 
 /** Owned PresentationState storage; preserves ROM slot indexing. */
 final class EntityPresentationState {
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private EntitySpriteSelection spriteSelection;
     private int bgPaletteEffectAddress;
     private int paletteDataFlags;
@@ -16,7 +17,9 @@ final class EntityPresentationState {
         return spriteSelection;
     }
 
-    EntitySpriteSelection writeSpriteSelection(EntitySpriteSelection value) {
+    EntitySpriteSelection writeSpriteSelection(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
+                    value) {
         return spriteSelection = value;
     }
 

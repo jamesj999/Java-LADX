@@ -34,4 +34,8 @@ final class EntityLinkState {
     public int currentLinkSpeedY;
     public int currentLinkFinalPositionX;
     public boolean currentLinkFinalPositionXConfigured;
+
+    boolean entityTimersInteractive() {
+        return !dialogActive && !inventoryAppearing && linkPlayingOcarinaCountdown == 0;
+    }
 }

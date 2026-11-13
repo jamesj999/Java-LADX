@@ -60,13 +60,16 @@ public final class PlayerArrowMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         return advance(entity, backgroundCollision, 0, 0, false);
     }
 
     public Update advance(
             RoomEntity entity,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int frameCounter,
             int groundStatus,
             boolean sideScrolling) {
@@ -75,7 +78,8 @@ public final class PlayerArrowMotion {
 
     public Update advance(
             RoomEntity entity,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             int frameCounter,
             int groundStatus,
             boolean sideScrolling,

@@ -8,6 +8,7 @@ import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.FollowingNpcMotion.FollowingNpcFrame;
 import org.junit.jupiter.api.Test;
 
 final class FollowingNpcMotionTest {

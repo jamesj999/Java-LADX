@@ -4,17 +4,16 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityCombatRules;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.BushCrawlerFrame;
 import linksawakening.world.entity.motion.BushCrawlerMotion;
+import linksawakening.world.entity.motion.BushCrawlerMotion.BushCrawlerFrame;
 
 /** ROM handler stages for BushCrawler. */
 final class BushCrawlerHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_BUSH_CRAWLER, EntityTickStage.PHASE_3_BEFORE_LASER, 13, BushCrawlerHandler::phase3BushCrawler);
     }

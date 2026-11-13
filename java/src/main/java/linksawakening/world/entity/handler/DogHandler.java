@@ -1,23 +1,21 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_DOG;
 
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.DogFrame;
 import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.DogMotion.DogFrame;
 
 /** ROM handler stages for Dog. */
 final class DogHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_DOG, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 2, DogHandler::phase1Dog);
         registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 14, DogHandler::phase4Dog);
@@ -74,7 +72,7 @@ final class DogHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(DogMotion.class, DogMotion::new).initialize(entity.slot());
     }
 }

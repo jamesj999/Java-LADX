@@ -1,10 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.world.entity.event.BombExplosionEvent;
@@ -47,33 +42,38 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 
 /** Typed outbox consumption preserving pre-tick staging and immutable snapshots. */
 final class EntityEffectConsumption {
-    private final EntityEffectConsumptionServices runtime;
+    private final EntityEventChannels events;
+    private final EntityPresentationState presentationState;
+    private final EntityRoomVariables roomVariables;
 
-    EntityEffectConsumption(EntityEffectConsumptionServices runtime) {
-        this.runtime = runtime;
+    EntityEffectConsumption(
+            EntityEventChannels events, EntityPresentationState presentationState, EntityRoomVariables roomVariables) {
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
     }
 
     boolean consumePendingSwitchBlockAnimationRequest() {
-        boolean pending = runtime.roomVariables().readPendingSwitchBlockAnimationRequest();
-        runtime.roomVariables().writePendingSwitchBlockAnimationRequest(false);
+        boolean pending = roomVariables.readPendingSwitchBlockAnimationRequest();
+        roomVariables.writePendingSwitchBlockAnimationRequest(false);
         return pending;
     }
 
     int consumePendingClearedEntityMask() {
-        int pending = runtime.roomVariables().readPendingClearedEntityMask();
-        runtime.roomVariables().writePendingClearedEntityMask(0);
+        int pending = roomVariables.readPendingClearedEntityMask();
+        roomVariables.writePendingClearedEntityMask(0);
         return pending;
     }
 
     int consumePendingRoomStatusMask() {
-        int pending = runtime.roomVariables().readPendingRoomStatusMask();
-        runtime.roomVariables().writePendingRoomStatusMask(0);
+        int pending = roomVariables.readPendingRoomStatusMask();
+        roomVariables.writePendingRoomStatusMask(0);
         return pending;
     }
 
     List<EntityCombatEvent> consumePendingEntityEvents() {
-        var first = runtime.events().pendingPreTickEntityEvents;
-        var second = runtime.events().pendingEntityEvents;
+        var first = this.events.pendingPreTickEntityEvents;
+        var second = this.events.pendingEntityEvents;
         int size = first.size() + second.size();
         if (size == 0) return List.of();
         List<EntityCombatEvent> pending = new ArrayList<>(size);
@@ -85,56 +85,56 @@ final class EntityEffectConsumption {
     }
 
     List<ThrownBackgroundCollisionEvent> consumePendingThrownBackgroundCollisions() {
-        return runtime.events().outbox.drain(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
+        return events.outbox.drain(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
     }
 
     List<DungeonWarpRequest> consumePendingDungeonWarpRequests() {
-        return runtime.events().outbox.drain(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
+        return events.outbox.drain(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
     }
 
     List<WarpLinkStateRequest> consumePendingWarpLinkStateRequests() {
-        return runtime.events().outbox.drain(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
+        return events.outbox.drain(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
     }
 
     List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() {
-        return runtime.events().outbox.drain(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
+        return events.outbox.drain(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
     }
 
     List<RoosterLinkStateRequest> consumePendingRoosterLinkStateRequests() {
-        return runtime.events().outbox.drain(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
+        return events.outbox.drain(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
     }
 
     List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() {
-        return runtime.events().outbox.drain(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
+        return events.outbox.drain(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
     }
 
     List<SideViewPlatformLinkRequest> consumePendingSideViewPlatformLinkRequests() {
-        return runtime.events().outbox.drain(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
+        return events.outbox.drain(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
     }
 
     List<SideViewPotLinkRequest> consumePendingSideViewPotLinkRequests() {
-        return runtime.events().outbox.drain(SideViewPotLinkRequest.class, "pendingSideViewPotLinkRequests");
+        return events.outbox.drain(SideViewPotLinkRequest.class, "pendingSideViewPotLinkRequests");
     }
 
     List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() {
-        return runtime.events().outbox.drain(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
+        return events.outbox.drain(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
     }
 
     List<LinkFallenPoseRequest> consumePendingLinkFallenPoseRequests() {
-        return runtime.events().outbox.drain(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
+        return events.outbox.drain(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
     }
 
     List<LinkFacingRequest> consumePendingLinkFacingRequests() {
-        return runtime.events().outbox.drain(LinkFacingRequest.class, "pendingLinkFacingRequests");
+        return events.outbox.drain(LinkFacingRequest.class, "pendingLinkFacingRequests");
     }
 
     List<LinkAttackClearRequest> consumePendingLinkAttackClearRequests() {
-        return runtime.events().outbox.drain(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
+        return events.outbox.drain(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
     }
 
     List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
-        var first = runtime.events().pendingPreTickLinkAttackStepRequests;
-        var second = runtime.events().pendingLinkAttackStepRequests;
+        var first = this.events.pendingPreTickLinkAttackStepRequests;
+        var second = this.events.pendingLinkAttackStepRequests;
         int size = first.size() + second.size();
         if (size == 0) return List.of();
         List<LinkAttackStepRequest> pending = new ArrayList<>(size);
@@ -146,131 +146,128 @@ final class EntityEffectConsumption {
     }
 
     List<RoomStatusPersistenceRequest> consumePendingRoomStatusPersistenceRequests() {
-        return runtime.events()
-                .outbox
-                .drain(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
+        return events.outbox.drain(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
     }
 
     List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() {
-        return runtime.events().outbox.drain(LinkHeldItemPoseRequest.class, "pendingLinkHeldItemPoseRequests");
+        return events.outbox.drain(LinkHeldItemPoseRequest.class, "pendingLinkHeldItemPoseRequests");
     }
 
     List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
-        return runtime.events().outbox.drain(LinkSwordSpinPoseRequest.class, "pendingLinkSwordSpinPoseRequests");
+        return events.outbox.drain(LinkSwordSpinPoseRequest.class, "pendingLinkSwordSpinPoseRequests");
     }
 
     List<LinkSwordFinalPoseRequest> consumePendingLinkSwordFinalPoseRequests() {
-        return runtime.events().outbox.drain(LinkSwordFinalPoseRequest.class, "pendingLinkSwordFinalPoseRequests");
+        return events.outbox.drain(LinkSwordFinalPoseRequest.class, "pendingLinkSwordFinalPoseRequests");
     }
 
     List<ScreenShakeRequest> consumePendingScreenShakeRequests() {
-        return runtime.events().outbox.drain(ScreenShakeRequest.class, "pendingScreenShakeRequests");
+        return events.outbox.drain(ScreenShakeRequest.class, "pendingScreenShakeRequests");
     }
 
     List<ChestRewardEvent> consumePendingChestRewardEvents() {
-        return runtime.events().outbox.drain(ChestRewardEvent.class, "pendingChestRewardEvents");
+        return events.outbox.drain(ChestRewardEvent.class, "pendingChestRewardEvents");
     }
 
     List<KeyRewardEvent> consumePendingKeyRewardEvents() {
-        return runtime.events().outbox.drain(KeyRewardEvent.class, "pendingKeyRewardEvents");
+        return events.outbox.drain(KeyRewardEvent.class, "pendingKeyRewardEvents");
     }
 
     List<SlimeKeyRewardEvent> consumePendingSlimeKeyRewardEvents() {
-        return runtime.events().outbox.drain(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
+        return events.outbox.drain(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
     }
 
     List<KeyQuicksandEvent> consumePendingKeyQuicksandEvents() {
-        return runtime.events().outbox.drain(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
+        return events.outbox.drain(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
     }
 
     int consumePendingMusicTrack() {
-        int pending = runtime.presentationState().readPendingMusicTrack();
-        runtime.presentationState().writePendingMusicTrack(-1);
+        int pending = presentationState.readPendingMusicTrack();
+        presentationState.writePendingMusicTrack(-1);
         return pending;
     }
 
     int consumePendingMusicFadeOutCountdown() {
-        int pending = runtime.presentationState().readPendingMusicFadeOutCountdown();
-        runtime.presentationState().writePendingMusicFadeOutCountdown(0);
+        int pending = presentationState.readPendingMusicFadeOutCountdown();
+        presentationState.writePendingMusicFadeOutCountdown(0);
         return pending;
     }
 
     List<LikeLikeEvent> consumePendingLikeLikeEvents() {
-        return runtime.events().outbox.drain(LikeLikeEvent.class, "pendingLikeLikeEvents");
+        return events.outbox.drain(LikeLikeEvent.class, "pendingLikeLikeEvents");
     }
 
     List<DialogRequest> consumePendingDialogRequests() {
-        return runtime.events().outbox.drain(DialogRequest.class, "pendingDialogRequests");
+        return events.outbox.drain(DialogRequest.class, "pendingDialogRequests");
     }
 
     List<BombExplosionEvent> consumeBombExplosionEvents() {
-        return runtime.events().outbox.drain(BombExplosionEvent.class, "pendingBombExplosionEvents");
+        return events.outbox.drain(BombExplosionEvent.class, "pendingBombExplosionEvents");
     }
 
     List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
-        var result = List.copyOf(runtime.events().heartPieceUpdates);
-        runtime.events().heartPieceUpdates.clear();
+        var result = List.copyOf(events.heartPieceUpdates);
+        events.heartPieceUpdates.clear();
         return result;
     }
 
     List<HeartContainerRewardEvent> consumePendingHeartContainerRewards() {
-        List<HeartContainerRewardEvent> rewards = List.copyOf(runtime.events().pendingHeartContainerRewards);
-        runtime.events().pendingHeartContainerRewards.clear();
+        List<HeartContainerRewardEvent> rewards = List.copyOf(this.events.pendingHeartContainerRewards);
+        this.events.pendingHeartContainerRewards.clear();
         return rewards;
     }
 
     List<MadamMeowMeowFullHealRequest> consumePendingMadamMeowMeowFullHealRequests() {
-        List<MadamMeowMeowFullHealRequest> requests =
-                List.copyOf(runtime.events().pendingMadamMeowMeowFullHealRequests);
-        runtime.events().pendingMadamMeowMeowFullHealRequests.clear();
+        List<MadamMeowMeowFullHealRequest> requests = List.copyOf(this.events.pendingMadamMeowMeowFullHealRequests);
+        this.events.pendingMadamMeowMeowFullHealRequests.clear();
         return requests;
     }
 
     List<SwordPickupRewardEvent> consumePendingSwordPickupRewards() {
-        List<SwordPickupRewardEvent> rewards = List.copyOf(runtime.events().pendingSwordPickupRewards);
-        runtime.events().pendingSwordPickupRewards.clear();
+        List<SwordPickupRewardEvent> rewards = List.copyOf(this.events.pendingSwordPickupRewards);
+        this.events.pendingSwordPickupRewards.clear();
         return rewards;
     }
 
     List<ToadstoolRewardEvent> consumePendingToadstoolRewards() {
-        List<ToadstoolRewardEvent> rewards = List.copyOf(runtime.events().pendingToadstoolRewards);
-        runtime.events().pendingToadstoolRewards.clear();
+        List<ToadstoolRewardEvent> rewards = List.copyOf(this.events.pendingToadstoolRewards);
+        this.events.pendingToadstoolRewards.clear();
         return rewards;
     }
 
     List<InstrumentRewardEvent> consumePendingInstrumentRewards() {
-        List<InstrumentRewardEvent> rewards = List.copyOf(runtime.events().pendingInstrumentRewards);
-        runtime.events().pendingInstrumentRewards.clear();
+        List<InstrumentRewardEvent> rewards = List.copyOf(this.events.pendingInstrumentRewards);
+        this.events.pendingInstrumentRewards.clear();
         return rewards;
     }
 
     List<InstrumentCompletionEvent> consumePendingInstrumentCompletions() {
-        List<InstrumentCompletionEvent> completions = List.copyOf(runtime.events().pendingInstrumentCompletions);
-        runtime.events().pendingInstrumentCompletions.clear();
+        List<InstrumentCompletionEvent> completions = List.copyOf(this.events.pendingInstrumentCompletions);
+        this.events.pendingInstrumentCompletions.clear();
         return completions;
     }
 
     List<RichardProgressEvent> consumePendingRichardProgressEvents() {
-        List<RichardProgressEvent> events = List.copyOf(runtime.events().pendingRichardProgressEvents);
-        runtime.events().pendingRichardProgressEvents.clear();
+        List<RichardProgressEvent> events = List.copyOf(this.events.pendingRichardProgressEvents);
+        this.events.pendingRichardProgressEvents.clear();
         return events;
     }
 
     List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {
-        List<WitchExchangeEvent> events = List.copyOf(runtime.events().pendingWitchExchangeEvents);
-        runtime.events().pendingWitchExchangeEvents.clear();
+        List<WitchExchangeEvent> events = List.copyOf(this.events.pendingWitchExchangeEvents);
+        this.events.pendingWitchExchangeEvents.clear();
         return events;
     }
 
     List<WitchRewardEvent> consumePendingWitchRewardEvents() {
-        List<WitchRewardEvent> events = List.copyOf(runtime.events().pendingWitchRewardEvents);
-        runtime.events().pendingWitchRewardEvents.clear();
+        List<WitchRewardEvent> events = List.copyOf(this.events.pendingWitchRewardEvents);
+        this.events.pendingWitchRewardEvents.clear();
         return events;
     }
 
     List<OwlEventCompletion> consumePendingOwlEventCompletions() {
-        List<OwlEventCompletion> completions = List.copyOf(runtime.events().pendingOwlEventCompletions);
-        runtime.events().pendingOwlEventCompletions.clear();
+        List<OwlEventCompletion> completions = List.copyOf(this.events.pendingOwlEventCompletions);
+        this.events.pendingOwlEventCompletions.clear();
         return completions;
     }
 }

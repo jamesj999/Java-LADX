@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.BushCrawlerMotion.BushCrawlerFrame;
 import org.junit.jupiter.api.Test;
 
 final class BushCrawlerMotionTest {

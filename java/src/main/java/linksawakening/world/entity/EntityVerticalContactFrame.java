@@ -12,4 +12,5 @@ record EntityVerticalContactFrame(
         int swordWidth,
         int swordY,
         int swordHeight,
+        // Optional attack details; null selects the existing default attack context.
         EnemyAttackContext attackContext) {}

@@ -1,23 +1,21 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.BOMBER_THROW_JINGLE_ID;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMBER;
 
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BomberMotion;
 
 /** ROM handler stages for Bomber. */
 final class BomberHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_BOMBER, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_BOMBER, EntityTickStage.PHASE_2_AFTER_LEEVER_CONTACT, 0, BomberHandler::phase2Bomber);
@@ -65,7 +63,7 @@ final class BomberHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(BomberMotion.class, BomberMotion::new).initialize(entity.slot());
     }
 }

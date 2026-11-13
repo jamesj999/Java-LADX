@@ -3,13 +3,13 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
 /** ROM handler stages for SleepyToadstool. */
 final class SleepyToadstoolHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_SLEEPY_TOADSTOOL,
                 EntityTickStage.PHASE_1_AFTER_INSTRUMENT_PICKUP,

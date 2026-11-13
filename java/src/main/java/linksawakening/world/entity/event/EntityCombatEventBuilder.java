@@ -1,6 +1,9 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.entity.event.EntityCombatEvent.*;
+import linksawakening.world.entity.event.EntityCombatEvent.LinkAction;
+import linksawakening.world.entity.event.EntityCombatEvent.LinkCollisionResponse;
+import linksawakening.world.entity.event.EntityCombatEvent.SoundChannel;
+import linksawakening.world.entity.event.EntityCombatEvent.SwordPokeVfx;
 
 /** Named construction; validation occurs when the immutable event is built. */
 public final class EntityCombatEventBuilder {
@@ -14,6 +17,7 @@ public final class EntityCombatEventBuilder {
     private int soundId = -1;
     private SoundChannel secondarySoundChannel = SoundChannel.NONE;
     private int secondarySoundId = -1;
+    // Optional sword-poke effect; null emits no effect.
     private SwordPokeVfx swordPokeVfx = null;
     private LinkAction linkAction = LinkAction.NONE;
     private LinkCollisionResponse linkCollisionResponse = LinkCollisionResponse.NONE;

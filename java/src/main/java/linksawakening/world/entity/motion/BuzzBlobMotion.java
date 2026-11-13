@@ -57,7 +57,8 @@ public final class BuzzBlobMotion {
             int frameCounter,
             int transitionCountdown,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         checkType(entity);
         validateByte(transitionCountdown, "Buzz Blob transition countdown");
         Objects.requireNonNull(randomByteSupplier, "Buzz Blob random-byte supplier");
@@ -134,7 +135,9 @@ public final class BuzzBlobMotion {
     }
 
     private PositionAndCollision moveWithBackground(
-            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction interaction,
+            int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
 

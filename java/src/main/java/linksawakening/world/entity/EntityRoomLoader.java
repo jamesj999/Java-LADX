@@ -47,7 +47,9 @@ public final class EntityRoomLoader {
         }
     }
 
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private final Rom romData;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private final EntitySpriteHandlerCatalog spriteHandlers;
 
     public EntityRoomLoader(Rom romData) {

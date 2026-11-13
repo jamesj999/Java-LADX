@@ -1,22 +1,20 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_WINGED_OCTOROK;
 
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.WingedOctorokInteractionFrame;
 import linksawakening.world.entity.motion.WingedOctorokMotion;
+import linksawakening.world.entity.motion.WingedOctorokMotion.WingedOctorokInteractionFrame;
 
 /** ROM handler stages for WingedOctorok. */
 final class WingedOctorokHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_WINGED_OCTOROK, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_WINGED_OCTOROK,
@@ -74,7 +72,7 @@ final class WingedOctorokHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(WingedOctorokMotion.class, WingedOctorokMotion::new).initialize(entity.slot());
     }
 }

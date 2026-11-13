@@ -12,8 +12,8 @@ import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.TestRoms;
-import linksawakening.world.entity.motion.DogFrame;
 import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.DogMotion.DogFrame;
 import linksawakening.world.entity.motion.MotionTestAccess;
 import org.junit.jupiter.api.Test;
 

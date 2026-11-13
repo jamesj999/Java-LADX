@@ -1,16 +1,19 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOW_WOW;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_GHOST;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MARIN_AT_THE_SHORE;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROOSTER;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.FollowingNpcMotion;
 
 /** ROM handler stages for FollowingNpcType. */
 final class FollowingNpcTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_BOW_WOW,
                 EntityTickStage.PHASE_2_AFTER_INITIALIZE,

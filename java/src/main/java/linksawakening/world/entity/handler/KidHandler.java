@@ -4,13 +4,13 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_KID_71;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_KID_72;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
 /** ROM handler stages for Kid. */
 final class KidHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_KID_71, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 19, KidHandler::phase1Kid72);
         registry.registerTick(

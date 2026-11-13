@@ -1,13 +1,10 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
+import linksawakening.world.entity.EntityCombatResolver.EntityCombatSlot;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.MoblinKingMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** Ordered linkcontact operations for a single slot. */
 final class EntityLinkContact {
@@ -16,14 +13,14 @@ final class EntityLinkContact {
         var frame = slot.inputs;
 
         if (slot.linkCollision && slot.entity.type() == EntityRomConstants.ENTITY_GEL) {
-            runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).onLinkCollision(slot.entity.slot());
+            runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).onLinkCollision(slot.entity.slot());
         }
         // ApplyLinkCollisionWithEnemy's Gel branch ($03:6D3D) returns
         // immediately after starting the cling, before damage/recoil.
         slot.linkDamage = slot.linkCollision && slot.entity.type() != EntityRomConstants.ENTITY_GEL
-                ? runtime.contactDamage(slot.entity.slot())
+                ? runtime.slotProperties.contactDamage(slot.entity.slot())
                 : 0;
-        if ((runtime.physicsTables().readEnemyPhysicsFlags(slot.entity.slot())
+        if ((runtime.physicsTables.readEnemyPhysicsFlags(slot.entity.slot())
                         & EntityRomConstants.ENTITY_PHYSICS_HARMLESS)
                 != 0) {
             // func_003_6CC0 keeps CheckLinkCollisionWithEnemy's carry
@@ -67,13 +64,13 @@ final class EntityLinkContact {
         if (slot.linkDamage > 0
                 && !slot.swordHit
                 && slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING
-                && runtime.motions()
+                && runtime.motions
                                 .get(MoblinKingMotion.class, MoblinKingMotion::new)
                                 .state(slot.entity.slot())
                         == 9
-                && runtime.physicsTables().readEnemyTransitionCountdown(slot.entity.slot()) == 0x60) {
+                && runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()) == 0x60) {
             slot.linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
-                    runtime.motions()
+                    runtime.motions
                             .get(MoblinKingMotion.class, MoblinKingMotion::new)
                             .speedX(slot.entity.slot()),
                     0,

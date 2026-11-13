@@ -1,30 +1,28 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARMOS_KNIGHT;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIFTABLE_ROCK;
 
 import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFallenPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ArmosKnightFrame;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
+import linksawakening.world.entity.motion.ArmosKnightMotion.ArmosKnightFrame;
 import linksawakening.world.entity.motion.BossIntroMotion;
 
 /** ROM handler stages for ArmosKnight. */
 final class ArmosKnightHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_ARMOS_KNIGHT, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_ARMOS_KNIGHT, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 1, ArmosKnightHandler::phase4ArmosKnight);
@@ -101,7 +99,7 @@ final class ArmosKnightHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(ArmosKnightMotion.class, ArmosKnightMotion::new).initialize(entity.slot());
     }
 }

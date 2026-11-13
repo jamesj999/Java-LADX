@@ -1,26 +1,24 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_STALFOS_EVASIVE;
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.StalfosEvasiveFrame;
 import linksawakening.world.entity.motion.StalfosEvasiveMotion;
+import linksawakening.world.entity.motion.StalfosEvasiveMotion.StalfosEvasiveFrame;
 
 /** ROM handler stages for StalfosEvasive. */
 final class StalfosEvasiveHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_STALFOS_EVASIVE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_STALFOS_EVASIVE,
@@ -83,7 +81,7 @@ final class StalfosEvasiveHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new).initialize(entity.slot());
     }
 }

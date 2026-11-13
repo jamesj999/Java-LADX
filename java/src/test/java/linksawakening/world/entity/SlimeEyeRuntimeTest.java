@@ -1,6 +1,8 @@
 package linksawakening.world.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +11,7 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.testing.TestRom;
 import linksawakening.testing.TestRoms;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.room.ChestContentsTable;
 import org.junit.jupiter.api.Test;
 
@@ -207,9 +209,9 @@ final class SlimeEyeRuntimeTest {
     }
 
     private void set(RoomEntityRuntime r, String field, int value) throws Exception {
-        var reflected = SlimeEyeController.class.getDeclaredField(field);
+        var reflected = SlimeEyeController.State.class.getDeclaredField(field);
         reflected.setAccessible(true);
-        ((int[]) reflected.get(r.slimeEye))[0] = value;
+        ((int[]) reflected.get(r.slimeEye.encounter))[0] = value;
     }
 
     @Test

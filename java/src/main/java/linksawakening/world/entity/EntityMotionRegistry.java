@@ -10,9 +10,13 @@ final class EntityMotionRegistry {
     private final Map<Class<?>, Object> motions = new HashMap<>();
 
     <T> T get(Class<T> type, Supplier<? extends T> factory) {
+        return get(type, factory, Supplier::get);
+    }
+
+    <T, C> T get(Class<T> type, C context, java.util.function.Function<? super C, ? extends T> factory) {
         Object motion = motions.get(type);
         if (motion == null) {
-            motion = Objects.requireNonNull(factory.get(), "motion");
+            motion = Objects.requireNonNull(factory.apply(context), "motion");
             motions.put(type, type.cast(motion));
         }
         return type.cast(motion);

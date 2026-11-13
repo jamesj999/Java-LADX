@@ -1,6 +1,6 @@
 package linksawakening.world.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.RequiresRom;

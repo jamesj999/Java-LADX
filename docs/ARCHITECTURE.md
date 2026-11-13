@@ -664,123 +664,122 @@ sequenceDiagram
 
 ## Entity system
 
-`RoomEntityRuntime` is the source-compatible room facade. It contains an
-`EntityRuntimeState`; neither class inherits fields or constants. The state
-composition has nine references, including four cohesive stores:
-`EntityPhysicsTables`, `EntityCombatTables`, `EntityRoomVariables` and
-`EntityPresentationState`. Their fields are private and accessed through slot
-or room methods. `EntityRomConstants` is a final, non-instantiable holder; callers
-use it directly instead of facade aliases.
+`RoomEntityRuntime` is the source-compatible room facade and the single
+composition root. It constructs shared state first, then concrete controllers
+in dependency order. There are no lazy service bindings or suppliers of the
+runtime. `EntityRuntimeState` composes cross-cutting slot, combat, physics,
+room and presentation data; neither class inherits fields or constants.
+`EntityRomConstants` is a final, non-instantiable holder used directly by callers.
 
-Per-type state belongs to its motion or controller: for example Iron Mask,
-Moldorm, Rolling Bones and Moblin King retain their own slot latches, Genie
-owns its jar/body/projectile coordination, and the story controller owns owl
-state. `EntityMotionRegistry` lazily supplies one typed motion instance per
-room through `get(MotionClass.class, MotionClass::new)`. Adding a motion does
-not add a field to central runtime state. Controllers receive narrowly scoped
-service interfaces; bindings connect those capabilities to the room facade.
-Stateless behavior helpers operate on their owner's state. Longer operations
-use private, reusable scratch and named state handlers. Each scratch holder
-resets invocation values before use and releases input references afterward;
-a nested call uses a separate holder so callbacks cannot overwrite the outer
-invocation. Persistent slot state remains in the motion/controller owner.
+Per-type state belongs to its motion or encounter. State needed by both an
+inspector/reset path and a behavior controller has an independent owner:
+bomb, projectile, lift, pickup, reward, story, boss and slot-presentation state,
+plus Genie and Slime Eye encounter state. This breaks construction cycles
+without exposing a partially constructed controller. Controllers receive final,
+validated concrete dependencies. Optional ROM data, room geometry, caller
+overrides and presentation values are documented where declared; absence keeps
+the established ROM-free or no-interaction path.
 
-`EntitySlotOrchestrator` runs the five slot phases in descending slot order.
-`RoomEntity` remains an immutable record whose slot and load order are ROM
-identity. Snapshot helpers combine related field writes into one replacement
-and reuse unchanged values where fresh identity is not required. Lifecycle and
-spawn helpers preserve slot allocation, reset and early-return sites. Do not compact slots, sort by type, add resets on slot reuse or
-move RNG reads and byte writes across their original execution points.
+One entity's motion, input records, state handlers and reusable scratch live
+in its motion class. `EntityMotionRegistry` supplies one typed motion instance
+per room through `get(MotionClass.class, MotionClass::new)`. Adding a motion
+does not add a field to central runtime state. Controllers likewise contain
+their own behavior sequences and scratch. Scratch owners are final constructor
+dependencies; invocation inputs and temporary results are reset and released.
+A reentrant call uses a separate holder. Moldorm's tail snapshot cache stays
+separate because it owns retained immutable projections of the history taps.
+
+`EntitySlotPipeline` contains frame preparation, five named phase methods and
+presentation commit. The descending slot loop and every early return remain
+visible in one place. `RoomEntity` remains an immutable record whose slot and
+load order are ROM identity. Snapshot helpers combine related writes into one
+replacement and reuse unchanged values where fresh identity is not required.
+The persistent and non-persistent slot reset paths remain distinct. Do not
+compact slots, sort by type, add resets on slot reuse or move RNG reads and
+byte writes across their original execution points.
 
 `EntityHandlerRegistry` has 256 type bindings for initialization, generic
-advance and stage hooks. Handlers register explicit type IDs and named static
-callbacks. Their initializer and advance registrations live beside their tick
-hooks. `EntityHandlerFamilies.INSTALLERS` is the ordered installation list;
-duplicate registrations fail and unsupported bindings remain explicit.
+advance and stage hooks. Family handlers register directly with this concrete
+registry using explicit type IDs and named callbacks. Their initialization,
+advance, tick hooks and nested scratch live together. The ordered
+`EntityHandlerFamilies.INSTALLERS` list contains one registration line per
+family; duplicate registrations fail and unsupported bindings remain explicit.
 
-`EntityTickStage` describes 27 dispatch sites between the phase operations.
-Each site retains ordered visit positions, preserving all 141 original visits.
-Dispatch reads the current slot type at each visit, so an earlier hook that
-replaces or transforms an entity affects subsequent selection exactly as
-before. A false callback stops the slot immediately. Site names and visit
-positions describe source order; enum order and numeric entity IDs do not
-establish the schedule.
+`EntityTickStage` describes 27 dispatch sites between phase operations. Each
+site retains ordered visit positions, preserving all 141 original visits.
+Dispatch reads the current slot type at each visit, so a hook that replaces or
+transforms an entity affects subsequent selection in the original order.
+A false callback stops the slot immediately. Enum order and numeric entity IDs
+do not establish the schedule.
 
 `EntityFrameContext` is immutable frame input. Use its builder or `toBuilder`
-when changing Link state, collision services, RNG or interaction gates; service
-references retain their identity. `EntityFrameExecution` exposes operations,
-not public mutable fields. Its private scratch is grouped into frame inputs,
-timer gates, slot execution and presentation flags. The runtime owns one
-reusable execution object; acquisition resets the frame inputs and gates,
-and each descending slot visit resets slot scratch and presentation flags.
-The orchestrator releases the frame in a finally block. Reentrant frame calls
-use separate execution state. Frame setup and commit remain separate from
-individual handler behavior.
+when changing Link state, collision inputs, RNG or interaction gates; referenced
+services retain their identity. `EntityFrameExecution` owns nested frame-input,
+timer-gate, slot-execution and presentation scratch, with no public mutable
+fields. The runtime reuses one execution object. Acquisition resets frame
+scratch, descending visits reset slot scratch, and the pipeline releases the
+frame in a `finally` block. Reentrant frames use a separate execution object.
+Stable collision adapters and typed state views retain their identities.
 
-`EntityRoomInspection.snapshot()` captures an owned immutable copy for tests,
-retained state and consumers that require ownership. `view()` returns a cached
-read-only live `RoomEntitySnapshot` for immediate same-thread consumption.
-Its slot lists and presentation metadata follow the runtime; it must not be
-used as a historical frame or shared across threads. A `withX` operation on a
-live view materializes owned data before transforming it. Moldorm tail
-presentation similarly reuses immutable segment lists only while their
-coordinates are unchanged.
+`EntityRoomInspection.snapshot()` captures an owned immutable copy for retained
+state and consumers that require ownership. `view()` returns a cached read-only
+live `RoomEntitySnapshot` for immediate same-thread consumption. Its lists and
+metadata follow the runtime; it is not a historical frame or a cross-thread
+snapshot. A `withX` operation on a live view materializes owned data first.
+Moldorm tail presentation reuses immutable segment lists only while their
+coordinates are unchanged. Empty cache entries, optional hooks and optional
+results are domain absence; they are distinct from required collaborators.
 
 `EntityTickAllocationTest` measures a ROM-free six-entity mix: roaming enemies,
 a projectile, active Moldorm, a droppable and an NPC, with three inspection
-reads per tick. It retains frame inputs and repositions the same slots without
-allocation, while motion state and timers continue advancing. Its 1,100-byte
-limit provides roughly 25% headroom over the optimized steady-state result.
-Measure with escape analysis both enabled and disabled using temporary local
-JVM arguments; do not commit test-runner configuration changes. Immutable
-changed entities, motion results and emitted events still allocate.
+reads per tick. It retains inputs and repositions the same slots without
+allocation while motion state and timers advance. Its 1,100-byte limit keeps
+headroom over the steady-state result. Measure with escape analysis enabled
+and disabled using temporary JVM arguments; do not commit runner configuration
+changes. Changed immutable entities, motion results and emitted events still
+allocate. Other entity, presentation and session allocation guards also apply.
 
-Typed events and requests accumulate in the entity outbox rather than calling
-app orchestration from handlers. Room/app consumers apply Link, progression,
-dialog, music and transient effects. Source slots preserve the order of
-multiple Link writes in a frame. Outbox channels are cached, index-based views;
-size, clear and append operations do not create iterators, predicates or channel
-wrappers per tick. Draining events still returns an owned result.
+Typed events and requests accumulate in the entity outbox. Room/app consumers
+apply Link, progression, dialog, music and transient effects. Source slots
+preserve multiple Link writes in a frame. Outbox channels are cached index-based
+views; size, clear and append do not create iterators, predicates or wrappers
+per tick. Draining returns an owned result. Event/request records remain
+separate public value types because consumers outside the entity tree use them.
 `EntityCombatEvent.builder` and `EntityProjectileEvent.builder` name optional
 effects without positional argument lists.
 
-Entity ROM readers accept `linksawakening.rom.Rom` and use typed addresses and
-reads. Collision and property queries use `CollisionTables` and
-`EntityPropertyTables`. All entity byte-array delegates and aggregate-table
-adapters have been removed. Room, entity and sprite catalogs share the typed
-session Rom directly. Room-status arrays are mutable RAM state, not ROM buffers.
+Entity ROM readers accept `linksawakening.rom.Rom` and typed addresses/reads.
+Collision and property queries use `CollisionTables` and `EntityPropertyTables`.
+Room, entity and sprite catalogs share the typed session ROM. Room-status arrays
+are mutable RAM state, not ROM buffers. Class and table comments name the
+ported routines and original labels, including unnamed disassembly tables.
 
-Use `RoomEntityRuntime.builder(snapshot)` for runtime construction. Test-side
-`EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` provide
-setup and queries without production test hooks. Runtime tests are split by
-entity family and behavior. Room consumers now use runtime/frame builders,
-`EntityPickupFrame`, `EnemyCombatFrame`, `EntitySwordContactFrame` and
-`FollowingNpcSpawn`; the old `from`, `ForTest`, frame and wide operation adapters
-are deleted. The room simulation reuses its builder but emits an immutable
-`EntityFrameContext`, so retained frame inputs cannot change. Its default
-handler collision gate is derived from the projectile Link motion state.
-Combat/projectile consumer tests use named event builders; the four former
-constructor adapters are deleted. Immutable record schemas retain their canonical constructors
-and validation; value schemas are the exception to the normal eight-parameter
-method limit. See [Entity API migration](archive/history/entity-api-migration.md).
+Use `RoomEntityRuntime.builder(snapshot)` for construction. Test-side
+`EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` supply
+real ROM-free state and focused setup. Tests remain split by entity family and
+behavior. Room consumers use runtime/frame builders, `EntityPickupFrame`,
+`EnemyCombatFrame`, `EntitySwordContactFrame` and `FollowingNpcSpawn`; the old
+`from`, `ForTest` and wide operation adapters are removed. Preserve externally
+used signatures when consolidating internal code. Cohesion determines class
+boundaries; there is no file-length limit. Main and test imports are explicit.
 
 To add an entity type:
 
-1. Add its motion/state owner in `world.entity.motion`, using the disassembly's
-   exact initialization, timers, byte arithmetic and RNG ordering.
-2. Add its handler in `world.entity.handler`. Register initialization, advance
-   and the required site/visit hooks there, acquire its motion through the
-   typed registry, and emit typed events for effects outside the entity tree.
+1. Add its motion/state owner in `world.entity.motion`, preserving the
+   disassembly's initialization, timers, byte arithmetic and RNG ordering.
+   Keep its input values and execution scratch beside the behavior.
+2. Add its family handler in `world.entity.handler`. Register initialization,
+   advance and site/visit hooks with `EntityHandlerRegistry`, acquire the
+   motion through the typed registry and emit typed events for external effects.
 3. Add one `NewEntityHandler::install` entry to
    `EntityHandlerFamilies.INSTALLERS`.
 
-Add focused behavior coverage using the test fixtures and ROM-backed tables;
-never add extracted assets. For this refactor the required headless oracle is
+Add focused behavior coverage with the fixtures and ROM-backed tables; never
+add extracted assets. The required headless refactor oracle is
 `LA_ROM=/path/to/user/rom ./gradlew spotlessApply test` from `java/`, including
 its default session replays. Explicitly tagged `known-gap` routes are excluded
-from that suite and are not refactor validation targets. Preserve existing
-consumer and sprite contracts when implementing a handler within the current
-entity boundary.
+and are not refactor validation targets. Preserve consumer and sprite contracts
+within the entity boundary.
 
 ## Rooms and world
 

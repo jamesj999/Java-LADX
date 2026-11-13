@@ -8,7 +8,7 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.DialogRequest;
@@ -19,7 +19,7 @@ import linksawakening.world.entity.motion.KeyDropPointMotion;
 
 /** ROM handler stages for KeyDropPoint. */
 final class KeyDropPointHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_KEY_DROP_POINT,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,

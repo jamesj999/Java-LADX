@@ -1,18 +1,24 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_ARROWS;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_BOMBS;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_FAIRY;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_HEART;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_MAGIC_POWDER;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_RUPEE;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
 
 /** ROM handler stages for CommonDroppableType. */
 final class CommonDroppableTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_DROPPABLE_HEART,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL,

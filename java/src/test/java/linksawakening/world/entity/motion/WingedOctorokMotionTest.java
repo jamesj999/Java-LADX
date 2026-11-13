@@ -8,6 +8,8 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.WingedOctorokOam;
+import linksawakening.world.entity.motion.WingedOctorokMotion.WingedOctorokFrame;
+import linksawakening.world.entity.motion.WingedOctorokMotion.WingedOctorokInteractionFrame;
 import org.junit.jupiter.api.Test;
 
 final class WingedOctorokMotionTest {

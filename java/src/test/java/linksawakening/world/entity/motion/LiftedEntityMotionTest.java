@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.world.entity.motion.LiftedEntityMotion.LiftedEntityFrame;
 import org.junit.jupiter.api.Test;
 
 final class LiftedEntityMotionTest {

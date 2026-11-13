@@ -1,7 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-
 import linksawakening.entity.EntitySpriteDefinition;
 
 /** Shared immutable slot snapshot transformations. */

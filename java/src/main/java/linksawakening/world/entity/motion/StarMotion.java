@@ -31,7 +31,8 @@ public final class StarMotion {
             RoomEntity entity,
             int frameCounter,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {

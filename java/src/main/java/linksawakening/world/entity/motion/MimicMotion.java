@@ -38,7 +38,8 @@ public final class MimicMotion {
             int frameCounter,
             int pressedButtonsMask,
             int collisionType,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction) {
         return advance(entity, frameCounter, pressedButtonsMask, collisionType, backgroundInteraction, 0, frameCounter);
     }
 
@@ -47,7 +48,8 @@ public final class MimicMotion {
             int frameCounter,
             int pressedButtonsMask,
             int collisionType,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int currentFrame) {
         int slot = entity.slot();

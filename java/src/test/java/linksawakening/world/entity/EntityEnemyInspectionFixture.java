@@ -1,11 +1,6 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
-
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 final class EntityEnemyInspectionFixture {
     private final RoomEntityRuntime runtime;
@@ -32,7 +27,7 @@ final class EntityEnemyInspectionFixture {
 
     int musicalNoteInertiaForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.projectiles.readMusicalNoteInertia(slot);
+        return runtime.projectiles.state.readMusicalNoteInertia(slot);
     }
 
     int hitboxFlagsForTest(int slot) {

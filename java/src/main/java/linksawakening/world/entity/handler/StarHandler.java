@@ -1,20 +1,19 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_STAR;
 
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.StarMotion;
 
 /** ROM handler stages for Star. */
 final class StarHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_STAR, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_STAR, EntityTickStage.PHASE_3_BEFORE_LASER, 9, StarHandler::phase3Star);
     }
@@ -46,7 +45,7 @@ final class StarHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(StarMotion.class, StarMotion::new).initialize(entity.slot(), random);
     }
 }

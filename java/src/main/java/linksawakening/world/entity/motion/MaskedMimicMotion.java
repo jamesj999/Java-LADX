@@ -197,4 +197,16 @@ public final class MaskedMimicMotion {
             throw new IllegalArgumentException("ROM Link direction must be 0..3: " + value);
         }
     }
+
+    public record MaskedMimicFrame(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            int romLinkDirection,
+            int pressedButtonsMask,
+            int collisionType,
+            // Optional room geometry/history; null preserves the path without that room input.
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int currentFrame) {}
 }

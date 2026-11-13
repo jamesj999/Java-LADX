@@ -91,7 +91,9 @@ public final class EnemyProjectileMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         return advance(entity, backgroundCollision, false);
     }
 
@@ -102,13 +104,16 @@ public final class EnemyProjectileMotion {
      * transition without restoring either coordinate.
      */
     public Update advance(
-            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean preexistingCollision) {
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision,
+            boolean preexistingCollision) {
         return advance(entity, backgroundCollision, preexistingCollision, 0, 0, false);
     }
 
     public Update advance(
             RoomEntity entity,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             boolean preexistingCollision,
             int frameCounter,
             int groundStatus,
@@ -126,7 +131,8 @@ public final class EnemyProjectileMotion {
 
     public Update advance(
             RoomEntity entity,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             boolean preexistingCollision,
             int frameCounter,
             int groundStatus,

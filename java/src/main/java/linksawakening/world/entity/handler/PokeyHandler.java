@@ -1,25 +1,23 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_POKEY;
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.PokeyFrame;
 import linksawakening.world.entity.motion.PokeyMotion;
+import linksawakening.world.entity.motion.PokeyMotion.PokeyFrame;
 
 /** ROM handler stages for Pokey. */
 final class PokeyHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_POKEY, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_POKEY, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 8, PokeyHandler::phase4Pokey);
     }
@@ -96,7 +94,7 @@ final class PokeyHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(PokeyMotion.class, PokeyMotion::new).initialize(entity.slot());
     }
 }

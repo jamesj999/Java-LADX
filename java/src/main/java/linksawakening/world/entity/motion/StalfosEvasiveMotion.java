@@ -57,13 +57,14 @@ public final class StalfosEvasiveMotion {
     }
 
     public Update advance(StalfosEvasiveFrame inputs) {
-        return stalfosEvasiveFrameStep.run(this, inputs);
+        return stalfosEvasiveFrameStep.run(inputs);
     }
 
     Update advanceAirborne(
             RoomEntity entity,
             int transitionCountdown,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             CloneRequest cloneRequest) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
@@ -91,7 +92,8 @@ public final class StalfosEvasiveMotion {
             int frame,
             int transitionCountdown,
             int ignoreHitsCountdown,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -168,7 +170,10 @@ public final class StalfosEvasiveMotion {
     }
 
     static MoveResult applyBackground(
-            RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+            RoomEntity entity,
+            int x,
+            int y, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision) {
         boolean xBlocked = false;
         boolean yBlocked = false;
         if (backgroundCollision != null) {
@@ -257,5 +262,222 @@ public final class StalfosEvasiveMotion {
 
     record Vector(int x, int y) {}
 
-    final StalfosEvasiveFrameStep stalfosEvasiveFrameStep = new StalfosEvasiveFrameStep();
+    final StalfosEvasiveFrameStep stalfosEvasiveFrameStep = new StalfosEvasiveFrameStep(this);
+
+    public record StalfosEvasiveFrame(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean actionButtonsHeld,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
+            RoomEntityBackgroundCollision backgroundCollision,
+            int mapId) {}
+
+    static final class StalfosEvasiveFrameStep {
+        private final StalfosEvasiveMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.StalfosEvasiveMotion.StalfosEvasiveFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.RoomEntity entity;
+        private int frameCounter;
+        private int linkEntityX;
+        private int linkEntityY;
+        private boolean actionButtonsHeld;
+        private int transitionCountdown;
+        private int ignoreHitsCountdown;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
+        private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
+        private int mapId;
+        private int slot;
+        private boolean cloneBranchReady;
+        private int frame;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.StalfosEvasiveMotion.CloneRequest cloneRequest;
+        private int x;
+        private int y;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.StalfosEvasiveMotion.MoveResult movement;
+        private int distanceX;
+        private int distanceY;
+        private int variant;
+
+        StalfosEvasiveFrameStep(StalfosEvasiveMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
+
+        linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run() {
+            if (!prepareCloneBranch()) return completedResult;
+            if (!advanceMovement()) return completedResult;
+
+            return new StalfosEvasiveMotion.Update(
+                    StalfosEvasiveMotion.withPositionAndVariant(entity, x, y, entity.z(), variant),
+                    transitionCountdown,
+                    false,
+                    false,
+                    cloneRequest);
+        }
+
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.StalfosEvasiveMotion.Update completedResult;
+
+        private boolean prepareCloneBranch() {
+
+            entity = inputs.entity();
+            frameCounter = inputs.frameCounter();
+            linkEntityX = inputs.linkEntityX();
+            linkEntityY = inputs.linkEntityY();
+            actionButtonsHeld = inputs.actionButtonsHeld();
+            transitionCountdown = inputs.transitionCountdown();
+            ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+            randomByteSupplier = inputs.randomByteSupplier();
+            backgroundCollision = inputs.backgroundCollision();
+            mapId = inputs.mapId();
+            slot = entity.slot();
+            if (!owner.initialized[slot]) {
+                // A Gibdo burn conversion calls ConfigureNewEntity.attributes and
+                // returns ACTIVE without running EntityInitHandlersTable.$1E.
+                owner.initializeForActiveEntity(slot);
+            }
+            cloneBranchReady = false;
+            if (owner.privateCountdown1[slot] > 0) {
+                owner.privateCountdown1[slot]--;
+                cloneBranchReady = owner.privateCountdown1[slot] == 1;
+            }
+
+            frame = frameCounter & 0xFF;
+            if (owner.privateState1[slot] != 0) {
+
+                completedResult = owner.advanceFleeing(
+                        entity, frame, transitionCountdown, ignoreHitsCountdown, backgroundCollision);
+                return false;
+            }
+
+            cloneRequest = null;
+            if (cloneBranchReady) {
+                // The source returns immediately when hMapId is below
+                // MAP_ANGLERS_TUNNEL, before its inertia dispatch or movement.
+                if (mapId < 0x03) {
+                    int variant = (frame >>> 3) & 0x01;
+
+                    completedResult = new StalfosEvasiveMotion.Update(
+                            StalfosEvasiveMotion.withPositionAndVariant(
+                                    entity, entity.x(), entity.y(), entity.z(), variant),
+                            transitionCountdown,
+                            false,
+                            false,
+                            null);
+                    return false;
+                }
+                StalfosEvasiveMotion.Vector vector = StalfosEvasiveMotion.vectorTowardsLink(
+                        entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x18);
+                cloneRequest = new StalfosEvasiveMotion.CloneRequest(
+                        slot, entity.x(), entity.y(), entity.z(), vector.x(), vector.y());
+            }
+            return true;
+        }
+
+        private boolean advanceMovement() {
+
+            if (owner.inertia[slot] != 0) {
+
+                completedResult = owner.advanceAirborne(entity, transitionCountdown, backgroundCollision, cloneRequest);
+                return false;
+            }
+
+            x = StalfosEvasiveMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot);
+            y = StalfosEvasiveMotion.addSpeedToPosition(entity.y(), owner.speedY[slot], owner.speedYAccumulator, slot);
+            movement = StalfosEvasiveMotion.applyBackground(entity, x, y, backgroundCollision);
+            x = movement.x();
+            y = movement.y();
+            if (movement.xBlocked()) {
+                owner.speedX[slot] ^= 0xF0;
+            }
+            if (movement.yBlocked()) {
+                owner.speedY[slot] ^= 0xF0;
+            }
+
+            distanceX = StalfosEvasiveMotion.signedByte(linkEntityX - entity.x());
+            distanceY = StalfosEvasiveMotion.signedByte(linkEntityY - entity.y());
+            if (actionButtonsHeld
+                    && StalfosEvasiveMotion.distanceInJumpWindow(distanceX)
+                    && StalfosEvasiveMotion.distanceInJumpWindow(distanceY)) {
+                transitionCountdown = 0x08;
+                owner.privateCountdown1[slot] = 0;
+                owner.inertia[slot] = 1;
+                owner.speedZ[slot] = 0x15;
+                StalfosEvasiveMotion.Vector vector = StalfosEvasiveMotion.vectorTowardsLink(
+                        entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x12);
+                owner.speedX[slot] = (-vector.x()) & 0xFF;
+                owner.speedY[slot] = (-vector.y()) & 0xFF;
+
+                completedResult = new StalfosEvasiveMotion.Update(
+                        StalfosEvasiveMotion.withPositionAndVariant(entity, x, y, entity.z(), 0x02),
+                        transitionCountdown,
+                        false,
+                        false,
+                        cloneRequest);
+                return false;
+            }
+
+            // jr_015_4FCE: the initialization state or random low six bits forces
+            // a new choice; otherwise the current fixed-point speed is retained.
+            if (owner.state[slot] != 0 || (randomByteSupplier.getAsInt() & 0x2F) == 0) {
+                owner.chooseRandomDirection(slot, randomByteSupplier);
+            }
+            variant = (frame >>> 3) & 0x01;
+            return true;
+        }
+
+        private boolean inUse;
+
+        linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run(
+                linksawakening.world.entity.motion.StalfosEvasiveMotion.StalfosEvasiveFrame inputs) {
+            if (inUse) {
+                return new StalfosEvasiveFrameStep(owner).run(inputs);
+            }
+            inUse = true;
+            entity = null;
+            frameCounter = 0;
+            linkEntityX = 0;
+            linkEntityY = 0;
+            actionButtonsHeld = false;
+            transitionCountdown = 0;
+            ignoreHitsCountdown = 0;
+            randomByteSupplier = null;
+            backgroundCollision = null;
+            mapId = 0;
+            slot = 0;
+            cloneBranchReady = false;
+            frame = 0;
+            cloneRequest = null;
+            x = 0;
+            y = 0;
+            movement = null;
+            distanceX = 0;
+            distanceY = 0;
+            variant = 0;
+            completedResult = null;
+
+            this.inputs = inputs;
+            try {
+                return run();
+            } finally {
+                inUse = false;
+
+                this.inputs = null;
+                this.entity = null;
+                this.randomByteSupplier = null;
+                this.backgroundCollision = null;
+                this.cloneRequest = null;
+                this.movement = null;
+                this.completedResult = null;
+            }
+        }
+    }
 }

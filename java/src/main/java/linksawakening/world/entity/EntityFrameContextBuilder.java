@@ -8,14 +8,19 @@ public final class EntityFrameContextBuilder {
     private int linkEntityX;
     private int linkEntityY;
     private int collisionType;
+    // Absent before initialization or while this reusable execution scratch is inactive.
     private IntSupplier randomByteSupplier;
+    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityBackgroundCollision backgroundCollision;
+    // Optional room geometry/history; null preserves the path without that room input.
     private RoomEntityObjectCollision objectCollision;
+    // Optional room geometry/history; null preserves the path without that room input.
     private LinkPositionHistory linkPositionHistory;
     private int linkZ;
     private boolean linkAirborne;
     private int linkDirection;
     private int entityYOffset;
+    // Absent before initialization or while this reusable execution scratch is inactive.
     private EnemyProjectileCollision.LinkState projectileLinkState;
     private boolean swordCollisionActive;
     private int swordX;
@@ -25,6 +30,7 @@ public final class EntityFrameContextBuilder {
     private int linkSpeedX;
     private int linkSpeedY;
     private boolean creditsGameplay;
+    // Optional override; null retains the derived/default value.
     private Boolean handlerLinkCollisionEnabled;
 
     EntityFrameContextBuilder() {}
@@ -54,17 +60,23 @@ public final class EntityFrameContextBuilder {
         return this;
     }
 
-    public EntityFrameContextBuilder backgroundCollision(RoomEntityBackgroundCollision value) {
+    public EntityFrameContextBuilder backgroundCollision(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    value) {
         backgroundCollision = value;
         return this;
     }
 
-    public EntityFrameContextBuilder objectCollision(RoomEntityObjectCollision value) {
+    public EntityFrameContextBuilder objectCollision(
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityObjectCollision
+                    value) {
         objectCollision = value;
         return this;
     }
 
-    public EntityFrameContextBuilder linkPositionHistory(LinkPositionHistory value) {
+    public EntityFrameContextBuilder linkPositionHistory(
+            /* Optional room geometry/history; null preserves the path without that room input. */ LinkPositionHistory
+                    value) {
         linkPositionHistory = value;
         return this;
     }

@@ -137,7 +137,10 @@ public final class UrchinMotion {
     }
 
     private PositionAndCollision moveWithBackground(
-            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot, int frameCounter) {
+            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundInteraction interaction,
+            int slot,
+            int frameCounter) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
@@ -237,4 +240,17 @@ public final class UrchinMotion {
     }
 
     private record PositionAndCollision(int x, int y, int collisionFlags) {}
+
+    public record UrchinFrame(
+            RoomEntity entity,
+            int frameCounter,
+            int physicsFlags,
+            int linkEntityX,
+            int linkEntityY,
+            int linkDirection,
+            boolean usingShield,
+            boolean swordCollisionActive,
+            boolean linkInteractive,
+            // Optional room geometry/history; null preserves the path without that room input.
+            RoomEntityBackgroundInteraction backgroundInteraction) {}
 }

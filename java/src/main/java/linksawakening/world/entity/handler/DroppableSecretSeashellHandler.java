@@ -5,17 +5,16 @@ import static linksawakening.world.entity.EntityRomConstants.SECRET_SEASHELL_HID
 import static linksawakening.world.entity.EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityObjectSample;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.SecretSeashellInteractionFrame;
 import linksawakening.world.entity.motion.SecretSeashellMotion;
+import linksawakening.world.entity.motion.SecretSeashellMotion.SecretSeashellInteractionFrame;
 
 /** ROM handler stages for DroppableSecretSeashell. */
 final class DroppableSecretSeashellHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_DROPPABLE_SECRET_SEASHELL,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,

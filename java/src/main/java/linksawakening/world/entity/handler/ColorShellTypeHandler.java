@@ -5,17 +5,16 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ColorShellFrame;
 import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.ColorShellMotion.ColorShellFrame;
 
 /** ROM handler stages for ColorShellType. */
 final class ColorShellTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(0xE9, EntityTickStage.PHASE_2_FALLING, 0, ColorShellTypeHandler::phase2ColorShellType);
         registry.registerTick(0xEA, EntityTickStage.PHASE_2_FALLING, 0, ColorShellTypeHandler::phase2ColorShellType);
         registry.registerTick(0xEB, EntityTickStage.PHASE_2_FALLING, 0, ColorShellTypeHandler::phase2ColorShellType);

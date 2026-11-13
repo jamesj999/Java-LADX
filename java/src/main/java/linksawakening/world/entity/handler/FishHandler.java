@@ -1,23 +1,21 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_FISH;
 
 import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.FishMotion;
 
 /** ROM handler stages for Fish. */
 final class FishHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_FISH, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_FISH, EntityTickStage.PHASE_3_AFTER_LASER, 3, FishHandler::phase3Fish);
     }
@@ -53,7 +51,7 @@ final class FishHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(FishMotion.class, FishMotion::new).initialize(entity.slot());
     }
 }

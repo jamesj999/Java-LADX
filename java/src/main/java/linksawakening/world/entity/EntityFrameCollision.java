@@ -11,7 +11,7 @@ final class EntityFrameCollision {
     private final RoomEntityBackgroundInteraction richProbe = this::probeBooleanInput;
 
     EntityFrameCollision(EntityFrameExecution state) {
-        this.state = state;
+        this.state = java.util.Objects.requireNonNull(state, "state");
     }
 
     RoomEntityBackgroundCollision booleanProbe() {

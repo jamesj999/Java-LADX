@@ -8,6 +8,7 @@ public final class EntitySpriteViews {
     private static final EntityRoomLoader.RoomTable[] TABLES = EntityRoomLoader.RoomTable.values();
     private static final EntityStatus[] STATUSES = EntityStatus.values();
     private static final int CAPACITY = 128;
+    // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
     private final EntitySpriteHandlerCatalog catalog;
     private final int[] kinds = new int[CAPACITY],
             first = new int[CAPACITY],
@@ -16,7 +17,9 @@ public final class EntitySpriteViews {
     private final EntitySpriteDefinition[] definitions = new EntitySpriteDefinition[CAPACITY];
     private int size, next;
 
-    EntitySpriteViews(EntitySpriteHandlerCatalog catalog) {
+    EntitySpriteViews(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteHandlerCatalog
+                    catalog) {
         this.catalog = catalog;
     }
 

@@ -1,6 +1,12 @@
 package linksawakening.world.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
@@ -13,7 +19,7 @@ class EntityInfrastructureTest {
     @Test
     void dispatchSiteKeepsRepeatedVisitsAndStopsAtTheFirstEarlyReturn() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
-        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().frameExecution;
         frame.slotFrame().entity(RoomEntity.disabled(15));
         var visited = new java.util.ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE;
@@ -40,7 +46,7 @@ class EntityInfrastructureTest {
     @Test
     void dispatchSiteRereadsEntityTypeBetweenVisits() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
-        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().frameExecution;
         frame.slotFrame().entity(RoomEntity.disabled(15));
         var visited = new java.util.ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
@@ -137,7 +143,7 @@ class EntityInfrastructureTest {
     @Test
     void registryKeepsStageRoutingWhenAdvanceIsAddedLater() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
-        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().frameExecution;
         frame.slotFrame().entity(RoomEntity.disabled(15));
         var stage = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
         registry.registerTick(255, stage, actual -> {

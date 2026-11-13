@@ -1,13 +1,27 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
 import java.util.Arrays;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.LaserMotion;
+import linksawakening.world.entity.motion.MoblinKingMotion;
 import linksawakening.world.entity.motion.MotionTestFixture;
+import linksawakening.world.entity.motion.PairoddProjectileMotion;
+import linksawakening.world.entity.motion.SideViewPlatformMotion;
+import linksawakening.world.entity.motion.SideViewPotMotion;
+import linksawakening.world.entity.motion.StalfosEvasiveMotion;
+import linksawakening.world.entity.motion.TarinRaccoonMotion;
+import linksawakening.world.entity.motion.ThreeOfAKindMotion;
+import linksawakening.world.entity.motion.WitchMotion;
+import linksawakening.world.entity.motion.WizrobeMotion;
+import linksawakening.world.entity.motion.WizrobeProjectileMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
 
 final class EntityDebugConfigurationFixture {
     private final RoomEntityRuntime runtime;
@@ -81,7 +95,7 @@ final class EntityDebugConfigurationFixture {
     void setDroppedItemForTest(int slot, int itemType) {
         EntitySlotValidation.validateEntitySlot(slot);
         EntitySlotValidation.validateEnemyDropByte(itemType, "Dropped item");
-        runtime.bossRewards.writeDroppedItemBySlot(slot, itemType);
+        runtime.bossRewards.state.writeDroppedItemBySlot(slot, itemType);
     }
 
     void setEntityMapIdForTest(int mapId) {
@@ -115,13 +129,13 @@ final class EntityDebugConfigurationFixture {
         if (!isCommonDroppableType(type)) {
             throw new IllegalArgumentException("Entity slot is not an ordinary droppable: " + slot);
         }
-        runtime.bossRewards.writeDroppablePrivateState3(slot, 0);
-        runtime.bossRewards.writeDroppablePrivateState4(slot, 0);
+        runtime.bossRewards.state.writeDroppablePrivateState3(slot, 0);
+        runtime.bossRewards.state.writeDroppablePrivateState4(slot, 0);
         runtime.entityState.physicsTables.writeEntityOptions1Override(
                 slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
         runtime.entityState.physicsTables.writeSlowTransitionCountdown(slot, slowCountdown);
         runtime.entityState.physicsTables.writeSlowTimerInitialized(slot, true);
-        runtime.bossRewards.writeEnemyDropActive(slot, false);
+        runtime.bossRewards.state.writeEnemyDropActive(slot, false);
         runtime.entityState
                 .motions
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)

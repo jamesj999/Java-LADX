@@ -2,7 +2,6 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.WarpDestination;
 
@@ -116,4 +115,15 @@ public final class WarpMotion {
             int immunityCountdown,
             boolean destinationReady,
             WarpDestination destination) {}
+
+    public record WarpFrame(
+            RoomEntity entity,
+            int state,
+            int countdown,
+            int mapId,
+            int roomId,
+            boolean minibossReady,
+            int linkX,
+            int linkY,
+            int linkZ) {}
 }

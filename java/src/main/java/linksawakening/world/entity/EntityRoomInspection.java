@@ -1,9 +1,7 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -11,41 +9,143 @@ import linksawakening.world.entity.event.HeartPieceVisual;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 import linksawakening.world.entity.event.LiftedEntityState;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.FollowingNpcMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.MoblinKingMotion;
+import linksawakening.world.entity.motion.WitchMotion;
 
 /** Queries over ExecuteEntities slot state; snapshot() owns data, view() follows the live room. */
 public final class EntityRoomInspection {
-    private final EntityRoomInspectionServices runtime;
+    final EntityWarpController warpState;
+    final boolean indoorRoom;
+    // Optional ROM data, absent in ROM-free runtimes.
+    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    // Optional ROM data, absent in ROM-free runtimes.
+    final linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles;
+    final EntityBombState bombInteractions;
+    final EntityBossState bossRewards;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityLiftState liftThrow;
+    final EntityLinkState linkState;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityPickupState pickups;
+    final EntityPresentationState presentationState;
+    final EntityProjectileState projectiles;
+    final EntityRewardState rewards;
+    final EntityRoomVariables roomVariables;
+    final EntitySlotPresentation slotProperties;
+    final EntityStoryState story;
+    // Optional ROM data, absent in ROM-free runtimes.
+    final RomEnemyCombatTables enemyCombatTables;
+    final RoomEntity[] slots;
+
     private final RoomEntitySnapshot liveView;
 
-    EntityRoomInspection(EntityRoomInspectionServices runtime) {
-        this.runtime = runtime;
-        this.liveView = RoomEntitySnapshot.liveView(runtime);
+    EntityRoomInspection(
+            EntityWarpController warpState,
+            boolean indoorRoom,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.gpu
+                            .EntitySpriteTileSnapshot
+                    spriteTiles,
+            EntityBombState bombInteractions,
+            EntityBossState bossRewards,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityLiftState liftThrow,
+            EntityLinkState linkState,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityPickupState pickups,
+            EntityPresentationState presentationState,
+            EntityProjectileState projectiles,
+            EntityRewardState rewards,
+            EntityRoomVariables roomVariables,
+            EntitySlotPresentation slotProperties,
+            EntityStoryState story,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ RomEnemyCombatTables
+                    enemyCombatTables,
+            RoomEntity[] slots) {
+        this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
+        this.indoorRoom = indoorRoom;
+        this.spriteHandlers = spriteHandlers;
+        this.spriteTiles = spriteTiles;
+        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
+        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.story = java.util.Objects.requireNonNull(story, "story");
+        this.enemyCombatTables = enemyCombatTables;
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.liveView = RoomEntitySnapshot.liveView(this);
     }
 
     public LiftedEntityState liftedEntityState() {
-        return EntityRoomQueries.liftedEntityState(runtime);
+        if (this.liftThrow.readLiftedEntitySlot() < 0 || this.liftThrow.readLiftedEntitySlot() >= this.slots.length) {
+            return LiftedEntityState.none();
+        }
+        RoomEntity entity = this.slots[this.liftThrow.readLiftedEntitySlot()];
+        if (!entity.loaded() || entity.status() != EntityStatus.LIFTED) {
+            return LiftedEntityState.none();
+        }
+        return new LiftedEntityState(
+                this.liftThrow.readLiftedEntitySlot(),
+                entity.type(),
+                this.liftThrow.readLiftedPhase(this.liftThrow.readLiftedEntitySlot()),
+                this.physicsTables.readEnemyTransitionCountdown(this.liftThrow.readLiftedEntitySlot()),
+                this.liftThrow.readLiftedCarryState(),
+                this.liftThrow.readLiftedSourceDirection(this.liftThrow.readLiftedEntitySlot()),
+                this.liftThrow.readLiftedEffectiveDirection());
     }
 
     int initialHealth(int type) {
-        return runtime.enemyCombatTables() == null
+        return this.enemyCombatTables == null
                 ? RoomEntityCombatRules.initialHealth(type)
-                : runtime.enemyCombatTables().initialHealth(type);
+                : this.enemyCombatTables.initialHealth(type);
     }
 
     int contactDamage(int slot) {
-        return runtime.enemyCombatTables() == null
-                ? RoomEntityCombatRules.contactDamage(runtime.slots()[slot].type())
-                : runtime.enemyCombatTables()
-                        .contactDamageForGroup(runtime.combatTables().readEnemyHealthGroup(slot));
+        return this.enemyCombatTables == null
+                ? RoomEntityCombatRules.contactDamage(this.slots[slot].type())
+                : this.enemyCombatTables.contactDamageForGroup(this.combatTables.readEnemyHealthGroup(slot));
     }
 
     public int activeProjectileCount() {
-        return EntityRoomQueries.activeProjectileCount(runtime);
+        int count = 0;
+        for (RoomEntity entity : this.slots) {
+            if (!entity.loaded()) {
+                continue;
+            }
+            int type = entity.type() & 0xFF;
+            if (type == EntityRomConstants.ENTITY_ARROW
+                    || type == EntityRomConstants.ENTITY_BOOMERANG
+                    || type == EntityRomConstants.ENTITY_MAGIC_ROD_FIREBALL
+                    || type == EntityRomConstants.ENTITY_SWORD_BEAM) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public boolean boomerangActive() {
-        for (RoomEntity entity : runtime.slots()) {
+        for (RoomEntity entity : this.slots) {
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOOMERANG) {
                 return true;
             }
@@ -54,53 +154,50 @@ public final class EntityRoomInspection {
     }
 
     public boolean lastArrowShotPlayedWhoosh() {
-        return runtime.projectiles().readLastArrowShotPlayedWhoosh();
+        return this.projectiles.readLastArrowShotPlayedWhoosh();
     }
 
     public boolean lastBombPlacementPlayedBump() {
-        return runtime.bombInteractions().readLastBombPlacementPlayedBump();
+        return this.bombInteractions.readLastBombPlacementPlayedBump();
     }
 
     public boolean tarinTransformationHandlerInteractive() {
-        return runtime.roomVariables().readTransitionSequenceCounter() == 0x04
-                && !runtime.linkState().dialogActive
-                && !runtime.linkState().inventoryAppearing;
+        return this.roomVariables.readTransitionSequenceCounter() == 0x04
+                && !this.linkState.dialogActive
+                && !this.linkState.inventoryAppearing;
     }
 
     boolean tarinTransformationTimersInteractive() {
-        return tarinTransformationHandlerInteractive() && runtime.linkState().linkPlayingOcarinaCountdown == 0;
+        return tarinTransformationHandlerInteractive() && this.linkState.linkPlayingOcarinaCountdown == 0;
     }
 
     public boolean genieState0Interactive(boolean creditsGameplay) {
         return !creditsGameplay
-                && runtime.roomVariables().readGameplayWorld()
-                && runtime.roomVariables().readTransitionSequenceCounter() == 0x04
-                && !runtime.linkState().dialogActive
-                && !runtime.linkState().inventoryAppearing
+                && this.roomVariables.readGameplayWorld()
+                && this.roomVariables.readTransitionSequenceCounter() == 0x04
+                && !this.linkState.dialogActive
+                && !this.linkState.inventoryAppearing
                 && !witchGotItemPresentationActive()
-                && !runtime.roomVariables().readRoomTransitionActive();
+                && !this.roomVariables.readRoomTransitionActive();
     }
 
     boolean gameplayEntityTimersInteractive(boolean creditsGameplay) {
         return (creditsGameplay
-                        || (runtime.roomVariables().readGameplayWorld()
-                                && runtime.roomVariables().readTransitionSequenceCounter() == 0x04))
-                && !runtime.roomVariables().readRoomTransitionActive()
-                && runtime.backgroundMechanics().entityTimersInteractive();
+                        || (this.roomVariables.readGameplayWorld()
+                                && this.roomVariables.readTransitionSequenceCounter() == 0x04))
+                && !this.roomVariables.readRoomTransitionActive()
+                && this.linkState.entityTimersInteractive();
     }
 
     boolean isLoadedEntityOfType(int slot, int type) {
-        return slot >= 0
-                && slot < runtime.slots().length
-                && runtime.slots()[slot].loaded()
-                && runtime.slots()[slot].type() == type;
+        return slot >= 0 && slot < this.slots.length && this.slots[slot].loaded() && this.slots[slot].type() == type;
     }
 
     public boolean bombActive() {
-        for (RoomEntity entity : runtime.slots()) {
+        for (RoomEntity entity : this.slots) {
             if (entity.loaded()
                     && entity.type() == EntityRomConstants.ENTITY_BOMB
-                    && !runtime.bombFinalPresentationPending(entity.slot())) {
+                    && !this.bombInteractions.bombFinalPresentationPending(entity.slot())) {
                 return true;
             }
         }
@@ -109,7 +206,7 @@ public final class EntityRoomInspection {
 
     public int bombDirection(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.bombInteractions().readBombDirection(slot) & 0xFF;
+        return this.bombInteractions.readBombDirection(slot) & 0xFF;
     }
 
     public boolean hookshotActive() {
@@ -117,8 +214,8 @@ public final class EntityRoomInspection {
     }
 
     int hookshotSlot() {
-        for (int slot = 0; slot < runtime.slots().length; slot++) {
-            if (runtime.motions()
+        for (int slot = 0; slot < this.slots.length; slot++) {
+            if (this.motions
                     .get(HookshotChainMotion.class, HookshotChainMotion::new)
                     .active(slot)) {
                 return slot;
@@ -129,41 +226,41 @@ public final class EntityRoomInspection {
 
     /** MarinEntityHandler $05:4E6A and MarinEntityHandler_Indoor $05:51CE. */
     public boolean indoorMarinAbsent() {
-        return EntityRoomQueries.indoorMarinAbsent(runtime);
+        return EntityRoomInspection.entityRoomQueriesIndoorMarinAbsent(this);
     }
 
     /** TarinIndoorsHandler $05:4BF1-4C11, before any sprite rendering. */
     public boolean indoorTarinAbsent() {
-        return EntityRoomQueries.indoorTarinAbsent(runtime);
+        return EntityRoomInspection.entityRoomQueriesIndoorTarinAbsent(this);
     }
 
     public RoomEntitySnapshot snapshot() {
-        return EntityRoomQueries.snapshot(runtime);
+        return EntityRoomInspection.entityRoomQueriesSnapshot(this);
     }
 
     public int groundStatus(int slot) {
-        if (slot < 0 || slot >= runtime.physicsTables().slotCount()) {
+        if (slot < 0 || slot >= this.physicsTables.slotCount()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
-        return runtime.physicsTables().readEntityGroundStatus(slot);
+        return this.physicsTables.readEntityGroundStatus(slot);
     }
 
     public int bowWowState() {
-        return runtime.motions().get(BowWowMotion.class, BowWowMotion::new).readBowWowState() & 0xFF;
+        return this.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() & 0xFF;
     }
 
     public boolean shouldGetLostInMysteriousWoods() {
-        return runtime.story().readShouldGetLostInMysteriousWoods();
+        return this.story.readShouldGetLostInMysteriousWoods();
     }
 
     public int warpTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.warpState().readWarpTransitionCountdown(slot) & 0xFF;
+        return this.warpState.readWarpTransitionCountdown(slot) & 0xFF;
     }
 
     public boolean witchGotItemPresentationActive() {
         for (int countdown :
-                runtime.motions().get(WitchMotion.class, WitchMotion::new).storageWitchGotItemCountdown()) {
+                this.motions.get(WitchMotion.class, WitchMotion::new).storageWitchGotItemCountdown()) {
             if (countdown != 0) {
                 return true;
             }
@@ -172,12 +269,12 @@ public final class EntityRoomInspection {
     }
 
     public boolean powerUpPickupSequenceActive() {
-        for (int countdown : runtime.rewards().storagePowerUpPickupCountdown()) if (countdown != 0) return true;
+        for (int countdown : this.rewards.storagePowerUpPickupCountdown()) if (countdown != 0) return true;
         return false;
     }
 
     public boolean swordPickupSequenceActive() {
-        for (boolean active : runtime.rewards().storageSwordPickupSequenceActive()) {
+        for (boolean active : this.rewards.storageSwordPickupSequenceActive()) {
             if (active) {
                 return true;
             }
@@ -186,11 +283,11 @@ public final class EntityRoomInspection {
     }
 
     public List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
-        return List.copyOf(runtime.events().hookshotBridgeUpdates);
+        return List.copyOf(this.events.hookshotBridgeUpdates);
     }
 
     public RoomEntity firstLoadedEntityOfType(int type) {
-        for (RoomEntity candidate : runtime.slots()) {
+        for (RoomEntity candidate : this.slots) {
             if (candidate.loaded() && candidate.type() == type) {
                 return candidate;
             }
@@ -206,188 +303,340 @@ public final class EntityRoomInspection {
             int linkVerticalVelocity,
             boolean linkInteractive,
             int frameCounter) {
-        return EntityRoomQueries.canGoombaStomp(
-                runtime,
-                entity,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkVerticalVelocity,
-                linkInteractive,
-                frameCounter);
+        if (entity.type() != EntityRomConstants.ENTITY_GOOMBA
+                || !linkAirborne
+                || !linkInteractive
+                || !RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
+                || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+            return false;
+        }
+
+        // Top-down hLinkVelocityZ is negative while descending. The side-view
+        // branch instead tests hLinkSpeedY, where a non-negative value means
+        // Link is moving downward onto the Goomba.
+        return this.physicsTables.readGroundInteractionSideScrolling()
+                ? (linkVerticalVelocity & 0x80) == 0
+                : (linkVerticalVelocity & 0x80) != 0;
     }
 
     boolean hasNoGroundInteractionOverride(int slot) {
-        return EntityRoomQueries.hasNoGroundInteractionOverride(runtime, slot);
+        return EntityRoomInspection.entityRoomQueriesHasNoGroundInteractionOverride(this, slot);
     }
 
     boolean hasNoGroundInteraction(RoomEntity entity) {
-        return EntityRoomQueries.hasNoGroundInteraction(runtime, entity);
+        return isGhiniType(entity.type())
+                || entity.type() == EntityRomConstants.ENTITY_MAD_BOMBER
+                || entity.type() == EntityRomConstants.ENTITY_WIZROBE_PROJECTILE
+                || entity.type() == EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER
+                || entity.type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE
+                || entity.type() == EntityRomConstants.ENTITY_BOO_BUDDY
+                || entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY
+                || entity.type() == EntityRomConstants.ENTITY_PINCER
+                || entity.type() == EntityRomConstants.ENTITY_MOLDORM
+                || entityRoomQueriesHasNoGroundInteractionOverride(this, entity.slot());
     }
 
     boolean sourceNpcInteractionAllowed(int xDistance, int yDistance, boolean linkAirborne, int entityDirection) {
-        return EntityRoomQueries.sourceNpcInteractionAllowed(
-                runtime, xDistance, yDistance, linkAirborne, entityDirection);
+        return this.linkState.actionButtonAHeld
+                && ((yDistance + 0x14) & 0xFF) < 0x28
+                && ((xDistance + 0x10) & 0xFF) < 0x20
+                && (this.linkState.lastRomLinkDirection ^ 0x01) == entityDirection
+                && !this.linkState.dialogActive
+                && !this.linkState.inventoryAppearing
+                && !linkAirborne
+                && this.linkState.dialogCooldown == 0
+                && this.linkState.windowY == 0x80;
     }
 
     public boolean heartPiecePickupActive() {
-        for (var motion : runtime.pickups().storageHeartPiecePickup())
-            if (motion != null && motion.active()) return true;
+        for (var motion : this.pickups.storageHeartPiecePickup()) if (motion != null && motion.active()) return true;
         return false;
     }
 
     public HeartPieceVisual heartPieceVisual() {
-        for (var motion : runtime.pickups().storageHeartPiecePickup())
+        for (var motion : this.pickups.storageHeartPiecePickup())
             if (motion != null && motion.showMeter())
                 return new HeartPieceVisual(
-                        runtime.pickups().readHeartPiecesCount(),
-                        runtime.pickups().storageHeartPieceMeterPairs());
+                        this.pickups.readHeartPiecesCount(), this.pickups.storageHeartPieceMeterPairs());
         return null;
     }
 
     public String instrumentTrace() {
-        return EntityRoomQueries.instrumentTrace(runtime);
+        StringBuilder trace = new StringBuilder().append(this.presentationState.readActiveMusic() ? 1 : 0);
+        for (RoomEntity entity : this.slots) {
+            if (entity.loaded()
+                    && entity.type() == 0x39
+                    && this.rewards.readInstrumentParticleKind(entity.slot()) == 0) {
+                int slot = entity.slot();
+                trace.append(';')
+                        .append(slot)
+                        .append(',')
+                        .append(this.rewards.readInstrumentPickupState(slot))
+                        .append(',')
+                        .append(this.physicsTables.readEnemyTransitionCountdown(slot))
+                        .append(',')
+                        .append(this.physicsTables.readSlowTransitionCountdown(slot));
+            }
+        }
+        return trace.toString();
     }
 
     public String moblinKingTrace() {
-        return EntityRoomQueries.moblinKingTrace(runtime);
+        for (RoomEntity entity : this.slots)
+            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
+                int slot = entity.slot();
+                return "%d,%d,%d,%d,%d,%d,%d"
+                        .formatted(
+                                this.motions
+                                        .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                                        .state(slot),
+                                entity.x(),
+                                entity.y(),
+                                entity.z(),
+                                this.combatTables.readEnemyHealth(slot),
+                                this.physicsTables.readEnemyTransitionCountdown(slot),
+                                this.physicsTables.readSlowTransitionCountdown(slot));
+            }
+        return "-1";
     }
 
     public InstrumentWarpVisual instrumentWarpVisual() {
-        return EntityRoomQueries.instrumentWarpVisual(runtime);
+        for (int slot = 0; slot < this.rewards.storageInstrumentPickupState().length; slot++) {
+            // The ROM leaves the white BG/palettes in VRAM after the controller
+            // finishes. Keep them until the destination room replaces this runtime.
+            if (this.rewards.readInstrumentPickupState(slot) == 3
+                    || this.rewards.readInstrumentPickupState(slot) == 4) {
+                return new InstrumentWarpVisual(
+                        this.rewards.readInstrumentBackgroundFade(slot),
+                        this.rewards.readInstrumentObjectFade(slot),
+                        this.rewards.readInstrumentHintBatches(slot),
+                        this.rewards.storageInstrumentHintTiles(),
+                        this.rewards.storageInstrumentHintAttributes(),
+                        this.rewards.readInstrumentWarpX(slot),
+                        this.rewards.readInstrumentWarpY(slot),
+                        this.rewards.storageInstrumentWarpSprites());
+            }
+        }
+        return null;
     }
 
     RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
-        if (runtime.spriteHandlers() == null) {
+        if (this.spriteHandlers == null) {
             return entity;
         }
         boolean flying = ((frameCounter >>> 2) & 0x02) != 0;
-        return withDefinition(entity, runtime.slotProperties().spriteViews().forOwlEvent(flying), 0);
+        return withDefinition(entity, this.slotProperties.spriteViews().forOwlEvent(flying), 0);
     }
 
     int enemyDropHealthGroup(int slot) {
-        if (runtime.enemyCombatTables() == null) {
+        if (this.enemyCombatTables == null) {
             throw new IllegalStateException("ROM enemy combat tables are required for enemy drop resolution");
         }
-        return runtime.combatTables().readEnemyHealthGroup(slot);
+        return this.combatTables.readEnemyHealthGroup(slot);
     }
 
     EntitySpriteDefinition spriteDefinitionFor(int entityType) {
-        return EntityRoomQueries.spriteDefinitionFor(runtime, entityType);
+        if (this.spriteHandlers == null) {
+            return this.slotProperties
+                    .spriteViews()
+                    .forEntityType(entityType, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        }
+        EntityRoomLoader.RoomTable table = this.presentationState.readSpriteSelection() == null
+                ? (this.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
+                : this.presentationState.readSpriteSelection().roomTable();
+        int mapId = this.presentationState.readSpriteSelection() == null
+                ? -1
+                : this.presentationState.readSpriteSelection().roomId();
+        return this.slotProperties.spriteViews().forEntityType(entityType, table, mapId);
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int disguiseState) {
-        return runtime.spriteHandlers() == null
+        return this.spriteHandlers == null
                 ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : runtime.slotProperties().spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
+                : this.slotProperties.spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
-        return runtime.spriteHandlers() == null
+        return this.spriteHandlers == null
                 ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_POKEY)
-                : runtime.slotProperties().spriteViews().forPokeySegment();
+                : this.slotProperties.spriteViews().forPokeySegment();
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int crawlState) {
-        return runtime.spriteHandlers() == null
+        return this.spriteHandlers == null
                 ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : runtime.slotProperties().spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
+                : this.slotProperties.spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
     }
 
     EntityRoomLoader.RoomTable spriteRoomTable() {
-        return EntityRoomQueries.spriteRoomTable(runtime);
+        return this.presentationState.readSpriteSelection() == null
+                ? (this.indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
+                : this.presentationState.readSpriteSelection().roomTable();
     }
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int evadeState) {
-        return runtime.spriteHandlers() == null
+        return this.spriteHandlers == null
                 ? fallback
-                : runtime.slotProperties().spriteViews().forStalfosEvasiveState(evadeState);
+                : this.slotProperties.spriteViews().forStalfosEvasiveState(evadeState);
     }
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
-        return EntityRoomQueries.refreshColorShellDisplay(runtime, entity, status);
+        if (!ColorShellMotion.isColorShellType(entity.type()) || this.spriteHandlers == null) {
+            return entity;
+        }
+        EntitySpriteDefinition definition = this.slotProperties
+                .spriteViews()
+                .forColorShellState(
+                        entity.type(),
+                        this.motions
+                                .get(ColorShellMotion.class, ColorShellMotion::new)
+                                .state(entity.slot()),
+                        status);
+        return withDefinition(
+                entity,
+                definition,
+                this.motions.get(ColorShellMotion.class, ColorShellMotion::new).spriteVariant(entity.slot()));
     }
 
     public int killOrderAt(int index) {
-        if (index < 0 || index >= runtime.bossRewards().storageKillOrder().length) {
+        if (index < 0 || index >= this.bossRewards.storageKillOrder().length) {
             throw new IllegalArgumentException("Kill-order index out of range: " + index);
         }
-        return runtime.bossRewards().readKillOrder(index);
+        return this.bossRewards.readKillOrder(index);
     }
 
     public EnemyDropResolver.CounterState enemyDropCounters() {
-        return runtime.bossRewards().readEnemyDropCounters();
+        return this.bossRewards.readEnemyDropCounters();
     }
 
     public int dropSpeedX(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motions()
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .speedX(slot);
+        return this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new).speedX(slot);
     }
 
     public int dropSpeedZ(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motions()
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .speedZ(slot);
+        return this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new).speedZ(slot);
     }
 
     public int entityMapId() {
-        return runtime.roomVariables().readEntityMapId();
+        return this.roomVariables.readEntityMapId();
     }
 
     public int entityRoomId() {
-        return runtime.roomVariables().readEntityRoomId();
+        return this.roomVariables.readEntityRoomId();
     }
 
     public int entityRoomStatus() {
-        return runtime.roomVariables().readEntityRoomStatus();
+        return this.roomVariables.readEntityRoomStatus();
     }
 
     public boolean indoorRoom() {
-        return runtime.indoorRoom();
+        return this.indoorRoom;
     }
 
     public boolean roomTransitionActive() {
-        return runtime.roomVariables().readRoomTransitionActive();
+        return this.roomVariables.readRoomTransitionActive();
     }
 
     public boolean gameplayWorld() {
-        return runtime.roomVariables().readGameplayWorld();
+        return this.roomVariables.readGameplayWorld();
     }
 
     public boolean freeMovementMode() {
-        return runtime.roomVariables().readFreeMovementMode();
+        return this.roomVariables.readFreeMovementMode();
     }
 
     public int chestSwordLevel() {
-        return runtime.pickups().readChestSwordLevel();
+        return this.pickups.readChestSwordLevel();
     }
 
     public boolean inBossBattle() {
-        return runtime.bossRewards().readInBossBattle();
+        return this.bossRewards.readInBossBattle();
     }
 
     public boolean dungeonMinibossReady() {
-        return runtime.roomVariables().readDungeonMinibossReady();
+        return this.roomVariables.readDungeonMinibossReady();
     }
 
     public int defaultMusicTrack() {
-        return runtime.presentationState().readDefaultMusicTrack();
+        return this.presentationState.readDefaultMusicTrack();
     }
 
     public ColorShellWorld colorShellWorld() {
-        return runtime.motions()
-                .get(ColorShellMotion.class, ColorShellMotion::new)
-                .readColorShellWorld();
+        return this.motions.get(ColorShellMotion.class, ColorShellMotion::new).readColorShellWorld();
     }
 
-    EntityRoomInspectionServices inspectionServices() {
-        return runtime;
-    }
     /** Reusable read-only view for immediate consumption; use snapshot() to retain owned frame data. */
     public RoomEntitySnapshot view() {
         return liveView;
+    }
+
+    static boolean entityRoomQueriesIndoorMarinAbsent(EntityRoomInspection runtime) {
+        if (runtime.motions
+                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                .readFollowingNpcState()
+                .marinFollowing()) return true;
+        if (runtime.story.readHouseTradeItem() >= 7) return (runtime.story.readHouseWalrusStatus() & 0x30) != 0;
+        return runtime.pickups.readChestPlayerLevelsKnown() && runtime.pickups.readChestSwordLevel() != 0;
+    }
+
+    static boolean entityRoomQueriesIndoorTarinAbsent(EntityRoomInspection runtime) {
+        if (!runtime.motions
+                        .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                        .readFollowingNpcState()
+                        .marinFollowing()
+                && ((runtime.story.readHouseInstrument3Flags() & 2) != 0 || runtime.story.readHouseTradeItem() >= 4))
+            return true;
+        return runtime.story.readHouseTarinFlag() == 0
+                && runtime.pickups.readChestPlayerLevelsKnown()
+                && runtime.pickups.readChestSwordLevel() != 0;
+    }
+
+    static RoomEntitySnapshot entityRoomQueriesSnapshot(EntityRoomInspection runtime) {
+        // These handlers test story state before drawing ($05:4E78,
+        // $05:51CE, $05:4BF1). Apply the same gates to pre-tick snapshots,
+        // including room transitions which pause entity advancement.
+        var presentedSlots = new java.util.ArrayList<RoomEntity>(runtime.slots.length);
+        for (int slot = 0; slot < runtime.slots.length; slot++)
+            presentedSlots.add(entityRoomQueriesPresentedEntity(runtime, slot));
+        return new RoomEntitySnapshot(
+                presentedSlots,
+                runtime.presentationState.readSpriteSelection(),
+                runtime.spriteTiles,
+                runtime.physicsTables.readGroundInteractionSideScrolling(),
+                runtime.slotProperties.readHookshotChainOam(),
+                runtime.slotProperties.readPincerBodyOam(),
+                runtime.slotProperties.readWingedOctorokOam(),
+                runtime.physicsTables.copyFallingVisualYOffset(),
+                runtime.slotProperties.readBowWowChainOam());
+    }
+
+    static boolean entityRoomQueriesHasNoGroundInteractionOverride(EntityRoomInspection runtime, int slot) {
+        return runtime.physicsTables.readEntityOptions1Override(slot) >= 0
+                && (runtime.physicsTables.readEntityOptions1Override(slot)
+                                & EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION)
+                        != 0;
+    }
+
+    static RoomEntity entityRoomQueriesPresentedEntity(EntityRoomInspection runtime, int slot) {
+        return entityRoomQueriesPresentedEntity(runtime, slot, null, null);
+    }
+
+    static RoomEntity entityRoomQueriesPresentedEntity(
+            EntityRoomInspection runtime,
+            int slot, /* Optional cached source; null means this slot has not been read. */
+            RoomEntity previousSource,
+            /* Optional cached projection; null means no presentation is cached. */ RoomEntity previousPresentation) {
+        RoomEntity entity = runtime.slots[slot];
+        boolean hidden = entity.type() == 0x3E
+                && (runtime.indoorRoom
+                        ? entityRoomQueriesIndoorMarinAbsent(runtime) || runtime.story.readHouseTradeItem() >= 7
+                        : runtime.pickups.readChestPlayerLevelsKnown() && runtime.pickups.readChestSwordLevel() == 0);
+        hidden |= entity.type() == 0x3F && runtime.indoorRoom && entityRoomQueriesIndoorTarinAbsent(runtime);
+        if (!hidden || entity.spriteVariant() == -1) return entity;
+        if (entity == previousSource && previousPresentation != null && previousPresentation.spriteVariant() == -1)
+            return previousPresentation;
+        return EntitySnapshots.withVariant(entity, -1);
     }
 }

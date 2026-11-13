@@ -1,19 +1,19 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_IRON_MASK;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_OCTOROK;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 
 /** ROM handler stages for RoamingEnemyType. */
 final class RoamingEnemyTypeHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_OCTOROK,
                 EntityTickStage.PHASE_3_BEFORE_LASER,

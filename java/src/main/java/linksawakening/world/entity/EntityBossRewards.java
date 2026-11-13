@@ -1,49 +1,90 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withFlipAttribute;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
+import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
+import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
 
 import java.util.function.IntSupplier;
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.MoldormSegmentPosition;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.EnemyDropMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.GhiniMotion;
+import linksawakening.world.entity.motion.LikeLikeMotion;
+import linksawakening.world.entity.motion.MoblinKingMotion;
+import linksawakening.world.entity.motion.MoblinSwordMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+import linksawakening.world.entity.motion.RollingBonesMotion;
 
 /** Boss destruction and source-shaped reward production. */
 public final class EntityBossRewards {
-    private int bossAgonySfxCountdown;
-    private int bossAgonySourceSlot;
-    private final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] droppablePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private EnemyDropResolver enemyDropResolver;
-    private EnemyDropResolver.CounterState enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
-    private int enemyDropMaxHearts = 3;
-    private int enemyDropHealth = 6;
-    private Boolean enemyDropLowHealth;
-    private boolean enemyDropActivePowerUp;
-    private boolean inBossBattle;
-    private int killCount;
-    private final int[] killOrder = new int[0x100];
 
     EnemyDropResolver.Result resolveDrop(EnemyDropResolver.Context context) {
-        return this.readEnemyDropLowHealth() == null
-                ? this.readEnemyDropResolver().resolve(context)
-                : this.readEnemyDropResolver().resolve(context, this.readEnemyDropLowHealth());
+        return state.readEnemyDropLowHealth() == null
+                ? state.readEnemyDropResolver().resolve(context)
+                : state.readEnemyDropResolver().resolve(context, state.readEnemyDropLowHealth());
     }
 
-    final EntityBossRewardsServices runtime;
+    final EntityBossState state;
+    // Optional ROM data, absent in ROM-free runtimes.
+    final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
+    final EntityBackgroundMechanics backgroundMechanics;
+    final EntityCombatTables combatTables;
+    final EntityEventChannels events;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityPickupController pickups;
+    final EntityRoomInspection roomInspection;
+    final EntityRoomVariables roomVariables;
+    final EntitySlotLifecycle lifecycle;
+    final EntitySlotProperties slotProperties;
+    final RoomEntity[] slots;
 
-    EntityBossRewards(EntityBossRewardsServices runtime) {
-        this.runtime = runtime;
+    final EntityLinkState linkState;
+
+    EntityBossRewards(
+            EntityBossState state,
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.entity
+                            .EntitySpriteHandlerCatalog
+                    spriteHandlers,
+            EntityBackgroundMechanics backgroundMechanics,
+            EntityCombatTables combatTables,
+            EntityEventChannels events,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityPickupController pickups,
+            EntityRoomInspection roomInspection,
+            EntityRoomVariables roomVariables,
+            EntitySlotLifecycle lifecycle,
+            EntitySlotProperties slotProperties,
+            RoomEntity[] slots,
+            EntityLinkState linkState) {
+        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+
+        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.spriteHandlers = spriteHandlers;
+        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
+        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
     }
 
     /** ApplySwordDamagesToEnemy, $03:7361: preserve descending RNG order. */
@@ -51,240 +92,551 @@ public final class EntityBossRewards {
         if (killed.type() != 0x12) return;
         int[] drops = {0x2D, 0x2E, 0x38, 0x37};
         for (int slot = RoomEntity.SLOT_COUNT - 1; slot >= 0; slot--) {
-            RoomEntity other = runtime.slots()[slot];
+            RoomEntity other = this.slots[slot];
             if (slot == killed.slot()
-                    || other == null
                     || (other.type() != 0x10 && other.type() != 0x11)
-                    || runtime.motions()
-                                    .get(GhiniMotion.class, GhiniMotion::new)
-                                    .state(slot)
-                            != 0
+                    || this.motions.get(GhiniMotion.class, GhiniMotion::new).state(slot) != 0
                     || other.status() == EntityStatus.DISABLED) continue;
-            runtime.slots()[slot] = withStatus(other, EntityStatus.DYING);
-            runtime.combatTables().writeDyingCountdown(slot, 0x1F);
-            this.writeDroppedItemBySlot(slot, drops[random.getAsInt() & 3]);
+            this.slots[slot] = withStatus(other, EntityStatus.DYING);
+            this.combatTables.writeDyingCountdown(slot, 0x1F);
+            state.writeDroppedItemBySlot(slot, drops[random.getAsInt() & 3]);
         }
-        this.writeDroppedItemBySlot(killed.slot(), 0x2E);
+        state.writeDroppedItemBySlot(killed.slot(), 0x2E);
     }
 
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
-        BossDeathBehavior.handleTerminalEnemyDeath(this, entity, randomByteSupplier);
+        var runtime = this;
+        boolean swallowedShield = entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE
+                && runtime.motions
+                                .get(LikeLikeMotion.class, LikeLikeMotion::new)
+                                .privateState1(entity.slot())
+                        != 0;
+        if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
+            // The mini-boss option reaches DidKillEnemy's room-event branch,
+            // permanently opening the east rescue-room path.
+            runtime.roomVariables.writePendingRoomStatusMask(
+                    runtime.roomVariables.readPendingRoomStatusMask() | (0x20));
+        }
+        if (entity.sourceLoadOrder() < 0 || (this.state.readEnemyDropResolver() == null && !swallowedShield)) {
+            if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
+                runtime.roomVariables.writePendingClearedEntityMask(
+                        runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(entity)));
+            }
+            runtime.lifecycle.disableEntityWithoutPersistence(entity.slot());
+            return;
+        }
+
+        EnemyDropResolver.Result result;
+        if (swallowedShield) {
+            result = new EnemyDropResolver.Result(
+                    EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP, this.state.readEnemyDropCounters(), 0);
+        } else {
+            EnemyDropResolver.Context context = new EnemyDropResolver.Context(
+                    entity.type(),
+                    runtime.roomInspection.enemyDropHealthGroup(entity.slot()),
+                    this.state.readDroppedItemBySlot(entity.slot()),
+                    this.state.readEnemyDropMaxHearts(),
+                    this.state.readEnemyDropHealth(),
+                    this.state.readInBossBattle(),
+                    this.state.readEnemyDropActivePowerUp(),
+                    runtime.physicsTables.readGroundInteractionSideScrolling(),
+                    this.state.readEnemyDropCounters(),
+                    randomByteSupplier);
+            result = this.resolveDrop(context);
+            this.state.writeEnemyDropCounters(result.counters());
+        }
+
+        int killIndex = this.state.readKillCount() & 0xFF;
+        this.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
+        this.state.writeKillCount((this.state.readKillCount() + 1) & 0xFF);
+        runtime.roomVariables.writePendingClearedEntityMask(
+                runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(entity)));
+        if (result.dropped()) {
+            runtime.pickups.spawnEnemyDrop(entity, result.itemType());
+        }
+        runtime.lifecycle.disableEntityWithoutPersistence(entity.slot());
     }
 
     public void advanceRollingBonesDestruction(RoomEntity entity, IntSupplier randomByteSupplier) {
-        BossDeathBehavior.advanceRollingBonesDestruction(this, entity, randomByteSupplier);
+        var runtime = this;
+        int slot = entity.slot();
+        if (!runtime.motions
+                .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                .deathInitialized(slot)) {
+            runtime.motions
+                    .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                    .setDeathInitialized(slot, true);
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
+            runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+            return;
+        }
+        int countdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
+        runtime.combatTables.writeEnemyFlashCountdown(slot, countdown);
+        if (countdown == 0) {
+            // $06:6CC1 calls DidKillEnemy, including SpawnEnemyDrop. The
+            // ROM health-group tables select the miniboss healing fairy.
+            if (this.state.readEnemyDropResolver() != null) {
+                EnemyDropResolver.Result drop = this.resolveDrop(new EnemyDropResolver.Context(
+                        entity.type(),
+                        runtime.roomInspection.enemyDropHealthGroup(entity.slot()),
+                        this.state.readDroppedItemBySlot(slot),
+                        this.state.readEnemyDropMaxHearts(),
+                        this.state.readEnemyDropHealth(),
+                        this.state.readInBossBattle(),
+                        this.state.readEnemyDropActivePowerUp(),
+                        runtime.physicsTables.readGroundInteractionSideScrolling(),
+                        this.state.readEnemyDropCounters(),
+                        randomByteSupplier));
+                this.state.writeEnemyDropCounters(drop.counters());
+                if (drop.dropped()) runtime.pickups.spawnEnemyDrop(entity, drop.itemType());
+            }
+            int killIndex = this.state.readKillCount() & 0xFF;
+            this.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
+            this.state.writeKillCount((this.state.readKillCount() + 1) & 0xFF);
+            runtime.roomVariables.writePendingClearedEntityMask(
+                    runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(entity)));
+            if (runtime.roomVariables.readEntityMapId() != 0x07) {
+                runtime.roomVariables.writePendingRoomStatusMask(
+                        runtime.roomVariables.readPendingRoomStatusMask() | (0x20));
+            }
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
+            return;
+        }
+        if (countdown < 0x80 && (countdown & 0x07) == 0) {
+            int x = (entity.x() + ((randomByteSupplier.getAsInt() & 0x1F) - 0x10)) & 0xFF;
+            int y = (entity.y() - entity.z() + ((randomByteSupplier.getAsInt() & 0x1F) - 0x14)) & 0xFF;
+            runtime.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+            runtime.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        }
     }
 
     public void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) {
-        BossDeathBehavior.advanceMoblinKingDestruction(this, source, frame, random);
+        var runtime = this;
+        int slot = source.slot();
+        // Main resolves sword damage before dispatch; the ROM dispatches the
+        // dying branch on the following frame, after this hit's active handler.
+        boolean hitThisFrame = runtime.motions
+                        .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                        .lethalHitFrame(slot)
+                == frame + 1;
+        runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new).setLethalHitFrame(slot, 0);
+        if (hitThisFrame) return;
+        if (runtime.spriteHandlers != null)
+            source = withDefinition(
+                    source, runtime.slotProperties.spriteViews().forMoblinKingState(12, -1, source.z() != 0), 0);
+        runtime.slots[slot] = withFlipAttribute(
+                source,
+                runtime.physicsTables.readBaseEntityFlipAttribute(slot)
+                        ^ ((runtime.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10));
+        if (this.state.readBossDeathProducerState(slot) == 0) {
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
+            runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+            this.state.writeBossDeathProducerState(slot, 1);
+        } else if (this.state.readBossDeathProducerState(slot) == 1) {
+            if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
+                runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+                this.state.writeBossDeathProducerState(slot, 2);
+            }
+        } else if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+            runtime.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
+            runtime.motions
+                    .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                    .writeSwordMoblinAlertingSoundCounter(4);
+            this.handleTerminalEnemyDeath(source, random);
+        } else if ((runtime.physicsTables.readEnemyTransitionCountdown(slot) & 7) == 0
+                && runtime.backgroundMechanics.entityHandlerInteractive(false)) {
+            int x = (source.x() + (random.getAsInt() & 0x1F) - 0x10) & 255;
+            int y = (source.y() - source.z() + (random.getAsInt() & 0x1F) - 0x14) & 255;
+            runtime.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+            runtime.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        }
     }
 
     public void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
-        MoldormDeathBehavior.advanceMoldormDestruction(this, source, frameCounter);
+        var runtime = this;
+        int slot = source.slot();
+        int tailState =
+                runtime.motions.get(MoldormMotion.class, MoldormMotion::new).destructionTailState(slot);
+        if (runtime.spriteHandlers != null) {
+            RoomEntity rendered = withDefinition(
+                    source,
+                    runtime.spriteHandlers.forMoldormState(
+                            runtime.motions
+                                    .get(MoldormMotion.class, MoldormMotion::new)
+                                    .headSpriteVariant(slot),
+                            source.x(),
+                            (source.y() - source.z()) & 0xFF,
+                            runtime.motions
+                                    .get(MoldormMotion.class, MoldormMotion::new)
+                                    .currentTailSegments(slot),
+                            tailState,
+                            frameCounter),
+                    0);
+            runtime.slots[slot] = withFlipAttribute(
+                    rendered,
+                    runtime.physicsTables.readBaseEntityFlipAttribute(slot)
+                            ^ ((runtime.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10));
+        }
+
+        switch (this.state.readBossDeathProducerState(slot)) {
+            case 0 -> {
+                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x60);
+                runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+                this.state.writeBossDeathProducerState(slot, 1);
+            }
+            case 1 -> {
+                if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
+                    runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
+                    runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+                    this.state.writeBossDeathProducerState(slot, 2);
+                }
+            }
+            case 2 -> {
+                if ((runtime.physicsTables.readEnemyTransitionCountdown(slot) & 0x1F) != 0) {
+                    return;
+                }
+                if (tailState == 4) {
+                    runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x30);
+                    this.state.writeBossDeathProducerState(slot, 3);
+                    return;
+                }
+                MoldormSegmentPosition poofPosition = runtime.motions
+                        .get(MoldormMotion.class, MoldormMotion::new)
+                        .currentTailSegments(slot)
+                        .get(3 - tailState);
+                this.createMoldormPoof(source, poofPosition.x(), poofPosition.y());
+                runtime.motions
+                        .get(MoldormMotion.class, MoldormMotion::new)
+                        .setDestructionTailState(slot, tailState + 1);
+            }
+            default -> this.advanceMoldormBossExplosion(source);
+        }
     }
 
     void advanceMoldormBossExplosion(RoomEntity source) {
-        MoldormDeathBehavior.advanceMoldormBossExplosion(this, source);
+        var runtime = this;
+        int slot = source.slot();
+        int countdown = runtime.physicsTables.readEnemyTransitionCountdown(slot);
+        if (countdown == 0) {
+            this.spawnMoldormHeartContainer(source);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
+            runtime.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A));
+            return;
+        }
+        if ((countdown & 0x03) != 0) {
+            return;
+        }
+        int index = (countdown >> 2) & 0x07;
+        int[] xOffsets = {0, 6, 8, 6, 0, -6, -8, -6};
+        int[] yOffsets = {-8, -6, 0, 6, 8, 6, 0, -6};
+        this.createMoldormPoof(
+                source, (source.x() + xOffsets[index]) & 0xFF, ((source.y() - source.z()) + yOffsets[index]) & 0xFF);
+        if (countdown == 0x10) {
+            runtime.motions.get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot, 5);
+        }
     }
 
     void spawnMoldormHeartContainer(RoomEntity source) {
-        MoldormDeathBehavior.spawnMoldormHeartContainer(this, source);
+        var runtime = this;
+        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+        int x = Math.max(0x18, Math.min(0x88, source.x()));
+        int y = Math.max(0x20, Math.min(0x70, source.y()));
+        EntitySpriteDefinition definition =
+                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_HEART_CONTAINER);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        runtime.slots[freeSlot] = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_HEART_CONTAINER,
+                x,
+                y,
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                source.z(),
+                -1,
+                false);
+        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        runtime.pickups.resetEnemyDropState(freeSlot);
+        runtime.motions
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                .initialize(freeSlot, runtime.physicsTables.readGroundInteractionSideScrolling(), 0x10);
+        this.state.writeEnemyDropActive(freeSlot, true);
+        runtime.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
+        runtime.physicsTables.writeSlowTimerInitialized(freeSlot, false);
+        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
+        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
+        runtime.physicsTables.writeEnemyPhysicsFlags(
+                freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_HEART_CONTAINER));
+        runtime.combatTables.writeEnemyHealth(
+                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_HEART_CONTAINER));
+        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        runtime.physicsTables.writeEntityGroundStatus(freeSlot, 0);
+        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     void createMoldormPoof(RoomEntity source, int x, int y) {
-        runtime.events().transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
-        runtime.events()
-                .pendingEntityEvents
-                .add(new EntityCombatEvent(
-                        source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        this.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
+                source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
 
     public void advanceCollectedHeartContainer(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
-        if (runtime.physicsTables().readEnemyTransitionCountdown(slot) == 1) {
-            runtime.events().pendingHeartContainerRewards.add(new HeartContainerRewardEvent(slot));
-            runtime.lifecycle().disableEntityWithoutPersistence(slot);
+        if (this.physicsTables.readEnemyTransitionCountdown(slot) == 1) {
+            this.events.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(slot));
+            this.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        runtime.events().pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held =
                 withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
-        runtime.slots()[slot] = withZ(held, linkZ & 0xFF);
+        this.slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
     void advanceBossKeyDropProducer(RoomEntity source, IntSupplier randomByteSupplier) {
-        BossKeyDropBehavior.advanceBossKeyDropProducer(this, source, randomByteSupplier);
+        this.bossKeyDropStep.run(source, randomByteSupplier);
     }
 
-    int readBossAgonySfxCountdown() {
-        return bossAgonySfxCountdown;
+    final BossKeyDropStep bossKeyDropStep = new BossKeyDropStep(this);
+
+    void handleBowWowTargetContact(
+            RoomEntity source, BowWowMotion.TargetContact contact, IntSupplier randomByteSupplier) {
+        int targetSlot = contact.slot();
+        if (targetSlot < 0 || targetSlot >= this.slots.length) {
+            return;
+        }
+        RoomEntity target = this.slots[targetSlot];
+        if (!target.loaded()) {
+            return;
+        }
+
+        if (target.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            if (this.physicsTables.readEntityPrivateState4(targetSlot) == 0
+                    || this.linkState.dialogActive
+                    || this.motions.get(BowWowMotion.class, BowWowMotion::new).privateCountdown2(source.slot()) != 0) {
+                return;
+            }
+            this.motions.get(BowWowMotion.class, BowWowMotion::new).setTransitionCountdown(source.slot(), 0);
+            this.motions.get(BowWowMotion.class, BowWowMotion::new).setPrivateCountdown2(source.slot(), 0x80);
+            this.events.pendingDialogRequests.add(new DialogRequest(1, EntityRomConstants.DIALOG_BOW_WOW));
+            return;
+        }
+
+        if (this.combatTables.readEnemyFlashCountdown(targetSlot) != 0) {
+            return;
+        }
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
+                source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x03));
+        if (target.type() == EntityRomConstants.ENTITY_KIKI_THE_MONKEY) {
+            this.combatTables.writeEnemyFlashCountdown(targetSlot, 0x18);
+            this.physicsTables.writeEntityInertia(
+                    targetSlot, (this.physicsTables.readEntityInertia(targetSlot) + 1) & 0xFF);
+            return;
+        }
+        this.handleTerminalEnemyDeath(target, randomByteSupplier);
     }
 
-    int writeBossAgonySfxCountdown(int value) {
-        return bossAgonySfxCountdown = value;
-    }
+    static final class BossKeyDropStep {
+        private final linksawakening.world.entity.EntityBossRewards owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.RoomEntity source;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private java.util.function.IntSupplier randomByteSupplier;
+        private int slot;
+        private int state;
 
-    int postBossAgonySfxCountdown(int delta) {
-        int previous = bossAgonySfxCountdown;
-        bossAgonySfxCountdown += delta;
-        return previous;
-    }
+        BossKeyDropStep(linksawakening.world.entity.EntityBossRewards owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
 
-    int readBossAgonySourceSlot() {
-        return bossAgonySourceSlot;
-    }
+        void run() {
 
-    int writeBossAgonySourceSlot(int value) {
-        return bossAgonySourceSlot = value;
-    }
+            slot = source.slot();
+            if (owner.physicsTables.readEnemyTransitionCountdown(slot) != 0) {
+                return;
+            }
 
-    int readDroppedItemBySlot(int slot) {
-        return droppedItemBySlot[slot];
-    }
+            state = owner.state.readBossDeathProducerState(slot);
+            if (source.type() == EntityRomConstants.ENTITY_DESERT_LANMOLA) {
+                switch (state) {
+                    case 0 -> {
+                        if (!advanceState0()) return;
+                    }
+                    case 1 -> {
+                        if (!advanceState1()) return;
+                    }
+                    default -> {
+                        if (!advanceDefault()) return;
+                    }
+                }
+                return;
+            }
 
-    int writeDroppedItemBySlot(int slot, int value) {
-        return droppedItemBySlot[slot] = value;
-    }
+            if (source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT
+                    || source.type() == EntityRomConstants.ENTITY_HINOX) {
+                switch (state) {
+                    case 0 -> {
+                        if (!advanceState02()) return;
+                    }
+                    case 1 -> {
+                        if (!advanceState12()) return;
+                    }
+                    default -> {
+                        if (!advanceDefault2()) return;
+                    }
+                }
+                return;
+            }
 
-    int[] storageDroppedItemBySlot() {
-        return droppedItemBySlot;
-    }
+            switch (state) {
+                case 0 -> {
+                    if (!advanceState03()) return;
+                }
+                case 1 -> {
+                    if (!advanceState13()) return;
+                }
+                default -> {
+                    if (!advanceDefault3()) return;
+                }
+            }
+        }
 
-    int readDropPrivateCountdown1(int slot) {
-        return dropPrivateCountdown1[slot];
-    }
+        private boolean advanceState0() {
+            // func_006_5629: transition $60, then private state 2++.
+            owner.state.writeBossDeathProducerState(slot, 1);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x60);
+            return false;
+        }
 
-    int writeDropPrivateCountdown1(int slot, int value) {
-        return dropPrivateCountdown1[slot] = value;
-    }
+        private boolean advanceState1() {
+            // func_006_563A: transition $CF, then private state 2++.
+            owner.state.writeBossDeathProducerState(slot, 2);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xCF);
+            return false;
+        }
 
-    int postDropPrivateCountdown1(int slot, int delta) {
-        int previous = dropPrivateCountdown1[slot];
-        dropPrivateCountdown1[slot] += delta;
-        return previous;
-    }
+        private boolean advanceDefault() {
+            // func_006_564B: variant $02, z from hMultiPurpose3,
+            // speedZ $10, and private countdown 1 $10.
+            owner.pickups.spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
+            owner.lifecycle.disableEntityWithoutPersistence(slot);
+            owner.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
 
-    int readDropPrivateCountdown3(int slot) {
-        return dropPrivateCountdown3[slot];
-    }
+            return true;
+        }
 
-    int writeDropPrivateCountdown3(int slot, int value) {
-        return dropPrivateCountdown3[slot] = value;
-    }
+        private boolean advanceState02() {
+            // ArmosKnightPrivateState0Handler: transition $A0 and
+            // the first full flash countdown.
+            owner.state.writeBossDeathProducerState(slot, 1);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
+            owner.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+            return false;
+        }
 
-    int postDropPrivateCountdown3(int slot, int delta) {
-        int previous = dropPrivateCountdown3[slot];
-        dropPrivateCountdown3[slot] += delta;
-        return previous;
-    }
+        private boolean advanceState12() {
+            // ArmosKnightPrivateState1Handler: the second flash
+            // begins only after the first countdown reaches zero.
+            owner.state.writeBossDeathProducerState(slot, 2);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
+            owner.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+            return false;
+        }
 
-    int readDroppablePrivateState3(int slot) {
-        return droppablePrivateState3[slot];
-    }
+        private boolean advanceDefault2() {
+            // The shared inactive handler emits the boss explosion,
+            // then calls DidKillEnemy. Armos has pre-forced the key;
+            // Hinox uses the ordinary drop resolver here.
+            if (source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
+                int killIndex = owner.state.readKillCount() & 0xFF;
+                owner.state.writeKillOrder(killIndex, source.sourceLoadOrder() & 0xFF);
+                owner.state.writeKillCount((owner.state.readKillCount() + 1) & 0xFF);
+                owner.roomVariables.writePendingClearedEntityMask(
+                        owner.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(source)));
+                owner.pickups.spawnEnemyDrop(source, EntityRomConstants.ENTITY_KEY_DROP_POINT);
+                owner.lifecycle.disableEntityWithoutPersistence(slot);
+            } else {
+                owner.handleTerminalEnemyDeath(source, randomByteSupplier);
+                // label_006_5355 -> label_006_6CC9 opens the Hinox
+                // room event except in Eagle's Tower and later maps.
+                if (owner.roomVariables.readEntityMapId() >= 0 && owner.roomVariables.readEntityMapId() < 0x06) {
+                    owner.roomVariables.writePendingRoomStatusMask(
+                            owner.roomVariables.readPendingRoomStatusMask() | (0x20));
+                }
+            }
+            owner.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A));
 
-    int writeDroppablePrivateState3(int slot, int value) {
-        return droppablePrivateState3[slot] = value;
-    }
+            return true;
+        }
 
-    int readDroppablePrivateState4(int slot) {
-        return droppablePrivateState4[slot];
-    }
+        private boolean advanceState03() {
+            // func_007_7EB6: transition $A0, then private state 2++.
+            owner.state.writeBossDeathProducerState(slot, 1);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
 
-    int writeDroppablePrivateState4(int slot, int value) {
-        return droppablePrivateState4[slot] = value;
-    }
+            return true;
+        }
 
-    boolean readEnemyDropActive(int slot) {
-        return enemyDropActive[slot];
-    }
+        private boolean advanceState13() {
+            // func_007_7EC7: transition $C0, then private state 2++.
+            owner.state.writeBossDeathProducerState(slot, 2);
+            owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
 
-    boolean writeEnemyDropActive(int slot, boolean value) {
-        return enemyDropActive[slot] = value;
-    }
+            return true;
+        }
 
-    int readBossDeathProducerState(int slot) {
-        return bossDeathProducerState[slot];
-    }
+        private boolean advanceDefault3() {
+            // func_007_7ED6: ConfigureNewEntity leaves z at zero;
+            // the producer supplies speedZ $18 and countdown 1 $20.
+            owner.pickups.spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
+            owner.lifecycle.disableEntityWithoutPersistence(slot);
+            owner.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A));
 
-    int writeBossDeathProducerState(int slot, int value) {
-        return bossDeathProducerState[slot] = value;
-    }
+            return true;
+        }
 
-    EnemyDropResolver readEnemyDropResolver() {
-        return enemyDropResolver;
-    }
+        private boolean inUse;
 
-    EnemyDropResolver writeEnemyDropResolver(EnemyDropResolver value) {
-        return enemyDropResolver = value;
-    }
+        void run(linksawakening.world.entity.RoomEntity source, java.util.function.IntSupplier randomByteSupplier) {
+            if (inUse) {
+                new BossKeyDropStep(owner).run(source, randomByteSupplier);
+                return;
+            }
+            inUse = true;
 
-    EnemyDropResolver.CounterState readEnemyDropCounters() {
-        return enemyDropCounters;
-    }
+            slot = 0;
+            state = 0;
 
-    EnemyDropResolver.CounterState writeEnemyDropCounters(EnemyDropResolver.CounterState value) {
-        return enemyDropCounters = value;
-    }
+            this.source = source;
+            this.randomByteSupplier = randomByteSupplier;
+            try {
+                run();
+            } finally {
+                inUse = false;
 
-    int readEnemyDropMaxHearts() {
-        return enemyDropMaxHearts;
+                this.source = null;
+                this.randomByteSupplier = null;
+            }
+        }
     }
-
-    int writeEnemyDropMaxHearts(int value) {
-        return enemyDropMaxHearts = value;
-    }
-
-    int readEnemyDropHealth() {
-        return enemyDropHealth;
-    }
-
-    int writeEnemyDropHealth(int value) {
-        return enemyDropHealth = value;
-    }
-
-    Boolean readEnemyDropLowHealth() {
-        return enemyDropLowHealth;
-    }
-
-    Boolean writeEnemyDropLowHealth(Boolean value) {
-        return enemyDropLowHealth = value;
-    }
-
-    boolean readEnemyDropActivePowerUp() {
-        return enemyDropActivePowerUp;
-    }
-
-    boolean writeEnemyDropActivePowerUp(boolean value) {
-        return enemyDropActivePowerUp = value;
-    }
-
-    boolean readInBossBattle() {
-        return inBossBattle;
-    }
-
-    boolean writeInBossBattle(boolean value) {
-        return inBossBattle = value;
-    }
-
-    int readKillCount() {
-        return killCount;
-    }
-
-    int writeKillCount(int value) {
-        return killCount = value;
-    }
-
-    int readKillOrder(int slot) {
-        return killOrder[slot];
-    }
-
-    int writeKillOrder(int slot, int value) {
-        return killOrder[slot] = value;
-    }
-
-    int[] storageKillOrder() {
-        return killOrder;
-    }
-
-    final BossKeyDropStep bossKeyDropStep = new BossKeyDropStep();
 }

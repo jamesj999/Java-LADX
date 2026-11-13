@@ -1,55 +1,149 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntityRomConstants.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
+import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
+import static linksawakening.world.entity.EntityTypeRules.isBombiteType;
+import static linksawakening.world.entity.EntityTypeRules.isFollowingNpcType;
+import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
+import static linksawakening.world.entity.EntityTypeRules.isLaserType;
 
 import java.util.Arrays;
+import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.handler.EntityHandlerFamilies;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BombiteMotion;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.BushCrawlerMotion;
+import linksawakening.world.entity.motion.BuzzBlobMotion;
+import linksawakening.world.entity.motion.CrowMotion;
+import linksawakening.world.entity.motion.CuccoMotion;
+import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.FairyMotion;
+import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.FollowingNpcMotion;
 import linksawakening.world.entity.motion.GenieMotion;
+import linksawakening.world.entity.motion.GhiniMotion;
+import linksawakening.world.entity.motion.LaserMotion;
 import linksawakening.world.entity.motion.LiftedEntityMotion;
+import linksawakening.world.entity.motion.LikeLikeMotion;
+import linksawakening.world.entity.motion.MaskedMimicMotion;
+import linksawakening.world.entity.motion.MimicMotion;
+import linksawakening.world.entity.motion.MiniMoldormMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+import linksawakening.world.entity.motion.PincerMotion;
+import linksawakening.world.entity.motion.PolsVoiceMotion;
+import linksawakening.world.entity.motion.RollingBonesMotion;
+import linksawakening.world.entity.motion.SandCrabMotion;
+import linksawakening.world.entity.motion.SpikedBeetleMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
+import linksawakening.world.entity.motion.UrchinMotion;
 import linksawakening.world.entity.motion.WarpMotion;
+import linksawakening.world.entity.motion.WitchRatMotion;
 
 /** ROM presentation loading and initial room slot setup in source order. */
 final class EntityRoomInitialization {
-    private final EntityRoomInitializationServices runtime;
+    final EntityWarpController warpState;
+    final boolean indoorRoom;
+    final EntityBombState bombInteractions;
+    final EntityBossState bossRewards;
+    final EntityCombatTables combatTables;
+    final EntityLiftState liftThrow;
+    final EntityMotionRegistry motions;
+    final EntityPhysicsTables physicsTables;
+    final EntityPickupState pickups;
+    final EntityRewardState rewards;
+    final EntitySlotProperties slotProperties;
+    final EntityStoryState story;
+    final GenieEntityController genie;
+    final RoomEntity[] slots;
+    final EntitySlotLifecycle lifecycle;
 
-    EntityRoomInitialization(EntityRoomInitializationServices runtime) {
-        this.runtime = runtime;
+    EntityRoomInitialization(
+            EntityWarpController warpState,
+            boolean indoorRoom,
+            EntityBombState bombInteractions,
+            EntityBossState bossRewards,
+            EntityCombatTables combatTables,
+            EntityLiftState liftThrow,
+            EntityMotionRegistry motions,
+            EntityPhysicsTables physicsTables,
+            EntityPickupState pickups,
+            EntityRewardState rewards,
+            EntitySlotProperties slotProperties,
+            EntityStoryState story,
+            GenieEntityController genie,
+            RoomEntity[] slots,
+            EntitySlotLifecycle lifecycle) {
+        this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
+        this.indoorRoom = indoorRoom;
+        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
+        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.story = java.util.Objects.requireNonNull(story, "story");
+        this.genie = java.util.Objects.requireNonNull(genie, "genie");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
     }
 
     EntityHandlerRegistry createEntityHandlers() {
-        EntityHandlerRegistry registry = new EntityHandlerRegistry(runtime.motions());
+        EntityHandlerRegistry registry = new EntityHandlerRegistry(this.motions);
         EntityHandlerFamilies.install(registry);
         return registry;
     }
 
-    void initializeRomPresentation(linksawakening.rom.Rom romData) {
-        EntityPresentationRom.initialize(runtime, romData);
+    void initializeRomPresentation(
+            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.rom
+                            .Rom
+                    romData) {
+        if (romData != null) {
+            for (int i = 0; i < this.pickups.storageHeartPieceMeterPairs().length; i++)
+                this.pickups.writeHeartPieceMeterPairs(
+                        i, romData.u8(ENTITYPRESENTATIONROM_HEART_PIECE_VARIANTS.plus(i)));
+            for (int i = 0; i < this.rewards.storageInstrumentPaletteCycle().length; i++) {
+                int rgb555 = romData.u16le(ENTITYPRESENTATIONROM_INSTRUMENT_PALETTE.plus(i * 2));
+                this.rewards.writeInstrumentPaletteCycle(i, linksawakening.rom.RomBank.decodeRgb555(rgb555));
+            }
+            for (int i = 0; i < this.rewards.storageInstrumentWarpSprites().length; i++) {
+                this.rewards.writeInstrumentWarpSprites(
+                        i, romData.u8(ENTITYPRESENTATIONROM_INSTRUMENT_WARP_SPRITES.plus(i)));
+            }
+            // Eighteen fixed repeat commands, two rows per controller frame.
+            // Shipped ROM symbols: Data_007_6493=$6493, Data_007_64F6=$64DB.
+            for (int row = 0; row < 18; row++) {
+                int tile = romData.u8(ENTITYPRESENTATIONROM_HINT_TILES.plus(row * 4 + 3));
+                int attr = romData.u8(ENTITYPRESENTATIONROM_HINT_ATTRIBUTES.plus(row * 4 + 3));
+                java.util.Arrays.fill(this.rewards.storageInstrumentHintTiles(), row * 20, (row + 1) * 20, tile);
+                java.util.Arrays.fill(this.rewards.storageInstrumentHintAttributes(), row * 20, (row + 1) * 20, attr);
+            }
+        }
     }
 
     void initializeRoomSlots(RoomEntitySnapshot initial) {
 
-        runtime.slotProperties().writeHookshotChainOam(initial.hookshotChainOam());
-        runtime.slotProperties().writePincerBodyOam(initial.pincerBodyOam());
-        runtime.slotProperties().writeWingedOctorokOam(initial.wingedOctorokOam());
-        Arrays.fill(runtime.story().storageKidBall(), false);
-        Arrays.fill(runtime.story().storageKidPlayTimer(), 0);
-        Arrays.fill(runtime.story().storageKidPlayState(), 0);
-        Arrays.fill(runtime.story().storageKidZSpeed(), 0);
-        Arrays.fill(runtime.story().storageKidKidnapState(), 0);
-        Arrays.fill(runtime.story().storageKidKidnapDelay(), 0);
-        Arrays.fill(runtime.story().storageKidSpeedXAccumulator(), 0);
-        Arrays.fill(runtime.story().storageKidSpeedYAccumulator(), 0);
-        runtime.physicsTables().resetOptionsOverrides();
-        Arrays.fill(runtime.bossRewards().storageDroppedItemBySlot(), 0);
-        Arrays.fill(runtime.bombInteractions().storageBombDirection(), 0xFF);
-        runtime.clearBombFinalPresentations();
-        Arrays.fill(runtime.liftThrow().storageThrownDirection(), 0xFF);
-        for (RoomEntity entity : runtime.slots()) {
+        this.slotProperties.state.writeHookshotChainOam(initial.hookshotChainOam());
+        this.slotProperties.state.writePincerBodyOam(initial.pincerBodyOam());
+        this.slotProperties.state.writeWingedOctorokOam(initial.wingedOctorokOam());
+        Arrays.fill(this.story.storageKidBall(), false);
+        Arrays.fill(this.story.storageKidPlayTimer(), 0);
+        Arrays.fill(this.story.storageKidPlayState(), 0);
+        Arrays.fill(this.story.storageKidZSpeed(), 0);
+        Arrays.fill(this.story.storageKidKidnapState(), 0);
+        Arrays.fill(this.story.storageKidKidnapDelay(), 0);
+        Arrays.fill(this.story.storageKidSpeedXAccumulator(), 0);
+        Arrays.fill(this.story.storageKidSpeedYAccumulator(), 0);
+        this.physicsTables.resetOptionsOverrides();
+        Arrays.fill(this.bossRewards.storageDroppedItemBySlot(), 0);
+        Arrays.fill(this.bombInteractions.storageBombDirection(), 0xFF);
+        this.bombInteractions.clearBombFinalPresentations();
+        Arrays.fill(this.liftThrow.storageThrownDirection(), 0xFF);
+        for (RoomEntity entity : this.slots) {
             initializeSlotTables(entity, initial);
             initializeSpecialEntities(entity, initial);
             initializeRoamingEntities(entity, initial);
@@ -59,160 +153,158 @@ final class EntityRoomInitialization {
 
     private void initializeSlotTables(RoomEntity entity, RoomEntitySnapshot initial) {
         if (entity.loaded() && entity.type() == 0x71) {
-            runtime.story().writeKidPlayState(entity.slot(), 1);
-            runtime.story().writeKidPlayTimer(entity.slot(), 0x20);
+            this.story.writeKidPlayState(entity.slot(), 1);
+            this.story.writeKidPlayTimer(entity.slot(), 0x20);
         }
-        runtime.physicsTables().writeBaseEntityFlipAttribute(entity.slot(), entity.entityFlipAttribute());
-        runtime.physicsTables().writeFallingVisualYOffset(entity.slot(), initial.visualYOffset(entity.slot()));
-        if (entity.loaded()) runtime.initializeHealthGroup(entity.slot());
-        runtime.combatTables()
-                .writeEnemyHealth(entity.slot(), entity.loaded() ? runtime.initialHealth(entity.type()) : 0);
-        runtime.physicsTables()
-                .writeEnemyPhysicsFlags(entity.slot(), entity.loaded() ? initialPhysicsFlags(entity.type()) : 0);
-        runtime.combatTables()
-                .writeEnemyHitboxFlags(entity.slot(), entity.loaded() ? initialHitboxFlags(entity.type()) : 0);
+        this.physicsTables.writeBaseEntityFlipAttribute(entity.slot(), entity.entityFlipAttribute());
+        this.physicsTables.writeFallingVisualYOffset(entity.slot(), initial.visualYOffset(entity.slot()));
+        if (entity.loaded()) this.lifecycle.initializeHealthGroup(entity.slot());
+        this.combatTables.writeEnemyHealth(
+                entity.slot(), entity.loaded() ? this.slotProperties.initialHealth(entity.type()) : 0);
+        this.physicsTables.writeEnemyPhysicsFlags(
+                entity.slot(), entity.loaded() ? initialPhysicsFlags(entity.type()) : 0);
+        this.combatTables.writeEnemyHitboxFlags(entity.slot(), entity.loaded() ? initialHitboxFlags(entity.type()) : 0);
         // Room-loaded indoor warps start at state 1 ($03:4F75).
         // State 0 is reserved for dynamically spawned warps.
-        if (entity.loaded() && runtime.indoorRoom() && entity.type() == WarpMotion.ENTITY_TYPE) {
-            runtime.warpState().writeWarpState(entity.slot(), WarpMotion.STATE_APPROACH);
-            runtime.slots()[entity.slot()] = withPositionAndVariant(entity, entity.x(), entity.y(), -1);
+        if (entity.loaded() && this.indoorRoom && entity.type() == WarpMotion.ENTITY_TYPE) {
+            this.warpState.writeWarpState(entity.slot(), WarpMotion.STATE_APPROACH);
+            this.slots[entity.slot()] = withPositionAndVariant(entity, entity.x(), entity.y(), -1);
         }
     }
 
     private void initializeSpecialEntities(RoomEntity entity, RoomEntitySnapshot initial) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_GENIE) {
             GenieMotion.JarState jar =
-                    runtime.motions().get(GenieMotion.class, GenieMotion::new).initialize(entity.slot());
-            runtime.genie().setGenieActiveState(entity.slot(), 0);
-            runtime.genie().setGeniePrivateState1(entity.slot(), jar.privateState1());
-            runtime.genie().setGeniePrivateState3(entity.slot(), 0);
-            runtime.combatTables().writeEnemyHealth(entity.slot(), jar.health());
-            runtime.physicsTables().writeEnemyPhysicsFlags(entity.slot(), jar.physicsFlags());
-            runtime.combatTables().writeEnemyHitboxFlags(entity.slot(), jar.hitboxFlags());
-            runtime.physicsTables().writeEntityOptions1Override(entity.slot(), EntityRomConstants.GENIE_OPTIONS1);
+                    this.motions.get(GenieMotion.class, GenieMotion::new).initialize(entity.slot());
+            this.genie.setGenieActiveState(entity.slot(), 0);
+            this.genie.setGeniePrivateState1(entity.slot(), jar.privateState1());
+            this.genie.setGeniePrivateState3(entity.slot(), 0);
+            this.combatTables.writeEnemyHealth(entity.slot(), jar.health());
+            this.physicsTables.writeEnemyPhysicsFlags(entity.slot(), jar.physicsFlags());
+            this.combatTables.writeEnemyHitboxFlags(entity.slot(), jar.hitboxFlags());
+            this.physicsTables.writeEntityOptions1Override(entity.slot(), EntityRomConstants.GENIE_OPTIONS1);
             if (entity.status() == EntityStatus.INIT) {
-                runtime.slots()[entity.slot()] =
+                this.slots[entity.slot()] =
                         withPositionAndVariant(entity, entity.x() + 0x08, entity.y(), entity.spriteVariant());
             }
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CHEST_WITH_ITEM) {
-            runtime.pickups().writeChestItemBySlot(entity.slot(), entity.spriteVariant());
+            this.pickups.writeChestItemBySlot(entity.slot(), entity.spriteVariant());
         }
         if (entity.loaded() && isBombiteType(entity.type())) {
-            runtime.motions().get(BombiteMotion.class, BombiteMotion::new).initialize(entity.slot());
+            this.motions.get(BombiteMotion.class, BombiteMotion::new).initialize(entity.slot());
             // The bank-$04 handlers use the global slow-transition tick
             // for TimerBombite's fuse. Keep it live for either family;
             // BouncingBombite simply leaves its value at zero.
-            runtime.physicsTables().writeSlowTimerInitialized(entity.slot(), true);
+            this.physicsTables.writeSlowTimerInitialized(entity.slot(), true);
         }
         if (entity.loaded() && isGhiniType(entity.type())) {
-            runtime.motions().get(GhiniMotion.class, GhiniMotion::new).initialize(entity.slot(), entity.type());
+            this.motions.get(GhiniMotion.class, GhiniMotion::new).initialize(entity.slot(), entity.type());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE) {
-            runtime.motions().get(LikeLikeMotion.class, LikeLikeMotion::new).initialize(entity.slot());
+            this.motions.get(LikeLikeMotion.class, LikeLikeMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_POLS_VOICE) {
-            runtime.motions().get(PolsVoiceMotion.class, PolsVoiceMotion::new).initialize(entity.slot());
+            this.motions.get(PolsVoiceMotion.class, PolsVoiceMotion::new).initialize(entity.slot());
         }
     }
 
     private void initializeRoamingEntities(RoomEntity entity, RoomEntitySnapshot initial) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_FISH) {
-            runtime.motions().get(FishMotion.class, FishMotion::new).initialize(entity.slot());
+            this.motions.get(FishMotion.class, FishMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CROW) {
-            runtime.motions().get(CrowMotion.class, CrowMotion::new).initialize(entity.slot());
+            this.motions.get(CrowMotion.class, CrowMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOO_BUDDY) {
-            runtime.motions().get(BooBuddyMotion.class, BooBuddyMotion::new).initialize(entity.slot());
+            this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BUZZ_BLOB) {
-            runtime.motions().get(BuzzBlobMotion.class, BuzzBlobMotion::new).initialize(entity.slot());
+            this.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_SAND_CRAB) {
-            runtime.motions().get(SandCrabMotion.class, SandCrabMotion::new).initialize(entity.slot());
+            this.motions.get(SandCrabMotion.class, SandCrabMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DOG) {
-            runtime.motions().get(DogMotion.class, DogMotion::new).initialize(entity.slot());
+            this.motions.get(DogMotion.class, DogMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_URCHIN) {
-            runtime.motions().get(UrchinMotion.class, UrchinMotion::new).initialize(entity.slot());
+            this.motions.get(UrchinMotion.class, UrchinMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_WITCH_RAT) {
-            runtime.motions().get(WitchRatMotion.class, WitchRatMotion::new).initialize(entity.slot());
+            this.motions.get(WitchRatMotion.class, WitchRatMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            runtime.motions().get(FairyMotion.class, FairyMotion::new).initialize(entity.slot());
+            this.motions.get(FairyMotion.class, FairyMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
-            runtime.motions()
-                    .get(SpikedBeetleMotion.class, SpikedBeetleMotion::new)
-                    .initialize(entity.slot());
+            this.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_PINCER) {
-            runtime.motions().get(PincerMotion.class, PincerMotion::new).initialize(entity.slot());
+            this.motions.get(PincerMotion.class, PincerMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BUSH_CRAWLER) {
-            runtime.motions()
-                    .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
-                    .initialize(entity.slot());
+            this.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MIMIC) {
-            runtime.motions().get(MimicMotion.class, MimicMotion::new).initialize(entity.slot());
+            this.motions.get(MimicMotion.class, MimicMotion::new).initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MASKED_MIMIC_GORIYA) {
-            runtime.motions()
-                    .get(MaskedMimicMotion.class, MaskedMimicMotion::new)
-                    .initialize(entity.slot());
+            this.motions.get(MaskedMimicMotion.class, MaskedMimicMotion::new).initialize(entity.slot());
         }
     }
 
     private void initializeBossAndFollowerEntities(RoomEntity entity, RoomEntitySnapshot initial) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
-            runtime.motions()
-                    .get(MiniMoldormMotion.class, MiniMoldormMotion::new)
-                    .initialize(entity);
+            this.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new).initialize(entity);
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-            runtime.motions().get(MoldormMotion.class, MoldormMotion::new).initialize(entity);
+            this.motions.get(MoldormMotion.class, MoldormMotion::new).initialize(entity);
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
-            runtime.motions()
-                    .get(RollingBonesMotion.class, RollingBonesMotion::new)
-                    .initializeBoss(entity.slot());
+            this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new).initializeBoss(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
-            runtime.motions()
-                    .get(RollingBonesMotion.class, RollingBonesMotion::new)
-                    .initializeBar(entity.slot());
+            this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new).initializeBar(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CUCCO) {
-            runtime.motions().get(CuccoMotion.class, CuccoMotion::new).initialize(entity.slot());
+            this.motions.get(CuccoMotion.class, CuccoMotion::new).initialize(entity.slot());
         }
         if (entity.status() == EntityStatus.DYING) {
-            runtime.combatTables().writePowerRecoilDeath(entity.slot(), entity.powerRecoilDeath());
+            this.combatTables.writePowerRecoilDeath(entity.slot(), entity.powerRecoilDeath());
         }
         if (isLaserType(entity.type())) {
-            runtime.motions().get(LaserMotion.class, LaserMotion::new).initializeForEntity(entity);
+            this.motions.get(LaserMotion.class, LaserMotion::new).initializeForEntity(entity);
         }
         if (isFollowingNpcType(entity.type())) {
             if (entity.type() == EntityRomConstants.ENTITY_BOW_WOW) {
-                runtime.motions().get(BowWowMotion.class, BowWowMotion::new).initialize(entity.slot());
+                this.motions.get(BowWowMotion.class, BowWowMotion::new).initialize(entity.slot());
             } else {
-                runtime.motions()
+                this.motions
                         .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                         .initialize(entity.slot(), entity.type());
             }
         }
         if (entity.status() == EntityStatus.LIFTED) {
-            runtime.liftThrow().writeLiftedStateInitialized(entity.slot(), true);
-            runtime.liftThrow().writeLiftedSourceDirection(entity.slot(), LiftedEntityMotion.ROM_DIRECTION_DOWN);
-            runtime.liftThrow().writeLiftedEffectiveDirection(LiftedEntityMotion.ROM_DIRECTION_DOWN);
-            runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0x02);
-            runtime.liftThrow().writeLiftedEntitySlot(entity.slot());
+            this.liftThrow.writeLiftedStateInitialized(entity.slot(), true);
+            this.liftThrow.writeLiftedSourceDirection(entity.slot(), LiftedEntityMotion.ROM_DIRECTION_DOWN);
+            this.liftThrow.writeLiftedEffectiveDirection(LiftedEntityMotion.ROM_DIRECTION_DOWN);
+            this.physicsTables.writeEnemyTransitionCountdown(entity.slot(), 0x02);
+            this.liftThrow.writeLiftedEntitySlot(entity.slot());
         }
         if (entity.status() == EntityStatus.THROWN) {
-            runtime.liftThrow().writeThrownDirection(entity.slot(), ThrownEntityMotion.ROM_DIRECTION_DOWN);
+            this.liftThrow.writeThrownDirection(entity.slot(), ThrownEntityMotion.ROM_DIRECTION_DOWN);
         }
     }
+
+    // These symbols are not yet in the shared generated RomSymbols allowlist.
+    private static final RomAddress ENTITYPRESENTATIONROM_HEART_PIECE_VARIANTS =
+            new RomAddress(0x03, 0x5B17); // HeartPieceSpriteVariants
+    private static final RomAddress ENTITYPRESENTATIONROM_INSTRUMENT_PALETTE =
+            new RomAddress(0x36, 0x7096); // InstrumentPalette
+    private static final RomAddress ENTITYPRESENTATIONROM_INSTRUMENT_WARP_SPRITES =
+            new RomAddress(0x06, 0x773C); // Data_006_773C
+    private static final RomAddress ENTITYPRESENTATIONROM_HINT_TILES = new RomAddress(0x07, 0x6493); // Data_007_6493
+    private static final RomAddress ENTITYPRESENTATIONROM_HINT_ATTRIBUTES =
+            new RomAddress(0x07, 0x64DB); // Data_007_64F6, unpatched ROM
 }

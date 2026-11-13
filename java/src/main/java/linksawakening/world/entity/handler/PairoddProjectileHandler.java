@@ -1,23 +1,22 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PAIRODD_PROJECTILE;
 
 import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.entity.*;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.PairoddProjectileMotion;
 
 /** ROM handler stages for PairoddProjectile. */
 final class PairoddProjectileHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(
                 ENTITY_PAIRODD_PROJECTILE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
@@ -90,7 +89,7 @@ final class PairoddProjectileHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
         registry.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
                 .initialize(entity.slot(), random);
     }

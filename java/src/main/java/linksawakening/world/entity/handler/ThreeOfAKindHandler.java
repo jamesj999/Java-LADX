@@ -3,15 +3,14 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_THREE_OF_A_KIND;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ThreeOfAKindMotion;
 
 /** ROM handler stages for ThreeOfAKind. */
 final class ThreeOfAKindHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_THREE_OF_A_KIND,
                 EntityTickStage.PHASE_3_AFTER_LASER,

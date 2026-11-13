@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
@@ -57,7 +58,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision) {
         return advance(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision, false)
                 .entity();
     }
@@ -67,7 +69,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
+                    backgroundCollision,
             boolean creditsGameplay) {
         RoomEntityBackgroundInteraction interaction =
                 backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
@@ -80,7 +83,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             boolean creditsGameplay) {
         return advanceWithInteraction(
                 entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, 0, creditsGameplay);
@@ -91,7 +95,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             boolean creditsGameplay) {
         return advanceWithInteraction(
@@ -110,7 +115,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
@@ -130,7 +136,8 @@ public final class RoamingEnemyMotion {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
+            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
+                    backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
@@ -146,7 +153,7 @@ public final class RoamingEnemyMotion {
     }
 
     private linksawakening.world.entity.motion.RoamingEnemyMotion.Update advanceInternal(RoamingEnemyFrame inputs) {
-        return roamingEnemyFrameStep.run(this, inputs);
+        return roamingEnemyFrameStep.run(inputs);
     }
 
     LaunchRequest launchRequestIfEligible(
@@ -286,5 +293,187 @@ public final class RoamingEnemyMotion {
     public record LaunchRequest(int sourceSlot, int sourceType, int projectileType)
             implements linksawakening.world.entity.event.EntityRequestBridge {}
 
-    final RoamingEnemyFrameStep roamingEnemyFrameStep = new RoamingEnemyFrameStep();
+    final RoamingEnemyFrameStep roamingEnemyFrameStep = new RoamingEnemyFrameStep(this);
+
+    record RoamingEnemyFrame(
+            linksawakening.world.entity.RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            // Optional room geometry/history; null preserves the path without that room input.
+            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int frameCounter,
+            boolean creditsGameplay) {}
+
+    static final class RoamingEnemyFrameStep {
+        private final RoamingEnemyMotion owner;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.RoamingEnemyMotion.RoamingEnemyFrame inputs;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.RoomEntity entity;
+        private int linkEntityX;
+        private int linkEntityY;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private java.util.function.IntSupplier randomByteSupplier;
+        // Optional room geometry/history; null preserves the path without that room input.
+        private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
+        private int ignoreHitsCountdown;
+        private int frameCounter;
+        private boolean creditsGameplay;
+        private int slot;
+        private int x;
+        private int y;
+        private int variant;
+
+        RoamingEnemyFrameStep(RoamingEnemyMotion owner) {
+            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+        }
+
+        linksawakening.world.entity.motion.RoamingEnemyMotion.Update run() {
+            if (!prepareTimersAndMotion()) return completedResult;
+            if (!chooseDirectionAndAnimation()) return completedResult;
+
+            return new RoamingEnemyMotion.Update(
+                    RoamingEnemyMotion.withPositionAndVariant(entity, x, y, variant), null);
+        }
+
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.RoamingEnemyMotion.Update completedResult;
+
+        private boolean prepareTimersAndMotion() {
+
+            entity = inputs.entity();
+            linkEntityX = inputs.linkEntityX();
+            linkEntityY = inputs.linkEntityY();
+            randomByteSupplier = inputs.randomByteSupplier();
+            backgroundInteraction = inputs.backgroundInteraction();
+            ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+            frameCounter = inputs.frameCounter();
+            creditsGameplay = inputs.creditsGameplay();
+
+            slot = entity.slot();
+            if (!owner.initialized[slot]) {
+                owner.initialize(slot);
+            }
+            if (owner.privateCountdown1[slot] > 0) {
+                owner.privateCountdown1[slot]--;
+            }
+            if (owner.transitionCountdown[slot] > 0) {
+                owner.transitionCountdown[slot]--;
+            }
+
+            if (owner.state[slot] != 0) {
+                RoamingEnemyMotion.LaunchRequest launchRequest =
+                        owner.launchRequestIfEligible(entity, linkEntityX, linkEntityY, creditsGameplay);
+                if (launchRequest != null && entity.type() == RoamingEnemyMotion.ENTITY_OCTOROK) {
+
+                    completedResult = new RoamingEnemyMotion.Update(entity, launchRequest);
+                    return false;
+                }
+                if (owner.transitionCountdown[slot] == 0) {
+                    owner.transitionCountdown[slot] = 0x20 | (randomByteSupplier.getAsInt() & 0x1F);
+                    owner.state[slot] = 0;
+                    owner.privateState1[slot] = (owner.privateState1[slot] + 1) & 0x03;
+                    owner.direction[slot] = owner.privateState1[slot] == 0
+                            ? RoamingEnemyMotion.directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
+                            : randomByteSupplier.getAsInt() & 0x03;
+                    owner.speedX[slot] = RoamingEnemyMotion.speedXFor(entity.type(), owner.direction[slot]);
+                    owner.speedY[slot] = RoamingEnemyMotion.speedYFor(entity.type(), owner.direction[slot]);
+                } else {
+                    // $03:7A30-7A64 clears collisions, then skips both wall
+                    // probes when paused (both speeds are zero).
+                    owner.collisionsTable[slot] = 0;
+                    owner.horizontallyCollidedObject[slot] = 0;
+                }
+
+                completedResult = new RoamingEnemyMotion.Update(entity, launchRequest);
+                return false;
+            }
+
+            x = entity.x();
+            y = entity.y();
+            return true;
+        }
+
+        private boolean chooseDirectionAndAnimation() {
+
+            if ((owner.collisionsTable[slot] & 0x0F) != 0 || owner.transitionCountdown[slot] == 0) {
+                owner.transitionCountdown[slot] = 0x10 | (randomByteSupplier.getAsInt() & 0x0F);
+                owner.state[slot] = 1;
+                owner.speedX[slot] = 0;
+                owner.speedY[slot] = 0;
+                owner.collisionsTable[slot] = 0;
+            } else {
+                int nextX = RoamingEnemyMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
+                if (nextX != x && backgroundInteraction != null) {
+                    EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                            entity, owner.direction[slot], nextX, y, ignoreHitsCountdown, frameCounter);
+                    if (result.blocked()) {
+                        owner.collisionsTable[slot] |= result.collisionFlag();
+                        owner.horizontallyCollidedObject[slot] = result.objectId();
+                    } else {
+                        x = nextX;
+                    }
+                } else {
+                    x = nextX;
+                }
+
+                int nextY = RoamingEnemyMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
+                if (nextY != y && backgroundInteraction != null) {
+                    EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                            entity, owner.direction[slot], x, nextY, ignoreHitsCountdown, frameCounter);
+                    if (result.blocked()) {
+                        owner.collisionsTable[slot] |= result.collisionFlag();
+                        owner.verticallyCollidedObject[slot] = result.objectId();
+                    } else {
+                        y = nextY;
+                    }
+                } else {
+                    y = nextY;
+                }
+            }
+
+            owner.inertia[slot] = (owner.inertia[slot] + 1) & 0xFF;
+            variant = RoamingEnemyMotion.VARIANT_BY_DIRECTION[owner.direction[slot]]
+                    | ((owner.inertia[slot] >>> 3) & 0x01);
+            return true;
+        }
+
+        private boolean inUse;
+
+        linksawakening.world.entity.motion.RoamingEnemyMotion.Update run(
+                linksawakening.world.entity.motion.RoamingEnemyMotion.RoamingEnemyFrame inputs) {
+            if (inUse) {
+                return new RoamingEnemyFrameStep(owner).run(inputs);
+            }
+            inUse = true;
+            entity = null;
+            linkEntityX = 0;
+            linkEntityY = 0;
+            randomByteSupplier = null;
+            backgroundInteraction = null;
+            ignoreHitsCountdown = 0;
+            frameCounter = 0;
+            creditsGameplay = false;
+            slot = 0;
+            x = 0;
+            y = 0;
+            variant = 0;
+            completedResult = null;
+
+            this.inputs = inputs;
+            try {
+                return run();
+            } finally {
+                inUse = false;
+
+                this.inputs = null;
+                this.entity = null;
+                this.randomByteSupplier = null;
+                this.backgroundInteraction = null;
+                this.completedResult = null;
+            }
+        }
+    }
 }

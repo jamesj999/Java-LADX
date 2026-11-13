@@ -10,4 +10,5 @@ public record FollowingNpcSpawn(
         int linkZ,
         int entityYOffset,
         int linkDirection,
+        // Optional room geometry/history; null preserves the path without that room input.
         LinkPositionHistory history) {}

@@ -1,7 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.*;
-
 /** Test-only writes to owned motion state. */
 public final class MotionTestFixture {
     private MotionTestFixture() {}

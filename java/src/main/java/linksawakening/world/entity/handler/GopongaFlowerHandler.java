@@ -4,7 +4,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_GOPONGA_FLOW
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityHandlerRegistration;
+import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
@@ -12,7 +12,7 @@ import linksawakening.world.entity.motion.GopongaFlowerMotion;
 
 /** ROM handler stages for GopongaFlower. */
 final class GopongaFlowerHandler {
-    static void install(EntityHandlerRegistration registry) {
+    static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
                 ENTITY_GOPONGA_FLOWER,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,

@@ -12,8 +12,8 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.MotionTestFixture;
-import linksawakening.world.entity.motion.ZolGelFrame;
 import linksawakening.world.entity.motion.ZolGelMotion;
+import linksawakening.world.entity.motion.ZolGelMotion.ZolGelFrame;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
