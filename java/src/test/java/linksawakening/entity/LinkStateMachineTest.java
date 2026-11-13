@@ -7,21 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import linksawakening.state.Direction;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 final class LinkStateMachineTest {
     @Test
     void spikesReverseSpeedBufferOneHeartAndGateRepeatedHits() {
         PlayerState player = new PlayerState();
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(player)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().player(player).build();
         link.linkMotion.position().lastRomSpeedX(0x14);
         link.linkMotion.position().lastRomSpeedY(0xF1);
         link.linkDamage.hurtBySpikes();
@@ -41,15 +34,7 @@ final class LinkStateMachineTest {
     @Test
     void sideViewSpikesPreserveVerticalJumpRegisters() {
         PlayerState player = new PlayerState();
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(player)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().player(player).build();
         link.linkSideView.sideScrolling = true;
         link.linkAirborne.elevation().zVelocity(7);
         link.linkDamage.hurtBySpikes();
@@ -60,15 +45,7 @@ final class LinkStateMachineTest {
 
     @Test
     void scrollEntryPreservesBothFractionalAccumulatorsAndRecordsLanding() {
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(null)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().build();
         link.linkMotion.position().subX((148 << Link.SUB_PIXEL_SHIFT) + 10);
         link.linkMotion.position().subY((80 << Link.SUB_PIXEL_SHIFT) + 5);
         link.position().setRoomScrollEntryPixelPosition(3, 80);
@@ -87,15 +64,7 @@ final class LinkStateMachineTest {
     @Test
     void interactiveBlockIsConsumedAfterInvincibilityTicks() {
         PlayerState player = new PlayerState();
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(player)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().player(player).build();
         link.position().setPixelPosition(64, 64);
         link.motion().blockNextRomMotionFrame();
         player.vitals().setInvincibilityCounter(2);
@@ -110,15 +79,7 @@ final class LinkStateMachineTest {
 
     @Test
     void revolvingDoorExitsOnFrameSeventyTwoAndEmitsOneTransition() {
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(null)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().build();
         link.linkStateMachine.status().motionState(LinkMotionState.REVOLVING_DOOR);
         link.linkStateMachine.door().revolvingDoorFrame(70);
         link.linkStateMachine.door().tickRevolvingDoor();

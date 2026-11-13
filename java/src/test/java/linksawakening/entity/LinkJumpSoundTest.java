@@ -18,6 +18,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
+import linksawakening.testing.TestLinks;
 import linksawakening.testing.TestRom;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
@@ -143,12 +144,11 @@ final class LinkJumpSoundTest {
             if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
             Arrays.fill(room, 0xFF);
             collision.setRoom(room);
-            link = new LinkTestBuilder()
+            link = TestLinks.link()
                     .input(input)
                     .config(config)
                     .tables(tables)
                     .collision(collision)
-                    .sprites(null)
                     .player(new PlayerState())
                     .items(new ItemRegistry())
                     .sounds(event -> sounds.add(frame + ":" + event))

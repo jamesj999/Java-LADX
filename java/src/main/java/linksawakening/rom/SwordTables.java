@@ -1,6 +1,15 @@
 package linksawakening.rom;
+
+import java.util.Arrays;
+
 /** Immutable copies of SwordTables ROM lookup data. */
 public final class SwordTables {
+    private final boolean bladeCollisionEnabled;
+
+    /** Whether this data set includes a physical blade, rather than animation only. */
+    public boolean bladeCollisionEnabled() {
+        return bladeCollisionEnabled;
+    }
     // LinkDirectionToLinkAnimationState1: original loader length.
     private static final int SWORD_ANIM_STATE_LENGTH = 24;
     private final int[] swordAnimState;
@@ -47,7 +56,82 @@ public final class SwordTables {
     private static final int STATIC_SWORD_COLLISION_Y_LENGTH = 12;
     private final byte[] staticSwordCollisionY;
 
+    /** Animation-only sword: no blade OAM or collision, with the existing spin cadence. */
+    public static SwordTables animationOnly() {
+        return new SwordTables();
+    }
+
+    private SwordTables() {
+        bladeCollisionEnabled = false;
+        swordAnimState = new int[SWORD_ANIM_STATE_LENGTH];
+        swordDirection = new int[SWORD_DIRECTION_LENGTH];
+        swordSpinAnimationState = new int[SWORD_SPIN_ANIMATION_STATE_LENGTH];
+        swordSpinAbsoluteDirection = new int[SWORD_SPIN_ABSOLUTE_DIRECTION_LENGTH];
+        swordXOffset = new byte[SWORD_X_OFFSET_LENGTH];
+        swordYOffset = new byte[SWORD_Y_OFFSET_LENGTH];
+        swordYBase = new byte[SWORD_Y_BASE_LENGTH];
+        swordCollisionNeeded = new int[SWORD_COLLISION_NEEDED_LENGTH];
+        swordCollisionWidth = new int[SWORD_COLLISION_WIDTH_LENGTH];
+        swordCollisionOffset = new int[SWORD_COLLISION_OFFSET_LENGTH];
+        swordCollisionHeight = new int[SWORD_COLLISION_HEIGHT_LENGTH];
+        swordSpriteTiles = new int[SWORD_SPRITE_TILES_LENGTH];
+        swordSpriteAttrs = new int[SWORD_SPRITE_ATTRS_LENGTH];
+        staticSwordCollisionX = new byte[STATIC_SWORD_COLLISION_X_LENGTH];
+        staticSwordCollisionY = new byte[STATIC_SWORD_COLLISION_Y_LENGTH];
+        Arrays.fill(swordAnimState, 0xFF);
+        Arrays.fill(swordSpriteTiles, 0xFF);
+        for (int direction = 0; direction < 4; direction++) {
+            System.arraycopy(
+                    SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[direction], 0, swordSpinAnimationState, direction * 8, 8);
+            System.arraycopy(
+                    SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[direction],
+                    0,
+                    swordSpinAbsoluteDirection,
+                    direction * 8,
+                    8);
+        }
+    }
+    // bank2.asm:46C9-46E8. Indexed as (base hLinkDirection << 3) + spin sector.
+    private static final int[][] SPIN_ANIMATION_STATE_BY_BASE_DIRECTION = {
+        {
+            3, 2, 3, 2,
+            3, 2, 3, 4
+        },
+        {
+            3, 4, 3, 2,
+            3, 4, 3, 4
+        },
+        {
+            3, 2, 3, 4,
+            3, 4, 3, 4
+        },
+        {
+            3, 4, 3, 4,
+            3, 2, 3, 4
+        },
+    };
+    // bank2.asm:46E9-4708. Indexed as (base hLinkDirection << 3) + spin sector.
+    private static final int[][] SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION = {
+        {
+            0, 2, 2, 1,
+            1, 3, 3, 0
+        },
+        {
+            1, 2, 2, 0,
+            0, 3, 3, 1
+        },
+        {
+            2, 0, 0, 3,
+            3, 1, 1, 2
+        },
+        {
+            3, 1, 1, 2,
+            2, 0, 0, 3
+        },
+    };
+
     private SwordTables(Rom rom) {
+        bladeCollisionEnabled = true;
         swordAnimState = rom.u8Table(RomSymbols.LinkDirectionToLinkAnimationState1, SWORD_ANIM_STATE_LENGTH);
         swordDirection = rom.u8Table(RomSymbols.LinkDirectionToSwordDirection, SWORD_DIRECTION_LENGTH);
         swordSpinAnimationState =

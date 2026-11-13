@@ -13,6 +13,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -148,12 +149,11 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         }
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(roomObjects);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(playerState)
                 .items(new ItemRegistry())
                 .build();

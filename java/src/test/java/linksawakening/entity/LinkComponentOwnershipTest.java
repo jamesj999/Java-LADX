@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 class LinkComponentOwnershipTest {
@@ -31,15 +32,7 @@ class LinkComponentOwnershipTest {
 
     @Test
     void assemblyBindsEachDependencyToTheOwnedComponent() {
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(null)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().build();
         assertSame(link.linkMotion, link.assembly.linkMotion.get());
         assertSame(link.linkAnimationState, link.assembly.linkAnimationState.get());
         assertSame(link.linkItemState, link.assembly.linkItemState.get());

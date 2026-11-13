@@ -4,7 +4,6 @@ import linksawakening.equipment.EquipmentItem;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 import linksawakening.state.InventoryItem;
-import linksawakening.state.Tunic;
 
 /** Owns body tile composition and equipment sprite order for ROM DrawLinkSprite ($00:1D4F). */
 final class LinkSpriteComposer {
@@ -70,8 +69,7 @@ final class LinkSpriteComposer {
         int originX = linkMotion.get().position().pixelX() + offsetX;
         int renderY = bodyY;
         int originY = renderY + offsetY;
-        int[] palette = linkServices.get().playerState != null
-                        && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
+        int[] palette = (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
                 ? linkServices.get().tunicPalette.objectPaletteView(4)
@@ -79,13 +77,7 @@ final class LinkSpriteComposer {
                         .get()
                         .tunicPalette
                         .tunicView(
-                                linkServices.get().playerState == null
-                                        ? Tunic.GREEN.romValue()
-                                        : linkServices
-                                                .get()
-                                                .playerState
-                                                .equipmentLevels()
-                                                .tunicType());
+                                linkServices.get().playerState.equipmentLevels().tunicType());
 
         if (linkStateMachine.get().door().revolvingDoorPaletteVariant() >= 0
                 && linkStateMachine.get().door().revolvingDoorFrame() < 0x38) {
@@ -116,9 +108,7 @@ final class LinkSpriteComposer {
     }
 
     private void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY, boolean acquisition) {
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return;
-        }
+
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
@@ -183,8 +173,7 @@ final class LinkSpriteComposer {
         int originX = linkMotion.get().position().pixelX() + offsetX;
         int renderY = bodyY;
         int originY = renderY + offsetY;
-        int[] palette = linkServices.get().playerState != null
-                        && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
+        int[] palette = (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
                 ? linkServices.get().tunicPalette.objectPaletteView(4)
@@ -192,13 +181,7 @@ final class LinkSpriteComposer {
                         .get()
                         .tunicPalette
                         .tunicView(
-                                linkServices.get().playerState == null
-                                        ? Tunic.GREEN.romValue()
-                                        : linkServices
-                                                .get()
-                                                .playerState
-                                                .equipmentLevels()
-                                                .tunicType());
+                                linkServices.get().playerState.equipmentLevels().tunicType());
 
         if (linkStateMachine.get().door().revolvingDoorPaletteVariant() >= 0
                 && linkStateMachine.get().door().revolvingDoorFrame() < 0x38) {
@@ -232,9 +215,7 @@ final class LinkSpriteComposer {
     }
 
     private void submitEquippedOam(linksawakening.render.OamSink sink, int offsetX, int offsetY, boolean acquisition) {
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return;
-        }
+
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry

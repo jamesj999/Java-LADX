@@ -15,6 +15,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -49,12 +50,9 @@ final class MarinWakeUpLinkStateTest {
 
     @Test
     void leavingBedAppliesMarinsSourceLinkMotion() {
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -86,12 +84,11 @@ final class MarinWakeUpLinkStateTest {
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState input = new InputState();
         input.onKeyEvent(config.leftKey(), GLFW_PRESS);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(input)
                 .config(config)
                 .tables(tables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();

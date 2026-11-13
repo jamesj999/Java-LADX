@@ -55,8 +55,8 @@ public final class LinkTunicPalette {
         return objectPalettes[paletteIndex];
     }
 
-    /** Compatibility source for isolated Link fixtures without a ROM. */
-    static LinkTunicPalette greenCompatibility() {
+    /** Fixed green presentation palette for ROM-free actors. */
+    public static LinkTunicPalette green() {
         int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};
         return new LinkTunicPalette(
                 new int[][] {green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()});

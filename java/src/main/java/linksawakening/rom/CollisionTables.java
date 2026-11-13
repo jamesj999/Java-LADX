@@ -21,6 +21,18 @@ public final class CollisionTables {
     private static final int LINK_FINE_COLLISION_SHAPES_LENGTH = 80;
     private final int[] linkFineCollisionShapes;
 
+    private CollisionTables() {
+        entityCollisionPointsX = new byte[ENTITY_COLLISION_POINTS_X_LENGTH];
+        entityCollisionPointsY = new byte[ENTITY_COLLISION_POINTS_Y_LENGTH];
+        entityFineCollisionShapes = new int[ENTITY_FINE_COLLISION_SHAPES_LENGTH];
+        linkFineCollisionShapes = new int[LINK_FINE_COLLISION_SHAPES_LENGTH];
+    }
+
+    /** Empty collision shapes for an open world. */
+    public static CollisionTables openWorld() {
+        return new CollisionTables();
+    }
+
     private CollisionTables(Rom rom) {
         entityCollisionPointsX = rom.bytes(RomSymbols.EntityCollisionPointsX, ENTITY_COLLISION_POINTS_X_LENGTH);
         entityCollisionPointsY = rom.bytes(RomSymbols.EntityCollisionPointsY, ENTITY_COLLISION_POINTS_Y_LENGTH);

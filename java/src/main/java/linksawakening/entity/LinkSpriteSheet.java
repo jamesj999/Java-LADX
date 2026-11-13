@@ -45,6 +45,27 @@ public final class LinkSpriteSheet {
         this.attrsTable = attrsTable;
     }
 
+    /** Invisible sprite sheet with the legacy ROM-free walking and pushing poses. */
+    public static LinkSpriteSheet invisible() {
+        Tile[] tiles = new Tile[LINK_CHARACTER_2_TILES_COUNT];
+        for (int i = 0; i < tiles.length; i++) tiles[i] = new Tile();
+        int[] walking = new int[6 * 8];
+        for (linksawakening.state.Direction direction : linksawakening.state.Direction.values()) {
+            int javaIndex = direction.javaIndex();
+            if (javaIndex < 0) continue;
+            for (int frame = 0; frame < 2; frame++) {
+                int index = direction.romIndex() * 2 + frame;
+                walking[index] = LinkPoseTables.ANIMATION_STATE[javaIndex][frame];
+                walking[8 + index] = walking[index];
+                walking[16 + index] = LinkPoseTables.SHIELD_USE_ANIMATION_STATE[javaIndex][frame];
+                walking[24 + index] = walking[index];
+                walking[32 + index] = LinkPoseTables.MIRROR_SHIELD_USE_ANIMATION_STATE[javaIndex][frame];
+                walking[40 + index] = LinkPoseTables.UNSHIELDED_WALK_BASE[javaIndex] + frame;
+            }
+        }
+        return new LinkSpriteSheet(tiles, new int[STATE_TABLE_LENGTH * 2], new int[STATE_TABLE_LENGTH * 2], walking);
+    }
+
     public static LinkSpriteSheet loadFromRom(Rom romData) {
         Tile[] tiles = new Tile[LINK_CHARACTER_2_TILES_COUNT];
         int tilesOffset = romOffset(LINK_CHARACTER_2_TILES_BANK, LINK_CHARACTER_2_TILES_ADDR);

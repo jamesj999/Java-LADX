@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.state.Direction;
 import linksawakening.state.GroundStatus;
 import linksawakening.state.LinkMotionState;
@@ -20,16 +21,16 @@ final class LinkEntityEffects {
     private final LinkComponentRef<LinkSwimming> linkSwimming;
 
     LinkEntityEffects(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkDamage = dependencies.linkDamage;
-        linkGroundMotion = dependencies.linkGroundMotion;
-        linkItemState = dependencies.linkItemState;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkStateMachine = dependencies.linkStateMachine;
-        linkSwimming = dependencies.linkSwimming;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkGroundMotion = Objects.requireNonNull(dependencies.linkGroundMotion, "linkGroundMotion");
+        linkItemState = Objects.requireNonNull(dependencies.linkItemState, "linkItemState");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
+        linkSwimming = Objects.requireNonNull(dependencies.linkSwimming, "linkSwimming");
     }
 
     static final class Dependencies {
@@ -219,7 +220,7 @@ final class LinkEntityEffects {
         if (immunityCountdown != 0) {
             linkDamage.get().collisionDamageImmune = true;
         }
-        if (linkServices.get().playerState != null) {
+        {
             linkServices.get().playerState.vitals().setInvincibilityCounter(0);
             linkServices.get().playerState.vitals().clearSubtractHealthBuffer();
         }

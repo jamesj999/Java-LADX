@@ -12,6 +12,7 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -29,12 +30,11 @@ final class LinkPitBehaviorAdditionalTest extends LinkFixture {
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(roomObjects);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();

@@ -8,7 +8,12 @@ import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
 
 /** Frame-driven facade over ROM-backed sound effect execution. */
-public final class SoundEffectPlayer {
+public final class SoundEffectPlayer implements SoundEffectPlayback {
+    @Override
+    public boolean available() {
+        return true;
+    }
+
     private static final String ROM_RESOURCE = "rom/azle.gbc";
 
     private final GameBoyApu apu;

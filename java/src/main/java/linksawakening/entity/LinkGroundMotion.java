@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.state.LinkMotionState;
 
 /** Link ground motion state and operations used by ROM {@code ApplyLinkMotionState}. */
@@ -12,12 +13,12 @@ final class LinkGroundMotion {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
     LinkGroundMotion(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkDamage = dependencies.linkDamage;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkSideView = dependencies.linkSideView;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
 
     static final class Dependencies {
@@ -38,8 +39,7 @@ final class LinkGroundMotion {
         linkDamage.get().applySpikeGroundPhysics();
         // ApplyLinkGroundPhysics uses the completed motion position. Dialogs
         // and scrolling reuse this result while ordinary Link updates pause.
-        grassGroundEffectActive = linkServices.get().collision != null
-                && !linkSideView.get().sideScrolling
+        grassGroundEffectActive = !linkSideView.get().sideScrolling
                 && !linkAirborne.get().elevation().airborne()
                 && !linkAirborne.get().pit().fallingIntoPit()
                 && linkStateMachine.get().status().motionState() != LinkMotionState.UNSTUCKING
@@ -63,13 +63,12 @@ final class LinkGroundMotion {
 
     boolean accessShouldApplyGroundMotion() {
         groundMotionCounter++;
-        if (linkServices.get().collision == null
-                || !linkServices
-                        .get()
-                        .collision
-                        .linkOnSlowGround(
-                                linkMotion.get().position().pixelX(),
-                                linkMotion.get().position().pixelY())) {
+        if (!linkServices
+                .get()
+                .collision
+                .linkOnSlowGround(
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY())) {
             return true;
         }
         // GROUND_STATUS_SLOW ($03) uses the same frame-counter mask in the

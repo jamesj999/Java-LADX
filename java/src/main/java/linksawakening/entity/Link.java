@@ -40,7 +40,7 @@ public final class Link {
                 collision,
                 spriteSheet,
                 new linksawakening.entity.Link.Services(
-                        playerState, itemRegistry, GameplaySoundSink.none(), LinkTunicPalette.greenCompatibility()));
+                        playerState, itemRegistry, GameplaySoundSink.none(), LinkTunicPalette.green()));
     }
 
     public Link(
@@ -59,7 +59,7 @@ public final class Link {
                 collision,
                 spriteSheet,
                 new linksawakening.entity.Link.Services(
-                        playerState, itemRegistry, soundSink, LinkTunicPalette.greenCompatibility()));
+                        playerState, itemRegistry, soundSink, LinkTunicPalette.green()));
     }
 
     public Link(
@@ -70,8 +70,12 @@ public final class Link {
             LinkSpriteSheet spriteSheet,
             Services arguments) {
 
-        assembly = new LinkAssembly(
-                new LinkServices(inputState, inputConfig, romTables, collision, spriteSheet, arguments));
+        this(LinkDependencies.legacy(inputState, inputConfig, romTables, collision, spriteSheet, arguments));
+    }
+
+    /** Constructs an actor from non-null, validated services. */
+    public Link(LinkDependencies dependencies) {
+        assembly = new LinkAssembly(new LinkServices(Objects.requireNonNull(dependencies, "dependencies")));
         linkAnimator = assembly.linkAnimator.get();
         linkSideView = assembly.linkSideView.get();
         linkStateMachine = assembly.linkStateMachine.get();

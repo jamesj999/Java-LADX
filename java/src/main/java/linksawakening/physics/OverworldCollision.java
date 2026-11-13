@@ -1,5 +1,6 @@
 package linksawakening.physics;
 
+import java.util.Objects;
 import linksawakening.rom.CollisionTables;
 import linksawakening.rom.PhysicsTables;
 import linksawakening.rom.RomTables;
@@ -39,8 +40,19 @@ public final class OverworldCollision {
     public record GroundInteractionSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {}
 
     public OverworldCollision(RomTables romTables) {
-        this.physicsTables = romTables == null ? null : romTables.physicsTables();
-        this.collisionTables = romTables == null ? null : romTables.collisionTables();
+        this(
+                romTables == null ? PhysicsTables.openWorld() : romTables.physicsTables(),
+                romTables == null ? CollisionTables.openWorld() : romTables.collisionTables());
+    }
+
+    /** Queries an open world with no room bound and no blocking objects. */
+    public static OverworldCollision openWorld() {
+        return new OverworldCollision(PhysicsTables.openWorld(), CollisionTables.openWorld());
+    }
+
+    public OverworldCollision(PhysicsTables physicsTables, CollisionTables collisionTables) {
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.collisionTables = Objects.requireNonNull(collisionTables, "collisionTables");
     }
 
     public void setRoom(int[] roomObjectsArea) {

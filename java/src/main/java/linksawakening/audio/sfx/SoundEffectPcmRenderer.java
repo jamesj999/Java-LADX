@@ -11,7 +11,7 @@ public final class SoundEffectPcmRenderer {
 
     private SoundEffectPcmRenderer() {}
 
-    public static short[] renderOneShot(GameBoyApu apu, SoundEffectPlayer player, SoundEffect effect) {
+    public static short[] renderOneShot(GameBoyApu apu, SoundEffectPlayback player, SoundEffect effect) {
         Objects.requireNonNull(apu, "apu");
         Objects.requireNonNull(player, "player");
         Objects.requireNonNull(effect, "effect");
@@ -26,7 +26,7 @@ public final class SoundEffectPcmRenderer {
         }
     }
 
-    private static short[] renderActiveEffect(GameBoyApu apu, SoundEffectPlayer player) {
+    private static short[] renderActiveEffect(GameBoyApu apu, SoundEffectPlayback player) {
         int wholeFramesPerTick = apu.sampleRate() / TICKS_PER_SECOND;
         int frameRemainderPerTick = apu.sampleRate() % TICKS_PER_SECOND;
         int frameRemainder = 0;

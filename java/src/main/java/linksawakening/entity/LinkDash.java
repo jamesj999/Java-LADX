@@ -61,11 +61,7 @@ final class LinkDash {
 
     /** Mirrors CheckItemsToUse's two Pegasus-Boots slot branches and UsePegasusBoots. */
     void updatePegasusBootsUse() {
-        if (linkServices.get().playerState == null
-                || linkServices.get().inputState == null
-                || linkServices.get().inputConfig == null) {
-            return;
-        }
+
         boolean aHeld = linkServices.get().playerState.inventory().itemA() == InventoryItem.PEGASUS_BOOTS.romValue()
                 && linkServices
                         .get()
@@ -123,8 +119,7 @@ final class LinkDash {
 
     /** Mirrors bank2.asm:74AD's dash collision response and func_020_49BA. */
     void handlePegasusBootsCollision() {
-        if (linkServices.get().playerState == null
-                || !linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
+        if (!linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
                 || (linkMotion.get().collisionState().romCollisionType() & 0x0F) == 0) {
             return;
         }
@@ -154,7 +149,7 @@ final class LinkDash {
     /** Mirrors ResetPegasusBoots for handlers that interrupt a this. */
     void resetPegasusBoots() {
         pegasusBootsChargeMeter = 0;
-        if (linkServices.get().playerState != null) {
+        {
             linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(false);
         }
     }

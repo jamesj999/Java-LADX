@@ -10,7 +10,7 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     private static final int MAX_BUFFERS = 8;
     private final DialogPcmBufferQueue bufferQueue = new DialogPcmBufferQueue(MAX_BUFFERS);
     private final PcmStreamBuffering buffering = new PcmStreamBuffering();
-    private PcmAlDevice device;
+    private final PcmAlDevice device;
     private boolean available;
     private boolean closed;
     private String statusMessage;
@@ -21,13 +21,16 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     private final DialogPcmBufferQueue allocatedBuffers = new DialogPcmBufferQueue(MAX_BUFFERS);
 
     public OpenAlPcmSoundOutput() {
+        PcmAlDevice selected;
         try {
-            device = new NativePcmAlDevice();
+            selected = new NativePcmAlDevice();
             available = true;
             statusMessage = "OpenAL PCM output ready";
         } catch (RuntimeException | LinkageError failure) {
+            selected = UnavailablePcmAlDevice.INSTANCE;
             statusMessage = "OpenAL PCM output unavailable: " + conciseMessage(failure);
         }
+        device = Objects.requireNonNull(selected, "device");
     }
 
     OpenAlPcmSoundOutput(PcmAlDevice device) {
@@ -82,7 +85,7 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     }
 
     private int querySafely(IntSupplier query) {
-        if (device == null || closed) return -1;
+        if (closed) return -1;
         try {
             return query.getAsInt();
         } catch (RuntimeException | LinkageError ignored) {
@@ -214,7 +217,6 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
         if (closed) return;
         closed = true;
         available = false;
-        if (device == null) return;
         try {
             device.makeCurrent();
             resetQueue();

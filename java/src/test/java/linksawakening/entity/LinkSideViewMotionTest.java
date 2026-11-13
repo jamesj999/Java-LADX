@@ -14,6 +14,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -31,12 +32,11 @@ final class LinkSideViewMotionTest {
         var collision = new OverworldCollision(tables);
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         collision.setRoom(objects);
-        var link = new LinkTestBuilder()
+        var link = TestLinks.link()
                 .input(input)
                 .config(config)
                 .tables(tables)
                 .collision(collision)
-                .sprites(null)
                 .player(player)
                 .items(new ItemRegistry())
                 .build();

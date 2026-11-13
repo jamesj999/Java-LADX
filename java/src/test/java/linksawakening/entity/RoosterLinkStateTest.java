@@ -8,18 +8,16 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 final class RoosterLinkStateTest {
 
     @Test
     void appliesAndClearsTheHandlerOwnedAirborneCarryState() {
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new linksawakening.equipment.ItemRegistry())
                 .build();

@@ -16,6 +16,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -33,12 +34,9 @@ final class LinkJumpBehaviorTest extends LinkFixture {
     void acceptedRocsFeatherJumpPlaysJumpJingleOnce() {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(inputConfig)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .sounds(soundSink)
@@ -84,12 +82,10 @@ final class LinkJumpBehaviorTest extends LinkFixture {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(RomTables.load(linksawakening.rom.Rom.of(loadRom())))
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
@@ -155,12 +151,11 @@ final class LinkJumpBehaviorTest extends LinkFixture {
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         collision.setRoom(roomObjects);
         collision.setSwitchBlocksState(0x00);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();

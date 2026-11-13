@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.state.Direction;
 import linksawakening.state.GroundStatus;
 import linksawakening.state.LinkMotionState;
@@ -48,20 +49,20 @@ final class LinkStateMachine {
 
     LinkStateMachine(LinkAssembly.MotionDependencies dependencies) {
 
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkControls = dependencies.linkControls;
-        linkDamage = dependencies.linkDamage;
-        linkEntityEffects = dependencies.linkEntityEffects;
-        linkEquipment = dependencies.linkEquipment;
-        linkGroundMotion = dependencies.linkGroundMotion;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkControls = Objects.requireNonNull(dependencies.linkControls, "linkControls");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkEntityEffects = Objects.requireNonNull(dependencies.linkEntityEffects, "linkEntityEffects");
+        linkEquipment = Objects.requireNonNull(dependencies.linkEquipment, "linkEquipment");
+        linkGroundMotion = Objects.requireNonNull(dependencies.linkGroundMotion, "linkGroundMotion");
 
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkSideView = dependencies.linkSideView;
-        linkSignals = dependencies.linkSignals;
-        linkSwimming = dependencies.linkSwimming;
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
+        linkSignals = Objects.requireNonNull(dependencies.linkSignals, "linkSignals");
+        linkSwimming = Objects.requireNonNull(dependencies.linkSwimming, "linkSwimming");
 
         status = new LinkMotionStatus();
         dash = new LinkDash(linkAirborne, linkAnimationState, linkEntityEffects, linkMotion, linkServices, status);
@@ -281,8 +282,7 @@ final class LinkStateMachine {
     private void resolveSpeeds() { // Source $43E6/$4440/$445F/$4503. The grass OAM flip depends on
         // this byte, including steps suppressed by slow ground or a wall.
         if (linkAirborne.get().elevation().airborne()) linkAnimationState.get().romConsecutiveStepsCount = 0xFF;
-        else if (linkServices.get().playerState != null
-                && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())
+        else if (linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())
             linkAnimationState.get().romConsecutiveStepsCount =
                     (linkAnimationState.get().romConsecutiveStepsCount + 2) & 0xFF;
         else if (frame.mask != 0)
@@ -296,8 +296,7 @@ final class LinkStateMachine {
         } else if (linkEntityEffects.get().marinBedJumpMotionLocked) {
             frame.speedX = 0x0C;
             frame.speedY = 0;
-        } else if (linkServices.get().playerState != null
-                && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()) {
+        } else if (linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()) {
             frame.speedX = dash.pegasusRunningSpeedX();
             frame.speedY = dash.pegasusRunningSpeedY();
         } else if (linkMotion.get().position().forcedSpeedPending()) {
@@ -384,16 +383,7 @@ final class LinkStateMachine {
 
     // $02:4409-4427 selects the second row only for Piece of Power.
     int groundSpeedIndex(int mask) {
-        return (mask & 0x0F)
-                | (linkServices.get().playerState != null
-                                && linkServices
-                                                .get()
-                                                .playerState
-                                                .equipmentLevels()
-                                                .activePowerUp()
-                                        == 1
-                        ? 0x10
-                        : 0);
+        return (mask & 0x0F) | (linkServices.get().playerState.equipmentLevels().activePowerUp() == 1 ? 0x10 : 0);
     }
 
     void updateDebugNoClip() {

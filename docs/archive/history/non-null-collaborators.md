@@ -334,3 +334,44 @@ Baseline: develop 0476fe58. Every equality/inequality comparison against the nul
 | vfx/TransientVfxSystem.java | 157 | `slot != null` | b | Optional domain value or absent query result |
 | vfx/TransientVfxSystem.java | 176 | `slot != null` | b | Optional domain value or absent query result |
 | vfx/TransientVfxSystem.java | 96 | `slot != null` | b | Optional domain value or absent query result |
+
+## Step 2: required collaborators
+
+Owned main comparisons: **309 → 200**. Link's eight nullable service fields are now non-null. Update, motion, animation, damage and equipment paths no longer test for missing services. `LinkDependencies` validates the complete configuration once; the old constructors adapt nullable arguments at one boundary. `TestLinks.link()` constructs real player/input/registry state and explicit inert data. The former null-dependent test assertions are unchanged.
+
+Explicit configurations: `OverworldCollision.openWorld()`, inert motion targets, animation-only sword data/assets, invisible Link/sword/equipment sprites, `InventoryGraphics.overlayOnly()`, `SoundEffectPlayback.none()` and an unavailable PCM device. These do not fabricate a ROM image. The green ROM-free palette and sword-spin tables preserve the existing fallback values. Native output retains device-failure status and diagnostic values. APU diagnostic subscriptions are mutable registration data in a final registry, with one non-null sink at all times.
+
+The baseline ledger classified `AudioBrowserMain`'s missing resource stream as (a); that site is actually (b), an I/O lookup result. Corrected baseline audio counts are **8/32/1/1/0**, and the true collaborator baseline is **115**. Remaining construction-time nullable adapters are category (c), not nullable stored collaborators.
+
+Production construction was checked in `app/wiring/PlayerWiring`, `EquipmentWiring`, `SubsystemWiring` and `UiWiring`: all pass real, non-null dependencies from validated wiring bundles. The browser passes a real sound-effect engine. No off-limits source was edited.
+
+### Construction hand-off
+
+- `app/wiring/PlayerWiring.java`: use `new Link(LinkDependencies)`; its current six-argument constructor remains a thin adapter.
+- `app/wiring/EquipmentWiring.java`: use `Sword.Assets` and the typed constructor; the ROM-table overload remains a thin adapter. Magic Rod's production form already requires complete non-null graphics.
+- `app/wiring/SubsystemWiring.java`: use the `(PhysicsTables, CollisionTables)` collision constructor. The aggregate-table form remains compatible.
+- `app/wiring/UiWiring.java`: use `InventoryGraphics.fromRom(rom)`; the `Rom` overload remains a thin adapter.
+
+External tests still using Link's compatibility constructors can adopt `testing.TestLinks`:
+- `world/entity/RoomEntityLiftThrowRuntimeTest.java`
+- `world/room/GameplayRouteScenario.java`
+- `world/room/KeyCavernEntranceRouteTest.java`
+- `world/room/LibraryTreeCollisionTest.java`
+- `world/room/MabeWellRegressionTest.java`
+- `world/room/RoomTransitionBoundariesTest.java`
+- `world/room/RoomTransitionDoorsTest.java`
+- `world/room/WarpEntranceRegressionTest.java`
+- `app/MabeCollisionSweepTest.java`
+- `app/gameplay/entity/EntityBoundaryBehaviorTest.java`
+- `app/gameplay/entity/LinkCommandAdapterTest.java`
+- `app/wiring/RoomBombPlacementTest.java`
+- `gameplay/EnemyProjectileEventConsumerTest.java`
+- `render/DialogEmulatorCapture.java`
+- `render/DialogGotItemRenderTest.java`
+- `render/GameFrameSceneBuilderTest.java`
+- `render/HouseEmulatorCapture.java`
+- `render/LinkGrassRenderLayerTest.java`
+- `render/LinkScrollVisibilityTest.java`
+- `render/MarinWakeUpBedRenderLayerTest.java`
+- `render/SceneConstructionFixture.java`
+- `render/TarinShieldRenderLayerTest.java`

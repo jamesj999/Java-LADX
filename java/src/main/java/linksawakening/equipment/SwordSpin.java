@@ -1,10 +1,8 @@
 package linksawakening.equipment;
 
 import static linksawakening.equipment.Sword.STATE_NONE;
-import static linksawakening.equipment.Sword.STATE_SWING_END;
-import static linksawakening.equipment.Sword.STATE_SWING_MIDDLE;
-import static linksawakening.equipment.Sword.STATE_SWING_START;
 
+import java.util.Objects;
 import linksawakening.rom.SwordTables;
 import linksawakening.state.Direction;
 
@@ -13,7 +11,7 @@ final class SwordSpin {
     private final SwordTables swordTables;
 
     SwordSpin(SwordTables swordTables) {
-        this.swordTables = swordTables;
+        this.swordTables = Objects.requireNonNull(swordTables, "swordTables");
     }
 
     boolean active() {
@@ -83,49 +81,6 @@ final class SwordSpin {
     }
 
     private static final int SPIN_ATTACK_FRAMES = 0x20; // wIsUsingSpinAttack initial countdown ($20)
-    // bank2.asm:46C9-46E8. Indexed as (base hLinkDirection << 3) + spin sector.
-    private static final int[][] SPIN_ANIMATION_STATE_BY_BASE_DIRECTION = {
-        {
-            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_START,
-            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END
-        },
-        {
-            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_START,
-            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END
-        },
-        {
-            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END,
-            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END
-        },
-        {
-            STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END,
-            STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END
-        },
-    };
-    // bank2.asm:46E9-4708. Indexed as (base hLinkDirection << 3) + spin sector.
-    private static final int[][] SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION = {
-        {
-            Direction.RIGHT.javaIndex(), Direction.UP.javaIndex(), Direction.UP.javaIndex(), Direction.LEFT.javaIndex(),
-            Direction.LEFT.javaIndex(), Direction.DOWN.javaIndex(), Direction.DOWN.javaIndex(),
-                    Direction.RIGHT.javaIndex()
-        },
-        {
-            Direction.LEFT.javaIndex(), Direction.UP.javaIndex(), Direction.UP.javaIndex(), Direction.RIGHT.javaIndex(),
-            Direction.RIGHT.javaIndex(), Direction.DOWN.javaIndex(), Direction.DOWN.javaIndex(),
-                    Direction.LEFT.javaIndex()
-        },
-        {
-            Direction.UP.javaIndex(), Direction.RIGHT.javaIndex(), Direction.RIGHT.javaIndex(),
-                    Direction.DOWN.javaIndex(),
-            Direction.DOWN.javaIndex(), Direction.LEFT.javaIndex(), Direction.LEFT.javaIndex(), Direction.UP.javaIndex()
-        },
-        {
-            Direction.DOWN.javaIndex(), Direction.LEFT.javaIndex(), Direction.LEFT.javaIndex(),
-                    Direction.UP.javaIndex(),
-            Direction.UP.javaIndex(), Direction.RIGHT.javaIndex(), Direction.RIGHT.javaIndex(),
-                    Direction.DOWN.javaIndex()
-        },
-    };
     private int spinFramesRemaining;
     private int spinFrameCounter;
     private int spinSector;
@@ -138,22 +93,16 @@ final class SwordSpin {
             return direction;
         }
         int baseDirection = Direction.fromJavaOrDown(spinBaseDirection).romIndex();
-        return swordTables == null
-                ? SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[baseDirection][spinSector()]
-                : Direction.fromRom((swordTables.swordSpinAbsoluteDirection(
-                                        Direction.fromJavaOrDown(spinBaseDirection)
-                                                .romIndex(),
-                                        spinSector()))
-                                & 0x03)
-                        .javaIndex();
+        return Direction.fromRom((swordTables.swordSpinAbsoluteDirection(
+                                Direction.fromJavaOrDown(spinBaseDirection).romIndex(), spinSector()))
+                        & 0x03)
+                .javaIndex();
     }
 
     int animationState() {
         int baseDirection = Direction.fromJavaOrDown(spinBaseDirection).romIndex();
-        return swordTables == null
-                ? SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[baseDirection][spinSector()]
-                : swordTables.swordSpinAnimationState(
-                        Direction.fromJavaOrDown(spinBaseDirection).romIndex(), spinSector());
+        return swordTables.swordSpinAnimationState(
+                Direction.fromJavaOrDown(spinBaseDirection).romIndex(), spinSector());
     }
 
     int spinSector() {

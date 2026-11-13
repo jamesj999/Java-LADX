@@ -16,6 +16,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -23,12 +24,9 @@ final class LinkAdditionalTest extends LinkFixture {
 
     @Test
     void savedLoadsCanRestoreFacingAndRejectInvalidDirections() {
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -46,12 +44,11 @@ final class LinkAdditionalTest extends LinkFixture {
         RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setRoom(emptyRoomObjectsArea());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(input)
                 .config(config)
                 .tables(tables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -74,12 +71,9 @@ final class LinkAdditionalTest extends LinkFixture {
 
     @Test
     void fullyHeldObjectsUseTheRomLiftingAnimationListByDirection() throws Exception {
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -98,12 +92,9 @@ final class LinkAdditionalTest extends LinkFixture {
     void intermediateLiftStatesAreRomAnimationStatesAndBlockMotion() throws Exception {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -142,12 +133,11 @@ final class LinkAdditionalTest extends LinkFixture {
         RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -166,12 +156,9 @@ final class LinkAdditionalTest extends LinkFixture {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
@@ -310,12 +297,11 @@ final class LinkAdditionalTest extends LinkFixture {
 
             OverworldCollision collision = new OverworldCollision(romTables);
             collision.setRoom(roomObjects);
-            Link link = new LinkTestBuilder()
+            Link link = TestLinks.link()
                     .input(inputState)
                     .config(inputConfig)
                     .tables(romTables)
                     .collision(collision)
-                    .sprites(null)
                     .player(new PlayerState())
                     .items(new ItemRegistry())
                     .build();
@@ -354,12 +340,11 @@ final class LinkAdditionalTest extends LinkFixture {
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         collision.setRoom(roomObjects);
         collision.setSwitchBlocksState(0x00);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -384,12 +369,11 @@ final class LinkAdditionalTest extends LinkFixture {
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         collision.setRoom(roomObjects);
         collision.setSwitchBlocksState(0x02);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -413,12 +397,11 @@ final class LinkAdditionalTest extends LinkFixture {
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         collision.setRoom(roomObjects);
         collision.setSwitchBlocksState(0x00);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -461,12 +444,11 @@ final class LinkAdditionalTest extends LinkFixture {
             objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = 0x21;
             OverworldCollision collision = new OverworldCollision(tables);
             collision.setRoom(objects);
-            Link link = new LinkTestBuilder()
+            Link link = TestLinks.link()
                     .input(input)
                     .config(config)
                     .tables(tables)
                     .collision(collision)
-                    .sprites(null)
                     .player(new PlayerState())
                     .items(new ItemRegistry())
                     .build();

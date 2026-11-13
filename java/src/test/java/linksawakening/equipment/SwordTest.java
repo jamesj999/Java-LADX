@@ -28,7 +28,7 @@ final class SwordTest {
 
     @Test
     void movementLockUsesPreviousAnimationIncludingTheFinalSwingFrame() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
         sword.onPress();
         for (int frame = 1; frame <= 20; frame++) {
             sword.tick(false);
@@ -42,7 +42,7 @@ final class SwordTest {
     void startingSlashPlaysOneOfTheRomSwordSwingNoiseEffects() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         SequenceIntSupplier randomBytes = new SequenceIntSupplier(0, 1, 2, 3);
-        Sword sword = new Sword(null, null, soundSink, randomBytes);
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, randomBytes);
 
         sword.onPress();
 
@@ -73,7 +73,7 @@ final class SwordTest {
     @Test
     void pressingSwordWhileSwingingDoesNotReplaySwingSound() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, new SequenceIntSupplier(0));
 
         sword.onPress();
         sword.onPress();
@@ -85,8 +85,12 @@ final class SwordTest {
     void acceptedSwordPressOffersTheOptionalLevelTwoBeamSpawn() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         RecordingBeamTarget beamTarget = new RecordingBeamTarget();
-        Sword sword =
-                new Sword(null, null, soundSink, new SequenceIntSupplier(0), SwordPalette.compatibility(), beamTarget);
+        Sword sword = new Sword(
+                Sword.Assets.animationOnly(),
+                soundSink,
+                new SequenceIntSupplier(0),
+                SwordPalette.compatibility(),
+                beamTarget);
 
         sword.onPress();
 
@@ -97,7 +101,7 @@ final class SwordTest {
     @Test
     void reachingMaximumChargePlaysChargingSwordJingleOnce() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, new SequenceIntSupplier(0));
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -115,7 +119,7 @@ final class SwordTest {
     @Test
     void releasingFullyChargedSwordPlaysSpinAttackNoise() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, new SequenceIntSupplier(0));
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -137,7 +141,7 @@ final class SwordTest {
 
     @Test
     void tapSlashDoesNotExposeAnExtraSwingEndFrame() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
 
@@ -169,7 +173,7 @@ final class SwordTest {
 
     @Test
     void heldSlashTransitionsStraightIntoHolding() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
 
@@ -201,7 +205,7 @@ final class SwordTest {
 
     @Test
     void holdingSwordDoesNotEnableStaticCollision() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -214,7 +218,7 @@ final class SwordTest {
 
     @Test
     void releasingFullyChargedSwordStartsSpinAttackInsteadOfEndingImmediately() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -253,7 +257,7 @@ final class SwordTest {
 
     @Test
     void swordAcquisitionStartsTheRomForcedSpinWithoutChargeOrInput() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.startSwordAcquisitionSpin(Direction.DOWN.javaIndex());
 
@@ -264,7 +268,7 @@ final class SwordTest {
 
     @Test
     void resetSpinAttackPreservesAnOrdinaryHeldSwordPose() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -281,7 +285,7 @@ final class SwordTest {
 
     @Test
     void fullyChargedReleaseKeepsSwordExtendedForReleaseFrame() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -381,7 +385,7 @@ final class SwordTest {
     @Test
     void heldSwordRetainsEnemyCollisionWhileRunningWithPegasusBoots() throws Exception {
         var tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
-        Sword sword = new Sword(tables, null);
+        Sword sword = new Sword(new Sword.Assets(tables.swordTables(), SwordSpriteSheet.invisible()));
         sword.onPress();
         for (int i = 0; i < 32 && sword.state() != Sword.STATE_HOLDING; i++) sword.tick(true);
         assertEquals(Sword.STATE_HOLDING, sword.state());
@@ -394,7 +398,8 @@ final class SwordTest {
 
     @Test
     void enemyCollisionBoxUsesTheRomNormalSwingTables() throws Exception {
-        Sword sword = new Sword(RomTables.load(linksawakening.rom.Rom.of(loadRom())), null);
+        Sword sword = new Sword(new Sword.Assets(
+                RomTables.load(linksawakening.rom.Rom.of(loadRom())).swordTables(), SwordSpriteSheet.invisible()));
         sword.onPress();
         for (int frame = 0; frame < 4; frame++) {
             sword.tick(false);
@@ -415,7 +420,7 @@ final class SwordTest {
 
     @Test
     void fullyChargedReleaseStartsOnRomFirstSpinFrameOnFollowingFrame() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -434,7 +439,8 @@ final class SwordTest {
 
     @Test
     void spinAttackCollisionWalksEveryRomSwordDirection() throws Exception {
-        Sword sword = new Sword(RomTables.load(linksawakening.rom.Rom.of(loadRom())), null);
+        Sword sword = new Sword(new Sword.Assets(
+                RomTables.load(linksawakening.rom.Rom.of(loadRom())).swordTables(), SwordSpriteSheet.invisible()));
         Set<Integer> collisionIndices = new HashSet<>();
 
         sword.onPress();
@@ -624,7 +630,7 @@ final class SwordTest {
     }
 
     private static Sword fullyChargedSwordFacing(int direction) {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
         sword.onPress();
         sword.attackDirection(direction);
         while (sword.state() != Sword.STATE_HOLDING) {

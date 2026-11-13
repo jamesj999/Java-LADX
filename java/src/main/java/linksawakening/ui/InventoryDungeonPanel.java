@@ -7,7 +7,7 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 
 /** ROM CreateMinimapTilemap, LoadMinimap and the dungeon inventory draw commands. */
-final class InventoryDungeonPanel {
+final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
     private final int[] rowTiles = new int[11];
     private final int[] rowAttributes = new int[11];
 
@@ -50,7 +50,9 @@ final class InventoryDungeonPanel {
                 : 0x7D;
     }
 
-    void apply(int[] tilemap, int[] attrs, int mapId, boolean collapsed, byte[] items, byte[] roomStatusByPosition) {
+    @Override
+    public void apply(
+            int[] tilemap, int[] attrs, int mapId, boolean collapsed, byte[] items, byte[] roomStatusByPosition) {
         int layout = read(
                 linksawakening.rom.RomSymbols.MinimapLayoutTable.bank(),
                 linksawakening.rom.RomSymbols.MinimapLayoutTable.address() + (mapId == 0xFF ? 15 : mapId));
@@ -111,7 +113,8 @@ final class InventoryDungeonPanel {
         if (items[4] != 0) attrs[5 * 20 + 18] = attrs[6 * 20 + 18] = 1;
     }
 
-    void render(byte[] buffer, int[] map, int[] attrs, int[][] palettes, int offsetY, Presentation arguments) {
+    @Override
+    public void render(byte[] buffer, int[] map, int[] attrs, int[][] palettes, int offsetY, Presentation arguments) {
         int mapId = arguments.mapId();
         int position = arguments.position();
         int frame = arguments.frame();
@@ -161,7 +164,8 @@ final class InventoryDungeonPanel {
         }
     }
 
-    void submit(
+    @Override
+    public void submit(
             linksawakening.render.HardwareFrame frameModel,
             int[] map,
             int[] attrs,

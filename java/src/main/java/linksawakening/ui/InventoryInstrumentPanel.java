@@ -7,7 +7,7 @@ import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
 /** LoadInstrumentsBG ($01:6BEA) and the palette cycle at $20:5EB5. */
-final class InventoryInstrumentPanel {
+final class InventoryInstrumentPanel implements InventoryGraphics.Instruments {
     private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
     private final int[] attributeScratch = new int[4];
@@ -59,7 +59,8 @@ final class InventoryInstrumentPanel {
     }
 
     /** Borrowed palette rows, consumed synchronously by render/submit before the next call. */
-    int[][] framePalettes(int[][] base, int frame) {
+    @Override
+    public int[][] framePalettes(int[][] base, int frame) {
         if (paletteScratch == null || paletteScratch.length != base.length) paletteScratch = new int[base.length][];
         System.arraycopy(base, 0, paletteScratch, 0, base.length);
         System.arraycopy(base[7], 0, cyclingPalette, 0, 4);
@@ -84,7 +85,8 @@ final class InventoryInstrumentPanel {
     }
 
     /** func_020_62DE: the blinking SELECT prompt between two arrows. */
-    void renderNavigation(byte[] buffer, int[][] objectPalettes, int frame) {
+    @Override
+    public void renderNavigation(byte[] buffer, int[][] objectPalettes, int frame) {
         int y = 0x90 - 16;
         int x = 0x53 - 8;
         IndexedRenderer.drawSpriteTile8x16(buffer, tiles, 0x4A, x, y, true, false, objectPalettes[6]);
@@ -97,7 +99,8 @@ final class InventoryInstrumentPanel {
         IndexedRenderer.drawSpriteTile8x16(buffer, tiles, 0x4A, 0x9B - 8, y, true, false, objectPalettes[6]);
     }
 
-    void render(byte[] buffer, int[] attributes, int[][] palettes, byte[] flags, int windowY) {
+    @Override
+    public void render(byte[] buffer, int[] attributes, int[][] palettes, byte[] flags, int windowY) {
         for (int i = 0; i < 8; i++) {
             int row = positions[i] / 32;
             int col = positions[i] % 32;
@@ -117,7 +120,8 @@ final class InventoryInstrumentPanel {
         }
     }
 
-    void submit(
+    @Override
+    public void submit(
             linksawakening.render.HardwareFrame frameModel,
             int[] attributes,
             int[][] palettes,
@@ -142,7 +146,8 @@ final class InventoryInstrumentPanel {
         }
     }
 
-    void submitNavigation(linksawakening.render.HardwareFrame frameModel, int[][] objectPalettes, int frame) {
+    @Override
+    public void submitNavigation(linksawakening.render.HardwareFrame frameModel, int[][] objectPalettes, int frame) {
         int y = 0x90 - 16;
         int x = 0x53 - 8;
         frameModel.sprite8x16(tiles, 0x4A, x, y, true, false, objectPalettes[6]);

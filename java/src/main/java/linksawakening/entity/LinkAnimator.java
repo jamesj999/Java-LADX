@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
@@ -50,16 +51,16 @@ final class LinkAnimator {
     private int pushingAnimationState = -1;
 
     LinkAnimator(Dependencies dependencies) {
-        dialogGotItemSequence = dependencies.dialogGotItemSequence;
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkDamage = dependencies.linkDamage;
-        linkEntityEffects = dependencies.linkEntityEffects;
-        linkEquipment = dependencies.linkEquipment;
-        linkItemState = dependencies.linkItemState;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkStateMachine = dependencies.linkStateMachine;
+        dialogGotItemSequence = Objects.requireNonNull(dependencies.dialogGotItemSequence, "dialogGotItemSequence");
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkEntityEffects = Objects.requireNonNull(dependencies.linkEntityEffects, "linkEntityEffects");
+        linkEquipment = Objects.requireNonNull(dependencies.linkEquipment, "linkEquipment");
+        linkItemState = Objects.requireNonNull(dependencies.linkItemState, "linkItemState");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
         sprites = new LinkSpriteComposer(linkAirborne, linkAnimationState, linkMotion, linkServices, linkStateMachine);
     }
 
@@ -106,8 +107,6 @@ final class LinkAnimator {
                                 && linkAnimationState.get().romConsecutiveStepsCount == 0xFF)
                 ? 1
                 : linkAnimationState.get().walkFrame;
-        int baseState = LinkPoseTables.ANIMATION_STATE[
-                linkAnimationState.get().direction.javaIndex()][normalFrame];
         if (linkEntityEffects.get().carryingLiftedObjectState == 1) {
             return LinkPoseTables.LIFTING_ANIMATION_STATE[
                     linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().walkFrame];
@@ -128,9 +127,8 @@ final class LinkAnimator {
                     linkAnimationState.get().direction.javaIndex()][jumpAnimationFrame];
         }
         if (pushingAnimationState >= 0) return pushingAnimationState;
-        if (linkServices.get().spriteSheet != null) {
+        {
             int carriedShield = !linkStateMachine.get().status().gelClinging()
-                            && linkServices.get().playerState != null
                             && (linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
                                     || linkServices
                                                     .get()
@@ -149,39 +147,23 @@ final class LinkAnimator {
                             carriedShield,
                             linkEquipment.get().isUsingShield());
         }
-        if (linkEquipment.get().isUsingShield()
-                && linkServices.get().playerState != null
-                && linkServices.get().playerState.equipmentLevels().shieldLevel() > 0) {
-            int[][] shieldTable =
-                    linkServices.get().playerState.equipmentLevels().shieldLevel() >= 2
-                            ? LinkPoseTables.MIRROR_SHIELD_USE_ANIMATION_STATE
-                            : LinkPoseTables.SHIELD_USE_ANIMATION_STATE;
-            return shieldTable[linkAnimationState.get().direction.javaIndex()][normalFrame];
-        }
-        return baseState;
     }
 
     /** $02:42C7 selects walking poses before this frame's movement/collisions. */
     void cachePushingAnimation() {
         pushingAnimationState = -1;
         if (linkItemState.get().accessIsRomLinkPushing()
-                && (linkServices.get().collision == null
-                        || !linkServices
-                                .get()
-                                .collision
-                                .linkOnSlowGround(
-                                        linkMotion.get().position().pixelX(),
-                                        linkMotion.get().position().pixelY()))) {
+                && (!linkServices
+                        .get()
+                        .collision
+                        .linkOnSlowGround(
+                                linkMotion.get().position().pixelX(),
+                                linkMotion.get().position().pixelY()))) {
             int frame = (linkAnimationState.get().romConsecutiveStepsCount >> 3) & 1;
-            pushingAnimationState = linkServices.get().spriteSheet != null
-                    ? linkServices
-                            .get()
-                            .spriteSheet
-                            .pushingAnimationState(
-                                    linkAnimationState.get().direction.romIndex(), frame)
-                    : LinkPoseTables.UNSHIELDED_WALK_BASE[
-                                    linkAnimationState.get().direction.javaIndex()]
-                            + frame;
+            pushingAnimationState = linkServices
+                    .get()
+                    .spriteSheet
+                    .pushingAnimationState(linkAnimationState.get().direction.romIndex(), frame);
         }
     }
 
@@ -247,9 +229,7 @@ final class LinkAnimator {
         if (countdown < 0 || countdown > 0x20) {
             throw new IllegalArgumentException("Sword-spin countdown must be between 0 and 32");
         }
-        if (linkServices.get().linkMotionTables == null) {
-            throw new IllegalStateException("Sword acquisition spin requires ROM tables");
-        }
+
         if (swordAcquisitionBaseRomDirection < 0) {
             swordAcquisitionBaseRomDirection =
                     linkAnimationState.get().direction.romIndex();

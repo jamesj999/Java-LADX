@@ -41,6 +41,27 @@ public final class LinkMotionTables {
     private static final int REVOLVING_DOOR_PALETTES_LENGTH = 8;
     private final int[][] revolvingDoorPalettes;
 
+    private LinkMotionTables() {
+        pitWarpArrivalDirections = new byte[PIT_WARP_ARRIVAL_DIRECTIONS_LENGTH];
+        waterCurrentX = new byte[WATER_CURRENT_X_LENGTH];
+        waterCurrentY = new byte[WATER_CURRENT_Y_LENGTH];
+        linkSpeedX = new byte[LINK_SPEED_X_LENGTH];
+        linkSpeedY = new byte[LINK_SPEED_Y_LENGTH];
+        airSpeedX = new byte[AIR_SPEED_X_LENGTH];
+        airSpeedY = new byte[AIR_SPEED_Y_LENGTH];
+        swimmingSpeedX = new byte[SWIMMING_SPEED_X_LENGTH];
+        swimmingSpeedY = new byte[SWIMMING_SPEED_Y_LENGTH];
+        swimmingEntrySpeedX = new byte[SWIMMING_ENTRY_SPEED_X_LENGTH];
+        swimmingEntrySpeedY = new byte[SWIMMING_ENTRY_SPEED_Y_LENGTH];
+        revolvingDoorAnimation = new int[REVOLVING_DOOR_ANIMATION_LENGTH];
+        revolvingDoorPalettes = new int[2][4];
+    }
+
+    /** Motion targets for an inert, ROM-free actor. */
+    public static LinkMotionTables stationary() {
+        return new LinkMotionTables();
+    }
+
     private LinkMotionTables(Rom rom) {
         pitWarpArrivalDirections =
                 rom.bytes(RomSymbols.FrameCounterToLinkDirection, PIT_WARP_ARRIVAL_DIRECTIONS_LENGTH);

@@ -5,26 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 final class LinkDamageTest {
     private Link link(PlayerState player) {
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(player)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().player(player).build();
         link.position().setPixelPosition(64, 64);
         return link;
     }
 
     @Test
     void recoilConsumesPendingSignedSpeedAndPreservesFractionalPosition() {
-        Link link = link(null);
+        Link link = link(new PlayerState());
         link.position().applyRomSpeed(0xFF, 0x08);
         link.status().setCollisionIgnoreFrames(2);
         link.linkDamage.tickRecoil();
@@ -40,7 +33,7 @@ final class LinkDamageTest {
 
     @Test
     void roomBoundaryCancelsRecoilAndRestoresBothAxes() {
-        Link link = link(null);
+        Link link = link(new PlayerState());
         link.position().setPixelPosition(80, 115);
         link.position().applyRomSpeed(8, 32);
         link.status().setCollisionIgnoreFrames(2);

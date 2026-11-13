@@ -21,13 +21,13 @@ final class LinkEquipment {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
     LinkEquipment(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkControls = dependencies.linkControls;
-        linkEntityEffects = dependencies.linkEntityEffects;
-        linkItemState = dependencies.linkItemState;
-        linkServices = dependencies.linkServices;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkControls = Objects.requireNonNull(dependencies.linkControls, "linkControls");
+        linkEntityEffects = Objects.requireNonNull(dependencies.linkEntityEffects, "linkEntityEffects");
+        linkItemState = Objects.requireNonNull(dependencies.linkItemState, "linkItemState");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
 
     static final class Dependencies {
@@ -66,11 +66,7 @@ final class LinkEquipment {
         if (linkStateMachine.get().status().gelClinging() || !shieldInputAllowed.getAsBoolean()) {
             return false;
         }
-        if (linkServices.get().inputState == null
-                || linkServices.get().inputConfig == null
-                || linkServices.get().playerState == null) {
-            return false;
-        }
+
         boolean usingA = linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
                 && linkServices
                         .get()
@@ -105,9 +101,7 @@ final class LinkEquipment {
         if (linkEntityEffects.get().grabbingObject || linkEntityEffects.get().accessIsLiftTransitionBlockingMotion()) {
             return true;
         }
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return false;
-        }
+
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
@@ -134,9 +128,7 @@ final class LinkEquipment {
 
     boolean itemsLockFacing(boolean beforeTopDownAnimation) {
         if (linkEntityEffects.get().grabbingObject) return true;
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return false;
-        }
+
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
@@ -158,9 +150,7 @@ final class LinkEquipment {
     }
 
     EquipmentItem itemInSlotA() {
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return null;
-        }
+
         return linkServices
                 .get()
                 .itemRegistry
@@ -168,9 +158,7 @@ final class LinkEquipment {
     }
 
     EquipmentItem itemInSlotB() {
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return null;
-        }
+
         return linkServices
                 .get()
                 .itemRegistry

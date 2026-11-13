@@ -1,7 +1,7 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
 import linksawakening.gpu.Tile;
-import linksawakening.rom.RomTables;
 import linksawakening.rom.SwordTables;
 import linksawakening.state.Direction;
 
@@ -12,9 +12,9 @@ final class SwordRenderer {
     private final SwordTables swordTables;
     private final SwordSpriteSheet spriteSheet;
 
-    SwordRenderer(RomTables romTables, SwordSpriteSheet spriteSheet) {
-        this.swordTables = romTables == null ? null : romTables.swordTables();
-        this.spriteSheet = spriteSheet;
+    SwordRenderer(SwordTables swordTables, SwordSpriteSheet spriteSheet) {
+        this.swordTables = Objects.requireNonNull(swordTables, "swordTables");
+        this.spriteSheet = Objects.requireNonNull(spriteSheet, "spriteSheet");
     }
 
     void render(

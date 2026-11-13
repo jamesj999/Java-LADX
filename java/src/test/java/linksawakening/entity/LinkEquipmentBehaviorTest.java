@@ -12,6 +12,7 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.Shield;
 import linksawakening.equipment.Sword;
+import linksawakening.equipment.SwordSpriteSheet;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
@@ -22,6 +23,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -33,15 +35,13 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState player = new PlayerState();
         ItemRegistry registry = new ItemRegistry();
-        Sword sword = new Sword(tables, null);
+        Sword sword = new Sword(new Sword.Assets(tables.swordTables(), SwordSpriteSheet.invisible()));
         registry.register(InventoryItem.SWORD.romValue(), sword);
         player.inventory().setItemA(InventoryItem.SWORD.romValue());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(config)
                 .tables(tables)
-                .collision(null)
-                .sprites(null)
                 .player(player)
                 .items(registry)
                 .build();
@@ -68,12 +68,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new AnimationOverrideItem(0x22));
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
@@ -89,12 +86,10 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         for (int baseRomDirection : new int[] {0, 3}) {
-            Link link = new LinkTestBuilder()
+            Link link = TestLinks.link()
                     .input(new InputState())
                     .config(inputConfig)
                     .tables(romTables)
-                    .collision(null)
-                    .sprites(null)
                     .player(new PlayerState())
                     .items(new ItemRegistry())
                     .build();
@@ -131,12 +126,10 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
     void swordAcquisitionSpinOverridesAQueuedMotionBlockedButtPose() throws Exception {
         RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(inputConfig)
                 .tables(romTables)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -162,11 +155,10 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         ItemRegistry itemRegistry = new ItemRegistry();
         RecordingRenderItem sword = new RecordingRenderItem();
         itemRegistry.register(InventoryItem.SWORD.romValue(), sword);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(inputConfig)
                 .tables(RomTables.load(linksawakening.rom.Rom.unchecked(rom)))
-                .collision(null)
                 .sprites(LinkSpriteSheet.loadFromRom(Rom.of(rom)))
                 .player(playerState)
                 .items(itemRegistry)
@@ -189,12 +181,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         OcarinaAnimationTarget target = new OcarinaAnimationTarget();
         itemRegistry.register(
                 playerState.inventory().itemA(), new Ocarina(playerState, GameplaySoundSink.none(), target));
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
@@ -212,12 +201,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
 
     @Test
     void tarinRewardSwitchesFromHeldItemToStandingShieldDown() throws Exception {
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -235,12 +221,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
@@ -264,14 +247,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
 
     @Test
     void tarinCanClearTheLiveAttackStepCountdown() {
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(null)
-                .items(null)
                 .build();
         link.equipment().startRomMagicPowderAttackStep();
 
@@ -285,12 +263,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
@@ -311,12 +286,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         playerState.inventory().setItemA(InventoryItem.SHIELD.romValue());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(new ItemRegistry())
                 .build();
@@ -344,11 +316,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState player = new PlayerState();
         player.equipmentLevels().setShieldLevel(1);
         player.inventory().setItemB(InventoryItem.SHIELD.romValue());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(input)
                 .config(config)
-                .tables(null)
-                .collision(null)
                 .sprites(LinkSpriteSheet.loadFromRom(Rom.of(loadRom())))
                 .player(player)
                 .items(new ItemRegistry())
@@ -372,11 +342,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState player = new PlayerState();
         player.inventory().setItemA(InventoryItem.SWORD.romValue());
         player.inventory().setItemB(InventoryItem.SHIELD.romValue());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(input)
                 .config(config)
-                .tables(null)
-                .collision(null)
                 .sprites(LinkSpriteSheet.loadFromRom(Rom.of(rom)))
                 .player(player)
                 .items(new ItemRegistry())
@@ -406,12 +374,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         playerState.inventory().setItemA(InventoryItem.SHIELD.romValue());
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(InventoryItem.SHIELD.romValue(), new Shield(GameplaySoundSink.none()));
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
@@ -432,17 +397,16 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState player = new PlayerState();
         ItemRegistry registry = new ItemRegistry();
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
         registry.register(player.inventory().itemA(), sword);
         RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setRoom(emptyRoomObjectsArea());
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(input)
                 .config(config)
                 .tables(tables)
                 .collision(collision)
-                .sprites(null)
                 .player(player)
                 .items(registry)
                 .build();
@@ -466,7 +430,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
 
     @Test
     void holdingChargedSwordDoesNotBlockMovement() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -482,15 +446,14 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
         itemRegistry.register(playerState.inventory().itemA(), sword);
         RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(new OverworldCollision(romTables))
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();

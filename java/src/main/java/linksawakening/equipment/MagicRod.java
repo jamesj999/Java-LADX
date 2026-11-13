@@ -43,11 +43,23 @@ public final class MagicRod implements EquipmentItem {
     private int attackStepCountdown;
 
     public MagicRod(GameplaySoundSink soundSink, LaunchTarget target) {
-        this(soundSink, target, () -> true, null, null, null);
+        this(
+                soundSink,
+                target,
+                () -> true,
+                EquipmentTables.invisible(),
+                LinkSpriteSheet.invisible(),
+                LinkTunicPalette.green());
     }
 
     public MagicRod(GameplaySoundSink soundSink, LaunchTarget target, BooleanSupplier itemUseAllowed) {
-        this(soundSink, target, itemUseAllowed, null, null, null);
+        this(
+                soundSink,
+                target,
+                itemUseAllowed,
+                EquipmentTables.invisible(),
+                LinkSpriteSheet.invisible(),
+                LinkTunicPalette.green());
     }
 
     public MagicRod(
@@ -57,25 +69,28 @@ public final class MagicRod implements EquipmentItem {
             GameplaySoundSink soundSink,
             LaunchTarget target,
             BooleanSupplier itemUseAllowed) {
-        this(soundSink, target, itemUseAllowed, romTables, spriteSheet, tunicPalette);
+        this(
+                soundSink,
+                target,
+                itemUseAllowed,
+                Objects.requireNonNull(romTables, "romTables").equipmentTables(),
+                spriteSheet,
+                tunicPalette);
     }
 
     private MagicRod(
             GameplaySoundSink soundSink,
             LaunchTarget target,
             BooleanSupplier itemUseAllowed,
-            RomTables romTables,
+            EquipmentTables equipmentTables,
             LinkSpriteSheet spriteSheet,
             LinkTunicPalette tunicPalette) {
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");
         this.itemUseAllowed = Objects.requireNonNull(itemUseAllowed, "itemUseAllowed");
-        if ((romTables == null) != (spriteSheet == null) || (romTables == null) != (tunicPalette == null)) {
-            throw new IllegalArgumentException("Magic Rod rendering dependencies must be complete");
-        }
-        this.equipmentTables = romTables == null ? null : romTables.equipmentTables();
-        this.spriteSheet = spriteSheet;
-        this.tunicPalette = tunicPalette;
+        this.equipmentTables = Objects.requireNonNull(equipmentTables, "equipmentTables");
+        this.spriteSheet = Objects.requireNonNull(spriteSheet, "spriteSheet");
+        this.tunicPalette = Objects.requireNonNull(tunicPalette, "tunicPalette");
     }
 
     @Override
@@ -120,7 +135,7 @@ public final class MagicRod implements EquipmentItem {
 
     @Override
     public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {
-        if (attackStepCountdown == 0 || equipmentTables == null) {
+        if (attackStepCountdown == 0) {
             return;
         }
 
@@ -154,7 +169,7 @@ public final class MagicRod implements EquipmentItem {
             int direction,
             int offsetX,
             int offsetY) {
-        if (attackStepCountdown == 0 || equipmentTables == null) {
+        if (attackStepCountdown == 0) {
             return;
         }
 

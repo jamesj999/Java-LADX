@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 final class DialogGotItemSequenceTest {
@@ -77,12 +78,9 @@ final class DialogGotItemSequenceTest {
     }
 
     private static Link link() {
-        return new LinkTestBuilder()
+        return TestLinks.link()
                 .input(new linksawakening.input.InputState())
                 .config(new linksawakening.input.InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new linksawakening.state.PlayerState())
                 .items(new linksawakening.equipment.ItemRegistry())
                 .build();

@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
@@ -16,15 +17,15 @@ final class LinkSideView {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
     LinkSideView(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkControls = dependencies.linkControls;
-        linkDamage = dependencies.linkDamage;
-        linkEquipment = dependencies.linkEquipment;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkControls = Objects.requireNonNull(dependencies.linkControls, "linkControls");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkEquipment = Objects.requireNonNull(dependencies.linkEquipment, "linkEquipment");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
 
     static final class Dependencies {
@@ -90,8 +91,7 @@ final class LinkSideView {
             if (sideViewGrounded || standingOnSideViewEntity) {
                 if (linkAirborne.get().elevation().airborne()) {
                     linkServices.get().soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
-                    if (linkServices.get().playerState != null)
-                        linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(false);
+                    linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(false);
                 }
                 linkAirborne.get().elevation().airborne(false);
                 sideViewSpeedX = targetX;
@@ -112,14 +112,12 @@ final class LinkSideView {
         int oldX = linkMotion.get().position().subX(),
                 oldY = linkMotion.get().position().subY();
         moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
-        int centerPhysics = linkServices.get().collision == null
-                ? 0
-                : linkServices
-                        .get()
-                        .collision
-                        .objectPhysicsFlagAtPoint(
-                                linkMotion.get().position().romEntityX(),
-                                linkMotion.get().position().romEntityY() - 5);
+        int centerPhysics = linkServices
+                .get()
+                .collision
+                .objectPhysicsFlagAtPoint(
+                        linkMotion.get().position().romEntityX(),
+                        linkMotion.get().position().romEntityY() - 5);
         if (!recoiling) {
             if (sideViewModifier == 1 && centerPhysics != 0xB1) sideViewModifier = 0;
             else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0) sideViewModifier = 1;
@@ -128,9 +126,8 @@ final class LinkSideView {
             if (recoiling) sideViewSpeedY = (byte) (sideViewSpeedY + 3);
             else if (sideViewSpeedY < 0x40) {
                 sideViewSpeedY++;
-                boolean featherHeld = linkServices.get().playerState != null
-                        && linkServices.get().inputState != null
-                        && (linkServices.get().playerState.inventory().itemB() == InventoryItem.ROCS_FEATHER.romValue()
+                boolean featherHeld =
+                        (linkServices.get().playerState.inventory().itemB() == InventoryItem.ROCS_FEATHER.romValue()
                                 ? linkServices
                                         .get()
                                         .inputState
@@ -168,8 +165,7 @@ final class LinkSideView {
         linkMotion.get().position().subX(linkMotion.get().position().subX() + (speedX));
         linkMotion.get().position().subY(linkMotion.get().position().subY() + (speedY));
         sideViewGrounded = standingOnSideViewEntity;
-        if (linkServices.get().collision == null
-                || linkMotion.get().position().romEntityX() < 4
+        if (linkMotion.get().position().romEntityX() < 4
                 || linkMotion.get().position().romEntityX() >= 156
                 || linkMotion.get().position().romEntityY() < 12
                 || linkMotion.get().position().romEntityY() >= 128) return;
