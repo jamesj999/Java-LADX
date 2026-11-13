@@ -540,7 +540,7 @@ public final class ColorShellMotion {
         owner.positionZ[slot] = entity.z();
         owner.decrementTransitionCountdown(slot);
 
-        ColorShellWorld effects = world == null ? ColorShellWorld.none() : world;
+        ColorShellWorld effects = world;
         List<RoomEntity> entities = allEntities == null ? List.of(entity) : allEntities;
         int frame = frameCounter & 0xFF;
         int dispatchedState = owner.state[slot];
@@ -617,6 +617,7 @@ public final class ColorShellMotion {
             ColorShellWorld world,
             java.util.List<RoomEntity> allEntities) {
         public ColorShellFrame {
+            world = java.util.Objects.requireNonNullElse(world, ColorShellWorld.none());
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         }
     }

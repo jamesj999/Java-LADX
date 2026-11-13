@@ -334,7 +334,7 @@ public final class EntityRuntimeConfiguration {
                     world) {
         this.motions
                 .get(ColorShellMotion.class, ColorShellMotion::new)
-                .writeColorShellWorld(world == null ? ColorShellWorld.none() : world);
+                .writeColorShellWorld(java.util.Objects.requireNonNullElse(world, ColorShellWorld.none()));
     }
 
     public void setSwitchBlockAnimationActive(boolean active) {
