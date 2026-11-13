@@ -42,7 +42,7 @@ public final class BombiteMotion {
     }
 
     public Update advance(BombiteFrame inputs) {
-        return bombiteStep.run(this, inputs);
+        return bombiteStep.run(inputs);
     }
 
     /** Starts the BouncingBombite state-$02 sword-recoil path. */
@@ -404,9 +404,9 @@ public final class BombiteMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.BombiteMotion.Update run(
-                BombiteMotion owner, linksawakening.world.entity.motion.BombiteMotion.BombiteFrame inputs) {
+                linksawakening.world.entity.motion.BombiteMotion.BombiteFrame inputs) {
             if (inUse) {
-                return new BombiteStep(owner).run(owner, inputs);
+                return new BombiteStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

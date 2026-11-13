@@ -79,7 +79,7 @@ public final class WingedOctorokMotion {
     }
 
     public Update advance(WingedOctorokInteractionFrame inputs) {
-        return wingedOctorokStep.run(this, inputs);
+        return wingedOctorokStep.run(inputs);
     }
 
     public void decrementPrivateCountdown2(int slot) {
@@ -468,10 +468,9 @@ public final class WingedOctorokMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.WingedOctorokMotion.Update run(
-                WingedOctorokMotion owner,
                 linksawakening.world.entity.motion.WingedOctorokMotion.WingedOctorokInteractionFrame inputs) {
             if (inUse) {
-                return new WingedOctorokStep(owner).run(owner, inputs);
+                return new WingedOctorokStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

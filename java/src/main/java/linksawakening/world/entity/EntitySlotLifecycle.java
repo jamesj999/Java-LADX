@@ -87,7 +87,7 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 
-/** Slot clearing, status countdowns and persistence lifecycle. */
+/** ConfigureEntityHealth and the ROM slot status, countdown and persistence reset paths. */
 public final class EntitySlotLifecycle {
     final EntityWarpController warpState;
     final EntityBombState bombInteractions;
@@ -205,11 +205,98 @@ public final class EntitySlotLifecycle {
     }
 
     public int clearEntity(int slot) {
-        return EntitySlotLifecycle.entityPersistentSlotResetClearEntity(this, slot);
+        if (slot < 0 || slot >= this.slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        entityPersistentSlotResetClearBossState(this, slot);
+        RoomEntity entity = this.slots[slot];
+        entityPersistentSlotResetClearPrivateState(this, slot);
+        if (!entity.loaded()) {
+            return 0;
+        }
+        entityPersistentSlotResetClearSlotTables(this, slot);
+        entityPersistentSlotResetClearWeaponState(this, slot, entity);
+        entityPersistentSlotResetClearRoamingMotions(this, slot);
+        entityPersistentSlotResetClearRemainingMotions(this, slot);
+        if (this.liftThrow.readLiftedEntitySlot() == slot) {
+            this.liftThrow.writeLiftedEntitySlot(-1);
+            this.liftThrow.writeLiftedCarryState(0);
+            this.liftThrow.writeLiftedEffectiveDirection(0);
+        }
+        this.slots[slot] = RoomEntity.disabled(slot);
+        this.slotPresentation.updatePincerBodyOam(this.slots, this.motions);
+        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8 ? 1 << entity.sourceLoadOrder() : 0;
     }
 
     public RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated, ZolGelMotion.Split split) {
-        return EntitySlotLifecycle.zolSplitControllerApplyZolSplit(this, original, updated, split);
+        EntitySpriteDefinition gelDefinition = this.inspection.spriteDefinitionFor(EntityRomConstants.ENTITY_GEL);
+        int gelVariant = gelDefinition.supported() ? 0 : -1;
+        int slot = original.slot();
+        RoomEntity gel = new RoomEntity(
+                slot,
+                original.sourceLoadOrder(),
+                EntityRomConstants.ENTITY_GEL,
+                (split.originalX() - 4) & 0xFF,
+                split.originalY(),
+                EntityStatus.ACTIVE,
+                gelDefinition,
+                gelVariant,
+                original.entityFlipAttribute(),
+                original.spriteTileOffset(),
+                split.originalZ(),
+                -1,
+                false);
+        // ConfigureNewEntity ($03:485B) reloads these for the new type.
+        this.physicsTables.writeEnemyPhysicsFlags(slot, initialPhysicsFlags(EntityRomConstants.ENTITY_GEL));
+        this.combatTables.writeEnemyHitboxFlags(slot, initialHitboxFlags(EntityRomConstants.ENTITY_GEL));
+        this.physicsTables.writeEntityOptions1Override(slot, -1);
+        this.physicsTables.writeEnemyTransitionCountdown(slot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(slot, 0);
+        this.combatTables.writeEnemyHealthGroup(
+                slot,
+                this.enemyCombatTables == null ? 0 : this.enemyCombatTables.healthGroup(EntityRomConstants.ENTITY_GEL));
+        this.combatTables.writeEnemyHealth(slot, this.inspection.initialHealth(EntityRomConstants.ENTITY_GEL));
+        this.combatTables.writeEnemyFlashCountdown(slot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
+        this.combatTables.writeDyingCountdown(slot, 0);
+        this.combatTables.writePowerRecoilDeath(slot, false);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
+
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot >= 0) {
+            this.physicsTables.writeBaseEntityFlipAttribute(
+                    freeSlot, this.physicsTables.readBaseEntityFlipAttribute(original.slot()));
+            RoomEntity spawnedGel = new RoomEntity(
+                    freeSlot,
+                    original.sourceLoadOrder(),
+                    EntityRomConstants.ENTITY_GEL,
+                    (split.originalX() + 8) & 0xFF,
+                    split.originalY(),
+                    EntityStatus.ACTIVE,
+                    gelDefinition,
+                    gelVariant,
+                    original.entityFlipAttribute(),
+                    original.spriteTileOffset(),
+                    split.originalZ(),
+                    -1,
+                    false);
+            this.slots[freeSlot] = spawnedGel;
+            this.initializeHealthGroup(freeSlot);
+            this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_GEL));
+            this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_GEL));
+            this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+            this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+            this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+            this.combatTables.writeDyingCountdown(freeSlot, 0);
+            this.combatTables.writePowerRecoilDeath(freeSlot, false);
+            this.combatTables.writeEnemyHealth(freeSlot, this.inspection.initialHealth(EntityRomConstants.ENTITY_GEL));
+            this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+            // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
+            this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+            this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+            this.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareSpawnedGel(freeSlot);
+        }
+        return gel;
     }
 
     void finishBurning(RoomEntity entity) {
@@ -257,7 +344,17 @@ public final class EntitySlotLifecycle {
     }
 
     public void disableEntityWithoutPersistence(int slot) {
-        EntitySlotLifecycle.entityTransientSlotResetDisableEntityWithoutPersistence(this, slot);
+        entityTransientSlotResetClearBossState(this, slot);
+        entityTransientSlotResetClearRoomAndRewardState(this, slot);
+        entityTransientSlotResetClearPhysicsAndWeaponState(this, slot);
+        entityTransientSlotResetClearRoamingMotions(this, slot);
+        entityTransientSlotResetClearRemainingMotions(this, slot);
+        if (this.liftThrow.readLiftedEntitySlot() == slot) {
+            this.liftThrow.writeLiftedEntitySlot(-1);
+            this.liftThrow.writeLiftedCarryState(0);
+            this.liftThrow.writeLiftedEffectiveDirection(0);
+        }
+        this.slots[slot] = RoomEntity.disabled(slot);
     }
 
     boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) {
@@ -348,30 +445,6 @@ public final class EntitySlotLifecycle {
 
     public int droppablePrivateState3(int slot) {
         return this.bossRewards.readDroppablePrivateState3(slot);
-    }
-
-    static int entityPersistentSlotResetClearEntity(EntitySlotLifecycle runtime, int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        entityPersistentSlotResetClearBossState(runtime, slot);
-        RoomEntity entity = runtime.slots[slot];
-        entityPersistentSlotResetClearPrivateState(runtime, slot);
-        if (!entity.loaded()) {
-            return 0;
-        }
-        entityPersistentSlotResetClearSlotTables(runtime, slot);
-        entityPersistentSlotResetClearWeaponState(runtime, slot, entity);
-        entityPersistentSlotResetClearRoamingMotions(runtime, slot);
-        entityPersistentSlotResetClearRemainingMotions(runtime, slot);
-        if (runtime.liftThrow.readLiftedEntitySlot() == slot) {
-            runtime.liftThrow.writeLiftedEntitySlot(-1);
-            runtime.liftThrow.writeLiftedCarryState(0);
-            runtime.liftThrow.writeLiftedEffectiveDirection(0);
-        }
-        runtime.slots[slot] = RoomEntity.disabled(slot);
-        runtime.slotPresentation.updatePincerBodyOam(runtime.slots, runtime.motions);
-        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8 ? 1 << entity.sourceLoadOrder() : 0;
     }
 
     private static void entityPersistentSlotResetClearBossState(EntitySlotLifecycle runtime, int slot) {
@@ -589,20 +662,6 @@ public final class EntitySlotLifecycle {
         runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
     }
 
-    static void entityTransientSlotResetDisableEntityWithoutPersistence(EntitySlotLifecycle runtime, int slot) {
-        entityTransientSlotResetClearBossState(runtime, slot);
-        entityTransientSlotResetClearRoomAndRewardState(runtime, slot);
-        entityTransientSlotResetClearPhysicsAndWeaponState(runtime, slot);
-        entityTransientSlotResetClearRoamingMotions(runtime, slot);
-        entityTransientSlotResetClearRemainingMotions(runtime, slot);
-        if (runtime.liftThrow.readLiftedEntitySlot() == slot) {
-            runtime.liftThrow.writeLiftedEntitySlot(-1);
-            runtime.liftThrow.writeLiftedCarryState(0);
-            runtime.liftThrow.writeLiftedEffectiveDirection(0);
-        }
-        runtime.slots[slot] = RoomEntity.disabled(slot);
-    }
-
     private static void entityTransientSlotResetClearBossState(EntitySlotLifecycle runtime, int slot) {
         runtime.slimeEye.clear(slot);
         runtime.bossRewards.resetEnemyDropState(slot, runtime.motions);
@@ -783,80 +842,5 @@ public final class EntitySlotLifecycle {
         runtime.motions.get(BowWowMotion.class, BowWowMotion::new).clear(slot);
         runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new).clear(slot);
         runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
-    }
-
-    static RoomEntity zolSplitControllerApplyZolSplit(
-            EntitySlotLifecycle runtime, RoomEntity original, RoomEntity updated, ZolGelMotion.Split split) {
-        EntitySpriteDefinition gelDefinition = runtime.inspection.spriteDefinitionFor(EntityRomConstants.ENTITY_GEL);
-        int gelVariant = gelDefinition.supported() ? 0 : -1;
-        int slot = original.slot();
-        RoomEntity gel = new RoomEntity(
-                slot,
-                original.sourceLoadOrder(),
-                EntityRomConstants.ENTITY_GEL,
-                (split.originalX() - 4) & 0xFF,
-                split.originalY(),
-                EntityStatus.ACTIVE,
-                gelDefinition,
-                gelVariant,
-                original.entityFlipAttribute(),
-                original.spriteTileOffset(),
-                split.originalZ(),
-                -1,
-                false);
-        // ConfigureNewEntity ($03:485B) reloads these for the new type.
-        runtime.physicsTables.writeEnemyPhysicsFlags(slot, initialPhysicsFlags(EntityRomConstants.ENTITY_GEL));
-        runtime.combatTables.writeEnemyHitboxFlags(slot, initialHitboxFlags(EntityRomConstants.ENTITY_GEL));
-        runtime.physicsTables.writeEntityOptions1Override(slot, -1);
-        runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(slot, 0);
-        runtime.combatTables.writeEnemyHealthGroup(
-                slot,
-                runtime.enemyCombatTables == null
-                        ? 0
-                        : runtime.enemyCombatTables.healthGroup(EntityRomConstants.ENTITY_GEL));
-        runtime.combatTables.writeEnemyHealth(slot, runtime.inspection.initialHealth(EntityRomConstants.ENTITY_GEL));
-        runtime.combatTables.writeEnemyFlashCountdown(slot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
-        runtime.combatTables.writeDyingCountdown(slot, 0);
-        runtime.combatTables.writePowerRecoilDeath(slot, false);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
-
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot >= 0) {
-            runtime.physicsTables.writeBaseEntityFlipAttribute(
-                    freeSlot, runtime.physicsTables.readBaseEntityFlipAttribute(original.slot()));
-            RoomEntity spawnedGel = new RoomEntity(
-                    freeSlot,
-                    original.sourceLoadOrder(),
-                    EntityRomConstants.ENTITY_GEL,
-                    (split.originalX() + 8) & 0xFF,
-                    split.originalY(),
-                    EntityStatus.ACTIVE,
-                    gelDefinition,
-                    gelVariant,
-                    original.entityFlipAttribute(),
-                    original.spriteTileOffset(),
-                    split.originalZ(),
-                    -1,
-                    false);
-            runtime.slots[freeSlot] = spawnedGel;
-            runtime.initializeHealthGroup(freeSlot);
-            runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_GEL));
-            runtime.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_GEL));
-            runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-            runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-            runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-            runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-            runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-            runtime.combatTables.writeEnemyHealth(
-                    freeSlot, runtime.inspection.initialHealth(EntityRomConstants.ENTITY_GEL));
-            runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-            // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
-            runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-            runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-            runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareSpawnedGel(freeSlot);
-        }
-        return gel;
     }
 }

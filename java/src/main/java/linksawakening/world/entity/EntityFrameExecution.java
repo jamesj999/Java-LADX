@@ -26,7 +26,7 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.WarpMotion;
 
-/** Mutable execution locals for one immutable entity frame input. */
+/** Reusable ExecuteEntities locals; invocation scratch is nested and room slot tables stay shared. */
 public final class EntityFrameExecution {
     private final EntityFrameInputs inputs = new EntityFrameInputs();
 

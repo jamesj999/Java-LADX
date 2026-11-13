@@ -58,7 +58,7 @@ public final class ArmosKnightMotion {
     }
 
     public Update advance(ArmosKnightFrame inputs) {
-        return armosKnightStep.run(this, inputs);
+        return armosKnightStep.run(inputs);
     }
 
     public void clear(int slot) {
@@ -425,9 +425,9 @@ public final class ArmosKnightMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.ArmosKnightMotion.Update run(
-                ArmosKnightMotion owner, linksawakening.world.entity.motion.ArmosKnightMotion.ArmosKnightFrame inputs) {
+                linksawakening.world.entity.motion.ArmosKnightMotion.ArmosKnightFrame inputs) {
             if (inUse) {
-                return new ArmosKnightStep(owner).run(owner, inputs);
+                return new ArmosKnightStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

@@ -57,7 +57,7 @@ public final class StalfosEvasiveMotion {
     }
 
     public Update advance(StalfosEvasiveFrame inputs) {
-        return stalfosEvasiveFrameStep.run(this, inputs);
+        return stalfosEvasiveFrameStep.run(inputs);
     }
 
     Update advanceAirborne(
@@ -352,11 +352,10 @@ public final class StalfosEvasiveMotion {
 
             frame = frameCounter & 0xFF;
             if (owner.privateState1[slot] != 0) {
-                {
-                    completedResult = owner.advanceFleeing(
-                            entity, frame, transitionCountdown, ignoreHitsCountdown, backgroundCollision);
-                    return false;
-                }
+
+                completedResult = owner.advanceFleeing(
+                        entity, frame, transitionCountdown, ignoreHitsCountdown, backgroundCollision);
+                return false;
             }
 
             cloneRequest = null;
@@ -365,16 +364,15 @@ public final class StalfosEvasiveMotion {
                 // MAP_ANGLERS_TUNNEL, before its inertia dispatch or movement.
                 if (mapId < 0x03) {
                     int variant = (frame >>> 3) & 0x01;
-                    {
-                        completedResult = new StalfosEvasiveMotion.Update(
-                                StalfosEvasiveMotion.withPositionAndVariant(
-                                        entity, entity.x(), entity.y(), entity.z(), variant),
-                                transitionCountdown,
-                                false,
-                                false,
-                                null);
-                        return false;
-                    }
+
+                    completedResult = new StalfosEvasiveMotion.Update(
+                            StalfosEvasiveMotion.withPositionAndVariant(
+                                    entity, entity.x(), entity.y(), entity.z(), variant),
+                            transitionCountdown,
+                            false,
+                            false,
+                            null);
+                    return false;
                 }
                 StalfosEvasiveMotion.Vector vector = StalfosEvasiveMotion.vectorTowardsLink(
                         entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x18);
@@ -387,11 +385,9 @@ public final class StalfosEvasiveMotion {
         private boolean advanceMovement() {
 
             if (owner.inertia[slot] != 0) {
-                {
-                    completedResult =
-                            owner.advanceAirborne(entity, transitionCountdown, backgroundCollision, cloneRequest);
-                    return false;
-                }
+
+                completedResult = owner.advanceAirborne(entity, transitionCountdown, backgroundCollision, cloneRequest);
+                return false;
             }
 
             x = StalfosEvasiveMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot);
@@ -419,15 +415,14 @@ public final class StalfosEvasiveMotion {
                         entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x12);
                 owner.speedX[slot] = (-vector.x()) & 0xFF;
                 owner.speedY[slot] = (-vector.y()) & 0xFF;
-                {
-                    completedResult = new StalfosEvasiveMotion.Update(
-                            StalfosEvasiveMotion.withPositionAndVariant(entity, x, y, entity.z(), 0x02),
-                            transitionCountdown,
-                            false,
-                            false,
-                            cloneRequest);
-                    return false;
-                }
+
+                completedResult = new StalfosEvasiveMotion.Update(
+                        StalfosEvasiveMotion.withPositionAndVariant(entity, x, y, entity.z(), 0x02),
+                        transitionCountdown,
+                        false,
+                        false,
+                        cloneRequest);
+                return false;
             }
 
             // jr_015_4FCE: the initialization state or random low six bits forces
@@ -442,10 +437,9 @@ public final class StalfosEvasiveMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run(
-                StalfosEvasiveMotion owner,
                 linksawakening.world.entity.motion.StalfosEvasiveMotion.StalfosEvasiveFrame inputs) {
             if (inUse) {
-                return new StalfosEvasiveFrameStep(owner).run(owner, inputs);
+                return new StalfosEvasiveFrameStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

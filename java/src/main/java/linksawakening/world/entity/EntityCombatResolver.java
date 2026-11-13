@@ -40,7 +40,7 @@ import linksawakening.world.entity.motion.WizrobeMotion;
 import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 
-/** ROM sword and contact combat resolution, sharing the owning room slot table. */
+/** DefaultEnemyDamageCollisionHandler and ApplySwordDamagesToEnemy, in ROM collision order. */
 final class EntityCombatResolver {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
@@ -127,24 +127,15 @@ final class EntityCombatResolver {
     }
 
     void finishLeeverContactRecoil(RoomEntity moved) {
-        EntityCombatResolver.enemyContactRecoilFinishLeeverContactRecoil(this, moved);
-    }
-
-    List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
-        return EntityCombatResolver.entityCombatPassResolveCombat(this, inputs);
-    }
-
-    static void enemyContactRecoilFinishLeeverContactRecoil(EntityCombatResolver owner, RoomEntity moved) {
-        var runtime = owner;
         int slot = moved.slot();
-        if (!owner.deferredLeeverContact[slot]) return;
-        owner.deferredLeeverContact[slot] = false;
+        if (!this.deferredLeeverContact[slot]) return;
+        this.deferredLeeverContact[slot] = false;
         // $04:7F01 moves before $7F49 calls the shared collision handler.
         // Its hitbox uses cached hActiveEntityPosX/Y, but $03:7565 reads
         // the updated position tables when selecting Link's recoil vector.
         var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                moved.x(), moved.y(), moved.z(), owner.contactLinkX[slot], owner.contactLinkY[slot], 0x14);
-        runtime.events.pendingEntityEvents.add(
+                moved.x(), moved.y(), moved.z(), this.contactLinkX[slot], this.contactLinkY[slot], 0x14);
+        this.events.pendingEntityEvents.add(
                 linksawakening.world.entity.event.EntityCombatEvent.builder(slot, moved.type())
                         .linkDamage(0)
                         .swordHit(false)
@@ -161,11 +152,45 @@ final class EntityCombatResolver {
                         .build());
     }
 
+    List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
+        var runtime = this;
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        EnemyAttackContext attackContext = inputs.attackContext();
+        EntitySlotValidation.validateByte(linkVerticalVelocity, "Link vertical velocity");
+        this.clearDeferredContactRecoil();
+        if (attackContext == null) {
+            throw new IllegalArgumentException("Enemy attack context cannot be null");
+        }
+        runtime.linkState.runningWithPegasusBoots = attackContext.pegasusBoots();
+        List<EntityCombatEvent> events = runtime.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
+        events.clear();
+        EntityCombatSlot slot = this.acquireSlot();
+        try {
+            for (int index = runtime.slots.length - 1; index >= 0; index--) {
+                slot.reset(inputs, events, runtime.slots[index]);
+                EntitySlotCombat.resolve(slot);
+            }
+        } finally {
+            this.releaseSlot(slot);
+        }
+        return runtime.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
+    }
+
     static boolean entityCombatGatesAcceptInitialStatus(EntityCombatSlot slot) {
         var runtime = slot.runtime;
         var frame = slot.inputs;
 
-        if (slot.entity.loaded() && slot.entity.type() == 0x5B) {
+        if (slot.entity.loaded() && slot.entity.type() == EntityRomConstants.ENTITY_SLIME_EYE) {
             runtime.slimeEye.resolveCombat(new SlimeEyeCombatFrame(
                     slot.entity,
                     frame.frameCounter(),
@@ -516,40 +541,6 @@ final class EntityCombatResolver {
             return false;
         }
         return true;
-    }
-
-    static List<EntityCombatEvent> entityCombatPassResolveCombat(EntityCombatResolver owner, EnemyCombatInputs inputs) {
-        var runtime = owner;
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        boolean linkAirborne = inputs.linkAirborne();
-        int linkVerticalVelocity = inputs.linkVerticalVelocity();
-        boolean linkInteractive = inputs.linkInteractive();
-        boolean swordCollisionActive = inputs.swordCollisionActive();
-        int swordX = inputs.swordX();
-        int swordWidth = inputs.swordWidth();
-        int swordY = inputs.swordY();
-        int swordHeight = inputs.swordHeight();
-        EnemyAttackContext attackContext = inputs.attackContext();
-        EntitySlotValidation.validateByte(linkVerticalVelocity, "Link vertical velocity");
-        owner.clearDeferredContactRecoil();
-        if (attackContext == null) {
-            throw new IllegalArgumentException("Enemy attack context cannot be null");
-        }
-        runtime.linkState.runningWithPegasusBoots = attackContext.pegasusBoots();
-        List<EntityCombatEvent> events = runtime.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
-        events.clear();
-        EntityCombatSlot slot = owner.acquireSlot();
-        try {
-            for (int index = runtime.slots.length - 1; index >= 0; index--) {
-                slot.reset(inputs, events, runtime.slots[index]);
-                EntitySlotCombat.resolve(slot);
-            }
-        } finally {
-            owner.releaseSlot(slot);
-        }
-        return runtime.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
     }
 
     static void entitySwordDamageApply(EntityCombatSlot slot) {

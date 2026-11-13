@@ -114,8 +114,42 @@ public final class EntityBombInteractions {
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        return EntityBombInteractions.bombCollisionBehaviorAdvanceBombEntity(
-                this, index, entity, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
+        int slot = entity.slot();
+        BombMotion.Decision decision = BombMotion.decide(this.physicsTables.readEnemyTransitionCountdown(slot) & 0xFF);
+        if (decision.playExplosionSound()) {
+            this.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    slot, EntityRomConstants.ENTITY_BOMB, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
+        }
+        if (decision.countdownOverride().isPresent()) {
+            this.physicsTables.writeEnemyTransitionCountdown(
+                    slot, decision.countdownOverride().getAsInt());
+        }
+        if (decision.phase() == BombMotion.Phase.EXPLOSION) {
+            this.physicsTables.writeEnemyPhysicsFlags(
+                    slot,
+                    (this.physicsTables.readEnemyPhysicsFlags(slot) & 0xF0)
+                            | EntityRomConstants.BOMB_EXPLOSION_PHYSICS_LOW_BITS);
+        }
+
+        EntitySpriteDefinition definition =
+                switch (decision.phase()) {
+                    case NORMAL -> this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB);
+                    case WARNING -> this.spriteHandlers == null
+                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
+                            : this.slotProperties.spriteViews().forBombRightBeforeExploding();
+                    case EXPLOSION -> this.spriteHandlers == null
+                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
+                            : this.slotProperties.spriteViews().forBombExplosion();
+                };
+        int variant = decision.explosionVariant().orElse(0);
+        RoomEntity updated = withDefinition(entity, definition, variant);
+        this.slots[index] = updated;
+        this.queueBombExplosionInteractions(
+                updated, decision, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
+        if (decision.unloadAfterPresentation()) {
+            this.state.setBombFinalPresentationPending(slot, true);
+        }
+        return decision;
     }
 
     void queueBombExplosionInteractions(
@@ -125,101 +159,7 @@ public final class EntityBombInteractions {
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        EntityBombInteractions.bombCollisionBehaviorQueueBombExplosionInteractions(
-                this, bomb, decision, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
-    }
-
-    void queueEnemyBombLinkCollision(
-            RoomEntity bomb,
-            List<EntityProjectileEvent> projectileEvents,
-            int linkEntityX,
-            int linkEntityY,
-            EnemyProjectileCollision.LinkState projectileLinkState) {
-        EntityBombInteractions.bombCollisionBehaviorQueueEnemyBombLinkCollision(
-                this, bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
-    }
-
-    void applyBombDamage(RoomEntity bomb, RoomEntity target) {
-        EntityBombInteractions.bombCollisionBehaviorApplyBombDamage(this, bomb, target);
-    }
-
-    public RoomEntity applyBombStunnedPostActiveWork(
-            RoomEntity stunned, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundCollision backgroundCollision,
-            int frame) {
-        return EntityBombInteractions.bombCollisionBehaviorApplyBombStunnedPostActiveWork(
-                this, stunned, backgroundCollision, frame);
-    }
-
-    public int bombPrivateCountdown1(int slot) {
-        return state.readBombPrivateCountdown1(slot);
-    }
-
-    public void setBombPrivateCountdown1(int slot, int value) {
-        state.writeBombPrivateCountdown1(slot, value);
-    }
-
-    public int bombPrivateState4(int slot) {
-        return state.readBombPrivateState4(slot);
-    }
-
-    static BombMotion.Decision bombCollisionBehaviorAdvanceBombEntity(
-            EntityBombInteractions owner,
-            int index,
-            RoomEntity entity,
-            List<EntityProjectileEvent> projectileEvents,
-            int linkEntityX,
-            int linkEntityY,
-            EnemyProjectileCollision.LinkState projectileLinkState) {
-        var runtime = owner;
-        int slot = entity.slot();
-        BombMotion.Decision decision =
-                BombMotion.decide(runtime.physicsTables.readEnemyTransitionCountdown(slot) & 0xFF);
-        if (decision.playExplosionSound()) {
-            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, EntityRomConstants.ENTITY_BOMB, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
-        }
-        if (decision.countdownOverride().isPresent()) {
-            runtime.physicsTables.writeEnemyTransitionCountdown(
-                    slot, decision.countdownOverride().getAsInt());
-        }
-        if (decision.phase() == BombMotion.Phase.EXPLOSION) {
-            runtime.physicsTables.writeEnemyPhysicsFlags(
-                    slot,
-                    (runtime.physicsTables.readEnemyPhysicsFlags(slot) & 0xF0)
-                            | EntityRomConstants.BOMB_EXPLOSION_PHYSICS_LOW_BITS);
-        }
-
-        EntitySpriteDefinition definition =
-                switch (decision.phase()) {
-                    case NORMAL -> runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB);
-                    case WARNING -> runtime.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : runtime.slotProperties.spriteViews().forBombRightBeforeExploding();
-                    case EXPLOSION -> runtime.spriteHandlers == null
-                            ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : runtime.slotProperties.spriteViews().forBombExplosion();
-                };
-        int variant = decision.explosionVariant().orElse(0);
-        RoomEntity updated = withDefinition(entity, definition, variant);
-        runtime.slots[index] = updated;
-        owner.queueBombExplosionInteractions(
-                updated, decision, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
-        if (decision.unloadAfterPresentation()) {
-            owner.state.setBombFinalPresentationPending(slot, true);
-        }
-        return decision;
-    }
-
-    static void bombCollisionBehaviorQueueBombExplosionInteractions(
-            EntityBombInteractions owner,
-            RoomEntity bomb,
-            BombMotion.Decision decision,
-            List<EntityProjectileEvent> projectileEvents,
-            int linkEntityX,
-            int linkEntityY,
-            EnemyProjectileCollision.LinkState projectileLinkState) {
-        var runtime = owner;
+        var runtime = this;
         if (decision.phase() != BombMotion.Phase.EXPLOSION) {
             return;
         }
@@ -228,7 +168,7 @@ public final class EntityBombInteractions {
         // BombExplosionHandler returns before every interaction for Tarin's
         // transformation explosion. All other bomb variants, including
         // enemy bombs, still run the shared destroyable-object checks.
-        if (owner.state.readBombPrivateState4(bombSlot) == 0x4C) {
+        if (this.state.readBombPrivateState4(bombSlot) == 0x4C) {
             return;
         }
         if (countdown < 0x0E || countdown > 0x16) {
@@ -247,8 +187,8 @@ public final class EntityBombInteractions {
         if (countdown != 0x12) {
             return;
         }
-        if (owner.state.readBombPrivateState4(bombSlot) != 0) {
-            owner.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
+        if (this.state.readBombPrivateState4(bombSlot) != 0) {
+            this.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }
         runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
@@ -268,18 +208,17 @@ public final class EntityBombInteractions {
             }
             runtime.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
                     bombSlot, targetSlot, bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
-            owner.applyBombDamage(bomb, target);
+            this.applyBombDamage(bomb, target);
         }
     }
 
-    static void bombCollisionBehaviorQueueEnemyBombLinkCollision(
-            EntityBombInteractions owner,
+    void queueEnemyBombLinkCollision(
             RoomEntity bomb,
             List<EntityProjectileEvent> projectileEvents,
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        var runtime = owner;
+        var runtime = this;
         runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
         int bombX = bomb.x() & 0xFF;
         int bombY = bomb.y() & 0xFF;
@@ -311,8 +250,8 @@ public final class EntityBombInteractions {
                 collisionProtected ? 0 : 0x10));
     }
 
-    static void bombCollisionBehaviorApplyBombDamage(EntityBombInteractions owner, RoomEntity bomb, RoomEntity target) {
-        var runtime = owner;
+    void applyBombDamage(RoomEntity bomb, RoomEntity target) {
+        var runtime = this;
         int targetSlot = target.slot();
         RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables == null
                 ? null
@@ -386,13 +325,11 @@ public final class EntityBombInteractions {
                 .configureFromSource(targetSlot, bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
-    static RoomEntity bombCollisionBehaviorApplyBombStunnedPostActiveWork(
-            EntityBombInteractions owner,
-            RoomEntity stunned,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
-                    backgroundCollision,
+    public RoomEntity applyBombStunnedPostActiveWork(
+            RoomEntity stunned, /* Optional room geometry/history; null preserves the path without that room input. */
+            RoomEntityBackgroundCollision backgroundCollision,
             int frame) {
-        var runtime = owner;
+        var runtime = this;
         int slot = stunned.slot();
         RoomEntity moved = stunned;
         if (runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).isActive(slot)) {
@@ -412,5 +349,17 @@ public final class EntityBombInteractions {
         runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
         runtime.liftThrow.writeThrownMotionInitialized(slot, false);
         return withStatus(moved, stunned.status());
+    }
+
+    public int bombPrivateCountdown1(int slot) {
+        return state.readBombPrivateCountdown1(slot);
+    }
+
+    public void setBombPrivateCountdown1(int slot, int value) {
+        state.writeBombPrivateCountdown1(slot, value);
+    }
+
+    public int bombPrivateState4(int slot) {
+        return state.readBombPrivateState4(slot);
     }
 }

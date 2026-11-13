@@ -49,7 +49,7 @@ public final class DogMotion {
     }
 
     public Update advance(DogFrame inputs) {
-        return dogStep.run(this, inputs);
+        return dogStep.run(inputs);
     }
 
     public int state(int slot) {
@@ -492,9 +492,9 @@ public final class DogMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.DogMotion.Update run(
-                DogMotion owner, linksawakening.world.entity.motion.DogMotion.DogFrame inputs) {
+                linksawakening.world.entity.motion.DogMotion.DogFrame inputs) {
             if (inUse) {
-                return new DogStep(owner).run(owner, inputs);
+                return new DogStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

@@ -1,6 +1,6 @@
 package linksawakening.world.entity;
 
-/** Test-side entity setup and inspection; production exposes only compatibility shims. */
+/** Test-side entity setup and inspection using real ROM-free runtime collaborators. */
 public final class EntityRuntimeFixture {
     private EntityRuntimeFixture() {}
 

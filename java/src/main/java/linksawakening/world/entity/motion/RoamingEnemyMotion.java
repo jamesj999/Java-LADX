@@ -153,7 +153,7 @@ public final class RoamingEnemyMotion {
     }
 
     private linksawakening.world.entity.motion.RoamingEnemyMotion.Update advanceInternal(RoamingEnemyFrame inputs) {
-        return roamingEnemyFrameStep.run(this, inputs);
+        return roamingEnemyFrameStep.run(inputs);
     }
 
     LaunchRequest launchRequestIfEligible(
@@ -367,10 +367,9 @@ public final class RoamingEnemyMotion {
                 RoamingEnemyMotion.LaunchRequest launchRequest =
                         owner.launchRequestIfEligible(entity, linkEntityX, linkEntityY, creditsGameplay);
                 if (launchRequest != null && entity.type() == RoamingEnemyMotion.ENTITY_OCTOROK) {
-                    {
-                        completedResult = new RoamingEnemyMotion.Update(entity, launchRequest);
-                        return false;
-                    }
+
+                    completedResult = new RoamingEnemyMotion.Update(entity, launchRequest);
+                    return false;
                 }
                 if (owner.transitionCountdown[slot] == 0) {
                     owner.transitionCountdown[slot] = 0x20 | (randomByteSupplier.getAsInt() & 0x1F);
@@ -387,10 +386,9 @@ public final class RoamingEnemyMotion {
                     owner.collisionsTable[slot] = 0;
                     owner.horizontallyCollidedObject[slot] = 0;
                 }
-                {
-                    completedResult = new RoamingEnemyMotion.Update(entity, launchRequest);
-                    return false;
-                }
+
+                completedResult = new RoamingEnemyMotion.Update(entity, launchRequest);
+                return false;
             }
 
             x = entity.x();
@@ -445,10 +443,9 @@ public final class RoamingEnemyMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.RoamingEnemyMotion.Update run(
-                RoamingEnemyMotion owner,
                 linksawakening.world.entity.motion.RoamingEnemyMotion.RoamingEnemyFrame inputs) {
             if (inUse) {
-                return new RoamingEnemyFrameStep(owner).run(owner, inputs);
+                return new RoamingEnemyFrameStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

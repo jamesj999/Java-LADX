@@ -66,7 +66,7 @@ public final class WitchMotion {
     final boolean[] musicTrackTiming = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(RoomEntity source, int transitionCountdown, Input input) {
-        return witchStep.run(this, source, transitionCountdown, input);
+        return witchStep.run(source, transitionCountdown, input);
     }
 
     static boolean nearbyAndFacing(RoomEntity entity, Input input) {
@@ -301,12 +301,11 @@ public final class WitchMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.WitchMotion.Update run(
-                WitchMotion owner,
                 linksawakening.world.entity.RoomEntity source,
                 int transitionCountdown,
                 linksawakening.world.entity.motion.WitchMotion.Input input) {
             if (inUse) {
-                return new WitchStep(owner).run(owner, source, transitionCountdown, input);
+                return new WitchStep(owner).run(source, transitionCountdown, input);
             }
             inUse = true;
             slot = 0;

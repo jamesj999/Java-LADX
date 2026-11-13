@@ -42,7 +42,7 @@ public final class WizrobeMotion {
             int transitionCountdown,
             int currentPhysicsFlags) {
         return wizrobeFrameStep.run(
-                this, entity, linkEntityX, linkEntityY, randomByteSupplier, transitionCountdown, currentPhysicsFlags);
+                entity, linkEntityX, linkEntityY, randomByteSupplier, transitionCountdown, currentPhysicsFlags);
     }
 
     public void clear(int slot) {
@@ -266,7 +266,6 @@ public final class WizrobeMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.WizrobeMotion.Update run(
-                WizrobeMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int linkEntityX,
                 int linkEntityY,
@@ -276,7 +275,6 @@ public final class WizrobeMotion {
             if (inUse) {
                 return new WizrobeFrameStep(owner)
                         .run(
-                                owner,
                                 entity,
                                 linkEntityX,
                                 linkEntityY,

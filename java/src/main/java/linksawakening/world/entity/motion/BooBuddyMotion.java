@@ -108,7 +108,7 @@ public final class BooBuddyMotion {
     }
 
     public linksawakening.world.entity.motion.BooBuddyMotion.Update advanceAfterTimers(BooBuddyFrame inputs) {
-        return booBuddyFrameStep.run(this, inputs);
+        return booBuddyFrameStep.run(inputs);
     }
 
     public void clear(int slot) {
@@ -419,9 +419,9 @@ public final class BooBuddyMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.BooBuddyMotion.Update run(
-                BooBuddyMotion owner, linksawakening.world.entity.motion.BooBuddyMotion.BooBuddyFrame inputs) {
+                linksawakening.world.entity.motion.BooBuddyMotion.BooBuddyFrame inputs) {
             if (inUse) {
-                return new BooBuddyFrameStep(owner).run(owner, inputs);
+                return new BooBuddyFrameStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

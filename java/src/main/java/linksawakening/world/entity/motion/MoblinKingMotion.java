@@ -52,7 +52,7 @@ public final class MoblinKingMotion {
     final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(MoblinKingFrame inputs) {
-        return moblinKingStep.run(this, inputs);
+        return moblinKingStep.run(inputs);
     }
 
     Update applyLinkImpact(
@@ -491,9 +491,9 @@ public final class MoblinKingMotion {
 
         private boolean inUse;
 
-        MoblinKingMotion.Update run(MoblinKingMotion owner, MoblinKingFrame inputs) {
+        MoblinKingMotion.Update run(MoblinKingFrame inputs) {
             if (inUse) {
-                return new MoblinKingStep(owner).run(owner, inputs);
+                return new MoblinKingStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

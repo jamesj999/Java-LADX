@@ -38,7 +38,7 @@ public final class LeeverMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
         return leeverFrameStep.run(
-                this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
+                entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
 
     public void clear(int slot) {
@@ -261,7 +261,6 @@ public final class LeeverMotion {
         private boolean inUse;
 
         linksawakening.world.entity.RoomEntity run(
-                LeeverMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int frameCounter,
                 int linkEntityX,
@@ -272,14 +271,7 @@ public final class LeeverMotion {
                         backgroundCollision) {
             if (inUse) {
                 return new LeeverFrameStep(owner)
-                        .run(
-                                owner,
-                                entity,
-                                frameCounter,
-                                linkEntityX,
-                                linkEntityY,
-                                randomByteSupplier,
-                                backgroundCollision);
+                        .run(entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
             }
             inUse = true;
             slot = 0;

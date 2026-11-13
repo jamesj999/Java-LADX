@@ -61,7 +61,6 @@ public final class CrowMotion {
             boolean allowLinkProximityTrigger,
             boolean externalTakeoffTrigger) {
         return crowStep.run(
-                this,
                 entity,
                 transitionCountdown,
                 frameCounter,
@@ -348,7 +347,6 @@ public final class CrowMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.CrowMotion.Update run(
-                CrowMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int transitionCountdown,
                 int frameCounter,
@@ -359,7 +357,6 @@ public final class CrowMotion {
             if (inUse) {
                 return new CrowStep(owner)
                         .run(
-                                owner,
                                 entity,
                                 transitionCountdown,
                                 frameCounter,

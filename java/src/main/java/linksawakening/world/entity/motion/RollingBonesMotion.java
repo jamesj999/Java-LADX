@@ -91,7 +91,7 @@ public final class RollingBonesMotion {
             int health,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
-        return rollingBonesFrameStep.run(this, entity, bar, transitionCountdown, health, backgroundCollision);
+        return rollingBonesFrameStep.run(entity, bar, transitionCountdown, health, backgroundCollision);
     }
 
     public BarUpdate advanceBar(
@@ -393,7 +393,6 @@ public final class RollingBonesMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.RollingBonesMotion.BossUpdate run(
-                RollingBonesMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 linksawakening.world.entity.RoomEntity bar,
                 int transitionCountdown,
@@ -403,7 +402,7 @@ public final class RollingBonesMotion {
                         backgroundCollision) {
             if (inUse) {
                 return new RollingBonesFrameStep(owner)
-                        .run(owner, entity, bar, transitionCountdown, health, backgroundCollision);
+                        .run(entity, bar, transitionCountdown, health, backgroundCollision);
             }
             inUse = true;
             slot = 0;

@@ -53,7 +53,7 @@ public final class WitchRatMotion {
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
                     backgroundInteraction) {
         return witchRatFrameStep.run(
-                this, entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
+                entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
     }
 
     public int state(int slot) {
@@ -284,19 +284,18 @@ public final class WitchRatMotion {
                     countdown = 0x48;
                     owner.state[slot] = 0;
                     // The ROM returns before its final SetEntitySpriteVariant.
-                    {
-                        completedResult = new WitchRatMotion.Update(
-                                entity,
-                                owner.state[slot],
-                                countdown,
-                                owner.direction[slot],
-                                owner.speedX[slot] & 0xFF,
-                                owner.speedY[slot] & 0xFF,
-                                owner.speedZ[slot] & 0xFF,
-                                collisionFlags,
-                                appliesBackgroundInteraction);
-                        return false;
-                    }
+
+                    completedResult = new WitchRatMotion.Update(
+                            entity,
+                            owner.state[slot],
+                            countdown,
+                            owner.direction[slot],
+                            owner.speedX[slot] & 0xFF,
+                            owner.speedY[slot] & 0xFF,
+                            owner.speedZ[slot] & 0xFF,
+                            collisionFlags,
+                            appliesBackgroundInteraction);
+                    return false;
                 }
                 owner.speedZ[slot] = 0x08;
                 z = (z + 1) & 0xFF;
@@ -310,7 +309,6 @@ public final class WitchRatMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.WitchRatMotion.Update run(
-                WitchRatMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int frameCounter,
                 int transitionCountdown,
@@ -320,13 +318,7 @@ public final class WitchRatMotion {
                         backgroundInteraction) {
             if (inUse) {
                 return new WitchRatFrameStep(owner)
-                        .run(
-                                owner,
-                                entity,
-                                frameCounter,
-                                transitionCountdown,
-                                randomByteSupplier,
-                                backgroundInteraction);
+                        .run(entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
             }
             inUse = true;
             slot = 0;

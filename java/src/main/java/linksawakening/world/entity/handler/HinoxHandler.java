@@ -28,7 +28,7 @@ final class HinoxHandler {
 
     private static boolean phase4Hinox(EntityFrameExecution state) {
         return state.scratch(HinoxHandlerFrameStep.class, HinoxHandlerFrameStep::new)
-                .run(state);
+                .execute();
     }
 
     private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
@@ -201,9 +201,9 @@ final class HinoxHandler {
 
         private boolean inUse;
 
-        boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        boolean execute() {
             if (inUse) {
-                return new HinoxHandlerFrameStep(state).run(state);
+                return new HinoxHandlerFrameStep(state).execute();
             }
             inUse = true;
             slotState = null;

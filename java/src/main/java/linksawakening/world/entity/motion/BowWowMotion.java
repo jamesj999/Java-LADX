@@ -81,7 +81,26 @@ public final class BowWowMotion {
     }
 
     Update advanceWithTargetScan(BowWowTargetFrame inputs) {
-        return BowWowMotion.advanceWithTargetScanBody(this, inputs);
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        java.util.List<RoomEntity> entities = inputs.entities();
+        java.util.function.IntPredicate canEatEntity = inputs.canEatEntity();
+        this.tickTimers(entity.slot());
+        return this.advanceAfterTimers(new BowWowFrame(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkEntityZ,
+                randomByteSupplier,
+                backgroundCollision,
+                entities,
+                canEatEntity));
     }
 
     public Update advanceAfterTimers(BowWowFrame inputs) {
@@ -369,29 +388,6 @@ public final class BowWowMotion {
 
     final BowWowStep bowWowStep = new BowWowStep(this);
 
-    static BowWowMotion.Update advanceWithTargetScanBody(BowWowMotion owner, BowWowTargetFrame inputs) {
-        RoomEntity entity = inputs.entity();
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        int linkEntityZ = inputs.linkEntityZ();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
-        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
-        java.util.List<RoomEntity> entities = inputs.entities();
-        java.util.function.IntPredicate canEatEntity = inputs.canEatEntity();
-        owner.tickTimers(entity.slot());
-        return owner.advanceAfterTimers(new BowWowFrame(
-                entity,
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkEntityZ,
-                randomByteSupplier,
-                backgroundCollision,
-                entities,
-                canEatEntity));
-    }
-
     static BowWowMotion.Update advanceAfterTimersBody(BowWowMotion owner, BowWowFrame inputs) {
         RoomEntity entity = inputs.entity();
         int frameCounter = inputs.frameCounter();
@@ -416,7 +412,7 @@ public final class BowWowMotion {
     }
 
     static BowWowMotion.Update advanceAfterTimersBody(BowWowMotion owner, BowWowCollisionFrame inputs) {
-        return owner.bowWowStep.run(owner, inputs);
+        return owner.bowWowStep.run(inputs);
     }
 
     static int findTargetBody(
@@ -670,10 +666,9 @@ public final class BowWowMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.BowWowMotion.Update run(
-                linksawakening.world.entity.motion.BowWowMotion owner,
                 linksawakening.world.entity.motion.BowWowMotion.BowWowCollisionFrame inputs) {
             if (inUse) {
-                return new BowWowStep(owner).run(owner, inputs);
+                return new BowWowStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

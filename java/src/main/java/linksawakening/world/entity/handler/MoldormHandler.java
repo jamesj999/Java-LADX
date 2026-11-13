@@ -75,7 +75,7 @@ final class MoldormHandler {
 
     private static boolean phase2Moldorm(EntityFrameExecution state) {
         return state.scratch(MoldormHandlerFrameStep.class, MoldormHandlerFrameStep::new)
-                .run(state);
+                .execute();
     }
 
     private static boolean phase2Moldorm2(EntityFrameExecution state) {
@@ -161,10 +161,9 @@ final class MoldormHandler {
                 }
                 if (state.roomInspection().roomTransitionActive())
                     state.motion(MoldormMotion.class, MoldormMotion::new).resetHistory(slot);
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
             moldormBackgroundInteraction = state.background().interaction();
             if (moldormBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
@@ -222,9 +221,9 @@ final class MoldormHandler {
 
         private boolean inUse;
 
-        boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        boolean execute() {
             if (inUse) {
-                return new MoldormHandlerFrameStep(state).run(state);
+                return new MoldormHandlerFrameStep(state).execute();
             }
             inUse = true;
             slotState = null;

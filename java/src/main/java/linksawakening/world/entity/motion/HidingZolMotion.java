@@ -61,7 +61,7 @@ public final class HidingZolMotion {
                     backgroundInteraction,
             int frameCounter) {
         return hidingZolStep.run(
-                this, entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, frameCounter);
+                entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, frameCounter);
     }
 
     public boolean allowsSwordCollision(int slot) {
@@ -416,7 +416,6 @@ public final class HidingZolMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.HidingZolMotion.Update run(
-                HidingZolMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int linkEntityX,
                 int linkEntityY,
@@ -427,14 +426,7 @@ public final class HidingZolMotion {
                 int frameCounter) {
             if (inUse) {
                 return new HidingZolStep(owner)
-                        .run(
-                                owner,
-                                entity,
-                                linkEntityX,
-                                linkEntityY,
-                                randomByteSupplier,
-                                backgroundInteraction,
-                                frameCounter);
+                        .run(entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, frameCounter);
             }
             inUse = true;
             slot = 0;

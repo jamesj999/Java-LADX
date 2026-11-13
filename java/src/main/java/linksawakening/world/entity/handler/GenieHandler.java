@@ -53,7 +53,7 @@ final class GenieHandler {
 
     private static boolean phase4Genie(EntityFrameExecution state) {
         return state.scratch(GenieHandlerFrameStep.class, GenieHandlerFrameStep::new)
-                .run(state);
+                .execute();
     }
 
     private static final class GenieHandlerFrameStep {
@@ -120,10 +120,9 @@ final class GenieHandler {
                             || state.roomInspection().genieState0Interactive(frameInput.creditsGameplay()))) {
                 state.genie().advanceGenieJar(slotState.entity(), frameInput.linkEntityY());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-                    {
-                        completedResult = false;
-                        return false;
-                    }
+
+                    completedResult = false;
+                    return false;
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
@@ -131,10 +130,9 @@ final class GenieHandler {
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 state.genie().advanceGenieAppearance(slotState.entity());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-                    {
-                        completedResult = false;
-                        return false;
-                    }
+
+                    completedResult = false;
+                    return false;
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
@@ -147,10 +145,9 @@ final class GenieHandler {
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 state.genie().advanceGenieSideProjectile(slotState.entity(), frameInput.frameCounter());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-                    {
-                        completedResult = false;
-                        return false;
-                    }
+
+                    completedResult = false;
+                    return false;
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
@@ -163,10 +160,9 @@ final class GenieHandler {
                 }
                 state.genie().advanceGenieFireball(slotState.entity(), frameInput.frameCounter());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-                    {
-                        completedResult = false;
-                        return false;
-                    }
+
+                    completedResult = false;
+                    return false;
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
@@ -192,10 +188,9 @@ final class GenieHandler {
                                 frameInput.linkEntityY(),
                                 frameInput.randomByteSupplier());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-                    {
-                        completedResult = false;
-                        return false;
-                    }
+
+                    completedResult = false;
+                    return false;
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
@@ -204,9 +199,9 @@ final class GenieHandler {
 
         private boolean inUse;
 
-        boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        boolean execute() {
             if (inUse) {
-                return new GenieHandlerFrameStep(state).run(state);
+                return new GenieHandlerFrameStep(state).execute();
             }
             inUse = true;
             slotState = null;

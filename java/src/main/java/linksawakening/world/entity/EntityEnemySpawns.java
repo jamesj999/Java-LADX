@@ -23,7 +23,7 @@ import linksawakening.world.entity.motion.WizrobeProjectileMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 
-/** ROM slot allocation and enemy child spawning. */
+/** SpawnNewEntity / SpawnNewEntityInRange and each enemy handler’s child initialization path. */
 public final class EntityEnemySpawns {
     // Optional ROM catalog for ROM-free entity fixtures.
     final linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers;
@@ -83,39 +83,351 @@ public final class EntityEnemySpawns {
     }
 
     public int spawnTarinTransformationBomb(RoomEntity tarin) {
-        return EntityEnemySpawns.enemyBombSpawnsSpawnTarinTransformationBomb(this, tarin);
+        return EntityEnemySpawns.enemyBombSpawnsSpawnEnemyBomb(
+                this, new EnemyBombSpawn(tarin.x(), tarin.y(), tarin.z(), 0x20, 0, 0, 0, false, 0x4C));
     }
 
     public boolean spawnKanaletWallMoblin(RoomEntity wall) {
-        return EntityEnemySpawns.enemyBombSpawnsSpawnKanaletWallMoblin(this, wall);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return false;
+        }
+        EntitySpriteDefinition definition =
+                this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_MOBLIN_SWORD);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        this.slots[freeSlot] = new RoomEntity(
+                freeSlot,
+                0xFF,
+                EntityRomConstants.ENTITY_MOBLIN_SWORD,
+                wall.x(),
+                (wall.y() + 0x08) & 0xFF,
+                EntityStatus.INIT,
+                definition,
+                variant,
+                0,
+                0,
+                wall.z(),
+                -1,
+                false);
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.pickups.resetEnemyDropState(freeSlot);
+        this.bossRewards.writeDroppedItemBySlot(freeSlot, EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
+        this.physicsTables.writeEnemyPhysicsFlags(
+                freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_MOBLIN_SWORD));
+        this.combatTables.writeEnemyHealth(
+                freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_MOBLIN_SWORD));
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        return true;
     }
 
     public void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) {
-        EntityEnemySpawns.enemyProjectileSpawnsSpawnPairoddProjectile(this, source, linkEntityX, linkEntityY);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition projectileDefinition =
+                this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE);
+        int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
+        RoomEntity projectile = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_PAIRODD_PROJECTILE,
+                source.x(),
+                source.y(),
+                EntityStatus.ACTIVE,
+                projectileDefinition,
+                projectileVariant,
+                0,
+                0,
+                source.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = projectile;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyHealth(
+                freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.motions
+                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                .initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
 
     public void spawnGopongaProjectile(RoomEntity source, GiantGopongaMotion.ProjectileSpawn spawn) {
-        EntityEnemySpawns.enemyProjectileSpawnsSpawnGopongaProjectile(this, source, spawn);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition projectileDefinition =
+                this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE);
+        int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
+        RoomEntity projectile = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE,
+                spawn.x(),
+                spawn.y(),
+                EntityStatus.ACTIVE,
+                projectileDefinition,
+                projectileVariant,
+                0,
+                0,
+                source.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = projectile;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, GopongaProjectileMotion.OPTIONS1);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS);
+        this.combatTables.writeEnemyHealth(freeSlot, GopongaProjectileMotion.HEALTH_OVERRIDE);
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(
+                freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.motions
+                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
+                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     public void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
-        EntityEnemySpawns.enemyProjectileSpawnsSpawnZoraProjectile(this, spawn);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition projectileDefinition =
+                this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE);
+        int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
+        RoomEntity projectile = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE,
+                spawn.x(),
+                spawn.y(),
+                EntityStatus.ACTIVE,
+                projectileDefinition,
+                projectileVariant,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        this.slots[freeSlot] = projectile;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, GopongaProjectileMotion.OPTIONS1);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS);
+        this.combatTables.writeEnemyHealth(freeSlot, GopongaProjectileMotion.HEALTH_OVERRIDE);
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(
+                freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.motions
+                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
+                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     public void spawnZombieChild(ZombieMotion.SpawnRequest spawn) {
-        EntityEnemySpawns.enemyChildSpawnsSpawnZombieChild(this, spawn);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, 0x05);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOMBIE);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity child = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_ZOMBIE,
+                spawn.x(),
+                spawn.y(),
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                0,
+                -1,
+                false);
+        this.slots[freeSlot] = child;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        // ConfigureNewEntity starts from the static $52 row; the handler
+        // clears projectile noclip before the child is first dispatched.
+        this.physicsTables.writeEnemyPhysicsFlags(
+                freeSlot, ZombieMotion.INITIAL_PHYSICS_FLAGS & ~ZombieMotion.PROJECTILE_NOCLIP_FLAG);
+        this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_ZOMBIE));
+        this.combatTables.writeEnemyHealth(
+                freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOMBIE));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.motions.get(ZombieMotion.class, ZombieMotion::new).initializeChild(freeSlot);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     public void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
-        EntityEnemySpawns.enemyChildSpawnsSpawnPokeySegment(this, spawn);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionForPokeySegment();
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity segment = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_POKEY,
+                spawn.x(),
+                spawn.y(),
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                spawn.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = segment;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, spawn.transitionCountdown());
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_POKEY));
+        this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_POKEY));
+        this.combatTables.writeEnemyHealth(
+                freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_POKEY));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        // ConfigureNewEntity seeds one ignored-hit frame; the child handler
+        // decrements it before its first interactive collision pass.
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.physicsTables.writeEntityInertia(freeSlot, 0);
+        this.motions
+                .get(PokeyMotion.class, PokeyMotion::new)
+                .initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     public void spawnWizrobeProjectile(RoomEntity source, WizrobeMotion.ProjectileSpawn spawn) {
-        EntityEnemySpawns.enemyProjectileSpawnsSpawnWizrobeProjectile(this, source, spawn);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition projectileDefinition =
+                this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE);
+        int projectileVariant = projectileDefinition.supported() ? spawn.direction() : -1;
+        RoomEntity projectile = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_WIZROBE_PROJECTILE,
+                spawn.x(),
+                spawn.y(),
+                EntityStatus.ACTIVE,
+                projectileDefinition,
+                projectileVariant,
+                0,
+                0,
+                source.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = projectile;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, 0x42);
+        this.combatTables.writeEnemyHealth(
+                freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.motions
+                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                .initializeSpawn(freeSlot, spawn.direction());
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     public boolean spawnEvasiveClone(RoomEntity source, StalfosEvasiveMotion.CloneRequest request) {
-        return EntityEnemySpawns.enemyChildSpawnsSpawnEvasiveClone(this, source, request);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return false;
+        }
+
+        EntitySpriteDefinition cloneDefinition =
+                this.slotProperties.spriteDefinitionForEvasiveState(source.spriteDefinition(), 1);
+        int cloneVariant = cloneDefinition.supported() ? cloneDefinition.initialVariant() : -1;
+        RoomEntity clone = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_STALFOS_EVASIVE,
+                request.x(),
+                request.y(),
+                EntityStatus.ACTIVE,
+                cloneDefinition,
+                cloneVariant,
+                0,
+                0,
+                request.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = clone;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.EVASIVE_CLONE_OPTIONS);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, EntityRomConstants.EVASIVE_CLONE_PHYSICS_FLAGS);
+        this.combatTables.writeEnemyHealth(
+                freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_STALFOS_EVASIVE));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        // SpawnNewEntity writes one frame, but the Evasive handler immediately
+        // stores register B over it. AnimateEntities keeps B at zero, so this
+        // clone enters its fleeing handler with no ignore-hits countdown.
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.motions
+                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                .initializeClone(freeSlot, request.speedX(), request.speedY());
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
+                source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0A));
+        return true;
     }
 
     public void spawnEnemyProjectile(RoomEntity source, RoamingEnemyMotion.LaunchRequest request) {
@@ -127,23 +439,178 @@ public final class EntityEnemySpawns {
     }
 
     public void spawnWingedOctorokRock(RoomEntity source, int direction) {
-        EntityEnemySpawns.enemyProjectileSpawnsSpawnWingedOctorokRock(this, source, direction);
+        // SpawnNewEntity returns with carry when no room slot is available.
+        // The ROM handler simply abandons the launch in that case.
+        if (this.spriteHandlers == null) {
+            return;
+        }
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EnemyProjectileMotion.SpawnData spawn =
+                EnemyProjectileMotion.spawnData(EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
+        EntitySpriteDefinition projectileDefinition =
+                this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_OCTOROK_ROCK);
+        int projectileVariant = projectileDefinition.supported() ? 1 : -1;
+        RoomEntity projectile = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_OCTOROK_ROCK,
+                byteValue(source.x() + signedByte(spawn.offsetX())),
+                byteValue(source.y() + signedByte(spawn.offsetY())),
+                EntityStatus.ACTIVE,
+                projectileDefinition,
+                projectileVariant,
+                0,
+                0,
+                source.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = projectile;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyHealth(
+                freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_OCTOROK_ROCK));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.motions
+                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                .initializeSpawn(freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
+        this.physicsTables.writeEnemyProjectileSpawnedThisFrame(freeSlot, true);
     }
 
     public boolean canSpawnCuccoAngry() {
-        return EntityEnemySpawns.enemyChildSpawnsCanSpawnCuccoAngry(this);
+        for (int slot = 7; slot >= 0; slot--) {
+            if (!this.slots[slot].loaded()) return true;
+        }
+        return false;
     }
 
     public boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
-        return EntityEnemySpawns.enemyChildSpawnsSpawnCuccoAngry(this, request);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, 7);
+        if (freeSlot < 0) {
+            return false;
+        }
+
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_CUCCO);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity angry = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_CUCCO,
+                request.x(),
+                request.y(),
+                EntityStatus.ACTIVE,
+                definition,
+                variant,
+                0,
+                0,
+                request.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = angry;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.motions
+                .get(CuccoMotion.class, CuccoMotion::new)
+                .initializeAngry(freeSlot, request.speedX(), request.speedY());
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, CuccoMotion.ANGRY_OPTIONS1);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, CuccoMotion.ANGRY_PHYSICS_FLAGS);
+        this.combatTables.writeEnemyHitboxFlags(freeSlot, CuccoMotion.ANGRY_HITBOX_FLAGS);
+        this.combatTables.writeEnemyHealth(freeSlot, CuccoMotion.HEALTH_OVERRIDE);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        return true;
     }
 
     void spawnLaserSensor(RoomEntity parent) {
-        EntityEnemySpawns.laserSpawnsSpawnLaserSensor(this, parent);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return;
+        }
+
+        RoomEntity sensor = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_LASER,
+                parent.x(),
+                parent.y(),
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_LASER),
+                -1,
+                0,
+                0,
+                parent.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = sensor;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyHealth(freeSlot, 0);
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.motions
+                .get(LaserMotion.class, LaserMotion::new)
+                .initializeSensor(
+                        freeSlot,
+                        parent.slot(),
+                        this.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()));
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     boolean spawnLaserBeam(RoomEntity parent) {
-        return EntityEnemySpawns.laserSpawnsSpawnLaserBeam(this, parent);
+        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        if (freeSlot < 0) {
+            return false;
+        }
+
+        RoomEntity beam = new RoomEntity(
+                freeSlot,
+                -1,
+                EntityRomConstants.ENTITY_LASER_BEAM,
+                parent.x(),
+                parent.y(),
+                EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_LASER_BEAM),
+                -1,
+                0,
+                0,
+                parent.z(),
+                -1,
+                false);
+        this.slots[freeSlot] = beam;
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyHealth(freeSlot, 0);
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.motions
+                .get(LaserMotion.class, LaserMotion::new)
+                .initializeBeam(
+                        freeSlot,
+                        this.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()),
+                        this.motions.get(LaserMotion.class, LaserMotion::new).speedX(parent.slot()),
+                        this.motions.get(LaserMotion.class, LaserMotion::new).speedY(parent.slot()));
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        return true;
     }
 
     static int enemyBombSpawnsSpawnEnemyBomb(
@@ -239,406 +706,6 @@ public final class EntityEnemySpawns {
         return freeSlot;
     }
 
-    static int enemyBombSpawnsSpawnTarinTransformationBomb(EntityEnemySpawns runtime, RoomEntity tarin) {
-        return EntityEnemySpawns.enemyBombSpawnsSpawnEnemyBomb(
-                runtime, new EnemyBombSpawn(tarin.x(), tarin.y(), tarin.z(), 0x20, 0, 0, 0, false, 0x4C));
-    }
-
-    static boolean enemyBombSpawnsSpawnKanaletWallMoblin(EntityEnemySpawns runtime, RoomEntity wall) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return false;
-        }
-        EntitySpriteDefinition definition =
-                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_MOBLIN_SWORD);
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        runtime.slots[freeSlot] = new RoomEntity(
-                freeSlot,
-                0xFF,
-                EntityRomConstants.ENTITY_MOBLIN_SWORD,
-                wall.x(),
-                (wall.y() + 0x08) & 0xFF,
-                EntityStatus.INIT,
-                definition,
-                variant,
-                0,
-                0,
-                wall.z(),
-                -1,
-                false);
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.pickups.resetEnemyDropState(freeSlot);
-        runtime.bossRewards.writeDroppedItemBySlot(freeSlot, EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
-        runtime.physicsTables.writeEnemyPhysicsFlags(
-                freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_MOBLIN_SWORD));
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_MOBLIN_SWORD));
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        return true;
-    }
-
-    static void enemyChildSpawnsSpawnZombieChild(EntityEnemySpawns runtime, ZombieMotion.SpawnRequest spawn) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, 0x05);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EntitySpriteDefinition definition =
-                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOMBIE);
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity child = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_ZOMBIE,
-                spawn.x(),
-                spawn.y(),
-                EntityStatus.ACTIVE,
-                definition,
-                variant,
-                0,
-                0,
-                0,
-                -1,
-                false);
-        runtime.slots[freeSlot] = child;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        // ConfigureNewEntity starts from the static $52 row; the handler
-        // clears projectile noclip before the child is first dispatched.
-        runtime.physicsTables.writeEnemyPhysicsFlags(
-                freeSlot, ZombieMotion.INITIAL_PHYSICS_FLAGS & ~ZombieMotion.PROJECTILE_NOCLIP_FLAG);
-        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_ZOMBIE));
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOMBIE));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.motions.get(ZombieMotion.class, ZombieMotion::new).initializeChild(freeSlot);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-    }
-
-    static void enemyChildSpawnsSpawnPokeySegment(EntityEnemySpawns runtime, PokeyMotion.SegmentSpawn spawn) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionForPokeySegment();
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity segment = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_POKEY,
-                spawn.x(),
-                spawn.y(),
-                EntityStatus.ACTIVE,
-                definition,
-                variant,
-                0,
-                0,
-                spawn.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = segment;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, spawn.transitionCountdown());
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_POKEY));
-        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_POKEY));
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_POKEY));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        // ConfigureNewEntity seeds one ignored-hit frame; the child handler
-        // decrements it before its first interactive collision pass.
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.physicsTables.writeEntityInertia(freeSlot, 0);
-        runtime.motions
-                .get(PokeyMotion.class, PokeyMotion::new)
-                .initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-    }
-
-    static boolean enemyChildSpawnsSpawnEvasiveClone(
-            EntityEnemySpawns runtime, RoomEntity source, StalfosEvasiveMotion.CloneRequest request) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return false;
-        }
-
-        EntitySpriteDefinition cloneDefinition =
-                runtime.slotProperties.spriteDefinitionForEvasiveState(source.spriteDefinition(), 1);
-        int cloneVariant = cloneDefinition.supported() ? cloneDefinition.initialVariant() : -1;
-        RoomEntity clone = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_STALFOS_EVASIVE,
-                request.x(),
-                request.y(),
-                EntityStatus.ACTIVE,
-                cloneDefinition,
-                cloneVariant,
-                0,
-                0,
-                request.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = clone;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.EVASIVE_CLONE_OPTIONS);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, EntityRomConstants.EVASIVE_CLONE_PHYSICS_FLAGS);
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_STALFOS_EVASIVE));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        // SpawnNewEntity writes one frame, but the Evasive handler immediately
-        // stores register B over it. AnimateEntities keeps B at zero, so this
-        // clone enters its fleeing handler with no ignore-hits countdown.
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.motions
-                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                .initializeClone(freeSlot, request.speedX(), request.speedY());
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0A));
-        return true;
-    }
-
-    static boolean enemyChildSpawnsCanSpawnCuccoAngry(EntityEnemySpawns runtime) {
-        for (int slot = 7; slot >= 0; slot--) {
-            if (!runtime.slots[slot].loaded()) return true;
-        }
-        return false;
-    }
-
-    static boolean enemyChildSpawnsSpawnCuccoAngry(EntityEnemySpawns runtime, CuccoMotion.SpawnRequest request) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, 7);
-        if (freeSlot < 0) {
-            return false;
-        }
-
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_CUCCO);
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity angry = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_CUCCO,
-                request.x(),
-                request.y(),
-                EntityStatus.ACTIVE,
-                definition,
-                variant,
-                0,
-                0,
-                request.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = angry;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.motions
-                .get(CuccoMotion.class, CuccoMotion::new)
-                .initializeAngry(freeSlot, request.speedX(), request.speedY());
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, CuccoMotion.ANGRY_OPTIONS1);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, CuccoMotion.ANGRY_PHYSICS_FLAGS);
-        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, CuccoMotion.ANGRY_HITBOX_FLAGS);
-        runtime.combatTables.writeEnemyHealth(freeSlot, CuccoMotion.HEALTH_OVERRIDE);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        return true;
-    }
-
-    static void enemyProjectileSpawnsSpawnPairoddProjectile(
-            EntityEnemySpawns runtime, RoomEntity source, int linkEntityX, int linkEntityY) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE);
-        int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
-        RoomEntity projectile = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_PAIRODD_PROJECTILE,
-                source.x(),
-                source.y(),
-                EntityStatus.ACTIVE,
-                projectileDefinition,
-                projectileVariant,
-                0,
-                0,
-                source.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = projectile;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.motions
-                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                .initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
-    }
-
-    static void enemyProjectileSpawnsSpawnGopongaProjectile(
-            EntityEnemySpawns runtime, RoomEntity source, GiantGopongaMotion.ProjectileSpawn spawn) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE);
-        int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
-        RoomEntity projectile = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE,
-                spawn.x(),
-                spawn.y(),
-                EntityStatus.ACTIVE,
-                projectileDefinition,
-                projectileVariant,
-                0,
-                0,
-                source.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = projectile;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, GopongaProjectileMotion.OPTIONS1);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS);
-        runtime.combatTables.writeEnemyHealth(freeSlot, GopongaProjectileMotion.HEALTH_OVERRIDE);
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(
-                freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.motions
-                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
-                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-    }
-
-    static void enemyProjectileSpawnsSpawnZoraProjectile(EntityEnemySpawns runtime, ZoraMotion.ProjectileSpawn spawn) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE);
-        int projectileVariant = projectileDefinition.supported() ? projectileDefinition.initialVariant() : -1;
-        RoomEntity projectile = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE,
-                spawn.x(),
-                spawn.y(),
-                EntityStatus.ACTIVE,
-                projectileDefinition,
-                projectileVariant,
-                0,
-                0,
-                0,
-                -1,
-                false);
-        runtime.slots[freeSlot] = projectile;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, GopongaProjectileMotion.OPTIONS1);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS);
-        runtime.combatTables.writeEnemyHealth(freeSlot, GopongaProjectileMotion.HEALTH_OVERRIDE);
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(
-                freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.motions
-                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
-                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-    }
-
-    static void enemyProjectileSpawnsSpawnWizrobeProjectile(
-            EntityEnemySpawns runtime, RoomEntity source, WizrobeMotion.ProjectileSpawn spawn) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE);
-        int projectileVariant = projectileDefinition.supported() ? spawn.direction() : -1;
-        RoomEntity projectile = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_WIZROBE_PROJECTILE,
-                spawn.x(),
-                spawn.y(),
-                EntityStatus.ACTIVE,
-                projectileDefinition,
-                projectileVariant,
-                0,
-                0,
-                source.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = projectile;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, 0x42);
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.motions
-                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
-                .initializeSpawn(freeSlot, spawn.direction());
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-    }
-
     static void enemyProjectileSpawnsSpawnEnemyProjectile(
             EntityEnemySpawns runtime, RoomEntity source, RoamingEnemyMotion.LaunchRequest request) {
         EntityEnemySpawns.enemyProjectileSpawnsSpawnEnemyProjectile(
@@ -696,134 +763,5 @@ public final class EntityEnemySpawns {
                 .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
                 .initializeSpawn(freeSlot, request.projectileType(), direction);
         runtime.physicsTables.writeEnemyProjectileSpawnedThisFrame(freeSlot, true);
-    }
-
-    static void enemyProjectileSpawnsSpawnWingedOctorokRock(
-            EntityEnemySpawns runtime, RoomEntity source, int direction) {
-        // SpawnNewEntity returns with carry when no room slot is available.
-        // The ROM handler simply abandons the launch in that case.
-        if (runtime.spriteHandlers == null) {
-            return;
-        }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EnemyProjectileMotion.SpawnData spawn =
-                EnemyProjectileMotion.spawnData(EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
-        EntitySpriteDefinition projectileDefinition =
-                runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_OCTOROK_ROCK);
-        int projectileVariant = projectileDefinition.supported() ? 1 : -1;
-        RoomEntity projectile = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_OCTOROK_ROCK,
-                byteValue(source.x() + signedByte(spawn.offsetX())),
-                byteValue(source.y() + signedByte(spawn.offsetY())),
-                EntityStatus.ACTIVE,
-                projectileDefinition,
-                projectileVariant,
-                0,
-                0,
-                source.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = projectile;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_OCTOROK_ROCK));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.motions
-                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                .initializeSpawn(freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
-        runtime.physicsTables.writeEnemyProjectileSpawnedThisFrame(freeSlot, true);
-    }
-
-    static void laserSpawnsSpawnLaserSensor(EntityEnemySpawns runtime, RoomEntity parent) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return;
-        }
-
-        RoomEntity sensor = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_LASER,
-                parent.x(),
-                parent.y(),
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_LASER),
-                -1,
-                0,
-                0,
-                parent.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = sensor;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyHealth(freeSlot, 0);
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.motions
-                .get(LaserMotion.class, LaserMotion::new)
-                .initializeSensor(
-                        freeSlot,
-                        parent.slot(),
-                        runtime.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()));
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-    }
-
-    static boolean laserSpawnsSpawnLaserBeam(EntityEnemySpawns runtime, RoomEntity parent) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
-        if (freeSlot < 0) {
-            return false;
-        }
-
-        RoomEntity beam = new RoomEntity(
-                freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_LASER_BEAM,
-                parent.x(),
-                parent.y(),
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_LASER_BEAM),
-                -1,
-                0,
-                0,
-                parent.z(),
-                -1,
-                false);
-        runtime.slots[freeSlot] = beam;
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyHealth(freeSlot, 0);
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.motions
-                .get(LaserMotion.class, LaserMotion::new)
-                .initializeBeam(
-                        freeSlot,
-                        runtime.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()),
-                        runtime.motions.get(LaserMotion.class, LaserMotion::new).speedX(parent.slot()),
-                        runtime.motions.get(LaserMotion.class, LaserMotion::new).speedY(parent.slot()));
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        return true;
     }
 }

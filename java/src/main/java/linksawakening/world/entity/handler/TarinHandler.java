@@ -37,7 +37,7 @@ final class TarinHandler {
 
     private static boolean phase4Tarin(EntityFrameExecution state) {
         return state.scratch(TarinHandlerFrameStep.class, TarinHandlerFrameStep::new)
-                .run(state);
+                .execute();
     }
 
     private static final class TarinHandlerFrameStep {
@@ -163,9 +163,9 @@ final class TarinHandler {
 
         private boolean inUse;
 
-        boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        boolean execute() {
             if (inUse) {
-                return new TarinHandlerFrameStep(state).run(state);
+                return new TarinHandlerFrameStep(state).execute();
             }
             inUse = true;
             slotState = null;

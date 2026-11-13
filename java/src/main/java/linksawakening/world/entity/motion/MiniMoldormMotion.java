@@ -124,7 +124,6 @@ public final class MiniMoldormMotion {
             IntSupplier randomByteSupplier,
             int frameCounter) {
         return miniMoldormFrameStep.run(
-                this,
                 entity,
                 transitionCountdown,
                 ignoreHitsCountdown,
@@ -348,7 +347,6 @@ public final class MiniMoldormMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.MiniMoldormMotion.Update run(
-                MiniMoldormMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int transitionCountdown,
                 int ignoreHitsCountdown,
@@ -361,7 +359,6 @@ public final class MiniMoldormMotion {
             if (inUse) {
                 return new MiniMoldormFrameStep(owner)
                         .run(
-                                owner,
                                 entity,
                                 transitionCountdown,
                                 ignoreHitsCountdown,

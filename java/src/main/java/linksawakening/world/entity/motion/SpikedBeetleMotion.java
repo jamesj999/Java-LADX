@@ -65,7 +65,7 @@ public final class SpikedBeetleMotion {
     }
 
     public linksawakening.world.entity.motion.SpikedBeetleMotion.Update advance(SpikedBeetleFrame inputs) {
-        return spikedBeetleFrameStep.run(this, inputs);
+        return spikedBeetleFrameStep.run(inputs);
     }
 
     /** Mirrors the shield-contact branch at $03:6F2A. */
@@ -445,10 +445,9 @@ public final class SpikedBeetleMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.SpikedBeetleMotion.Update run(
-                SpikedBeetleMotion owner,
                 linksawakening.world.entity.motion.SpikedBeetleMotion.SpikedBeetleFrame inputs) {
             if (inUse) {
-                return new SpikedBeetleFrameStep(owner).run(owner, inputs);
+                return new SpikedBeetleFrameStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

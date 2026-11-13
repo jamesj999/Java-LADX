@@ -80,7 +80,7 @@ final class EntitySlotPipeline {
         return state.events().outbox.drain(EntityProjectileEvent.class, "projectileEvents");
     }
 
-    static void copyInputs(EntityFrameExecution state) {
+    private static void copyInputs(EntityFrameExecution state) {
 
         state.inputs().frameCounter(state.context().frameCounter());
         state.inputs().linkEntityX(state.context().linkEntityX());
@@ -106,7 +106,7 @@ final class EntitySlotPipeline {
         Objects.requireNonNull(state.inputs().projectileLinkState(), "projectileLinkState");
     }
 
-    static void prepareInteractionGates(EntityFrameExecution state) {
+    private static void prepareInteractionGates(EntityFrameExecution state) {
 
         state.motion(ZolGelMotion.class, ZolGelMotion::new)
                 .writeGelClingingToLink(false); // AnimateEntities clears wIsGelClingingToLink each pass.
@@ -144,7 +144,7 @@ final class EntitySlotPipeline {
         state.inputs().romCollisionType(state.inputs().collisionType() & 0xFF);
     }
 
-    static void advanceRoomClocks(EntityFrameExecution state) {
+    private static void advanceRoomClocks(EntityFrameExecution state) {
 
         // WorldHandler runs $14:4B21 before AnimateEntities, even when no
         // boomerang exists or dialogs/room transitions suspend its handler.
@@ -165,7 +165,7 @@ final class EntitySlotPipeline {
         }
     }
 
-    static void prepareBackgroundCollision(EntityFrameExecution state) {
+    private static void prepareBackgroundCollision(EntityFrameExecution state) {
 
         if (state.physicsTables().readBackgroundInteraction() != null) {
             state.inputs().backgroundCollision(state.collisionAdapters().booleanProbe());
@@ -177,7 +177,7 @@ final class EntitySlotPipeline {
         }
     }
 
-    static void resetSlotAndLinkEffects(EntityFrameExecution state) {
+    private static void resetSlotAndLinkEffects(EntityFrameExecution state) {
 
         state.events().projectileLaunchRequests.clear();
         state.physicsTables().clearEnemyProjectileSpawnedThisFrame();
@@ -205,7 +205,7 @@ final class EntitySlotPipeline {
         state.events().pendingScreenShakeRequests.clear();
     }
 
-    static void resetRewardsAndObjects(EntityFrameExecution state) {
+    private static void resetRewardsAndObjects(EntityFrameExecution state) {
 
         state.events().boomerangObjectRequests.clear();
         state.events().magicRodObjectRequests.clear();
@@ -226,7 +226,7 @@ final class EntitySlotPipeline {
         state.events().pendingRichardProgressEvents.clear();
     }
 
-    static void prepareLateFrameEvents(EntityFrameExecution state) {
+    private static void prepareLateFrameEvents(EntityFrameExecution state) {
 
         if (state.bossRewards().state.readBossAgonySfxCountdown() > 0) {
             state.bossRewards().state.postBossAgonySfxCountdown(-1);
@@ -263,7 +263,7 @@ final class EntitySlotPipeline {
         state.inputs().projectileEvents().clear();
     }
 
-    static void prepareFollowerState(EntityFrameExecution state) {
+    private static void prepareFollowerState(EntityFrameExecution state) {
 
         if (state.inputs().linkPositionHistory() != null) {
             state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
@@ -394,7 +394,7 @@ final class EntitySlotPipeline {
                                 !slotState.wasInitializing()
                                         && slotState.entity().type() != EntityRomConstants.ENTITY_BOO_BUDDY
                                         && slotState.entity().type() != EntityRomConstants.ENTITY_BOW_WOW
-                                        && slotState.entity().type() != 0x5B));
+                                        && slotState.entity().type() != EntityRomConstants.ENTITY_SLIME_EYE));
         if (!timerGates.freezeTarinTimers()
                 && !timerGates.freezeThreeOfAKindTimers()
                 && !timerGates.freezeHinoxTimers()

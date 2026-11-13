@@ -54,8 +54,8 @@ import linksawakening.world.room.ChestContentsTable;
 
 /**
  * Per-room composition root for ExecuteEntities and EntityInitHandler.
- * Owns shared slot tables, handler services and reusable frame scratch;
- * entity-specific state belongs to motions. Slots remain immutable values.
+ * Constructs concrete controllers in dependency order and owns reusable frame scratch;
+ * shared encounter state breaks observer/reset cycles. Slots remain immutable values.
  */
 public final class RoomEntityRuntime {
     final GenieEntityController.State genieState = new GenieEntityController.State();

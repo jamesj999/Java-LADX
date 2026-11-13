@@ -38,7 +38,7 @@ final class MoblinKingHandler {
 
     private static boolean phase4MoblinKing(EntityFrameExecution state) {
         return state.scratch(MoblinKingHandlerFrameStep.class, MoblinKingHandlerFrameStep::new)
-                .run(state);
+                .execute();
     }
 
     private static final class MoblinKingHandlerFrameStep {
@@ -186,9 +186,9 @@ final class MoblinKingHandler {
 
         private boolean inUse;
 
-        boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        boolean execute() {
             if (inUse) {
-                return new MoblinKingHandlerFrameStep(state).run(state);
+                return new MoblinKingHandlerFrameStep(state).execute();
             }
             inUse = true;
             slotState = null;

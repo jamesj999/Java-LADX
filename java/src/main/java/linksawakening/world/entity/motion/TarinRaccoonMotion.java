@@ -161,7 +161,30 @@ public final class TarinRaccoonMotion {
             RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundInteraction interaction,
             int slot) {
-        return TarinRaccoonMotion.moveWithBackgroundBody(this, entity, interaction, slot);
+        int x = TarinRaccoonMotion.addSpeedToPosition(entity.x(), this.speedX[slot], this.accumulatorX, slot);
+        int y = TarinRaccoonMotion.addSpeedToPosition(entity.y(), this.speedY[slot], this.accumulatorY, slot);
+        int flags = 0;
+        if (interaction != null && x != entity.x()) {
+            int direction = TarinRaccoonMotion.signedByte(this.speedX[slot]) < 0
+                    ? EntityBackgroundCollisionResult.LEFT
+                    : EntityBackgroundCollisionResult.RIGHT;
+            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, entity.y());
+            if (result.blocked()) {
+                flags |= result.collisionFlag();
+                x = entity.x();
+            }
+        }
+        if (interaction != null && y != entity.y()) {
+            int direction = TarinRaccoonMotion.signedByte(this.speedY[slot]) < 0
+                    ? EntityBackgroundCollisionResult.UP
+                    : EntityBackgroundCollisionResult.DOWN;
+            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, y);
+            if (result.blocked()) {
+                flags |= result.collisionFlag();
+                y = entity.y();
+            }
+        }
+        return new TarinRaccoonMotion.Movement(x & 0xFF, y & 0xFF, flags & 0x0F);
     }
 
     static int accelerateToLimit(int value) {
@@ -270,38 +293,7 @@ public final class TarinRaccoonMotion {
             TarinRaccoonMotion.Input input,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
                     backgroundInteraction) {
-        return owner.tarinRaccoonStep.run(owner, source, input, backgroundInteraction);
-    }
-
-    static TarinRaccoonMotion.Movement moveWithBackgroundBody(
-            TarinRaccoonMotion owner,
-            RoomEntity entity, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction interaction,
-            int slot) {
-        int x = TarinRaccoonMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.accumulatorX, slot);
-        int y = TarinRaccoonMotion.addSpeedToPosition(entity.y(), owner.speedY[slot], owner.accumulatorY, slot);
-        int flags = 0;
-        if (interaction != null && x != entity.x()) {
-            int direction = TarinRaccoonMotion.signedByte(owner.speedX[slot]) < 0
-                    ? EntityBackgroundCollisionResult.LEFT
-                    : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, entity.y());
-            if (result.blocked()) {
-                flags |= result.collisionFlag();
-                x = entity.x();
-            }
-        }
-        if (interaction != null && y != entity.y()) {
-            int direction = TarinRaccoonMotion.signedByte(owner.speedY[slot]) < 0
-                    ? EntityBackgroundCollisionResult.UP
-                    : EntityBackgroundCollisionResult.DOWN;
-            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, y);
-            if (result.blocked()) {
-                flags |= result.collisionFlag();
-                y = entity.y();
-            }
-        }
-        return new TarinRaccoonMotion.Movement(x & 0xFF, y & 0xFF, flags & 0x0F);
+        return owner.tarinRaccoonStep.run(source, input, backgroundInteraction);
     }
 
     static final class TarinRaccoonStep {
@@ -533,14 +525,13 @@ public final class TarinRaccoonMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.TarinRaccoonMotion.Update run(
-                linksawakening.world.entity.motion.TarinRaccoonMotion owner,
                 linksawakening.world.entity.RoomEntity source,
                 linksawakening.world.entity.motion.TarinRaccoonMotion.Input input,
                 /* Optional room geometry/history; null preserves the path without that room input. */ linksawakening
                                 .world.entity.RoomEntityBackgroundInteraction
                         backgroundInteraction) {
             if (inUse) {
-                return new TarinRaccoonStep(owner).run(owner, source, input, backgroundInteraction);
+                return new TarinRaccoonStep(owner).run(source, input, backgroundInteraction);
             }
             inUse = true;
             slot = 0;

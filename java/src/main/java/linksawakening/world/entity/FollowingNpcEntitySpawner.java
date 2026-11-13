@@ -39,7 +39,7 @@ public final class FollowingNpcEntitySpawner {
     }
 
     public Result synchronize(FollowingNpcSpawn inputs) {
-        return followingNpcEntitySpawnerFrameStep.run(this, inputs);
+        return followingNpcEntitySpawnerFrameStep.run(inputs);
     }
 
     SpawnResult spawn(List<RoomEntity> slots, int type, int x, int y, EntitySpriteDefinition definition) {
@@ -179,10 +179,9 @@ public final class FollowingNpcEntitySpawner {
                 throw new IllegalArgumentException("Follower synchronization inputs cannot be null");
             }
             if (!FollowingNpcEntitySpawner.isEligibleRoom(room)) {
-                {
-                    completedResult = new FollowingNpcEntitySpawner.Result(initial, requestedState, false);
-                    return false;
-                }
+
+                completedResult = new FollowingNpcEntitySpawner.Result(initial, requestedState, false);
+                return false;
             }
 
             slots = new ArrayList<>(initial.slots());
@@ -286,9 +285,9 @@ public final class FollowingNpcEntitySpawner {
         private boolean inUse;
 
         linksawakening.world.entity.FollowingNpcEntitySpawner.Result run(
-                FollowingNpcEntitySpawner owner, linksawakening.world.entity.FollowingNpcSpawn inputs) {
+                linksawakening.world.entity.FollowingNpcSpawn inputs) {
             if (inUse) {
-                return new FollowingNpcEntitySpawnerFrameStep(owner).run(owner, inputs);
+                return new FollowingNpcEntitySpawnerFrameStep(owner).run(inputs);
             }
             inUse = true;
             initial = null;

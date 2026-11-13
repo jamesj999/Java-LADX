@@ -46,7 +46,6 @@ public final class SnakeMotion {
                     backgroundCollision,
             int transitionCountdown) {
         return snakeFrameStep.run(
-                this,
                 entity,
                 frameCounter,
                 linkEntityX,
@@ -322,7 +321,6 @@ public final class SnakeMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.SnakeMotion.Update run(
-                SnakeMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int frameCounter,
                 int linkEntityX,
@@ -335,7 +333,6 @@ public final class SnakeMotion {
             if (inUse) {
                 return new SnakeFrameStep(owner)
                         .run(
-                                owner,
                                 entity,
                                 frameCounter,
                                 linkEntityX,

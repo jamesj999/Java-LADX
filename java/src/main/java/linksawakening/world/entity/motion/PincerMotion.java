@@ -38,7 +38,7 @@ public final class PincerMotion {
     }
 
     public Update advance(RoomEntity entity, int transitionCountdown, int physicsFlags, int linkX, int linkY) {
-        return pincerStep.run(this, entity, transitionCountdown, physicsFlags, linkX, linkY);
+        return pincerStep.run(entity, transitionCountdown, physicsFlags, linkX, linkY);
     }
 
     public int state(int slot) {
@@ -326,14 +326,13 @@ public final class PincerMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.PincerMotion.Update run(
-                PincerMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int transitionCountdown,
                 int physicsFlags,
                 int linkX,
                 int linkY) {
             if (inUse) {
-                return new PincerStep(owner).run(owner, entity, transitionCountdown, physicsFlags, linkX, linkY);
+                return new PincerStep(owner).run(entity, transitionCountdown, physicsFlags, linkX, linkY);
             }
             inUse = true;
             slot = 0;

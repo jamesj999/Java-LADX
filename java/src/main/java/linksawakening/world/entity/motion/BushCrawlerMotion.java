@@ -51,7 +51,7 @@ public final class BushCrawlerMotion {
     }
 
     public Update advance(BushCrawlerFrame inputs) {
-        return bushCrawlerStep.run(this, inputs);
+        return bushCrawlerStep.run(inputs);
     }
 
     public void clear(int slot) {
@@ -348,9 +348,9 @@ public final class BushCrawlerMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.BushCrawlerMotion.Update run(
-                BushCrawlerMotion owner, linksawakening.world.entity.motion.BushCrawlerMotion.BushCrawlerFrame inputs) {
+                linksawakening.world.entity.motion.BushCrawlerMotion.BushCrawlerFrame inputs) {
             if (inUse) {
-                return new BushCrawlerStep(owner).run(owner, inputs);
+                return new BushCrawlerStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

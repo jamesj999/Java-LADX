@@ -30,7 +30,7 @@ final class HookshotChainHandler {
 
     private static boolean phase1HookshotChain(EntityFrameExecution state) {
         return state.scratch(HookshotChainHandlerFrameStep.class, HookshotChainHandlerFrameStep::new)
-                .run(state);
+                .execute();
     }
 
     private static final class HookshotChainHandlerFrameStep {
@@ -85,18 +85,16 @@ final class HookshotChainHandler {
                     .state(slotState.entity().slot());
             if (hookshotState == null) {
                 state.lifecycle().clearEntity(slotState.entity().slot());
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
             // $7BE3 cancels the chain before rendering or the pause gate.
             if (state.link().linkPlayingOcarinaCountdown() != 0) {
                 state.lifecycle().clearEntity(slotState.entity().slot());
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
             if (timerGates.projectileTimersInteractive()) {
                 hookshotState = HookshotChainMotion.decrementTransitionCountdown(hookshotState);
@@ -105,10 +103,9 @@ final class HookshotChainHandler {
             }
             // Bank $18 has no credits exception in ReturnIfNonInteractive.
             if (!timerGates.handlerInteractive() || frameInput.creditsGameplay()) {
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
 
             if ((frameInput.frame() & 0x03) == 0) {
@@ -130,10 +127,9 @@ final class HookshotChainHandler {
                         && HookshotChainMotion.overlapsLink(
                                 hookshotState, frameInput.linkEntityX(), frameInput.linkEntityY())) {
                     state.lifecycle().clearEntity(slotState.entity().slot());
-                    {
-                        completedResult = false;
-                        return false;
-                    }
+
+                    completedResult = false;
+                    return false;
                 }
                 HookshotChainMotion.PullSpeed pullSpeed = HookshotChainMotion.pullLinkSpeed(
                         hookshotState, frameInput.linkEntityX(), frameInput.linkEntityY());
@@ -142,10 +138,9 @@ final class HookshotChainHandler {
                         .add(EntityProjectileEvent.hookshotPull(
                                 slotState.entity().slot(), pullSpeed.speedX(), pullSpeed.speedY()));
                 state.replaceEntity(slotState.entity());
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
 
             nextPosition = HookshotChainMotion.nextPosition(hookshotState);
@@ -163,10 +158,9 @@ final class HookshotChainHandler {
                             step.state().y(),
                             slotState.entity().spriteVariant()));
                 }
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
             // $7C59 checks enemies before background interaction. The
             // collision pass may clear the timer, but this pass still
@@ -204,10 +198,9 @@ final class HookshotChainHandler {
                         step.state().x(),
                         step.state().y(),
                         slotState.entity().spriteVariant()));
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
             collisionResult = null;
 
@@ -244,10 +237,9 @@ final class HookshotChainHandler {
                     if (HookshotChainMotion.shouldUnloadForHookshotable(
                             step.state().transitionCountdown())) {
                         state.lifecycle().clearEntity(slotState.entity().slot());
-                        {
-                            completedResult = false;
-                            return false;
-                        }
+
+                        completedResult = false;
+                        return false;
                     }
                     state.motion(HookshotChainMotion.class, HookshotChainMotion::new)
                             .setState(slotState.entity().slot(), HookshotChainMotion.enterPulling(stopped));
@@ -256,10 +248,9 @@ final class HookshotChainHandler {
                             .setState(slotState.entity().slot(), HookshotChainMotion.deferWallPoke(stopped));
                 }
                 state.replaceEntity(slotState.entity());
-                {
-                    completedResult = false;
-                    return false;
-                }
+
+                completedResult = false;
+                return false;
             }
 
             if (state.roomInspection().indoorRoom()
@@ -307,9 +298,9 @@ final class HookshotChainHandler {
 
         private boolean inUse;
 
-        boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        boolean execute() {
             if (inUse) {
-                return new HookshotChainHandlerFrameStep(state).run(state);
+                return new HookshotChainHandlerFrameStep(state).execute();
             }
             inUse = true;
             slotState = null;

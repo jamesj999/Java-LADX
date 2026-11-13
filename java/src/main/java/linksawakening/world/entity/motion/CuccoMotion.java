@@ -275,7 +275,7 @@ public final class CuccoMotion {
     }
 
     static CuccoMotion.Update advanceBody(CuccoMotion owner, CuccoInteractionFrame inputs) {
-        return owner.cuccoStep.run(owner, inputs);
+        return owner.cuccoStep.run(inputs);
     }
 
     record CuccoFrame(
@@ -555,20 +555,19 @@ public final class CuccoMotion {
                     && RoomEntityCombatRules.overlapsLink(collisionEntity, linkEntityX, linkEntityY);
             if (linkCollision && !linkAttackStepActive && powerBraceletHeld) {
                 RoomEntity updated = CuccoMotion.withPosition(entity, x, y, z, renderedVariant);
-                {
-                    completedResult = new CuccoMotion.Update(
-                            updated,
-                            countdown,
-                            nextFlashCountdown,
-                            true,
-                            false,
-                            false,
-                            -1,
-                            dialogTableId,
-                            dialogLowId,
-                            null);
-                    return false;
-                }
+
+                completedResult = new CuccoMotion.Update(
+                        updated,
+                        countdown,
+                        nextFlashCountdown,
+                        true,
+                        false,
+                        false,
+                        -1,
+                        dialogTableId,
+                        dialogLowId,
+                        null);
+                return false;
             }
             return true;
         }
@@ -602,10 +601,9 @@ public final class CuccoMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.CuccoMotion.Update run(
-                linksawakening.world.entity.motion.CuccoMotion owner,
                 linksawakening.world.entity.motion.CuccoMotion.CuccoInteractionFrame inputs) {
             if (inUse) {
-                return new CuccoStep(owner).run(owner, inputs);
+                return new CuccoStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

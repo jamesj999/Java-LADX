@@ -93,23 +93,107 @@ public final class EntityPickupController {
     }
 
     void initializeCommonDroppable(RoomEntity entity) {
-        EntityPickupController.droppablePickupBehaviorInitializeCommonDroppable(this, entity);
+        int slot = entity.slot();
+        // EntityInitDiggableBushOrPotDroppable is used by hearts and magic
+        // powder directly. The other ordinary drops use the tree/pot init
+        // handler, which selects the Pegasus branch outdoors and the buried
+        // branch indoors.
+        this.bossRewards.writeDroppablePrivateState3(
+                slot,
+                entity.type() == EntityRomConstants.ENTITY_DROPPABLE_HEART
+                                || entity.type() == EntityRomConstants.ENTITY_DROPPABLE_MAGIC_POWDER
+                                || entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
+                                || this.indoorRoom
+                        ? EntityRomConstants.DROPPABLE_HIDDEN_STATE_BURIED
+                        : EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS);
+        this.bossRewards.writeDroppablePrivateState4(slot, 0);
+        this.physicsTables.writeEntityOptions1Override(
+                slot,
+                entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
+                        ? EntityRomConstants.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
+                        : EntityRomConstants.DROPPABLE_HIDDEN_OPTIONS1);
     }
 
     public CommonDroppableUpdate advanceCommonDroppable(
             RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityObjectSample objectUnderEntity) {
-        return EntityPickupController.droppablePickupBehaviorAdvanceCommonDroppable(
-                this, entity, linkEntityX, linkEntityY, objectUnderEntity);
+        return this.droppablePickupFrameStep.run(entity, linkEntityX, linkEntityY, objectUnderEntity);
     }
 
     void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) {
-        EntityPickupController.droppablePickupBehaviorRevealCommonDroppable(this, entity, linkEntityX, linkEntityY);
+        var runtime = this;
+        int slot = entity.slot();
+        runtime.bossRewards.writeDroppablePrivateState3(slot, 0);
+        runtime.bossRewards.writeDroppablePrivateState4(slot, 0);
+        runtime.bossRewards.writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
+        runtime.physicsTables.writeSlowTransitionCountdown(slot, EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN);
+        runtime.physicsTables.writeSlowTimerInitialized(slot, true);
+
+        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
+        if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
+            Vector vector = vectorAwayFromLink(
+                    entity.x(),
+                    entity.y(),
+                    linkEntityX,
+                    linkEntityY,
+                    EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
+            runtime.motions.get(FairyMotion.class, FairyMotion::new).setSpeed(slot, vector.x(), vector.y());
+            return;
+        }
+
+        runtime.motions
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                .initialize(
+                        slot,
+                        runtime.physicsTables.readGroundInteractionSideScrolling(),
+                        EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
+        runtime.motions
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                .initializeAwayFromLink(
+                        slot,
+                        entity.x(),
+                        entity.y(),
+                        linkEntityX,
+                        linkEntityY,
+                        EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
+        runtime.bossRewards.writeEnemyDropActive(slot, true);
+        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
     }
 
     public SlimeKeyTransitionUpdate advanceHidingSlimeKey(
             RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) {
-        return EntityPickupController.droppablePickupBehaviorAdvanceHidingSlimeKey(
-                this, entity, slot, linkEntityX, linkEntityY, linkZ);
+        int transition = this.physicsTables.readEnemyTransitionCountdown(slot);
+        if (transition == 0) {
+            return new SlimeKeyTransitionUpdate(entity, 0, false, false, null);
+        }
+        if (transition == 1) {
+            // The handler decrements A locally for this branch and then takes
+            // UnloadEntityAndReturn; the transition table byte itself is not
+            // observed again because the entity is gone.
+            return new SlimeKeyTransitionUpdate(entity, transition, false, true, null);
+        }
+
+        SlimeKeyRewardEvent reward = null;
+        int nextTransition = transition;
+        if (transition == 0x10) {
+            nextTransition = 0x0F;
+            int leaves = Math.min(0x63, this.roomVariables.readEntityGoldenLeavesCount() & 0xFF);
+            if (!this.indoorRoom
+                    && this.roomVariables.readEntityRoomId() == EntityRomConstants.ROOM_OW_POTHOLE_FIELD_SLIME_KEY) {
+                leaves = EntityRomConstants.GOLDEN_LEAVES_FIVE_COUNT;
+            }
+            leaves = Math.min(0x63, leaves + 1);
+            this.roomVariables.writeEntityGoldenLeavesCount(leaves);
+            int dialogLowId = leaves == EntityRomConstants.GOLDEN_LEAVES_FINAL_COUNT
+                    ? EntityRomConstants.DIALOG_SLIME_KEY
+                    : leaves == EntityRomConstants.GOLDEN_LEAVES_FIVE_COUNT
+                            ? EntityRomConstants.DIALOG_FINAL_GOLDEN_LEAF
+                            : EntityRomConstants.DIALOG_GOLDEN_LEAF;
+            reward = new SlimeKeyRewardEvent(slot, leaves, dialogLowId);
+        }
+
+        RoomEntity held = withPositionAndVariant(entity, linkEntityX, linkEntityY - 0x0C, entity.spriteVariant());
+        held = withZ(held, linkZ);
+        return new SlimeKeyTransitionUpdate(held, nextTransition, true, false, reward);
     }
 
     void initializeEntityTimers(RoomEntity entity) {
@@ -152,55 +236,36 @@ public final class EntityPickupController {
     }
 
     public void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) {
-        EntityPickupController.droppablePickupBehaviorAdvanceHeartPiecePickup(this, entity, x, y, z);
+        int slot = entity.slot();
+        var update = this.state
+                .readHeartPiecePickup(slot)
+                .advance(
+                        this.physicsTables.readEnemyTransitionCountdown(slot),
+                        this.linkState.dialogActive,
+                        this.state.readHeartPiecesCount());
+        this.events.heartPieceUpdates.add(update);
+        if (update.incrementPiece()) this.state.postHeartPiecesCount(1);
+        if (update.newContainer()) this.state.writeHeartPiecesCount(0);
+        if (update.dialogId() >= 0) this.events.pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
+        if (update.newContainer())
+            this.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x19));
+        if (update.complete()) {
+            this.lifecycle.disableEntityWithoutPersistence(slot);
+            return;
+        }
+        this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.slots[slot] = withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z);
     }
 
     public void initializeChestEntity(RoomEntity entity) {
-        EntityPickupController.chestPickupBehaviorInitializeChestEntity(this, entity);
-    }
-
-    public boolean advanceChestEntity(int index, RoomEntity entity) {
-        return EntityPickupController.chestPickupBehaviorAdvanceChestEntity(this, index, entity);
-    }
-
-    void spawnChestZol(RoomEntity chest) {
-        EntityPickupController.chestPickupBehaviorSpawnChestZol(this, chest);
-    }
-
-    void spawnEnemyDrop(RoomEntity source, int itemType) {
-        EntityPickupController.enemyDropSpawnsSpawnEnemyDrop(this, source, itemType);
-    }
-
-    void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) {
-        spawnKeyDropAt(
-                EntityRomConstants.ENTITY_KEY_DROP_POINT,
-                source.x(),
-                source.y(),
-                spriteVariant,
-                z,
-                speedZ,
-                privateCountdown1);
-    }
-
-    int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) {
-        return EntityPickupController.enemyDropSpawnsSpawnKeyDropAt(
-                this, itemType, x, y, spriteVariant, z, speedZ, privateCountdown1);
-    }
-
-    public boolean hasHeartPiecePickup(int slot) {
-        return state.readHeartPiecePickup(slot) != null;
-    }
-
-    final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep(this);
-
-    static void chestPickupBehaviorInitializeChestEntity(EntityPickupController owner, RoomEntity entity) {
-        var runtime = owner;
         int slot = entity.slot();
-        int itemType = owner.state.readChestItemBySlot(slot) & 0xFF;
-        owner.state.writeChestSpeedY(slot, 0xFC);
-        owner.state.writeChestSpeedYAccumulator(slot, 0);
-        owner.state.writeChestInertia(slot, 0);
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        int itemType = this.state.readChestItemBySlot(slot) & 0xFF;
+        this.state.writeChestSpeedY(slot, 0xFC);
+        this.state.writeChestSpeedYAccumulator(slot, 0);
+        this.state.writeChestInertia(slot, 0);
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot,
                 EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
                 0,
@@ -208,45 +273,44 @@ public final class EntityPickupController {
                 EntityCombatEvent.SoundChannel.NOISE,
                 EntityRomConstants.CHEST_OPEN_NOISE_ID));
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
-            for (RoomEntity candidate : runtime.slots) {
+            for (RoomEntity candidate : this.slots) {
                 if (candidate.loaded() && candidate.type() == EntityRomConstants.ENTITY_OWL_EVENT) {
-                    runtime.story.owlState().writeOwlPrivateCountdown1(candidate.slot(), 0x38);
+                    this.story.owlState().writeOwlPrivateCountdown1(candidate.slot(), 0x38);
                     break;
                 }
             }
         }
         if (itemType < ChestContentsTable.CHEST_MESSAGE) {
-            runtime.events.pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
+            this.events.pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
         }
     }
 
-    static boolean chestPickupBehaviorAdvanceChestEntity(EntityPickupController owner, int index, RoomEntity entity) {
-        var runtime = owner;
+    public boolean advanceChestEntity(int index, RoomEntity entity) {
         int slot = entity.slot();
-        int itemType = owner.state.readChestItemBySlot(slot) & 0xFF;
+        int itemType = this.state.readChestItemBySlot(slot) & 0xFF;
         if (itemType == ChestContentsTable.CHEST_ZOL) {
-            owner.spawnChestZol(entity);
-            runtime.lifecycle.clearEntity(slot);
+            this.spawnChestZol(entity);
+            this.lifecycle.clearEntity(slot);
             return true;
         }
 
         // ChestWithItemEntityHandler ($07:7C5E) renders before this gate,
         // but does not move, advance inertia, or unload while text is open.
-        if (runtime.linkState.dialogActive) {
+        if (this.linkState.dialogActive) {
             return false;
         }
 
         int y = addFallingSpeedToPosition(
-                entity.y(), owner.state.readChestSpeedY(slot), owner.state.storageChestSpeedYAccumulator(), slot);
-        int inertia = (owner.state.readChestInertia(slot) + 1) & 0xFF;
-        owner.state.writeChestInertia(slot, inertia);
+                entity.y(), this.state.readChestSpeedY(slot), this.state.storageChestSpeedYAccumulator(), slot);
+        int inertia = (this.state.readChestInertia(slot) + 1) & 0xFF;
+        this.state.writeChestInertia(slot, inertia);
         if (inertia == 0x10) {
-            owner.state.writeChestSpeedY(slot, 0);
+            this.state.writeChestSpeedY(slot, 0);
         }
-        if (inertia == 0x08 && runtime.chestContentsTable != null) {
-            int soundValue = runtime.chestContentsTable.presentationSoundValue(itemType);
+        if (inertia == 0x08 && this.chestContentsTable != null) {
+            int soundValue = this.chestContentsTable.presentationSoundValue(itemType);
             if (soundValue == EntityRomConstants.CHEST_TREASURE_JINGLE_ID) {
-                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                this.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot,
                         EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
                         0,
@@ -254,33 +318,33 @@ public final class EntityPickupController {
                         EntityCombatEvent.SoundChannel.JINGLE,
                         EntityRomConstants.CHEST_TREASURE_JINGLE_ID));
             } else if (soundValue != 0) {
-                runtime.presentationState.writePendingMusicTrack(soundValue);
+                this.presentationState.writePendingMusicTrack(soundValue);
             }
         }
-        if (inertia == 0x26 && runtime.chestContentsTable != null) {
-            int roomId = runtime.presentationState.readSpriteSelection() == null
+        if (inertia == 0x26 && this.chestContentsTable != null) {
+            int roomId = this.presentationState.readSpriteSelection() == null
                     ? -1
-                    : runtime.presentationState.readSpriteSelection().roomId();
-            int dialogLow = runtime.chestContentsTable.dialogLowIdFor(
+                    : this.presentationState.readSpriteSelection().roomId();
+            int dialogLow = this.chestContentsTable.dialogLowIdFor(
                     itemType,
-                    owner.state.readChestShieldLevel(),
-                    owner.state.readChestSwordLevel(),
-                    owner.state.readChestPowerBraceletLevel(),
-                    runtime.roomVariables.readEntityMapId() < 0 ? 0 : runtime.roomVariables.readEntityMapId(),
+                    this.state.readChestShieldLevel(),
+                    this.state.readChestSwordLevel(),
+                    this.state.readChestPowerBraceletLevel(),
+                    this.roomVariables.readEntityMapId() < 0 ? 0 : this.roomVariables.readEntityMapId(),
                     roomId < 0 ? 0 : roomId);
             int tableId = itemType == ChestContentsTable.CHEST_MESSAGE && roomId == 0x96 ? 1 : 0;
-            runtime.events.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
+            this.events.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
         }
         if (inertia == 0x28) {
-            runtime.lifecycle.clearEntity(slot);
+            this.lifecycle.clearEntity(slot);
             return true;
         }
-        runtime.slots[index] = withPositionAndVariant(entity, entity.x(), y, itemType);
+        this.slots[index] = withPositionAndVariant(entity, entity.x(), y, itemType);
         return false;
     }
 
-    static void chestPickupBehaviorSpawnChestZol(EntityPickupController owner, RoomEntity chest) {
-        var runtime = owner;
+    void spawnChestZol(RoomEntity chest) {
+        var runtime = this;
         int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return;
@@ -314,145 +378,8 @@ public final class EntityPickupController {
                 freeSlot, EntityRomConstants.ENTITY_ZOL, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
     }
 
-    static void droppablePickupBehaviorInitializeCommonDroppable(EntityPickupController owner, RoomEntity entity) {
-        var runtime = owner;
-        int slot = entity.slot();
-        // EntityInitDiggableBushOrPotDroppable is used by hearts and magic
-        // powder directly. The other ordinary drops use the tree/pot init
-        // handler, which selects the Pegasus branch outdoors and the buried
-        // branch indoors.
-        runtime.bossRewards.writeDroppablePrivateState3(
-                slot,
-                entity.type() == EntityRomConstants.ENTITY_DROPPABLE_HEART
-                                || entity.type() == EntityRomConstants.ENTITY_DROPPABLE_MAGIC_POWDER
-                                || entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
-                                || runtime.indoorRoom
-                        ? EntityRomConstants.DROPPABLE_HIDDEN_STATE_BURIED
-                        : EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS);
-        runtime.bossRewards.writeDroppablePrivateState4(slot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(
-                slot,
-                entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
-                        ? EntityRomConstants.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
-                        : EntityRomConstants.DROPPABLE_HIDDEN_OPTIONS1);
-    }
-
-    static CommonDroppableUpdate droppablePickupBehaviorAdvanceCommonDroppable(
-            EntityPickupController owner,
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            RoomEntityObjectSample objectUnderEntity) {
-        return owner.droppablePickupFrameStep.run(owner, entity, linkEntityX, linkEntityY, objectUnderEntity);
-    }
-
-    static void droppablePickupBehaviorRevealCommonDroppable(
-            EntityPickupController owner, RoomEntity entity, int linkEntityX, int linkEntityY) {
-        var runtime = owner;
-        int slot = entity.slot();
-        runtime.bossRewards.writeDroppablePrivateState3(slot, 0);
-        runtime.bossRewards.writeDroppablePrivateState4(slot, 0);
-        runtime.bossRewards.writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
-        runtime.physicsTables.writeSlowTransitionCountdown(slot, EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN);
-        runtime.physicsTables.writeSlowTimerInitialized(slot, true);
-
-        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
-        if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            Vector vector = vectorAwayFromLink(
-                    entity.x(),
-                    entity.y(),
-                    linkEntityX,
-                    linkEntityY,
-                    EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-            runtime.motions.get(FairyMotion.class, FairyMotion::new).setSpeed(slot, vector.x(), vector.y());
-            return;
-        }
-
-        runtime.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initialize(
-                        slot,
-                        runtime.physicsTables.readGroundInteractionSideScrolling(),
-                        EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
-        runtime.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initializeAwayFromLink(
-                        slot,
-                        entity.x(),
-                        entity.y(),
-                        linkEntityX,
-                        linkEntityY,
-                        EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-        runtime.bossRewards.writeEnemyDropActive(slot, true);
-        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
-    }
-
-    static SlimeKeyTransitionUpdate droppablePickupBehaviorAdvanceHidingSlimeKey(
-            EntityPickupController owner, RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) {
-        var runtime = owner;
-        int transition = runtime.physicsTables.readEnemyTransitionCountdown(slot);
-        if (transition == 0) {
-            return new SlimeKeyTransitionUpdate(entity, 0, false, false, null);
-        }
-        if (transition == 1) {
-            // The handler decrements A locally for this branch and then takes
-            // UnloadEntityAndReturn; the transition table byte itself is not
-            // observed again because the entity is gone.
-            return new SlimeKeyTransitionUpdate(entity, transition, false, true, null);
-        }
-
-        SlimeKeyRewardEvent reward = null;
-        int nextTransition = transition;
-        if (transition == 0x10) {
-            nextTransition = 0x0F;
-            int leaves = Math.min(0x63, runtime.roomVariables.readEntityGoldenLeavesCount() & 0xFF);
-            if (!runtime.indoorRoom
-                    && runtime.roomVariables.readEntityRoomId() == EntityRomConstants.ROOM_OW_POTHOLE_FIELD_SLIME_KEY) {
-                leaves = EntityRomConstants.GOLDEN_LEAVES_FIVE_COUNT;
-            }
-            leaves = Math.min(0x63, leaves + 1);
-            runtime.roomVariables.writeEntityGoldenLeavesCount(leaves);
-            int dialogLowId = leaves == EntityRomConstants.GOLDEN_LEAVES_FINAL_COUNT
-                    ? EntityRomConstants.DIALOG_SLIME_KEY
-                    : leaves == EntityRomConstants.GOLDEN_LEAVES_FIVE_COUNT
-                            ? EntityRomConstants.DIALOG_FINAL_GOLDEN_LEAF
-                            : EntityRomConstants.DIALOG_GOLDEN_LEAF;
-            reward = new SlimeKeyRewardEvent(slot, leaves, dialogLowId);
-        }
-
-        RoomEntity held = withPositionAndVariant(entity, linkEntityX, linkEntityY - 0x0C, entity.spriteVariant());
-        held = withZ(held, linkZ);
-        return new SlimeKeyTransitionUpdate(held, nextTransition, true, false, reward);
-    }
-
-    static void droppablePickupBehaviorAdvanceHeartPiecePickup(
-            EntityPickupController owner, RoomEntity entity, int x, int y, int z) {
-        var runtime = owner;
-        int slot = entity.slot();
-        var update = owner.state
-                .readHeartPiecePickup(slot)
-                .advance(
-                        runtime.physicsTables.readEnemyTransitionCountdown(slot),
-                        runtime.linkState.dialogActive,
-                        owner.state.readHeartPiecesCount());
-        runtime.events.heartPieceUpdates.add(update);
-        if (update.incrementPiece()) owner.state.postHeartPiecesCount(1);
-        if (update.newContainer()) owner.state.writeHeartPiecesCount(0);
-        if (update.dialogId() >= 0) runtime.events.pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
-        if (update.newContainer())
-            runtime.events.pendingEntityEvents.add(
-                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x19));
-        if (update.complete()) {
-            runtime.lifecycle.disableEntityWithoutPersistence(slot);
-            return;
-        }
-        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
-        runtime.slots[slot] = withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z);
-    }
-
-    static void enemyDropSpawnsSpawnEnemyDrop(EntityPickupController owner, RoomEntity source, int itemType) {
-        var runtime = owner;
+    void spawnEnemyDrop(RoomEntity source, int itemType) {
+        var runtime = this;
         int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return;
@@ -480,7 +407,7 @@ public final class EntityPickupController {
                 false);
         runtime.slots[freeSlot] = drop;
         runtime.lifecycle.initializeHealthGroup(freeSlot);
-        owner.resetEnemyDropState(freeSlot);
+        this.resetEnemyDropState(freeSlot);
         runtime.physicsTables.writeSlowTransitionCountdown(freeSlot, 0x80);
         runtime.physicsTables.writeSlowTimerInitialized(freeSlot, true);
         runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
@@ -508,16 +435,19 @@ public final class EntityPickupController {
         runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
-    static int enemyDropSpawnsSpawnKeyDropAt(
-            EntityPickupController owner,
-            int itemType,
-            int x,
-            int y,
-            int spriteVariant,
-            int z,
-            int speedZ,
-            int privateCountdown1) {
-        var runtime = owner;
+    void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) {
+        spawnKeyDropAt(
+                EntityRomConstants.ENTITY_KEY_DROP_POINT,
+                source.x(),
+                source.y(),
+                spriteVariant,
+                z,
+                speedZ,
+                privateCountdown1);
+    }
+
+    int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) {
+        var runtime = this;
         int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
         if (freeSlot < 0) {
             return -1;
@@ -541,7 +471,7 @@ public final class EntityPickupController {
                 false);
         runtime.slots[freeSlot] = drop;
         runtime.lifecycle.initializeHealthGroup(freeSlot);
-        owner.resetEnemyDropState(freeSlot);
+        this.resetEnemyDropState(freeSlot);
         runtime.motions
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(freeSlot, runtime.physicsTables.readGroundInteractionSideScrolling(), speedZ);
@@ -565,6 +495,12 @@ public final class EntityPickupController {
         runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
+
+    public boolean hasHeartPiecePickup(int slot) {
+        return state.readHeartPiecePickup(slot) != null;
+    }
+
+    final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep(this);
 
     static final class DroppablePickupFrameStep {
         private final linksawakening.world.entity.EntityPickupController owner;
@@ -660,14 +596,12 @@ public final class EntityPickupController {
         private boolean inUse;
 
         linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate run(
-                linksawakening.world.entity.EntityPickupController owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int linkEntityX,
                 int linkEntityY,
                 linksawakening.world.entity.RoomEntityObjectSample objectUnderEntity) {
             if (inUse) {
-                return new DroppablePickupFrameStep(owner)
-                        .run(owner, entity, linkEntityX, linkEntityY, objectUnderEntity);
+                return new DroppablePickupFrameStep(owner).run(entity, linkEntityX, linkEntityY, objectUnderEntity);
             }
             inUse = true;
 

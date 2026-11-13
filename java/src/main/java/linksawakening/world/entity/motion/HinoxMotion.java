@@ -81,11 +81,66 @@ public final class HinoxMotion {
     }
 
     public Update advance(HinoxFrame inputs) {
-        return HinoxMotion.advanceBody(this, inputs);
+        return this.hinoxStep.run(inputs);
     }
 
     Update update(HinoxResult inputs) {
-        return HinoxMotion.updateBody(this, inputs);
+        RoomEntity entity = inputs.entity();
+        int x = inputs.x();
+        int y = inputs.y();
+        int transition = inputs.transition();
+        int spriteVariant = inputs.spriteVariant();
+        boolean blocked = inputs.blocked();
+        int heldX = inputs.heldX();
+        int heldY = inputs.heldY();
+        int heldZ = inputs.heldZ();
+        int linkSpeedX = inputs.linkSpeedX();
+        int linkSpeedY = inputs.linkSpeedY();
+        int linkVelocityZ = inputs.linkVelocityZ();
+        int airborne = inputs.airborne();
+        int linkDamage = inputs.linkDamage();
+        int jingle = inputs.jingle();
+        int wave = inputs.wave();
+        boolean dust = inputs.dust();
+        boolean heldLinkPositionWritten = inputs.heldLinkPositionWritten();
+        boolean applyHeldLinkPose = inputs.applyHeldLinkPose();
+        HinoxMotion.BombSpawn bomb = inputs.bomb();
+        RoomEntity updated = new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x & 0xFF,
+                y & 0xFF,
+                entity.status(),
+                entity.spriteDefinition(),
+                entity.spriteDefinition().supported()
+                        ? Math.min(spriteVariant, entity.spriteDefinition().variantCount() - 1)
+                        : -1,
+                entity.entityFlipAttribute(),
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
+        return new HinoxMotion.Update(
+                updated,
+                this.state[entity.slot()],
+                transition & 0xFF,
+                spriteVariant,
+                blocked,
+                heldX & 0xFF,
+                heldY & 0xFF,
+                heldZ & 0xFF,
+                linkSpeedX & 0xFF,
+                linkSpeedY & 0xFF,
+                linkVelocityZ & 0xFF,
+                airborne & 0xFF,
+                linkDamage & 0xFF,
+                jingle,
+                wave,
+                dust,
+                heldLinkPositionWritten,
+                applyHeldLinkPose,
+                bomb);
     }
 
     Position move(
@@ -94,7 +149,26 @@ public final class HinoxMotion {
             int y, /* Optional room geometry/history; null preserves the path without that room input. */
             RoomEntityBackgroundInteraction background,
             int slot) {
-        return HinoxMotion.moveBody(this, entity, x, y, background, slot);
+        this.entityCollisionFlags[slot] = 0;
+        int nextX = HinoxMotion.addSpeed(x, this.speedX[slot], this.speedXAccumulator, slot);
+        if (nextX != x && background != null) {
+            EntityBackgroundCollisionResult result =
+                    background.probe(entity, HinoxMotion.horizontalDirection(this.speedX[slot]), nextX, y);
+            if (result.blocked()) {
+                this.entityCollisionFlags[slot] |= result.collisionFlag();
+                nextX = x;
+            }
+        }
+        int nextY = HinoxMotion.addSpeed(y, this.speedY[slot], this.speedYAccumulator, slot);
+        if (nextY != y && background != null) {
+            EntityBackgroundCollisionResult result =
+                    background.probe(entity, HinoxMotion.verticalDirection(this.speedY[slot]), nextX, nextY);
+            if (result.blocked()) {
+                this.entityCollisionFlags[slot] |= result.collisionFlag();
+                nextY = y;
+            }
+        }
+        return new HinoxMotion.Position(nextX, nextY);
     }
 
     int tickInertia(int slot) {
@@ -222,39 +296,6 @@ public final class HinoxMotion {
     record Position(int x, int y) {}
 
     final HinoxStep hinoxStep = new HinoxStep(this);
-
-    static HinoxMotion.Update advanceBody(HinoxMotion owner, HinoxFrame inputs) {
-        return owner.hinoxStep.run(owner, inputs);
-    }
-
-    static HinoxMotion.Position moveBody(
-            HinoxMotion owner,
-            RoomEntity entity,
-            int x,
-            int y, /* Optional room geometry/history; null preserves the path without that room input. */
-            RoomEntityBackgroundInteraction background,
-            int slot) {
-        owner.entityCollisionFlags[slot] = 0;
-        int nextX = HinoxMotion.addSpeed(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-        if (nextX != x && background != null) {
-            EntityBackgroundCollisionResult result =
-                    background.probe(entity, HinoxMotion.horizontalDirection(owner.speedX[slot]), nextX, y);
-            if (result.blocked()) {
-                owner.entityCollisionFlags[slot] |= result.collisionFlag();
-                nextX = x;
-            }
-        }
-        int nextY = HinoxMotion.addSpeed(y, owner.speedY[slot], owner.speedYAccumulator, slot);
-        if (nextY != y && background != null) {
-            EntityBackgroundCollisionResult result =
-                    background.probe(entity, HinoxMotion.verticalDirection(owner.speedY[slot]), nextX, nextY);
-            if (result.blocked()) {
-                owner.entityCollisionFlags[slot] |= result.collisionFlag();
-                nextY = y;
-            }
-        }
-        return new HinoxMotion.Position(nextX, nextY);
-    }
 
     public record HinoxFrame(
             RoomEntity entity,
@@ -432,11 +473,10 @@ public final class HinoxMotion {
                 linkX = x;
                 linkY = y;
                 owner.privateCountdown1[slot] = 0x50;
-                {
-                    completedResult =
-                            result(entity.spriteVariant(), linkMotionBlockedAtEntry, linkX, linkY, linkZ, true, false);
-                    return false;
-                }
+
+                completedResult =
+                        result(entity.spriteVariant(), linkMotionBlockedAtEntry, linkX, linkY, linkZ, true, false);
+                return false;
             }
             return holdGrabbedLink();
         }
@@ -551,11 +591,10 @@ public final class HinoxMotion {
                 applyHeldLinkPose = true;
             }
             spriteVariant = GRAB_BODY_VARIANT[Math.min(transition >>> 3, GRAB_BODY_VARIANT.length - 1)];
-            {
-                completedResult =
-                        result(spriteVariant, blocked, heldX, heldY, heldZ, heldPositionWritten, applyHeldLinkPose);
-                return false;
-            }
+
+            completedResult =
+                    result(spriteVariant, blocked, heldX, heldY, heldZ, heldPositionWritten, applyHeldLinkPose);
+            return false;
         }
 
         private HinoxMotion.Update result(
@@ -585,9 +624,9 @@ public final class HinoxMotion {
 
         private boolean inUse;
 
-        HinoxMotion.Update run(HinoxMotion owner, HinoxFrame inputs) {
+        HinoxMotion.Update run(HinoxFrame inputs) {
             if (inUse) {
-                return new HinoxStep(owner).run(owner, inputs);
+                return new HinoxStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;
@@ -633,65 +672,6 @@ public final class HinoxMotion {
                 this.completedResult = null;
             }
         }
-    }
-
-    static HinoxMotion.Update updateBody(HinoxMotion owner, HinoxResult inputs) {
-        RoomEntity entity = inputs.entity();
-        int x = inputs.x();
-        int y = inputs.y();
-        int transition = inputs.transition();
-        int spriteVariant = inputs.spriteVariant();
-        boolean blocked = inputs.blocked();
-        int heldX = inputs.heldX();
-        int heldY = inputs.heldY();
-        int heldZ = inputs.heldZ();
-        int linkSpeedX = inputs.linkSpeedX();
-        int linkSpeedY = inputs.linkSpeedY();
-        int linkVelocityZ = inputs.linkVelocityZ();
-        int airborne = inputs.airborne();
-        int linkDamage = inputs.linkDamage();
-        int jingle = inputs.jingle();
-        int wave = inputs.wave();
-        boolean dust = inputs.dust();
-        boolean heldLinkPositionWritten = inputs.heldLinkPositionWritten();
-        boolean applyHeldLinkPose = inputs.applyHeldLinkPose();
-        HinoxMotion.BombSpawn bomb = inputs.bomb();
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x & 0xFF,
-                y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteDefinition().supported()
-                        ? Math.min(spriteVariant, entity.spriteDefinition().variantCount() - 1)
-                        : -1,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
-        return new HinoxMotion.Update(
-                updated,
-                owner.state[entity.slot()],
-                transition & 0xFF,
-                spriteVariant,
-                blocked,
-                heldX & 0xFF,
-                heldY & 0xFF,
-                heldZ & 0xFF,
-                linkSpeedX & 0xFF,
-                linkSpeedY & 0xFF,
-                linkVelocityZ & 0xFF,
-                airborne & 0xFF,
-                linkDamage & 0xFF,
-                jingle,
-                wave,
-                dust,
-                heldLinkPositionWritten,
-                applyHeldLinkPose,
-                bomb);
     }
 
     record HinoxResult(

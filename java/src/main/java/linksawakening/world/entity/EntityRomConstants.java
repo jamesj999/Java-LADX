@@ -36,6 +36,7 @@ public final class EntityRomConstants {
     public static final int ENTITY_CHEST_WITH_ITEM = 0x07;
     public static final int ENTITY_KEY_DROP_POINT = 0x30;
     public static final int ENTITY_MASTER_STALFOS = 0x5F;
+    public static final int ENTITY_SLIME_EYE = 0x5B;
     public static final int ENTITY_GENIE = 0x5C;
     public static final int ENTITY_DESERT_LANMOLA = 0x87;
     public static final int ENTITY_ARMOS_KNIGHT = 0x88;

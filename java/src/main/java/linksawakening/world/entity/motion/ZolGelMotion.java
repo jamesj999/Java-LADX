@@ -234,7 +234,36 @@ public final class ZolGelMotion {
                     backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter) {
-        return ZolGelMotion.moveBody(this, entity, x, y, backgroundInteraction, ignoreHitsCountdown, frameCounter);
+        int slot = entity.slot();
+        int movedX = ZolGelMotion.addSpeedToPosition(x, this.speedX[slot], this.speedXAccumulator, slot);
+        int movedY = ZolGelMotion.addSpeedToPosition(y, this.speedY[slot], this.speedYAccumulator, slot);
+        if (backgroundInteraction != null) {
+            if (movedX != x
+                    && backgroundInteraction
+                            .probe(
+                                    entity,
+                                    ZolGelMotion.signedByte(this.speedX[slot]) < 0 ? 1 : 0,
+                                    movedX,
+                                    y,
+                                    ignoreHitsCountdown,
+                                    frameCounter)
+                            .blocked()) {
+                movedX = x;
+            }
+            if (movedY != y
+                    && backgroundInteraction
+                            .probe(
+                                    entity,
+                                    ZolGelMotion.signedByte(this.speedY[slot]) < 0 ? 2 : 3,
+                                    movedX,
+                                    movedY,
+                                    ignoreHitsCountdown,
+                                    frameCounter)
+                            .blocked()) {
+                movedY = y;
+            }
+        }
+        return new int[] {movedX, movedY};
     }
 
     static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
@@ -291,48 +320,7 @@ public final class ZolGelMotion {
     }
 
     static ZolGelMotion.Update advanceBody(ZolGelMotion owner, ZolGelFrame inputs) {
-        return owner.zolGelStep.run(owner, inputs);
-    }
-
-    static int[] moveBody(
-            ZolGelMotion owner,
-            RoomEntity entity,
-            int x,
-            int y,
-            /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundInteraction
-                    backgroundInteraction,
-            int ignoreHitsCountdown,
-            int frameCounter) {
-        int slot = entity.slot();
-        int movedX = ZolGelMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-        int movedY = ZolGelMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
-        if (backgroundInteraction != null) {
-            if (movedX != x
-                    && backgroundInteraction
-                            .probe(
-                                    entity,
-                                    ZolGelMotion.signedByte(owner.speedX[slot]) < 0 ? 1 : 0,
-                                    movedX,
-                                    y,
-                                    ignoreHitsCountdown,
-                                    frameCounter)
-                            .blocked()) {
-                movedX = x;
-            }
-            if (movedY != y
-                    && backgroundInteraction
-                            .probe(
-                                    entity,
-                                    ZolGelMotion.signedByte(owner.speedY[slot]) < 0 ? 2 : 3,
-                                    movedX,
-                                    movedY,
-                                    ignoreHitsCountdown,
-                                    frameCounter)
-                            .blocked()) {
-                movedY = y;
-            }
-        }
-        return new int[] {movedX, movedY};
+        return owner.zolGelStep.run(inputs);
     }
 
     static ZolGelMotion.Vector vectorTowardsLinkBody(int entityX, int entityY, int linkX, int linkY, int length) {
@@ -583,10 +571,9 @@ public final class ZolGelMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.ZolGelMotion.Update run(
-                linksawakening.world.entity.motion.ZolGelMotion owner,
                 linksawakening.world.entity.motion.ZolGelMotion.ZolGelFrame inputs) {
             if (inUse) {
-                return new ZolGelStep(owner).run(owner, inputs);
+                return new ZolGelStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

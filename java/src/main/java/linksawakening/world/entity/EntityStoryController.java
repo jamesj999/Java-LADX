@@ -26,7 +26,7 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.FollowingNpcMotion;
 import linksawakening.world.entity.motion.WitchMotion;
 
-/** ROM story and NPC presentation sequences, sharing the owning room slot table. */
+/** OwlEventEntityHandler, RichardEntityHandler and village NPC presentation sequences. */
 public final class EntityStoryController {
     final EntityStoryState state;
     final EntityMotionRegistry motions;
@@ -91,7 +91,7 @@ public final class EntityStoryController {
 
     /** Bank 06:607F–620D. Speeds use the ROM's sixteenth-pixel units. */
     public void advanceVillageKid(RoomEntity entity, int frame, int linkX, int linkY) {
-        EntityStoryController.villageNpcBehaviorAdvanceVillageKid(this, entity, frame, linkX, linkY);
+        this.villageNpcFrameStep.run(entity, frame, linkX, linkY);
     }
 
     // Both 06:6234 and 06:613C restore visual Y to ground Y before testing
@@ -103,36 +103,173 @@ public final class EntityStoryController {
     }
 
     public void advanceKidnapWarningKid(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY) {
-        EntityStoryController.villageNpcBehaviorAdvanceKidnapWarningKid(
-                this, entity, frameCounter, linkEntityX, linkEntityY);
+        int slot = entity.slot();
+        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
+        int facingVariant = ((yDistance < 0 ? 0 : 2) ^ 2) + ((frameCounter >>> 3) & 0x01);
+        this.slots[slot] = withVariant(entity, facingVariant);
+        switch (this.state.readKidKidnapState(slot)) {
+            case 0 -> {
+                this.state.writeKidKidnapDelay(slot, 0x30);
+                this.presentationState.writePendingMusicTrack(0x0E);
+                this.state.writeKidKidnapState(slot, 1);
+            }
+            case 1 -> {
+                if ((yDistance >= -0x20 && yDistance < 0x20 || this.state.preKidKidnapDelay(slot, -1) == 0)
+                        && this.roomVariables.readTransitionSequenceCounter() == 0x04) {
+                    if (entity.type() == EntityRomConstants.ENTITY_KID_71) {
+                        this.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
+                    }
+                    this.state.writeKidKidnapState(slot, 2);
+                } else {
+                    EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
+                            entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x08);
+                    this.slots[slot] = withPositionAndVariant(
+                            entity,
+                            addFallingSpeedToPosition(
+                                    entity.x(), vector.x() & 0xFF, this.state.storageKidSpeedXAccumulator(), slot),
+                            addFallingSpeedToPosition(
+                                    entity.y(), vector.y() & 0xFF, this.state.storageKidSpeedYAccumulator(), slot),
+                            facingVariant);
+                    this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                }
+            }
+            default -> {
+                this.pushLinkFromKid(entity, linkEntityX, linkEntityY);
+                int z = addFallingSpeedToPosition(
+                        entity.z(),
+                        this.state.readKidZSpeed(slot) & 255,
+                        this.state.storageKidSpeedYAccumulator(),
+                        slot);
+                this.state.writeKidZSpeed(slot, this.state.readKidZSpeed(slot) - (2));
+                if (z == 0 || (z & 128) != 0) {
+                    z = 0;
+                    this.state.writeKidZSpeed(slot, (frameCounter & 31) == 0 ? 0x10 : 0);
+                }
+                this.slots[slot] = withZ(this.slots[slot], z);
+                int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
+                if (this.linkState.actionButtonsHeld
+                        && !this.linkState.dialogActive
+                        && xDistance < 0x18
+                        && Math.abs(yDistance) < 0x18) {
+                    this.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
+                }
+            }
+        }
     }
 
     public void advanceMadamMeowMeow(
             RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) {
-        EntityStoryController.villageNpcBehaviorAdvanceMadamMeowMeow(
-                this, entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
+        var runtime = this;
+        int slot = entity.slot();
+        if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 1) {
+            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0);
+            runtime.events.pendingMadamMeowMeowFullHealRequests.add(new MadamMeowMeowFullHealRequest(slot));
+        }
+        int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
+        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
+        int direction = Math.abs(xDistance) >= Math.abs(yDistance) ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
+        int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
+        runtime.slots[entity.slot()] = withVariant(entity, variant);
+        boolean linkFacingMadam = (runtime.linkState.lastRomLinkDirection ^ 0x01) == direction;
+        boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28 && ((xDistance + 0x10) & 0xFF) < 0x20;
+        if (runtime.linkState.actionButtonAHeld
+                && interactionWindow
+                && linkFacingMadam
+                && !runtime.linkState.dialogActive
+                && !runtime.linkState.inventoryAppearing
+                && !linkAirborne
+                && runtime.linkState.dialogCooldown == 0
+                && runtime.linkState.windowY == 0x80) {
+            if ((runtime.roomVariables.readInstrument2Flags() & 0x02) != 0
+                    && runtime.motions
+                                    .get(BowWowMotion.class, BowWowMotion::new)
+                                    .readBowWowState()
+                            == 0x01) {
+                runtime.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0);
+                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
+                runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x2F));
+                return;
+            }
+            int dialogLowId =
+                    switch (runtime.motions
+                            .get(BowWowMotion.class, BowWowMotion::new)
+                            .readBowWowState()) {
+                        case 0 -> 0x30;
+                        case 1 -> 0x32;
+                        default -> 0x31;
+                    };
+            runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
+        }
     }
 
     public void advanceOwlStatue(
             RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int linkMotionState, boolean linkAirborne) {
-        EntityStoryController.villageNpcBehaviorAdvanceOwlStatue(
-                this, entity, linkEntityX, linkEntityY, linkZ, linkMotionState, linkAirborne);
+        // The shipped handler pushes before ReturnIfNonInteractive_18.
+        // CheckLinkCollisionWithEnemy uses the already incremented visual Y;
+        // translating the Link probe keeps the statue's world position unchanged.
+        if (linkZ == 0
+                && linkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
+                && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY - 1)) {
+            this.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+        }
+        if (!this.roomVariables.readGameplayWorld()
+                || this.roomVariables.readTransitionSequenceCounter() != 0x04
+                || this.linkState.dialogActive
+                || this.linkState.inventoryAppearing
+                || this.roomVariables.readRoomTransitionActive()
+                || this.inspection.witchGotItemPresentationActive()
+                || this.state.owlState().readOwlStatueDialogId() < 0) {
+            return;
+        }
+        int dx = signedByte((linkEntityX - entity.x()) & 0xFF);
+        int dy = signedByte((linkEntityY - entity.y()) & 0xFF);
+        if (this.roomInspection.sourceNpcInteractionAllowed(dx, dy, linkAirborne, directionToLink(dx, dy))) {
+            this.events.pendingDialogRequests.add(new DialogRequest(
+                    this.state.owlState().readOwlStatueDialogId() >>> 8,
+                    this.state.owlState().readOwlStatueDialogId() & 0xFF));
+        }
     }
 
     public void advanceRichard(
             RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) {
-        EntityStoryController.richardBehaviorAdvanceRichard(
-                this, entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
+        this.richardStep.run(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
     }
 
     public void advanceOwlEvent(
             RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean handlerLinkInteractive) {
-        EntityStoryController.owlEventBehaviorAdvanceOwlEvent(
-                this, entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive);
+        this.owlEventStep.run(entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive);
     }
 
     void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) {
-        EntityStoryController.owlEventBehaviorAdvanceDepartingOwl(this, entity, slot, frameCounter);
+        this.blockLinkForOwl(slot);
+        RoomEntity flying = this.roomInspection.owlPresentation(entity, frameCounter);
+        int x = addFallingSpeedToPosition(
+                flying.x(),
+                this.state.owlState().readOwlSpeedX(slot),
+                this.state.owlState().storageOwlXAccumulator(),
+                slot);
+        int y = addFallingSpeedToPosition(
+                flying.y(),
+                this.state.owlState().readOwlSpeedY(slot),
+                this.state.owlState().storageOwlYAccumulator(),
+                slot);
+        int z = addFallingSpeedToPosition(
+                flying.z(),
+                this.state.owlState().readOwlSpeedZ(slot),
+                this.state.owlState().storageOwlZAccumulator(),
+                slot);
+        this.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
+        if ((frameCounter & 0x07) == 0) {
+            this.events.pendingEntityEvents.add(
+                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x05));
+        }
+        if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
+            this.presentationState.writePendingMusicTrack(
+                    this.bossRewards.readEnemyDropActivePowerUp()
+                            ? 0x49
+                            : this.state.owlState().readOwlPreviousMusicTrack(slot));
+            this.lifecycle.disableEntityWithoutPersistence(slot);
+        }
     }
 
     public void advanceWitchGotItemPresentation(int slot) {
@@ -156,7 +293,35 @@ public final class EntityStoryController {
     }
 
     public void enableBowWowFollowing() {
-        EntityStoryController.richardBehaviorEnableBowWowFollowing(this);
+        var runtime = this;
+        runtime.motions
+                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                .writeFollowingNpcState(new FollowingNpcState(
+                        runtime.motions
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                                .readFollowingNpcState()
+                                .roosterFollowing(),
+                        runtime.motions
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                                .readFollowingNpcState()
+                                .ghostFollowingState(),
+                        runtime.motions
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                                .readFollowingNpcState()
+                                .marinFollowing(),
+                        true,
+                        runtime.motions
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                                .readFollowingNpcState()
+                                .instrument4Flags(),
+                        runtime.motions
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                                .readFollowingNpcState()
+                                .powerBraceletLevel(),
+                        runtime.motions
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                                .readFollowingNpcState()
+                                .db10()));
     }
 
     public void markBowWowRescued() {
@@ -211,239 +376,6 @@ public final class EntityStoryController {
 
     void blockLinkForOwl(int slot) {
         events.pendingLinkMotionBlockRequests.add(new linksawakening.world.entity.event.LinkMotionBlockRequest(slot));
-    }
-
-    static void owlEventBehaviorAdvanceOwlEvent(
-            EntityStoryController owner,
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean handlerLinkInteractive) {
-        owner.owlEventStep.run(owner, entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive);
-    }
-
-    static void owlEventBehaviorAdvanceDepartingOwl(
-            EntityStoryController owner, RoomEntity entity, int slot, int frameCounter) {
-        var runtime = owner;
-        runtime.blockLinkForOwl(slot);
-        RoomEntity flying = runtime.roomInspection.owlPresentation(entity, frameCounter);
-        int x = addFallingSpeedToPosition(
-                flying.x(),
-                owner.state.owlState().readOwlSpeedX(slot),
-                owner.state.owlState().storageOwlXAccumulator(),
-                slot);
-        int y = addFallingSpeedToPosition(
-                flying.y(),
-                owner.state.owlState().readOwlSpeedY(slot),
-                owner.state.owlState().storageOwlYAccumulator(),
-                slot);
-        int z = addFallingSpeedToPosition(
-                flying.z(),
-                owner.state.owlState().readOwlSpeedZ(slot),
-                owner.state.owlState().storageOwlZAccumulator(),
-                slot);
-        runtime.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
-        if ((frameCounter & 0x07) == 0) {
-            runtime.events.pendingEntityEvents.add(
-                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x05));
-        }
-        if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
-            runtime.presentationState.writePendingMusicTrack(
-                    runtime.bossRewards.readEnemyDropActivePowerUp()
-                            ? 0x49
-                            : owner.state.owlState().readOwlPreviousMusicTrack(slot));
-            runtime.lifecycle.disableEntityWithoutPersistence(slot);
-        }
-    }
-
-    static void richardBehaviorAdvanceRichard(
-            EntityStoryController owner,
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne) {
-        owner.richardStep.run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
-    }
-
-    static void richardBehaviorEnableBowWowFollowing(EntityStoryController owner) {
-        var runtime = owner;
-        runtime.motions
-                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                .writeFollowingNpcState(new FollowingNpcState(
-                        runtime.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .roosterFollowing(),
-                        runtime.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .ghostFollowingState(),
-                        runtime.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .marinFollowing(),
-                        true,
-                        runtime.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .instrument4Flags(),
-                        runtime.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .powerBraceletLevel(),
-                        runtime.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .db10()));
-    }
-
-    static void villageNpcBehaviorAdvanceVillageKid(
-            EntityStoryController owner, RoomEntity entity, int frame, int linkX, int linkY) {
-        owner.villageNpcFrameStep.run(owner, entity, frame, linkX, linkY);
-    }
-
-    static void villageNpcBehaviorAdvanceKidnapWarningKid(
-            EntityStoryController owner, RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY) {
-        var runtime = owner;
-        int slot = entity.slot();
-        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
-        int facingVariant = ((yDistance < 0 ? 0 : 2) ^ 2) + ((frameCounter >>> 3) & 0x01);
-        runtime.slots[slot] = withVariant(entity, facingVariant);
-        switch (owner.state.readKidKidnapState(slot)) {
-            case 0 -> {
-                owner.state.writeKidKidnapDelay(slot, 0x30);
-                runtime.presentationState.writePendingMusicTrack(0x0E);
-                owner.state.writeKidKidnapState(slot, 1);
-            }
-            case 1 -> {
-                if ((yDistance >= -0x20 && yDistance < 0x20 || owner.state.preKidKidnapDelay(slot, -1) == 0)
-                        && runtime.roomVariables.readTransitionSequenceCounter() == 0x04) {
-                    if (entity.type() == EntityRomConstants.ENTITY_KID_71) {
-                        runtime.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
-                    }
-                    owner.state.writeKidKidnapState(slot, 2);
-                } else {
-                    EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
-                            entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x08);
-                    runtime.slots[slot] = withPositionAndVariant(
-                            entity,
-                            addFallingSpeedToPosition(
-                                    entity.x(), vector.x() & 0xFF, owner.state.storageKidSpeedXAccumulator(), slot),
-                            addFallingSpeedToPosition(
-                                    entity.y(), vector.y() & 0xFF, owner.state.storageKidSpeedYAccumulator(), slot),
-                            facingVariant);
-                    runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-                }
-            }
-            default -> {
-                owner.pushLinkFromKid(entity, linkEntityX, linkEntityY);
-                int z = addFallingSpeedToPosition(
-                        entity.z(),
-                        owner.state.readKidZSpeed(slot) & 255,
-                        owner.state.storageKidSpeedYAccumulator(),
-                        slot);
-                owner.state.writeKidZSpeed(slot, owner.state.readKidZSpeed(slot) - (2));
-                if (z == 0 || (z & 128) != 0) {
-                    z = 0;
-                    owner.state.writeKidZSpeed(slot, (frameCounter & 31) == 0 ? 0x10 : 0);
-                }
-                runtime.slots[slot] = withZ(runtime.slots[slot], z);
-                int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
-                if (runtime.linkState.actionButtonsHeld
-                        && !runtime.linkState.dialogActive
-                        && xDistance < 0x18
-                        && Math.abs(yDistance) < 0x18) {
-                    runtime.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
-                }
-            }
-        }
-    }
-
-    static void villageNpcBehaviorAdvanceMadamMeowMeow(
-            EntityStoryController owner,
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne) {
-        var runtime = owner;
-        int slot = entity.slot();
-        if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 1) {
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0);
-            runtime.events.pendingMadamMeowMeowFullHealRequests.add(new MadamMeowMeowFullHealRequest(slot));
-        }
-        int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
-        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
-        int direction = Math.abs(xDistance) >= Math.abs(yDistance) ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
-        int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
-        runtime.slots[entity.slot()] = withVariant(entity, variant);
-        boolean linkFacingMadam = (runtime.linkState.lastRomLinkDirection ^ 0x01) == direction;
-        boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28 && ((xDistance + 0x10) & 0xFF) < 0x20;
-        if (runtime.linkState.actionButtonAHeld
-                && interactionWindow
-                && linkFacingMadam
-                && !runtime.linkState.dialogActive
-                && !runtime.linkState.inventoryAppearing
-                && !linkAirborne
-                && runtime.linkState.dialogCooldown == 0
-                && runtime.linkState.windowY == 0x80) {
-            if ((runtime.roomVariables.readInstrument2Flags() & 0x02) != 0
-                    && runtime.motions
-                                    .get(BowWowMotion.class, BowWowMotion::new)
-                                    .readBowWowState()
-                            == 0x01) {
-                runtime.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0);
-                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
-                runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x2F));
-                return;
-            }
-            int dialogLowId =
-                    switch (runtime.motions
-                            .get(BowWowMotion.class, BowWowMotion::new)
-                            .readBowWowState()) {
-                        case 0 -> 0x30;
-                        case 1 -> 0x32;
-                        default -> 0x31;
-                    };
-            runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
-        }
-    }
-
-    static void villageNpcBehaviorAdvanceOwlStatue(
-            EntityStoryController owner,
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            int linkMotionState,
-            boolean linkAirborne) {
-        var runtime = owner;
-        // The shipped handler pushes before ReturnIfNonInteractive_18.
-        // CheckLinkCollisionWithEnemy uses the already incremented visual Y;
-        // translating the Link probe keeps the statue's world position unchanged.
-        if (linkZ == 0
-                && linkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
-                && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY - 1)) {
-            runtime.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-        }
-        if (!runtime.roomVariables.readGameplayWorld()
-                || runtime.roomVariables.readTransitionSequenceCounter() != 0x04
-                || runtime.linkState.dialogActive
-                || runtime.linkState.inventoryAppearing
-                || runtime.roomVariables.readRoomTransitionActive()
-                || runtime.inspection.witchGotItemPresentationActive()
-                || owner.state.owlState().readOwlStatueDialogId() < 0) {
-            return;
-        }
-        int dx = signedByte((linkEntityX - entity.x()) & 0xFF);
-        int dy = signedByte((linkEntityY - entity.y()) & 0xFF);
-        if (runtime.roomInspection.sourceNpcInteractionAllowed(dx, dy, linkAirborne, directionToLink(dx, dy))) {
-            runtime.events.pendingDialogRequests.add(new DialogRequest(
-                    owner.state.owlState().readOwlStatueDialogId() >>> 8,
-                    owner.state.owlState().readOwlStatueDialogId() & 0xFF));
-        }
     }
 
     static final class OwlEventStep {
@@ -673,15 +605,13 @@ public final class EntityStoryController {
         private boolean inUse;
 
         void run(
-                linksawakening.world.entity.EntityStoryController owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
                 boolean handlerLinkInteractive) {
             if (inUse) {
-                new OwlEventStep(owner)
-                        .run(owner, entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive);
+                new OwlEventStep(owner).run(entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive);
                 return;
             }
             inUse = true;
@@ -862,14 +792,13 @@ public final class EntityStoryController {
         private boolean inUse;
 
         void run(
-                linksawakening.world.entity.EntityStoryController owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
                 boolean linkAirborne) {
             if (inUse) {
-                new RichardStep(owner).run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
+                new RichardStep(owner).run(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
                 return;
             }
             inUse = true;
@@ -1035,14 +964,9 @@ public final class EntityStoryController {
 
         private boolean inUse;
 
-        void run(
-                linksawakening.world.entity.EntityStoryController owner,
-                linksawakening.world.entity.RoomEntity entity,
-                int frame,
-                int linkX,
-                int linkY) {
+        void run(linksawakening.world.entity.RoomEntity entity, int frame, int linkX, int linkY) {
             if (inUse) {
-                new VillageNpcFrameStep(owner).run(owner, entity, frame, linkX, linkY);
+                new VillageNpcFrameStep(owner).run(entity, frame, linkX, linkY);
                 return;
             }
             inUse = true;

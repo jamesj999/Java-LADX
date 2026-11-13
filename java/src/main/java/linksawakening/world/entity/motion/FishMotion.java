@@ -43,7 +43,7 @@ public final class FishMotion {
             IntSupplier randomByteSupplier,
             /* Optional room geometry/history; null preserves the path without that room input. */ RoomEntityBackgroundCollision
                     backgroundCollision) {
-        return fishFrameStep.run(this, entity, transitionCountdown, randomByteSupplier, backgroundCollision);
+        return fishFrameStep.run(entity, transitionCountdown, randomByteSupplier, backgroundCollision);
     }
 
     public void clear(int slot) {
@@ -234,7 +234,6 @@ public final class FishMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.FishMotion.Update run(
-                FishMotion owner,
                 linksawakening.world.entity.RoomEntity entity,
                 int transitionCountdown,
                 java.util.function.IntSupplier randomByteSupplier,
@@ -243,7 +242,7 @@ public final class FishMotion {
                         backgroundCollision) {
             if (inUse) {
                 return new FishFrameStep(owner)
-                        .run(owner, entity, transitionCountdown, randomByteSupplier, backgroundCollision);
+                        .run(entity, transitionCountdown, randomByteSupplier, backgroundCollision);
             }
             inUse = true;
             slot = 0;

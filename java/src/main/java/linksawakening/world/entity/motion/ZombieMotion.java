@@ -56,7 +56,7 @@ public final class ZombieMotion {
     }
 
     public Update advance(ZombieFrame inputs) {
-        return zombieStep.run(this, inputs);
+        return zombieStep.run(inputs);
     }
 
     boolean isChild(int slot) {
@@ -432,18 +432,17 @@ public final class ZombieMotion {
                 } else {
                     updated = ZombieMotion.withVariant(entity, variant);
                 }
-                {
-                    completedResult = owner.update(
-                            updated,
-                            countdown,
-                            nextPhysicsFlags,
-                            nextSpeedX,
-                            nextSpeedY,
-                            spawnRequest,
-                            false,
-                            appliesBackgroundInteraction);
-                    return false;
-                }
+
+                completedResult = owner.update(
+                        updated,
+                        countdown,
+                        nextPhysicsFlags,
+                        nextSpeedX,
+                        nextSpeedY,
+                        spawnRequest,
+                        false,
+                        appliesBackgroundInteraction);
+                return false;
             }
 
             // $640F renders before any state handler writes the next stored frame.
@@ -473,9 +472,9 @@ public final class ZombieMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.ZombieMotion.Update run(
-                ZombieMotion owner, linksawakening.world.entity.motion.ZombieMotion.ZombieFrame inputs) {
+                linksawakening.world.entity.motion.ZombieMotion.ZombieFrame inputs) {
             if (inUse) {
-                return new ZombieStep(owner).run(owner, inputs);
+                return new ZombieStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

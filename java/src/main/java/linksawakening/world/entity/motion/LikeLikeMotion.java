@@ -37,7 +37,7 @@ public final class LikeLikeMotion {
     }
 
     public Update advance(LikeLikeFrame inputs) {
-        return likeLikeFrameStep.run(this, inputs);
+        return likeLikeFrameStep.run(inputs);
     }
 
     public int state(int slot) {
@@ -157,14 +157,13 @@ public final class LikeLikeMotion {
                     owner.privateState3[slot] = 1;
                     owner.inertia[slot] = 0;
                 }
-                {
-                    completedResult = new LikeLikeMotion.Update(
-                            owner.walkMotion.advance(entity, randomByteSupplier, backgroundCollision),
-                            slowTransitionCountdown,
-                            null,
-                            -1);
-                    return false;
-                }
+
+                completedResult = new LikeLikeMotion.Update(
+                        owner.walkMotion.advance(entity, randomByteSupplier, backgroundCollision),
+                        slowTransitionCountdown,
+                        null,
+                        -1);
+                return false;
             }
 
             if (actionButtonsHeld) {
@@ -172,14 +171,13 @@ public final class LikeLikeMotion {
                 if (owner.inertia[slot] >= 0x08) {
                     owner.privateState3[slot] = 0;
                     slowTransitionCountdown = 0x15;
-                    {
-                        completedResult = new LikeLikeMotion.Update(
-                                entity,
-                                slowTransitionCountdown,
-                                new LikeLikeEvent(slot, LikeLikeEvent.Kind.RELEASE, entity.x(), entity.y(), -1, 0),
-                                renderedVariant);
-                        return false;
-                    }
+
+                    completedResult = new LikeLikeMotion.Update(
+                            entity,
+                            slowTransitionCountdown,
+                            new LikeLikeEvent(slot, LikeLikeEvent.Kind.RELEASE, entity.x(), entity.y(), -1, 0),
+                            renderedVariant);
+                    return false;
                 }
             }
             return true;
@@ -206,21 +204,20 @@ public final class LikeLikeMotion {
             // $7E27-$7E55 hides Link and removes the shield before checking his
             // motion state. Only the position writes and animation calls are gated.
             if (linkMotionState != LikeLikeMotion.LINK_MOTION_DEFAULT) {
-                {
-                    completedResult = new LikeLikeMotion.Update(
-                            entity,
-                            slowTransitionCountdown,
-                            new LikeLikeEvent(
-                                    slot,
-                                    LikeLikeEvent.Kind.CAPTURE,
-                                    entity.x(),
-                                    entity.y(),
-                                    stolenInventorySlot,
-                                    stolenShieldLevel,
-                                    false),
-                            renderedVariant);
-                    return false;
-                }
+
+                completedResult = new LikeLikeMotion.Update(
+                        entity,
+                        slowTransitionCountdown,
+                        new LikeLikeEvent(
+                                slot,
+                                LikeLikeEvent.Kind.CAPTURE,
+                                entity.x(),
+                                entity.y(),
+                                stolenInventorySlot,
+                                stolenShieldLevel,
+                                false),
+                        renderedVariant);
+                return false;
             }
 
             // Both $7F05 calls use the same privateState4 counter as walking.
@@ -233,9 +230,9 @@ public final class LikeLikeMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.LikeLikeMotion.Update run(
-                LikeLikeMotion owner, linksawakening.world.entity.motion.LikeLikeMotion.LikeLikeFrame inputs) {
+                linksawakening.world.entity.motion.LikeLikeMotion.LikeLikeFrame inputs) {
             if (inUse) {
-                return new LikeLikeFrameStep(owner).run(owner, inputs);
+                return new LikeLikeFrameStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;

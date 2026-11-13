@@ -61,7 +61,7 @@ public final class BomberMotion {
     }
 
     public linksawakening.world.entity.motion.BomberMotion.Update advance(BomberFrame inputs) {
-        return bomberFrameStep.run(this, inputs);
+        return bomberFrameStep.run(inputs);
     }
 
     public void clear(int slot) {
@@ -335,9 +335,9 @@ public final class BomberMotion {
         private boolean inUse;
 
         linksawakening.world.entity.motion.BomberMotion.Update run(
-                BomberMotion owner, linksawakening.world.entity.motion.BomberMotion.BomberFrame inputs) {
+                linksawakening.world.entity.motion.BomberMotion.BomberFrame inputs) {
             if (inUse) {
-                return new BomberFrameStep(owner).run(owner, inputs);
+                return new BomberFrameStep(owner).run(inputs);
             }
             inUse = true;
             entity = null;
