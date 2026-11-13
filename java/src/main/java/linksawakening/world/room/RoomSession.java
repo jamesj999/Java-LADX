@@ -62,6 +62,7 @@ public final class RoomSession implements RoomEntityOutputSource {
         java.util.Objects.requireNonNull(room, "room");
         // Transitional aliases retained only while collaborators migrate to explicit arguments.
         components.location().activeRoom = room.room;
+        components.location().contents = room.contents;
         components.entityFrame().runtime = room.entities;
         components.entityFrame().loaded = room;
         components.puzzles().current = room.contents.puzzles;
@@ -734,5 +735,20 @@ public final class RoomSession implements RoomEntityOutputSource {
             requests.addAll(loadedRoom.entities.consumePendingDialogRequests());
         }
         return List.copyOf(requests);
+    }
+
+    boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
+        return hasRoom() && components.roomObjectMutations().tickCrackedFloor(loadedRoom, frame, dialogGotItemActive);
+    }
+
+    boolean tickCrackedFloorOnLanding(LinkGroundFrame frame, boolean dialogGotItemActive) {
+        return hasRoom()
+                && components
+                        .roomObjectMutations()
+                        .applyCrackedFloorGroundPhysics(loadedRoom.contents, frame, dialogGotItemActive);
+    }
+
+    boolean breakIndoorSwordCrystal(int location) {
+        return hasRoom() && components.roomObjectMutations().breakIndoorSwordCrystal(loadedRoom, location);
     }
 }

@@ -141,3 +141,13 @@ exactly that interface and an added test prohibits room/runtime access through
 it; the no-superclass/no-deprecated-bridge guarantees remain. Ordered queue
 draining and immutable ownership tests remain unchanged in intent.
 World null occurrences: 248 -> 222. Gate: 2966 tests, zero failures/errors, one skip.
+
+## Map mutation scope
+
+Map-only writes/redraws receive RoomContents, including pre-runtime door setup.
+Entity-producing writes receive RoomRuntime. Ground probes read the supplied
+room rather than the current-room alias; their persistent ROM registers retain
+the existing lifetime. Terrain role operations preserve unloaded false defaults.
+RoomObjectMutations contains no room/runtime absence checks. Remaining loader
+preparation aliases are temporary for the next collaborator migrations.
+World null occurrences: 222 -> 204. Gate: 2966 tests, zero failures/errors, one skip.

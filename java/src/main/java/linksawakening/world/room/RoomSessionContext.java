@@ -71,7 +71,6 @@ final class RoomSessionContext {
                 values.transientVfxSystem));
         values.roomCollisionQueries = new RoomCollisionQueries(new RoomCollisionQueries.Dependencies(
                 values.entityFrame,
-                values.puzzles,
                 values.terrain,
                 values.entityBackgroundCollisionResolver,
                 values.entityCollisionPointProbe,

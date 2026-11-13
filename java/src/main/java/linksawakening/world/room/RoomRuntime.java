@@ -32,6 +32,8 @@ final class RoomRuntime {
             Objects.requireNonNull(queries);
             Objects.requireNonNull(objects);
             Objects.requireNonNull(frame);
+            Objects.requireNonNull(puzzles);
+            Objects.requireNonNull(terrain);
         }
     }
 

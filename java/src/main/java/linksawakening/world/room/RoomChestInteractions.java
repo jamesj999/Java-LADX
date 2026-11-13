@@ -53,7 +53,7 @@ final class RoomChestInteractions {
             return new ChestOpenResult(false, -1, -1, location);
         }
 
-        dependencies.roomObjectMutations().writeBombPuzzleObject(location, 0xA1);
+        dependencies.roomObjectMutations().writeBombPuzzleObject(dependencies.location().contents, location, 0xA1);
         byte[] status = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? dependencies.roomState().overworldRoomStatus
                 : dependencies
@@ -64,7 +64,7 @@ final class RoomChestInteractions {
         // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
         // from the ROM overlay would discard other live mutations (cut bushes).
         if (dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            dependencies.roomTileRedraw().refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap(dependencies.location().contents);
         }
         dependencies
                 .overworldCollision()

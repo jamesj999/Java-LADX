@@ -264,15 +264,19 @@ final class RoomLiftInteractions {
                                 ? 3
                                 : 4;
                 if (room == 0x52 || room == 0x04) replacement = 0xC6;
-                dependencies.roomObjectMutations().writeBombPuzzleObject(target.touchedLocation(), replacement);
+                dependencies
+                        .roomObjectMutations()
+                        .writeBombPuzzleObject(dependencies.location().contents, target.touchedLocation(), replacement);
             }
-            dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation();
+            dependencies
+                    .roomObjectMutations()
+                    .refreshOverworldCollisionAfterObjectMutation(dependencies.location().contents);
         } else {
             dependencies.location()
                             .activeRoom
                             .roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + target.touchedLocation()] =
                     target.touchedObject() == OBJECT_POT_WITH_SWITCH ? OBJECT_SWITCH_BUTTON : 0x0D;
-            dependencies.roomTileRedraw().refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap(dependencies.location().contents);
             dependencies
                     .overworldCollision()
                     .setRoom(dependencies.location().activeRoom.roomObjectsArea());

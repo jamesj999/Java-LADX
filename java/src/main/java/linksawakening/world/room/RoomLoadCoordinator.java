@@ -143,8 +143,8 @@ final class RoomLoadCoordinator {
                 .indoorTorchPaletteEffect()
                 .reset(
                         dependencies.location().activeRoom.palettes(),
-                        dependencies.roomObjectMutations().countUnlitTorches());
-        dependencies.roomObjectMutations().copyIndoorTorchPalettesToActiveRoom();
+                        dependencies.roomObjectMutations().countUnlitTorches(dependencies.location().contents));
+        dependencies.roomObjectMutations().copyIndoorTorchPalettesToActiveRoom(dependencies.location().contents);
         dependencies.roomStoryState().updateWitchEnvironment(dependencies.entityRuntimeState().loaded);
         dependencies
                 .overworldCollision()
@@ -165,6 +165,8 @@ final class RoomLoadCoordinator {
         dependencies.entityInputs().secretSeashellPegasusCollisionY = 0;
         RoomEntitySnapshot entities = prepareEntities(room, objectPalettes);
         dependencies.location().activeRoom = ActiveRoom.from(room, entities);
+        dependencies.location().contents = new RoomContents(
+                dependencies.location().activeRoom, dependencies.puzzles().current, dependencies.terrain().overrides);
         configureDoorAndEventState();
         dependencies.entityRuntimeState().runtime = entities == null
                 ? null

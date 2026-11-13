@@ -173,16 +173,23 @@ final class RoomSessionViews {
     }
 
     int objectAtRoomLocation(int location) {
+        return objectAtRoomLocation(dependencies.location().activeRoom, location);
+    }
+
+    int objectAtRoomLocation(ActiveRoom room, int location) {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        int[] objects = dependencies.location().activeRoom.roomObjectsArea();
+        int[] objects = room.roomObjectsArea();
         return areaIndex < 0 || areaIndex >= objects.length ? 0xFF : objects[areaIndex] & 0xFF;
     }
 
     int adjacentIndoorRoomIdForBombWall(int wallIndex) {
+        return adjacentIndoorRoomIdForBombWall(dependencies.location().activeRoom, wallIndex);
+    }
+
+    int adjacentIndoorRoomIdForBombWall(ActiveRoom room, int wallIndex) {
         return dependencies
                 .scrollNavigation()
-                .adjacentIndoorRoomIdForBombWall(
-                        dependencies.location().activeRoom, dependencies.location().indoorMapPosition, wallIndex);
+                .adjacentIndoorRoomIdForBombWall(room, dependencies.location().indoorMapPosition, wallIndex);
     }
 
     int findIndoorMapPosition(int mapId, int roomId) {

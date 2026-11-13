@@ -139,9 +139,9 @@ final class RoomShovelActions {
                             loaded.room.gbcOverlay(),
                             loaded.room.tileIds(),
                             loaded.room.tileAttrs());
-            dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation();
+            dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation(loaded.contents);
         } else {
-            dependencies.roomTileRedraw().refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap(loaded.contents);
             dependencies.overworldCollision().setRoom(loaded.room.roomObjectsArea());
         }
     }

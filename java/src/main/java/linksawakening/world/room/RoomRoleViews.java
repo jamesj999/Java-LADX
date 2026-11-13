@@ -23,11 +23,8 @@ record RoomRoleViews(
                         new RoomDungeonView.Dependencies(components.roomSessionViews(), components.roomState())),
                 new RoomProgressView(
                         new RoomProgressView.Dependencies(
-                                components.entityFrame(),
-                                components.location(),
-                                components.roomLoadCoordinator(),
-                                components.terrain()),
+                                components.entityFrame(), components.location(), components.terrain()),
                         session),
-                new RoomTerrainView(new RoomTerrainView.Dependencies(components.roomObjectMutations())));
+                new RoomTerrainView(session));
     }
 }

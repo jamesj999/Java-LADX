@@ -136,7 +136,7 @@ final class RoomEntitySimulation {
                 .setTorchPaletteTransitionState(
                         setup.indoorTorchPaletteEffect().targetAddress(),
                         setup.indoorTorchPaletteEffect().transitionActive());
-        setup.roomObjectMutations().copyIndoorTorchPalettesToActiveRoom();
+        setup.roomObjectMutations().copyIndoorTorchPalettesToActiveRoom(loaded.contents);
         setup.roomTransitionController().tickOcarinaAnimationHandler();
         loaded.entities
                 .configuration()
@@ -357,19 +357,20 @@ final class RoomEntitySimulation {
     private void applyObjects(
             RoomRuntime loaded, List<BombExplosionEvent> bombExplosionEvents, int linkEntityX, int linkEntityY) {
         effects.roomTileRedraw()
-                .applyHookshotBridgeUpdates(loaded.entities.inspection().hookshotBridgeUpdates());
+                .applyHookshotBridgeUpdates(
+                        loaded.contents, loaded.entities.inspection().hookshotBridgeUpdates());
         loaded.room.replaceEntities(loaded.entities.inspection().view());
         boolean objectRequests = !bombExplosionEvents.isEmpty();
-        effects.roomObjectMutations().applyBombObjectInteractions(bombExplosionEvents);
+        effects.roomObjectMutations().applyBombObjectInteractions(loaded, bombExplosionEvents);
         var boomerangs = loaded.entities.enemies().boomerangObjectRequests();
         objectRequests |= !boomerangs.isEmpty();
-        effects.roomObjectMutations().applyBoomerangObjectInteractions(boomerangs);
+        effects.roomObjectMutations().applyBoomerangObjectInteractions(loaded.contents, boomerangs);
         var rods = loaded.entities.enemies().magicRodObjectRequests();
         objectRequests |= !rods.isEmpty();
-        effects.roomObjectMutations().applyMagicRodObjectInteractions(rods);
+        effects.roomObjectMutations().applyMagicRodObjectInteractions(loaded.contents, rods);
         var powders = loaded.entities.enemies().magicPowderObjectRequests();
         objectRequests |= !powders.isEmpty();
-        effects.roomObjectMutations().applyMagicPowderObjectInteractions(powders);
+        effects.roomObjectMutations().applyMagicPowderObjectInteractions(loaded.contents, powders);
         // Empty object-request lists return without mutating runtime entities. The first
         // immutable snapshot already contains their final state in that common case.
         if (objectRequests)

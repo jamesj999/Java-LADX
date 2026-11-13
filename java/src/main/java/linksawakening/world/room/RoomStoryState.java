@@ -27,13 +27,11 @@ final class RoomStoryState {
         roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
                 dependencies.chestContentsTable(),
                 dependencies.enemyCombatTables(),
-                dependencies.entityRuntimeState(),
                 dependencies.entityInputs(),
                 dependencies.entityRandomByteSource(),
                 dependencies.entitySpriteHandlerCatalog(),
                 dependencies.followers(),
                 dependencies.followingNpcEntitySpawner(),
-                dependencies.location(),
                 dependencies.owlEventDialogResolver(),
                 dependencies.romData(),
                 dependencies.romTables(),

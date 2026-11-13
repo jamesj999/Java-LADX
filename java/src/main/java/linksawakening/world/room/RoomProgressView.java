@@ -41,15 +41,10 @@ final class RoomProgressView implements RoomProgress {
         dependencies.terrain().switchableObjectAnimationStage = 0;
     }
 
-    record Dependencies(
-            RoomEntitySessionState entityFrame,
-            RoomLocationState location,
-            RoomLoadCoordinator roomLoadCoordinator,
-            RoomTerrainState terrain) {
+    record Dependencies(RoomEntitySessionState entityFrame, RoomLocationState location, RoomTerrainState terrain) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
             java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
             java.util.Objects.requireNonNull(terrain, "terrain");
         }
     }

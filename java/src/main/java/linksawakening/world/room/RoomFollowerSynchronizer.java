@@ -77,13 +77,11 @@ final class RoomFollowerSynchronizer {
     record Dependencies(
             ChestContentsTable chestContentsTable,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntitySessionState entityRuntimeState,
             RoomEntityInputs entityInputs,
             RomRandomByteSource entityRandomByteSource,
             EntitySpriteHandlerCatalog entitySpriteHandlerCatalog,
             RoomFollowerState followers,
             FollowingNpcEntitySpawner followingNpcEntitySpawner,
-            RoomLocationState location,
             OwlEventDialogResolver owlEventDialogResolver,
             Rom romData,
             RomTables romTables,
@@ -97,13 +95,11 @@ final class RoomFollowerSynchronizer {
         Dependencies {
             java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
             java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
             java.util.Objects.requireNonNull(followers, "followers");
             java.util.Objects.requireNonNull(followingNpcEntitySpawner, "followingNpcEntitySpawner");
-            java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
             java.util.Objects.requireNonNull(romData, "romData");
             java.util.Objects.requireNonNull(romTables, "romTables");

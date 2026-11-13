@@ -198,7 +198,7 @@ final class RoomDoorInteractions {
         dependencies.puzzles().current.pushedBlockDirection = direction;
         dependencies.puzzles().current.pushedBlockMotionFrames = PUSHED_BLOCK_MOTION_FRAMES;
         dependencies.puzzles().current.pushedBlockEntitySlot = spawnedSlot;
-        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap(dependencies.location().contents);
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -320,14 +320,16 @@ final class RoomDoorInteractions {
         dependencies.puzzles().current.pushBlockContactTicks = 0;
         dependencies.roomState().dungeonItemState.consumeSmallKey();
 
-        dependencies.roomObjectMutations().writeBombPuzzleObject(touchedLocation, OBJECT_FLOOR_OD);
+        dependencies
+                .roomObjectMutations()
+                .writeBombPuzzleObject(dependencies.location().contents, touchedLocation, OBJECT_FLOOR_OD);
         dependencies.roomSessionViews()
                         .indoorStatusTableForMap(
                                 dependencies.location().activeRoom.mapId())[
                         dependencies.location().activeRoom.roomId()] |=
                 (byte) INDOOR_ROOM_STATUS_EVENT_3;
         dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-        dependencies.roomTileRedraw().refreshActiveRoomTilemap();
+        dependencies.roomTileRedraw().refreshActiveRoomTilemap(dependencies.location().contents);
         dependencies
                 .overworldCollision()
                 .setRoom(dependencies.location().activeRoom.roomObjectsArea());
@@ -431,7 +433,9 @@ final class RoomDoorInteractions {
                 dependencies.location().activeRoom.gbcOverlay()[overlayIndex] = OBJECT_CAVE_DOOR;
                 dependencies.location().activeRoom.renderValues()[gateIndex] = OBJECT_CAVE_DOOR;
                 // The source's draw command changes tile IDs only; keep attrs.
-                dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation();
+                dependencies
+                        .roomObjectMutations()
+                        .refreshOverworldCollisionAfterObjectMutation(dependencies.location().contents);
             }
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
         }

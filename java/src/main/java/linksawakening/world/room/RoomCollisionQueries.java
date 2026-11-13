@@ -231,7 +231,6 @@ final class RoomCollisionQueries {
 
     record Dependencies(
             RoomEntitySessionState entityFrame,
-            RoomPuzzleState puzzles,
             RoomTerrainState terrain,
             EntityBackgroundCollisionResolver entityBackgroundCollisionResolver,
             EntityCollisionPointProbe entityCollisionPointProbe,
@@ -239,7 +238,6 @@ final class RoomCollisionQueries {
             RomTables romTables) {
         Dependencies {
             java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityBackgroundCollisionResolver, "entityBackgroundCollisionResolver");
             java.util.Objects.requireNonNull(entityCollisionPointProbe, "entityCollisionPointProbe");

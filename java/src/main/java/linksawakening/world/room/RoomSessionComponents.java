@@ -174,7 +174,7 @@ record RoomSessionComponents(
                     entityCombatBridge,
                     new LinkOutputs.Dependencies(entityBridge),
                     new RewardOutputs.Dependencies(entityFrame, roomSessionViews),
-                    new PresentationOutputs.Dependencies(entityFrame),
+                    new PresentationOutputs.Dependencies(),
                     roomRuntimeServices);
         }
     }
