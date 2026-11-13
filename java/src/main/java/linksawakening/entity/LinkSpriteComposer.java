@@ -4,7 +4,6 @@ import linksawakening.equipment.EquipmentItem;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 import linksawakening.state.InventoryItem;
-import linksawakening.state.Tunic;
 
 /** Owns body tile composition and equipment sprite order for ROM DrawLinkSprite ($00:1D4F). */
 final class LinkSpriteComposer {
@@ -31,9 +30,6 @@ final class LinkSpriteComposer {
 
     static void drawTile(
             byte[] buffer, Tile tile, int screenX, int screenY, boolean flipX, boolean flipY, int[] palette) {
-        if (tile == null) {
-            return;
-        }
         for (int ty = 0; ty < 8; ty++) {
             for (int tx = 0; tx < 8; tx++) {
                 int px = screenX + tx;
@@ -70,8 +66,7 @@ final class LinkSpriteComposer {
         int originX = linkMotion.get().position().pixelX() + offsetX;
         int renderY = bodyY;
         int originY = renderY + offsetY;
-        int[] palette = linkServices.get().playerState != null
-                        && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
+        int[] palette = (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
                 ? linkServices.get().tunicPalette.objectPaletteView(4)
@@ -79,13 +74,7 @@ final class LinkSpriteComposer {
                         .get()
                         .tunicPalette
                         .tunicView(
-                                linkServices.get().playerState == null
-                                        ? Tunic.GREEN.romValue()
-                                        : linkServices
-                                                .get()
-                                                .playerState
-                                                .equipmentLevels()
-                                                .tunicType());
+                                linkServices.get().playerState.equipmentLevels().tunicType());
 
         if (linkStateMachine.get().door().revolvingDoorPaletteVariant() >= 0
                 && linkStateMachine.get().door().revolvingDoorFrame() < 0x38) {
@@ -116,14 +105,12 @@ final class LinkSpriteComposer {
     }
 
     private void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY, boolean acquisition) {
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return;
-        }
+
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemA());
-        if (a != null) {
+                .item(linkServices.get().playerState.inventory().itemA());
+        {
             a.render(
                     displayBuffer,
                     linkMotion.get().position().pixelX(),
@@ -135,8 +122,8 @@ final class LinkSpriteComposer {
         EquipmentItem b = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemB());
-        if (b != null && b != a) {
+                .item(linkServices.get().playerState.inventory().itemB());
+        if (b != a) {
             b.render(
                     displayBuffer,
                     linkMotion.get().position().pixelX(),
@@ -150,8 +137,8 @@ final class LinkSpriteComposer {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
-            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
+            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
+            if (acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.render(
                         displayBuffer,
                         linkMotion.get().position().pixelX(),
@@ -183,8 +170,7 @@ final class LinkSpriteComposer {
         int originX = linkMotion.get().position().pixelX() + offsetX;
         int renderY = bodyY;
         int originY = renderY + offsetY;
-        int[] palette = linkServices.get().playerState != null
-                        && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
+        int[] palette = (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
                 ? linkServices.get().tunicPalette.objectPaletteView(4)
@@ -192,13 +178,7 @@ final class LinkSpriteComposer {
                         .get()
                         .tunicPalette
                         .tunicView(
-                                linkServices.get().playerState == null
-                                        ? Tunic.GREEN.romValue()
-                                        : linkServices
-                                                .get()
-                                                .playerState
-                                                .equipmentLevels()
-                                                .tunicType());
+                                linkServices.get().playerState.equipmentLevels().tunicType());
 
         if (linkStateMachine.get().door().revolvingDoorPaletteVariant() >= 0
                 && linkStateMachine.get().door().revolvingDoorFrame() < 0x38) {
@@ -232,14 +212,12 @@ final class LinkSpriteComposer {
     }
 
     private void submitEquippedOam(linksawakening.render.OamSink sink, int offsetX, int offsetY, boolean acquisition) {
-        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
-            return;
-        }
+
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemA());
-        if (a != null) {
+                .item(linkServices.get().playerState.inventory().itemA());
+        {
             a.submitOam(
                     sink,
                     linkMotion.get().position().pixelX(),
@@ -251,8 +229,8 @@ final class LinkSpriteComposer {
         EquipmentItem b = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.inventory().itemB());
-        if (b != null && b != a) {
+                .item(linkServices.get().playerState.inventory().itemB());
+        if (b != a) {
             b.submitOam(
                     sink,
                     linkMotion.get().position().pixelX(),
@@ -266,8 +244,8 @@ final class LinkSpriteComposer {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
-            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
+            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
+            if (acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.submitOam(
                         sink,
                         linkMotion.get().position().pixelX(),

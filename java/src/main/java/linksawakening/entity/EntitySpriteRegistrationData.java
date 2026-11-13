@@ -165,7 +165,7 @@ final class EntitySpriteRegistrationData {
         if (entityType == ENTITY_FISH) {
             return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.FISH, entityType);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** HardHatBeetleCaveBSpriteVariants from azle.sym. */
@@ -262,7 +262,7 @@ final class EntitySpriteRegistrationData {
                     2,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     private static final int BOSS_MAP_TURTLE_ROCK = 0x07;
@@ -310,7 +310,7 @@ final class EntitySpriteRegistrationData {
                     : mapId == BOSS_MAP_EAGLES_TOWER ? BOSS_EAGLES_TOWER_HINOX.address() : BOSS_DEFAULT_HINOX.address();
             return EntitySpriteRecipe.rectangle(entityType, 0x06, address, 4, 8, 0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** CuccoSpriteVariants at $05:$4514. */
@@ -351,7 +351,7 @@ final class EntitySpriteRegistrationData {
                     2,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** LiftableStatueSpriteRect_BottleGrotto from azle.sym. */
@@ -364,9 +364,6 @@ final class EntitySpriteRegistrationData {
             int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
-        }
-        if (roomTable == null) {
-            throw new IllegalArgumentException("Room entity table cannot be null");
         }
 
         // Color Dungeon's $86 handler is bank-$36 func_036_4F9B, not the
@@ -400,7 +397,7 @@ final class EntitySpriteRegistrationData {
         if (entityType == 0x41) {
             return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.OWL, entityType);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** KeeseCaveBSpriteVariants from azle.sym. */
@@ -541,7 +538,7 @@ final class EntitySpriteRegistrationData {
                     2,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** Data_015_4A15 at $15:$4A15. */
@@ -601,7 +598,7 @@ final class EntitySpriteRegistrationData {
                     1,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** CrowSpriteVariants at $06:$5C89. */
@@ -697,7 +694,7 @@ final class EntitySpriteRegistrationData {
                     2,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** SirensInstrument2SpriteVariants at $03:$5D83. */
@@ -818,7 +815,7 @@ final class EntitySpriteRegistrationData {
                     1,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** BushcrawlerIndoorSpriteVariants from azle.sym. */
@@ -874,7 +871,7 @@ final class EntitySpriteRegistrationData {
                     0,
                     EntitySpriteDefinition.DynamicSprite.TileSource.GPU);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** EntityArrowSpriteVariants at $03:$6BC6. */
@@ -949,7 +946,7 @@ final class EntitySpriteRegistrationData {
         if (entityType == ENTITY_HOOKSHOT_CHAIN) {
             return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.HOOKSHOT_CHAIN, entityType);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** OwlStatueSpriteVariants at $18:$5DF7. */
@@ -997,7 +994,7 @@ final class EntitySpriteRegistrationData {
                     1,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** GoombaSpriteVariants at $07:$65CE. */
@@ -1012,7 +1009,7 @@ final class EntitySpriteRegistrationData {
                     3,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** ZolSpriteVariants at $06:$7C09. */
@@ -1043,7 +1040,7 @@ final class EntitySpriteRegistrationData {
                     5,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** GibdoTurtleRockSpriteVariants from azle.sym. */
@@ -1125,7 +1122,7 @@ final class EntitySpriteRegistrationData {
                     8,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     /** Kid72SpriteVariants from azle.sym. */
@@ -1251,7 +1248,7 @@ final class EntitySpriteRegistrationData {
                     8,
                     0);
         }
-        return null;
+        return EntitySpriteRecipe.NO_MATCH;
     }
 
     private static final int[] MAPS = {-1, 1, 3, 6, 7, 10, 22, 31, 128, 129, 130, 131};
@@ -1293,37 +1290,37 @@ final class EntitySpriteRegistrationData {
 
         EntitySpriteRecipe result;
         result = contextualObjectLookupFloatingItem(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = roomObjectLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = pickupLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = bossLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = playerProjectileLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = overworldCreatureLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = companionLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = plantLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = aquaticLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = undeadEnemyLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = villageNpcLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = dungeonCreatureLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = sideViewLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = armoredEnemyLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = hazardLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
         result = slimeEnemyLookup(entityType, roomTable, mapId);
-        if (result != null) return result;
+        if (result.matched()) return result;
 
         return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.UNSUPPORTED, entityType);
     }

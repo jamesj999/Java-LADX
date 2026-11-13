@@ -9,6 +9,7 @@ import linksawakening.app.GameSession;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkCommand;
 import linksawakening.equipment.Sword;
+import linksawakening.testing.TestLinks;
 import linksawakening.world.entity.RomRandomByteSource;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +71,7 @@ class SwordInteractionGateTest {
 
     @Test
     void rawWritesOverwriteAndSideViewKeepsItsOwnPolicy() {
-        Link link = new Link(null, null, null, null, null, null, null);
+        Link link = TestLinks.link().build();
         link.apply(new LinkCommand.MotionBlock(0, 0, 2));
         link.apply(new LinkCommand.MotionBlock(0, 0, 3));
         assertEquals(3, link.motion().romInteractiveMotionBlockValue());

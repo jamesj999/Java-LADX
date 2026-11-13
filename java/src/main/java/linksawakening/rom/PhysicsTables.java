@@ -9,6 +9,15 @@ public final class PhysicsTables {
     private static final int PHYSICS_FLAGS_LENGTH = 256;
     private final int[][] physicsFlags;
 
+    private PhysicsTables() {
+        physicsFlags = new int[3][PHYSICS_FLAGS_LENGTH];
+    }
+
+    /** No object physics for an open world. */
+    public static PhysicsTables openWorld() {
+        return new PhysicsTables();
+    }
+
     private PhysicsTables(Rom rom) {
         physicsFlags = new int[][] {
             rom.u8Table(RomSymbols.OverworldObjectPhysicFlags, PHYSICS_FLAGS_LENGTH),

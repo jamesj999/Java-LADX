@@ -3,6 +3,7 @@ package linksawakening.audio.openal;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Objects;
 import java.util.function.LongSupplier;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL;
@@ -18,7 +19,7 @@ final class OpenAlStream {
     final int[] buffers = new int[BUFFER_COUNT];
     final IntBufferRing freeBuffers = new IntBufferRing(BUFFER_COUNT);
     boolean available;
-    String statusMessage;
+    String statusMessage = "";
     long device;
     long context;
     int source;
@@ -223,7 +224,7 @@ final class OpenAlStream {
 
     static String conciseMessage(Throwable throwable) {
         String message = throwable.getMessage();
-        if (message == null || message.isBlank()) {
+        if (Objects.requireNonNullElse(message, "").isBlank()) {
             return throwable.getClass().getSimpleName();
         }
         return message;

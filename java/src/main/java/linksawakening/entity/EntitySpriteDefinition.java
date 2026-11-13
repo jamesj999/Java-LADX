@@ -21,8 +21,13 @@ public final class EntitySpriteDefinition {
             }
         }
     }
-    /** Immutable variant values. */
+    /** OAM pair; a single-column variant has no second entry (query {@link Variant#hasSecond()}). */
     public record Variant(OamAttribute first, OamAttribute second) {
+        /** Whether the ROM display list emits a second 8x16 column. */
+        public boolean hasSecond() {
+            return second != null;
+        }
+
         public Variant {
             if (first == null) {
                 throw new IllegalArgumentException("A display-list variant needs a first OAM entry");

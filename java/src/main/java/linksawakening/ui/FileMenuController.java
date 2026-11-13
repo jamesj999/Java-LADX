@@ -145,6 +145,7 @@ public final class FileMenuController {
         return false;
     }
 
+    /** Missing name rows mean empty save slots; normalize them to five zero bytes at this boundary. */
     private static int[][] copySavedNames(int[][] names) {
         int[][] copy = new int[3][NAME_LENGTH];
         if (names == null) {

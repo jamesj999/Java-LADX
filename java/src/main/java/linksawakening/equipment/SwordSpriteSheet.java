@@ -31,6 +31,13 @@ public final class SwordSpriteSheet {
         this.tiles = tiles;
     }
 
+    /** Transparent tiles for an animation-only sword without a renderer. */
+    public static SwordSpriteSheet invisible() {
+        Tile[] tiles = new Tile[TILE_COUNT];
+        for (int i = 0; i < tiles.length; i++) tiles[i] = new Tile();
+        return new SwordSpriteSheet(tiles);
+    }
+
     public static SwordSpriteSheet loadFromRom(Rom romData) {
         Tile[] tiles = new Tile[TILE_COUNT];
         int offset = romOffset(LINK_CHARACTER_1_BANK_GBC, LINK_CHARACTER_1_ADDR);

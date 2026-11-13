@@ -29,17 +29,24 @@ final class IntroFramePublisher {
     private final Function<String, BackgroundScene> backgroundProvider;
     private final int[] colorModifiers;
     private final IntroRomData.PaletteBlock dxFadeInPalette;
-    private int[][] fadeBg, fadeObj;
-    private int[][] visibleBg, visibleObj;
-    private byte[] visibleWave;
+    // Identity sentinels represent VBlank data that has not been latched, not missing services.
+    private static final int[][] UNLATCHED_PALETTES = new int[0][];
+    private static final int[] UNLATCHED_MAP = new int[0];
+    private static final byte[] UNLATCHED_WAVE = new byte[0];
+    private int[][] fadeBg = UNLATCHED_PALETTES, fadeObj = UNLATCHED_PALETTES;
+    private int[][] visibleBg = UNLATCHED_PALETTES, visibleObj = UNLATCHED_PALETTES;
+    private byte[] visibleWave = UNLATCHED_WAVE;
     private int visibleScrollY;
-    private int[] visibleTilemap, visibleAttrmap;
+    private int[] visibleTilemap = UNLATCHED_MAP, visibleAttrmap = UNLATCHED_MAP;
     private int[][] bgPalettes;
     private int[][] objPalettes;
     private List<IntroSprite> sprites = List.of();
-    private List<IntroSprite> pendingSprites;
-    private IntroFrameSnapshot snapshot;
-    private IntroFrameSnapshot transitionFrame;
+    // The first sprite publication precedes the first pending VBlank list.
+    private boolean pendingSpritesReady;
+    private List<IntroSprite> pendingSprites = List.of();
+    private IntroFrameSnapshot snapshot = IntroFrameSnapshot.empty();
+    private boolean transitionFrameReady;
+    private IntroFrameSnapshot transitionFrame = IntroFrameSnapshot.empty();
 
     private final IntroRomData rom;
     private final IntroPhaseState phase;
@@ -74,10 +81,15 @@ final class IntroFramePublisher {
         return phase.sceneId().equals(IntroCutsceneScript.SCENE_BEACH) ? video.beachScrollX() : video.scrollX();
     }
 
+    /** Construction-time publication after the scene and wave tables are loaded. */
+    void initializeFrame(int shipX, int shipY, int seaFadeTimer, List<IntroSequence.Lightning> lightning, int clock) {
+        sprites = renderSprites(shipX, shipY, seaFadeTimer, lightning, clock);
+        refreshSnapshot(shipX, shipY, seaFadeTimer, lightning, clock);
+    }
+
     void refreshSnapshot(int shipX, int shipY, int seaFadeTimer, List<IntroSequence.Lightning> lightning, int clock) {
-        if (snapshot == null) sprites = renderSprites(shipX, shipY, seaFadeTimer, lightning, clock);
         boolean previousScene = phase.stageFrame() == 0
-                && transitionFrame != null
+                && transitionFrameReady
                 && (phase.stage() == Stage.LINK_FACE || phase.stage() == Stage.BEACH_LOAD);
         int blank = phase.stage() == Stage.SEA && phase.frameCounter() <= 3
                 ? 0xFFFFFF
@@ -86,8 +98,8 @@ final class IntroFramePublisher {
                         : phase.stage() == Stage.SEA_FADE && phase.stageFrame() <= 2
                                 ? 0xFFFFFF
                                 : phase.stage() == Stage.BEACH_LOAD && phase.stageFrame() > 0 ? 0xFFFFFF : -1;
-        int[][] backgroundColors = this.visibleBg() == null ? dynamicBgPalettes() : this.visibleBg();
-        int[][] objectColors = visibleObj == null ? dynamicObjPalettes() : visibleObj;
+        int[][] backgroundColors = this.visibleBg() == UNLATCHED_PALETTES ? dynamicBgPalettes() : this.visibleBg();
+        int[][] objectColors = visibleObj == UNLATCHED_PALETTES ? dynamicObjPalettes() : visibleObj;
         if (blank >= 0) {
             backgroundColors = solidPalettes(blank);
             objectColors = solidPalettes(blank);
@@ -109,11 +121,11 @@ final class IntroFramePublisher {
                 .tilemap(
                         previousScene
                                 ? transitionFrame.tilemap()
-                                : this.visibleTilemap() == null ? video.tilemap() : this.visibleTilemap())
+                                : this.visibleTilemap() == UNLATCHED_MAP ? video.tilemap() : this.visibleTilemap())
                 .attrmap(
                         previousScene
                                 ? transitionFrame.attrmap()
-                                : visibleAttrmap == null ? video.attrmap() : visibleAttrmap)
+                                : visibleAttrmap == UNLATCHED_MAP ? video.attrmap() : visibleAttrmap)
                 .bgPalettes(backgroundColors)
                 .objPalettes(objectColors)
                 .sprites(sprites)
@@ -127,7 +139,7 @@ final class IntroFramePublisher {
                                 ? null
                                 : previousScene
                                         ? transitionFrame.animatedTiles()
-                                        : visibleWave == null ? water.waveTiles() : visibleWave)
+                                        : visibleWave == UNLATCHED_WAVE ? water.waveTiles() : visibleWave)
                 .animatedTilesDestination(
                         previousScene ? transitionFrame.animatedTilesDestination() : water.waveDestination())
                 .build();
@@ -222,7 +234,7 @@ final class IntroFramePublisher {
         }
         video.tilemap(scene.tilemap().clone());
         video.attrmap(scene.attrmap().clone());
-        this.visibleTilemap((visibleAttrmap = null));
+        visibleTilemap = visibleAttrmap = UNLATCHED_MAP;
         bgPalettes = copyPalettes(scene.palettes());
         objPalettes = copyPalettes(scene.objectPalettes());
     }
@@ -230,7 +242,8 @@ final class IntroFramePublisher {
     int[][] dynamicBgPalettes() {
         if (phase.stage() == Stage.BEACH_LOAD
                 || phase.stage() == Stage.BEACH_FADE
-                || (phase.stage() == Stage.SEA_FADE && this.fadeBg() != null)) return copyPalettes(this.fadeBg());
+                || (phase.stage() == Stage.SEA_FADE && this.fadeBg() != UNLATCHED_PALETTES))
+            return copyPalettes(this.fadeBg());
         int[][] palettes = copyPalettes(bgPalettes);
         if (paletteLightningCountdown == 0
                 || (phase.stage() != Stage.SEA
@@ -251,7 +264,7 @@ final class IntroFramePublisher {
     int[][] dynamicObjPalettes() {
         if (phase.stage() == Stage.BEACH_LOAD
                 || phase.stage() == Stage.BEACH_FADE
-                || (phase.stage() == Stage.SEA_FADE && fadeObj != null)) return copyPalettes(fadeObj);
+                || (phase.stage() == Stage.SEA_FADE && fadeObj != UNLATCHED_PALETTES)) return copyPalettes(fadeObj);
         int[][] palettes = copyPalettes(objPalettes);
         if (phase.stage() != Stage.TITLE_DX && phase.stage() != Stage.COMPLETE) {
             return palettes;
@@ -281,6 +294,10 @@ final class IntroFramePublisher {
     int[][] fadeObj(int[][] value) {
         fadeObj = value;
         return value;
+    }
+
+    void clearVisiblePalettes() {
+        visibleBg = visibleObj = UNLATCHED_PALETTES;
     }
 
     int[][] visibleBg() {
@@ -334,12 +351,17 @@ final class IntroFramePublisher {
         return value;
     }
 
+    boolean hasPendingSprites() {
+        return pendingSpritesReady;
+    }
+
     List<IntroSprite> pendingSprites() {
         return pendingSprites;
     }
 
     List<IntroSprite> pendingSprites(List<IntroSprite> value) {
         pendingSprites = value;
+        pendingSpritesReady = true;
         return value;
     }
 
@@ -349,6 +371,7 @@ final class IntroFramePublisher {
 
     IntroFrameSnapshot transitionFrame(IntroFrameSnapshot value) {
         transitionFrame = value;
+        transitionFrameReady = true;
         return value;
     }
 

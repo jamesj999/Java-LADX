@@ -4,6 +4,7 @@ import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.audio.sfx.SoundEffectPlayback;
 import linksawakening.rom.Rom;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,7 +32,7 @@ final class FrameAudioMixerTest {
         other.start(track);
         driver.tick60Hz();
         other.tick60Hz();
-        var mixer = new FrameAudioMixer(driver, apu, null);
+        var mixer = new FrameAudioMixer(driver, apu, SoundEffectPlayback.none());
         int remainder = rate % 60;
         int until = Math.max(1, rate / 60);
         for (int buffer = 0; buffer < 30; buffer++) {

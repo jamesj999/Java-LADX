@@ -2,6 +2,7 @@ package linksawakening.dialog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** DialogDrawNextCharacterHandler: ordered opening, reveal, paging, choice and closing transitions. */
 public final class DialogController {
@@ -82,13 +83,13 @@ public final class DialogController {
     }
 
     private void open(String text, BoxPosition boxPosition, boolean preformatted) {
-        DialogText.ParsedText parsedText = textPreparation.parse(text == null ? "" : text);
+        DialogText.ParsedText parsedText = textPreparation.parse(Objects.requireNonNullElse(text, ""));
         this.text = preformatted
                 ? textPreparation.formatPreformatted(parsedText.text())
                 : textPreparation.wrap(parsedText.text());
         this.choicePrompt = false;
         this.choiceSelectionIndex = 0;
-        this.boxPosition = boxPosition == null ? BoxPosition.BOTTOM : boxPosition;
+        this.boxPosition = Objects.requireNonNullElse(boxPosition, BoxPosition.BOTTOM);
         openingAge = 0;
         closingAge = -1;
         scrollAge = -1;

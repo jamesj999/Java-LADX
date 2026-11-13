@@ -8,6 +8,7 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -29,12 +30,9 @@ final class LinkRoomBehaviorTest extends LinkFixture {
     @Test
     void keepsRoomEntryCoordinatesInBothHostAndRomConventions() {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(inputConfig)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
@@ -69,12 +67,9 @@ final class LinkRoomBehaviorTest extends LinkFixture {
     @Test
     void warpState3KeepsCollisionImmunitySeparateFromInvincibilityCounter() {
         PlayerState playerState = new PlayerState();
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
-                .tables(null)
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(new ItemRegistry())
                 .build();

@@ -5,9 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 class LinkComponentOwnershipTest {
+    @Test
+    void unboundAssemblyCellCannotLeakAComponent() {
+        var reference = new LinkComponentRef<Object>();
+        assertThrows(IllegalStateException.class, reference::get);
+        Object component = new Object();
+        reference.bind(component);
+        assertSame(component, reference.get());
+    }
+
     @Test
     void behaviorsNeverRetainTheLinkFacade() {
         for (Class<?> component : List.of(
@@ -31,15 +41,7 @@ class LinkComponentOwnershipTest {
 
     @Test
     void assemblyBindsEachDependencyToTheOwnedComponent() {
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(null)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().build();
         assertSame(link.linkMotion, link.assembly.linkMotion.get());
         assertSame(link.linkAnimationState, link.assembly.linkAnimationState.get());
         assertSame(link.linkItemState, link.assembly.linkItemState.get());

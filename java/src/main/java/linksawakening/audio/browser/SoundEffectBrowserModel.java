@@ -15,7 +15,7 @@ final class SoundEffectBrowserModel {
     }
 
     public List<SoundEffect> filteredEffects(String filter) {
-        String normalizedFilter = filter == null ? "" : filter.trim().toLowerCase(Locale.ROOT);
+        String normalizedFilter = Objects.requireNonNullElse(filter, "").trim().toLowerCase(Locale.ROOT);
         if (normalizedFilter.isEmpty()) {
             return effects;
         }

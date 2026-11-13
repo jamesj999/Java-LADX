@@ -5,6 +5,7 @@ import static linksawakening.state.Direction.LEFT;
 import static linksawakening.state.Direction.RIGHT;
 import static linksawakening.state.Direction.UP;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.state.Direction;
@@ -53,18 +54,18 @@ final class LinkMotion {
     }
 
     LinkMotion(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkControls = dependencies.linkControls;
-        linkDamage = dependencies.linkDamage;
-        linkEntityEffects = dependencies.linkEntityEffects;
-        linkEquipment = dependencies.linkEquipment;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkControls = Objects.requireNonNull(dependencies.linkControls, "linkControls");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkEntityEffects = Objects.requireNonNull(dependencies.linkEntityEffects, "linkEntityEffects");
+        linkEquipment = Objects.requireNonNull(dependencies.linkEquipment, "linkEquipment");
 
-        linkItemState = dependencies.linkItemState;
-        linkServices = dependencies.linkServices;
-        linkSideView = dependencies.linkSideView;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkItemState = Objects.requireNonNull(dependencies.linkItemState, "linkItemState");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
         position = new LinkPosition(linkSideView, collisionState);
     }
 
@@ -100,8 +101,7 @@ final class LinkMotion {
 
         // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too:
         // BackgroundCollisionHandler ($02:6E45) skips all probes until landing.
-        int probeMask = linkServices.get().collision != null
-                        && !linkStateMachine.get().status().debugNoClip()
+        int probeMask = !linkStateMachine.get().status().debugNoClip()
                         && !linkEntityEffects.get().marinBedJumpMotionLocked
                         && !linkAirborne.get().directionalLedgeJumpMotionLocked()
                 ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection)
@@ -171,11 +171,9 @@ final class LinkMotion {
                         .zSubPixels(linkAirborne.get().elevation().zVelocity(0));
                 linkAirborne.get().elevation().airborne(false);
                 linkDamage.get().collisionIgnoreFramesRemaining = 0;
-                if (linkServices.get().playerState != null)
-                    linkServices.get().playerState.vitals().setInvincibilityCounter(0);
-                if (linkServices.get().itemRegistry != null
-                        && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
-                                instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+                linkServices.get().playerState.vitals().setInvincibilityCounter(0);
+                if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
+                        instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
                 linkServices.get().soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
             }
             if (physicsFlag == PhysicsFlags.DOOR) {
@@ -206,13 +204,11 @@ final class LinkMotion {
                 blocked = true;
                 // ApplyCollisionWithSolid $02:72FA-7338: holding the sword
                 // follows its poke path; a raised shield suppresses the write.
-                var sword = linkServices.get().itemRegistry == null
-                        ? null
-                        : linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
+                var sword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
                 boolean swordHolding = sword instanceof linksawakening.equipment.Sword blade
                         && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
-                boolean running = linkServices.get().playerState != null
-                        && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots();
+                boolean running =
+                        linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots();
                 if (!linkEquipment.get().isUsingShield() && (!swordHolding || running)) {
                     linkItemState.get().accessMarkRomLinkPushing(3);
                 }
@@ -239,8 +235,8 @@ final class LinkMotion {
             return true;
         }
 
-        boolean pegasusRunning = linkServices.get().playerState != null
-                && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots();
+        boolean pegasusRunning =
+                linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots();
         linkAirborne.get().directionalLedgeCollisionCounter(linkAirborne.get().directionalLedgeCollisionCounter() + 1);
         if (!pegasusRunning && linkAirborne.get().directionalLedgeCollisionCounter() < 0x0C) {
             return true;

@@ -14,7 +14,7 @@ final class EntitySpriteGeometry {
             List<EntitySpriteDefinition.DynamicSprite> sprites, EntitySpriteDefinition.Variant body) {
         sprites.add(new EntitySpriteDefinition.DynamicSprite(
                 0, 0, body.first(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
-        if (body.second() != null) {
+        if (body.hasSecond()) {
             sprites.add(new EntitySpriteDefinition.DynamicSprite(
                     0, 0x08, body.second(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
         }
@@ -51,7 +51,7 @@ final class EntitySpriteGeometry {
             EntitySpriteDefinition.Variant pair,
             EntitySpriteDefinition.DynamicSprite.TileSource tileSource) {
         destination.add(new EntitySpriteDefinition.DynamicSprite(0, 0, pair.first(), tileSource, true));
-        if (pair.second() != null) {
+        if (pair.hasSecond()) {
             destination.add(new EntitySpriteDefinition.DynamicSprite(0, 0x08, pair.second(), tileSource, true));
         }
     }
@@ -67,7 +67,7 @@ final class EntitySpriteGeometry {
                 pair.first(),
                 EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
                 true));
-        if (pair.second() != null) {
+        if (pair.hasSecond()) {
             destination.add(new EntitySpriteDefinition.DynamicSprite(
                     signedByte(yOffset),
                     signedByte(xOffset + 0x08),
@@ -89,7 +89,7 @@ final class EntitySpriteGeometry {
                 xorAttributes(pair.first(), paletteXor),
                 EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
                 true));
-        if (pair.second() != null) {
+        if (pair.hasSecond()) {
             destination.add(new EntitySpriteDefinition.DynamicSprite(
                     signedByte(yOffset),
                     signedByte(xOffset + 0x08),

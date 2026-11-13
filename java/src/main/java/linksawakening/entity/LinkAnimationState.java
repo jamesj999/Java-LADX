@@ -10,6 +10,7 @@ import static linksawakening.state.Direction.LEFT;
 import static linksawakening.state.Direction.RIGHT;
 import static linksawakening.state.Direction.UP;
 
+import java.util.Objects;
 import linksawakening.state.Direction;
 
 /** Link animation state state and operations used by ROM {@code UpdateLinkAnimation}. */
@@ -18,8 +19,8 @@ final class LinkAnimationState {
     private final LinkComponentRef<LinkMotion> linkMotion;
 
     LinkAnimationState(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkMotion = dependencies.linkMotion;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
     }
 
     static final class Dependencies {

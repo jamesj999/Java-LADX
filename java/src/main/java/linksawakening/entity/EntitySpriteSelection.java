@@ -12,9 +12,12 @@ public final class EntitySpriteSelection {
     private final int groupIndex;
     private final int[] sheetValues;
     private final boolean standardSheets;
+    // Optional room palette override; absent sets/rows inherit the renderer palette selection.
     private final int[][] objectPalettes;
     private final Map<Integer, EntitySpriteDefinition> spriteOverrides;
     private final Map<Integer, EntitySpriteDefinition> spriteOverlays;
+    // Optional alternate display lists: null means the room provides no such effect.
+    // This is sprite data, not a decoder/render collaborator; external world callers retain it.
     private final EntitySpriteDefinition burningSpriteDefinition;
     private final EntitySpriteDefinition deathSpriteDefinition;
     private final EntitySpriteDefinition powerRecoilDeathSpriteDefinition;

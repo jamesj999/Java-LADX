@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import static linksawakening.entity.Link.SUB_PIXEL_SHIFT;
 
+import java.util.Objects;
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.GroundStatus;
@@ -113,19 +114,19 @@ final class LinkAirborne {
     }
 
     LinkAirborne(Dependencies dependencies) {
-        dialogGotItemSequence = dependencies.dialogGotItemSequence;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkControls = dependencies.linkControls;
-        linkDamage = dependencies.linkDamage;
-        linkEntityEffects = dependencies.linkEntityEffects;
-        linkItemState = dependencies.linkItemState;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkSideView = dependencies.linkSideView;
-        linkSignals = dependencies.linkSignals;
-        linkStateMachine = dependencies.linkStateMachine;
-        linkSwimming = dependencies.linkSwimming;
+        dialogGotItemSequence = Objects.requireNonNull(dependencies.dialogGotItemSequence, "dialogGotItemSequence");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkControls = Objects.requireNonNull(dependencies.linkControls, "linkControls");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkEntityEffects = Objects.requireNonNull(dependencies.linkEntityEffects, "linkEntityEffects");
+        linkItemState = Objects.requireNonNull(dependencies.linkItemState, "linkItemState");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
+        linkSignals = Objects.requireNonNull(dependencies.linkSignals, "linkSignals");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
+        linkSwimming = Objects.requireNonNull(dependencies.linkSwimming, "linkSwimming");
         pit = new LinkPitFall(linkAnimationState, linkDamage, linkMotion, linkServices, linkSignals, elevation);
     }
 
@@ -155,8 +156,7 @@ final class LinkAirborne {
                 && !linkSideView.get().sideScrolling
                 && !linkEntityEffects.get().marinBedJumpMotionLocked
                 && !directionalLedgeJumpMotionLocked
-                && (linkServices.get().playerState == null
-                        || !linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())) {
+                && (!linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())) {
             int mask = linkControls.get().accessBuildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
                 int target = linkServices.get().linkMotionTables.airSpeedX(mask & 3);
@@ -204,7 +204,7 @@ final class LinkAirborne {
         if (linkMotion.get().position().romEntityY() >= 0x88) return;
         int x = linkMotion.get().position().pixelX() + 8;
         int y = linkMotion.get().position().pixelY() + 12;
-        if (linkServices.get().collision != null) {
+        {
             if (linkServices.get().collision.objectIdAtPoint(x, y) == 0x61) return;
             int physics = linkServices.get().collision.objectPhysicsFlagAtPoint(x, y);
             if (physics == 5) {
@@ -228,8 +228,8 @@ final class LinkAirborne {
     }
 
     boolean swordSuppressesJumpAnimation() {
-        if (linkServices.get().itemRegistry == null) return false;
-        EquipmentItem item = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
+
+        EquipmentItem item = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
         return item instanceof linksawakening.equipment.Sword sword && sword.suppressesJumpAnimation();
     }
 
@@ -317,9 +317,8 @@ final class LinkAirborne {
         // ApplyGotItem caches body Y before func_21E1 updates Z; the held OAM
         // entry uses the updated Z. Preserve the fractional position at ground.
         linkAnimator.get().bedJumpRenderZ(accessZPixels());
-        if (linkServices.get().itemRegistry != null
-                && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
-                        instanceof linksawakening.equipment.Sword sword) {
+        if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
+                instanceof linksawakening.equipment.Sword sword) {
             sword.resetSpinAttack();
         }
         linkItemState.get().romAttackStepAnimationCountdown = 0;

@@ -47,7 +47,7 @@ final class LinkTunicPaletteTest {
 
     @Test
     void noRomCompatibilityKeepsLegacyTunicStatesVisible() {
-        LinkTunicPalette palette = LinkTunicPalette.greenCompatibility();
+        LinkTunicPalette palette = LinkTunicPalette.green();
 
         assertArrayEquals(palette.forTunic(Tunic.GREEN.romValue()), palette.forTunic(Tunic.RED.romValue()));
         assertArrayEquals(palette.forTunic(Tunic.GREEN.romValue()), palette.forTunic(Tunic.BLUE.romValue()));

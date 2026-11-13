@@ -5,20 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.state.GroundStatus;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 final class LinkAirborneTest {
     @Test
     void pitFallRecoversRoomEntryPositionOnFrameNinetySix() {
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(null)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().build();
         link.position().setRoomEntryPixelPosition(32, 48);
         link.position().setPixelPosition(64, 64);
         link.linkAirborne.pit().startPitFall();
@@ -33,15 +26,7 @@ final class LinkAirborneTest {
 
     @Test
     void missingPitTargetReturnsToNormalGroundWithoutMoving() {
-        Link link = new LinkTestBuilder()
-                .input(null)
-                .config(null)
-                .tables(null)
-                .collision(null)
-                .sprites(null)
-                .player(null)
-                .items(null)
-                .build();
+        Link link = TestLinks.link().build();
         link.position().setPixelPosition(64, 64);
         link.linkAirborne.pit().groundStatus(GroundStatus.PIT);
         link.linkAirborne.pit().slipTowardPitCenter();

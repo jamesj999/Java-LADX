@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
+import linksawakening.equipment.SwordSpriteSheet;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.input.KeyCodes;
@@ -15,6 +16,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.AllocationProbe;
+import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
 
 class LinkAllocationTest {
@@ -33,11 +35,11 @@ class LinkAllocationTest {
         var player = new PlayerState();
         player.inventory().setItemA(InventoryItem.SWORD.romValue());
         var items = new ItemRegistry();
-        var sword = new Sword(tables, null);
+        var sword = new Sword(new Sword.Assets(tables.swordTables(), SwordSpriteSheet.invisible()));
         items.register(InventoryItem.SWORD.romValue(), sword);
         var collision = new OverworldCollision(tables);
         collision.setRoom(new int[0x100]);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(input)
                 .config(config)
                 .tables(tables)

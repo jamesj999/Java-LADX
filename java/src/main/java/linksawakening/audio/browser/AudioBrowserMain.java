@@ -23,7 +23,6 @@ public final class AudioBrowserMain {
     }
 
     private static void start() {
-        OpenAlMusicPlayer player = null;
         try {
             Rom romData = loadRom();
             MusicCatalog catalog = MusicCatalog.fromRom(romData);
@@ -31,14 +30,15 @@ public final class AudioBrowserMain {
             MusicDriver driver = new MusicDriver(romData, apu);
             SoundEffectCatalog soundEffectCatalog = SoundEffectCatalog.fromRom(romData);
             SoundEffectPlayer soundEffectPlayer = new SoundEffectPlayer(apu, romData, soundEffectCatalog);
-            player = new OpenAlMusicPlayer(driver, apu, soundEffectPlayer);
-            AudioBrowserFrame frame = new AudioBrowserFrame(catalog, soundEffectCatalog, player, driver);
-            frame.setVisible(true);
-            player = null;
-        } catch (RuntimeException e) {
-            if (player != null) {
+            OpenAlMusicPlayer player = new OpenAlMusicPlayer(driver, apu, soundEffectPlayer);
+            try {
+                AudioBrowserFrame frame = new AudioBrowserFrame(catalog, soundEffectCatalog, player, driver);
+                frame.setVisible(true);
+            } catch (RuntimeException failure) {
                 player.close();
+                throw failure;
             }
+        } catch (RuntimeException e) {
             AudioBrowserFrame.showStartupError(e.getMessage());
         }
     }

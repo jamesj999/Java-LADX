@@ -1,31 +1,35 @@
 package linksawakening.audio.music;
 
 import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
-import linksawakening.audio.sfx.SoundEffectPlayer;
+import linksawakening.audio.sfx.SoundEffectPlayback;
 
 /** Sample-clock transport for the browser, independent of native audio. */
 public final class FrameAudioMixer {
     private static final int BUFFER_FRAMES = 1024;
     private final MusicDriver driver;
     private final GameBoyApu apu;
-    private final SoundEffectPlayer soundEffectPlayer;
+    private final SoundEffectPlayback soundEffectPlayer;
     private final int sampleRate;
     private int samplesUntilNextTick;
     private int tickSampleRemainder;
     private boolean loopEnabled;
+    // No selected track until setTrack; trackSelected is the presence bit used by the sample clock.
     private MusicTrack currentTrack;
+    private boolean trackSelected;
 
-    public FrameAudioMixer(MusicDriver driver, GameBoyApu apu, SoundEffectPlayer effects) {
-        this.driver = driver;
-        this.apu = apu;
-        soundEffectPlayer = effects;
+    public FrameAudioMixer(MusicDriver driver, GameBoyApu apu, SoundEffectPlayback effects) {
+        this.driver = Objects.requireNonNull(driver, "driver");
+        this.apu = Objects.requireNonNull(apu, "apu");
+        soundEffectPlayer = Objects.requireNonNull(effects, "effects");
         sampleRate = apu.sampleRate();
         resetSampleClock();
     }
 
     public void setTrack(MusicTrack track) {
         currentTrack = track;
+        trackSelected = track != null;
     }
 
     public void setLoopEnabled(boolean enabled) {
@@ -61,7 +65,7 @@ public final class FrameAudioMixer {
         if (isSoundEffectPlaying()) {
             return true;
         }
-        if (!loopEnabled || currentTrack == null) {
+        if (!loopEnabled || !trackSelected) {
             return false;
         }
         driver.start(currentTrack);
@@ -73,7 +77,7 @@ public final class FrameAudioMixer {
     private void tick60HzClients() {
         if (driver.isPlaying()) {
             driver.tick60Hz();
-        } else if (loopEnabled && currentTrack != null) {
+        } else if (loopEnabled && trackSelected) {
             ensureAudioPlaying();
         }
         if (isSoundEffectPlaying()) {
@@ -82,7 +86,7 @@ public final class FrameAudioMixer {
     }
 
     private boolean isSoundEffectPlaying() {
-        return soundEffectPlayer != null && soundEffectPlayer.isPlaying();
+        return soundEffectPlayer.isPlaying();
     }
 
     public void resetSampleClock() {

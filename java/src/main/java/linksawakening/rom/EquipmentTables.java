@@ -1,4 +1,7 @@
 package linksawakening.rom;
+
+import java.util.Arrays;
+
 /** Immutable copies of EquipmentTables ROM lookup data. */
 public final class EquipmentTables {
     // LinkDirectionToMagicRodXOffset: original loader length.
@@ -16,6 +19,21 @@ public final class EquipmentTables {
     // LinkDirectionToLinkAnimationState2: original loader length.
     private static final int SHOVEL_ANIMATION_STATES_LENGTH = 8;
     private final int[] shovelAnimationStates;
+
+    /** Hidden equipment sprites for an action-only actor. */
+    public static EquipmentTables invisible() {
+        return new EquipmentTables();
+    }
+
+    private EquipmentTables() {
+        magicRodXOffset = new byte[MAGIC_ROD_X_OFFSET_LENGTH];
+        magicRodYOffset = new byte[MAGIC_ROD_Y_OFFSET_LENGTH];
+        magicRodTiles = new int[MAGIC_ROD_TILES_LENGTH];
+        Arrays.fill(magicRodTiles, 0xFF);
+        magicRodAttributes = new int[MAGIC_ROD_ATTRIBUTES_LENGTH];
+        shovelAnimationStates = new int[SHOVEL_ANIMATION_STATES_LENGTH];
+        Arrays.fill(shovelAnimationStates, 0xFF);
+    }
 
     private EquipmentTables(Rom rom) {
         magicRodXOffset = rom.bytes(RomSymbols.LinkDirectionToMagicRodXOffset, MAGIC_ROD_X_OFFSET_LENGTH);

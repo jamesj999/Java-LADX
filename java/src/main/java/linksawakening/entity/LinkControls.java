@@ -5,12 +5,14 @@ import static linksawakening.entity.LinkRomConstants.JOY_LEFT;
 import static linksawakening.entity.LinkRomConstants.JOY_RIGHT;
 import static linksawakening.entity.LinkRomConstants.JOY_UP;
 
+import java.util.Objects;
+
 /** Link controls state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkControls {
     private final LinkComponentRef<LinkServices> linkServices;
 
     LinkControls(Dependencies dependencies) {
-        linkServices = dependencies.linkServices;
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
     }
 
     static final class Dependencies {
@@ -18,14 +20,11 @@ final class LinkControls {
     }
 
     boolean accessButtonWasPressed(int key) {
-        return linkServices.get().inputState != null
-                && key >= 0
-                && linkServices.get().inputState.wasPressed(key);
+        return key >= 0 && linkServices.get().inputState.wasPressed(key);
     }
 
     boolean accessPlayerHasFlippers() {
-        return linkServices.get().playerState != null
-                && linkServices.get().playerState.progression().hasFlippers();
+        return linkServices.get().playerState.progression().hasFlippers();
     }
 
     int accessBuildJoypadMask() {
@@ -38,9 +37,7 @@ final class LinkControls {
     }
 
     int accessRomPressedButtonsMask() {
-        if (linkServices.get().inputState == null || linkServices.get().inputConfig == null) {
-            return 0;
-        }
+
         return accessBuildJoypadMask();
     }
 }

@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.state.LinkMotionState;
 
 /** Link recovery state and operations used by ROM {@code ApplyLinkMotionState}. */
@@ -13,13 +14,13 @@ final class LinkRecovery {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
     LinkRecovery(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkDamage = dependencies.linkDamage;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
 
     static final class Dependencies {
@@ -82,8 +83,7 @@ final class LinkRecovery {
     void accessBeginPassOut() {
         linkStateMachine.get().status().motionState(LinkMotionState.PASS_OUT);
         linkStateMachine.get().roomPhysics().physicsModifier(0);
-        if (linkServices.get().playerState != null)
-            linkServices.get().playerState.vitals().setInvincibilityCounter(0);
+        linkServices.get().playerState.vitals().setInvincibilityCounter(0);
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
         linkMotion.get().position().forcedSpeedPending(false);
         linkMotion.get().position().lastRomSpeedX(0);

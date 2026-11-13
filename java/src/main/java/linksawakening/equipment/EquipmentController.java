@@ -1,5 +1,6 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
@@ -14,10 +15,10 @@ public final class EquipmentController {
 
     public EquipmentController(
             InputState inputState, InputConfig inputConfig, PlayerState playerState, ItemRegistry itemRegistry) {
-        this.inputState = inputState;
-        this.inputConfig = inputConfig;
-        this.playerState = playerState;
-        this.itemRegistry = itemRegistry;
+        this.inputState = Objects.requireNonNull(inputState, "inputState");
+        this.inputConfig = Objects.requireNonNull(inputConfig, "inputConfig");
+        this.playerState = Objects.requireNonNull(playerState, "playerState");
+        this.itemRegistry = Objects.requireNonNull(itemRegistry, "itemRegistry");
     }
 
     public void dispatchButtonEdges() {
@@ -62,10 +63,7 @@ public final class EquipmentController {
     }
 
     private void dispatchButtonEdges(int glfwKey, int inventoryId) {
-        EquipmentItem item = itemRegistry.lookup(inventoryId);
-        if (item == null) {
-            return;
-        }
+        EquipmentItem item = itemRegistry.item(inventoryId);
         if (inputState.wasPressed(glfwKey)) {
             item.onPress();
         }

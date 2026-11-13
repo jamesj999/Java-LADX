@@ -81,7 +81,7 @@ final class EquipmentControllerTest {
         player.inventory().setItemB(InventoryItem.SHIELD.romValue());
         player.equipmentLevels().setSwordLevel(0);
         ItemRegistry registry = new ItemRegistry();
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
         registry.register(InventoryItem.SWORD.romValue(), sword);
         EquipmentController controller =
                 new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
@@ -97,7 +97,7 @@ final class EquipmentControllerTest {
         PlayerState player = new PlayerState();
         player.inventory().setItemA(InventoryItem.SWORD.romValue());
         ItemRegistry registry = new ItemRegistry();
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
         registry.register(InventoryItem.SWORD.romValue(), sword);
         EquipmentController controller =
                 new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);

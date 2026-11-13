@@ -219,7 +219,7 @@ public final class MusicCatalog {
     }
 
     private static String nameFor(int id) {
-        if (id <= 0 || id >= TRACK_NAMES.length || TRACK_NAMES[id] == null) {
+        if (id <= 0 || id >= TRACK_NAMES.length) {
             throw new IllegalArgumentException("No music track name for id " + formatHex(id));
         }
         return TRACK_NAMES[id];

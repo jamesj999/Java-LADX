@@ -8,14 +8,21 @@ import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
 
 /** Frame-driven facade over ROM-backed sound effect execution. */
-public final class SoundEffectPlayer {
+public final class SoundEffectPlayer implements SoundEffectPlayback {
+    @Override
+    public boolean available() {
+        return true;
+    }
+
     private static final String ROM_RESOURCE = "rom/azle.gbc";
 
     private final GameBoyApu apu;
     private final SoundEffectCatalog catalog;
     private final RomSoundEffectEngine engine;
 
+    // Last requested identity; only observable while effectSelected and the engine is playing.
     private SoundEffect currentEffect;
+    private boolean effectSelected;
 
     public SoundEffectPlayer(GameBoyApu apu) {
         this(apu, loadRomResource());
@@ -52,9 +59,10 @@ public final class SoundEffectPlayer {
         }
 
         currentEffect = effect;
+        effectSelected = true;
         engine.start(effect);
         if (!engine.isPlaying()) {
-            currentEffect = null;
+            effectSelected = false;
         }
     }
 
@@ -64,12 +72,12 @@ public final class SoundEffectPlayer {
         }
         engine.tick60Hz();
         if (!engine.isPlaying()) {
-            currentEffect = null;
+            effectSelected = false;
         }
     }
 
     public boolean isPlaying() {
-        return currentEffect != null && engine.isPlaying();
+        return effectSelected && engine.isPlaying();
     }
 
     public SoundEffect currentEffect() {
@@ -85,7 +93,7 @@ public final class SoundEffectPlayer {
     }
 
     public void stop() {
-        currentEffect = null;
+        effectSelected = false;
         engine.stop();
     }
 

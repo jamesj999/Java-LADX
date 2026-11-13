@@ -67,17 +67,16 @@ final class LinkPitFall {
     }
 
     boolean linkOverPit() {
-        return linkServices.get().collision != null
-                && linkServices
-                        .get()
-                        .collision
-                        .linkOnPit(
-                                linkMotion.get().position().pixelX(),
-                                linkMotion.get().position().pixelY());
+        return linkServices
+                .get()
+                .collision
+                .linkOnPit(
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY());
     }
 
     void refreshGroundStatus() {
-        if (linkServices.get().collision != null) {
+        {
             linkServices
                     .get()
                     .collision
@@ -87,8 +86,7 @@ final class LinkPitFall {
         }
         // ApplyLinkGroundPhysics ($02:75CA-75D4) bypasses the solid
         // physics byte for OBJECT_WELL and enters the fall without slipping.
-        if (linkServices.get().collision != null
-                && !linkServices.get().collision.usesIndoorPhysicsTable()
+        if (!linkServices.get().collision.usesIndoorPhysicsTable()
                 && linkServices
                                 .get()
                                 .collision
@@ -111,15 +109,13 @@ final class LinkPitFall {
     void enterPitGroundState() {
         if (groundStatus != GroundStatus.PIT) {
             pitSlippingCounter = 0;
-            OverworldCollision.PitCell pit = linkServices.get().collision == null
-                    ? null
-                    : linkServices
-                            .get()
-                            .collision
-                            .normalPitUnderLink(
-                                    linkMotion.get().position().pixelX(),
-                                    linkMotion.get().position().pixelY());
-            if (pit != null) {
+            OverworldCollision.PitCell pit = linkServices
+                    .get()
+                    .collision
+                    .normalPitUnderLink(
+                            linkMotion.get().position().pixelX(),
+                            linkMotion.get().position().pixelY());
+            if (pit.present()) {
                 pitSlipTargetTopLeftX = pit.targetTopLeftX();
                 pitSlipTargetTopLeftY = pit.targetTopLeftY();
                 pitSlipPhysicsFlag = pit.physicsFlag();
@@ -196,7 +192,7 @@ final class LinkPitFall {
             linkSignals.get().pitWarpPending = true;
             return;
         }
-        if (linkServices.get().playerState != null) {
+        {
             linkDamage.get().applyPitDamage();
         }
         if (linkMotion.get().position().hasRoomEntryPosition()) {

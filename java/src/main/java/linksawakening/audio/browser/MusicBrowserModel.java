@@ -14,7 +14,7 @@ final class MusicBrowserModel {
     }
 
     public List<MusicTrack> filteredTracks(String filter) {
-        String normalizedFilter = filter == null ? "" : filter.trim().toLowerCase(Locale.ROOT);
+        String normalizedFilter = Objects.requireNonNullElse(filter, "").trim().toLowerCase(Locale.ROOT);
         if (normalizedFilter.isEmpty()) {
             return tracks;
         }

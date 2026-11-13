@@ -13,6 +13,7 @@ import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
+import linksawakening.audio.sfx.SoundEffectPlayback;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 
 /** Browser transport controls over a pure sample mixer and native stream. */
@@ -24,22 +25,28 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     private final OpenAlStream stream = new OpenAlStream();
     private final MusicDriver driver;
     private final GameBoyApu apu;
-    private final SoundEffectPlayer soundEffectPlayer;
+    private final SoundEffectPlayback soundEffectPlayer;
     private final int sampleRate;
 
     private boolean closed;
     private boolean paused;
     private float volume = 1.0f;
+    // The selected music identity is absent while stopped or auditioning an SFX.
     private MusicTrack currentTrack;
+    private boolean trackSelected;
 
     public OpenAlMusicPlayer(MusicDriver driver, GameBoyApu apu) {
-        this(driver, apu, null);
+        this(driver, apu, SoundEffectPlayback.none());
     }
 
     public OpenAlMusicPlayer(MusicDriver driver, GameBoyApu apu, SoundEffectPlayer soundEffectPlayer) {
+        this(driver, apu, Objects.requireNonNullElse(soundEffectPlayer, SoundEffectPlayback.none()));
+    }
+
+    public OpenAlMusicPlayer(MusicDriver driver, GameBoyApu apu, SoundEffectPlayback effects) {
         this.driver = Objects.requireNonNull(driver, "driver");
         this.apu = Objects.requireNonNull(apu, "apu");
-        this.soundEffectPlayer = soundEffectPlayer;
+        this.soundEffectPlayer = Objects.requireNonNull(effects, "effects");
         sampleRate = apu.sampleRate();
         mixer = new FrameAudioMixer(driver, apu, soundEffectPlayer);
         stream.initializeOpenAl();
@@ -70,6 +77,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
             stopPlayback(true);
             apu.reset();
             currentTrack = track;
+            trackSelected = true;
             mixer.setTrack(track);
             driver.start(track);
             driver.tick60Hz();
@@ -101,7 +109,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         if (stream.queuedBuffers > 0) {
             stream.play();
         }
-        stream.statusMessage = currentTrack == null ? "OpenAL ready" : "Playing " + currentTrack.name();
+        stream.statusMessage = !trackSelected ? "OpenAL ready" : "Playing " + currentTrack.name();
     }
 
     @Override
@@ -111,13 +119,13 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         }
         stream.makeContextCurrent();
         stopPlayback(true);
-        currentTrack = null;
+        trackSelected = false;
         mixer.setTrack(null);
         stream.statusMessage = "Stopped";
     }
 
     public boolean isSoundEffectAvailable() {
-        return isAvailable() && soundEffectPlayer != null;
+        return isAvailable() && soundEffectPlayer.available();
     }
 
     public void playSoundEffect(SoundEffect effect) {
@@ -129,7 +137,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         try {
             stream.makeContextCurrent();
             stopPlayback(true);
-            currentTrack = null;
+            trackSelected = false;
             mixer.setTrack(null);
             short[] pcm = SoundEffectPcmRenderer.renderOneShot(apu, soundEffectPlayer, effect);
             queueOneShotPcm(pcm);
@@ -181,7 +189,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         } finally {
             cleanupFailure = combine(cleanupFailure, stream.releaseNativeResources());
             stream.available = false;
-            if (stream.statusMessage == null || !stream.statusMessage.startsWith("OpenAL unavailable:")) {
+            if (!stream.statusMessage.startsWith("OpenAL unavailable:")) {
                 stream.statusMessage = cleanupFailure == null
                         ? "Closed"
                         : "Closed after cleanup warning: " + conciseMessage(cleanupFailure);
@@ -230,9 +238,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         if (stopDriver) {
             driver.stop();
         }
-        if (soundEffectPlayer != null) {
-            soundEffectPlayer.stop();
-        }
+        soundEffectPlayer.stop();
         paused = false;
         mixer.resetSampleClock();
     }
@@ -254,9 +260,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         if (stopDriver) {
             failure = rememberFailure(failure, driver::stop);
         }
-        if (soundEffectPlayer != null) {
-            failure = rememberFailure(failure, soundEffectPlayer::stop);
-        }
+        failure = rememberFailure(failure, soundEffectPlayer::stop);
         paused = false;
         mixer.resetSampleClock();
         return failure;

@@ -23,6 +23,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.state.PlayerStateTestBuilder;
+import linksawakening.testing.TestLinks;
 
 @linksawakening.testing.RequiresRom
 abstract class LinkFixture {
@@ -62,12 +63,11 @@ abstract class LinkFixture {
         RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
-        return new LinkTestBuilder()
+        return TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerStateTestBuilder().build())
                 .items(new ItemRegistry())
                 .build();
@@ -80,12 +80,11 @@ abstract class LinkFixture {
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(roomObjects);
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(new InputState())
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(new PlayerStateTestBuilder().build())
                 .items(new ItemRegistry())
                 .build();
@@ -104,12 +103,11 @@ abstract class LinkFixture {
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setPhysicsTable(physicsTableIndex);
         collision.setRoom(roomObjectsArea);
-        return new LinkTestBuilder()
+        return TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(romTables)
                 .collision(collision)
-                .sprites(null)
                 .player(playerState)
                 .items(new ItemRegistry())
                 .build();
@@ -153,12 +151,10 @@ abstract class LinkFixture {
             default:
                 throw new IllegalArgumentException("direction " + direction);
         }
-        Link link = new LinkTestBuilder()
+        Link link = TestLinks.link()
                 .input(inputState)
                 .config(inputConfig)
                 .tables(RomTables.load(linksawakening.rom.Rom.of(loadRom())))
-                .collision(null)
-                .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();

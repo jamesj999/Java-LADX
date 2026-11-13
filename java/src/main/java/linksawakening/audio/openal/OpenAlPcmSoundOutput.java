@@ -10,24 +10,28 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     private static final int MAX_BUFFERS = 8;
     private final DialogPcmBufferQueue bufferQueue = new DialogPcmBufferQueue(MAX_BUFFERS);
     private final PcmStreamBuffering buffering = new PcmStreamBuffering();
-    private PcmAlDevice device;
+    private final PcmAlDevice device;
     private boolean available;
     private boolean closed;
     private String statusMessage;
     private long backpressureCount;
     private long recoveryCount;
     private boolean needsRecovery;
+    // Absent until an actual device/playback failure; retained for diagnostics, never a service.
     private Throwable lastFailure;
     private final DialogPcmBufferQueue allocatedBuffers = new DialogPcmBufferQueue(MAX_BUFFERS);
 
     public OpenAlPcmSoundOutput() {
+        PcmAlDevice selected;
         try {
-            device = new NativePcmAlDevice();
+            selected = new NativePcmAlDevice();
             available = true;
             statusMessage = "OpenAL PCM output ready";
         } catch (RuntimeException | LinkageError failure) {
+            selected = UnavailablePcmAlDevice.INSTANCE;
             statusMessage = "OpenAL PCM output unavailable: " + conciseMessage(failure);
         }
+        device = Objects.requireNonNull(selected, "device");
     }
 
     OpenAlPcmSoundOutput(PcmAlDevice device) {
@@ -56,6 +60,10 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
         return recoveryCount;
     }
 
+    public boolean hasFailure() {
+        return lastFailure != null;
+    }
+
     public Throwable lastFailure() {
         return lastFailure;
     }
@@ -78,11 +86,11 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
                 querySafely(() -> device.processed()),
                 bufferQueue.queuedFrames(),
                 Thread.currentThread().isInterrupted(),
-                lastFailure == null ? "none" : conciseMessage(lastFailure));
+                !hasFailure() ? "none" : conciseMessage(lastFailure));
     }
 
     private int querySafely(IntSupplier query) {
-        if (device == null || closed) return -1;
+        if (closed) return -1;
         try {
             return query.getAsInt();
         } catch (RuntimeException | LinkageError ignored) {
@@ -214,7 +222,6 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
         if (closed) return;
         closed = true;
         available = false;
-        if (device == null) return;
         try {
             device.makeCurrent();
             resetQueue();
@@ -232,6 +239,8 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
 
     private static String conciseMessage(Throwable failure) {
         String message = failure.getMessage();
-        return message == null || message.isBlank() ? failure.getClass().getSimpleName() : message;
+        return Objects.requireNonNullElse(message, "").isBlank()
+                ? failure.getClass().getSimpleName()
+                : message;
     }
 }

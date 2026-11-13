@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.entity.Link.WaterSplash;
 
 /** Link signals state and operations used by ROM {@code ApplyLinkMotionState}. */
@@ -8,8 +9,8 @@ final class LinkSignals {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
     LinkSignals(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
 
     static final class Dependencies {
@@ -18,6 +19,7 @@ final class LinkSignals {
     }
 
     boolean pitWarpPending;
+    // At most one queued splash value; consume returns null when the event slot is empty.
     WaterSplash pendingWaterSplash;
 
     boolean accessRecoveryBlocksInput() {

@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
@@ -15,13 +16,13 @@ final class LinkDamage {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
     LinkDamage(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkSideView = dependencies.linkSideView;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
 
     static final class Dependencies {
@@ -41,8 +42,7 @@ final class LinkDamage {
     boolean collisionDamageImmune;
 
     void applySpikeGroundPhysics() {
-        if (linkServices.get().collision == null
-                || linkStateMachine.get().status().accessDebugNoClip()
+        if (linkStateMachine.get().status().accessDebugNoClip()
                 || linkAirborne.get().elevation().zSubPixels() != 0
                 || linkStateMachine.get().status().motionState() == LinkMotionState.UNSTUCKING) return;
         int x = linkMotion.get().position().pixelX() + 8;
@@ -58,11 +58,9 @@ final class LinkDamage {
     }
 
     void hurtBySpikes() {
-        if (linkServices.get().playerState == null
-                || linkServices.get().playerState.vitals().invincibilityCounter() != 0) return;
-        if (linkServices.get().itemRegistry != null
-                && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
-                        instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+        if (linkServices.get().playerState.vitals().invincibilityCounter() != 0) return;
+        if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
+                instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         linkMotion.get().position().lastRomSpeedX((-linkMotion.get().position().lastRomSpeedX()) & 0xFF);
         linkMotion.get().position().lastRomSpeedY((-linkMotion.get().position().lastRomSpeedY()) & 0xFF);
         linkAirborne.get().elevation().airborne(true);
@@ -139,8 +137,7 @@ final class LinkDamage {
     }
 
     void tickInvincibility() {
-        if (linkServices.get().playerState != null)
-            linkServices.get().playerState.vitals().tickInvincibility();
+        linkServices.get().playerState.vitals().tickInvincibility();
     }
 
     void applyPitDamage() {

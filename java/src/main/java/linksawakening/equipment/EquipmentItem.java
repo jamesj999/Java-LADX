@@ -14,6 +14,15 @@ package linksawakening.equipment;
  */
 // Integer facing arguments preserve legacy unknown-value fallbacks at the equipment/render boundary.
 public interface EquipmentItem {
+    /** An unassigned inventory slot: no timing, input, motion, collision or drawing work. */
+    static EquipmentItem none() {
+        return Empty.INSTANCE;
+    }
+
+    /** Singleton empty equipment value. */
+    enum Empty implements EquipmentItem {
+        INSTANCE
+    }
 
     /** The ROM weapon rectangle; item-specific records may retain their public names. */
     interface CollisionBox {

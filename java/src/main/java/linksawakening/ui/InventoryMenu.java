@@ -29,10 +29,10 @@ public final class InventoryMenu {
     private final GameplaySoundSink soundSink;
     private final OcarinaSongMenu ocarinaSongMenu;
     private final OcarinaPopupRenderer ocarinaPopupRenderer;
-    private final Rom romData;
+    private final InventoryGraphics.TileTransfers tileTransfers;
     private boolean ocarinaTilesLoaded;
-    private final InventoryInstrumentPanel instrumentPanel;
-    private final InventoryDungeonPanel dungeonPanel;
+    private final InventoryGraphics.Instruments instrumentPanel;
+    private final InventoryGraphics.Dungeon dungeonPanel;
     private int dungeonMapId, dungeonPosition = -1, dungeonFrame;
     private boolean dungeonCollapsed;
     private byte[] dungeonItems = new byte[5], dungeonRooms = new byte[64];
@@ -48,23 +48,36 @@ public final class InventoryMenu {
     private int cursorFrameCounter = 0;
 
     public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState) {
-        this(tilemapLoader, playerState, GameplaySoundSink.none(), (Rom) null);
+        this(tilemapLoader, playerState, GameplaySoundSink.none(), InventoryGraphics.overlayOnly());
     }
 
     public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState, GameplaySoundSink soundSink) {
-        this(tilemapLoader, playerState, soundSink, (Rom) null);
+        this(tilemapLoader, playerState, soundSink, InventoryGraphics.overlayOnly());
     }
 
     public InventoryMenu(
             InventoryTilemapLoader tilemapLoader, PlayerState playerState, GameplaySoundSink soundSink, Rom romData) {
-        this.tilemapLoader = tilemapLoader;
-        this.playerState = playerState;
+        this(
+                tilemapLoader,
+                playerState,
+                soundSink,
+                romData == null ? InventoryGraphics.overlayOnly() : InventoryGraphics.fromRom(romData));
+    }
+
+    public InventoryMenu(
+            InventoryTilemapLoader tilemapLoader,
+            PlayerState playerState,
+            GameplaySoundSink soundSink,
+            InventoryGraphics graphics) {
+        this.tilemapLoader = Objects.requireNonNull(tilemapLoader, "tilemapLoader");
+        this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
-        this.ocarinaSongMenu = new OcarinaSongMenu(playerState, this.soundSink);
-        this.ocarinaPopupRenderer = new OcarinaPopupRenderer(tilemapLoader.ocarinaPopupOam());
-        this.romData = romData;
-        instrumentPanel = romData == null ? null : new InventoryInstrumentPanel(romData);
-        dungeonPanel = romData == null ? null : new InventoryDungeonPanel(romData);
+        Objects.requireNonNull(graphics, "graphics");
+        ocarinaSongMenu = new OcarinaSongMenu(playerState, this.soundSink);
+        ocarinaPopupRenderer = new OcarinaPopupRenderer(tilemapLoader.ocarinaPopupOam());
+        tileTransfers = graphics.transfers();
+        instrumentPanel = graphics.instruments();
+        dungeonPanel = graphics.dungeon();
     }
 
     /**
@@ -240,8 +253,7 @@ public final class InventoryMenu {
     }
 
     public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
-        if (romData != null)
-            gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
+        tileTransfers.powder(gpu, playerState.ammunition().hasToadstool());
         tilemapLoader.copyInto(frameTiles, frameAttributes);
         int[] tilemap = frameTiles;
         int[] attrmap = frameAttributes;
@@ -249,7 +261,7 @@ public final class InventoryMenu {
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
 
-        if (dungeonPanel != null && !showInstruments && windowY() == 0)
+        if (!showInstruments && windowY() == 0)
             dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
         int offsetY = displayedWindowY();
         if (offsetY >= Framebuffer.HEIGHT) {
@@ -257,7 +269,7 @@ public final class InventoryMenu {
         }
 
         int[][] inventoryPalettes = tilemapLoader.palettes();
-        if (instrumentPanel != null && showInstruments && windowY() == 0) {
+        if (showInstruments && windowY() == 0) {
             inventoryPalettes = instrumentPanel.framePalettes(inventoryPalettes, instrumentPaletteFrame);
         }
         TilemapRenderer.render(
@@ -265,14 +277,14 @@ public final class InventoryMenu {
                 gpu,
                 tilemap,
                 attrmap,
-                windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
+                windowY() == 128 ? Objects.requireNonNullElse(roomPalettes, inventoryPalettes) : inventoryPalettes,
                 tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
-        if (instrumentPanel != null && showInstruments && windowY() == 0) {
+        if (showInstruments && windowY() == 0) {
             instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
         }
 
-        if (dungeonPanel != null && !showInstruments && windowY() == 0)
+        if (!showInstruments && windowY() == 0)
             dungeonPanel.render(
                     displayBuffer,
                     tilemap,
@@ -282,18 +294,18 @@ public final class InventoryMenu {
                     dungeonPresentation.set(
                             dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
-        if (instrumentPanel != null && isFullyOpen()) {
+        if (isFullyOpen()) {
             instrumentPanel.renderNavigation(displayBuffer, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
         }
 
         if (ocarinaSongMenu.isVisible()) {
-            if (romData != null && !ocarinaTilesLoaded) {
-                gpu.loadOcarinaSymbolsTiles(romData);
+            if (!ocarinaTilesLoaded) {
+                tileTransfers.ocarina(gpu);
                 ocarinaTilesLoaded = true;
             }
             ocarinaPopupRenderer.render(displayBuffer, gpu, tilemapLoader.objectPalettes(), ocarinaSongMenu);
-        } else if (ocarinaTilesLoaded && romData != null) {
-            gpu.loadSharedVfxTiles(romData);
+        } else if (ocarinaTilesLoaded) {
+            tileTransfers.sharedEffects(gpu);
             ocarinaTilesLoaded = false;
         }
     }
@@ -312,12 +324,14 @@ public final class InventoryMenu {
         HudOverlay.apply(tiles, attributes, playerState);
         InventorySubscreenOverlay.apply(tiles, attributes, playerState, cursorSlot, false);
         return new ClosedWindow(
-                tiles, attributes, roomPalettes == null ? tilemapLoader.palettes() : roomPalettes, displayedWindowY());
+                tiles,
+                attributes,
+                Objects.requireNonNullElse(roomPalettes, tilemapLoader.palettes()),
+                displayedWindowY());
     }
 
     public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
-        if (romData != null)
-            gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
+        tileTransfers.powder(gpu, playerState.ammunition().hasToadstool());
         tilemapLoader.copyInto(frameTiles, frameAttributes);
         int[] tilemap = frameTiles;
         int[] attrmap = frameAttributes;
@@ -325,7 +339,7 @@ public final class InventoryMenu {
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
 
-        if (dungeonPanel != null && !showInstruments && windowY() == 0)
+        if (!showInstruments && windowY() == 0)
             dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
         int offsetY = displayedWindowY();
         if (offsetY >= Framebuffer.HEIGHT) {
@@ -333,7 +347,7 @@ public final class InventoryMenu {
         }
 
         int[][] inventoryPalettes = tilemapLoader.palettes();
-        if (instrumentPanel != null && showInstruments && windowY() == 0) {
+        if (showInstruments && windowY() == 0) {
             inventoryPalettes = instrumentPanel.framePalettes(inventoryPalettes, instrumentPaletteFrame);
         }
         TilemapRenderer.submit(
@@ -341,14 +355,14 @@ public final class InventoryMenu {
                 gpu,
                 tilemap,
                 attrmap,
-                windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
+                windowY() == 128 ? Objects.requireNonNullElse(roomPalettes, inventoryPalettes) : inventoryPalettes,
                 tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
-        if (instrumentPanel != null && showInstruments && windowY() == 0) {
+        if (showInstruments && windowY() == 0) {
             instrumentPanel.submit(frameModel, attrmap, inventoryPalettes, instrumentFlags, offsetY);
         }
 
-        if (dungeonPanel != null && !showInstruments && windowY() == 0)
+        if (!showInstruments && windowY() == 0)
             dungeonPanel.submit(
                     frameModel,
                     tilemap,
@@ -358,18 +372,18 @@ public final class InventoryMenu {
                     dungeonPresentation.set(
                             dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
-        if (instrumentPanel != null && isFullyOpen()) {
+        if (isFullyOpen()) {
             instrumentPanel.submitNavigation(frameModel, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
         }
 
         if (ocarinaSongMenu.isVisible()) {
-            if (romData != null && !ocarinaTilesLoaded) {
-                gpu.loadOcarinaSymbolsTiles(romData);
+            if (!ocarinaTilesLoaded) {
+                tileTransfers.ocarina(gpu);
                 ocarinaTilesLoaded = true;
             }
             ocarinaPopupRenderer.submit(frameModel, gpu, tilemapLoader.objectPalettes(), ocarinaSongMenu);
-        } else if (ocarinaTilesLoaded && romData != null) {
-            gpu.loadSharedVfxTiles(romData);
+        } else if (ocarinaTilesLoaded) {
+            tileTransfers.sharedEffects(gpu);
             ocarinaTilesLoaded = false;
         }
     }

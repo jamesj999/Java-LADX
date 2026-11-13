@@ -74,7 +74,7 @@ final class LinkRoomPhysics {
         linkMotion.get().position().lastRomSpeedX(0);
         linkMotion.get().position().lastRomSpeedY(0);
         linkAirborne.get().elevation().zVelocity(0);
-        if (!downward || status.debugNoClip() || linkServices.get().collision == null) {
+        if (!downward || status.debugNoClip()) {
             return;
         }
         // Run the ordinary downward collision handler, including its ledge

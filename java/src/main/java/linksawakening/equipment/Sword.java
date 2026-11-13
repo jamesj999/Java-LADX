@@ -69,8 +69,45 @@ public final class Sword implements EquipmentItem {
             IntSupplier randomByteSupplier,
             SwordPalette swordPalette,
             BeamTarget beamTarget) {
-        this.swordTables = romTables == null ? null : romTables.swordTables();
-        this.renderer = new SwordRenderer(romTables, spriteSheet);
+        this(
+                new Assets(
+                        romTables == null ? SwordTables.animationOnly() : romTables.swordTables(),
+                        Objects.requireNonNullElseGet(spriteSheet, SwordSpriteSheet::invisible)),
+                soundSink,
+                randomByteSupplier,
+                swordPalette,
+                beamTarget);
+    }
+
+    /** Immutable blade data, with explicit invisible assets for action-only actors. */
+    public record Assets(SwordTables tables, SwordSpriteSheet sprites) {
+        public Assets {
+            Objects.requireNonNull(tables, "tables");
+            Objects.requireNonNull(sprites, "sprites");
+        }
+
+        public static Assets animationOnly() {
+            return new Assets(SwordTables.animationOnly(), SwordSpriteSheet.invisible());
+        }
+    }
+
+    public Sword(Assets assets) {
+        this(assets, GameplaySoundSink.none(), new RomRandomByteSource(), SwordPalette.compatibility(), () -> false);
+    }
+
+    public Sword(Assets assets, GameplaySoundSink soundSink, IntSupplier randomByteSupplier) {
+        this(assets, soundSink, randomByteSupplier, SwordPalette.compatibility(), () -> false);
+    }
+
+    public Sword(
+            Assets assets,
+            GameplaySoundSink soundSink,
+            IntSupplier randomByteSupplier,
+            SwordPalette swordPalette,
+            BeamTarget beamTarget) {
+        Objects.requireNonNull(assets, "assets");
+        this.swordTables = assets.tables();
+        this.renderer = new SwordRenderer(swordTables, assets.sprites());
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         this.swordPalette = Objects.requireNonNull(swordPalette, "swordPalette");
@@ -333,7 +370,8 @@ public final class Sword implements EquipmentItem {
     public Sword.CollisionBox enemyCollisionBox(
             int linkEntityX, int linkEntityY, int linkDirection, boolean runningWithPegasusBoots) {
         lastKnownDirection = linkDirection;
-        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING)) || swordTables == null) {
+        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING))
+                || !swordTables.bladeCollisionEnabled()) {
             return Sword.CollisionBox.inactive();
         }
         if (spinAttackActive()) {

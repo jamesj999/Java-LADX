@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import java.util.Objects;
 import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
@@ -17,15 +18,15 @@ final class LinkSwimming {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
     LinkSwimming(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkControls = dependencies.linkControls;
-        linkEquipment = dependencies.linkEquipment;
-        linkMotion = dependencies.linkMotion;
-        linkServices = dependencies.linkServices;
-        linkSignals = dependencies.linkSignals;
-        linkStateMachine = dependencies.linkStateMachine;
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkControls = Objects.requireNonNull(dependencies.linkControls, "linkControls");
+        linkEquipment = Objects.requireNonNull(dependencies.linkEquipment, "linkEquipment");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkSignals = Objects.requireNonNull(dependencies.linkSignals, "linkSignals");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
 
     static final class Dependencies {
@@ -46,7 +47,7 @@ final class LinkSwimming {
     int divingCountdown;
 
     boolean enterSwimmingIfNeeded() {
-        if (linkServices.get().linkMotionTables == null || linkServices.get().collision == null) return false;
+
         int flag = linkServices
                 .get()
                 .collision
@@ -127,9 +128,8 @@ final class LinkSwimming {
     }
 
     void updateRecover() {
-        if (linkServices.get().itemRegistry != null
-                && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
-                        instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+        if (linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue())
+                instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         linkMotion.get().position().lastRomSpeedX(linkMotion.get().position().lastRomSpeedY(0));
         linkAnimationState.get().movingThisFrame = false;
         if (linkStateMachine.get().status().recoverCountdown() > 0)
@@ -144,7 +144,7 @@ final class LinkSwimming {
                 linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.LINK_HURT);
             return;
         }
-        if (linkServices.get().playerState != null) {
+        {
             if (linkStateMachine.get().roomPhysics().physicsModifier() == 6)
                 linkServices.get().playerState.vitals().addSubtractHealthBuffer(4);
             linkServices.get().playerState.vitals().setInvincibilityCounter(0x40);
@@ -166,13 +166,12 @@ final class LinkSwimming {
     }
 
     void updateSwimming() {
-        if (linkServices.get().collision == null
-                || !linkServices
-                        .get()
-                        .collision
-                        .linkOnDeepWater(
-                                linkMotion.get().position().pixelX(),
-                                linkMotion.get().position().pixelY())) {
+        if (!linkServices
+                .get()
+                .collision
+                .linkOnDeepWater(
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY())) {
             leaveSwimming();
             return;
         }
@@ -195,10 +194,7 @@ final class LinkSwimming {
 
         if (linkControls
                 .get()
-                .accessButtonWasPressed(
-                        linkServices.get().inputConfig == null
-                                ? -1
-                                : linkServices.get().inputConfig.bKey())) {
+                .accessButtonWasPressed(linkServices.get().inputConfig.bKey())) {
             linkStateMachine
                     .get()
                     .roomPhysics()
@@ -207,10 +203,7 @@ final class LinkSwimming {
         }
         if (linkControls
                 .get()
-                .accessButtonWasPressed(
-                        linkServices.get().inputConfig == null
-                                ? -1
-                                : linkServices.get().inputConfig.aKey())) {
+                .accessButtonWasPressed(linkServices.get().inputConfig.aKey())) {
             swimmingFastCountdown = 0x20;
         }
 

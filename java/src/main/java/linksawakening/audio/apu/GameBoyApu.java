@@ -1,6 +1,8 @@
 package linksawakening.audio.apu;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /** Deterministic register-driven Game Boy stereo synthesizer. */
@@ -71,17 +73,19 @@ public final class GameBoyApu {
     }
 
     private static final RegisterObserver NO_OBSERVER = (register, value) -> {};
-    private RegisterObserver registerObserver = NO_OBSERVER;
+    // Mutable diagnostic subscription data; the synthesizer always has one non-null sink.
+    // Replacing a subscription does not replace any channel or audio collaborator.
+    private final List<RegisterObserver> registerObservers = new ArrayList<>(List.of(NO_OBSERVER));
 
     /** Primitive diagnostic tap; null disables observation. */
     public void setPrimitiveRegisterObserver(RegisterObserver observer) {
-        registerObserver = observer == null ? NO_OBSERVER : observer;
+        registerObservers.set(0, Objects.requireNonNullElse(observer, NO_OBSERVER));
     }
 
     public void writeRegister(int register, int value) {
         validateRegister(register);
         int unsignedValue = value & 0xFF;
-        registerObserver.accept(register, unsignedValue);
+        registerObservers.getFirst().accept(register, unsignedValue);
         if (register == NR52) {
             if ((unsignedValue & 0x80) == 0) {
                 Arrays.fill(registers, 0);

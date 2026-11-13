@@ -47,6 +47,7 @@ final class AudioBrowserFrame extends JFrame {
     final OpenAlMusicPlayer player;
     final MusicDriver driver;
     final DefaultListModel<MusicTrack> trackListModel = new DefaultListModel<>();
+    // Swing owns selection: selected values can be absent while filtering or when a list is empty.
     final JList<MusicTrack> trackList = new JList<>(trackListModel);
     final DefaultListModel<SoundEffect> soundEffectListModel = new DefaultListModel<>();
     final JList<SoundEffect> soundEffectList = new JList<>(soundEffectListModel);
@@ -92,7 +93,7 @@ final class AudioBrowserFrame extends JFrame {
     public static void showStartupError(String message) {
         JOptionPane.showMessageDialog(
                 null,
-                message == null || message.isBlank() ? "Audio browser failed to start" : message,
+                Objects.requireNonNullElse(message, "").isBlank() ? "Audio browser failed to start" : message,
                 "LADX Audio Browser",
                 JOptionPane.ERROR_MESSAGE);
     }
@@ -252,7 +253,7 @@ final class AudioBrowserFrame extends JFrame {
         }
         player.playSoundEffect(effect);
         String message = player.statusMessage();
-        statusLabel.setText(message == null || message.isBlank() ? "SFX triggered" : message);
+        statusLabel.setText(Objects.requireNonNullElse(message, "").isBlank() ? "SFX triggered" : message);
         refreshChannelActivity();
         refreshTransportAvailability();
     }
@@ -287,7 +288,7 @@ final class AudioBrowserFrame extends JFrame {
         refreshChannelActivity();
         refreshTransportAvailability();
         String message = player.statusMessage();
-        if (message != null && !message.isBlank()) {
+        if (!Objects.requireNonNullElse(message, "").isBlank()) {
             statusLabel.setText(message);
         }
     }
@@ -324,7 +325,7 @@ final class AudioBrowserFrame extends JFrame {
         playSoundEffectButton.setEnabled(player.isSoundEffectAvailable() && soundEffectList.getSelectedValue() != null);
         if (!available) {
             String message = player.statusMessage();
-            statusLabel.setText(message == null || message.isBlank() ? "Audio unavailable" : message);
+            statusLabel.setText(Objects.requireNonNullElse(message, "").isBlank() ? "Audio unavailable" : message);
         }
     }
 

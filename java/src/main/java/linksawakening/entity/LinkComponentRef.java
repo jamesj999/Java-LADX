@@ -2,16 +2,19 @@ package linksawakening.entity;
 
 import java.util.Objects;
 
-/** Assembly-time cell for mutually dependent components; bound once before a Link escapes. */
+/** Explicit unbound/bound assembly phase; a component is bound once before Link escapes. */
 final class LinkComponentRef<T> {
-    private T value;
+    private static final Object UNBOUND = new Object();
+    private Object binding = UNBOUND;
 
     void bind(T value) {
-        if (this.value != null) throw new IllegalStateException("Component already bound");
-        this.value = Objects.requireNonNull(value);
+        if (binding != UNBOUND) throw new IllegalStateException("Component already bound");
+        binding = Objects.requireNonNull(value, "value");
     }
 
+    @SuppressWarnings("unchecked")
     T get() {
-        return value;
+        if (binding == UNBOUND) throw new IllegalStateException("Component has not been bound");
+        return (T) binding;
     }
 }

@@ -10,6 +10,7 @@ import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
 import linksawakening.audio.music.ReusableFramePcmOutput;
 import linksawakening.audio.openal.OpenAlPcmSoundOutput;
+import linksawakening.audio.sfx.SoundEffectPlayback;
 import linksawakening.rom.Rom;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ final class AudioAllocationTest {
         var apu = new GameBoyApu(48001);
         var driver = new MusicDriver(Rom.of(syntheticRom()), apu);
         driver.start(new MusicTrack(1, "mixer allocation", 0x1b, 0x4077, 0x5000, 0x1b * 0x4000 + 0x1000));
-        var mixer = new FrameAudioMixer(driver, apu, null);
+        var mixer = new FrameAudioMixer(driver, apu, SoundEffectPlayback.none());
         double bytes = AllocationProbe.bytesPerIteration(5000, 1000, mixer::renderBufferPcm);
         assertTrue(driver.isPlaying(), "measurement must keep sequencing active");
         System.out.println("Frame mixer allocation bytes/buffer=" + bytes);

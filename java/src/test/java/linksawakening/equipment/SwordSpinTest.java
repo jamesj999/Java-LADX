@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.rom.SwordTables;
 import linksawakening.state.Direction;
 import org.junit.jupiter.api.Test;
 
 class SwordSpinTest {
     @Test
     void queuedReleaseWaitsOneFrameThenUsesTheTwentyFiveFrameCadence() {
-        var spin = new SwordSpin(null);
+        var spin = new SwordSpin(SwordTables.animationOnly());
         spin.queue(Direction.DOWN.javaIndex());
         assertTrue(spin.queued());
         assertFalse(spin.active());
@@ -30,7 +31,7 @@ class SwordSpinTest {
 
     @Test
     void acquisitionValidationPrecedesMutationAndInactiveDirectionFlowsThrough() {
-        var spin = new SwordSpin(null);
+        var spin = new SwordSpin(SwordTables.animationOnly());
         assertEquals(99, spin.effectiveDirection(99));
         spin.startAcquisition(Direction.RIGHT.javaIndex());
         int direction = spin.effectiveDirection(99);

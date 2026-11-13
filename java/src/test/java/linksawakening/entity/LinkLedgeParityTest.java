@@ -21,6 +21,7 @@ import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
+import linksawakening.testing.TestLinks;
 import linksawakening.testing.TestRom;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
@@ -195,7 +196,7 @@ final class LinkLedgeParityTest {
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         input.onKeyEvent(config.downKey(), GLFW_PRESS);
         return new Fixture(
-                new LinkTestBuilder()
+                TestLinks.link()
                         .input(input)
                         .config(config)
                         .tables(tables)
