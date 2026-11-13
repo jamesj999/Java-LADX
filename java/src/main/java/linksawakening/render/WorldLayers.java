@@ -3,7 +3,7 @@ package linksawakening.render;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Session-local configurable layers and palette scopes for every screen. Lists and layers never escape ownership. */
+/** Session-local configurable layers and palette scopes for every screen. Lists and layers never escape ownership.  Hardware analogue: ordered BG/window and OBJ submission. */
 final class WorldLayers {
     final List<RenderLayer> layers = new ArrayList<>(12);
     private final RoomRenderLayer room = new RoomRenderLayer();

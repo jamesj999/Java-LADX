@@ -2,7 +2,7 @@ package linksawakening.render;
 
 import linksawakening.gpu.GPU;
 
-/** Submits indexed data without writing the output buffer. */
+/** Submits indexed data without writing the output buffer.  Hardware analogue: indexed BG/window planes and ordered OBJ entries. */
 interface HardwareRenderLayer extends RenderLayer {
     @Override
     default void render(RenderContext context) {

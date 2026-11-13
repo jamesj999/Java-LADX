@@ -11,22 +11,17 @@ public final class GameFrameSceneBuilder {
     }
 
     private FrameDrawObserver observer;
-    private final WorldLayers reusable = new WorldLayers();
-    private final FrameScene reusableScene = FrameScene.borrowed(reusable.layers, frame);
+    private final WorldLayers world = new WorldLayers();
+    private final FrameScene scene = FrameScene.borrowed(world.layers, frame);
 
     /** Attaches optional inspection to scenes built by this session-local builder. */
     void setDrawObserver(FrameDrawObserver observer) {
         this.observer = observer;
     }
 
-    /** Compatibility bridge for app callers already holding an immutable frame; new room snapshots retain defensive-copy cost. */
-    public FrameScene buildReusable(GameFrameState state) {
-        return build(state);
-    }
-
-    /** Refills a borrowed scene, valid until this builder's next build. Capture callers use immutable build(GameFrameState). */
+    /** Refills a borrowed scene, valid until this builder's next build. Capture inputs are copied by test-side FrameSnapshots. */
     public FrameScene build(GameFrameState state) {
-        reusable.fill(state, dialogWindowPainter);
-        return reusableScene.observedBy(observer);
+        world.fill(state, dialogWindowPainter);
+        return scene.observedBy(observer);
     }
 }

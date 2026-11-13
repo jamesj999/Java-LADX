@@ -7,7 +7,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 
-/** Owns instrument-warp snapshot extraction, sprite fade scope, swirl and fullscreen uploads. */
+/** Owns instrument-warp snapshot extraction, sprite fade scope, swirl and fullscreen uploads.  Hardware analogue: BG overlays and OBJ swirl palette scopes. */
 final class WarpLayers {
     final List<RenderLayer> sprites = new ArrayList<>(10);
     private InstrumentWarpVisual visual;

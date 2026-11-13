@@ -2,7 +2,7 @@ package linksawakening.render;
 
 import linksawakening.dialog.DialogController;
 
-/** Submits dialog window pixels and the timed page-advance prompt. */
+/** Submits dialog window pixels and the timed page-advance prompt.  Hardware analogue: window text and OBJ page prompt. */
 final class DialogRenderLayer implements HardwareRenderLayer {
     private DialogWindowPainter windowPainter = DialogWindowPainter.ROM;
 

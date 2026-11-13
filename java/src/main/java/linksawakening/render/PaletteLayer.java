@@ -4,7 +4,7 @@ import java.util.function.IntUnaryOperator;
 import linksawakening.gpu.GPU;
 import linksawakening.ui.InventoryTransition;
 
-/** Owns synchronous submission callbacks and nested pass-out/inventory palette scopes. */
+/** Owns synchronous submission callbacks and nested pass-out/inventory palette scopes.  Hardware analogue: BG/window and OBJ palette scopes. */
 final class PaletteLayer implements HardwareRenderLayer {
     private HardwareRenderLayer child;
     private InventoryTransition inventory;
