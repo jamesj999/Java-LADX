@@ -29,7 +29,8 @@ public final class IntroAudioCapture {
         int count = Integer.parseInt(args[1]);
         int[] frame = {0};
         ByteArrayOutputStream pcm = new ByteArrayOutputStream();
-        try (PrintWriter trace = new PrintWriter(new File(directory, "engine.jsonl"))) {
+        try (PrintWriter trace =
+                new PrintWriter(new File(directory, "engine.jsonl"), java.nio.charset.Charset.defaultCharset())) {
             GameSession session = new GameSession((samples, rate) -> {
                 if (rate != 48000) throw new IllegalStateException("Unexpected sample rate");
                 for (short sample : samples) {

@@ -26,6 +26,8 @@ final class StoryLayer implements HardwareRenderLayer {
         this.kind = kind;
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     void configure(GameFrameState state) {
         this.state = state;
         if (kind == Kind.HEART && state.roomInputs.heart != heart) {

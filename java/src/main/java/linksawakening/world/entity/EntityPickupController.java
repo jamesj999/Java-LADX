@@ -36,6 +36,8 @@ public final class EntityPickupController {
                 commonUpdates, new RoomEntityRuntime.CommonDroppableUpdate(RoomEntity.disabled(0), false));
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     RoomEntityRuntime.CommonDroppableUpdate commonUpdate(RoomEntity entity, boolean hidden) {
         var previous = commonUpdates[entity.slot()];
         if (previous.entity() != entity || previous.hidden() != hidden) {

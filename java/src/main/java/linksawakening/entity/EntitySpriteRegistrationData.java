@@ -1248,6 +1248,8 @@ final class EntitySpriteRegistrationData {
     private static final EntitySpriteRegistrationData INSTANCE = new EntitySpriteRegistrationData();
     private final EntitySpriteRecipe[][][] recipes;
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     private EntitySpriteRegistrationData() {
         var rooms = EntityRoomLoader.RoomTable.values();
         recipes = new EntitySpriteRecipe[rooms.length][MAPS.length][256];
@@ -1261,6 +1263,8 @@ final class EntitySpriteRegistrationData {
         return INSTANCE;
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if ((entityType & ~255) != 0)
             throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);

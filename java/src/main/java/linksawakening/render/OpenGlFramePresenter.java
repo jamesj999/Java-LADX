@@ -34,7 +34,7 @@ public final class OpenGlFramePresenter {
     private final int texture;
     private final ByteBuffer textureUploadBuffer;
 
-    private OpenGlFramePresenter(long window, int vao, int vbo, GlShader shader, int texture, ResourceScope resources) {
+    private OpenGlFramePresenter(long window, int vao, GlShader shader, int texture, ResourceScope resources) {
         this.resources = resources;
         this.window = window;
         this.vao = vao;
@@ -91,7 +91,7 @@ public final class OpenGlFramePresenter {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 
-            return new OpenGlFramePresenter(window, vao, vbo, shader, texture, resources);
+            return new OpenGlFramePresenter(window, vao, shader, texture, resources);
         } catch (RuntimeException | Error failure) {
             resources.closeAfterFailure(failure);
             throw failure;
@@ -168,20 +168,28 @@ public final class OpenGlFramePresenter {
         }
 
         private void createShaders() {
-            String vertexSource = "#version 330 core\n" + "layout(location = 0) in vec2 aPosition;\n"
-                    + "layout(location = 1) in vec2 aTexCoord;\n"
-                    + "out vec2 vTexCoord;\n"
-                    + "void main() {\n"
-                    + "    gl_Position = vec4(aPosition, 0.0, 1.0);\n"
-                    + "    vTexCoord = aTexCoord;\n"
-                    + "}\n";
+            String vertexSource =
+                    """
+                                  #version 330 core
+                                  layout(location = 0) in vec2 aPosition;
+                                  layout(location = 1) in vec2 aTexCoord;
+                                  out vec2 vTexCoord;
+                                  void main() {
+                                      gl_Position = vec4(aPosition, 0.0, 1.0);
+                                      vTexCoord = aTexCoord;
+                                  }
+                                  """;
 
-            String fragmentSource = "#version 330 core\n" + "in vec2 vTexCoord;\n"
-                    + "uniform sampler2D uTexture;\n"
-                    + "out vec4 fragColor;\n"
-                    + "void main() {\n"
-                    + "    fragColor = texture(uTexture, vTexCoord);\n"
-                    + "}\n";
+            String fragmentSource =
+                    """
+                                    #version 330 core
+                                    in vec2 vTexCoord;
+                                    uniform sampler2D uTexture;
+                                    out vec4 fragColor;
+                                    void main() {
+                                        fragColor = texture(uTexture, vTexCoord);
+                                    }
+                                    """;
 
             ResourceScope shaders = new ResourceScope();
             try {

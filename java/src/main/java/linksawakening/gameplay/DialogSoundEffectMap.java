@@ -43,6 +43,6 @@ public final class DialogSoundEffectMap {
                 event,
                 catalog.find(namespace, id)
                         .orElseThrow(() -> new IllegalStateException("Missing dialog sound effect: " + namespace + " 0x"
-                                + Integer.toHexString(id).toUpperCase())));
+                                + Integer.toHexString(id).toUpperCase(java.util.Locale.ROOT))));
     }
 }

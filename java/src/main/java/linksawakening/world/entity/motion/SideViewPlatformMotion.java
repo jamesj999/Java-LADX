@@ -49,6 +49,8 @@ public final class SideViewPlatformMotion {
                 frame.verticalDelta());
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     public Update finishFrame(
             RoomEntity entity, Frame frame, int frameCounter, boolean standing, boolean activationAllowed) {
         Objects.requireNonNull(frame, "Platform frame cannot be null");

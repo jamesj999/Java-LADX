@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 public final class RomOwnershipAssertions {
     private RomOwnershipAssertions() {}
 
+    // Reflection failures in this test assertion utility intentionally remain assertion failures.
+    @SuppressWarnings("RethrowReflectiveOperationExceptionAsLinkageError")
     public static void assertBackedBy(byte[] bytes, Rom rom) {
         try {
             var storage = Rom.class.getDeclaredField("data");

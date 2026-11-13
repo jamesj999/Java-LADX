@@ -132,6 +132,8 @@ class GameplayRecorderTest {
         }
     }
 
+    // Acquisition and close are the behavior under test; the resource handle need not be read in the body.
+    @SuppressWarnings("try")
     @Test
     void emptyRecordingAndEncoderFailureAreCleanedUp() throws Exception {
         requireEncoder();

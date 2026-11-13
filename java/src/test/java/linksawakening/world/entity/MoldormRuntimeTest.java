@@ -500,9 +500,9 @@ final class MoldormRuntimeTest {
                 runtime.inspection().snapshot().slots().getFirst().status());
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).dyingCountdown(0));
 
-        int poofCount = 0;
-        int poofSoundCount = 0;
-        int bossExplosionSoundCount = 0;
+        long poofCount = 0;
+        long poofSoundCount = 0;
+        long bossExplosionSoundCount = 0;
         int frame = 2;
         boolean sawInitialDestructionFlash = false;
         boolean sawVisibleDestructionFlash = false;

@@ -19,6 +19,7 @@ public final class SwordRngCapture {
                 f.setAccessible(true);
                 return f.get(object);
             } catch (NoSuchFieldException ignored) {
+                // Keep walking superclasses until the named diagnostic field is found.
             }
         }
         throw new NoSuchFieldException(name);
@@ -30,8 +31,10 @@ public final class SwordRngCapture {
         var rng = new RomRandomByteSource(0xA2);
         var game = new GameSession(rng);
         int[] frame = {-1};
-        try (var trace = new PrintWriter(out.resolve("engine-rng.jsonl").toFile());
-                var states = new PrintWriter(out.resolve("engine-state.tsv").toFile())) {
+        try (var trace = new PrintWriter(
+                        out.resolve("engine-rng.jsonl").toFile(), java.nio.charset.Charset.defaultCharset());
+                var states = new PrintWriter(
+                        out.resolve("engine-state.tsv").toFile(), java.nio.charset.Charset.defaultCharset())) {
             game.initializeHeadlessNewGame();
             game.openingState().wakeUp(null);
             game.openingState().shield(null);
@@ -90,7 +93,7 @@ public final class SwordRngCapture {
                 states.printf(
                         "%d\t%d\t%s\t%b\t%d\t%d\t%d\t%d\t%d\t%d%n",
                         frame[0],
-                        (int) game.frameClock().value(),
+                        game.frameClock().value(),
                         parts[1],
                         d.dialogController().isActive(),
                         sword.state(),

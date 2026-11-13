@@ -14,8 +14,13 @@ final class PaletteLayer implements HardwareRenderLayer {
     private HardwareFrame frame;
     private GPU gpu;
     private final IntUnaryOperator passTransform = this::passColor;
-    private final IntUnaryOperator background = rgb -> inventory.color(rgb, false),
-            object = rgb -> inventory.color(rgb, true);
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
+    private final IntUnaryOperator background = rgb -> inventory.color(rgb, false);
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
+    private final IntUnaryOperator object = rgb -> inventory.color(rgb, true);
+
     private final Runnable draw = this::drawChild, inner = this::drawInner, sourced = this::drawSourced;
 
     void configure(RenderLayer layer, GameFrameState state) {

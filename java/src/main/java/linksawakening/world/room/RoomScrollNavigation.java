@@ -22,18 +22,13 @@ final class RoomScrollNavigation {
 
     int adjacentOverworldRoomId(ActiveRoom activeRoom, int direction) {
         int nextRoomId = activeRoom.roomId();
-        switch (direction) {
-            case ScrollController.UP:
-                return nextRoomId - 16;
-            case ScrollController.DOWN:
-                return nextRoomId + 16;
-            case ScrollController.LEFT:
-                return nextRoomId - 1;
-            case ScrollController.RIGHT:
-                return nextRoomId + 1;
-            default:
-                return nextRoomId;
-        }
+        return switch (direction) {
+            case ScrollController.UP -> nextRoomId - 16;
+            case ScrollController.DOWN -> nextRoomId + 16;
+            case ScrollController.LEFT -> nextRoomId - 1;
+            case ScrollController.RIGHT -> nextRoomId + 1;
+            default -> nextRoomId;
+        };
     }
 
     IndoorRoomDestination adjacentIndoorRoom(ActiveRoom activeRoom, int indoorMapPosition, int direction) {

@@ -52,7 +52,8 @@ public class GameSession implements AutoCloseable {
             } else {
                 var directory = recordingSettings.output().toAbsolutePath().getParent();
                 var output = directory.resolve("gameplay-"
-                        + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+                        + LocalDateTime.now(java.time.ZoneId.systemDefault())
+                                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
                         + "-" + UUID.randomUUID() + ".mp4");
                 recorder = new GameplayRecorder(new RecordingOptions(
                         output, recordingSettings.scale(), recordingSettings.crf(), recordingSettings.ffmpeg()));

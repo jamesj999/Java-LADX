@@ -189,6 +189,8 @@ final class SaveRoundTripTest {
         }
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     private static void playWakeUpPrefix(GameSession game) throws Exception {
         // Existing opening replay through the bed exit (first eight commands).
         var commands = Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()

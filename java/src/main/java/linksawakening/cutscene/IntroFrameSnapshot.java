@@ -46,8 +46,8 @@ public record IntroFrameSnapshot(
     /** @deprecated Use {@link Builder} for named construction. */
     @Deprecated(forRemoval = true)
     public IntroFrameSnapshot {
-        sceneId = Objects.requireNonNull(sceneId, "sceneId");
-        substate = Objects.requireNonNull(substate, "substate");
+        Objects.requireNonNull(sceneId, "sceneId");
+        Objects.requireNonNull(substate, "substate");
         tilemap = tilemap.clone();
         attrmap = attrmap.clone();
         bgPalettes = copyPalettes(bgPalettes);

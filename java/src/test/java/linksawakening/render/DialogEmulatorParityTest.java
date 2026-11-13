@@ -53,6 +53,8 @@ final class DialogEmulatorParityTest {
         verifyScenario("marin-close", 32);
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     private void verifyScenario(String scenario, int expectedFrames) throws Exception {
         String prefix = "marin".equals(scenario) ? "" : scenario + "/";
         Map<String, String> hashes = new HashMap<>();

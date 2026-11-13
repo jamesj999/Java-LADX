@@ -10,7 +10,10 @@ public final class ScrollController {
     public static final int LEFT = 3;
     public static final int RIGHT = 4;
 
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
     private static final Runnable NO_COMPLETION = () -> {};
+
     private Runnable completion = NO_COMPLETION;
     private int direction = NONE;
     private int offset;

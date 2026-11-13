@@ -615,18 +615,13 @@ final class SwordTest {
     }
 
     private static int toRomDirection(int javaDirection) {
-        switch (Direction.fromJavaOrUnknown(javaDirection)) {
-            case RIGHT:
-                return 0;
-            case LEFT:
-                return 1;
-            case UP:
-                return 2;
-            case DOWN:
-                return 3;
-            default:
-                return 3;
-        }
+        return switch (Direction.fromJavaOrUnknown(javaDirection)) {
+            case RIGHT -> 0;
+            case LEFT -> 1;
+            case UP -> 2;
+            case DOWN -> 3;
+            default -> 3;
+        };
     }
 
     private static Sword fullyChargedSwordFacing(int direction) {

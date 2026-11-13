@@ -10,7 +10,10 @@ final class EntityFrameRandom {
         throw new IllegalStateException("Shovel drops require a ROM random-byte supplier");
     };
 
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
     private static final IntConsumer EXTERNALLY_CLOCKED = frame -> {};
+
     private final IntSupplier source;
     private final IntSupplier spawnSource;
     private final IntConsumer beginFrame;

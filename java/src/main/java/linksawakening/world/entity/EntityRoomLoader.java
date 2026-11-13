@@ -30,6 +30,8 @@ public final class EntityRoomLoader {
     private static final int ROOM_INDOOR_A_QUICKSAND_CAVE = 0xF8;
     private static final int ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1 = 0x7A;
 
+    // RomAddress is an immutable record containing only final primitive bank/address values.
+    @SuppressWarnings("ImmutableEnumChecker")
     public enum RoomTable {
         OVERWORLD(RomSymbols.OverworldEntitiesPointersTable),
         INDOORS_A(RomSymbols.IndoorsAEntitiesPointersTable),

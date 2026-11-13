@@ -62,7 +62,7 @@ final class SwordBeamMotionTest {
     private static void assertSpawnData(int direction, int speedX, int speedY) {
         SwordBeamMotion.SpawnData actual = SwordBeamMotion.spawnData(direction);
         assertEquals(0, actual.offsetX());
-        assertEquals(direction < 2 ? 0 : 0, actual.offsetY());
+        assertEquals(0, actual.offsetY());
         assertEquals(speedX, actual.speedX());
         assertEquals(speedY, actual.speedY());
         assertEquals(direction, actual.initialVariant());

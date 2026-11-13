@@ -53,6 +53,8 @@ final class EntityInputCache {
         return linkMotion;
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     LinkInputs linkInputs(
             LinkPosition position,
             LinkMotion motion,
@@ -125,6 +127,8 @@ final class EntityInputCache {
         return playerHealth;
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     PlayerInputs playerInputs(
             ProgressInputs progress, InventoryInputs inventory, PlayerLevels levels, PlayerHealth health) {
         if (playerInputs == null

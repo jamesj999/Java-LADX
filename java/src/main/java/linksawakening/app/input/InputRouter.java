@@ -280,6 +280,8 @@ public final class InputRouter implements DebugScroll {
                 && !GameplayDialogInput.blocksGameplay(ui.dialogController());
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     public void headlessButton(String button, boolean pressed) {
         if (button.equals("none")) return;
         if (button.contains("+")) {

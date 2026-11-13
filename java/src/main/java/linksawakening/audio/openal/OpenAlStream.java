@@ -218,7 +218,7 @@ final class OpenAlStream {
         int error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
             throw new IllegalStateException("OpenAL " + operation + " failed: 0x"
-                    + Integer.toHexString(error).toUpperCase());
+                    + Integer.toHexString(error).toUpperCase(java.util.Locale.ROOT));
         }
     }
 

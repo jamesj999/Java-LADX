@@ -74,6 +74,8 @@ public final class DialogEmulatorCapture {
         capture("marin", initialClocks, frames, consumer);
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     static void capture(String scenario, String initialClocks, List<String> frames, BiConsumer<String, byte[]> consumer)
             throws Exception {
         boolean timedDialog =
@@ -164,6 +166,8 @@ public final class DialogEmulatorCapture {
                 gpu);
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     private static void replay(
             String scenario,
             List<String> frames,

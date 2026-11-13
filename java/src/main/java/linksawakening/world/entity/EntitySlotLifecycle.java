@@ -402,6 +402,8 @@ public final class EntitySlotLifecycle {
         this.roomVariables.writeEntityInteractionCountdown(countdown);
     }
 
+    // Preserve the eager ROM clinging-state accumulator merge across slots.
+    @SuppressWarnings("ShortCircuitBoolean")
     public void recordGelClinging(boolean clinging) {
         this.motions
                 .get(ZolGelMotion.class, ZolGelMotion::new)

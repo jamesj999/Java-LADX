@@ -160,6 +160,8 @@ final class RoomCollisionQueries {
                 loaded, entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     RoomEntityGroundInteraction.Result entityGroundInteraction(
             RoomRuntime loaded,
             RoomEntity entity,
@@ -245,5 +247,5 @@ final class RoomCollisionQueries {
         }
     }
 
-    /** Transitional boundary adapter; caller has already checked the facade's loaded state. */
+    /* Transitional boundary adapter; caller has already checked the facade's loaded state. */
 }

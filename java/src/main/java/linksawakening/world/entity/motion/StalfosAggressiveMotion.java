@@ -19,6 +19,8 @@ public final class StalfosAggressiveMotion {
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Mirrors EntityInitWithRandomDirection's consumed random byte. */
+    // The ROM advances its random source here even though this particular byte is discarded.
+    @SuppressWarnings("ReturnValueIgnored")
     public void initialize(int slot, IntSupplier randomByteSupplier) {
         initialize(slot);
         randomByteSupplier.getAsInt();

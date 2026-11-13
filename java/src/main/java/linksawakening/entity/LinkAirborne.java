@@ -136,6 +136,8 @@ final class LinkAirborne {
         pit = new LinkPitFall(linkAnimationState, linkDamage, linkMotion, linkServices, linkSignals, elevation);
     }
 
+    // Integer.compare is specified to return -1, 0 or 1; the ROM acceleration uses that signed step.
+    @SuppressWarnings("CompareToZero")
     static int steerAirSpeed(int speedByte, int target) {
         int speed = (byte) speedByte;
         return (speed + Integer.compare(target, speed)) & 0xFF;

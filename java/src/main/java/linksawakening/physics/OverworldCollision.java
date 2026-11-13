@@ -45,6 +45,8 @@ public final class OverworldCollision {
     public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {
         private static final PitCell NONE = new PitCell(0, 0, PhysicsFlags.NONE);
 
+        // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+        @SuppressWarnings("ReferenceEquality")
         public boolean present() {
             return this != NONE;
         }

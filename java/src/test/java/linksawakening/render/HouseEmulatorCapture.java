@@ -28,6 +28,8 @@ import linksawakening.world.transition.TransitionController;
 /** Offline opening scene through production room, entity, bed and HUD rendering. */
 @linksawakening.testing.RequiresRom
 public final class HouseEmulatorCapture {
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]);
         byte[] rom = CaptureImageWriter.readRom();

@@ -126,6 +126,8 @@ public final class SessionDiagnosticSnapshot implements SessionDiagnostics {
         return hash;
     }
 
+    // Preserve identity-oriented diagnostics for live session objects, rather than inventing value formatting.
+    @SuppressWarnings("ObjectToString")
     @Override
     public String toString() {
         return "Diagnostics[" + "gpu=" + gpu + ", roomSession=" + roomSession + ", transitionController="

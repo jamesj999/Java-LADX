@@ -114,6 +114,6 @@ public final class GameplaySoundEffectMap {
                 event,
                 catalog.find(namespace, id)
                         .orElseThrow(() -> new IllegalStateException("Missing gameplay sound effect: " + namespace
-                                + " 0x" + Integer.toHexString(id).toUpperCase())));
+                                + " 0x" + Integer.toHexString(id).toUpperCase(java.util.Locale.ROOT))));
     }
 }

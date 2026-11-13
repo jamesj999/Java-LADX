@@ -34,6 +34,11 @@ final class AppConfigResourceTest {
                     }
 
                     @Override
+                    public int read(byte[] buffer, int offset, int length) throws IOException {
+                        return super.read(buffer, offset, length);
+                    }
+
+                    @Override
                     public void close() {
                         closed[0] = true;
                     }

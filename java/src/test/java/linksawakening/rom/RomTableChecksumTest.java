@@ -61,6 +61,8 @@ revolvingDoorAnimation=1285a5ee8be8c6d4f5c4e2c30f08da8a2989910ee253e3d341d21a96e
 revolvingDoorPalettes=930d01137bd88b22d96200a6cf43d9b8c6b479642c014207a78344b09dd6a296
 """;
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     @Test
     void everyTableMatchesOriginalChecksum() throws Exception {
         try (var input = TestRom.open()) {

@@ -32,10 +32,14 @@ public final class EntitySpriteViews {
         this.source = catalog == null ? UnsupportedSource.INSTANCE : new RomSource(catalog);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forEntityType(int type, EntityRoomLoader.RoomTable table, int map) {
         return get(0, type, table.ordinal(), map);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forColorShellState(int type, int state, EntityStatus status) {
         return get(1, type, state, status.ordinal());
     }
@@ -44,10 +48,14 @@ public final class EntitySpriteViews {
         return get(2, flying ? 1 : 0, 0, 0);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forBushCrawlerState(int state, EntityRoomLoader.RoomTable table) {
         return get(3, state, table.ordinal(), 0);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forBushCrawlerCrawlState(EntityRoomLoader.RoomTable table, int state) {
         return get(4, table.ordinal(), state, 0);
     }

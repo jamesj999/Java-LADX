@@ -15,6 +15,8 @@ final class InventoryDungeonPanelTest {
         }
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     @Test
     void tailCavePanelMatchesTheRealEmulatorsTilemapAndAttributes() throws Exception {
         byte[] rom = rom();

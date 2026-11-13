@@ -265,6 +265,8 @@ final class LinkSwimming {
         }
     }
 
+    // The signed-byte casts deliberately truncate both ROM speeds before subtraction.
+    @SuppressWarnings("SelfAssignment")
     static int approachSignedSpeed(int current, int target) {
         current = (byte) current;
         target = (byte) target;

@@ -336,10 +336,10 @@ public final class GameFrameState {
     public boolean equals(Object value) {
         if (!(value instanceof GameFrameState other)) return false;
         return Objects.equals(screen, other.screen)
-                && Objects.equals(background.tilemap.value, other.background.tilemap.value)
-                && Objects.equals(background.attrmap.value, other.background.attrmap.value)
-                && Objects.equals(background.bgPalettes.value, other.background.bgPalettes.value)
-                && Objects.equals(background.objPalettes.value, other.background.objPalettes.value)
+                && (background.tilemap.value == other.background.tilemap.value)
+                && (background.attrmap.value == other.background.attrmap.value)
+                && (background.bgPalettes.value == other.background.bgPalettes.value)
+                && (background.objPalettes.value == other.background.objPalettes.value)
                 && Objects.equals(background.cutsceneManager.value, other.background.cutsceneManager.value)
                 && Objects.equals(overworld.room.value, other.overworld.room.value)
                 && Objects.equals(overworld.scrollController.value, other.overworld.scrollController.value)
@@ -348,7 +348,7 @@ public final class GameFrameState {
                 && Objects.equals(overworld.transientVfxSystem.value, other.overworld.transientVfxSystem.value)
                 && Objects.equals(
                         overworld.cutLeavesEffectRenderer.value, other.overworld.cutLeavesEffectRenderer.value)
-                && Objects.equals(overworld.transientVfxPalette.value, other.overworld.transientVfxPalette.value)
+                && (overworld.transientVfxPalette.value == other.overworld.transientVfxPalette.value)
                 && Objects.equals(overworld.droppableRupeeSystem.value, other.overworld.droppableRupeeSystem.value)
                 && Objects.equals(overworld.inventoryController.value, other.overworld.inventoryController.value)
                 && Objects.equals(overworld.dialogController.value, other.overworld.dialogController.value)

@@ -48,6 +48,8 @@ public final class TransitionController {
 
     private State state = State.IDLE;
     private int frameInPhase;
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
     private static final Runnable NO_LOAD = () -> {};
     /** A fade without a room load executes the explicit no-op action. */
     private Runnable pendingLoad = NO_LOAD;

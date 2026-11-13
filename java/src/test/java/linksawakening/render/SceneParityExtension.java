@@ -40,7 +40,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
 
     private static void observe(
             ExtensionContext context,
-            ArrayList<String> rows,
+            List<String> rows,
             Map<String, Group> groups,
             Map<String, Group> expectedSources) {
         boolean probe = Boolean.getBoolean("sceneParity.probe");
@@ -134,12 +134,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
     }
 
     private static void report(
-            ArrayList<String> rows,
-            String id,
-            int layers,
-            int expectedPixels,
-            int mismatchPixels,
-            Set<String> evidence) {
+            List<String> rows, String id, int layers, int expectedPixels, int mismatchPixels, Set<String> evidence) {
         if (mismatchPixels > 0) {
             rows.add(id + "\tMISMATCH\tpixels=" + mismatchPixels + ";expectedPixels=" + expectedPixels);
             return;

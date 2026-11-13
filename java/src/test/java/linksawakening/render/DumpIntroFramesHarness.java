@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 @linksawakening.testing.RequiresRom
 final class DumpIntroFramesHarness {
 
+    // Required validation or side-effecting ROM read; its returned value is deliberately unused.
+    @SuppressWarnings("UnusedVariable")
     @Test
     void dumpFrames() throws Exception {
         byte[] rom = loadRom();
@@ -38,7 +40,7 @@ final class DumpIntroFramesHarness {
             if (frame == frames[next]) {
                 String scene = sequence.snapshot().sceneId();
                 boolean titleTiles = BackgroundSceneCatalog.requiresTitleTileset(scene);
-                GPU frameGpu = titleTiles ? gpu : gpu;
+                GPU frameGpu = gpu;
                 byte[] buffer = render(builder, frameGpu, sequence.snapshot());
                 writePng(buffer, new File(outDir, String.format("f%04d_%s.png", frame, scene)));
                 next++;

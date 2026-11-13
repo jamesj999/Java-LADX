@@ -17,7 +17,10 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     final int[] objects = new int[WIDTH * HEIGHT];
     final int[] objectOrder = new int[WIDTH * HEIGHT];
     final boolean[] objectBehind = new boolean[WIDTH * HEIGHT];
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
     private static final IntUnaryOperator IDENTITY = color -> color;
+
     private int paletteTransform;
     private final int[] bgTransforms = new int[WIDTH * HEIGHT];
     private final ArrayList<IntUnaryOperator> transforms = new ArrayList<>();

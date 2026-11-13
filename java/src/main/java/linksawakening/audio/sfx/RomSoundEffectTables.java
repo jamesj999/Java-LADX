@@ -51,7 +51,7 @@ final class RomSoundEffectTables {
     private void requireReadable(int offset, int length) {
         if (offset < 0 || offset + length > romData.size()) {
             throw new IllegalArgumentException("SFX table read outside ROM at offset 0x"
-                    + Integer.toHexString(offset).toUpperCase());
+                    + Integer.toHexString(offset).toUpperCase(java.util.Locale.ROOT));
         }
     }
 }

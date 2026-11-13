@@ -21,7 +21,7 @@ final class ManboTransitionWaveTest {
         assertEquals(0, wave.offsetFor(0x20, 0x17));
 
         int reversedSource = RomBank.romOffset(0x14, 0x4EE8 + 0xC9);
-        assertEquals((byte) rom[reversedSource], wave.offsetFor(0x20, 0, true));
+        assertEquals(rom[reversedSource], wave.offsetFor(0x20, 0, true));
     }
 
     private static byte[] loadRom() {

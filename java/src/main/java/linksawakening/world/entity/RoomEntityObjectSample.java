@@ -18,6 +18,8 @@ public record RoomEntityObjectSample(int objectId, int physicsFlag, int objectLe
         return java.util.Objects.requireNonNullElse(value, UNSAMPLED);
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     public boolean sampled() {
         return this != UNSAMPLED;
     }

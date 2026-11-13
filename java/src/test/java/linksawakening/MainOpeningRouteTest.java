@@ -18,6 +18,8 @@ final class MainOpeningRouteTest {
 
     // Known parity gap: the ROM pauses hFrameCounter on tileset/LCD-off load frames
     // ($00:024A, render_loop.asm) and GameSession does not yet. Runs under `knownGapTest`.
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     @Tag("known-gap")
     @Test
     void newGameCanDefeatRollingBonesAndWarpBackToTheEntrance() throws Exception {

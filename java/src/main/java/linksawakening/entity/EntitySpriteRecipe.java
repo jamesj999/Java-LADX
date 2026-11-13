@@ -12,6 +12,8 @@ record EntitySpriteRecipe(
     /** A registration family did not recognize this entity; continue to the next family. */
     static final EntitySpriteRecipe NO_MATCH = special(Kind.UNSUPPORTED, -1);
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     boolean matched() {
         return this != NO_MATCH;
     }

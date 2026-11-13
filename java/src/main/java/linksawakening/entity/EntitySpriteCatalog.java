@@ -58,7 +58,7 @@ public final class EntitySpriteCatalog {
     /**
      * Loads the sprite selection using the same room context as the game's
      * OAM-loader path. The status array is the WRAM
-     * {@code wOverworldRoomStatus} table; it is only consulted for overworld
+     * overworld room-status table; it is only consulted for overworld
      * Siren and Walrus group overrides.
      */
     public EntitySpriteSelection load(

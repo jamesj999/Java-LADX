@@ -87,7 +87,7 @@ final class MusicOpcode {
     }
 
     private static IllegalArgumentException unsupported(int opcode, int channel) {
-        return new IllegalArgumentException(
-                "Unsupported music opcode 0x" + Integer.toHexString(opcode).toUpperCase() + " on channel " + channel);
+        return new IllegalArgumentException("Unsupported music opcode 0x"
+                + Integer.toHexString(opcode).toUpperCase(java.util.Locale.ROOT) + " on channel " + channel);
     }
 }

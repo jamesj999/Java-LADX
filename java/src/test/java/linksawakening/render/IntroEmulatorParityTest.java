@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Test;
 /** Golden pixels recorded by running the shipped ROM, independently of the Java renderer. */
 @linksawakening.testing.RequiresRom
 final class IntroEmulatorParityTest {
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     @Test
     void matchesEmulatorAcrossFadesBeachPanTitleAndFrameBoundaries() throws Exception {
         byte[] rom;
