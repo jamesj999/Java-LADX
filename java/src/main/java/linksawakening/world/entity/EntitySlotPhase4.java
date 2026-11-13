@@ -9,7 +9,7 @@ import java.util.Arrays;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BowWowMotion;
 import linksawakening.world.entity.motion.BowWowMotion.BowWowCollisionFrame;
-import linksawakening.world.entity.motion.FollowingNpcFrame;
+import linksawakening.world.entity.motion.FollowingNpcMotion.FollowingNpcFrame;
 
 /** Ordered slot dispatch phase 4; false preserves the ROM handler early return. */
 final class EntitySlotPhase4 {

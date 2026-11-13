@@ -12,8 +12,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.LikeLikeFrame;
 import linksawakening.world.entity.motion.LikeLikeMotion;
+import linksawakening.world.entity.motion.LikeLikeMotion.LikeLikeFrame;
 
 /** ROM handler stages for LikeLike. */
 final class LikeLikeHandler {

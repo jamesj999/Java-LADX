@@ -13,8 +13,8 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
-import linksawakening.world.entity.motion.HinoxFrame;
 import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.HinoxMotion.HinoxFrame;
 
 /** Reused, reentrancy-safe scratch for HinoxHandler.phase4Hinox; values are assigned in source order. */
 final class HinoxHandlerFrameStep {

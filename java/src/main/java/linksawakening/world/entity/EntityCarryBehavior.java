@@ -9,8 +9,8 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
-import linksawakening.world.entity.motion.LiftedEntityFrame;
 import linksawakening.world.entity.motion.LiftedEntityMotion;
+import linksawakening.world.entity.motion.LiftedEntityMotion.LiftedEntityFrame;
 
 /** Focused behavior using the state owned by EntityLiftThrowController. */
 final class EntityCarryBehavior {

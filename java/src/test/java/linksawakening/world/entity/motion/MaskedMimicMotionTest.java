@@ -9,6 +9,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.MaskedMimicMotion.MaskedMimicFrame;
 import org.junit.jupiter.api.Test;
 
 final class MaskedMimicMotionTest {

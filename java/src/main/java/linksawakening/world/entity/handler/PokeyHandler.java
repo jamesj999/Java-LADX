@@ -14,8 +14,8 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.PokeyFrame;
 import linksawakening.world.entity.motion.PokeyMotion;
+import linksawakening.world.entity.motion.PokeyMotion.PokeyFrame;
 
 /** ROM handler stages for Pokey. */
 final class PokeyHandler {

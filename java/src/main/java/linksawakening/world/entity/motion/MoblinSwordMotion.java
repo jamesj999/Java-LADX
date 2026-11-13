@@ -390,4 +390,15 @@ public final class MoblinSwordMotion {
         int unsigned = value & 0xFF;
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
+
+    public record MoblinSwordFrame(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int alertingSoundCounter,
+            int mapId,
+            int transitionSequenceCounter,
+            int frameCounter) {}
 }

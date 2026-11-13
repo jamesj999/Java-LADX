@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.motion.MoblinSwordMotion.MoblinSwordFrame;
 import org.junit.jupiter.api.Test;
 
 final class MoblinSwordMotionTest {

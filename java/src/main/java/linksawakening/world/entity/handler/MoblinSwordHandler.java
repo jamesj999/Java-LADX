@@ -10,8 +10,8 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.MoblinSwordFrame;
 import linksawakening.world.entity.motion.MoblinSwordMotion;
+import linksawakening.world.entity.motion.MoblinSwordMotion.MoblinSwordFrame;
 
 /** ROM handler stages for MoblinSword. */
 final class MoblinSwordHandler {

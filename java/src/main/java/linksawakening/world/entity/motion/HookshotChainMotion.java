@@ -197,7 +197,7 @@ public final class HookshotChainMotion {
      * hookshotable-object pull state for the shared collision increment.</p>
      */
     public static Step advance(State state, int linkX, int linkY, boolean blocked) {
-        return HookshotChainBehavior.advance(state, linkX, linkY, blocked);
+        return HookshotChainMotion.advanceBody(state, linkX, linkY, blocked);
     }
 
     public static State decrementTransitionCountdown(State state) {
@@ -218,7 +218,7 @@ public final class HookshotChainMotion {
     }
 
     public static Step advance(State state, int linkX, int linkY, boolean blocked, boolean tickCountdown) {
-        return HookshotChainBehavior.advance(state, linkX, linkY, blocked, tickCountdown);
+        return HookshotChainMotion.advanceBody(state, linkX, linkY, blocked, tickCountdown);
     }
 
     /**
@@ -267,7 +267,7 @@ public final class HookshotChainMotion {
     }
 
     public Step advance(int slot, int linkX, int linkY, boolean blocked) {
-        return HookshotChainBehavior.advance(this, slot, linkX, linkY, blocked);
+        return HookshotChainMotion.advanceBody(this, slot, linkX, linkY, blocked);
     }
 
     public void setState(int slot, State state) {
@@ -322,7 +322,7 @@ public final class HookshotChainMotion {
     }
 
     private static State copy(HookshotChainSnapshot inputs) {
-        return HookshotChainBehavior.copy(inputs);
+        return HookshotChainMotion.copyBody(inputs);
     }
 
     static int signedByte(int value) {
@@ -358,4 +358,90 @@ public final class HookshotChainMotion {
     record SpeedStep(int position, int accumulator) {}
 
     record Vector(int x, int y) {}
+
+    static HookshotChainMotion.Step advanceBody(
+            HookshotChainMotion.State state, int linkX, int linkY, boolean blocked) {
+        return HookshotChainMotion.advance(state, linkX, linkY, blocked, true);
+    }
+
+    static HookshotChainMotion.Step advanceBody(
+            HookshotChainMotion.State state, int linkX, int linkY, boolean blocked, boolean tickCountdown) {
+        if (state == null) {
+            throw new IllegalArgumentException("Hookshot state cannot be null");
+        }
+        HookshotChainMotion.validateByte(linkX, "linkX");
+        HookshotChainMotion.validateByte(linkY, "linkY");
+        if (blocked) {
+            return new HookshotChainMotion.Step(state, true, false, state.transitionCountdown() == 0);
+        }
+
+        HookshotChainMotion.SpeedStep nextX =
+                HookshotChainMotion.addSpeed(state.x(), state.speedX(), state.speedXAccumulator());
+        HookshotChainMotion.SpeedStep nextY =
+                HookshotChainMotion.addSpeed(state.y(), state.speedY(), state.speedYAccumulator());
+        int nextCountdown = tickCountdown ? Math.max(0, state.transitionCountdown() - 1) : state.transitionCountdown();
+        boolean returning = nextCountdown == 0;
+        int nextSpeedX = state.speedX();
+        int nextSpeedY = state.speedY();
+        if (returning) {
+            HookshotChainMotion.Vector vector = HookshotChainMotion.vectorTowardsLink(
+                    nextX.position(), nextY.position(), state.z(), linkX, linkY, HOOKSHOT_SPEED);
+            nextSpeedX = vector.x();
+            nextSpeedY = vector.y();
+        }
+        HookshotChainMotion.State next = new HookshotChainMotion.State(
+                nextX.position(),
+                nextY.position(),
+                state.z(),
+                state.direction(),
+                nextSpeedX,
+                nextSpeedY,
+                nextCountdown,
+                nextX.accumulator(),
+                nextY.accumulator(),
+                state.entityState(),
+                state.wallCollisionPending());
+        // The chain is spawned on Link's collision box. The ROM only treats
+        // that overlap as the unload condition after the transition countdown
+        // has switched the entity to its return path; otherwise the outbound
+        // launch would immediately collide with its owner.
+        return new HookshotChainMotion.Step(
+                next, false, returning && HookshotChainMotion.overlapsLink(state, linkX, linkY), returning);
+    }
+
+    static HookshotChainMotion.Step advanceBody(
+            HookshotChainMotion owner, int slot, int linkX, int linkY, boolean blocked) {
+        HookshotChainMotion.validateSlot(slot);
+        HookshotChainMotion.State state = owner.requireState(slot);
+        HookshotChainMotion.Step step = HookshotChainMotion.advance(state, linkX, linkY, blocked);
+        owner.states[slot] = step.state();
+        return step;
+    }
+
+    static HookshotChainMotion.State copyBody(HookshotChainSnapshot inputs) {
+        HookshotChainMotion.State state = inputs.state();
+        int x = inputs.x();
+        int y = inputs.y();
+        int z = inputs.z();
+        int direction = inputs.direction();
+        int speedX = inputs.speedX();
+        int speedY = inputs.speedY();
+        int transitionCountdown = inputs.transitionCountdown();
+        int speedXAccumulator = inputs.speedXAccumulator();
+        int speedYAccumulator = inputs.speedYAccumulator();
+        int entityState = inputs.entityState();
+        boolean wallCollisionPending = inputs.wallCollisionPending();
+        return new HookshotChainMotion.State(
+                x,
+                y,
+                z,
+                direction,
+                speedX,
+                speedY,
+                transitionCountdown,
+                speedXAccumulator,
+                speedYAccumulator,
+                entityState,
+                wallCollisionPending);
+    }
 }

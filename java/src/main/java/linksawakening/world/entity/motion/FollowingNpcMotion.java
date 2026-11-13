@@ -330,4 +330,15 @@ public final class FollowingNpcMotion {
     }
 
     private record Vector(int x, int y) {}
+
+    public record FollowingNpcFrame(
+            RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int linkDirection,
+            int entityYOffset,
+            LinkPositionHistory linkPositionHistory,
+            RoomEntityBackgroundCollision backgroundCollision) {}
 }

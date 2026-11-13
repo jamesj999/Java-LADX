@@ -10,8 +10,8 @@ import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.MoblinKingFrame;
 import linksawakening.world.entity.motion.MoblinKingMotion;
+import linksawakening.world.entity.motion.MoblinKingMotion.MoblinKingFrame;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 
 /** Reused, reentrancy-safe scratch for MoblinKingHandler.phase4MoblinKing; values are assigned in source order. */

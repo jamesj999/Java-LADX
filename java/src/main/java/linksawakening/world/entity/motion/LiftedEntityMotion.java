@@ -133,4 +133,18 @@ public final class LiftedEntityMotion {
             throw new IllegalArgumentException(label + " must be an unsigned byte");
         }
     }
+
+    public record LiftedEntityFrame(
+            int phase,
+            int transitionCountdown,
+            int sourceRomDirection,
+            int currentRomDirection,
+            int linkX,
+            int linkY,
+            int linkZ,
+            int linkC13B,
+            int entityType,
+            boolean sideScrolling,
+            boolean fastTransition,
+            int existingEntityZ) {}
 }

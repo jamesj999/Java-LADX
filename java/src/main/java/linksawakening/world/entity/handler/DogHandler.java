@@ -12,8 +12,8 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.DogFrame;
 import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.DogMotion.DogFrame;
 
 /** ROM handler stages for Dog. */
 final class DogHandler {

@@ -8,8 +8,8 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.MaskedMimicFrame;
 import linksawakening.world.entity.motion.MaskedMimicMotion;
+import linksawakening.world.entity.motion.MaskedMimicMotion.MaskedMimicFrame;
 
 /** ROM handler stages for MaskedMimicGoriya. */
 final class MaskedMimicGoriyaHandler {

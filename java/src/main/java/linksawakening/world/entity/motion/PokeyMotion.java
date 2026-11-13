@@ -318,4 +318,15 @@ public final class PokeyMotion {
     }
 
     private record Vector(int x, int y) {}
+
+    public record PokeyFrame(
+            RoomEntity entity,
+            int frameCounter,
+            int inertia,
+            int transitionCountdown,
+            int flashCountdown,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {}
 }
