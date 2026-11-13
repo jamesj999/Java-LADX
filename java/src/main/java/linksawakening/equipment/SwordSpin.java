@@ -93,16 +93,13 @@ final class SwordSpin {
             return direction;
         }
         int baseDirection = Direction.fromJavaOrDown(spinBaseDirection).romIndex();
-        return Direction.fromRom((swordTables.swordSpinAbsoluteDirection(
-                                Direction.fromJavaOrDown(spinBaseDirection).romIndex(), spinSector()))
-                        & 0x03)
+        return Direction.fromRom((swordTables.swordSpinAbsoluteDirection(baseDirection, spinSector())) & 0x03)
                 .javaIndex();
     }
 
     int animationState() {
         int baseDirection = Direction.fromJavaOrDown(spinBaseDirection).romIndex();
-        return swordTables.swordSpinAnimationState(
-                Direction.fromJavaOrDown(spinBaseDirection).romIndex(), spinSector());
+        return swordTables.swordSpinAnimationState(baseDirection, spinSector());
     }
 
     int spinSector() {

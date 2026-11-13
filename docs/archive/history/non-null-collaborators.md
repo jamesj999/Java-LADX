@@ -401,3 +401,248 @@ Null comparisons: **131 → 90**. Sprite registration families return a shared `
 The final audit also removed impossible tile-null checks: Link/sword sheets populate every tile; signed background indices are always 128–383 and VRAM constructs all 384 tiles. The music-name null check was unreachable after rejecting id zero. Palette validation now precedes copying, removing its duplicate row-null branch. HUD and tile-plane absence normalize once to named no-attribute arrays.
 
 Validation: 2,970 tests, zero failures. Added checks distinguish unmatched from explicitly unsupported recipes and verify empty equipment/unregistration semantics. All former assertions remain.
+
+## Step 6: final null-comparison audit
+
+The initial classification was reviewed against the actual construction and call paths. The corrected baseline below retains all **309** sites; final main sources contain **89**. Categories: (a) optional collaborator, (b) optional domain value/result, (c) public-boundary validation/default or legacy constructor adapter, (d) lazy initialization, (e) redundant leftover. Counts are source comparisons, not runtime branch counts. No nullable collaborator is retained behind a renamed predicate.
+
+| Package | a before → after | b before → after | c before → after | d before → after | e before → after | Total before → after |
+|---|---:|---:|---:|---:|---:|---:|
+| entity | 75 → 0 | 38 → 3 | 31 → 31 | 1 → 0 | 2 → 0 | 147 → 34 |
+| equipment | 12 → 0 | 3 → 0 | 2 → 3 | 0 → 0 | 1 → 0 | 18 → 3 |
+| state | 0 → 0 | 1 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 1 → 0 |
+| dialog | 0 → 0 | 2 → 2 | 7 → 3 | 1 → 0 | 0 → 0 | 10 → 5 |
+| ui | 18 → 0 | 11 → 5 | 0 → 1 | 2 → 0 | 1 → 0 | 32 → 6 |
+| cutscene | 0 → 0 | 24 → 8 | 2 → 2 | 5 → 0 | 2 → 0 | 33 → 10 |
+| startup | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 |
+| scene | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 |
+| physics | 2 → 0 | 7 → 0 | 0 → 2 | 1 → 0 | 0 → 0 | 10 → 2 |
+| vfx | 0 → 0 | 6 → 0 | 1 → 1 | 0 → 0 | 0 → 0 | 7 → 1 |
+| audio | 8 → 0 | 29 → 17 | 3 → 3 | 1 → 0 | 1 → 0 | 42 → 20 |
+| save | 0 → 0 | 3 → 3 | 0 → 0 | 0 → 0 | 0 → 0 | 3 → 3 |
+| config | 0 → 0 | 5 → 5 | 0 → 0 | 0 → 0 | 0 → 0 | 5 → 5 |
+| input | 0 → 0 | 1 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 1 → 0 |
+| rom | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 |
+| testing | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 |
+| **Total** | 115 → 0 | 130 → 43 | 46 → 46 | 11 → 0 | 7 → 0 | **309 → 89** |
+
+### Classification corrections
+
+These are corrections to the first-commit ledger, not removed sites or hidden comparisons. The final audit also moved FileSaveController’s scene load into its constructor and made that scene final; its original null check was lazy initialization, not optional scene data.
+
+- `audio/browser/AudioBrowserMain.java:48` `stream == null`: a → b; Resource lookup may be absent.
+- `audio/music/MusicCatalog.java:147` `previous != null`: b → c; Reject duplicate/unknown catalog identity.
+- `audio/music/MusicCatalog.java:173` `track == null`: b → c; Reject duplicate/unknown catalog identity.
+- `audio/music/MusicCatalog.java:222` `TRACK_NAMES[id] == null`: b → e; Only null entry is id zero, already rejected.
+- `cutscene/IntroFramePublisher.java:220` `scene == null`: b → c; Validate scene-provider result.
+- `cutscene/IntroFramePublisher.java:78` `snapshot == null`: b → d; Construction-time first publication/loading.
+- `cutscene/IntroResources.java:19` `spec == null`: b → c; Reject unknown scene identifier at provider boundary.
+- `cutscene/IntroSequence.java:222` `frames.snapshot() == null`: b → e; Initial snapshot is already published before construction returns.
+- `cutscene/IntroSequence.java:230` `frames.snapshot() == null`: b → e; Initial snapshot is already published before construction returns.
+- `dialog/DialogController.java:85` `text == null`: b → c; Public argument default normalization.
+- `dialog/DialogController.java:91` `boxPosition == null`: b → c; Public argument default normalization.
+- `dialog/DialogRenderer.java:96` `suppliedPalette == null`: b → c; Public palette default normalization.
+- `dialog/DialogText.java:35` `playerName == null`: b → c; Public argument default normalization.
+- `entity/EntitySpriteCatalog.java:103` `overworldRoomStatus != null`: b → c; Input room-status buffer length validation.
+- `entity/EntitySpriteSelection.java:104` `burningSpriteDefinition != null`: b → c; Input definition/map validation.
+- `entity/EntitySpriteSelection.java:184` `definition != null`: b → c; Input definition/map validation.
+- `entity/EntitySpriteSelection.java:262` `definition != null`: b → c; Input definition/map validation.
+- `entity/EntitySpriteSelection.java:77` `spriteOverrides == null`: b → c; Input definition/map validation.
+- `entity/EntitySpriteSelection.java:89` `spriteOverlays == null`: b → c; Input definition/map validation.
+- `entity/LinkSpriteComposer.java:34` `tile == null`: b → e; Proven populated tile and bounded index.
+- `equipment/ItemSpriteRenderer.java:12` `tile == null`: b → e; Proven populated tile and bounded index.
+- `save/SaveRamStore.java:153` `path == null`: c → b; Explicit in-memory save destination.
+- `ui/FileSaveController.java:60` `scene == null`: b → d; Construction-time first publication/loading.
+- `ui/TilemapRenderer.java:29` `tile == null`: b → e; Proven populated tile and bounded index.
+
+### Every remaining comparison
+
+| Source | Line | Comparison | Class | Reason |
+|---|---:|---|---|---|
+| audio/browser/AudioBrowserFrame.java | 185 | `selected != null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserFrame.java | 197 | `selected != null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserFrame.java | 229 | `track == null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserFrame.java | 246 | `effect == null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserFrame.java | 298 | `track == null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserFrame.java | 304 | `effect == null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserFrame.java | 317 | `trackList.getSelectedValue() != null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserFrame.java | 325 | `soundEffectList.getSelectedValue() != null` | b | Absent Swing list selection |
+| audio/browser/AudioBrowserMain.java | 48 | `stream == null` | b | Absent classpath resource lookup |
+| audio/music/FrameAudioMixer.java | 32 | `track != null` | b | Track-selection presence bit at setter |
+| audio/music/MusicCatalog.java | 147 | `previous != null` | c | Duplicate/unknown catalog identity validation |
+| audio/music/MusicCatalog.java | 173 | `track == null` | c | Duplicate/unknown catalog identity validation |
+| audio/openal/OpenAlMusicPlayer.java | 193 | `cleanupFailure == null` | b | Optional failure/cleanup diagnostic |
+| audio/openal/OpenAlMusicPlayer.java | 249 | `cleanupFailure != null` | b | Optional failure/cleanup diagnostic |
+| audio/openal/OpenAlPcmSoundOutput.java | 117 | `pcm == null` | c | PCM argument validation |
+| audio/openal/OpenAlPcmSoundOutput.java | 64 | `lastFailure != null` | b | Optional failure/cleanup diagnostic |
+| audio/openal/OpenAlStream.java | 207 | `next == null` | b | Optional failure/cleanup diagnostic |
+| audio/openal/OpenAlStream.java | 210 | `first == null` | b | Optional failure/cleanup diagnostic |
+| audio/openal/OpenAlStream.java | 71 | `cleanupFailure != null` | b | Optional failure/cleanup diagnostic |
+| audio/sfx/SoundEffectPlayer.java | 102 | `stream == null` | b | Absent classpath resource lookup |
+| config/AppConfig.java | 107 | `stream == null` | b | Absent configuration resource/property |
+| config/AppConfig.java | 138 | `value == null` | b | Absent configuration resource/property |
+| config/AppConfig.java | 157 | `value == null` | b | Absent configuration resource/property |
+| config/AppConfig.java | 169 | `value == null` | b | Absent configuration resource/property |
+| config/AppConfig.java | 186 | `value == null` | b | Absent configuration resource/property |
+| cutscene/CutsceneManager.java | 109 | `lineScroll == null` | b | Documented optional line-scroll/upload data; nullable renderer compatibility |
+| cutscene/IntroFramePublisher.java | 232 | `scene == null` | c | Scene-provider result validation |
+| cutscene/IntroFrameSnapshot.java | 62 | `lineScrollX != null` | b | Documented optional line-scroll/upload data; nullable renderer compatibility |
+| cutscene/IntroFrameSnapshot.java | 66 | `lineScrollY != null` | b | Documented optional line-scroll/upload data; nullable renderer compatibility |
+| cutscene/IntroFrameSnapshot.java | 70 | `animatedTiles != null` | b | Documented optional line-scroll/upload data; nullable renderer compatibility |
+| cutscene/IntroFrameSnapshot.java | 80 | `scroll == null` | b | Documented optional line-scroll/upload data; nullable renderer compatibility |
+| cutscene/IntroFrameSnapshot.java | 84 | `tiles == null` | b | Documented optional line-scroll/upload data; nullable renderer compatibility |
+| cutscene/IntroResources.java | 19 | `spec == null` | c | Unknown scene identifier validation |
+| cutscene/IntroResources.java | 28 | `stream == null` | b | Absent classpath resource lookup |
+| cutscene/IntroSequence.java | 227 | `lineScroll == null` | b | Documented optional line-scroll/upload data; nullable renderer compatibility |
+| dialog/DialogFont.java | 37 | `stream == null` | b | Absent classpath resource lookup |
+| dialog/DialogFont.java | 47 | `romData == null` | c | ROM argument validation |
+| dialog/DialogRenderer.java | 28 | `buffer == null` | c | Legacy nullable render arguments |
+| dialog/DialogRenderer.java | 28 | `dialog == null` | c | Legacy nullable render arguments |
+| dialog/DialogRomLayout.java | 25 | `input == null` | b | Absent classpath resource lookup |
+| entity/BossSpriteComposer.java | 69 | `segments == null` | c | Construction/query validation or legacy construction adapter |
+| entity/EntitySpriteCatalog.java | 46 | `romData == null` | c | Construction/query validation or legacy construction adapter |
+| entity/EntitySpriteCatalog.java | 96 | `roomTable == null` | c | Construction/query validation or legacy construction adapter |
+| entity/EntitySpriteDecoder.java | 17 | `romData == null` | c | Construction/query validation or legacy construction adapter |
+| entity/EntitySpriteDefinition.java | 134 | `shape == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 135 | `variants == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 136 | `rectangleVariants == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 137 | `dynamicVariants == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 138 | `pairTileSource == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 157 | `s == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 157 | `variant == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 170 | `s == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 170 | `variant == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 28 | `second != null` | b | Single-column presence predicate |
+| entity/EntitySpriteDefinition.java | 32 | `first == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 44 | `oam == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 63 | `oam == null` | c | Display-list metadata validation |
+| entity/EntitySpriteDefinition.java | 63 | `tileSource == null` | c | Display-list metadata validation |
+| entity/EntitySpriteRegistrationData.java | 1274 | `roomTable == null` | c | Construction/query validation or legacy construction adapter |
+| entity/EntitySpriteSelection.java | 107 | `burningSpriteDefinition != null` | c | Input definition/map validation |
+| entity/EntitySpriteSelection.java | 187 | `definition != null` | c | Input definition/map validation |
+| entity/EntitySpriteSelection.java | 265 | `definition != null` | c | Input definition/map validation |
+| entity/EntitySpriteSelection.java | 271 | `source == null` | b | Optional inherited palette data |
+| entity/EntitySpriteSelection.java | 276 | `source[i] == null` | b | Optional inherited palette data |
+| entity/EntitySpriteSelection.java | 80 | `spriteOverrides == null` | c | Input definition/map validation |
+| entity/EntitySpriteSelection.java | 86 | `entry.getValue() == null` | c | Input definition/map validation |
+| entity/EntitySpriteSelection.java | 92 | `spriteOverlays == null` | c | Input definition/map validation |
+| entity/EntitySpriteSelection.java | 98 | `entry.getValue() == null` | c | Input definition/map validation |
+| entity/EntitySpriteStates.java | 181 | `status == null` | c | Construction/query validation or legacy construction adapter |
+| entity/LinkAnimator.java | 206 | `palette == null` | c | Construction/query validation or legacy construction adapter |
+| entity/LinkDependencies.java | 50 | `tables == null` | c | Construction/query validation or legacy construction adapter |
+| entity/LinkDependencies.java | 51 | `tables == null` | c | Construction/query validation or legacy construction adapter |
+| entity/LinkTunicPalette.java | 17 | `objectPalettes == null` | c | Construction/query validation or legacy construction adapter |
+| entity/LinkTunicPalette.java | 21 | `palette == null` | c | Construction/query validation or legacy construction adapter |
+| equipment/Sword.java | 74 | `romTables == null` | c | Construction/query validation or legacy construction adapter |
+| equipment/SwordPalette.java | 16 | `objectPalettes == null` | c | Construction/query validation or legacy construction adapter |
+| equipment/SwordPalette.java | 51 | `row == null` | c | Construction/query validation or legacy construction adapter |
+| physics/OverworldCollision.java | 58 | `romTables == null` | c | Construction/query validation or legacy construction adapter |
+| physics/OverworldCollision.java | 59 | `romTables == null` | c | Construction/query validation or legacy construction adapter |
+| save/SaveRamStore.java | 156 | `path != null` | b | Optional save destination, parent path or host property |
+| save/SaveRamStore.java | 169 | `parent != null` | b | Optional save destination, parent path or host property |
+| save/SaveRamStore.java | 77 | `userHome == null` | b | Optional save destination, parent path or host property |
+| ui/FileMenuAction.java | 22 | `nameBytes == null` | b | Absent save-name data normalizes to an empty name |
+| ui/FileMenuController.java | 151 | `names == null` | b | Absent save-name data normalizes to an empty name |
+| ui/FileMenuController.java | 155 | `names[slot] != null` | b | Absent save-name data normalizes to an empty name |
+| ui/FileMenuFrameSnapshot.java | 62 | `palettes == null` | b | Optional inherited palette set/rows |
+| ui/FileMenuFrameSnapshot.java | 67 | `palettes[index] == null` | b | Optional inherited palette set/rows |
+| ui/InventoryMenu.java | 64 | `romData == null` | c | Legacy ROM constructor adapter |
+| vfx/TransientVfxSystem.java | 129 | `type == null` | c | Construction/query validation or legacy construction adapter |
+
+### Compiler-recorded off-limits callers
+
+Read from compiled method references after the full suite (main and test outputs); nested classes are grouped by source file. Constructors below retain their legacy overloads.
+
+`cutscene/CutsceneManager.frameSnapshot`:
+
+- `main/linksawakening/app/presentation/RenderStateAssembler.java`
+
+`entity/Link.<init>`:
+
+- `main/linksawakening/app/wiring/PlayerWiring.java`
+- `test/linksawakening/app/MabeCollisionSweepTest.java`
+- `test/linksawakening/app/gameplay/entity/EntityBoundaryBehaviorTest.java`
+- `test/linksawakening/app/gameplay/entity/LinkCommandAdapterTest.java`
+- `test/linksawakening/app/wiring/RoomBombPlacementTest.java`
+- `test/linksawakening/gameplay/EnemyProjectileEventConsumerTest.java`
+- `test/linksawakening/render/DialogEmulatorCapture.java`
+- `test/linksawakening/render/DialogGotItemRenderTest.java`
+- `test/linksawakening/render/GameFrameSceneBuilderTest.java`
+- `test/linksawakening/render/HouseEmulatorCapture.java`
+- `test/linksawakening/render/LinkGrassRenderLayerTest.java`
+- `test/linksawakening/render/LinkScrollVisibilityTest.java`
+- `test/linksawakening/render/MarinWakeUpBedRenderLayerTest.java`
+- `test/linksawakening/render/SceneConstructionFixture.java`
+- `test/linksawakening/render/TarinShieldRenderLayerTest.java`
+- `test/linksawakening/world/entity/RoomEntityLiftThrowRuntimeTest.java`
+- `test/linksawakening/world/room/GameplayRouteScenario.java`
+- `test/linksawakening/world/room/KeyCavernEntranceRouteTest.java`
+- `test/linksawakening/world/room/LibraryTreeCollisionTest.java`
+- `test/linksawakening/world/room/MabeWellRegressionTest.java`
+- `test/linksawakening/world/room/RoomTransitionBoundariesTest.java`
+- `test/linksawakening/world/room/RoomTransitionDoorsTest.java`
+- `test/linksawakening/world/room/WarpEntranceRegressionTest.java`
+
+`equipment/ItemRegistry.lookup`:
+
+- `main/linksawakening/app/gameplay/entity/LinkWriteApplier.java`
+- `test/linksawakening/world/room/RoomNavigationFixture.java`
+
+`equipment/Sword.<init>`:
+
+- `main/linksawakening/app/wiring/EquipmentWiring.java`
+- `test/linksawakening/world/room/GameplayRouteScenario.java`
+- `test/linksawakening/world/room/RoomNavigationFixture.java`
+
+`physics/OverworldCollision.<init>`:
+
+- `main/linksawakening/app/wiring/SubsystemWiring.java`
+- `test/linksawakening/app/MabeCollisionSweepTest.java`
+- `test/linksawakening/app/MusicDirectorTest.java`
+- `test/linksawakening/gameplay/EnemyProjectileEventConsumerTest.java`
+- `test/linksawakening/render/DialogEmulatorCapture.java`
+- `test/linksawakening/render/HouseEmulatorCapture.java`
+- `test/linksawakening/render/LinkGrassRenderLayerTest.java`
+- `test/linksawakening/world/entity/SlimeEyeRuntimeTest.java`
+- `test/linksawakening/world/entity/TarinRaccoonRuntimeTest.java`
+- `test/linksawakening/world/room/CrackedFloorGroundPhysicsTest.java`
+- `test/linksawakening/world/room/GameplayRouteScenario.java`
+- `test/linksawakening/world/room/KeyCavernEntranceRouteTest.java`
+- `test/linksawakening/world/room/LibraryTreeCollisionTest.java`
+- `test/linksawakening/world/room/MabeWellRegressionTest.java`
+- `test/linksawakening/world/room/OpeningHouseRegressionTest.java`
+- `test/linksawakening/world/room/RoomNavigationFixture.java`
+- `test/linksawakening/world/room/RoomRenderAllocationTest.java`
+- `test/linksawakening/world/room/RoomSessionFloatingItemTest.java`
+- `test/linksawakening/world/room/RoomSessionTestSupport.java`
+- `test/linksawakening/world/room/RoomTransitionBoundariesTest.java`
+- `test/linksawakening/world/room/RoomTransitionDoorsTest.java`
+- `test/linksawakening/world/room/RoomTransitionFollowersTest.java`
+- `test/linksawakening/world/room/WarpEntranceRegressionTest.java`
+- `test/linksawakening/world/room/WellHeartEmulatorTrajectoryTest.java`
+- `test/linksawakening/world/room/WorldRomEntryPointsTest.java`
+
+`ui/InventoryMenu.<init>`:
+
+- `main/linksawakening/app/wiring/UiWiring.java`
+- `test/linksawakening/render/DialogEmulatorCapture.java`
+- `test/linksawakening/render/HouseEmulatorCapture.java`
+- `test/linksawakening/render/RenderPipelineGpuUploadsTest.java`
+- `test/linksawakening/render/SceneConstructionFixture.java`
+
+### Final allocation verification
+
+All allocation guard tests pass with and without escape analysis. The EA-off argument came only from `/tmp/r7-ea-off.gradle`; no Gradle/build configuration was edited.
+
+| Scenario | EA on B/frame | EA off B/frame |
+|---|---:|---:|
+| Whole frame: opening dialog | 0 | 0 |
+| Whole frame: inventory | 0 | 0 |
+| Whole frame: walking with entities | 532.33 | 580.93 |
+| Link walking and sword | 0 | 0 |
+| Dialog printing | 0 | 0 |
+| HUD/inventory submission | 0 | 0 |
+| Frame audio | 0 | 0 |
+| Reusable render assembly + scene | 0 | 0 |
+
+Walking's remaining whole-frame allocations are outside the changed collaborator setup; its 747 B guard remains unchanged. Owned per-frame measurements remain zero. Full default suite: **2,970 tests, zero failures/errors, one pre-existing skip**, versus 2,960 at the merged baseline. Off-limits source files, fixtures and build files were not edited.

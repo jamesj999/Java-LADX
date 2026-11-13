@@ -23,13 +23,15 @@ public final class FileSaveController {
     private static final int SAVE_ARROW_OAM_X = 0x24;
     private static final int[] SAVE_OPTION_OAM_Y = {0x48, 0x58};
 
-    private final Function<String, BackgroundScene> sceneProvider;
-    private BackgroundScene scene;
+    private final BackgroundScene scene;
     private int selectedOption;
     private FileMenuFrameSnapshot snapshot;
 
     public FileSaveController(Function<String, BackgroundScene> sceneProvider) {
-        this.sceneProvider = Objects.requireNonNull(sceneProvider, "sceneProvider");
+        Objects.requireNonNull(sceneProvider, "sceneProvider");
+        scene = Objects.requireNonNull(
+                sceneProvider.apply(BackgroundSceneCatalog.FILE_SAVE_SCENE),
+                "sceneProvider returned null for " + BackgroundSceneCatalog.FILE_SAVE_SCENE);
         refreshSnapshot();
     }
 
@@ -57,11 +59,6 @@ public final class FileSaveController {
     }
 
     private void refreshSnapshot() {
-        if (scene == null) {
-            scene = Objects.requireNonNull(
-                    sceneProvider.apply(BackgroundSceneCatalog.FILE_SAVE_SCENE),
-                    "sceneProvider returned null for " + BackgroundSceneCatalog.FILE_SAVE_SCENE);
-        }
         int oamY = SAVE_OPTION_OAM_Y[selectedOption];
         snapshot = snapshotBuilder
                 .sceneId(BackgroundSceneCatalog.FILE_SAVE_SCENE)
