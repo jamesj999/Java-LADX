@@ -90,5 +90,11 @@ final class RoomNpcPresentation {
     record Dependencies(
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             RoomFollowerState followers,
-            RoomLocationState location) {}
+            RoomLocationState location) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(location, "location");
+        }
+    }
 }

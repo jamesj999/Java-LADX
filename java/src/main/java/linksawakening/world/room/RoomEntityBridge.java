@@ -11,7 +11,9 @@ import linksawakening.world.object.SwitchBlockAnimation;
 
 /** Owns room-level entity output queues and their consumption boundary. */
 final class RoomEntityBridge {
+    /** Absent until a room has loaded; replaced, rather than mutated across room loads. */
     RoomEntityRuntime entityRuntime;
+
     final RoomEntityOutbox outbox = new RoomEntityOutbox(() -> entityRuntime);
     final RoomEntityCombatBridge combat;
     private final Dependencies dependencies;
@@ -175,7 +177,25 @@ final class RoomEntityBridge {
             GPU gpu,
             Rom romData,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
-            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator) {}
+            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(entityAfterTick, "entityAfterTick");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityCombatBridge, "entityCombatBridge");
+            java.util.Objects.requireNonNull(entityFrameSetup, "entityFrameSetup");
+            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
+            java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
+            java.util.Objects.requireNonNull(gpu, "gpu");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+        }
+    }
 
     List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
         return roomEntitySimulation.tickEntities(inputs);

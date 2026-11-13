@@ -206,5 +206,16 @@ final class RoomEntityRewards {
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> roomStoryState) {}
+            java.util.function.Supplier<RoomStoryState> roomStoryState) {
+        Dependencies {
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+        }
+    }
 }

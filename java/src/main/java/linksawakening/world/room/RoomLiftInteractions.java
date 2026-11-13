@@ -132,7 +132,21 @@ final class RoomLiftInteractions {
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
-            java.util.function.Supplier<RoomDoorInteractions> owner) {}
+            java.util.function.Supplier<RoomDoorInteractions> owner) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(roomDoorInteractions, "roomDoorInteractions");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            java.util.Objects.requireNonNull(owner, "owner");
+        }
+    }
 
     private LiftTarget probeLiftTarget(int linkPixelX, int linkPixelY, Direction linkDirection) {
         int oppositeButton =

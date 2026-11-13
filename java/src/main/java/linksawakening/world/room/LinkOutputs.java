@@ -84,5 +84,9 @@ public final class LinkOutputs {
         return dependencies.entityBridge().get().outbox.consumeHinoxLinkEffectRequests();
     }
 
-    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {}
+    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+        }
+    }
 }

@@ -203,7 +203,14 @@ public final class RoomTransitionCoordinator {
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             java.util.function.Supplier<RoomStoryState> roomStoryState,
-            java.util.function.Supplier<RoomTransitionController> roomTransitionController) {}
+            java.util.function.Supplier<RoomTransitionController> roomTransitionController) {
+        Dependencies {
+            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+        }
+    }
 
     private static Dependencies dependencies(RoomSession roomSession) {
         return new Dependencies(

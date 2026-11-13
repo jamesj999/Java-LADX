@@ -113,7 +113,18 @@ final class RoomEntitySimulation {
             RoomItemUseState items,
             RoomLocationState location,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
-            java.util.function.Supplier<RoomEntityBridge> owner) {}
+            java.util.function.Supplier<RoomEntityBridge> owner) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+            java.util.Objects.requireNonNull(owner, "owner");
+        }
+    }
 
     private void spawnPendingShovelDrop() {
         if (dependencies.items().pendingShovelDrop != null) {
@@ -306,7 +317,24 @@ final class RoomEntitySimulation {
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             RoomWorldState roomState,
             java.util.function.Supplier<RoomStoryState> roomStoryState,
-            java.util.function.Supplier<RoomTransitionController> roomTransitionController) {}
+            java.util.function.Supplier<RoomTransitionController> roomTransitionController) {
+        SetupDependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
+            java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
+            java.util.Objects.requireNonNull(owlStatueDialogResolver, "owlStatueDialogResolver");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+        }
+    }
 
     void complete(int linkEntityX, int linkEntityY) {
         synchronizeQuestState();
@@ -487,5 +515,21 @@ final class RoomEntitySimulation {
             RoomWorldState roomState,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             java.util.function.Supplier<RoomTransitionController> roomTransitionController,
-            TransientVfxSystem transientVfxSystem) {}
+            TransientVfxSystem transientVfxSystem) {
+        EffectsDependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(roomEntityRewards, "roomEntityRewards");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+        }
+    }
 }

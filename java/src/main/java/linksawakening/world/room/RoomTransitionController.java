@@ -315,5 +315,22 @@ final class RoomTransitionController {
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
             java.util.function.Supplier<RoomTransitionController> roomTransitionController,
-            RoomScrollNavigation scrollNavigation) {}
+            RoomScrollNavigation scrollNavigation) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(gpu, "gpu");
+            java.util.Objects.requireNonNull(manboWarpResolver, "manboWarpResolver");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+            java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");
+        }
+    }
 }

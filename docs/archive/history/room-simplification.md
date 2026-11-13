@@ -65,3 +65,27 @@ Navigation support is one RoomNavigationFixture. All twelve route fragments
 are methods of GameplayRouteScenario, named for their gameplay phase and called
 in their original sequence using the same GameplayRouteState. No assertions or
 tests were removed. Test files 82 -> 66; lines 18300 -> 17970; numbered names 8 -> 0.
+
+## Null audit
+
+Dependency records now reject absent required collaborators at construction;
+optional presentation services remain absent in domain-only/headless fixtures.
+Null comparisons remain 328 main / 140 test: these are retained to preserve
+unloaded-room, absent-runtime, optional-service and absent-event behavior, rather
+than replacing domain absence merely to lower a metric. Intentional optionals:
+
+- active room and entity runtime before load; cached renderView() returns null
+  before the first room load (the public role contract now states this explicitly);
+- pending warp/respawn/shovel requests and optional visual/event metadata;
+- optional VFX, rupee presentation and load observer services;
+- an unset low-health override (derive the result from hearts instead);
+- unknown ocarina selection or motion classification outside the ROM table;
+- cache misses, collision misses, optional ROM stream entries and absent overrides.
+
+The old lazy collaborator suppliers still form construction cycles between
+load, entity, story, mutation and puzzle collaborators. They have NOT been
+relabelled as direct injection or hidden behind new access wrappers. Removing
+those cycles remains unfinished; it requires moving operations across these
+state owners or introducing explicit domain-effect ports, with the same
+synchronous ordering. Runtime/active-room suppliers additionally represent
+legitimate changing domain state. No new lazy supplier was introduced.

@@ -97,5 +97,17 @@ final class RoomChestInteractions {
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {}
+            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
+        Dependencies {
+            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+        }
+    }
 }

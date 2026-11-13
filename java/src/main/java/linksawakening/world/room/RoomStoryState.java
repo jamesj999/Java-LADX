@@ -317,5 +317,32 @@ final class RoomStoryState {
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
             java.util.function.Supplier<RoomStoryState> roomStoryState,
-            java.util.function.Supplier<RoomTransientState> roomTransientState) {}
+            java.util.function.Supplier<RoomTransientState> roomTransientState) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            java.util.Objects.requireNonNull(colorShellWorld, "colorShellWorld");
+            java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
+            java.util.Objects.requireNonNull(entityBackgroundInteraction, "entityBackgroundInteraction");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
+            java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
+            java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
+            java.util.Objects.requireNonNull(followingNpcEntitySpawner, "followingNpcEntitySpawner");
+            java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
+            java.util.Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(romTables, "romTables");
+            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+            java.util.Objects.requireNonNull(roomTransientState, "roomTransientState");
+        }
+    }
 }

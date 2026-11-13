@@ -101,7 +101,12 @@ final class RoomEntityTickDefaults {
                         new SwordBox(false, 0, 0, 0, 0)));
     }
 
-    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge, RoomFollowerState followers) {}
+    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge, RoomFollowerState followers) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(followers, "followers");
+        }
+    }
 
     List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
         return dependencies.entityBridge().get().tickEntities(inputs);

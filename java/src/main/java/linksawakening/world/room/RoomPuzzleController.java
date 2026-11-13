@@ -479,7 +479,26 @@ final class RoomPuzzleController {
             java.util.function.Supplier<RoomStoryState> roomStoryState,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             java.util.function.Supplier<RoomTransitionController> roomTransitionController,
-            TransientVfxSystem transientVfxSystem) {}
+            TransientVfxSystem transientVfxSystem) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
+            java.util.Objects.requireNonNull(gpu, "gpu");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(romTables, "romTables");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+        }
+    }
 
     private void applyRoomEventEffect(int effect, int linkEntityX, int linkEntityY) {
         if (effect == EVENT_EFFECT_REVEAL_CHEST) {

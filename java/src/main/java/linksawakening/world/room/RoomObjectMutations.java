@@ -732,7 +732,24 @@ final class RoomObjectMutations {
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
-            TransientVfxSystem transientVfxSystem) {}
+            TransientVfxSystem transientVfxSystem) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
+            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romTables, "romTables");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomPlayerItemActions, "roomPlayerItemActions");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+        }
+    }
 
     private boolean applyPowderRequest(MagicPowderObjectRequest request) {
         return switch (request.action()) {

@@ -200,5 +200,15 @@ final class RoomEntityCombatBridge {
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             java.util.function.Supplier<RoomEntityRewards> roomEntityRewards,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomStoryState> roomStoryState) {}
+            java.util.function.Supplier<RoomStoryState> roomStoryState) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(roomEntityRewards, "roomEntityRewards");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+        }
+    }
 }

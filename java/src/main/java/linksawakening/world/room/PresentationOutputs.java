@@ -40,5 +40,9 @@ public final class PresentationOutputs {
         return dependencies.entityBridge().get().outbox.consumeFirstEntityDialogRequest();
     }
 
-    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {}
+    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+        }
+    }
 }

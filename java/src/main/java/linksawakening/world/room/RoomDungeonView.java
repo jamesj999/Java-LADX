@@ -62,5 +62,10 @@ final class RoomDungeonView implements RoomDungeon {
         dependencies.roomSessionViews().restoreDungeonProgressFlags(flags);
     }
 
-    record Dependencies(RoomSessionViews roomSessionViews, RoomWorldState roomState) {}
+    record Dependencies(RoomSessionViews roomSessionViews, RoomWorldState roomState) {
+        Dependencies {
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+        }
+    }
 }

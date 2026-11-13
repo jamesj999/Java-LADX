@@ -523,7 +523,24 @@ final class RoomDoorInteractions {
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {}
+            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(roomDoorInteractions, "roomDoorInteractions");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+        }
+    }
 
     private static final int BOSS_DOOR_PHYSICS = 0x98;
 

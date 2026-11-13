@@ -267,5 +267,18 @@ final class RoomCollisionQueries {
             EntityCollisionPointProbe entityCollisionPointProbe,
             OverworldCollision overworldCollision,
             RomTables romTables,
-            java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries) {}
+            java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(entityBackgroundCollisionResolver, "entityBackgroundCollisionResolver");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(entityCollisionPointProbe, "entityCollisionPointProbe");
+            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
+            java.util.Objects.requireNonNull(romTables, "romTables");
+            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+        }
+    }
 }

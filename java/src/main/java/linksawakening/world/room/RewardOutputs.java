@@ -102,5 +102,10 @@ public final class RewardOutputs {
 
     record Dependencies(
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
-            java.util.function.Supplier<RoomSessionViews> roomSessionViews) {}
+            java.util.function.Supplier<RoomSessionViews> roomSessionViews) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+        }
+    }
 }

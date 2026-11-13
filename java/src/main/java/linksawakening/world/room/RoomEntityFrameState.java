@@ -11,7 +11,9 @@ final class RoomEntityFrameState {
     boolean boomerangSoundClockProvided;
     int enemyDropMaxHearts = 3;
     int enemyDropHealth = 6;
+    /** Absent means derive low-health status from hearts; tests may override the ROM gate. */
     Boolean enemyDropLowHealth;
+
     boolean enemyDropActivePowerUp;
     int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     boolean worldLinkMotionBlockPending;

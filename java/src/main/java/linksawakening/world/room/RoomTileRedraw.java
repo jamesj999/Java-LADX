@@ -191,5 +191,15 @@ final class RoomTileRedraw {
             Rom romData,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
-            RoomTilemapBuilder roomTilemapBuilder) {}
+            RoomTilemapBuilder roomTilemapBuilder) {
+        Dependencies {
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            java.util.Objects.requireNonNull(roomTilemapBuilder, "roomTilemapBuilder");
+        }
+    }
 }

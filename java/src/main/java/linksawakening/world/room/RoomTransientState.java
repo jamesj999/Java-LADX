@@ -91,5 +91,14 @@ final class RoomTransientState {
             RoomTerrainState terrain,
             DroppableRupeeSystem droppableRupeeSystem,
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
-            TransientVfxSystem transientVfxSystem) {}
+            TransientVfxSystem transientVfxSystem) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(items, "items");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+        }
+    }
 }

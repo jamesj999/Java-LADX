@@ -218,5 +218,14 @@ final class RoomSessionViews {
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             RoomWorldState roomState,
             java.util.function.Supplier<RoomStoryState> roomStoryState,
-            RoomScrollNavigation scrollNavigation) {}
+            RoomScrollNavigation scrollNavigation) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            java.util.Objects.requireNonNull(roomState, "roomState");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+            java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");
+        }
+    }
 }

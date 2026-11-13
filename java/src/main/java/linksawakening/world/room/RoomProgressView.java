@@ -43,5 +43,12 @@ final class RoomProgressView implements RoomProgress {
             RoomEntityFrameState entityFrame,
             RoomLocationState location,
             RoomLoadCoordinator roomLoadCoordinator,
-            RoomTerrainState terrain) {}
+            RoomTerrainState terrain) {
+        Dependencies {
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            java.util.Objects.requireNonNull(location, "location");
+            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            java.util.Objects.requireNonNull(terrain, "terrain");
+        }
+    }
 }

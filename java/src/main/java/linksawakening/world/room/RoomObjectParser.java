@@ -627,7 +627,12 @@ final class RoomObjectParser {
                 : objectId == OBJECT_DOOR_C5 || objectId == OBJECT_GROUND_STAIRS;
     }
 
-    record Dependencies(Rom romData, RoomObjectDecodeState state) {}
+    record Dependencies(Rom romData, RoomObjectDecodeState state) {
+        Dependencies {
+            java.util.Objects.requireNonNull(romData, "romData");
+            java.util.Objects.requireNonNull(state, "state");
+        }
+    }
 
     private static final int FIRST_SHUTTER_MACRO = 4;
     private static final int FIRST_OPEN_DOOR_MACRO = 8;

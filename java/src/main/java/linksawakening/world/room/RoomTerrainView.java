@@ -19,5 +19,9 @@ final class RoomTerrainView implements RoomTerrain {
         return dependencies.roomObjectMutations().breakIndoorSwordCrystal(location);
     }
 
-    record Dependencies(RoomObjectMutations roomObjectMutations) {}
+    record Dependencies(RoomObjectMutations roomObjectMutations) {
+        Dependencies {
+            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+        }
+    }
 }
