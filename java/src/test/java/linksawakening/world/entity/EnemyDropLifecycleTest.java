@@ -1,5 +1,9 @@
 package linksawakening.world.entity;
 
+import static linksawakening.world.entity.EntityRuntimeTestSupport.dyingEntity;
+import static linksawakening.world.entity.EntityRuntimeTestSupport.loadRom;
+import static linksawakening.world.entity.EntityRuntimeTestSupport.snapshot;
+import static linksawakening.world.entity.EntityRuntimeTestSupport.snapshotAt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,13 +13,103 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
-final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
+final class EnemyDropLifecycleTest {
+
+    @Test
+    void ordinaryDungeonRoomEventStillDropsAKeyBelowMapCaveB() {
+        RoomEntityRuntime runtime =
+                new RoomEntityRuntimeBuilder(snapshot()).indoorRoom(true).build();
+        EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x05);
+
+        int slot = runtime.spawns().spawnRoomEventKeyDrop();
+
+        assertEquals(0x30, runtime.inspection().snapshot().slots().get(slot).type());
+    }
+
+    @Test
+    void terminalStaticDeathRecordsKillAndDynamicDeathDoesNot() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
+        EnemyDropResolver resolver = new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom));
+
+        RoomEntityRuntime staticRuntime = new RoomEntityRuntimeBuilder(snapshotAt(dyingEntity(0, 0, 0x09, catalog)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
+        staticRuntime.configuration().setEnemyDropResolver(resolver);
+        EntityRuntimeFixture.debug(staticRuntime).setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
+        staticRuntime.tick(EntityTestFrames.frame(staticRuntime, 0, 0, 0, () -> 0));
+
+        assertEquals(
+                EntityStatus.DISABLED,
+                staticRuntime.inspection().snapshot().slots().get(0).status());
+        assertEquals(1, new EntityRoomInspectionQueries(staticRuntime.inspection()).killCount());
+        assertEquals(0, staticRuntime.inspection().killOrderAt(0));
+        assertEquals(1, staticRuntime.outbox().consumePendingClearedEntityMask());
+
+        RoomEntityRuntime dynamicRuntime = new RoomEntityRuntimeBuilder(snapshotAt(dyingEntity(0, -1, 0x09, catalog)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
+        dynamicRuntime.configuration().setEnemyDropResolver(resolver);
+        EntityRuntimeFixture.debug(dynamicRuntime).setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
+        dynamicRuntime.tick(EntityTestFrames.frame(dynamicRuntime, 0, 0, 0, () -> 0));
+
+        assertEquals(
+                EntityStatus.DISABLED,
+                dynamicRuntime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0, new EntityRoomInspectionQueries(dynamicRuntime.inspection()).killCount());
+        assertEquals(
+                new EnemyDropResolver.CounterState(0, 0),
+                dynamicRuntime.inspection().enemyDropCounters());
+        assertEquals(0, dynamicRuntime.outbox().consumePendingClearedEntityMask());
+    }
+
+    @Test
+    void explicitAndRandomNoDropDeathsUnloadWithExpectedCounterAndRandomBehavior() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
+                        snapshot(dyingEntity(0, 0, 0x09, catalog), dyingEntity(1, 1, 0x0B, catalog)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
+        EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
+        EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(1, 0);
+        AtomicInteger randomReads = new AtomicInteger();
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> {
+            randomReads.incrementAndGet();
+            return 0x01;
+        }));
+
+        assertFalse(runtime.inspection().snapshot().slots().get(0).loaded());
+        assertFalse(runtime.inspection().snapshot().slots().get(1).loaded());
+        assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).killCount());
+        assertEquals(1, runtime.inspection().killOrderAt(0));
+        assertEquals(0, runtime.inspection().killOrderAt(1));
+        assertEquals(
+                new EnemyDropResolver.CounterState(1, 1), runtime.inspection().enemyDropCounters());
+        assertEquals(1, randomReads.get());
+        assertEquals(0b11, runtime.outbox().consumePendingClearedEntityMask());
+    }
 
     @Test
     void terminalEnemyDeathSpawnsTopDownDropInReverseFreeSlotAndPreservesItUntilNextTick() throws IOException {

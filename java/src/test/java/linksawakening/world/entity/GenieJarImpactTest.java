@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import static linksawakening.world.entity.EntityRuntimeTestSupport.snapshot;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,40 +9,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
-final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
-
-    @Test
-    void genieBossIntroDelayPausesForInventoryAndRoomTransitions() {
-        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
-                        .sourceLoadOrder(0)
-                        .type(0x5C)
-                        .at(0x50, 0x68)
-                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
-                        .build()))
-                .indoorRoom(true)
-                .build();
-        EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x01);
-        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(0x04);
-        runtime.configuration().setTalkState(true, 0, 0);
-
-        for (int frame = 0; frame < 0x20; frame++) {
-            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
-        }
-        runtime.configuration().setTalkState(false, 0, 0);
-        EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(true);
-        for (int frame = 0x20; frame < 0x40; frame++) {
-            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
-        }
-        assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
-
-        EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(false);
-        for (int frame = 0x40; frame < 0x60; frame++) {
-            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
-            assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
-        }
-        runtime.tick(EntityTestFrames.frame(runtime, 0x60, 0x50, 0x70, () -> 0));
-        assertEquals(0x19, runtime.outbox().consumePendingMusicTrack());
-    }
+final class GenieJarImpactTest {
 
     @Test
     void genieJarThresholdSpawnsBodyAndRockThenUnloadsTheJar() {
