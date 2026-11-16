@@ -152,7 +152,6 @@ public final class EntityCombatResolver {
     }
 
     public List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
-        var runtime = this;
 
         int linkVerticalVelocity = inputs.linkVerticalVelocity();
 
@@ -162,19 +161,19 @@ public final class EntityCombatResolver {
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
-        runtime.linkState.writeRunningWithPegasusBoots(attackContext.pegasusBoots());
-        List<EntityCombatEvent> events = runtime.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
+        this.linkState.writeRunningWithPegasusBoots(attackContext.pegasusBoots());
+        List<EntityCombatEvent> events = this.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
         EntityCombatSlot slot = this.acquireSlot();
         try {
-            for (int index = runtime.slots.size() - 1; index >= 0; index--) {
-                slot.reset(inputs, events, runtime.slots.get(index));
+            for (int index = this.slots.size() - 1; index >= 0; index--) {
+                slot.reset(inputs, events, this.slots.get(index));
                 resolveSlotCombat(slot);
             }
         } finally {
             this.releaseSlot(slot);
         }
-        return runtime.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
+        return this.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
     }
 
     static boolean entityCombatGatesAcceptInitialStatus(EntityCombatSlot slot) {

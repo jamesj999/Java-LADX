@@ -132,15 +132,14 @@ public final class EntityPickupController {
     }
 
     void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) {
-        var runtime = this;
         int slot = entity.slot();
-        runtime.bossRewards.writeDroppablePrivateState3(slot, 0);
-        runtime.bossRewards.writeDroppablePrivateState4(slot, 0);
-        runtime.bossRewards.writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
-        runtime.physicsTables.writeSlowTransitionCountdown(slot, EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN);
-        runtime.physicsTables.writeSlowTimerInitialized(slot, true);
+        this.bossRewards.writeDroppablePrivateState3(slot, 0);
+        this.bossRewards.writeDroppablePrivateState4(slot, 0);
+        this.bossRewards.writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
+        this.physicsTables.writeSlowTransitionCountdown(slot, EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN);
+        this.physicsTables.writeSlowTimerInitialized(slot, true);
 
-        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
+        this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
             Vector vector = vectorAwayFromLink(
                     entity.x(),
@@ -148,17 +147,17 @@ public final class EntityPickupController {
                     linkEntityX,
                     linkEntityY,
                     EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-            runtime.motions.get(FairyMotion.class, FairyMotion::new).setSpeed(slot, vector.x(), vector.y());
+            this.motions.get(FairyMotion.class, FairyMotion::new).setSpeed(slot, vector.x(), vector.y());
             return;
         }
 
-        runtime.motions
+        this.motions
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(
                         slot,
-                        runtime.physicsTables.readGroundInteractionSideScrolling(),
+                        this.physicsTables.readGroundInteractionSideScrolling(),
                         EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
-        runtime.motions
+        this.motions
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initializeAwayFromLink(
                         slot,
@@ -167,8 +166,8 @@ public final class EntityPickupController {
                         linkEntityX,
                         linkEntityY,
                         EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-        runtime.bossRewards.writeEnemyDropActive(slot, true);
-        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
+        this.bossRewards.writeEnemyDropActive(slot, true);
+        this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
     }
 
     public SlimeKeyTransitionUpdate advanceHidingSlimeKey(
@@ -357,12 +356,11 @@ public final class EntityPickupController {
     }
 
     void spawnChestZol(RoomEntity chest) {
-        var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOL);
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOL);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity zol = new RoomEntity(
                 freeSlot,
@@ -378,27 +376,25 @@ public final class EntityPickupController {
                 0x06,
                 -1,
                 false);
-        runtime.slots.replace(freeSlot, zol);
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareChestSpawn(freeSlot);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
-        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOL));
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.slots.replace(freeSlot, zol);
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        this.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareChestSpawn(freeSlot);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
+        this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
+        this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOL));
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 freeSlot, EntityRomConstants.ENTITY_ZOL, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
     }
 
     void spawnEnemyDrop(RoomEntity source, int itemType) {
-        var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         if (itemType == EntityRomConstants.ENTITY_KEY_DROP_POINT
                 && source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
@@ -418,34 +414,34 @@ public final class EntityPickupController {
                 source.z(),
                 -1,
                 false);
-        runtime.slots.replace(freeSlot, drop);
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        this.slots.replace(freeSlot, drop);
+        this.lifecycle.initializeHealthGroup(freeSlot);
         this.resetEnemyDropState(freeSlot);
-        runtime.physicsTables.writeSlowTransitionCountdown(freeSlot, 0x80);
-        runtime.physicsTables.writeSlowTimerInitialized(freeSlot, true);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
-        runtime.combatTables.writeEnemyHealth(freeSlot, runtime.slotProperties.initialHealth(itemType));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeEntityGroundStatus(freeSlot, 0);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.bossRewards.writeDropPrivateCountdown1(freeSlot, 0x18);
-        runtime.bossRewards.writeDropPrivateCountdown3(freeSlot, 0x03);
+        this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0x80);
+        this.physicsTables.writeSlowTimerInitialized(freeSlot, true);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
+        this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(itemType));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.bossRewards.writeDropPrivateCountdown1(freeSlot, 0x18);
+        this.bossRewards.writeDropPrivateCountdown3(freeSlot, 0x03);
         if (itemType == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            runtime.motions.get(FairyMotion.class, FairyMotion::new).initialize(freeSlot);
+            this.motions.get(FairyMotion.class, FairyMotion::new).initialize(freeSlot);
         } else {
-            runtime.motions
+            this.motions
                     .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                    .initialize(freeSlot, runtime.physicsTables.readGroundInteractionSideScrolling());
-            runtime.bossRewards.writeEnemyDropActive(freeSlot, true);
+                    .initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling());
+            this.bossRewards.writeEnemyDropActive(freeSlot, true);
         }
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) {
@@ -460,13 +456,12 @@ public final class EntityPickupController {
     }
 
     int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) {
-        var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
         RoomEntity drop = new RoomEntity(
                 freeSlot,
@@ -482,30 +477,30 @@ public final class EntityPickupController {
                 z,
                 -1,
                 false);
-        runtime.slots.replace(freeSlot, drop);
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        this.slots.replace(freeSlot, drop);
+        this.lifecycle.initializeHealthGroup(freeSlot);
         this.resetEnemyDropState(freeSlot);
-        runtime.motions
+        this.motions
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initialize(freeSlot, runtime.physicsTables.readGroundInteractionSideScrolling(), speedZ);
-        runtime.bossRewards.writeEnemyDropActive(freeSlot, true);
-        runtime.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
-        runtime.physicsTables.writeSlowTimerInitialized(freeSlot, false);
-        runtime.bossRewards.writeDropPrivateCountdown1(freeSlot, privateCountdown1);
-        runtime.bossRewards.writeDropPrivateCountdown3(freeSlot, 0);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
-        runtime.combatTables.writeEnemyHealth(freeSlot, runtime.slotProperties.initialHealth(itemType));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeEntityGroundStatus(freeSlot, 0);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+                .initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling(), speedZ);
+        this.bossRewards.writeEnemyDropActive(freeSlot, true);
+        this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
+        this.physicsTables.writeSlowTimerInitialized(freeSlot, false);
+        this.bossRewards.writeDropPrivateCountdown1(freeSlot, privateCountdown1);
+        this.bossRewards.writeDropPrivateCountdown3(freeSlot, 0);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
+        this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(itemType));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
 

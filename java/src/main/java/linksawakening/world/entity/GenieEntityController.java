@@ -229,14 +229,13 @@ public final class GenieEntityController {
 
     int spawnGenieEntity(
             int x, int y, int privateState1, int transitionCountdown, int health, int physicsFlags, int hitboxFlags) {
-        var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GENIE);
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_GENIE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        runtime.slots.replace(
+        this.slots.replace(
                 freeSlot,
                 new RoomEntity(
                         freeSlot,
@@ -252,7 +251,7 @@ public final class GenieEntityController {
                         0,
                         -1,
                         false));
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        this.lifecycle.initializeHealthGroup(freeSlot);
         this.encounter.genieActiveState[freeSlot] = 0;
         this.encounter.handlerState[freeSlot] = privateState1 & 0xFF;
         this.encounter.romPrivateState2[freeSlot] = 0;
@@ -268,38 +267,37 @@ public final class GenieEntityController {
         this.encounter.genieSpeedXAccumulator[freeSlot] = 0;
         this.encounter.genieSpeedYAccumulator[freeSlot] = 0;
         this.encounter.genieSpeedZAccumulator[freeSlot] = 0;
-        runtime.motions.get(GenieMotion.class, GenieMotion::new).clear(freeSlot);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, transitionCountdown & 0xFF);
-        runtime.combatTables.writeEnemyHealth(freeSlot, health & 0xFF);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, physicsFlags & 0xFF);
-        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, hitboxFlags & 0xFF);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.GENIE_OPTIONS1);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        this.motions.get(GenieMotion.class, GenieMotion::new).clear(freeSlot);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, transitionCountdown & 0xFF);
+        this.combatTables.writeEnemyHealth(freeSlot, health & 0xFF);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, physicsFlags & 0xFF);
+        this.combatTables.writeEnemyHitboxFlags(freeSlot, hitboxFlags & 0xFF);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.GENIE_OPTIONS1);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
 
     RoomEntity registerGenieJarImpact(RoomEntity jar) {
-        var runtime = this;
         int slot = jar.slot();
         if (this.encounter.genieImpactRegisteredThisFrame[slot]) {
             return jar;
         }
         this.encounter.genieImpactRegisteredThisFrame[slot] = true;
         this.encounter.romPrivateState4[slot] = (this.encounter.romPrivateState4[slot] + 1) & 0xFF;
-        runtime.combatTables.writeEnemyFlashCountdown(slot, 0x20);
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.combatTables.writeEnemyFlashCountdown(slot, 0x20);
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, EntityRomConstants.ENTITY_GENIE, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x07));
         if (this.encounter.romPrivateState4[slot] != GenieMotion.JAR_HEALTH_THRESHOLD) {
             return jar;
         }
         this.encounter.genieActiveState[slot] = 1;
         this.encounter.romPrivateState3[slot] = 0;
-        runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x80);
-        runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
-        runtime.liftThrow.writeThrownMotionInitialized(slot, false);
+        this.physicsTables.writeEnemyTransitionCountdown(slot, 0x80);
+        this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+        this.liftThrow.writeThrownMotionInitialized(slot, false);
         return withStatus(jar, EntityStatus.ACTIVE);
     }
 

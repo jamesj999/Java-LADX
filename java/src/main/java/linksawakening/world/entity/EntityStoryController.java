@@ -163,46 +163,42 @@ public final class EntityStoryController {
 
     public void advanceMadamMeowMeow(
             RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) {
-        var runtime = this;
         int slot = entity.slot();
-        if (runtime.physicsTables.readEnemyTransitionCountdown(slot) == 1) {
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0);
-            runtime.events.pendingMadamMeowMeowFullHealRequests.add(new MadamMeowMeowFullHealRequest(slot));
+        if (this.physicsTables.readEnemyTransitionCountdown(slot) == 1) {
+            this.physicsTables.writeEnemyTransitionCountdown(slot, 0);
+            this.events.pendingMadamMeowMeowFullHealRequests.add(new MadamMeowMeowFullHealRequest(slot));
         }
         int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
         int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
         int direction = Math.abs(xDistance) >= Math.abs(yDistance) ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
         int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
-        runtime.slots.replace(entity.slot(), withVariant(entity, variant));
-        boolean linkFacingMadam = (runtime.linkState.readLastRomLinkDirection() ^ 0x01) == direction;
+        this.slots.replace(entity.slot(), withVariant(entity, variant));
+        boolean linkFacingMadam = (this.linkState.readLastRomLinkDirection() ^ 0x01) == direction;
         boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28 && ((xDistance + 0x10) & 0xFF) < 0x20;
-        if (runtime.linkState.readActionButtonAHeld()
+        if (this.linkState.readActionButtonAHeld()
                 && interactionWindow
                 && linkFacingMadam
-                && !runtime.linkState.readDialogActive()
-                && !runtime.linkState.readInventoryAppearing()
+                && !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
                 && !linkAirborne
-                && runtime.linkState.readDialogCooldown() == 0
-                && runtime.linkState.readWindowY() == 0x80) {
-            if ((runtime.roomVariables.readInstrument2Flags() & 0x02) != 0
-                    && runtime.motions
-                                    .get(BowWowMotion.class, BowWowMotion::new)
-                                    .readBowWowState()
-                            == 0x01) {
-                runtime.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0);
-                runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
-                runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x2F));
+                && this.linkState.readDialogCooldown() == 0
+                && this.linkState.readWindowY() == 0x80) {
+            if ((this.roomVariables.readInstrument2Flags() & 0x02) != 0
+                    && this.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() == 0x01) {
+                this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0);
+                this.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
+                this.events.pendingDialogRequests.add(new DialogRequest(1, 0x2F));
                 return;
             }
             int dialogLowId =
-                    switch (runtime.motions
+                    switch (this.motions
                             .get(BowWowMotion.class, BowWowMotion::new)
                             .readBowWowState()) {
                         case 0 -> 0x30;
                         case 1 -> 0x32;
                         default -> 0x31;
                     };
-            runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
+            this.events.pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
         }
     }
 
@@ -297,32 +293,31 @@ public final class EntityStoryController {
     }
 
     public void enableBowWowFollowing() {
-        var runtime = this;
-        runtime.motions
+        this.motions
                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                 .writeFollowingNpcState(new FollowingNpcState(
-                        runtime.motions
+                        this.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .roosterFollowing(),
-                        runtime.motions
+                        this.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .ghostFollowingState(),
-                        runtime.motions
+                        this.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .marinFollowing(),
                         true,
-                        runtime.motions
+                        this.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .instrument4Flags(),
-                        runtime.motions
+                        this.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .powerBraceletLevel(),
-                        runtime.motions
+                        this.motions
                                 .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .db10()));

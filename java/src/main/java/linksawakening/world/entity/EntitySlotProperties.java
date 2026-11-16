@@ -93,16 +93,15 @@ public final class EntitySlotProperties {
     }
 
     void resolveThreeOfAKindPuzzle() {
-        var runtime = this;
-        ThreeOfAKindMotion.PuzzleResult result = runtime.motions
+        ThreeOfAKindMotion.PuzzleResult result = this.motions
                 .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
                 .resolvePuzzle(this.puzzleEntities(), this.puzzleCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
             return;
         }
         int coordinatorSlot = 0;
-        for (int entitySlotIndex = 0; entitySlotIndex < runtime.slots.size(); entitySlotIndex++) {
-            RoomEntity entity = runtime.slots.get(entitySlotIndex);
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
 
             if (entity.status() == EntityStatus.ACTIVE && entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND) {
                 coordinatorSlot = entity.slot();
@@ -110,11 +109,11 @@ public final class EntitySlotProperties {
             }
         }
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
-                ? runtime.motions
+                ? this.motions
                         .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
                         .matchedJingle(coordinatorSlot)
                 : 0x1D;
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 coordinatorSlot,
                 EntityRomConstants.ENTITY_THREE_OF_A_KIND,
                 0,
@@ -124,25 +123,25 @@ public final class EntitySlotProperties {
         if (result != ThreeOfAKindMotion.PuzzleResult.MATCH) {
             return;
         }
-        for (int index = 0; index < runtime.slots.size(); index++) {
-            RoomEntity entity = runtime.slots.get(index);
+        for (int index = 0; index < this.slots.size(); index++) {
+            RoomEntity entity = this.slots.get(index);
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_THREE_OF_A_KIND) {
                 continue;
             }
             int slot = entity.slot();
-            runtime.bossRewards.writeDroppedItemBySlot(
+            this.bossRewards.writeDroppedItemBySlot(
                     slot,
-                    runtime.motions
+                    this.motions
                             .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
                             .matchedDrop(slot));
-            runtime.combatTables.writeDyingCountdown(slot, 0x1F);
-            runtime.combatTables.writeEnemyHealth(slot, 0);
-            runtime.physicsTables.writeEnemyPhysicsFlags(slot, 0x04);
-            runtime.slots.replace(index, withStatus(entity, EntityStatus.DYING));
+            this.combatTables.writeDyingCountdown(slot, 0x1F);
+            this.combatTables.writeEnemyHealth(slot, 0);
+            this.physicsTables.writeEnemyPhysicsFlags(slot, 0x04);
+            this.slots.replace(index, withStatus(entity, EntityStatus.DYING));
         }
         // The source writes the shared noise register once per card in the
         // same handler pass; only the final register value is audible.
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 coordinatorSlot,
                 EntityRomConstants.ENTITY_THREE_OF_A_KIND,
                 0,
@@ -190,41 +189,40 @@ public final class EntitySlotProperties {
     }
 
     void updateBowWowChain(int frame) {
-        var runtime = this;
         List<BowWowChain.Entry> entries = bowWowEntries;
         entries.clear();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
-        if (runtime.roomVariables.readTransitionSequenceCounter() != 4
-                && !runtime.roomVariables.readRoomTransitionActive()
-                && !runtime.linkState.readDialogActive()
-                && !runtime.linkState.readInventoryAppearing()
-                && !runtime.inspection.witchGotItemPresentationActive()) {
+        if (this.roomVariables.readTransitionSequenceCounter() != 4
+                && !this.roomVariables.readRoomTransitionActive()
+                && !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
+                && !this.inspection.witchGotItemPresentationActive()) {
             this.state.writeBowWowChainOam(List.of());
             return;
         }
-        boolean moving = (runtime.linkState.readCurrentLinkSpeedX()
-                        | runtime.linkState.readCurrentLinkSpeedY()
-                        | runtime.linkState.readCurrentLinkVelocityZ())
+        boolean moving = (this.linkState.readCurrentLinkSpeedX()
+                        | this.linkState.readCurrentLinkSpeedY()
+                        | this.linkState.readCurrentLinkVelocityZ())
                 != 0;
-        for (int slot = 0; slot < runtime.slots.size(); slot++) {
-            RoomEntity entity = runtime.slots.get(slot);
+        for (int slot = 0; slot < this.slots.size(); slot++) {
+            RoomEntity entity = this.slots.get(slot);
             if (entity.type() != EntityRomConstants.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
-            runtime.slots.replace(
+            this.slots.replace(
                     slot,
-                    runtime.motions
+                    this.motions
                             .get(BowWowMotion.class, BowWowMotion::new)
                             .advanceChain(
                                     entity,
-                                    runtime.motions
+                                    this.motions
                                             .get(BowWowMotion.class, BowWowMotion::new)
                                             .readBowWowState(),
                                     moving));
-            entries.addAll(runtime.motions
+            entries.addAll(this.motions
                     .get(BowWowMotion.class, BowWowMotion::new)
                     .chainEntries(
                             slot,
-                            runtime.motions
+                            this.motions
                                     .get(BowWowMotion.class, BowWowMotion::new)
                                     .readBowWowState(),
                             frame));

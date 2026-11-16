@@ -146,14 +146,13 @@ public final class SlimeEyeController {
     }
 
     private void advanceHandler(EntityFrameExecution frame) {
-        var runtime = this;
         RoomEntity entity = frame.slotFrame().entity();
         int slot = entity.slot();
         if (entity.status() == EntityStatus.INIT) {
             this.clear(slot);
-            runtime.combatTables.writeEnemyHealth(slot, 0x50);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
-            runtime.slots.replace(slot, withZ(withStatus(entity, EntityStatus.ACTIVE), 0x7E));
+            this.combatTables.writeEnemyHealth(slot, 0x50);
+            this.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
+            this.slots.replace(slot, withZ(withStatus(entity, EntityStatus.ACTIVE), 0x7E));
             this.render(slot);
             return;
         }
@@ -174,15 +173,15 @@ public final class SlimeEyeController {
                 frame.lifecycle().delayInteractions(2);
             }
         }
-        runtime.lifecycle.decrementSlowTransitionCountdown(slot, frame.inputs().frame());
+        this.lifecycle.decrementSlowTransitionCountdown(slot, frame.inputs().frame());
         if (!frame.link().inventoryAppearing() && !frame.roomInspection().roomTransitionActive()) {
-            BossIntroMotion.Update intro = runtime.motions
+            BossIntroMotion.Update intro = this.motions
                     .get(BossIntroMotion.class, BossIntroMotion::new)
                     .advance(
-                            runtime.slotProperties.options1(slot),
+                            this.slotProperties.options1(slot),
                             entity.type(),
-                            runtime.roomVariables.readEntityMapId(),
-                            runtime.lifecycle.transitionSequenceCounter());
+                            this.roomVariables.readEntityMapId(),
+                            this.lifecycle.transitionSequenceCounter());
             if (intro.musicTrack() >= 0) frame.requestMusic(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
                 frame.emit(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
@@ -192,10 +191,10 @@ public final class SlimeEyeController {
         }
         // Main's combat pass precedes tick. Restore the fresh write that the
         // common flash tick would otherwise age before the ROM collision site.
-        if (this.hitThisFrame(slot, frame.inputs().frame())) runtime.combatTables.writeEnemyFlashCountdown(slot, 0x18);
+        if (this.hitThisFrame(slot, frame.inputs().frame())) this.combatTables.writeEnemyFlashCountdown(slot, 0x18);
         // RenderActiveEntitySpritesRect runs before this frame's state changes.
         this.render(slot);
-        if (runtime.physicsTables.readSlowTransitionCountdown(slot) != 0) {
+        if (this.physicsTables.readSlowTransitionCountdown(slot) != 0) {
             frame.emit(new LinkMotionBlockRequest(slot));
             frame.emit(new LinkFallenPoseRequest(slot));
         }
@@ -210,7 +209,7 @@ public final class SlimeEyeController {
             this.advanceDeath(frame);
             return;
         }
-        if (this.encounter.half[slot] == 0) runtime.combatTables.writeEnemyHealth(slot, 0x50);
+        if (this.encounter.half[slot] == 0) this.combatTables.writeEnemyHealth(slot, 0x50);
         if ((this.encounter.half[slot] != 0 || this.encounter.state[slot] != 0)
                 && (!frame.gates().handlerInteractive() || frame.gates().countdownBlocksInteraction())) return;
         if (this.encounter.half[slot] == 0) this.advanceBody(frame);

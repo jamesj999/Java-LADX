@@ -155,12 +155,11 @@ public final class EntityBombInteractions {
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        var runtime = this;
         if (decision.phase() != BombMotion.Phase.EXPLOSION) {
             return;
         }
         int bombSlot = bomb.slot();
-        int countdown = runtime.physicsTables.readEnemyTransitionCountdown(bombSlot) & 0xFF;
+        int countdown = this.physicsTables.readEnemyTransitionCountdown(bombSlot) & 0xFF;
         // BombExplosionHandler returns before every interaction for Tarin's
         // transformation explosion. All other bomb variants, including
         // enemy bombs, still run the shared destroyable-object checks.
@@ -173,7 +172,7 @@ public final class EntityBombInteractions {
 
         int bombX = bomb.x() & 0xFF;
         int bombVisualY = (bomb.y() - bomb.z()) & 0xFF;
-        runtime.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
+        this.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
                 bombSlot,
                 BombExplosionEvent.OBJECT_TARGET,
                 bombX,
@@ -187,22 +186,22 @@ public final class EntityBombInteractions {
             this.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }
-        runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
+        this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
 
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
-            RoomEntity target = runtime.slots.get(targetSlot);
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+            RoomEntity target = this.slots.get(targetSlot);
             if (target.status().value() < EntityStatus.ACTIVE.value()
-                    || (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot)
+                    || (this.physicsTables.readEnemyPhysicsFlags(targetSlot)
                                     & (EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP
                                             | EntityRomConstants.ENTITY_PHYSICS_GRABBABLE))
                             != 0
-                    || (runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
+                    || (this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
                             != 0
                     || !isWithinBombExplosionWindow(bombX, target.x())
                     || !isWithinBombExplosionWindow((target.y() - target.z()) & 0xFF, bombVisualY)) {
                 continue;
             }
-            runtime.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
+            this.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
                     bombSlot, targetSlot, bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
             this.applyBombDamage(bomb, target);
         }
@@ -214,8 +213,7 @@ public final class EntityBombInteractions {
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        var runtime = this;
-        runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
+        this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
         int bombX = bomb.x() & 0xFF;
         int bombY = bomb.y() & 0xFF;
         if (!isWithinBombExplosionWindow(bombX, linkEntityX) || !isWithinBombExplosionWindow(bombY, linkEntityY)) {
@@ -223,8 +221,8 @@ public final class EntityBombInteractions {
         }
 
         boolean collisionProtected = projectileLinkState.invincibilityCounter() != 0;
-        int linkDamage = runtime.enemyCombatTables.contactDamage(
-                EntityRomConstants.ENTITY_BOMB, runtime.combatTables.readEnemyHealthGroup(bomb.slot()));
+        int linkDamage = this.enemyCombatTables.contactDamage(
+                EntityRomConstants.ENTITY_BOMB, this.combatTables.readEnemyHealthGroup(bomb.slot()));
         EnemyRecoilMotion.Vector linkResponse = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 bomb.x(), bomb.y(), bomb.z(), linkEntityX, linkEntityY, 0x14);
         projectileEvents.add(new EntityProjectileEvent(
@@ -240,20 +238,19 @@ public final class EntityBombInteractions {
                 0,
                 0,
                 collisionProtected
-                        ? (runtime.linkState.readCurrentLinkSpeedX() << 1) & 0xFF
+                        ? (this.linkState.readCurrentLinkSpeedX() << 1) & 0xFF
                         : (linkResponse.x() << 1) & 0xFF,
                 collisionProtected
-                        ? (runtime.linkState.readCurrentLinkSpeedY() << 1) & 0xFF
+                        ? (this.linkState.readCurrentLinkSpeedY() << 1) & 0xFF
                         : (linkResponse.y() << 1) & 0xFF,
                 collisionProtected ? 0 : 0x10));
     }
 
     void applyBombDamage(RoomEntity bomb, RoomEntity target) {
-        var runtime = this;
         int targetSlot = target.slot();
-        RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables.resolveAttackDamage(
+        RomEnemyCombatTables.SwordDamageResult damageResult = this.enemyCombatTables.resolveAttackDamage(
                 target.type(),
-                runtime.combatTables.readEnemyHealthGroup(target.slot()),
+                this.combatTables.readEnemyHealthGroup(target.slot()),
                 EntityRomConstants.DAMAGE_TYPE_BOMB);
         int rawDamage = damageResult.rawValue();
 
@@ -264,44 +261,44 @@ public final class EntityBombInteractions {
             int secondarySoundId = -1;
 
             if (rawDamage == 0xFE) {
-                runtime.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x60);
-                runtime.combatTables.writeEnemyStunnedCountdown(targetSlot, 0);
-                runtime.combatTables.writeEnemyFlashCountdown(targetSlot, 0);
-                runtime.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-                runtime.physicsTables.writeEnemyPhysicsFlags(
-                        targetSlot, (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot) + 2) & 0xFF);
-                runtime.physicsTables.writeEntityOptions1Override(
-                        targetSlot, runtime.slotProperties.options1(targetSlot) & 0xC2);
-                runtime.slots.replace(targetSlot, withStatus(target, EntityStatus.BURNING));
+                this.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x60);
+                this.combatTables.writeEnemyStunnedCountdown(targetSlot, 0);
+                this.combatTables.writeEnemyFlashCountdown(targetSlot, 0);
+                this.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
+                this.physicsTables.writeEnemyPhysicsFlags(
+                        targetSlot, (this.physicsTables.readEnemyPhysicsFlags(targetSlot) + 2) & 0xFF);
+                this.physicsTables.writeEntityOptions1Override(
+                        targetSlot, this.slotProperties.options1(targetSlot) & 0xC2);
+                this.slots.replace(targetSlot, withStatus(target, EntityStatus.BURNING));
                 secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
                 secondarySoundId = 0x12;
             } else if (rawDamage == 0xFF) {
-                runtime.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0);
-                runtime.combatTables.writeEnemyStunnedCountdown(targetSlot, 0xFF);
-                runtime.combatTables.writeEnemyFlashCountdown(targetSlot, 0);
-                runtime.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-                runtime.slots.replace(targetSlot, withStatus(target, EntityStatus.STUNNED));
+                this.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0);
+                this.combatTables.writeEnemyStunnedCountdown(targetSlot, 0xFF);
+                this.combatTables.writeEnemyFlashCountdown(targetSlot, 0);
+                this.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
+                this.slots.replace(targetSlot, withStatus(target, EntityStatus.STUNNED));
             } else if (rawDamage == 0xFD) {
                 // The ROM's FD action is dispatched by the target's own
                 // entity-specific branch. Preserve it as a special result;
                 // the bomb vector below still applies unconditionally.
             } else if (rawDamage < 0xF0) {
-                runtime.combatTables.writeEnemyHealth(
-                        targetSlot, Math.max(0, runtime.combatTables.readEnemyHealth(targetSlot) - enemyDamage));
-                if (runtime.combatTables.readEnemyHealth(targetSlot) == 0) {
+                this.combatTables.writeEnemyHealth(
+                        targetSlot, Math.max(0, this.combatTables.readEnemyHealth(targetSlot) - enemyDamage));
+                if (this.combatTables.readEnemyHealth(targetSlot) == 0) {
                     // ApplySwordDamagesToEnemy uses $2F for the ordinary
                     // dying countdown; $40 is the Piece-of-Power override.
-                    runtime.combatTables.writeDyingCountdown(targetSlot, 0x2F);
-                    runtime.combatTables.writePowerRecoilDeath(targetSlot, false);
-                    runtime.slots.replace(
+                    this.combatTables.writeDyingCountdown(targetSlot, 0x2F);
+                    this.combatTables.writePowerRecoilDeath(targetSlot, false);
+                    this.slots.replace(
                             targetSlot, withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false));
                 } else {
-                    runtime.combatTables.writeEnemyFlashCountdown(targetSlot, 0x18);
-                    runtime.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
+                    this.combatTables.writeEnemyFlashCountdown(targetSlot, 0x18);
+                    this.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
                 }
             }
 
-            runtime.events.pendingEntityEvents.add(
+            this.events.pendingEntityEvents.add(
                     linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
                             .linkDamage(0)
                             .swordHit(false)
@@ -315,32 +312,31 @@ public final class EntityBombInteractions {
                             .build());
         }
 
-        runtime.motions
+        this.motions
                 .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                 .configureFromSource(targetSlot, bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
     public RoomEntity applyBombStunnedPostActiveWork(
             RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
-        var runtime = this;
         int slot = stunned.slot();
         RoomEntity moved = stunned;
-        if (runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).isActive(slot)) {
-            moved = runtime.backgroundMechanics
+        if (this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).isActive(slot)) {
+            moved = this.backgroundMechanics
                     .applyEnemyRecoilIfNeeded(moved, backgroundCollision)
                     .entity();
         }
-        moved = runtime.motions
+        moved = this.motions
                 .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                 .advance(
                         moved,
-                        runtime.physicsTables.readGroundInteractionSideScrolling(),
+                        this.physicsTables.readGroundInteractionSideScrolling(),
                         backgroundCollision,
                         frame,
-                        runtime.physicsTables.readEntityGroundStatus(slot))
+                        this.physicsTables.readEntityGroundStatus(slot))
                 .entity();
-        runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
-        runtime.liftThrow.writeThrownMotionInitialized(slot, false);
+        this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+        this.liftThrow.writeThrownMotionInitialized(slot, false);
         return withStatus(moved, stunned.status());
     }
 
