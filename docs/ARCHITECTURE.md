@@ -690,12 +690,11 @@ suppliers of either object.
 The room-held runtime provides `tick(context)` and role accessors returning the
 behavior owner directly: `combat`, `pickups`, `spawns`, `enemySpawns`, `lifecycle`,
 `outbox`, `commands`, `background`, `inspection`, `configuration`, `debug` and
-`enemies`. For example, use `runtime.combat().resolveCombat(inputs)`. Required
-legacy operations are one-line delegates in the single marked seam-bridge
-section; internal-only forwarding overloads are removed. The
-[seam migration inventory](archive/history/entity-runtime-seam.md) maps every
-retained overload to its replacement and external caller files. Migrate those
-callers before removing the corresponding bridge and guard entry.
+`enemies`. For example, use `runtime.combat().resolveCombat(inputs)`. All operation
+bridges and the static builder factory are removed. Room consumers use these
+owners directly, and construction uses `new RoomEntityRuntimeBuilder(snapshot)`.
+The [completed seam review](archive/history/entity-runtime-seam.md) records the
+room policy boundaries, handler dependencies and wide-constructor decisions.
 
 `EntitySlots` owns fixed slot values and their combat/physics columns, which
 share ROM slot identity. Its descending allocation search resets its own hitbox
@@ -792,11 +791,14 @@ do not establish the schedule.
 `EntityFrameContext` is immutable frame input. Use its builder or `toBuilder`
 when changing Link state, collision inputs, RNG or interaction gates; referenced
 services retain their identity. `EntityFrameExecution` holds explicit final
-collaborators, never `RoomEntityRuntime`. Its four nested scratch concepts are
-`EntityFrameInputs`, `EntityTimerGates`, `EntitySlotExecution` and
-`EntityPresentationFlags`. They remain nested because they share frame
-acquisition/reset/release, not to satisfy a file-size limit. The pipeline reuses
-one execution object and owns frame setup plus Link-speed/deferred-recoil
+collaborators, never `RoomEntityRuntime`. Its independent scratch owners are
+`EntityFrameInputLatch`, `EntityTimerGates`, `EntitySlotExecution` and
+`EntityPresentationFlags`. These top-level state objects are borrowed during the
+current invocation/slot; execution still owns their acquisition/reset/release.
+Simple callbacks take only the groups and concrete behavior owners they use,
+selected explicitly at registration. Handlers coordinating slot replacement,
+emission and several ordered effects retain the execution protocol. The pipeline
+reuses one execution object and owns frame setup plus Link-speed/deferred-recoil
 cleanup. Acquisition resets frame scratch, descending visits reset slot scratch, and the pipeline releases the
 frame in a `finally` block. Reentrant frames use a separate execution object.
 Stable collision adapters and typed state views retain their identities.
@@ -806,10 +808,10 @@ latches uses methods on `EntityLinkState`, preserving the original write order.
 `architecture/EntityRuntimeShapeTest` uses the shared class-file reader to reject
 runtime references from every entity main class except the composition root and
 the runtime itself. It restricts the public runtime surface to tick, zero-argument
-role accessors and exact signatures in `SEAM_BRIDGES`. Since the shared reader
-does not decode field-write instructions, the third assertion enforces the
-stronger declaration rule: every non-final entity field must be private. The
-bridge set rejects stale entries and must shrink with room-side migration.
+role accessors with the exact twelve intended names. `SEAM_BRIDGES` is empty.
+Since the shared reader does not decode field-write instructions, the third
+assertion enforces the stronger declaration rule: every non-final entity field
+must be private.
 
 `EntityRoomInspection.snapshot()` captures an owned immutable copy for retained
 state and consumers that require ownership. `view()` returns a cached read-only
@@ -850,15 +852,13 @@ Room, entity and sprite catalogs share the typed session ROM. Room-status arrays
 are mutable RAM state, not ROM buffers. Class and table comments name the
 ported routines and original labels, including unnamed disassembly tables.
 
-Use `new RoomEntityRuntimeBuilder(snapshot)` for construction; the old static
-`RoomEntityRuntime.builder` factory remains a construction seam bridge. Test-side
+Use `new RoomEntityRuntimeBuilder(snapshot)` for construction. Test-side
 `EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` supply
 real ROM-free state, explicit service defaults and focused setup. Tests remain
 split by entity family and behavior. Room consumers use runtime/frame builders, `EntityPickupFrame`,
 `EnemyCombatFrame`, `EntitySwordContactFrame` and `FollowingNpcSpawn`; the old
-`from` and `ForTest` adapters are removed. Still-used operation bridges remain
-only in the marked migration seam. Preserve externally
-used signatures when consolidating internal code. Cohesion determines class
+`from`, `ForTest` and runtime operation bridges are removed. Preserve externally
+used contracts when consolidating internal code. Cohesion determines class
 boundaries; there is no file-length limit. Main and test imports are explicit.
 
 To add an entity type:
@@ -896,7 +896,10 @@ and [null audit](archive/history/room-null-audit.md) record those contracts.
 `RoomRuntime` means one live generation, distinct from the existing `LoadedRoom`
 owned decoded-ROM value. A generation has final non-null active room data,
 entity runtime, collision scratch and callbacks bound to that generation.
-Its `RoomContents` owns mutable room data, per-room puzzle counters/flags and
+Its `RoomEntityInteractions` retains the concrete combat, pickup, lifecycle,
+inspection and outbox owners for room-specific persistence/reward policy; it
+never receives a general runtime or session. Replacing a generation also replaces
+these bindings. Its `RoomContents` owns mutable room data, per-room puzzle counters/flags and
 tile overrides. Loading prepares these contents before creating the entity
 runtime, preserving door/shutter initialization order. Follower synchronization
 can replace the entity runtime while retaining the same room contents. Room
@@ -948,8 +951,11 @@ both low-health configuration steps, then invokes the entity owner. Tick registe
 are observed through RoomFollowerState.observeLink, RoomEntitySessionState.observeMotionState
 and RoomLocationState.beginEntityTick; the facade writes none of their fields.
 RoomEntityInputs distinguishes remembered inputs from updates applied to a loaded
-runtime. Output ports reference the entity owner directly, retaining drain order,
-queue clearing, reentrancy and immutable ownership contracts.
+runtime. `RoomEntitySimulation` calls entity roles directly while preserving
+room-owned RNG, palette, reward, terrain and persistence sequencing. Output ports
+reference the entity owner directly, retaining drain order, queue clearing,
+reentrancy and immutable ownership contracts. The room boundary keeps unloaded
+policies and session outputs; it does not mirror the entity runtime's operations.
 
 RoomSessionComponents is a construction inventory used only by RoomSessionContext.
 The wiring hands the facade role contracts, frame sequence/results and lifecycle
@@ -1025,11 +1031,13 @@ room representation. Door, puzzle and player-item collaborators implement
 specific interactions; `world.object` contains object-specific behavior. Object
 mutation, puzzle and door operations are kept together with their respective
 owners, without file-size limits or stateless sequence slices.
-Entity integration passes through room bridges, inputs and reward handling.
-`RoomEntityBridge` coordinates ticking; `RoomEntitySimulation` owns the complete
-configuration/tick/ordered-effects sequence,
-`RoomEntityCombatBridge` handles combat/pickup integration and
-`RoomEntityOutbox` owns queued outputs under the retained session state. The outbox contains no runtime supplier; lifecycle routing stays in RoomSession. Results expose grouped Link,
+`RoomEntityBridge` owns room-role entry policies and output consumption;
+`RoomEntitySimulation` owns the complete configuration/tick/ordered-effects
+sequence. Loaded `RoomEntityInteractions` handles combat/pickup policy through
+its concrete entity-role dependencies, and `RoomEntityOutbox` owns queued
+outputs under retained session state. The outbox contains no runtime supplier;
+role entry points resolve the loaded generation, while RoomSession publishes
+its lifecycle. Results expose grouped Link,
 reward and presentation consumers. Link writes merge by descending source slot
 with the established cross-stream tie precedence; the application applies the
 ordered writes. Empty outbox drains and merges allocate zero bytes, guarded by
