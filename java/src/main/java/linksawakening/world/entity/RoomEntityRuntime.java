@@ -137,8 +137,4 @@ public final class RoomEntityRuntime {
     public static RoomEntityRuntimeBuilder builder(RoomEntitySnapshot initial) {
         return new RoomEntityRuntimeBuilder(initial);
     }
-
-    public void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
-        background().resolvePushedBlockLinkContact(slot, linkEntityX, linkEntityY);
-    }
 }

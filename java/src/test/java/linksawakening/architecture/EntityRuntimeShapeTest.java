@@ -21,8 +21,7 @@ class EntityRuntimeShapeTest {
 
     // Exact overloads still used outside world/entity. Caller files and replacements:
     // docs/archive/history/entity-runtime-seam.md. Remove entries when those callers migrate.
-    private static final Set<String> SEAM_BRIDGES =
-            Set.of("builder(RoomEntitySnapshot)", "resolvePushedBlockLinkContact(int,int,int)");
+    private static final Set<String> SEAM_BRIDGES = Set.of("builder(RoomEntitySnapshot)");
 
     @Test
     void onlyTheCompositionRootDependsOnTheRuntime() throws Exception {

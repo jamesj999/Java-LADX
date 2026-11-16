@@ -148,8 +148,10 @@ final class RoomPuzzleController {
 
         loaded.entities.commands().movePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot, x, y);
         if (dependencies.entityFrame().currentLinkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
-            loaded.entities.resolvePushedBlockLinkContact(
-                    loaded.contents.puzzles.pushedBlockEntitySlot, linkEntityX, linkEntityY);
+            loaded.entities
+                    .background()
+                    .resolvePushedBlockLinkContact(
+                            loaded.contents.puzzles.pushedBlockEntitySlot, linkEntityX, linkEntityY);
         }
         loaded.room.replaceEntities(loaded.entities.inspection().view());
 
