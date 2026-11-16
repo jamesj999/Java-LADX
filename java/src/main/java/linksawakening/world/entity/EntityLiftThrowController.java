@@ -459,13 +459,11 @@ public final class EntityLiftThrowController {
         return renderLiftedEntity(entity, 0);
     }
 
-    public boolean tryLiftBombIfRequested(
-            int index,
-            BombMotion.Decision decision,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            int romLinkDirection) {
+    public boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision, EntityFrameInputLatch inputs) {
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkZ = inputs.linkZ();
+        int romLinkDirection = inputs.romLinkDirection();
         if (decision.phase() != BombMotion.Phase.NORMAL || !this.linkState.readBombButtonHeld()) {
             return false;
         }

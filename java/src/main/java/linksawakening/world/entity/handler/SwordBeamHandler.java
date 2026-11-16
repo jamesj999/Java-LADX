@@ -26,14 +26,7 @@ final class SwordBeamHandler {
             EntityTimerGates timerGates,
             EntityProjectileController projectiles) {
         if (slotState.status() == EntityStatus.ACTIVE) {
-            projectiles.advanceSwordBeamEntity(
-                    slotState.index(),
-                    slotState.entity(),
-                    frameInput.frame(),
-                    frameInput.linkEntityX(),
-                    frameInput.linkEntityY(),
-                    frameInput.romLinkDirection(),
-                    timerGates.handlerInteractive());
+            projectiles.advanceSwordBeamEntity(slotState, frameInput, timerGates);
             return false;
         }
         return true;

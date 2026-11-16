@@ -26,12 +26,7 @@ final class MagicRodFireballHandler {
             EntityTimerGates timerGates,
             EntityProjectileController projectiles) {
         if (slotState.status() == EntityStatus.ACTIVE) {
-            projectiles.advanceMagicRodFireballEntity(
-                    slotState.index(),
-                    slotState.entity(),
-                    frameInput.frame(),
-                    timerGates.handlerInteractive(),
-                    timerGates.projectileTimersInteractive());
+            projectiles.advanceMagicRodFireballEntity(slotState, frameInput, timerGates);
             return false;
         }
         return true;

@@ -48,14 +48,7 @@ final class BombHandler {
                                                 frameInput.backgroundCollision(),
                                                 frameInput.frame()));
             }
-            state.liftThrow()
-                    .tryLiftBombIfRequested(
-                            slotState.index(),
-                            bombDecision,
-                            frameInput.linkEntityX(),
-                            frameInput.linkEntityY(),
-                            frameInput.linkZ(),
-                            frameInput.romLinkDirection());
+            state.liftThrow().tryLiftBombIfRequested(slotState.index(), bombDecision, frameInput);
             return false;
         }
         return true;

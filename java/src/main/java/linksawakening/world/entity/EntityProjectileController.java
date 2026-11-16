@@ -104,13 +104,14 @@ public final class EntityProjectileController {
     }
 
     public void advanceSwordBeamEntity(
-            int index,
-            RoomEntity entity,
-            int frame,
-            int linkEntityX,
-            int linkEntityY,
-            int romLinkDirection,
-            boolean handlerInteractive) {
+            EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+        int index = slotState.index();
+        RoomEntity entity = slotState.entity();
+        int frame = inputs.frame();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int romLinkDirection = inputs.romLinkDirection();
+        boolean handlerInteractive = timers.handlerInteractive();
         int slot = entity.slot();
         var swordBeamMotion = this.motions.get(SwordBeamMotion.class, SwordBeamMotion::new);
         if (swordBeamMotion.state(slot) == 0) {
@@ -166,8 +167,8 @@ public final class EntityProjectileController {
     }
 
     public void advanceMagicRodFireballEntity(
-            int index, RoomEntity entity, int frame, boolean handlerInteractive, boolean timersInteractive) {
-        this.magicRodFrameStep.run(index, entity, frame, handlerInteractive, timersInteractive);
+            EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+        this.magicRodFrameStep.run(slotState, inputs, timers);
     }
 
     boolean isMagicRodBurnableObject(RoomEntityObjectSample object) {
@@ -182,13 +183,8 @@ public final class EntityProjectileController {
     }
 
     public void advanceMagicPowderSprinkleEntity(
-            int index,
-            RoomEntity entity,
-            int frame,
-            int linkMotionState,
-            boolean handlerInteractive,
-            boolean timersInteractive) {
-        this.magicPowderStep.run(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive);
+            EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+        this.magicPowderStep.run(slotState, inputs, timers);
     }
 
     boolean collideMagicPowderWithEntities(RoomEntity sprinkle, int frame) {
@@ -942,16 +938,15 @@ public final class EntityProjectileController {
 
         private boolean inUse;
 
-        void run(
-                int index,
-                linksawakening.world.entity.RoomEntity entity,
-                int frame,
-                int linkMotionState,
-                boolean handlerInteractive,
-                boolean timersInteractive) {
+        void run(EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+            int index = slotState.index();
+            RoomEntity entity = slotState.entity();
+            int frame = inputs.frame();
+            int linkMotionState = inputs.projectileLinkState().motionState();
+            boolean handlerInteractive = timers.handlerInteractive() && !inputs.creditsGameplay();
+            boolean timersInteractive = timers.projectileTimersInteractive();
             if (inUse) {
-                new MagicPowderStep(owner)
-                        .run(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive);
+                new MagicPowderStep(owner).run(slotState, inputs, timers);
                 return;
             }
             inUse = true;
@@ -1091,14 +1086,14 @@ public final class EntityProjectileController {
 
         private boolean inUse;
 
-        void run(
-                int index,
-                linksawakening.world.entity.RoomEntity entity,
-                int frame,
-                boolean handlerInteractive,
-                boolean timersInteractive) {
+        void run(EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+            int index = slotState.index();
+            RoomEntity entity = slotState.entity();
+            int frame = inputs.frame();
+            boolean handlerInteractive = timers.handlerInteractive();
+            boolean timersInteractive = timers.projectileTimersInteractive();
             if (inUse) {
-                new MagicRodFrameStep(owner).run(index, entity, frame, handlerInteractive, timersInteractive);
+                new MagicRodFrameStep(owner).run(slotState, inputs, timers);
                 return;
             }
             inUse = true;
