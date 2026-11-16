@@ -25,6 +25,7 @@ import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
@@ -71,20 +72,20 @@ final class RoomStoryPersistenceTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(
                     slot == 0
-                            ? new RoomEntity(
-                                    0,
-                                    -1,
-                                    0x30,
-                                    0x50,
-                                    0x48,
-                                    EntityStatus.ACTIVE,
-                                    EntitySpriteDefinition.unsupported(0x30),
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    -1,
-                                    false)
+                            ? new RoomEntityBuilder()
+                                    .slot(0)
+                                    .sourceLoadOrder(-1)
+                                    .type(0x30)
+                                    .at(0x50, 0x48)
+                                    .status(EntityStatus.ACTIVE)
+                                    .spriteDefinition(EntitySpriteDefinition.unsupported(0x30))
+                                    .spriteVariant(0)
+                                    .entityFlipAttribute(0)
+                                    .spriteTileOffset(0)
+                                    .z(0)
+                                    .deathSpriteVariant(-1)
+                                    .powerRecoilDeath(false)
+                                    .build()
                             : RoomEntity.disabled(slot));
         }
         RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();

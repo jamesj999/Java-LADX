@@ -23,6 +23,7 @@ import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -376,20 +377,20 @@ final class RoomDoorAndObjectInteractionTest {
         full.rooms().loadIndoor(0x00, 0x04);
         List<RoomEntity> occupiedSlots = new ArrayList<>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            occupiedSlots.add(new RoomEntity(
-                    slot,
-                    -1,
-                    0x42,
-                    0x08,
-                    0x10,
-                    EntityStatus.ACTIVE,
-                    EntitySpriteDefinition.unsupported(0x42),
-                    -1,
-                    0,
-                    0,
-                    0,
-                    -1,
-                    false));
+            occupiedSlots.add(new RoomEntityBuilder()
+                    .slot(slot)
+                    .sourceLoadOrder(-1)
+                    .type(0x42)
+                    .at(0x08, 0x10)
+                    .status(EntityStatus.ACTIVE)
+                    .spriteDefinition(EntitySpriteDefinition.unsupported(0x42))
+                    .spriteVariant(-1)
+                    .entityFlipAttribute(0)
+                    .spriteTileOffset(0)
+                    .z(0)
+                    .deathSpriteVariant(-1)
+                    .powerRecoilDeath(false)
+                    .build());
         }
         RoomDebugFixture.of(full)
                 .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(occupiedSlots))

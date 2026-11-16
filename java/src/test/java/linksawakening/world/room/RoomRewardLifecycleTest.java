@@ -34,6 +34,7 @@ import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.RoomEntityRuntimeBuilder;
@@ -355,20 +356,20 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadOverworld(0xC6);
         RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(List.of(
-                        new RoomEntity(
-                                0,
-                                0,
-                                0x3C,
-                                0x40,
-                                0x50,
-                                EntityStatus.INIT,
-                                EntitySpriteDefinition.unsupported(0x3C),
-                                -1,
-                                0,
-                                0,
-                                0,
-                                -1,
-                                false),
+                        new RoomEntityBuilder()
+                                .slot(0)
+                                .sourceLoadOrder(0)
+                                .type(0x3C)
+                                .at(0x40, 0x50)
+                                .status(EntityStatus.INIT)
+                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x3C))
+                                .spriteVariant(-1)
+                                .entityFlipAttribute(0)
+                                .spriteTileOffset(0)
+                                .z(0)
+                                .deathSpriteVariant(-1)
+                                .powerRecoilDeath(false)
+                                .build(),
                         RoomEntity.disabled(1),
                         RoomEntity.disabled(2),
                         RoomEntity.disabled(3),
@@ -915,20 +916,20 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x01, 0x2B);
         List<RoomEntity> dyingBossSlots = new ArrayList<>();
-        dyingBossSlots.add(new RoomEntity(
-                0,
-                0,
-                0x5C,
-                0x50,
-                0x40,
-                EntityStatus.DYING,
-                EntitySpriteDefinition.unsupported(0x5C),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false));
+        dyingBossSlots.add(new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x5C)
+                .at(0x50, 0x40)
+                .status(EntityStatus.DYING)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build());
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             dyingBossSlots.add(RoomEntity.disabled(slot));
         }

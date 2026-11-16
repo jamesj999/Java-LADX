@@ -7,24 +7,25 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.BowWowChain;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class BowWowChainTest {
     private static RoomEntity bowWow(int x, int y, int z) {
-        return new RoomEntity(
-                0,
-                -1,
-                0x6D,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x6D),
-                0,
-                0,
-                0,
-                z,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(-1)
+                .type(0x6D)
+                .at(x, y)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x6D))
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(z)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
     }
 
     @Test
