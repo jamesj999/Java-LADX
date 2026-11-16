@@ -134,10 +134,6 @@ public final class RoomEntityRuntime {
 
     // Seam bridges - removed when world/room adopts the role accessors
 
-    public boolean gelClingingToLink() {
-        return enemies().gelClingingToLink();
-    }
-
     public static RoomEntityRuntimeBuilder builder(RoomEntitySnapshot initial) {
         return new RoomEntityRuntimeBuilder(initial);
     }

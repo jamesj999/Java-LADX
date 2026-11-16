@@ -36,7 +36,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
 
     boolean gelClingingToLink() {
         RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && loaded.entities.gelClingingToLink();
+        return loaded != null && loaded.entities.enemies().gelClingingToLink();
     }
 
     void resetGuardianAcornCounterOnHurt() {
