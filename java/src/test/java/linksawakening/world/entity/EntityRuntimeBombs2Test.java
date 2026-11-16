@@ -28,7 +28,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         assertEquals(0x7DF5, definition.address());
         assertEquals(2, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x55)
                         .at(0x50, 0x50)
@@ -63,7 +63,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         EntitySpriteDefinition definition = catalog.forEntityType(0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x55)
@@ -124,7 +124,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
     @Test
     void protectedEnemyBombStillDoublesLinkSpeedWithoutDamageOrHurtSound() throws IOException {
         byte[] rom = loadRom();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
@@ -180,7 +180,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(pairDefinition(0x12, 2))
                 .z(0x10)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(ghini))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(ghini))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
@@ -219,7 +219,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
 
     @Test
     void bombExplosionObjectWindowIsInclusiveAndSilentOutsideIt() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
         int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x18);

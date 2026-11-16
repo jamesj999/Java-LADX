@@ -22,7 +22,7 @@ final class CrowRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(CrowMotion.ENTITY_TYPE)
                         .at(0x40, 0x50)
@@ -83,7 +83,7 @@ final class CrowRuntimeTest {
     @Test
     void takeoffKeepsFacingAndPresentsThePreviousAltitudeWingFrame() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(CrowMotion.ENTITY_TYPE)
                         .at(0x40, 0x50)
@@ -116,7 +116,7 @@ final class CrowRuntimeTest {
     @Test
     void kanaletCrowUsesTheSourceLeafDropAndRoomCompletionPersistence() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(4)
                         .type(CrowMotion.ENTITY_TYPE)
                         .at(0x40, 0x50)
@@ -146,7 +146,7 @@ final class CrowRuntimeTest {
     @Test
     void kanaletCrowTakesOffForANearbySmashedRock() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(CrowMotion.ENTITY_TYPE)
                         .at(0x40, 0x50)
@@ -172,7 +172,7 @@ final class CrowRuntimeTest {
     @Test
     void kanaletCrowAppliesThePatchedIgnoreHitsReductionBeforeItsHandler() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(CrowMotion.ENTITY_TYPE)
                         .at(0x40, 0x50)

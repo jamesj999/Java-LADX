@@ -13,6 +13,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.RichardProgressEvent;
@@ -158,7 +159,7 @@ final class RoomSessionStoryTest {
     void fifthKanaletLeafPublishesFinalLeafDialogAndCompletesItsSourceRoom() {
         RoomSession session = newSession();
         session.rooms().loadOverworld(0x58);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(List.of(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(List.of(
                         new RoomEntity(
                                 0,
                                 0xFF,

@@ -22,7 +22,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void spawnBombUsesTheRomSlotStateAndDoesNotSkipItsFirstTick() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -64,7 +64,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void sideScrollBombPlacementSkipsTheTopViewBumpJingle() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())).withSideScrolling(true))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -79,7 +79,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
 
     @Test
     void bombSpawnRejectsASecondLoadedBombAndReusesTheSlotAfterClear() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
 
         int firstSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
 
@@ -106,8 +106,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                     .spriteVariant(-1)
                     .build());
         }
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
 
         assertEquals(-1, runtime.spawns().spawnBomb(0x40, 0x50, 0, 0));
         assertFalse(runtime.inspection().bombActive());
@@ -118,7 +117,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void bombKeepsOneSlotAcrossWarningExplosionSoundAndUnload() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -205,7 +204,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void spawnBombFinalizesPendingFinalPresentationBeforeReusingItsSlot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -231,7 +230,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void alternateBombDisableClearsPendingPresentationAndDirectionBeforeReuse() throws Exception {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -258,7 +257,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
 
     @Test
     void bombExplosionPublishesOnlyTargetsInsideTheInclusiveCountdownWindow() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(11)
                                 .sourceLoadOrder(11)
@@ -319,7 +318,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
 
     @Test
     void bombExplosionFiltersNonInteractiveTargetsAtTheExactInteractionTick() throws Exception {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(10)
                                 .sourceLoadOrder(10)
@@ -386,7 +385,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x4F)
                 .spriteDefinition(pairDefinition(0x09, 8))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(octorok))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(octorok))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
@@ -442,7 +441,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -489,7 +488,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     @Test
     void enemyBombUsesRawEntityYInsteadOfExplosionVisualYForLinkCollision() throws IOException {
         byte[] rom = loadRom();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
@@ -523,7 +522,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition bomberDefinition = catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xBA)
                         .at(0x50, 0x50)
@@ -556,7 +555,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void bomberEnemyBombCarriesTheSourceVectorIntoTheNextBombHandlerFrame() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xBA)
                         .at(0x50, 0x50)
@@ -592,7 +591,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x4126, definition.address());
         assertEquals(5, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x93)
                         .at(0x50, 0x50)
@@ -634,7 +633,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x7CEF, definition.address());
         assertEquals(6, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x56)
                         .at(0x50, 0x50)

@@ -3,8 +3,11 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOLDORM;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
 
+import linksawakening.world.entity.EntityBossRewards;
 import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityFrameInputLatch;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.DialogRequest;
@@ -22,7 +25,11 @@ final class MoldormHandler {
                 ENTITY_ROLLING_BONES, EntityTickStage.PHASE_1_BOSS_DOORWAY, 0, MoldormHandler::phase1Moldorm2);
         registry.registerTick(
                 ENTITY_MOLDORM, EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION, 1, MoldormHandler::phase2Moldorm);
-        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_2_DYING, 3, MoldormHandler::phase2Moldorm2);
+        registry.registerTick(
+                ENTITY_MOLDORM,
+                EntityTickStage.PHASE_2_DYING,
+                3,
+                frame -> phase2Moldorm2(frame.slotFrame(), frame.inputs(), frame.bossRewards()));
         registry.registerTick(
                 ENTITY_MOLDORM, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 5, MoldormHandler::phase2Moldorm3);
     }
@@ -77,11 +84,9 @@ final class MoldormHandler {
                 .execute();
     }
 
-    private static boolean phase2Moldorm2(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-        var frameInput = state.inputs();
-
-        state.bossRewards().advanceMoldormDestruction(slotState.entity(), frameInput.frame());
+    private static boolean phase2Moldorm2(
+            EntitySlotExecution slotState, EntityFrameInputLatch frameInput, EntityBossRewards bossRewards) {
+        bossRewards.advanceMoldormDestruction(slotState.entity(), frameInput.frame());
         return false;
     }
 
@@ -97,13 +102,13 @@ final class MoldormHandler {
         // Owning frame execution is stable for this cached scratch holder.
         private final linksawakening.world.entity.EntityFrameExecution state;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        private linksawakening.world.entity.EntitySlotExecution slotState;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        private linksawakening.world.entity.EntityFrameInputLatch frameInput;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+        private linksawakening.world.entity.EntityTimerGates timerGates;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
+        private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         MoldormHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
             this.state = java.util.Objects.requireNonNull(state, "state");
@@ -125,7 +130,6 @@ final class MoldormHandler {
         private boolean completedResult;
 
         private boolean prepareMotion() {
-
             slotState = state.slotFrame();
             frameInput = state.inputs();
             timerGates = state.gates();
@@ -178,7 +182,6 @@ final class MoldormHandler {
         }
 
         private boolean applyMotionAndPresentation() {
-
             moldormUpdate = state.motion(MoldormMotion.class, MoldormMotion::new)
                     .advance(
                             slotState.entity(),

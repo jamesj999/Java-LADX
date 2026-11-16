@@ -337,7 +337,7 @@ final class RoomDoorInteractions implements RoomDoors {
         }
         int sourceX = ((touchedLocation & 0x0F) << 4) + 0x08;
         int sourceY = (touchedLocation & 0xF0) + 0x10;
-        int spawnedSlot = loaded.entities.spawnPushedBlock(sourceX, sourceY);
+        int spawnedSlot = loaded.entities.spawns().spawnPushedBlock(sourceX, sourceY);
         if (spawnedSlot < 0) {
             return true;
         }

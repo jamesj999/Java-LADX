@@ -101,7 +101,7 @@ final class BowWowPauseTest {
                         .at(0x40, 0x50)
                         .spriteDefinition(catalog.forFollowerEntityType(0x6D))
                         .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

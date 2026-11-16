@@ -12,7 +12,7 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
 
     @Test
     void matchingThreeOfAKindCardsEnterTheSourceDeathSequenceTogether() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         snapshot(threeOfAKind(0, 0x28, 0x28), threeOfAKind(1, 0x78, 0x28), threeOfAKind(2, 0x48, 0x38)))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
@@ -46,7 +46,7 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
 
     @Test
     void swordHitFeedsThreeOfAKindsGenericIgnoreHitLatch() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(threeOfAKind(0, 0x40, 0x50)))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(threeOfAKind(0, 0x40, 0x50)))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -76,7 +76,7 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
 
     @Test
     void settledThreeOfAKindDoesNotRunTheGenericCombatHandler() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(threeOfAKind(0, 0x40, 0x50)))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(threeOfAKind(0, 0x40, 0x50)))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -89,7 +89,7 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
 
     @Test
     void noninteractiveFramesFreezeThreeOfAKindCountdownAndPuzzleCheck() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         snapshot(threeOfAKind(0, 0x28, 0x28), threeOfAKind(1, 0x78, 0x28), threeOfAKind(2, 0x48, 0x38)))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)

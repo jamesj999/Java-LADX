@@ -21,7 +21,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_MIMIC, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(EntitySpriteHandlerCatalog.ENTITY_MIMIC)
                         .at(0x40, 0x50)
@@ -58,7 +58,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
                         .at(0x40, 0x50)
@@ -115,7 +115,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
                         .at(0x40, 0x50)
@@ -159,7 +159,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
                         .at(0x40, 0x50)

@@ -23,7 +23,7 @@ import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.HookshotBridgeMotion;
@@ -392,7 +392,7 @@ final class RoomDoorAndObjectInteractionTest {
                     false));
         }
         RoomDebugFixture.of(full)
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(occupiedSlots))
+                .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(occupiedSlots))
                         .indoorRoom(true)
                         .build());
         for (int tick = 0; tick < 64; tick++) {
@@ -466,7 +466,7 @@ final class RoomDoorAndObjectInteractionTest {
             emptySlots.add(RoomEntity.disabled(slot));
         }
         RoomDebugFixture.of(session)
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(emptySlots))
                         .indoorRoom(true)
                         .build());
 
@@ -494,7 +494,7 @@ final class RoomDoorAndObjectInteractionTest {
             emptySlots.add(RoomEntity.disabled(slot));
         }
         RoomDebugFixture.of(session)
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(emptySlots))
                         .indoorRoom(true)
                         .build());
 
@@ -522,7 +522,7 @@ final class RoomDoorAndObjectInteractionTest {
             emptySlots.add(RoomEntity.disabled(slot));
         }
         RoomDebugFixture.of(session)
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(emptySlots))
                         .indoorRoom(true)
                         .build());
 

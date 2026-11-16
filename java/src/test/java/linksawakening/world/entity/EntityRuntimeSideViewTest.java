@@ -36,9 +36,8 @@ final class EntityRuntimeSideViewTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x0C))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(projectile).withSideScrolling(true))
-                .build();
+        RoomEntityRuntime runtime =
+                new RoomEntityRuntimeBuilder(snapshot(projectile).withSideScrolling(true)).build();
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
                 0,

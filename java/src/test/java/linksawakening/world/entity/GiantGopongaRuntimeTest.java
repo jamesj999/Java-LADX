@@ -81,7 +81,7 @@ final class GiantGopongaRuntimeTest {
     void usesRomCombatValuesAndTheGiantFlowerHitbox() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GIANT_GOPONGA_FLOWER)
                         .at(0x40, 0x40)
@@ -141,7 +141,7 @@ final class GiantGopongaRuntimeTest {
     void pushesLinkEvenWhenTheGiantFlowerSeesAnAirborneLink() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GIANT_GOPONGA_FLOWER)
                         .at(0x38, 0x40)
@@ -172,7 +172,7 @@ final class GiantGopongaRuntimeTest {
     void roomRuntimeInsertsTheProjectileAsAHighestFreeDynamicEntity() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GIANT_GOPONGA_FLOWER)
                         .at(0x40, 0x40)

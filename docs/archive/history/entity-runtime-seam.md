@@ -1,205 +1,271 @@
-# Entity runtime seam migration
+# Entity runtime seam — complete
 
-`RoomEntityRuntimeBuilder` is the single composition root. Its assembly method
-uses local variables in dependency order and returns the runtime only after
-room initialization. No controller receives the builder or a service bundle.
-`RoomEntityRuntime` owns execution and stable role references; its marked seam
-section contains only delegates required by callers outside the entity tree.
+All operation bridges and the static `RoomEntityRuntime.builder` factory are
+removed. `RoomEntityRuntime` exposes exactly `tick(EntityFrameContext)` and its
+twelve role accessors. `EntityRuntimeShapeTest.SEAM_BRIDGES` is empty; the guard
+also requires the exact accessor names. Construction uses
+`new RoomEntityRuntimeBuilder(snapshot)`, including entity-owned fixtures.
 
-The role accessors return the behavior owner directly, without a forwarding
-interface. Room callers can migrate each expression below independently. The
-bridges preserve validation, overload behavior and return types at current
-call sites; remove each bridge after its listed external callers migrate.
+## Direct role boundary
 
-## Roles
+Each accessor returns the behavior owner, with no forwarding role wrapper:
 
-| Accessor | Owner |
-| --- | --- |
-| `combat()` | `EntityCombatResolver` |
-| `pickups()` | `EntityRewardController` |
-| `spawns()` | `EntityPlayerSpawns` |
-| `enemySpawns()` | `EntityEnemySpawns` |
-| `lifecycle()` | `EntitySlotLifecycle` |
-| `outbox()` | `EntityEffectConsumption` |
-| `commands()` | `EntityPlayerCommands` |
-| `background()` | `EntityBackgroundMechanics` |
-| `inspection()` | `EntityRoomInspection` |
-| `configuration()` | `EntityRuntimeConfiguration` |
-| `debug()` | `EntityDebugConfiguration` |
-| `enemies()` | `EntityEnemyInspection` |
+- `combat()` → `EntityCombatResolver`
+- `pickups()` → `EntityRewardController`
+- `spawns()` → `EntityPlayerSpawns`
+- `enemySpawns()` → `EntityEnemySpawns`
+- `lifecycle()` → `EntitySlotLifecycle`
+- `outbox()` → `EntityEffectConsumption`
+- `commands()` → `EntityPlayerCommands`
+- `background()` → `EntityBackgroundMechanics`
+- `inspection()` → `EntityRoomInspection`
+- `configuration()` → `EntityRuntimeConfiguration`
+- `debug()` → `EntityDebugConfiguration`
+- `enemies()` → `EntityEnemyInspection`
 
-The package-private `pipeline`, `execution`, `bosses`, `flyingEnemies` and
-`pickupState` accessors support owned fixtures. They do not expose runtime
-fields. Frame scratch remains nested: its input latch, timer gates, current-slot
-scratch and presentation flags share the frame acquisition/reset/release lifecycle.
+The migration used attributed Java call sites, including all overloads and
+builder calls in entity tests. Each role's caller migration and bridge removal
+was committed with the full ROM-configured gate green. Enemy-spawn, inspection
+and debug callers already used their role accessors. No compatibility member or
+caller hand-off remains. No test was removed, disabled or weakened.
 
-## Remaining seam bridges
+## Room integration decisions
 
-Signatures distinguish overloads. Caller paths are from an attributed Java
-source inventory, not a text search for similarly named room/session methods.
-`runtime` denotes the room-held runtime. The construction bridge can migrate to
-the public builder constructor.
+`RoomRuntime` constructs `RoomEntityInteractions` once per loaded generation.
+The interaction owner retains the active room and its concrete combat, pickup,
+lifecycle, inspection and effect-consumption owners, plus the specific shared
+room state it needs. It never receives `RoomEntityRuntime`, `RoomSession` or a
+construction inventory. Room/follower replacement constructs new bindings.
 
-| Old call | Replacement | Current external caller files |
-| --- | --- | --- |
-| `RoomEntityRuntime.builder(snapshot)` | `new RoomEntityRuntimeBuilder(snapshot)` | `java/src/main/java/linksawakening/world/room/RoomFollowerSynchronizer.java`<br>`java/src/main/java/linksawakening/world/room/RoomLoadCoordinator.java`<br>`java/src/test/java/linksawakening/world/room/GameplayRouteScenario.java`<br>`java/src/test/java/linksawakening/world/room/RoomDoorAndObjectInteractionTest.java`<br>`java/src/test/java/linksawakening/world/room/RoomLiveBoundaryTest.java`<br>`java/src/test/java/linksawakening/world/room/RoomRenderAllocationTest.java`<br>`java/src/test/java/linksawakening/world/room/RoomRewardLifecycleTest.java`<br>`java/src/test/java/linksawakening/world/room/RoomSessionProjectilesTest.java`<br>`java/src/test/java/linksawakening/world/room/RoomSessionStoryTest.java`<br>`java/src/test/java/linksawakening/world/room/RoomSessionTestSupport.java`<br>`java/src/test/java/linksawakening/world/room/RoomStoryPersistenceTest.java` |
-| `gelClingingToLink()` | `runtime.enemies().gelClingingToLink()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `setFreeMovementMode(boolean)` | `runtime.configuration().setFreeMovementMode(enabled)` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `deferContactRecoil(int,int,int)` | `runtime.combat().deferContactRecoil(slot, linkX, linkY)` | `java/src/main/java/linksawakening/world/room/RoomEntityCombatBridge.java` |
-| `clearEntity(int)` | `runtime.lifecycle().clearEntity(slot)` | `java/src/main/java/linksawakening/world/room/RoomEntityCombatBridge.java`<br>`java/src/test/java/linksawakening/world/room/RoomLiveBoundaryTest.java` |
-| `setHeartPiecesCount(int)` | `runtime.configuration().setHeartPiecesCount(count)` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `thrownDirection(int)` | `runtime.commands().thrownDirection(slot)` | `java/src/main/java/linksawakening/world/room/RoomCollisionQueries.java` |
-| `collectIfNeeded(EntityPickupFrameInputs)` | `runtime.pickups().collectIfNeeded(inputs)` | `java/src/main/java/linksawakening/world/room/RoomEntityCombatBridge.java` |
-| `resolveCombat(EntitySwordContactFrame)` | `runtime.combat().resolveCombat(inputs)` | `java/src/test/java/linksawakening/world/room/RoomSessionTestSupport.java` |
-| `resolveCombat(EnemyCombatInputs)` | `runtime.combat().resolveCombat(inputs)` | `java/src/main/java/linksawakening/world/room/RoomEntityCombatBridge.java` |
-| `consumePendingSwitchBlockAnimationRequest()` | `runtime.outbox().consumePendingSwitchBlockAnimationRequest()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumePendingClearedEntityMask()` | `runtime.outbox().consumePendingClearedEntityMask()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumePendingRoomStatusMask()` | `runtime.outbox().consumePendingRoomStatusMask()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumePendingEntityEvents()` | `runtime.outbox().consumePendingEntityEvents()` | `java/src/main/java/linksawakening/world/room/RoomObjectMutations.java`<br>`java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingThrownBackgroundCollisions()` | `runtime.outbox().consumePendingThrownBackgroundCollisions()` | `java/src/main/java/linksawakening/world/room/RoomPuzzleController.java` |
-| `consumePendingDungeonWarpRequests()` | `runtime.outbox().consumePendingDungeonWarpRequests()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumePendingWarpLinkStateRequests()` | `runtime.outbox().consumePendingWarpLinkStateRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkFinalPositionRequests()` | `runtime.outbox().consumePendingLinkFinalPositionRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingRoosterLinkStateRequests()` | `runtime.outbox().consumePendingRoosterLinkStateRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkMotionBlockRequests()` | `runtime.outbox().consumePendingLinkMotionBlockRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingSideViewPlatformLinkRequests()` | `runtime.outbox().consumePendingSideViewPlatformLinkRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingSideViewPotLinkRequests()` | `runtime.outbox().consumePendingSideViewPotLinkRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingHinoxLinkEffectRequests()` | `runtime.outbox().consumePendingHinoxLinkEffectRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkFallenPoseRequests()` | `runtime.outbox().consumePendingLinkFallenPoseRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkFacingRequests()` | `runtime.outbox().consumePendingLinkFacingRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkAttackClearRequests()` | `runtime.outbox().consumePendingLinkAttackClearRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkAttackStepRequests()` | `runtime.outbox().consumePendingLinkAttackStepRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingRoomStatusPersistenceRequests()` | `runtime.outbox().consumePendingRoomStatusPersistenceRequests()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumePendingLinkHeldItemPoseRequests()` | `runtime.outbox().consumePendingLinkHeldItemPoseRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkSwordSpinPoseRequests()` | `runtime.outbox().consumePendingLinkSwordSpinPoseRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLinkSwordFinalPoseRequests()` | `runtime.outbox().consumePendingLinkSwordFinalPoseRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingScreenShakeRequests()` | `runtime.outbox().consumePendingScreenShakeRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingChestRewardEvents()` | `runtime.outbox().consumePendingChestRewardEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumePendingKeyRewardEvents()` | `runtime.outbox().consumePendingKeyRewardEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingSlimeKeyRewardEvents()` | `runtime.outbox().consumePendingSlimeKeyRewardEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingKeyQuicksandEvents()` | `runtime.outbox().consumePendingKeyQuicksandEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingMusicTrack()` | `runtime.outbox().consumePendingMusicTrack()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingMusicFadeOutCountdown()` | `runtime.outbox().consumePendingMusicFadeOutCountdown()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingLikeLikeEvents()` | `runtime.outbox().consumePendingLikeLikeEvents()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingDialogRequests()` | `runtime.outbox().consumePendingDialogRequests()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumeBombExplosionEvents()` | `runtime.outbox().consumeBombExplosionEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumeHeartPieceUpdates()` | `runtime.outbox().consumeHeartPieceUpdates()` | `java/src/main/java/linksawakening/world/room/RoomSession.java` |
-| `consumePendingHeartContainerRewards()` | `runtime.outbox().consumePendingHeartContainerRewards()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingMadamMeowMeowFullHealRequests()` | `runtime.outbox().consumePendingMadamMeowMeowFullHealRequests()` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `consumePendingSwordPickupRewards()` | `runtime.outbox().consumePendingSwordPickupRewards()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingToadstoolRewards()` | `runtime.outbox().consumePendingToadstoolRewards()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingInstrumentRewards()` | `runtime.outbox().consumePendingInstrumentRewards()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingInstrumentCompletions()` | `runtime.outbox().consumePendingInstrumentCompletions()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingRichardProgressEvents()` | `runtime.outbox().consumePendingRichardProgressEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingWitchExchangeEvents()` | `runtime.outbox().consumePendingWitchExchangeEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingWitchRewardEvents()` | `runtime.outbox().consumePendingWitchRewardEvents()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `consumePendingOwlEventCompletions()` | `runtime.outbox().consumePendingOwlEventCompletions()` | `java/src/main/java/linksawakening/world/room/RoomEntityRewards.java` |
-| `beginLift(int,int)` | `runtime.commands().beginLift(slot, romDirection)` | `java/src/main/java/linksawakening/world/room/RoomLiftInteractions.java` |
-| `throwLiftedEntity(int)` | `runtime.commands().throwLiftedEntity(romDirection)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `applyMarinWakeUpPresentation(int,int,int)` | `runtime.commands().applyMarinWakeUpPresentation(x, y, spriteVariant)` | `java/src/main/java/linksawakening/world/room/RoomNpcPresentation.java`<br>`java/src/test/java/linksawakening/world/room/RoomLiveBoundaryTest.java` |
-| `updateHouseTarinPresentation(int,int)` | `runtime.commands().updateHouseTarinPresentation(linkX, linkY)` | `java/src/main/java/linksawakening/world/room/RoomNpcPresentation.java` |
-| `spawnHookshotChain(int,int,int,int)` | `runtime.spawns().spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `spawnPushedBlock(int,int)` | `runtime.spawns().spawnPushedBlock(x, y)` | `java/src/main/java/linksawakening/world/room/RoomDoorInteractions.java` |
-| `spawnLiftedRoomObject(int,int,int,int)` | `runtime.spawns().spawnLiftedRoomObject(x, y, romDirection, spriteVariant)` | `java/src/main/java/linksawakening/world/room/RoomLiftInteractions.java` |
-| `movePushedBlock(int,int,int)` | `runtime.commands().movePushedBlock(slot, x, y)` | `java/src/main/java/linksawakening/world/room/RoomPuzzleController.java` |
-| `resolvePushedBlockLinkContact(int,int,int)` | `runtime.background().resolvePushedBlockLinkContact(slot, linkEntityX, linkEntityY)` | `java/src/main/java/linksawakening/world/room/RoomPuzzleController.java` |
-| `removePushedBlock(int)` | `runtime.commands().removePushedBlock(slot)` | `java/src/main/java/linksawakening/world/room/RoomPuzzleController.java` |
-| `spawnRoomEventKeyDrop()` | `runtime.spawns().spawnRoomEventKeyDrop()` | `java/src/main/java/linksawakening/world/room/RoomPuzzleController.java` |
-| `spawnArrow(int,int,int,int,boolean)` | `runtime.spawns().spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `spawnBoomerang(int,int,int,int,int)` | `runtime.spawns().spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `spawnSwordBeam(int,int,int,int)` | `runtime.spawns().spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `spawnMagicRodFireball(int,int,int,int,boolean)` | `runtime.spawns().spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `spawnMagicPowderSprinkle(int,int,int,int)` | `runtime.spawns().spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `spawnBomb(int,int,int,int)` | `runtime.spawns().spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection)` | `java/src/main/java/linksawakening/world/room/RoomPlayerItemActions.java` |
-| `spawnLiftableRockSmash(int,int,int)` | `runtime.spawns().spawnLiftableRockSmash(entityX, entityY, sourceSpriteVariant)` | `java/src/main/java/linksawakening/world/room/RoomObjectMutations.java` |
-| `spawnLiftableRockRubble(int,int)` | `runtime.spawns().spawnLiftableRockRubble(entityX, entityY)` | `java/src/main/java/linksawakening/world/room/RoomObjectMutations.java` |
-| `spawnShovelDrop(int,int,int,int,boolean)` | `runtime.spawns().spawnShovelDrop(objectLeft, objectTop, linkEntityX, linkEntityY, allowDrop)` | `java/src/main/java/linksawakening/world/room/RoomEntitySimulation.java` |
-| `spawnChestWithItem(int,int,int)` | `runtime.spawns().spawnChestWithItem(objectLeft, objectTop, itemType)` | `java/src/main/java/linksawakening/world/room/RoomChestInteractions.java` |
+The former session-scoped `RoomEntityCombatBridge` and its duplicate wiring
+references are deleted. Combat resolution, persistent clearing, the Angler key
+source-room flag, seashell dialog/sound/completion, key reward harvesting and
+live entity-view refresh keep their original sequence. Deferred contact recoil
+goes straight to the combat role. Pickup's masked follower registers are written
+by `RoomFollowerState.observePickup`. A regression clears the replacement
+runtime while proving the previous generation remains unchanged.
 
-## Removed internal forwarding
+Three existing boundaries deliberately remain:
 
-Entity-owned tests now call the owning role. Unused runtime overloads for simple
-combat inputs, pickups, ordinary arrows/fireballs, enemy-bomb spawning and
-internal slot queries were removed. Their behavior remains on the appropriate
-combat, reward, spawn, lifecycle or slot owner. Validation in deferred recoil and
-thrown-direction queries moved with the operation. The pipeline owns frame RNG
-preparation and the Link-speed/deferred-recoil cleanup around a tick.
+- `RoomEntityBridge` owns the room role's unloaded defaults, required-input
+  evaluation, session output queues, ordered drains and room/entity integration.
+  It resolves the current generation once per operation. These policies cannot
+  be replaced by a cached entity role surviving room replacement.
+- `RoomEntitySimulation` configures the entity frame and applies its room effects
+  in source order. Torch palettes, ocarina progression, world RNG, rewards,
+  terrain redraw, puzzle motion and persistence are room responsibilities. It
+  calls entity roles directly; there is no extra runtime operation delegate.
+- `RoomEntityInputs` owns remembered inputs before a load and the distinction
+  between cached writes and immediate loaded configuration. Removing this
+  boundary would change validation, no-room behavior or application timing.
 
-## Constructor ownership review
+## Frame execution review
 
-The immutable entity values and the combat/physics columns use the same fixed
-ROM slot identity. `EntitySlots` owns all three, and its descending free-slot
-search resets its own combat column. Controllers receive that slot owner rather
-than independently supplied combat and physics tables. The cached list view is
-also obtained from the same owner. This prevents mismatched table wiring rather
-than merely hiding constructor arguments in a record.
+The independent scratch concepts are now top-level state owners:
+`EntityFrameInputLatch` (latched invocation inputs), `EntitySlotExecution`
+(current descending-slot scratch), `EntityTimerGates` (interaction/countdown
+decisions) and `EntityPresentationFlags` (handler-owned presentation retention).
+They contain state and reset behavior, not slices forwarding through execution.
+They are borrowed for the current synchronous invocation/slot and must not be
+retained as snapshots. Execution still owns acquisition, reset and release;
+reentrant execution allocates its own groups, while ordinary frames reuse them.
+A regression verifies reentrant isolation, stable identities and reset on reuse.
 
-Inspection and sprite-cache arguments which were the same instance at both
-positions are supplied once. Internal read aliases retain their original query
-behavior. No new Services/Dependencies bundle or forwarding interface was added.
+Thirty-five callback implementations now take only their actual groups and
+behavior owners. Registration spells out those dependencies, for example:
+`frame -> phase1HeartContainer(frame.slotFrame(), frame.inputs(), frame.slot(),
+frame.bossRewards())`. The noncapturing adapter is retained at registration;
+it creates no per-frame wrapper. Stage/visit order and stop semantics are unchanged.
 
-Some constructors intentionally still have more than eight inputs. Frame
-execution names the separate behavior owners actually used by handlers. The
-runtime constructor names its public roles. Lifecycle must reset independent
-entity-family owners at the original slot-reset sites, and inspection must read
-those families without owning their behavior. These are explicit edges, not
-parameters to combine into an aggregate service locator merely to meet a limit.
-The review groups the shared slot storage and removes duplicate identities;
-it does not change the order of lifecycle resets or move queries through a hub.
+The full execution protocol remains for handlers coordinating slot replacement,
+event emission, dynamic typed motion and several ordered effects. Their cached
+multi-step scratch also belongs to that invocation. Creating family-specific
+service bundles or forwarding “Events/Spawner” slices would hide these edges.
+Initialization/advance-only families already receive the entity, immutable
+frame/RNG and typed motion registry instead of execution. The family inventory
+below records the actual pre-migration execution capabilities; simple callbacks
+now expose the applicable subset as parameters. `slotFrame`, `inputs`, `gates`
+and `presentation` refer to the four independently named groups above.
 
-### Constructor decisions by owner
+- **AntiFairyHandler**: initializer/advance inputs and the typed motion registry; no execution context.
+- **ArmosKnightHandler**: `background`, `emit`, `inputs`, `lifecycle`, `motion`, `playerSpawns`, `presentation`, `requestMusic`, `roomInspection`, `slot`, `slotFrame`, `slotProperties`.
+- **ArmosStatueHandler**: `background`, `gates`, `inputs`, `motion`, `slot`, `slotFrame`.
+- **ArrowHandler**: `background`, `emit`, `gates`, `inputs`, `lifecycle`, `motion`, `playerSpawns`, `projectiles`, `replaceEntity`, `slotFrame`.
+- **BlooperHandler**: `background`, `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **BombHandler**: `bombInteractions`, `entityAt`, `inputs`, `liftThrow`, `replaceEntity`, `slotFrame`.
+- **BomberHandler**: `emit`, `enemySpawns`, `inputs`, `motion`, `slot`, `slotFrame`.
+- **BombiteTypeHandler**: `bombInteractions`, `emit`, `enemySpawns`, `inputs`, `lifecycle`, `link`, `motion`, `presentation`, `projectiles`, `slot`, `slotFrame`.
+- **BooBuddyHandler**: `gates`, `inputs`, `lifecycle`, `motion`, `replaceEntity`, `slot`, `slotFrame`, `story`.
+- **BoomerangHandler**: `gates`, `inputs`, `projectiles`, `slotFrame`.
+- **BowWowHandler**: `emit`, `gates`, `inputs`, `motion`, `replaceEntity`, `requestMusic`, `slot`, `slotFrame`, `spriteViews`, `sprites`, `story`.
+- **BushCrawlerHandler**: `background`, `gates`, `inputs`, `liftThrow`, `link`, `motion`, `presentation`, `slot`, `slotFrame`, `slotProperties`.
+- **ButterflyHandler**: initializer/advance inputs and the typed motion registry; no execution context.
+- **BuzzBlobHandler**: `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **ChestWithItemHandler**: `entityAt`, `pickups`, `slotFrame`.
+- **ColorShellTypeHandler**: `entities`, `inputs`, `lifecycle`, `motion`, `replaceEntity`, `roomInspection`, `slot`, `slotFrame`, `slotProperties`.
+- **CommonDroppableTypeHandler**: `background`, `inputs`, `lifecycle`, `pickups`, `presentation`, `replaceEntity`, `slotFrame`.
+- **CrowHandler**: `inputs`, `lifecycle`, `motion`, `projectiles`, `roomInspection`, `slot`, `slotFrame`, `slotProperties`.
+- **CrystalSwitchHandler**: `background`, `emit`, `slot`, `slotFrame`.
+- **CuccoHandler**: `emit`, `enemySpawns`, `entityAt`, `gates`, `inputs`, `lifecycle`, `liftThrow`, `link`, `motion`, `presentation`, `projectiles`, `replaceEntity`, `roomInspection`, `slot`, `slotFrame`, `story`.
+- **DogHandler**: `emit`, `gates`, `inputs`, `link`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **DroppableFairyHandler**: `inputs`, `motion`, `slot`, `slotFrame`.
+- **DroppableSecretSeashellHandler**: `background`, `inputs`, `lifecycle`, `motion`, `presentation`, `rewards`, `roomInspection`, `slot`, `slotFrame`.
+- **EnemyProjectileTypeHandler**: `background`, `emit`, `gates`, `inputs`, `lifecycle`, `motion`, `projectiles`, `slotFrame`.
+- **FishHandler**: `emit`, `inputs`, `motion`, `slot`, `slotFrame`.
+- **FollowingNpcTypeHandler**: `motion`, `slotFrame`.
+- **GenieHandler**: `background`, `emit`, `entityAt`, `gates`, `genie`, `inputs`, `lifecycle`, `link`, `motion`, `requestMusic`, `roomInspection`, `scratch`, `slotFrame`, `slotProperties`.
+- **GhiniTypeHandler**: `inputs`, `motion`, `presentation`, `slotFrame`.
+- **GiantGopongaFlowerHandler**: `background`, `enemySpawns`, `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **GibdoHandler**: initializer/advance inputs and the typed motion registry; no execution context.
+- **GoombaHandler**: `background`, `inputs`, `lifecycle`, `motion`, `slot`, `slotFrame`.
+- **GopongaFlowerHandler**: `background`, `gates`, `inputs`, `presentation`, `slotFrame`.
+- **GopongaFlowerProjectileHandler**: `gates`, `inputs`, `lifecycle`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **HardhatBeetleHandler**: `inputs`, `motion`, `slotFrame`.
+- **HeartContainerHandler**: `bossRewards`, `inputs`, `slot`, `slotFrame`.
+- **HidingSlimeKeyHandler**: `emit`, `inputs`, `lifecycle`, `pickups`, `roomInspection`, `slot`, `slotFrame`.
+- **HidingZolHandler**: `emit`, `inputs`, `motion`, `slot`, `slotFrame`.
+- **HinoxHandler**: `background`, `emit`, `enemySpawns`, `gates`, `inputs`, `lifecycle`, `motion`, `presentation`, `requestMusic`, `roomInspection`, `scratch`, `slot`, `slotFrame`, `slotProperties`.
+- **HookshotBridgeHandler**: `background`, `slotFrame`.
+- **HookshotChainHandler**: `background`, `emit`, `gates`, `inputs`, `lifecycle`, `link`, `motion`, `playerSpawns`, `projectiles`, `replaceEntity`, `roomInspection`, `scratch`, `slot`, `slotFrame`.
+- **InstrumentOfTheSirensHandler**: `inputs`, `rewards`, `slotFrame`.
+- **IronMaskHandler**: `inputs`, `presentation`, `slot`, `slotFrame`, `spriteViews`, `sprites`.
+- **KanaletBombableWallHandler**: `enemySpawns`, `lifecycle`, `roomInspection`, `slot`, `slotFrame`.
+- **KeeseHandler**: initializer/advance inputs and the typed motion registry; no execution context.
+- **KeyDropPointHandler**: `background`, `emit`, `inputs`, `pickups`, `replaceEntity`, `roomInspection`, `slot`, `slotFrame`, `slotProperties`.
+- **KidHandler**: `inputs`, `slotFrame`, `story`.
+- **LeeverHandler**: `slotFrame`.
+- **LiftableRockHandler**: `inputs`, `liftThrow`, `slotFrame`.
+- **LikeLikeHandler**: `emit`, `inputs`, `link`, `motion`, `slot`, `slotFrame`.
+- **MadBomberHandler**: `emit`, `enemySpawns`, `inputs`, `lifecycle`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **MadamMeowmeowHandler**: `inputs`, `slotFrame`, `story`.
+- **MagicPowderSprinkleHandler**: `gates`, `inputs`, `projectiles`, `slotFrame`.
+- **MagicRodFireballHandler**: `gates`, `inputs`, `projectiles`, `slotFrame`.
+- **MarinIndoorHandler**: `lifecycle`, `roomInspection`, `slotFrame`.
+- **MaskedMimicGoriyaHandler**: `inputs`, `link`, `motion`, `presentation`, `roomInspection`, `slot`, `slotFrame`.
+- **MimicHandler**: `inputs`, `link`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **MiniMoldormHandler**: `background`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`, `sprites`.
+- **MoblinHandler**: `motion`, `slotFrame`.
+- **MoblinKingHandler**: `background`, `bossRewards`, `emit`, `enemySpawns`, `gates`, `inputs`, `lifecycle`, `motion`, `presentation`, `replaceEntity`, `scratch`, `slot`, `slotFrame`, `spriteViews`, `sprites`, `story`.
+- **MoblinSwordHandler**: `emit`, `inputs`, `lifecycle`, `link`, `motion`, `projectiles`, `roomInspection`, `slot`, `slotFrame`.
+- **MoldormHandler**: `bossRewards`, `emit`, `gates`, `inputs`, `lifecycle`, `link`, `motion`, `presentation`, `replaceEntity`, `requestMusic`, `roomInspection`, `scratch`, `slot`, `slotFrame`, `slotProperties`, `sprites`.
+- **MusicalNoteHandler**: `replaceEntity`, `slotFrame`, `slotProperties`.
+- **OwlEventHandler**: `gates`, `inputs`, `slotFrame`, `story`.
+- **PairoddHandler**: `emit`, `enemySpawns`, `inputs`, `motion`, `slot`, `slotFrame`.
+- **PairoddProjectileHandler**: `emit`, `inputs`, `lifecycle`, `motion`, `slotFrame`.
+- **PeahatHandler**: `inputs`, `motion`, `slotFrame`.
+- **PincerHandler**: `background`, `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **PiranhaPlantHandler**: `gates`, `inputs`, `lifecycle`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **PokeyHandler**: `emit`, `enemySpawns`, `gates`, `inputs`, `lifecycle`, `motion`, `presentation`, `slot`, `slotFrame`, `spriteViews`, `sprites`.
+- **PolsVoiceHandler**: `emit`, `enemyInspection`, `inputs`, `lifecycle`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **RichardHandler**: `inputs`, `slotFrame`, `story`.
+- **RoamingEnemyTypeHandler**: `emit`, `enemySpawns`, `inputs`, `motion`, `slot`, `slotFrame`.
+- **RollingBonesBarHandler**: `background`, `emit`, `gates`, `inputs`, `lifecycle`, `link`, `motion`, `presentation`, `replaceEntity`, `requestMusic`, `roomInspection`, `slot`, `slotFrame`, `slotProperties`, `sprites`.
+- **RollingBonesHandler**: `bossRewards`, `emit`, `inputs`, `motion`, `presentation`, `roomInspection`, `slot`, `slotFrame`.
+- **RoosterHandler**: `emit`, `inputs`, `liftThrow`, `link`, `presentation`, `projectiles`, `slotFrame`.
+- **SandCrabHandler**: `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **SideViewPlatformHandler**: `background`, `emit`, `gates`, `inputs`, `lifecycle`, `link`, `motion`, `roomInspection`, `slotFrame`.
+- **SideViewPotHandler**: `background`, `emit`, `gates`, `inputs`, `lifecycle`, `liftThrow`, `link`, `motion`, `playerSpawns`, `replaceEntity`, `slotFrame`.
+- **SleepyToadstoolHandler**: `inputs`, `lifecycle`, `rewards`, `slotFrame`, `story`.
+- **SlimeEyeHandler**: `slimeEye`.
+- **SnakeHandler**: `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **SparkTypeHandler**: `inputs`, `motion`, `slotFrame`.
+- **SpikeTrapHandler**: `emit`, `inputs`, `motion`, `slotFrame`.
+- **SpikedBeetleHandler**: `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **StalfosAggressiveHandler**: `inputs`, `motion`, `slotFrame`.
+- **StalfosEvasiveHandler**: `emit`, `enemySpawns`, `inputs`, `lifecycle`, `link`, `motion`, `roomInspection`, `slot`, `slotFrame`, `spriteViews`, `sprites`.
+- **StarHandler**: `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **SwordBeamHandler**: `gates`, `inputs`, `projectiles`, `slotFrame`.
+- **SwordShieldPickupHandler**: `inputs`, `replaceEntity`, `rewards`, `roomInspection`, `slotFrame`, `spriteViews`, `sprites`.
+- **TarinHandler**: `background`, `emit`, `enemySpawns`, `inputs`, `lifecycle`, `link`, `motion`, `presentation`, `requestMusic`, `roomInspection`, `scratch`, `slot`, `slotFrame`, `story`.
+- **TektiteHandler**: initializer/advance inputs and the typed motion registry; no execution context.
+- **ThreeOfAKindHandler**: `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **Type0X35Handler**: `inputs`, `lifecycle`, `pickups`, `roomInspection`, `slotFrame`.
+- **Type0X39Handler**: `inputs`, `rewards`, `slotFrame`.
+- **Type0X42Handler**: `inputs`, `roomInspection`, `slotFrame`, `story`.
+- **UrchinHandler**: `background`, `emit`, `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`, `spriteViews`, `sprites`.
+- **WarpHandler**: `emit`, `inputs`, `lifecycle`, `replaceEntity`, `requestMusic`, `roomInspection`, `slotFrame`, `warpMotion`.
+- **WaterTektiteHandler**: `inputs`, `motion`, `slotFrame`.
+- **WingedOctorokHandler**: `emit`, `enemySpawns`, `gates`, `inputs`, `link`, `motion`, `presentation`, `projectiles`, `slot`, `slotFrame`.
+- **WitchHandler**: `emit`, `inputs`, `lifecycle`, `link`, `motion`, `presentation`, `requestMusic`, `roomInspection`, `slot`, `slotFrame`, `story`.
+- **WitchRatHandler**: `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **WizrobeHandler**: `enemySpawns`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **WizrobeProjectileHandler**: `inputs`, `lifecycle`, `motion`, `presentation`, `slotFrame`.
+- **ZolGelTypeHandler**: `gates`, `inputs`, `lifecycle`, `link`, `motion`, `slot`, `slotFrame`.
+- **ZombieHandler**: `background`, `enemySpawns`, `gates`, `inputs`, `lifecycle`, `motion`, `presentation`, `slot`, `slotFrame`.
+- **ZoraHandler**: `background`, `emit`, `enemySpawns`, `gates`, `inputs`, `motion`, `presentation`, `slot`, `slotFrame`.
 
-All changes below are cohesive grouping or removal of duplicate identities; no
-new controller slices or dependency records were introduced. Immutable frame,
-event and snapshot value constructors are data contracts, not lists of service
-collaborators, and were not regrouped.
+## Wide-constructor review
 
-| Constructor | Decision |
-| --- | --- |
-| `EntityBackgroundMechanics` | Combat and physics columns come from `EntitySlots`; one sprite-cache instance replaces duplicate parameters. |
-| `EntityBombInteractions` | Combat and physics columns come from `EntitySlots`. |
-| `EntityBossRewards` | Combat and physics columns come from `EntitySlots`. |
-| `EntityCombatResolver` | Combat and physics columns come from `EntitySlots`. |
-| `EntityEnemyInspection` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters. |
-| `EntityEnemySpawns` | Combat and physics columns come from `EntitySlots`. |
-| `EntityFrameExecution` | Combat and physics columns come from `EntitySlots`; slot list comes from the same owner. |
-| `EntityLiftThrowController` | Combat and physics columns come from `EntitySlots`. |
-| `EntityPickupController` | Combat and physics columns come from `EntitySlots`. |
-| `EntityPlayerCommands` | Combat and physics columns come from `EntitySlots`. |
-| `EntityPlayerSpawns` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters. |
-| `EntityProjectileController` | Combat and physics columns come from `EntitySlots`. |
-| `EntityRewardController` | Combat and physics columns come from `EntitySlots`; one sprite-cache instance replaces duplicate parameters. |
-| `EntityRoomInitialization` | Combat and physics columns come from `EntitySlots`. |
-| `EntityRoomInspection` | Combat and physics columns come from `EntitySlots`. |
-| `EntityRuntimeConfiguration` | Physics columns come from `EntitySlots`; one sprite-cache instance replaces duplicate parameters. |
-| `EntitySlotLifecycle` | Combat and physics columns come from `EntitySlots`. |
-| `EntitySlotProperties` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters. |
-| `EntityStoryController` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters; one sprite-cache instance replaces duplicate parameters. |
-| `GenieEntityController` | Combat and physics columns come from `EntitySlots`. |
-| `SlimeEyeController` | Combat and physics columns come from `EntitySlots`; slot list comes from the same owner. |
-| `RoomEntityRuntime` | Retains explicit execution and role references; grouping these into a service bundle would recreate the removed hub. |
+Reviewed every main-source constructor in `world/entity` with more than ten
+parameters, including implicit record canonical constructors and nested motion
+values. A wide protocol is retained when each collaborator participates in the
+same ordered operation. A data value is retained when its fields describe one
+step, state or emitted outcome. No remaining width exposed a second independent
+state responsibility to extract. In particular, no service bundle replaces
+explicit dependencies merely to shorten a signature.
 
-### Shape enforcement
+- **EntityBombInteractions (11)**: keep — one bomb countdown/explosion interaction protocol; keep damage, lift and emitted-effect targets explicit.
+- **EntityBossRewards (12)**: keep — one boss-death reward/completion protocol; keep slot, background, progression and presentation participants explicit.
+- **EntityCombatResolver (13)**: keep — one ordered contact/weapon damage-resolution protocol; keep collision, immunity, lifecycle and boss hooks explicit.
+- **EntityFrameExecution (31)**: keep — one invocation lifecycle and dispatch context; keep actual behavior owners, expose independent scratch groups and narrow simple callbacks.
+- **EntityLiftThrowController (16)**: keep — one lift/throw lifecycle, including bomb and carried-entity transitions; keep its concrete physics and command targets.
+- **EntityPickupController (13)**: keep — one pickup collision/collection protocol coordinating slot removal and held-item rewards; keep concrete targets.
+- **EntityPlayerSpawns (18)**: keep — one player/world-origin spawn protocol allocating and initializing shared slots; keep concrete initialization collaborators.
+- **EntityProjectileController (13)**: keep — one projectile contact/update protocol coordinating shared slots, bombs and player spawns; keep distinct targets.
+- **EntityRewardController (13)**: keep — one collected-item presentation/completion protocol across pickup, story and Link state; keep ordered participants.
+- **EntityRoomInitialization (13)**: keep — one ordered room-entry initialization protocol; keep family participants and reset order explicit.
+- **EntityRoomInspection (19)**: keep — one live/owned read model over slot and family state; keep explicit read dependencies.
+- **EntityRuntimeConfiguration (12)**: keep — one configuration protocol updating the concrete state owners; keep its distinct configuration targets.
+- **EntitySlotLifecycle (21)**: keep — one slot reset/unload protocol across independent family owners; keep reset ordering and explicit targets.
+- **EntitySlotProperties (14)**: keep — one ROM slot-property/initialization protocol; keep the state and family hooks that apply those properties.
+- **EntityStoryController (14)**: keep — one NPC/story interaction protocol coordinating motion, inventory and outputs; family state remains separately owned.
+- **RoomEntityRuntime (17)**: keep — one execution entry plus stable public role references and fixture inspectors; grouping them would recreate a service inventory.
+- **SlimeEyeController (12)**: keep — one Slime Eye encounter with combat and rendering phases sharing encounter state; keep its concrete encounter collaborators.
 
-`architecture/EntityRuntimeShapeTest` checks compiled references through the
-shared reader, the exact public seam signatures, and private ownership of every
-mutable field. The reader does not decode field-write bytecodes, so the final
-check uses the stronger allowed alternative: no non-private non-final fields.
-The runtime itself and `RoomEntityRuntimeBuilder` are the only entity main
-classes permitted to reference the runtime type. Nested frame scratch remains
-with its shared acquisition/reset/release lifecycle. Cross-owner Link-state
-reads/writes use owner methods; the arithmetic and operation order are unchanged.
+Frame, state and event constructors (each verdict is one data responsibility):
 
-### Final validation
+- **EnemyCombatFrame (12)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **EntityAttackContactFrame (11)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **EntityFrameContext (22)**: keep — one immutable slot value or invocation input contract; named builders already supply construction.
+- **EntityPickupFrame (12)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **EntityVerticalContactFrame (11)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **RoomEntity (13)**: keep — one immutable slot value or invocation input contract; named builders already supply construction.
+- **SlimeEyeController.SlimeEyeCombatFrame (13)**: keep — one encounter combat-step input and its result channel; preserve synchronous contact ordering.
+- **EntityCombatEvent (13)**: keep — one emitted interaction outcome, including its associated sound/Link effects; existing builders name optional effects.
+- **EntityProjectileEvent (14)**: keep — one emitted interaction outcome, including its associated sound/Link effects; existing builders name optional effects.
+- **HinoxLinkEffectRequest (11)**: keep — one held/thrown-Link register update, including damage and pose flags; the fields describe one ordered write outcome.
+- **BombiteMotion.BombiteFrame (11)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **BushCrawlerMotion.BushCrawlerFrame (12)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **CuccoMotion.CuccoFrame (15)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **CuccoMotion.CuccoInteractionFrame (16)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **DogMotion.DogFrame (11)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **DogMotion.Update (12)**: keep — one ROM handler result or captured motion state; its values are kept together for ownership and ordered application.
+- **HinoxMotion.HinoxFrame (11)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **HinoxMotion.HinoxResult (20)**: keep — one ROM handler result or captured motion state; its values are kept together for ownership and ordered application.
+- **HinoxMotion.Update (19)**: keep — one ROM handler result or captured motion state; its values are kept together for ownership and ordered application.
+- **HookshotChainMotion.HookshotChainSnapshot (12)**: keep — one ROM handler result or captured motion state; its values are kept together for ownership and ordered application.
+- **HookshotChainMotion.State (11)**: keep — one ROM handler result or captured motion state; its values are kept together for ownership and ordered application.
+- **LiftedEntityMotion.LiftedEntityFrame (12)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **LikeLikeMotion.LikeLikeFrame (13)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **SecretSeashellMotion.SecretSeashellInteractionFrame (12)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **SecretSeashellMotion.SecretSeashellWorldFrame (11)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **TarinRaccoonMotion.Input (14)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **TarinRaccoonMotion.Update (21)**: keep — one ROM handler result or captured motion state; its values are kept together for ownership and ordered application.
+- **WingedOctorokMotion.WingedOctorokFrame (11)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **WingedOctorokMotion.WingedOctorokInteractionFrame (12)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **WitchMotion.Input (15)**: keep — one ROM handler/contact-step input; fields describe the same synchronous decision, not independently owned services.
+- **WitchMotion.Update (11)**: keep — one ROM handler result or captured motion state; its values are kept together for ownership and ordered application.
 
-The required ROM-configured `./gradlew spotlessApply check` passes with fatal
-javac lint and Error Prone: 2,994 tests, zero failures/errors, one existing skip.
-No existing tests or fixtures were removed or weakened. The runtime shape test
-contributes three assertions as separate tests.
+## Validation
 
-With `-XX:-DoEscapeAnalysis` supplied through a temporary, uncommitted init
-script, the representative entity tick measured 834.59 bytes (budget 1,100),
-two-enemy combat 400 bytes (budget 570), cached sprite and repeated Marin
-presentation zero, idle session zero and active session 137 bytes per frame.
-The cold falling-definition decode remains 2,480 bytes; cached reads allocate
-zero. Existing allocation guard thresholds remain unchanged.
+Required ROM-configured `./gradlew spotlessApply check`: 3,000 tests, zero
+failures/errors, one existing skip (2,998 tests after merging develop). Lint is
+fatal. No replay fixture or allocation budget changed.
+
+With escape analysis disabled by a temporary local init script, all allocation
+guards pass: whole-frame idle 0, inventory 0 and walking 139.53 B/frame; active
+simulation 137 and idle simulation 0 B/frame; representative entity mix
+834.59 B/tick; two-enemy combat 400 B/frame; live room/render views and empty
+outbox drains/merges 0 B/frame. Input construction, collision and output
+ownership contracts are unchanged. New room-interaction objects are built only
+on load/replacement, never per frame. No native window was launched or push made.

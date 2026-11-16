@@ -23,7 +23,7 @@ final class FishRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(FishMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(FishMotion.ENTITY_TYPE)
                         .at(0x40, 0x50)

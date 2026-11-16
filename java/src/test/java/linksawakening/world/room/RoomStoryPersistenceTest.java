@@ -26,6 +26,7 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.ScrollController;
@@ -86,8 +87,7 @@ final class RoomStoryPersistenceTest {
                                     false)
                             : RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xCE);
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
 

@@ -59,7 +59,7 @@ final class FollowingNpcEntitySpawnerTest {
     @Test
     void runtimeSnapshotPreservesSideScrollingThroughFollowerSynchronization() {
         RoomEntitySnapshot initial = new RoomEntitySnapshot(disabledSlots(), selection()).withSideScrolling(true);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
                         new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())))

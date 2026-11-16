@@ -181,11 +181,11 @@ final class RoomObjectMutations implements RoomTerrain {
 
         // Variant zero uses LiftableRockStartSmashingAnimation ($03:53E4):
         // fifteen frames of rock debris and NOISE_SFX_POT_SMASHED ($09).
-        loaded.entities.spawnLiftableRockSmash(((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
+        loaded.entities.spawns().spawnLiftableRockSmash(((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
         // Link runs before the entity tick, which clears its frame outbox.
         RoomEntityOutbox.append(
                 dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents,
-                loaded.entities.consumePendingEntityEvents());
+                loaded.entities.outbox().consumePendingEntityEvents());
 
         return true;
     }
@@ -248,10 +248,12 @@ final class RoomObjectMutations implements RoomTerrain {
 
         if (result.bushLeavesVisible()) {
             int sourceSpriteVariant = result.originalObjectId() == 0x0A ? 0xFF : 0x01;
-            loaded.entities.spawnLiftableRockSmash(
-                    dependencies.overworldBushInteraction().effectOriginXForLocation(location),
-                    dependencies.overworldBushInteraction().effectOriginYForLocation(location),
-                    sourceSpriteVariant);
+            loaded.entities
+                    .spawns()
+                    .spawnLiftableRockSmash(
+                            dependencies.overworldBushInteraction().effectOriginXForLocation(location),
+                            dependencies.overworldBushInteraction().effectOriginYForLocation(location),
+                            sourceSpriteVariant);
         }
         this.refreshOverworldCollisionAfterObjectMutation(loaded.contents);
     }
@@ -492,8 +494,10 @@ final class RoomObjectMutations implements RoomTerrain {
         int[] rubbleYOffsets = {0x20, 0x20, 0x10, 0x10};
 
         for (int index = 0; index < rubbleXOffsets.length; index++) {
-            loaded.entities.spawnLiftableRockRubble(
-                    blockLeft + rubbleXOffsets[index], blockTop + rubbleYOffsets[index] - sourceZ);
+            loaded.entities
+                    .spawns()
+                    .spawnLiftableRockRubble(
+                            blockLeft + rubbleXOffsets[index], blockTop + rubbleYOffsets[index] - sourceZ);
         }
 
         this.queuePuzzleSolvedJingle(sourceSlot);
@@ -641,7 +645,9 @@ final class RoomObjectMutations implements RoomTerrain {
                 (byte) INDOOR_ROOM_STATUS_EVENT_3;
         loaded.contents.overrides.bombedBlockTileOverrides.add(areaIndex);
 
-        loaded.entities.spawnLiftableRockSmash(candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
+        loaded.entities
+                .spawns()
+                .spawnLiftableRockSmash(candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
 
         this.refreshActiveRoomTilemap(loaded.contents);
         dependencies.overworldCollision().setRoom(loaded.room.roomObjectsArea());

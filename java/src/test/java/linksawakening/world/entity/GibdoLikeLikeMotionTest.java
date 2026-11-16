@@ -49,8 +49,7 @@ final class GibdoLikeLikeMotionTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(slot == 0 ? entity(type) : RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
 
         for (int pass = 0; pass <= 33; pass++) {
             // The global frame is deliberately offset from the new entity's

@@ -12,8 +12,7 @@ class EntityCombatAllocationTest {
     void overlappingTwoEnemies() {
         var first = TestEntities.active(9).slot(0).at(64, 64).build();
         var second = TestEntities.active(9).slot(1).at(72, 64).build();
-        var runtime =
-                RoomEntityRuntime.builder(TestEntities.room(first, second)).build();
+        var runtime = new RoomEntityRuntimeBuilder(TestEntities.room(first, second)).build();
         var frame =
                 new EnemyCombatFrame(0, 120, 120, false, 0, true, true, 56, 32, 56, 24, EnemyAttackContext.standard());
         Runnable hit = () -> {

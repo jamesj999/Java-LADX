@@ -20,7 +20,7 @@ class GhiniDeathCascadeTest {
 
     @Test
     void cascadeDrawsOnlyForVisibleNonzeroSlotsInDescendingOrder() {
-        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(java.util.stream.IntStream.range(0, 16)
+        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(java.util.stream.IntStream.range(0, 16)
                         .mapToObj(slot -> entity(slot, 0, EntityStatus.DISABLED))
                         .toList()))
                 .indoorRoom(false)

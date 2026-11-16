@@ -8,6 +8,7 @@ import linksawakening.world.entity.FollowingNpcRoomContext;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.transition.Warp;
 
 final class RoomFollowerSynchronizer {
@@ -41,7 +42,7 @@ final class RoomFollowerSynchronizer {
         dependencies.followers().followingNpcState = result.state();
         dependencies.followers().followingNpcRoomNeedsSync = false;
         loaded.room.replaceEntities(result.snapshot());
-        RoomEntityRuntime replacementRuntime = RoomEntityRuntime.builder(result.snapshot())
+        RoomEntityRuntime replacementRuntime = new RoomEntityRuntimeBuilder(result.snapshot())
                 .indoorRoom(loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD)
                 .randomByteSupplier(dependencies.entityRandomByteSource())
                 .spriteHandlers(dependencies.entitySpriteHandlerCatalog())

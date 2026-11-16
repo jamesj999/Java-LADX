@@ -26,7 +26,7 @@ final class BoomerangRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables combatTables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -117,7 +117,7 @@ final class BoomerangRuntimeTest {
     void bushIntersectionRestoresPositionAndUsesThePaddedLocation() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -149,7 +149,7 @@ final class BoomerangRuntimeTest {
     void playerProjectileGateMatchesTheRomCounter() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -329,7 +329,7 @@ final class BoomerangRuntimeTest {
 
     private static RoomEntityRuntime runtime(boolean indoor) throws IOException {
         byte[] rom = loadRom();
-        return RoomEntityRuntime.builder(emptySnapshot())
+        return new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))

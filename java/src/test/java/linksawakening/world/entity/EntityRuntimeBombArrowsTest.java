@@ -27,7 +27,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(moblinDefinition)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(moblin))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(moblin))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
@@ -59,7 +59,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     void shootingWithinTheBombArrowWindowRemovesTheLatestBombAndMarksTheArrow() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -88,7 +88,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void placingWithinTheBombArrowWindowMarksTheLatestArrowButKeepsTheBomb() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
 
         int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 1);
         assertEquals(0x06, EntityRuntimeFixture.inspection(runtime).bombArrowCooldownForTest());
@@ -103,7 +103,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void bombArrowCooldownExpiresAfterSixEntityFrames() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
 
         int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         assertFalse(EntityRuntimeFixture.inspection(runtime).isBombArrowForTest(arrowSlot));
@@ -122,7 +122,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     void bombArrowSpawnsTheSourceBombExplosionAfterAWallTransition() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)

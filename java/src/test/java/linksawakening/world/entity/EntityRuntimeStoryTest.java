@@ -18,7 +18,7 @@ final class EntityRuntimeStoryTest extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());

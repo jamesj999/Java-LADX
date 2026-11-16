@@ -164,8 +164,9 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     boolean throwLiftedEntity(RoomRuntime loaded, linksawakening.state.Direction linkDirection) {
 
-        boolean thrown = loaded.entities.throwLiftedEntity(
-                RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
+        boolean thrown = loaded.entities
+                .commands()
+                .throwLiftedEntity(RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
             publishEntityView(loaded);
         }
@@ -183,7 +184,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
         if (linkAirborne || linkPushing) {
             return false;
         }
-        int slot = loaded.entities.spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities.spawns().spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -199,8 +200,9 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
             int romDirection,
             int pressedButtonsMask) {
 
-        int slot =
-                loaded.entities.spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
+        int slot = loaded.entities
+                .spawns()
+                .spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
         if (slot < 0) {
             return false;
         }
@@ -210,7 +212,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     boolean fireSwordBeam(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
 
-        int slot = loaded.entities.spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities.spawns().spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -231,8 +233,9 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
             int romDirection,
             boolean pieceOfPower) {
 
-        int slot = loaded.entities.spawnMagicRodFireball(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+        int slot = loaded.entities
+                .spawns()
+                .spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return false;
         }
@@ -243,7 +246,8 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
     boolean sprinkleMagicPowder(
             RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
 
-        int slot = loaded.entities.spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot =
+                loaded.entities.spawns().spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -275,7 +279,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     boolean placeBomb(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
 
-        int slot = loaded.entities.spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities.spawns().spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -305,7 +309,8 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
             int romDirection,
             boolean pieceOfPower) {
 
-        int slot = loaded.entities.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+        int slot =
+                loaded.entities.spawns().spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }

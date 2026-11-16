@@ -21,6 +21,7 @@ import linksawakening.world.entity.EntityTestFrames;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
@@ -150,7 +151,7 @@ final class RoomSessionTestSupport {
                             -1,
                             false));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -162,8 +163,9 @@ final class RoomSessionTestSupport {
             int slot = entitySlots[sourceOrder];
             RoomEntity target = runtime.inspection().snapshot().slots().get(slot);
             linksawakening.world.entity.EntityRuntimeTestAccess.setEnemyHealthForTest(runtime, slot, 1);
-            List<EntityCombatEvent> hit = runtime.resolveCombat(new linksawakening.world.entity.EntitySwordContactFrame(
-                    frame++, 0, 0, false, true, true, target.x() - 8, 0x10, target.y() - 8, 0x10));
+            List<EntityCombatEvent> hit = runtime.combat()
+                    .resolveCombat(new linksawakening.world.entity.EntitySwordContactFrame(
+                            frame++, 0, 0, false, true, true, target.x() - 8, 0x10, target.y() - 8, 0x10));
             assertTrue(hit.stream().anyMatch(event -> event.slot() == slot && event.swordHit()));
             int deathDeadline = frame + 0x80;
             while (runtime.inspection().snapshot().slots().get(slot).loaded() && frame < deathDeadline) {

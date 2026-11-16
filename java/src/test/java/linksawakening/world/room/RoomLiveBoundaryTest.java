@@ -6,20 +6,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.testing.AllocationProbe;
-import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.TestEntities;
 import org.junit.jupiter.api.Test;
 
 class RoomLiveBoundaryTest {
     @Test
     void retainedRenderSnapshotOwnsTheEntitiesReadFromALiveRoom() {
-        var runtime = RoomEntityRuntime.builder(TestEntities.room(
+        var runtime = new RoomEntityRuntimeBuilder(TestEntities.room(
                         TestEntities.active(9).slot(0).at(64, 64).build()))
                 .build();
         var live = runtime.inspection().view();
         var render = new RoomRenderSnapshot(new int[] {1}, new int[] {0}, new int[][] {{0, 0, 0, 0}}, live);
         assertEquals(1, render.entities().loadedEntities().size());
-        runtime.clearEntity(0);
+        runtime.lifecycle().clearEntity(0);
         assertTrue(live.loadedEntities().isEmpty());
         assertEquals(1, render.entities().loadedEntities().size());
         assertSame(render.entities(), render.entities().ownedCopy());
@@ -48,7 +48,7 @@ class RoomLiveBoundaryTest {
 
     @Test
     void publicRoomEntitiesStayOwnedWhileInternalReadsUseTheLiveView() {
-        var runtime = RoomEntityRuntime.builder(TestEntities.room(
+        var runtime = new RoomEntityRuntimeBuilder(TestEntities.room(
                         TestEntities.active(0x3E).slot(0).at(64, 64).build()))
                 .build();
         var loaded = new LoadedRoom(new LoadedRoomSpec(
@@ -61,11 +61,11 @@ class RoomLiveBoundaryTest {
         room.replaceEntities(runtime.inspection().view());
         var first = room.entities();
         assertSame(first, room.renderSnapshot().entities());
-        runtime.applyMarinWakeUpPresentation(56, 56, 1);
+        runtime.commands().applyMarinWakeUpPresentation(56, 56, 1);
         var second = room.entities();
         assertEquals(1, second.slots().get(0).spriteVariant());
         assertEquals(0, first.slots().get(0).spriteVariant());
-        runtime.applyMarinWakeUpPresentation(64, 64, 0);
+        runtime.commands().applyMarinWakeUpPresentation(64, 64, 0);
         assertSame(first, room.entities());
         assertSame(runtime.inspection().view(), room.entityView());
     }

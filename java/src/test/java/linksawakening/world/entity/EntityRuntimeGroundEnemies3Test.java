@@ -19,7 +19,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
     @Test
     void leeverKeepsBankFourRecoilWhenBackgroundBlocksTheStep() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0E)
                         .at(64, 64)
@@ -46,7 +46,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
     @Test
     void leeverRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0E)
                         .at(64, 64)
@@ -73,7 +73,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
     @Test
     void leeverAdvancesItsPositionWhenTheBackgroundDoesNotBlock() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0E)
                         .at(64, 64)
@@ -101,7 +101,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosState(0));
@@ -146,7 +146,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> contact =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -169,7 +169,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         // EntityInitHandlersTable._1F only increments the state. The first
         // handler pass therefore takes the forced-direction path.
@@ -198,7 +198,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
     @Test
     void likeLikeRunsTheRomInitDirectionChoiceAndFixedPointWalk() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x23)
                         .at(64, 64)
@@ -227,7 +227,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
     @Test
     void likeLikeCapturesLinkOnTheRomCollisionCadenceWithoutContactDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x23)
                         .at(64, 64)
@@ -270,7 +270,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
     @Test
     void likeLikeStealsTheBShieldFirstAndRefusesToStealTheLevelTwoShield() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x23)
                         .at(64, 64)
@@ -304,7 +304,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         assertEquals(1, stolen.stolenShieldLevel());
         assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikePrivateState1(0));
 
-        RoomEntityRuntime levelTwo = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime levelTwo = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x23)
                         .at(64, 64)
@@ -339,7 +339,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
 
     @Test
     void likeLikeDeliversShieldTheftWhileLinksMotionStatePreventsPositionWrites() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x23)
                         .at(64, 64)
@@ -378,7 +378,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
     @Test
     void likeLikeReleasesLinkAfterEightHeldActionFramesAndStartsTheRomSlowTimer() {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x23)
                         .at(64, 64)
@@ -432,7 +432,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9F)
                         .at(64, 64)
@@ -471,7 +471,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9F)
                         .at(64, 64)
@@ -504,7 +504,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9F)
                         .at(64, 64)
@@ -548,7 +548,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9F)
                         .at(64, 64)
@@ -579,7 +579,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                         .spriteDefinition(definition)
                         .build())
                 .withSideScrolling(true);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -608,7 +608,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xA1)
                         .at(64, 64)
@@ -646,7 +646,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xA1)
                         .at(64, 64)

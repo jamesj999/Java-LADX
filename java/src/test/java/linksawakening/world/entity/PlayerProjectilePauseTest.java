@@ -131,7 +131,7 @@ final class PlayerProjectilePauseTest {
             if (stream == null) {
                 throw new IOException("Missing shipped ROM");
             }
-            return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+            return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                     .indoorRoom(false)
                     .randomByteSupplier(() -> 0)
                     .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(stream.readAllBytes())))

@@ -113,8 +113,7 @@ final class EntityAllocationSemanticsTest {
         RoomEntity[] slots = new RoomEntity[RoomEntity.SLOT_COUNT];
         Arrays.setAll(slots, RoomEntity::disabled);
         slots[0] = entity(0, 0x09);
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(Arrays.asList(slots)))
-                .build();
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(Arrays.asList(slots))).build();
     }
 
     private static RoomEntity entity(int slot, int type) {

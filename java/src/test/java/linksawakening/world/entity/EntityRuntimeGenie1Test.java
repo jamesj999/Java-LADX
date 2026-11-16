@@ -16,7 +16,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieInitializesTheSourceJarCombatFields() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)
@@ -39,7 +39,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieInitAppliesTheSourceEightPixelXShift() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x48, 0x30)
@@ -55,7 +55,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieJarActivatesWhenLinkCrossesTheArenaThreshold() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)
@@ -76,7 +76,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void activeGenieJarReachesTheCenterAndSpawnsItsAppearanceController() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x48)
@@ -106,7 +106,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void activeGenieJarFallsAndBouncesWhileMovingTowardTheCenter() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x30, 0x48)
@@ -129,7 +129,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieAppearanceCountdownSixSpawnsTheFirstCycleBody() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x0A)
@@ -157,7 +157,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void firstGenieBodyOpensJarCycleDialogWhenTheOriginalJarStillExists() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x5C)
@@ -186,7 +186,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void firstGenieBodyEntersFinalFightWhenTheJarNoLongerExists() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x22)
@@ -207,7 +207,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieBodyStateOneSpawnsTheSourceSideProjectileAtItsNextDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x40)
@@ -245,7 +245,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieBodyPrivateCountdownSpawnsAimedFireballAndAdvancesInertia() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x40)
@@ -287,7 +287,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieFireballRunsItsSourceLinkCollisionBeforeMovement() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x50)
@@ -304,7 +304,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieBodyFinishesEightAttackCyclesAndStartsReturningToTheJar() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x40)
@@ -327,7 +327,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void returningGenieBodyHomesToTheJarAndStartsItsDisappearDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x5C)
@@ -356,7 +356,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void disappearingGenieBodySpawnsTheHighBitJarControllerAtCountdownFour() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x28)
@@ -385,7 +385,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void vulnerableGenieBodyHitFlashStartsTheMirroredDashPhase() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x40, 0x40)
@@ -407,7 +407,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieDashStoresThePositionMirroredAcrossTheArenaCenter() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x40, 0x40)
@@ -431,7 +431,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieDashCountdownZeroTeleportsToMirrorAndLaunchesAnotherFireball() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x40, 0x40)
@@ -465,7 +465,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void defeatedGenieRunsBossExplosionTimersAndDropsTheHeartContainer() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x90, 0x10)
@@ -504,7 +504,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void defeatedGenieExplosionTickCreatesAPoofAndDestroyedNoise() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x40)
@@ -528,7 +528,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void defeatedGeniePlaysTheGlobalBossDeathCryAfterThreeMoreTicks() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x40)
@@ -554,7 +554,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieDisappearanceControllerReactivatesTheOriginalJarAtCountdownEightZero() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x5C)
@@ -587,7 +587,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieStateZeroHonorsTheSourceInteractiveGateAndSkipsGenericFallthrough() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)
@@ -624,7 +624,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieStartsBossMusicAndMapOneDialogAfterTheIntroDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)

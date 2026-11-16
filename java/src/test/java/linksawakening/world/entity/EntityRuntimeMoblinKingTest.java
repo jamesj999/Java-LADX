@@ -21,7 +21,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -49,7 +49,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .at(0x58, 0x58)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -74,7 +74,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .at(0x58, 0x58)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -98,7 +98,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .at(0x58, 0x58)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -116,7 +116,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .at(0x58, 0x58)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -149,7 +149,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .at(0x58, 0x58)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -178,7 +178,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .at(0x58, 0x58)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -200,7 +200,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
                 .at(0x58, 0x58)
                 .spriteDefinition(pairDefinition(0xE4, 14))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(king))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(king))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();

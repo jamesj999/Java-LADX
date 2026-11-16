@@ -43,8 +43,7 @@ final class EntityTickAllocationTest {
                         .spriteDefinition(EntitySpriteDefinition.unsupported(types[slot]))
                         .build();
             }
-            runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(Arrays.asList(starting)))
-                    .build();
+            runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(Arrays.asList(starting))).build();
             for (int i = 0; i < frames.length; i++) {
                 frames[i] = EntityFrameContext.builder()
                         .frameCounter(i)

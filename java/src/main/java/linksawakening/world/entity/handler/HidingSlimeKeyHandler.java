@@ -5,6 +5,9 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityPickupController.SlimeKeyTransitionUpdate;
+import linksawakening.world.entity.EntityRoomInspection;
+import linksawakening.world.entity.EntitySlotExecution;
+import linksawakening.world.entity.EntitySlotLifecycle;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.DialogRequest;
@@ -16,7 +19,7 @@ final class HidingSlimeKeyHandler {
                 ENTITY_HIDING_SLIME_KEY,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
                 3,
-                HidingSlimeKeyHandler::phase2HidingSlimeKey);
+                frame -> phase2HidingSlimeKey(frame.slotFrame(), frame.roomInspection(), frame.lifecycle()));
         registry.registerTick(
                 ENTITY_HIDING_SLIME_KEY,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
@@ -26,19 +29,18 @@ final class HidingSlimeKeyHandler {
                 ENTITY_HIDING_SLIME_KEY,
                 EntityTickStage.PHASE_2_BEFORE_INITIALIZE,
                 0,
-                HidingSlimeKeyHandler::phase2HidingSlimeKey3);
+                frame -> phase2HidingSlimeKey3(frame.slotFrame(), frame.roomInspection(), frame.lifecycle()));
     }
 
-    private static boolean phase2HidingSlimeKey(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
+    private static boolean phase2HidingSlimeKey(
+            EntitySlotExecution slotState, EntityRoomInspection roomInspection, EntitySlotLifecycle lifecycle) {
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
-                && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
+                && (roomInspection.entityRoomStatus() & 0x10) != 0) {
             // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
             // calling the shared reveal helper and unloads without touching
             // the source persistence mask.
-            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
+            lifecycle.disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;
@@ -72,13 +74,12 @@ final class HidingSlimeKeyHandler {
         return true;
     }
 
-    private static boolean phase2HidingSlimeKey3(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
-        if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
+    private static boolean phase2HidingSlimeKey3(
+            EntitySlotExecution slotState, EntityRoomInspection roomInspection, EntitySlotLifecycle lifecycle) {
+        if ((roomInspection.entityRoomStatus() & 0x10) != 0) {
             // The handler's first instruction is the completed-room
             // gate, including the INIT dispatch path.
-            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
+            lifecycle.disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;

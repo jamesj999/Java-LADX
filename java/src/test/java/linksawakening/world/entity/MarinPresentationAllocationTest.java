@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class MarinPresentationAllocationTest {
     @Test
     void repeatingMarinVariantsReuseExactImmutableValuesButPositionChangesRemainVisible() {
-        var runtime = RoomEntityRuntime.builder(TestEntities.room(
+        var runtime = new RoomEntityRuntimeBuilder(TestEntities.room(
                         TestEntities.active(0x3E).slot(0).at(64, 64).build()))
                 .build();
         assertTrue(runtime.commands().applyMarinWakeUpPresentation(56, 56, 0));

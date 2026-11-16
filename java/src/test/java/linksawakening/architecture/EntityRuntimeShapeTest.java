@@ -13,88 +13,28 @@ import java.util.stream.Collectors;
 import linksawakening.world.entity.RoomEntityRuntime;
 import org.junit.jupiter.api.Test;
 
-/** Compiled entity ownership and the explicit, shrinking room-migration seam. */
+/** Compiled entity ownership and the closed tick-plus-roles runtime boundary. */
 class EntityRuntimeShapeTest {
     private static final String ENTITY = "linksawakening/world/entity/";
     private static final String RUNTIME = ENTITY + "RoomEntityRuntime";
     private static final String ASSEMBLY = ENTITY + "RoomEntityRuntimeBuilder";
 
-    // Exact overloads still used outside world/entity. Caller files and replacements:
-    // docs/archive/history/entity-runtime-seam.md. Remove entries when those callers migrate.
-    private static final Set<String> SEAM_BRIDGES = Set.of(
-            "applyMarinWakeUpPresentation(int,int,int)",
-            "beginLift(int,int)",
-            "builder(RoomEntitySnapshot)",
-            "clearEntity(int)",
-            "collectIfNeeded(EntityPickupFrameInputs)",
-            "consumeBombExplosionEvents()",
-            "consumeHeartPieceUpdates()",
-            "consumePendingChestRewardEvents()",
-            "consumePendingClearedEntityMask()",
-            "consumePendingDialogRequests()",
-            "consumePendingDungeonWarpRequests()",
-            "consumePendingEntityEvents()",
-            "consumePendingHeartContainerRewards()",
-            "consumePendingHinoxLinkEffectRequests()",
-            "consumePendingInstrumentCompletions()",
-            "consumePendingInstrumentRewards()",
-            "consumePendingKeyQuicksandEvents()",
-            "consumePendingKeyRewardEvents()",
-            "consumePendingLikeLikeEvents()",
-            "consumePendingLinkAttackClearRequests()",
-            "consumePendingLinkAttackStepRequests()",
-            "consumePendingLinkFacingRequests()",
-            "consumePendingLinkFallenPoseRequests()",
-            "consumePendingLinkFinalPositionRequests()",
-            "consumePendingLinkHeldItemPoseRequests()",
-            "consumePendingLinkMotionBlockRequests()",
-            "consumePendingLinkSwordFinalPoseRequests()",
-            "consumePendingLinkSwordSpinPoseRequests()",
-            "consumePendingMadamMeowMeowFullHealRequests()",
-            "consumePendingMusicFadeOutCountdown()",
-            "consumePendingMusicTrack()",
-            "consumePendingOwlEventCompletions()",
-            "consumePendingRichardProgressEvents()",
-            "consumePendingRoomStatusMask()",
-            "consumePendingRoomStatusPersistenceRequests()",
-            "consumePendingRoosterLinkStateRequests()",
-            "consumePendingScreenShakeRequests()",
-            "consumePendingSideViewPlatformLinkRequests()",
-            "consumePendingSideViewPotLinkRequests()",
-            "consumePendingSlimeKeyRewardEvents()",
-            "consumePendingSwitchBlockAnimationRequest()",
-            "consumePendingSwordPickupRewards()",
-            "consumePendingThrownBackgroundCollisions()",
-            "consumePendingToadstoolRewards()",
-            "consumePendingWarpLinkStateRequests()",
-            "consumePendingWitchExchangeEvents()",
-            "consumePendingWitchRewardEvents()",
-            "deferContactRecoil(int,int,int)",
-            "gelClingingToLink()",
-            "movePushedBlock(int,int,int)",
-            "removePushedBlock(int)",
-            "resolveCombat(EnemyCombatInputs)",
-            "resolveCombat(EntitySwordContactFrame)",
-            "resolvePushedBlockLinkContact(int,int,int)",
-            "setFreeMovementMode(boolean)",
-            "setHeartPiecesCount(int)",
-            "spawnArrow(int,int,int,int,boolean)",
-            "spawnBomb(int,int,int,int)",
-            "spawnBoomerang(int,int,int,int,int)",
-            "spawnChestWithItem(int,int,int)",
-            "spawnHookshotChain(int,int,int,int)",
-            "spawnLiftableRockRubble(int,int)",
-            "spawnLiftableRockSmash(int,int,int)",
-            "spawnLiftedRoomObject(int,int,int,int)",
-            "spawnMagicPowderSprinkle(int,int,int,int)",
-            "spawnMagicRodFireball(int,int,int,int,boolean)",
-            "spawnPushedBlock(int,int)",
-            "spawnRoomEventKeyDrop()",
-            "spawnShovelDrop(int,int,int,int,boolean)",
-            "spawnSwordBeam(int,int,int,int)",
-            "throwLiftedEntity(int)",
-            "thrownDirection(int)",
-            "updateHouseTarinPresentation(int,int)");
+    // Migration complete: no forwarding operation may return to the runtime facade.
+    private static final Set<String> SEAM_BRIDGES = Set.of();
+
+    private static final Set<String> ROLE_ACCESSORS = Set.of(
+            "combat",
+            "pickups",
+            "spawns",
+            "enemySpawns",
+            "lifecycle",
+            "outbox",
+            "commands",
+            "background",
+            "inspection",
+            "configuration",
+            "debug",
+            "enemies");
 
     @Test
     void onlyTheCompositionRootDependsOnTheRuntime() throws Exception {
@@ -115,6 +55,7 @@ class EntityRuntimeShapeTest {
     @Test
     void runtimeExposesOnlyTickRolesAndTheDeclaredSeam() {
         var observedBridges = new HashSet<String>();
+        var observedRoles = new HashSet<String>();
         var violations = new ArrayList<String>();
         for (Method method : RoomEntityRuntime.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(method.getModifiers()) || method.isSynthetic()) continue;
@@ -124,12 +65,15 @@ class EntityRuntimeShapeTest {
                 continue;
             }
             if (signature.equals("tick(EntityFrameContext)")) continue;
-            boolean role = !Modifier.isStatic(method.getModifiers())
+            boolean role = ROLE_ACCESSORS.contains(method.getName())
+                    && !Modifier.isStatic(method.getModifiers())
                     && method.getParameterCount() == 0
                     && method.getReturnType().getName().startsWith("linksawakening.world.entity.");
             if (!role) violations.add(signature);
+            else observedRoles.add(method.getName());
         }
         assertTrue(violations.isEmpty(), String.join("\n", violations));
+        assertEquals(ROLE_ACCESSORS, observedRoles, "Every intended behavior owner has an accessor");
         assertEquals(SEAM_BRIDGES, observedBridges, "Remove stale seam entries when bridges disappear");
     }
 

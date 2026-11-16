@@ -229,7 +229,7 @@ final class EnemyProjectileCollisionTest {
 
     @Test
     void runtimeEmitsProjectileEventsBeforeAdvancingTheSharedHandler() {
-        RoomEntityRuntime rockRuntime = RoomEntityRuntime.builder(snapshot(projectile(0x0A, 0x40, 0x50, 0)))
+        RoomEntityRuntime rockRuntime = new RoomEntityRuntimeBuilder(snapshot(projectile(0x0A, 0x40, 0x50, 0)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -259,7 +259,7 @@ final class EnemyProjectileCollisionTest {
                 link(0x40, 0x50, 0, 0x00, 1, true)));
         assertTrue(nextFrameEvents.isEmpty());
 
-        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.builder(snapshot(projectile(0x0C, 0x40, 0x50, 0)))
+        RoomEntityRuntime arrowRuntime = new RoomEntityRuntimeBuilder(snapshot(projectile(0x0C, 0x40, 0x50, 0)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -282,7 +282,7 @@ final class EnemyProjectileCollisionTest {
 
     @Test
     void runtimeChecksPairoddProjectileAfterBankFourMovementAndPublishesVfx() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(projectile(0x58, 0x3F, 0x50, 0)))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(projectile(0x58, 0x3F, 0x50, 0)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -313,7 +313,7 @@ final class EnemyProjectileCollisionTest {
 
     @Test
     void runtimeChecksPairoddSwordAfterBankFourMovementAndPublishesBumpResponse() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(projectile(0x58, 0x32, 0x58, 0x08)))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(projectile(0x58, 0x32, 0x58, 0x08)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -352,7 +352,7 @@ final class EnemyProjectileCollisionTest {
 
     @Test
     void runtimePreservesLinkAndSwordResponsesWhenBothPairoddChecksHit() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(projectile(0x58, 0x38, 0x58, 0x08)))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(projectile(0x58, 0x38, 0x58, 0x08)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();

@@ -104,7 +104,7 @@ final class HookshotBridgeRuntimeTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();

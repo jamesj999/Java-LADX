@@ -55,7 +55,7 @@ final class BuzzBlobRuntimeTest {
     void usesBuzzBlobsRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)
                         .at(0x40, 0x40)
@@ -180,7 +180,7 @@ final class BuzzBlobRuntimeTest {
     void nonInteractiveLinkMotionSkipsBuzzBlobTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)
                         .at(0x40, 0x40)
@@ -214,7 +214,7 @@ final class BuzzBlobRuntimeTest {
     void nonInteractiveLinkMotionSkipsBuzzBlobSharedRecoil() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)
                         .at(0x40, 0x40)
@@ -249,7 +249,7 @@ final class BuzzBlobRuntimeTest {
     void nonInteractiveLinkMotionSkipsBuzzBlobCombat() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)
                         .at(0x40, 0x40)

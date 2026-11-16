@@ -5,6 +5,8 @@ import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityPickupController;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
@@ -15,7 +17,7 @@ final class ChestWithItemHandler {
                 ENTITY_CHEST_WITH_ITEM,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL,
                 1,
-                ChestWithItemHandler::phase2ChestWithItem);
+                frame -> phase2ChestWithItem(frame.slotFrame(), frame.pickups()));
         registry.registerTick(
                 ENTITY_CHEST_WITH_ITEM,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
@@ -23,11 +25,9 @@ final class ChestWithItemHandler {
                 ChestWithItemHandler::phase2ChestWithItem2);
     }
 
-    private static boolean phase2ChestWithItem(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
+    private static boolean phase2ChestWithItem(EntitySlotExecution slotState, EntityPickupController pickups) {
         if (slotState.wasInitializing()) {
-            state.pickups().initializeChestEntity(slotState.entity());
+            pickups.initializeChestEntity(slotState.entity());
             slotState.updated(withPositionAndVariant(
                     slotState.entity(),
                     slotState.entity().x(),

@@ -194,7 +194,7 @@ final class BooBuddyPauseTest {
                         .spriteDefinition(
                                 catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A))
                         .build());
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)

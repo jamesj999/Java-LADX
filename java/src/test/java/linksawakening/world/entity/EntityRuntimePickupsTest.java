@@ -32,7 +32,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(shell))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(shell))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -73,7 +73,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(shell))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(shell))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -100,7 +100,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(shell))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(shell))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -139,7 +139,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(shell))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(shell))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -163,7 +163,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        runtime = RoomEntityRuntime.builder(snapshot(shell))
+        runtime = new RoomEntityRuntimeBuilder(snapshot(shell))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -192,23 +192,23 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .build());
 
-        RoomEntityRuntime xInside = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime xInside = new RoomEntityRuntimeBuilder(initial).build();
         assertNotNull(xInside.pickups().collectIfNeeded(1, 34, 34, false, true));
 
-        RoomEntityRuntime xOutside = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime xOutside = new RoomEntityRuntimeBuilder(initial).build();
         assertNull(xOutside.pickups().collectIfNeeded(1, 35, 34, false, true));
 
-        RoomEntityRuntime yInside = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime yInside = new RoomEntityRuntimeBuilder(initial).build();
         assertNotNull(yInside.pickups().collectIfNeeded(1, 24, 43, false, true));
 
-        RoomEntityRuntime yOutside = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime yOutside = new RoomEntityRuntimeBuilder(initial).build();
         assertNull(yOutside.pickups().collectIfNeeded(1, 24, 44, false, true));
     }
 
     @Test
     void keyDropPointNormalVariantImmediatelyAwardsASmallKeyAndClears() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x30)
                         .at(24, 32)
@@ -235,7 +235,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void keyDropPointDungeonVariantStartsTheHeldRewardTransitionAndUsesRomDialog() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x30)
                         .at(24, 32)
@@ -268,7 +268,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void keyDropPointAtYarnaQuicksandCenterStartsTheRomFallingHandoff() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x30)
                         .at(0x50, 0x48)
                         .spriteDefinition(definition)
@@ -300,7 +300,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .build());
         RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(initial).indoorRoom(true).build();
+                new RoomEntityRuntimeBuilder(initial).indoorRoom(true).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
 
@@ -325,7 +325,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void outdoorDroppableStaysHiddenUntilTheRomPegasusCollisionRevealsIt() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x37)
                         .at(0x40, 0x50)
@@ -369,7 +369,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void hidingSlimeKeyUsesTheBuriedRevealPathAndCannotBeCollectedFromGrass() {
         EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x3C)
                         .at(0x40, 0x50)
@@ -403,7 +403,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void hidingSlimeKeyRunsItsLeafRewardAtTransitionCountdownTen() {
         EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x3C)
                         .at(0x40, 0x50)
@@ -433,7 +433,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
 
     @Test
     void completedRoomUnloadsAnInitializingHidingSlimeKeyWithoutPersistence() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x3C)
                         .at(0x40, 0x50)
@@ -454,7 +454,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void revealedDroppableUsesTheRomBlinkSentinelBeforeUnloading() {
         EntitySpriteDefinition definition = pairDefinition(0x2E, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x2E)
                         .at(0x40, 0x50)

@@ -29,7 +29,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                 .at(0x70, 0x40)
                 .spriteDefinition(catalog.forEntityType(0x72, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(kid))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(kid))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -58,7 +58,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                     .at(24, 32)
                     .spriteDefinition(definition)
                     .build());
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
             EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(1, 24, 34, false, true);
 
@@ -93,7 +93,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
     void liftableRockSmashUsesTheRomCountdownDisplayFramesAndNoise() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -139,7 +139,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
     void liftableRockRubbleUsesTheRomSilentPhysicsAndRockFrame() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)

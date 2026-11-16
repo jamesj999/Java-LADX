@@ -28,7 +28,7 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
         };
         for (int type : new int[] {0x81, EntitySpriteHandlerCatalog.ENTITY_MOLDORM}) {
             for (int[] point : cases) {
-                RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(type)
                                 .at(0x70, 0x40)
@@ -66,7 +66,7 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(pairDefinition(0x59, 2))
                 .build();
-        var runtime = RoomEntityRuntime.builder(snapshot(enemy)).build();
+        var runtime = new RoomEntityRuntimeBuilder(snapshot(enemy)).build();
         var events = runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0));
         assertEquals(1, events.size());
@@ -87,7 +87,7 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
                 .at(0x50, 0x60)
                 .spriteDefinition(definition)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(initialEntity))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(initialEntity))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

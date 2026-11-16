@@ -25,7 +25,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void ordinaryDungeonRoomEventStillDropsAKeyBelowMapCaveB() {
         RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(snapshot()).indoorRoom(true).build();
+                new RoomEntityRuntimeBuilder(snapshot()).indoorRoom(true).build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x05);
 
         int slot = runtime.spawns().spawnRoomEventKeyDrop();
@@ -109,7 +109,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(120, 120)
                 .spriteDefinition(keese)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -155,7 +155,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x00));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -174,7 +174,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(32, 48)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         AtomicInteger calls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             calls.incrementAndGet();
@@ -210,7 +210,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         runtime.configuration()
                 .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
                         RoomEntityGroundInteraction.Result.unloaded(entity, 0x02, true));
@@ -238,7 +238,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x02);
         EntityRuntimeFixture.debug(runtime).setEnemyFlashCountdownForTest(0, 0x08);
         runtime.configuration()
@@ -267,7 +267,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .spriteVariant(-1)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
@@ -300,7 +300,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x02);
         runtime.configuration()
                 .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
@@ -347,7 +347,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .status(EntityStatus.FALLING)
                 .spriteDefinition(hardhat)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -375,7 +375,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x04);
         runtime.configuration()
                 .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
@@ -428,7 +428,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                         .status(EntityStatus.INIT)
                         .spriteDefinition(definition)
                         .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
 
@@ -445,7 +445,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(24, 32)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         // State 0 selects +4 X speed; state 16 selects -4 Y speed.
         IntSupplier randomBytes = sequence(0x00, 0x01);
@@ -467,7 +467,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(24, 32)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         // The initial speed is zero. At state 0 the handler chooses a speed,
         // then writes the vector toward Link into its private state. The
@@ -495,7 +495,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         // GetVectorTowardsLink(2) turns dx=16, dy=8 into (2,1), not (2,2).
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, sequence(0x00, 0x00)));
@@ -521,7 +521,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                         .at(64, 80)
                         .spriteDefinition(definition)
                         .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         // AnimateEntities starts at MAX_ENTITIES - 1 and decrements. Slot 1
         // therefore consumes the first wake timer byte.
@@ -543,7 +543,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(0x4FCB, definition.address());
         assertEquals(8, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x24)
                         .at(0x50, 0x50)
@@ -603,7 +603,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -644,7 +644,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     void clearingBurningOrStunnedEntitiesResetsTheirStatusCountdowns() throws IOException {
         RomEnemyCombatTables burningTables = new RomEnemyCombatTables(
                 linksawakening.world.entity.EntityRomTestData.view(romWithSwordResult(0x09, 0xFE)));
-        RoomEntityRuntime burningRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime burningRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x09)
                         .at(64, 64)
@@ -668,7 +668,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
 
         RomEnemyCombatTables stunnedTables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
-        RoomEntityRuntime stunnedRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime stunnedRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xE9)
                         .at(64, 64)

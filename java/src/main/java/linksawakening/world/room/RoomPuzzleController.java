@@ -57,7 +57,7 @@ final class RoomPuzzleController {
 
     void harvestThrownRoomEventCollisions(RoomRuntime loaded) {
 
-        var collisions = loaded.entities.consumePendingThrownBackgroundCollisions();
+        var collisions = loaded.entities.outbox().consumePendingThrownBackgroundCollisions();
         for (int i = 0; i < collisions.size(); i++) {
             var collision = collisions.get(i);
             int objectId = collision.objectId();
@@ -146,10 +146,12 @@ final class RoomPuzzleController {
             }
         }
 
-        loaded.entities.movePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot, x, y);
+        loaded.entities.commands().movePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot, x, y);
         if (dependencies.entityFrame().currentLinkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
-            loaded.entities.resolvePushedBlockLinkContact(
-                    loaded.contents.puzzles.pushedBlockEntitySlot, linkEntityX, linkEntityY);
+            loaded.entities
+                    .background()
+                    .resolvePushedBlockLinkContact(
+                            loaded.contents.puzzles.pushedBlockEntitySlot, linkEntityX, linkEntityY);
         }
         loaded.room.replaceEntities(loaded.entities.inspection().view());
 
@@ -435,7 +437,7 @@ final class RoomPuzzleController {
             loaded.contents.puzzles.activeRoomEvent = 0;
             dependencies.entityFrame().colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         } else if (effect == EVENT_EFFECT_DROP_KEY) {
-            if (loaded.entities.spawnRoomEventKeyDrop() >= 0) {
+            if (loaded.entities.spawns().spawnRoomEventKeyDrop() >= 0) {
                 loaded.room.replaceEntities(loaded.entities.inspection().view());
             }
             loaded.contents.puzzles.activeRoomEvent = 0;
@@ -471,7 +473,7 @@ final class RoomPuzzleController {
             loaded.room.roomObjectsArea()[destinationIndex] = OBJECT_SETTLED_PUSHED_BLOCK;
         }
 
-        loaded.entities.removePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot);
+        loaded.entities.commands().removePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot);
         loaded.room.replaceEntities(loaded.entities.inspection().view());
 
         loaded.contents.puzzles.pushedBlockEntitySlot = -1;

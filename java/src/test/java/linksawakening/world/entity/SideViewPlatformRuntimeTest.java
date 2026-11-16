@@ -335,8 +335,7 @@ final class SideViewPlatformRuntimeTest {
         for (int slot = slots.size(); slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
         runtime.configuration().setGroundInteractionSideScrolling(true);
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(roomId);
         EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(0x04);

@@ -23,7 +23,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 64, sequence(0x00)));
         assertEquals(0, runtime.flyingEnemies().keeseState(0));
@@ -47,7 +47,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         IntSupplier randomBytes = sequence(0x00, 0x01, 0x01);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 72, 64, randomBytes));
@@ -71,7 +71,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> skipped =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(0, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -105,7 +105,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> events = runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
@@ -148,7 +148,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         IntSupplier randomBytes = sequence(0x00);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
@@ -182,7 +182,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         IntSupplier randomBytes = sequence(0x00);
 
         for (int frame = 0; frame <= 280; frame++) {
@@ -213,7 +213,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> grounded =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -230,7 +230,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     void peaHatSwordHitConfiguresBankSevenRecoilBeforeItsStateMovement() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xA0)
                         .at(64, 64)
@@ -268,7 +268,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     void peaHatKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xA0)
                         .at(64, 64)
@@ -303,8 +303,8 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime blocked = RoomEntityRuntime.builder(initial).build();
-        RoomEntityRuntime unblocked = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime blocked = new RoomEntityRuntimeBuilder(initial).build();
+        RoomEntityRuntime unblocked = new RoomEntityRuntimeBuilder(initial).build();
         IntSupplier blockedRandom = sequence(0x00);
         IntSupplier unblockedRandom = sequence(0x00);
 
@@ -341,7 +341,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void peaHatUsesTheRomSwordClinkPathWhileAirborne() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xA0)
                         .at(64, 64)

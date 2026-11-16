@@ -4,8 +4,8 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_LEEVER;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameContext;
-import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.motion.LeeverMotion;
@@ -16,12 +16,13 @@ final class LeeverHandler {
         registry.registerInitializer(ENTITY_LEEVER, (entity, random) -> initialize(registry, entity));
         registry.registerAdvance(ENTITY_LEEVER, (entity, context) -> advance(registry, entity, context));
         registry.registerTick(
-                ENTITY_LEEVER, EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION, 5, LeeverHandler::phase2Leever);
+                ENTITY_LEEVER,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                5,
+                frame -> phase2Leever(frame.slotFrame()));
     }
 
-    private static boolean phase2Leever(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
+    private static boolean phase2Leever(EntitySlotExecution slotState) {
         if (slotState.wasInitializing()) {
             // EntityInitLeever calls SetEntitySpriteVariant($FF) before
             // the first active handler dispatch.

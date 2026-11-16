@@ -11,7 +11,7 @@ class RoomDependencyInjectionTest {
     @Test
     void runtimeCollaboratorsNeverRetainTheFacadeOrWiringBag() {
         for (Class<?> type : List.of(
-                RoomEntityCombatBridge.class,
+                RoomEntityInteractions.class,
                 RoomCollisionQueries.class,
                 RoomTransientState.class,
                 RoomTransitionController.class,

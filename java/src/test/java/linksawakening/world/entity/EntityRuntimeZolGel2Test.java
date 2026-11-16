@@ -18,7 +18,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
     void hidingZolRequestsTheRomJumpJingleForEachLaunchedLeap() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)
@@ -65,7 +65,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
     void hidingZolRestoresHarmlessPhysicsWhenItsFinalLeapHides() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)

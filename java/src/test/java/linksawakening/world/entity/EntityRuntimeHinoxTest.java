@@ -21,7 +21,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(hinox)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(hinox)).build();
         EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 0x12);
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -51,7 +51,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(hinox)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(hinox)).build();
         EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(0x03);
         EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 0x12);
 
@@ -85,7 +85,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE))
                 .spriteVariant(-1)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotAt(hinox))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotAt(hinox))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -123,7 +123,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(hinox)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(hinox)).build();
         EnemyProjectileCollision.LinkState interactive =
                 new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false);
 
@@ -152,7 +152,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(hinox)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(hinox)).build();
         EntityRuntimeFixture.debug(runtime).setHinoxStateForTest(0, HinoxMotion.STATE_GRAB);
         EntityRuntimeFixture.debug(runtime).setEnemyHealthForTest(0, 1);
 
@@ -176,7 +176,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(hinox)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(hinox)).build();
         EntityRuntimeFixture.debug(runtime).setHinoxStateForTest(0, MotionTestAccess.HinoxMotion_STATE_WANDER);
         EntityRuntimeFixture.debug(runtime).setHinoxSpeedForTest(0, 0x08, 0);
         EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 0x20);
@@ -201,7 +201,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .at(0x50, 0x40)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(hinox)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(hinox)).build();
         EntityRuntimeFixture.debug(runtime).setHinoxStateForTest(0, MotionTestAccess.HinoxMotion_STATE_CHARGE);
         EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 0);
 

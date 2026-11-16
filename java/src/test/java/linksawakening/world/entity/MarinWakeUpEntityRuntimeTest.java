@@ -28,7 +28,7 @@ final class MarinWakeUpEntityRuntimeTest {
                         .spriteVariant(6)
                         .build());
         for (boolean indoor : new boolean[] {false, true}) {
-            var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+            var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                     .indoorRoom(indoor)
                     .build();
             runtime.configuration().setChestPlayerLevels(0, 0, 0);
@@ -46,7 +46,7 @@ final class MarinWakeUpEntityRuntimeTest {
     void houseStoryGatesRunBeforeRenderingAndAllowTarinAfterTransformation() {
         var slots = new ArrayList<RoomEntity>();
         for (int slot = 0; slot < 16; slot++) slots.add(RoomEntity.disabled(slot));
-        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)
                 .build();
         runtime.configuration().setChestPlayerLevels(1, 1, 0);
@@ -82,7 +82,7 @@ final class MarinWakeUpEntityRuntimeTest {
                         .spriteDefinition(definition)
                         .spriteVariant(6)
                         .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)
                 .build();
 

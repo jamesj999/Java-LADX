@@ -23,7 +23,7 @@ final class EntityRuntimeWarpTest extends EntityRuntimeTestSupport {
                 .at(80, 72)
                 .spriteDefinition(catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.INDOORS_A, 0))
                 .build();
-        var runtime = RoomEntityRuntime.builder(snapshot(warp))
+        var runtime = new RoomEntityRuntimeBuilder(snapshot(warp))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

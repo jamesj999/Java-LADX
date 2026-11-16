@@ -64,7 +64,7 @@ final class ZombieRuntimeTest {
     void usesTheRomZombieCombatAndPhysicsRows() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_ZOMBIE)
                         .at(0x40, 0x40)
@@ -375,7 +375,7 @@ final class ZombieRuntimeTest {
                 .spriteDefinition(catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
         AtomicInteger randomCalls = new AtomicInteger();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(parent))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(parent))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12)
                 .spriteHandlers(catalog)
@@ -414,7 +414,7 @@ final class ZombieRuntimeTest {
                 .at(0x40, 0x40)
                 .spriteDefinition(catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(parent))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(parent))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -437,7 +437,7 @@ final class ZombieRuntimeTest {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(parent))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(parent))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

@@ -146,7 +146,7 @@ final class SwordBeamRuntimeTest {
     private static RoomEntityRuntime runtime() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        return RoomEntityRuntime.builder(emptySnapshot())
+        return new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

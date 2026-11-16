@@ -213,8 +213,9 @@ final class RoomLiftInteractions {
     private void completeStatueLift(
             RoomRuntime loaded, linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
 
-        loaded.entities.beginLift(
-                statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
+        loaded.entities
+                .commands()
+                .beginLift(statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         dependencies
                 .entityRuntimeState()
                 .outbox
@@ -267,11 +268,13 @@ final class RoomLiftInteractions {
     private void spawnLiftedObject(RoomRuntime loaded, LiftRequest request, LiftTarget target) {
         int x = request.linkPixelX() + 0x08;
         int y = request.linkPixelY() + 0x10;
-        loaded.entities.spawnLiftedRoomObject(
-                x,
-                y,
-                RoomInteractionGeometry.romDirectionForProjectileCollision(request.linkDirection()),
-                target.touchedObject() == 0x5C ? 1 : 0);
+        loaded.entities
+                .spawns()
+                .spawnLiftedRoomObject(
+                        x,
+                        y,
+                        RoomInteractionGeometry.romDirectionForProjectileCollision(request.linkDirection()),
+                        target.touchedObject() == 0x5C ? 1 : 0);
         publishEntityView(loaded);
     }
 

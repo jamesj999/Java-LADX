@@ -5,6 +5,9 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_TARIN;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityLinkCollisionRules;
+import linksawakening.world.entity.EntityRoomInspection;
+import linksawakening.world.entity.EntitySlotExecution;
+import linksawakening.world.entity.EntitySlotLifecycle;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -19,17 +22,19 @@ import linksawakening.world.entity.motion.TarinRaccoonMotion;
 /** ROM handler stages for Tarin. */
 final class TarinHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerTick(ENTITY_TARIN, EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS, 0, TarinHandler::phase1Tarin);
+        registry.registerTick(
+                ENTITY_TARIN,
+                EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS,
+                0,
+                frame -> phase1Tarin(frame.slotFrame(), frame.roomInspection(), frame.lifecycle()));
         registry.registerTick(ENTITY_TARIN, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 15, TarinHandler::phase4Tarin);
     }
 
-    private static boolean phase1Tarin(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
-        if ((state.roomInspection().indoorRoom() && state.roomInspection().indoorTarinAbsent())
-                || (!state.roomInspection().indoorRoom()
-                        && (state.roomInspection().entityRoomStatus() & 0x10) != 0)) {
-            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
+    private static boolean phase1Tarin(
+            EntitySlotExecution slotState, EntityRoomInspection roomInspection, EntitySlotLifecycle lifecycle) {
+        if ((roomInspection.indoorRoom() && roomInspection.indoorTarinAbsent())
+                || (!roomInspection.indoorRoom() && (roomInspection.entityRoomStatus() & 0x10) != 0)) {
+            lifecycle.disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;
@@ -44,11 +49,11 @@ final class TarinHandler {
         // Owning frame execution is stable for this cached scratch holder.
         private final linksawakening.world.entity.EntityFrameExecution state;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        private linksawakening.world.entity.EntitySlotExecution slotState;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        private linksawakening.world.entity.EntityFrameInputLatch frameInput;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
+        private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         TarinHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
             this.state = java.util.Objects.requireNonNull(state, "state");
@@ -68,7 +73,6 @@ final class TarinHandler {
         private boolean completedResult;
 
         private boolean advanceMotion() {
-
             slotState = state.slotFrame();
             frameInput = state.inputs();
             presentationFlags = state.presentation();
@@ -121,7 +125,6 @@ final class TarinHandler {
         }
 
         private boolean emitStoryEffects() {
-
             if (tarinUpdate.dialogGlobalId() >= 0) {
                 state.emit(new DialogRequest(tarinUpdate.dialogGlobalId() >>> 8, tarinUpdate.dialogGlobalId() & 0xFF));
             }

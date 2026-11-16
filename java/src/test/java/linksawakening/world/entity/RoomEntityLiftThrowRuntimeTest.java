@@ -28,7 +28,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     @Test
     void thrownStatueBreaksIntoSixRomRubbleSpritesAndTheyExpire() {
         var catalog = new linksawakening.entity.EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        var runtime = RoomEntityRuntime.builder(runtimeWithEntity(EntityStatus.ACTIVE, 0x9D)
+        var runtime = new RoomEntityRuntimeBuilder(runtimeWithEntity(EntityStatus.ACTIVE, 0x9D)
                         .inspection()
                         .snapshot())
                 .indoorRoom(true)
@@ -218,7 +218,7 @@ final class RoomEntityLiftThrowRuntimeTest {
                 .status(EntityStatus.THROWN)
                 .spriteDefinition(potDefinition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
@@ -276,8 +276,8 @@ final class RoomEntityLiftThrowRuntimeTest {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots).withSideScrolling(true))
-                .build();
+        RoomEntityRuntime runtime =
+                new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots).withSideScrolling(true)).build();
         runtime.configuration().setPowerBraceletButtonHeld(true);
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -807,8 +807,7 @@ final class RoomEntityLiftThrowRuntimeTest {
                         .spriteDefinition(tarinDefinition)
                         .spriteVariant(-1)
                         .build());
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots).withSideScrolling(true))
-                .build();
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots).withSideScrolling(true)).build();
     }
 
     @Test
@@ -1065,8 +1064,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots).withSideScrolling(true))
-                .build();
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots).withSideScrolling(true)).build();
     }
 
     private static RoomEntityRuntime sideViewPotWithTargetRuntime() {
@@ -1089,8 +1087,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         for (int slot = 2; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots).withSideScrolling(true))
-                .build();
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots).withSideScrolling(true)).build();
     }
 
     private static RoomEntityRuntime runtimeWithEntity(EntityStatus status) {
@@ -1110,7 +1107,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
     }
 
     private static EntitySpriteDefinition definition(int type) {

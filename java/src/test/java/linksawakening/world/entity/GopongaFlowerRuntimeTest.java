@@ -42,7 +42,7 @@ final class GopongaFlowerRuntimeTest {
     void alternatesOpenAndClosedFlowersOnTheRomFrameMask() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GOPONGA_FLOWER)
                         .at(0x40, 0x40)
@@ -72,7 +72,7 @@ final class GopongaFlowerRuntimeTest {
     void usesRomPhysicsOptionsHealthAndContactDamage() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GOPONGA_FLOWER)
                         .at(0x40, 0x40)
@@ -101,7 +101,7 @@ final class GopongaFlowerRuntimeTest {
     void requestsLinkFinalPositionEvenWhenLinkIsInTheAir() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GOPONGA_FLOWER)
                         .at(0x38, 0x40)

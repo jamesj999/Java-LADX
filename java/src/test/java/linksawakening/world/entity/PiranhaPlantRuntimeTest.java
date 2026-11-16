@@ -47,7 +47,7 @@ final class PiranhaPlantRuntimeTest {
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_PIRANHA_PLANT));
 
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
                         .at(0x40, 0x60)
@@ -70,7 +70,7 @@ final class PiranhaPlantRuntimeTest {
     void clearsSharedSwordRecoilBeforeRunningItsStateMachine() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
                         .at(0x40, 0x40)
@@ -104,7 +104,7 @@ final class PiranhaPlantRuntimeTest {
         EntitySpriteDefinition definition =
                 catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A);
 
-        RoomEntityRuntime creditsRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime creditsRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
                         .at(0x40, 0x40)
@@ -119,7 +119,7 @@ final class PiranhaPlantRuntimeTest {
         assertEquals(0, creditsRuntime.enemies().transitionCountdown(0));
         assertEquals(0x40, creditsRuntime.inspection().snapshot().slots().get(0).y());
 
-        RoomEntityRuntime transitionRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime transitionRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
                         .at(0x40, 0x40)
@@ -141,7 +141,7 @@ final class PiranhaPlantRuntimeTest {
     void hiddenPipeStateDoesNotRunEnemyDamageCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
                         .at(0x40, 0x40)
@@ -162,7 +162,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void waitsUntilLinkLeavesItsPipeColumnBeforeStartingRise() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
                         .at(0x40, 0x60)
@@ -197,7 +197,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void risesThroughRomFramesThenReturnsToHiddenPosition() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
                         .at(0x40, 0x60)

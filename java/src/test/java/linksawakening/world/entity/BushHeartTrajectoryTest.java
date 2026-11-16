@@ -22,7 +22,7 @@ final class BushHeartTrajectoryTest {
                 .filter(e -> e.type() == 0x2D)
                 .findFirst()
                 .orElseThrow();
-        var runtime = RoomEntityRuntime.builder(initial)
+        var runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))

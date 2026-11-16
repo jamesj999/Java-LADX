@@ -15,7 +15,7 @@ import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.object.SwitchBlockAnimation;
@@ -330,7 +330,7 @@ final class RoomLoadCoordinator implements RoomRooms {
         ActiveRoom active = ActiveRoom.from(room, entities);
         RoomContents contents = new RoomContents(active, puzzles, overrides);
         configureDoorAndEventState(contents);
-        var runtime = RoomEntityRuntime.builder(entities)
+        var runtime = new RoomEntityRuntimeBuilder(entities)
                 .indoorRoom(active.mapCategory() != Warp.CATEGORY_OVERWORLD)
                 .randomByteSupplier(dependencies.entityRandomByteSource())
                 .spriteHandlers(dependencies.entitySpriteHandlerCatalog())

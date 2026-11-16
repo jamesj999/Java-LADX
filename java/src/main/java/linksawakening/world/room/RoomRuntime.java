@@ -13,6 +13,7 @@ final class RoomRuntime {
     final RoomContents contents;
     final RoomEntityRuntime entities;
     final RoomRenderSnapshot.View renderView;
+    final RoomEntityInteractions interactions;
     final CollisionCache collisions = new CollisionCache();
     final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
     final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
@@ -26,11 +27,15 @@ final class RoomRuntime {
             RoomCollisionQueries queries,
             RoomObjectMutations objects,
             RoomEntitySessionState frame,
+            RoomFollowerState followers,
+            RoomWorldState world,
             linksawakening.vfx.TransientVfxSystem vfx) {
         Services {
             Objects.requireNonNull(queries);
             Objects.requireNonNull(objects);
             Objects.requireNonNull(frame);
+            Objects.requireNonNull(followers);
+            Objects.requireNonNull(world);
             Objects.requireNonNull(vfx);
         }
     }
@@ -41,6 +46,16 @@ final class RoomRuntime {
         this.entities = Objects.requireNonNull(entities, "entities");
         Objects.requireNonNull(room.entityView(), "loaded room entity view");
         renderView = RoomRenderLiveView.live(room, entities);
+        interactions = new RoomEntityInteractions(
+                room,
+                entities.combat(),
+                entities.pickups(),
+                entities.lifecycle(),
+                entities.inspection(),
+                entities.outbox(),
+                services.frame(),
+                services.followers(),
+                services.world());
         backgroundCollision = (entity, direction, x, y) ->
                 services.queries().entityBackgroundCollision(this, entity, direction, x, y);
         objectCollision = entity -> services.queries().pairoddProjectileObjectCollision(this, entity);

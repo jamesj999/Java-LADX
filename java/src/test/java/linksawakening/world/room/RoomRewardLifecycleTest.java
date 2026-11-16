@@ -36,6 +36,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -353,7 +354,7 @@ final class RoomRewardLifecycleTest {
     void harvestingHidingSlimeKeyPublishesItsLeafCountAndCompletesTheRoom() {
         RoomSession session = newSession();
         session.rooms().loadOverworld(0xC6);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(List.of(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(List.of(
                         new RoomEntity(
                                 0,
                                 0,
@@ -564,7 +565,7 @@ final class RoomRewardLifecycleTest {
                 .map(entity -> entity.type() == 0x9B ? RoomEntity.disabled(entity.slot()) : entity)
                 .toList();
         RoomDebugFixture.of(session)
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(hazardsOnly))
+                .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(hazardsOnly))
                         .indoorRoom(true)
                         .build());
         session.entities().tickEntities(1, 56, 74);
@@ -858,7 +859,7 @@ final class RoomRewardLifecycleTest {
             emptySlots.add(RoomEntity.disabled(slot));
         }
         RoomDebugFixture.of(session)
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(emptySlots))
                         .indoorRoom(true)
                         .build());
         session.entities().tickEntities(0, 0x50, 0x50);
@@ -931,7 +932,7 @@ final class RoomRewardLifecycleTest {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             dyingBossSlots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(dyingBossSlots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(dyingBossSlots))
                 .indoorRoom(true)
                 .build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setGeniePrivateState1ForTest(runtime, 0, 1);

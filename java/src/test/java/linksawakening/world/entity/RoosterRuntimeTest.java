@@ -15,7 +15,7 @@ final class RoosterRuntimeTest {
 
     @Test
     void activeFollowingRoosterUsesItsDedicatedPowerBraceletLiftBranch() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(MotionTestAccess.RoosterMotion_ENTITY_TYPE)
                         .at(0x40, 0x50)
                         .spriteDefinition(definition())

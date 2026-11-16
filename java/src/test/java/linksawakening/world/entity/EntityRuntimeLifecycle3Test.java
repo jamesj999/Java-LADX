@@ -34,7 +34,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                 .z(sourceZ)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotAt(source))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotAt(source))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -108,7 +108,8 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                 .z(0x09)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotAt(source).withSideScrolling(true))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
+                        snapshotAt(source).withSideScrolling(true))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -161,7 +162,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                 .build();
         entities.add(source);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(entities))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(entities))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

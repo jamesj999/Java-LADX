@@ -50,7 +50,7 @@ final class RoomChestInteractions {
                         loaded.room.roomId(),
                         swordLevel,
                         loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD);
-        int slot = loaded.entities.spawnChestWithItem(column << 4, row << 4, itemType);
+        int slot = loaded.entities.spawns().spawnChestWithItem(column << 4, row << 4, itemType);
         if (slot < 0) {
             return new ChestOpenResult(false, -1, -1, location);
         }

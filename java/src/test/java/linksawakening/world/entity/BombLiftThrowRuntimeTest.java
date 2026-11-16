@@ -382,8 +382,7 @@ final class BombLiftThrowRuntimeTest {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(0, 0xA0);
 
         assertDoesNotThrow(() -> runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0)));
@@ -453,8 +452,7 @@ final class BombLiftThrowRuntimeTest {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
         runtime.configuration().setPowerBraceletButtonHeld(true);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
@@ -479,7 +477,7 @@ final class BombLiftThrowRuntimeTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
