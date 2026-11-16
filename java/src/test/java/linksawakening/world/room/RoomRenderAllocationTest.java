@@ -18,6 +18,7 @@ import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.TestEntities;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Read-only production paths over a populated synthetic room; no user ROM needed. */
 class RoomRenderAllocationTest {
@@ -62,7 +63,7 @@ class RoomRenderAllocationTest {
     }
 
     @Test
-    void populatedRenderAndInventoryViewsAllocateLessThan256Bytes() {
+    void populatedRenderAndInventoryViewsAllocateLessThan256Bytes(TestReporter reporter) {
         var session = room();
         double owned = AllocationProbe.bytesPerIteration(4000, 1000, () -> {
             retained = session.rooms().renderSnapshotOrNull();
@@ -88,7 +89,8 @@ class RoomRenderAllocationTest {
             for (int i = 0; i < dungeon.progressFlagCount(); i++) value += dungeon.progressFlag(i);
             checksum = value;
         });
-        System.out.println("Owned room/inventory / live views bytes/frame: " + owned + " / " + live);
+        reporter.publishEntry("ownedRoomAndInventoryBytesPerFrame", Double.toString(owned));
+        reporter.publishEntry("liveRoomAndInventoryBytesPerFrame", Double.toString(live));
         assertTrue(live < 256, "Render view bytes/frame: " + live);
         assertNotEquals(0, checksum);
     }

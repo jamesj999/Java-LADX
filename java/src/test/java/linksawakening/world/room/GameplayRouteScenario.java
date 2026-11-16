@@ -86,7 +86,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
-/** One continuous route. Public stage methods form the itinerary; private methods name its player-visible goals. */
+/** One continuous route. Stage methods form the itinerary; private methods name its player-visible goals. */
 final class GameplayRouteScenario {
     static void collectSwordAndTailKey(GameplayRouteFixture route) throws Exception {
         collectTarinsShield(route);

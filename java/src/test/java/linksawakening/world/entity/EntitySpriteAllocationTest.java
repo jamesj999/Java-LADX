@@ -8,17 +8,19 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 class EntitySpriteAllocationTest {
     private static volatile Object retained;
 
     @Test
-    void recurringDisplayListsAvoidDefinitionAndDynamicVariantCopies() {
+    void recurringDisplayListsAvoidDefinitionAndDynamicVariantCopies(TestReporter reporter) {
         var catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]));
         var cache = new EntitySpriteViews(catalog);
         double owned = AllocationProbe.bytesPerIteration(4000, 1000, () -> retained = catalog.forFallingEntity());
         double cached = AllocationProbe.bytesPerIteration(4000, 1000, () -> retained = cache.forFallingEntity());
-        System.out.println("Falling definition decode / cached bytes: " + owned + " / " + cached);
+        reporter.publishEntry("fallingDefinitionDecodeBytes", Double.toString(owned));
+        reporter.publishEntry("cachedFallingDefinitionBytes", Double.toString(cached));
         assertEquals(0.0, cached);
         var original = catalog.forFallingEntity();
         var reused = cache.forFallingEntity();
