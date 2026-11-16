@@ -15,6 +15,10 @@ final class LoadedRoomHandle {
         current = Objects.requireNonNull(room, "room");
     }
 
+    void clear() {
+        current = null;
+    }
+
     boolean hasRoom() {
         return current != null;
     }

@@ -30,11 +30,13 @@ final class RoomSessionBoundariesTest {
     void roomLoadClearsAnUnconsumedDungeonWarpRequest() throws Exception {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x01, 0x28);
-        session.components.location().pendingDungeonWarp = new Warp(Warp.CATEGORY_INDOOR, 0x01, 0x36, 0x50, 0x48, 0x34);
+        RoomSessionInspection.component(session, RoomLocationState.class).pendingDungeonWarp =
+                new Warp(Warp.CATEGORY_INDOOR, 0x01, 0x36, 0x50, 0x48, 0x34);
 
         session.rooms().loadIndoor(0x01, 0x36);
 
-        assertNull(session.components.roomTransitionController().consumeClearedDungeonWarp());
+        assertNull(RoomSessionInspection.component(session, RoomTransitionController.class)
+                .consumeClearedDungeonWarp());
     }
 
     @Test
@@ -86,7 +88,7 @@ final class RoomSessionBoundariesTest {
         assertFalse(session.transitions().ocarinaPlaying());
         assertEquals(
                 0x13,
-                session.consumeEntityEvents().stream()
+                RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents().stream()
                         .filter(event -> event.type() == 0x18)
                         .findFirst()
                         .orElseThrow()
@@ -127,7 +129,7 @@ final class RoomSessionBoundariesTest {
         assertEquals(0x04, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x04
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                         && event.soundId() == 0x13));
@@ -155,7 +157,7 @@ final class RoomSessionBoundariesTest {
         assertEquals(0x04, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x08
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
                         && event.soundId() == 0x2F));
@@ -172,8 +174,7 @@ final class RoomSessionBoundariesTest {
         fillActiveObjects(session, 0x01); // Indoors1 object $01 is normal pit.
 
         RoomDebugFixture.of(session).setEntityIgnoreHitsCountdownForTest(entity.slot(), 1);
-        assertFalse(session.components
-                .roomCollisionQueries()
+        assertFalse(RoomSessionInspection.component(session, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
                         session.loadedRoomOrNull(),
                         entity,
@@ -183,8 +184,7 @@ final class RoomSessionBoundariesTest {
                 .blocked());
 
         RoomDebugFixture.of(session).setEntityIgnoreHitsCountdownForTest(entity.slot(), 0);
-        assertTrue(session.components
-                .roomCollisionQueries()
+        assertTrue(RoomSessionInspection.component(session, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
                         session.loadedRoomOrNull(),
                         entity,

@@ -11,7 +11,6 @@ final class RoomFrameInputApplier {
     private final RoomEntityState entityState;
     private final RoomStory story;
 
-    private final RoomSession session;
     private final RoomEntityBridge bridge;
 
     RoomFrameInputApplier(
@@ -19,17 +18,17 @@ final class RoomFrameInputApplier {
             RoomEntityBridge bridge,
             RoomEntitySessionState frame,
             RoomEntityState entityState,
-            RoomStory story,
-            RoomLoadCoordinator loads,
-            RoomSession session) {
+            RoomStory story) {
         this.entityInputs = entityInputs;
         this.bridge = java.util.Objects.requireNonNull(bridge);
 
         this.frame = frame;
         this.entityState = entityState;
         this.story = story;
+    }
 
-        this.session = session;
+    List<EntityProjectileEvent> tick(EntityTickValues inputs) {
+        return bridge.tickEntities(inputs);
     }
 
     List<EntityProjectileEvent> tick(EntityFrameValues inputs) {
@@ -73,7 +72,7 @@ final class RoomFrameInputApplier {
         entityInputs.updateSetFreeMovementMode(inputs.link().freeMovement());
         entityInputs.setEntityLinkVelocityZ(inputs.link().velocityZ());
         // Inputs have already been applied; select the low-level tick overload without a new wrapper.
-        return session.tickEntities((EntityTickValues) inputs);
+        return bridge.tickEntities((EntityTickValues) inputs);
     }
 
     private void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {

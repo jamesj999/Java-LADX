@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomSessionTestSupport.newSession;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
+import linksawakening.physics.OverworldCollision;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
 
@@ -16,10 +17,10 @@ class RoomLifecycleLoadTest {
         var first = session.loadedRoomOrNull();
         first.contents.puzzles.indoorPotPullFrames = 7;
         first.contents.overrides.bombedBlockTileOverrides.add(1);
-        session.components.terrain().crackedFloorCounter = 17;
-        session.components.terrain().linkGroundRoomPosition = 23;
-        session.components.terrain().switchBlocksState = 2;
-        session.components.puzzles().dungeonTitleMessageCountdown = 77;
+        RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter = 17;
+        RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundRoomPosition = 23;
+        RoomSessionInspection.component(session, RoomTerrainState.class).switchBlocksState = 2;
+        RoomSessionInspection.component(session, RoomPuzzleState.class).dungeonTitleMessageCountdown = 77;
         session.rooms().loadOverworld(0xA2);
         var next = session.loadedRoomOrNull();
         assertNotSame(first, next);
@@ -33,10 +34,10 @@ class RoomLifecycleLoadTest {
         assertEquals(0, next.contents.puzzles.indoorPotPullFrames);
         assertEquals(0, next.contents.overrides.bombedBlockTileOverrides.size());
         // ResetRoomVariables deliberately retains wC1C9 and Link room-position registers.
-        assertEquals(17, session.components.terrain().crackedFloorCounter);
-        assertEquals(23, session.components.terrain().linkGroundRoomPosition);
-        assertEquals(2, session.components.terrain().switchBlocksState);
-        assertEquals(77, session.components.puzzles().dungeonTitleMessageCountdown);
+        assertEquals(17, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
+        assertEquals(23, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundRoomPosition);
+        assertEquals(2, RoomSessionInspection.component(session, RoomTerrainState.class).switchBlocksState);
+        assertEquals(77, RoomSessionInspection.component(session, RoomPuzzleState.class).dungeonTitleMessageCountdown);
     }
 
     @Test
@@ -56,7 +57,10 @@ class RoomLifecycleLoadTest {
         var active = session.rooms().activeRoomOrNull();
         // A distinct callback-time mutation proves the outer continuation uses the replacement map.
         assertEquals(0xE7, active.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE]);
-        assertEquals(0xE7, session.components.overworldCollision().objectIdAtPoint(0, 0));
+        assertEquals(
+                0xE7,
+                RoomSessionInspection.component(session, OverworldCollision.class)
+                        .objectIdAtPoint(0, 0));
         assertEquals(
                 active.roomId(),
                 session.loadedRoomOrNull()
@@ -74,12 +78,15 @@ class RoomLifecycleLoadTest {
         var previous = session.loadedRoomOrNull();
         previous.contents.puzzles.pushedBlockMotionFrames = 7;
         previous.contents.overrides.bombedBlockTileOverrides.add(1);
-        long serial = session.components.roomSessionViews().roomLoadSerial();
+        long serial =
+                RoomSessionInspection.component(session, RoomSessionViews.class).roomLoadSerial();
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalArgumentException.class, () -> session.rooms().loadOverworld(0x100));
         org.junit.jupiter.api.Assertions.assertSame(previous, session.loadedRoomOrNull());
         assertEquals(0, previous.contents.puzzles.pushedBlockMotionFrames);
         org.junit.jupiter.api.Assertions.assertTrue(previous.contents.overrides.bombedBlockTileOverrides.isEmpty());
-        assertEquals(serial + 1, session.components.roomSessionViews().roomLoadSerial());
+        assertEquals(
+                serial + 1,
+                RoomSessionInspection.component(session, RoomSessionViews.class).roomLoadSerial());
     }
 }

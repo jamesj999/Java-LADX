@@ -100,7 +100,9 @@ final class RoomSessionStoryTest {
 
         tickInteractive(session, 0, 0x50, 0x50);
         tickInteractive(session, 1, 0x50, 0x50);
-        assertEquals(0x22, session.consumePendingMusicTrack());
+        assertEquals(
+                0x22,
+                RoomSessionInspection.component(session, RoomEntityBridge.class).consumePendingMusicTrack());
         int frame = 2;
         boolean dialogOpened = false;
         while (!dialogOpened && frame < 0x300) {
@@ -119,7 +121,9 @@ final class RoomSessionStoryTest {
                         .anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x500) {
             tickInteractive(session, frame++, 0x50, 0x50);
-            restoredMusic |= session.consumePendingMusicTrack() == 0x09;
+            restoredMusic |= RoomSessionInspection.component(session, RoomEntityBridge.class)
+                            .consumePendingMusicTrack()
+                    == 0x09;
         }
         assertTrue(restoredMusic);
 
@@ -133,7 +137,7 @@ final class RoomSessionStoryTest {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x80);
         session.story().setChestPlayerLevels(0, 1, 0);
-        session.components.entityBridge().updateSetEnemyDropPlayerState(3, 3, true);
+        RoomSessionInspection.component(session, RoomEntityBridge.class).updateSetEnemyDropPlayerState(3, 3, true);
 
         int frame = 0;
         boolean restoredPowerMusic = false;
@@ -141,7 +145,9 @@ final class RoomSessionStoryTest {
                         .anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x500) {
             tickInteractive(session, frame++, 0x50, 0x50);
-            restoredPowerMusic |= session.consumePendingMusicTrack() == 0x49;
+            restoredPowerMusic |= RoomSessionInspection.component(session, RoomEntityBridge.class)
+                            .consumePendingMusicTrack()
+                    == 0x49;
             session.entityState().consumeEntityDialogRequests();
         }
 
@@ -186,7 +192,7 @@ final class RoomSessionStoryTest {
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x58);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
-        session.components.entityInputs().updateSetEntityGoldenLeavesCount(4);
+        RoomSessionInspection.component(session, RoomEntityInputs.class).updateSetEntityGoldenLeavesCount(4);
 
         session.entities().tickEntities(0, 0x20, 0x30);
         session.entities().tickEntities(1, 0x40, 0x50);
@@ -196,7 +202,9 @@ final class RoomSessionStoryTest {
 
         assertEquals(
                 List.of(new SlimeKeyRewardEvent(0, 5, 0xE9)),
-                session.components.entityBridge().outbox.consumeSlimeKeyRewardEvents());
+                RoomSessionInspection.component(session, RoomEntityBridge.class)
+                        .outbox
+                        .consumeSlimeKeyRewardEvents());
         assertEquals(0x10, session.dungeon().overworldRoomStatusSnapshot()[0x58] & 0x10);
         assertEquals(List.of(new DialogRequest(0, 0xE9)), session.entityState().consumeEntityDialogRequests());
     }
@@ -238,7 +246,9 @@ final class RoomSessionStoryTest {
 
         session.entities().tickEntities(0, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         session.entities().tickEntities(1, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
-        assertEquals(0x40, session.consumePendingMusicTrack());
+        assertEquals(
+                0x40,
+                RoomSessionInspection.component(session, RoomEntityBridge.class).consumePendingMusicTrack());
         session.entityState().setEntityActionButtonsHeld(true, false);
         session.entities().tickEntities(2, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 
@@ -247,7 +257,9 @@ final class RoomSessionStoryTest {
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(
                 List.of(new RichardProgressEvent(richard.slot(), RichardProgressEvent.Kind.START_QUEST, 0)),
-                session.components.entityBridge().outbox.consumeRichardProgressEvents());
+                RoomSessionInspection.component(session, RoomEntityBridge.class)
+                        .outbox
+                        .consumeRichardProgressEvents());
         assertEquals(0x10, session.dungeon().indoorBRoomStatusSnapshot()[0xC7] & 0x10);
         assertEquals(2, session.story().richardSpokenFlag());
     }
@@ -290,7 +302,7 @@ final class RoomSessionStoryTest {
         session.entityState().setEntityActionButtonsHeld(false, false);
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntities(3, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
-        session.components.entityInputs().updateSetEntityDialogAskSelectionIndex(1);
+        RoomSessionInspection.component(session, RoomEntityInputs.class).updateSetEntityDialogAskSelectionIndex(1);
         session.entityState().setEntityDialogActive(false);
         session.entities().tickEntities(4, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 

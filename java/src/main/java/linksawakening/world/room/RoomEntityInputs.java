@@ -2,6 +2,12 @@ package linksawakening.world.room;
 
 /** Cached player inputs and gates supplied to each room entity runtime. */
 final class RoomEntityInputs {
+    void clearDialogAfterWarp() {
+        entityDialogActive = false;
+        entityDialogCooldown = 0;
+        entityInventoryAppearing = false;
+    }
+
     private final LoadedRoomHandle rooms;
 
     RoomEntityInputs(LoadedRoomHandle rooms) {

@@ -11,10 +11,13 @@ public final class RoomFrameTestAccess {
     }
 
     public static void music(RoomSession room, int track) {
-        room.components.entityBridge().outbox.pendingRoomMusicTrack = track;
+        RoomSessionInspection.component(room, RoomEntityBridge.class).outbox.pendingRoomMusicTrack = track;
     }
 
     public static void heart(RoomSession room) {
-        room.components.entityBridge().outbox.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(0));
+        RoomSessionInspection.component(room, RoomEntityBridge.class)
+                .outbox
+                .pendingHeartContainerRewards
+                .add(new HeartContainerRewardEvent(0));
     }
 }

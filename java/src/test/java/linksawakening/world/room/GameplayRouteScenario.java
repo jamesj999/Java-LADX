@@ -177,7 +177,10 @@ final class GameplayRouteScenario {
                         route.playerState.equipmentLevels().powerBraceletLevel());
         tickInteractiveEntities(route.session, 0, 0x3F, 0x44);
         tickInteractiveEntities(route.session, 1, 0x40, 0x44);
-        assertEquals(0x22, route.session.consumePendingMusicTrack());
+        assertEquals(
+                0x22,
+                RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                        .consumePendingMusicTrack());
 
         route.frame = 2;
         route.owlDialogOpened = false;
@@ -244,7 +247,10 @@ final class GameplayRouteScenario {
 
         tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
-        assertEquals(0x22, route.session.consumePendingMusicTrack());
+        assertEquals(
+                0x22,
+                RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                        .consumePendingMusicTrack());
         route.forestOwlDialogOpened = false;
         while (!route.forestOwlDialogOpened && route.frame < route.pickupFrame + 0x600) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
@@ -301,8 +307,9 @@ final class GameplayRouteScenario {
         while (route.toadstoolRewards.isEmpty() && route.frame < route.pickupFrame + 0x900) {
             route.session.entities().tickEntities(route.frame++, route.toadstool.x(), route.toadstool.y());
             route.session.entityState().consumeEntityDialogRequests();
-            route.toadstoolRewards =
-                    route.session.components.entityBridge().outbox.consumeToadstoolRewards();
+            route.toadstoolRewards = RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeToadstoolRewards();
         }
         assertEquals(List.of(new ToadstoolRewardEvent(route.toadstool.slot())), route.toadstoolRewards);
         // Mirrors Main's live event consumer; RoomSession owns the entity
@@ -359,16 +366,16 @@ final class GameplayRouteScenario {
                 InventoryItem.MAGIC_POWDER.romValue(),
                 route.playerState.inventory().itemA());
         route.session.entityState().setToadstoolPlayerState(true, 0);
-        route.session
-                .components
-                .entityInputs()
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class)
                 .updateSetEntityInventorySlots(
                         route.playerState.inventory().itemA(),
                         route.playerState.inventory().itemB());
         route.session.entityState().setEntityActionButtonsHeld(true, false);
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
-        route.exchangeEvents = route.session.components.entityBridge().outbox.consumeWitchExchangeEvents();
+        route.exchangeEvents = RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .outbox
+                .consumeWitchExchangeEvents();
         assertEquals(1, route.exchangeEvents.size());
         route.playerState
                 .playerRewards()
@@ -405,9 +412,7 @@ final class GameplayRouteScenario {
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         assertEquals(
                 1,
-                route.session
-                        .components
-                        .entityBridge()
+                RoomSessionInspection.component(route.session, RoomEntityBridge.class)
                         .outbox
                         .consumeWitchRewardEvents()
                         .size());
@@ -444,9 +449,7 @@ final class GameplayRouteScenario {
         assertTrue(route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3F));
 
-        route.session
-                .components
-                .entityInputs()
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class)
                 .updateSetEntityInventorySlots(
                         route.playerState.inventory().itemA(),
                         route.playerState.inventory().itemB());
@@ -490,7 +493,7 @@ final class GameplayRouteScenario {
                 route.session, route.coordinator, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x41, route.session.rooms().currentRoomId());
         assertEquals(0x40, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x41) & 0x40);
-        assertTrue(route.session.consumeEntityEvents().stream()
+        assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class).consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
 
@@ -507,9 +510,7 @@ final class GameplayRouteScenario {
         assertTrue(route.tailKeyChest.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, route.tailKeyChest.itemType());
         route.session.entities().tickEntities(route.frame++, 0x38, 0x31);
-        route.session
-                .components
-                .entityBridge()
+        RoomSessionInspection.component(route.session, RoomEntityBridge.class)
                 .outbox
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.chestRewards().applyChestReward(reward.itemType()));
@@ -573,9 +574,7 @@ final class GameplayRouteScenario {
         assertEquals(0x10, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0xD3) & 0x10);
         assertEquals(
                 0xDF,
-                route.session
-                        .components
-                        .roomDoorInteractions()
+                RoomSessionInspection.component(route.session, RoomDoorInteractions.class)
                         .tailCaveKeyholeCountdownForTest(route.session.loadedRoomOrNull().contents));
         route.rumbleTicks = 0;
         route.shookRight = false;
@@ -788,7 +787,8 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().pixelX(),
                             route.link.position().pixelY());
-            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+            assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .consumeWorldLinkMotionBlockRequest());
         }
         route.session
                 .entities()
@@ -796,7 +796,8 @@ final class GameplayRouteScenario {
                         route.frame++,
                         route.link.position().pixelX(),
                         route.link.position().pixelY());
-        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertFalse(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .consumeWorldLinkMotionBlockRequest());
         assertEquals(0x0B, route.session.rooms().activeRoomOrNull().roomObjectsArea()[route.upperKeyDoorIndex]);
         assertEquals(0x0C, route.session.rooms().activeRoomOrNull().roomObjectsArea()[route.lowerKeyDoorIndex]);
         assertEquals(0x01, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x0F) & 0x01);
@@ -1061,9 +1062,7 @@ final class GameplayRouteScenario {
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x21, 0, 0, Direction.UP.javaIndex(), false);
-        route.session
-                .components
-                .entityBridge()
+        RoomSessionInspection.component(route.session, RoomEntityBridge.class)
                 .outbox
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.chestRewards().applyChestReward(reward.itemType()));
@@ -1185,9 +1184,7 @@ final class GameplayRouteScenario {
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x1B, 0, 0, Direction.UP.javaIndex(), false);
-        route.session
-                .components
-                .entityBridge()
+        RoomSessionInspection.component(route.session, RoomEntityBridge.class)
                 .outbox
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.chestRewards().applyChestReward(reward.itemType()));
@@ -1419,9 +1416,7 @@ final class GameplayRouteScenario {
                     .tickEntitiesWithProjectileEvents(
                             route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
         }
-        route.session
-                .components
-                .entityBridge()
+        RoomSessionInspection.component(route.session, RoomEntityBridge.class)
                 .outbox
                 .consumeHeartContainerRewards()
                 .forEach(reward -> route.playerState.vitals().applyHeartContainerReward());
@@ -1456,7 +1451,10 @@ final class GameplayRouteScenario {
                         true,
                         Direction.DOWN.javaIndex(),
                         0));
-        assertEquals(0x1B, route.session.consumePendingMusicTrack());
+        assertEquals(
+                0x1B,
+                RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                        .consumePendingMusicTrack());
         for (int performance = 1; performance <= 88; performance++) {
             route.session
                     .entities()
@@ -1472,7 +1470,7 @@ final class GameplayRouteScenario {
                         .getFirst()
                         .globalDialogId());
         route.session.entityState().setEntityDialogActive(true);
-        route.session.components.entityInputs().updateSetEntityMusicActive(true);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityMusicActive(true);
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
@@ -1480,11 +1478,14 @@ final class GameplayRouteScenario {
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
-        route.session.components.entityInputs().updateSetEntityMusicActive(false);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityMusicActive(false);
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
-        assertEquals(0x20, route.session.consumePendingMusicTrack());
+        assertEquals(
+                0x20,
+                RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                        .consumePendingMusicTrack());
         route.ticksToWarpJingle = 0;
         route.heardWarpJingle = false;
         while (!route.heardWarpJingle && route.ticksToWarpJingle < 0x100) {
@@ -1493,9 +1494,12 @@ final class GameplayRouteScenario {
                     .tickEntitiesWithProjectileEvents(
                             route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
             route.ticksToWarpJingle++;
-            route.heardWarpJingle = route.session.consumeEntityEvents().stream()
-                    .anyMatch(event ->
-                            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x2B);
+            route.heardWarpJingle =
+                    RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                            .consumeEntityEvents()
+                            .stream()
+                            .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                                    && event.soundId() == 0x2B);
         }
         assertTrue(route.heardWarpJingle);
         assertEquals(0xFF, route.ticksToWarpJingle);
@@ -1578,7 +1582,10 @@ final class GameplayRouteScenario {
                 .orElseThrow();
         route.session.entities().tickEntities(route.frame++, 0x10, 0x10);
         route.session.entities().tickEntities(route.frame++, 0x10, 0x10);
-        assertEquals(0x0E, route.session.consumePendingMusicTrack());
+        assertEquals(
+                0x0E,
+                RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                        .consumePendingMusicTrack());
         route.session.entities().tickEntities(route.frame++, route.warningKid.x(), route.warningKid.y());
         assertEquals(
                 0x220,
@@ -1840,7 +1847,10 @@ final class GameplayRouteScenario {
                     new SwordBox(false, 0, 0, 0, 0)));
         }
         assertEquals(0x01, route.session.story().bowWowState());
-        assertEquals(0x10, route.session.consumePendingMusicTrack());
+        assertEquals(
+                0x10,
+                RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                        .consumePendingMusicTrack());
         assertTrue(route.session.entityState().consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x16C));
 
@@ -2396,7 +2406,7 @@ final class GameplayRouteScenario {
                 route.link.position().romEntityX(),
                 route.link.position().romEntityY());
         assertEquals(0x01, RoomDebugFixture.of(route.session).switchableObjectAnimationStageForTest());
-        assertTrue(route.session.consumeEntityEvents().stream()
+        assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class).consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x66
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
                         && event.soundId() == 0x0E));
@@ -2462,7 +2472,8 @@ final class GameplayRouteScenario {
                 int linkEntityY = (maskedMimic.y() + 0x20) & 0xFF;
                 // The first handler tick mirrors Link's down input. The next
                 // sees Link behind that facing and selects vulnerable options $08.
-                route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0x08);
+                RoomSessionInspection.component(route.session, RoomEntityInputs.class)
+                        .updateSetEntityPressedButtonsMask(0x08);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 maskedMimic = route.session
@@ -2488,7 +2499,8 @@ final class GameplayRouteScenario {
                                         && event.swordHit()
                                         && event.enemyDamage() == 1),
                         hitEvents.toString());
-                route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
+                RoomSessionInspection.component(route.session, RoomEntityInputs.class)
+                        .updateSetEntityPressedButtonsMask(0);
                 for (int recovery = 0; recovery < 0x30; recovery++) {
                     route.session
                             .entities()
@@ -2537,7 +2549,7 @@ final class GameplayRouteScenario {
                                 .count());
             }
         }
-        route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityPressedButtonsMask(0);
         route.mimicEventDeadline = route.frame + 0x300;
         while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.mimicEventDeadline) {
@@ -2668,7 +2680,7 @@ final class GameplayRouteScenario {
                 route.link.position().romEntityX(),
                 route.link.position().romEntityY());
         assertEquals(0x01, RoomDebugFixture.of(route.session).switchableObjectAnimationStageForTest());
-        assertTrue(route.session.consumeEntityEvents().stream()
+        assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class).consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x66
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
                         && event.soundId() == 0x0E));
@@ -2731,7 +2743,8 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().pixelX(),
                             route.link.position().pixelY());
-            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+            assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .consumeWorldLinkMotionBlockRequest());
         }
         route.session
                 .entities()
@@ -2739,7 +2752,8 @@ final class GameplayRouteScenario {
                         route.frame++,
                         route.link.position().pixelX(),
                         route.link.position().pixelY());
-        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertFalse(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .consumeWorldLinkMotionBlockRequest());
         assertEquals(0x8C, objectAt(route.session, route.bottomKeyDoorLocation));
         assertEquals(0x08, objectAt(route.session, route.bottomKeyDoorLocation + 1));
         assertEquals(0x08, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x32) & 0x08);
@@ -2776,7 +2790,8 @@ final class GameplayRouteScenario {
             assertEquals(EntityStatus.ACTIVE, route.maskedMimic.status());
             int linkEntityX = route.maskedMimic.x();
             int linkEntityY = (route.maskedMimic.y() + 0x20) & 0xFF;
-            route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0x08);
+            RoomSessionInspection.component(route.session, RoomEntityInputs.class)
+                    .updateSetEntityPressedButtonsMask(0x08);
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             route.maskedMimic =
@@ -2806,7 +2821,8 @@ final class GameplayRouteScenario {
                                 .filter(entity -> entity.type() == 0x2E)
                                 .count());
             }
-            route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
+            RoomSessionInspection.component(route.session, RoomEntityInputs.class)
+                    .updateSetEntityPressedButtonsMask(0);
             for (int recovery = 0; recovery < 0x30; recovery++) {
                 route.session
                         .entities()
@@ -2924,8 +2940,9 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
-            for (ChestRewardEvent reward :
-                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeChestRewardEvents()) {
                 route.compassRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_COMPASS;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
             }
@@ -3001,7 +3018,8 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().pixelX(),
                             route.link.position().pixelY());
-            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+            assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .consumeWorldLinkMotionBlockRequest());
         }
         route.session
                 .entities()
@@ -3009,7 +3027,8 @@ final class GameplayRouteScenario {
                         route.frame++,
                         route.link.position().pixelX(),
                         route.link.position().pixelY());
-        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertFalse(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .consumeWorldLinkMotionBlockRequest());
         assertEquals(0x09, objectAt(route.session, 0x30));
         assertEquals(0x0A, objectAt(route.session, 0x40));
         assertEquals(0x02, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x31) & 0x02);
@@ -3140,7 +3159,7 @@ final class GameplayRouteScenario {
                 assertEquals(0x21, RoomDebugFixture.of(route.session).activeRoomEventForTest());
             }
         }
-        route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityPressedButtonsMask(0);
         route.room30EventDeadline = route.frame + 0x300;
         while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.room30EventDeadline) {
@@ -3241,8 +3260,9 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
-            for (ChestRewardEvent reward :
-                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeChestRewardEvents()) {
                 route.stoneBeakRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_STONE_BEAK;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
             }
@@ -3551,8 +3571,9 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
-            for (ChestRewardEvent reward :
-                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeChestRewardEvents()) {
                 route.room38RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
             }
@@ -3647,8 +3668,9 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
-            for (ChestRewardEvent reward :
-                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeChestRewardEvents()) {
                 route.room39RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
             }
@@ -3708,7 +3730,8 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().pixelX(),
                             route.link.position().pixelY());
-            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+            assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .consumeWorldLinkMotionBlockRequest());
         }
         route.session
                 .entities()
@@ -3716,7 +3739,8 @@ final class GameplayRouteScenario {
                         route.frame++,
                         route.link.position().pixelX(),
                         route.link.position().pixelY());
-        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertFalse(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .consumeWorldLinkMotionBlockRequest());
         assertEquals(0x43, objectAt(route.session, 0x07));
         assertEquals(0x44, objectAt(route.session, 0x08));
         assertEquals(0x04, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x35) & 0x04);
@@ -4495,7 +4519,8 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().pixelX(),
                             route.link.position().pixelY());
-            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+            assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .consumeWorldLinkMotionBlockRequest());
         }
         route.session
                 .entities()
@@ -4503,7 +4528,8 @@ final class GameplayRouteScenario {
                         route.frame++,
                         route.link.position().pixelX(),
                         route.link.position().pixelY());
-        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertFalse(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .consumeWorldLinkMotionBlockRequest());
         assertEquals(0x02, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x21) & 0x02);
         assertEquals(0x01, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x20) & 0x01);
         walkToAndCrossIndoorBoundary(
@@ -4685,8 +4711,9 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
-            for (ChestRewardEvent reward :
-                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeChestRewardEvents()) {
                 route.braceletRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_POWER_BRACELET;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
             }
@@ -4722,9 +4749,7 @@ final class GameplayRouteScenario {
                 "the source event byte reloads but is inert once status bit $10 is set");
         assertFalse(route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == BooBuddyMotion.ENTITY_TYPE));
-        assertTrue(route.session
-                .components
-                .entityBridge()
+        assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
                 .outbox
                 .consumeChestRewardEvents()
                 .isEmpty());
@@ -4957,8 +4982,9 @@ final class GameplayRouteScenario {
                     route.frame++,
                     route.link.position().romEntityX(),
                     route.link.position().romEntityY());
-            for (ChestRewardEvent reward :
-                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeChestRewardEvents()) {
                 route.room22RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
             }
@@ -5241,8 +5267,9 @@ final class GameplayRouteScenario {
                     route.frame++,
                     route.link.position().romEntityX(),
                     route.link.position().romEntityY());
-            for (ChestRewardEvent reward :
-                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeChestRewardEvents()) {
                 route.nightmareKeyRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_NIGHTMARE_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
             }
@@ -5280,9 +5307,7 @@ final class GameplayRouteScenario {
                 "the source event byte reloads but status $10 keeps it inert");
         assertFalse(route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() <= 2));
-        assertTrue(route.session
-                .components
-                .entityBridge()
+        assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
                 .outbox
                 .consumeChestRewardEvents()
                 .isEmpty());
@@ -5399,7 +5424,8 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().pixelX(),
                             route.link.position().pixelY());
-            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+            assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .consumeWorldLinkMotionBlockRequest());
         }
         route.session
                 .entities()
@@ -5407,7 +5433,8 @@ final class GameplayRouteScenario {
                         route.frame++,
                         route.link.position().pixelX(),
                         route.link.position().pixelY());
-        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertFalse(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .consumeWorldLinkMotionBlockRequest());
         assertEquals(0x01, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x24) & 0x01);
         assertEquals(0x02, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x25) & 0x02);
 
@@ -5683,7 +5710,8 @@ final class GameplayRouteScenario {
         assertEquals(0x78, route.room3BPots.get(1).x());
         assertEquals(0x70, route.room3BPots.get(1).y());
 
-        route.session.components.entityInputs().updateSetEntityInventorySlots(0x00, 0x03);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class)
+                .updateSetEntityInventorySlots(0x00, 0x03);
         route.session.entityState().setEntityPowerBraceletButtonHeld(true);
         route.session.entityState().setEntityActionButtonsHeld(false, true);
         route.session.entityState().setEntityAttackStepAnimationCountdown(0);
@@ -5922,7 +5950,8 @@ final class GameplayRouteScenario {
                             route.frame++,
                             route.link.position().pixelX(),
                             route.link.position().pixelY());
-            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+            assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                    .consumeWorldLinkMotionBlockRequest());
         }
         route.session
                 .entities()
@@ -5930,7 +5959,8 @@ final class GameplayRouteScenario {
                         route.frame++,
                         route.link.position().pixelX(),
                         route.link.position().pixelY());
-        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertFalse(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
+                .consumeWorldLinkMotionBlockRequest());
         assertEquals(0x43, objectAt(route.session, 0x04));
         assertEquals(0x44, objectAt(route.session, 0x05));
         assertEquals(0x04, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x2D) & 0x04);

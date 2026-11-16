@@ -1,29 +1,10 @@
 package linksawakening.world.room;
 
+/** Immutable wiring output, containing only the public role contracts. */
 record RoomRoleViews(
         RoomEntities entities,
         RoomEntityState entityState,
         RoomRooms rooms,
         RoomDungeon dungeon,
         RoomProgress progress,
-        RoomTerrain terrain) {
-    static RoomRoleViews create(RoomSessionComponents components, RoomSession session, LoadedRoomHandle loadedRooms) {
-        return new RoomRoleViews(
-                new RoomEntitiesView(new RoomEntitiesView.Dependencies(session)),
-                new RoomEntityControl(new RoomEntityControl.Dependencies(
-                        components.entityBridge(),
-                        components.entityInputs(),
-                        components.followers(),
-                        components.roomSessionViews())),
-                components.roomLoadCoordinator(),
-                components.roomState(),
-                new RoomProgression(
-                        new RoomProgression.Dependencies(
-                                components.entityFrame(),
-                                components.location(),
-                                components.terrain(),
-                                components.roomLoadCoordinator()),
-                        loadedRooms),
-                components.roomObjectMutations());
-    }
-}
+        RoomTerrain terrain) {}

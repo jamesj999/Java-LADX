@@ -11,7 +11,7 @@ public final class RoomSessionTestAccess {
     }
 
     public static int crackedFloorCounter(RoomSession session) {
-        return session.components.terrain().crackedFloorCounter;
+        return RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter;
     }
 
     public static int overworldStatus(RoomSession session, int roomId) {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import linksawakening.vfx.TransientVfxSystem;
 import org.junit.jupiter.api.Test;
 
 class RoomRuntimeTest {
@@ -14,9 +15,13 @@ class RoomRuntimeTest {
         var room = session.rooms().activeRoomOrNull();
         var entities = session.loadedRoomOrNull().entities;
         var first = new RoomRuntime(
-                session.loadedRoomOrNull().contents, entities, session.components.roomRuntimeServices());
+                session.loadedRoomOrNull().contents,
+                entities,
+                RoomSessionInspection.component(session, RoomRuntime.Services.class));
         var replacement = new RoomRuntime(
-                session.loadedRoomOrNull().contents, entities, session.components.roomRuntimeServices());
+                session.loadedRoomOrNull().contents,
+                entities,
+                RoomSessionInspection.component(session, RoomRuntime.Services.class));
         assertSame(room, first.room);
         assertSame(entities, first.entities);
         assertNotSame(first.collisions, replacement.collisions);
@@ -30,11 +35,15 @@ class RoomRuntimeTest {
         assertThrows(
                 NullPointerException.class,
                 () -> new RoomRuntime(
-                        null, session.loadedRoomOrNull().entities, session.components.roomRuntimeServices()));
+                        null,
+                        session.loadedRoomOrNull().entities,
+                        RoomSessionInspection.component(session, RoomRuntime.Services.class)));
         assertThrows(
                 NullPointerException.class,
                 () -> new RoomRuntime(
-                        session.loadedRoomOrNull().contents, null, session.components.roomRuntimeServices()));
+                        session.loadedRoomOrNull().contents,
+                        null,
+                        RoomSessionInspection.component(session, RoomRuntime.Services.class)));
     }
 
     @Test
@@ -99,7 +108,8 @@ class RoomRuntimeTest {
         var session = RoomRenderAllocationTest.room();
         var role = session.entities();
         var first = session.loadedRoomOrNull();
-        var replacement = new RoomRuntime(first.contents, first.entities, session.components.roomRuntimeServices());
+        var replacement = new RoomRuntime(
+                first.contents, first.entities, RoomSessionInspection.component(session, RoomRuntime.Services.class));
         session.installRoom(replacement);
         assertSame(replacement, session.loadedRoomOrNull());
         assertSame(role, session.entities());
@@ -119,11 +129,13 @@ class RoomRuntimeTest {
                 new linksawakening.world.entity.RomRandomByteSource()));
         session.entityState().setEntityDialogActive(true);
         session.entityState().setEntityTalkState(true, 7, 0x80);
-        org.junit.jupiter.api.Assertions.assertTrue(session.components.entityInputs().entityDialogActive);
-        assertEquals(7, session.components.entityInputs().entityDialogCooldown);
+        org.junit.jupiter.api.Assertions.assertTrue(
+                RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogActive);
+        assertEquals(7, RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogCooldown);
         assertThrows(IllegalArgumentException.class, () -> session.entityState().setEntityTalkState(false, 256, 0));
-        assertEquals(7, session.components.entityInputs().entityDialogCooldown);
-        org.junit.jupiter.api.Assertions.assertTrue(session.components.entityInputs().entityInventoryAppearing);
+        assertEquals(7, RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogCooldown);
+        org.junit.jupiter.api.Assertions.assertTrue(
+                RoomSessionInspection.component(session, RoomEntityInputs.class).entityInventoryAppearing);
         org.junit.jupiter.api.Assertions.assertFalse(session.hasRoom());
     }
 
@@ -138,7 +150,7 @@ class RoomRuntimeTest {
                 new linksawakening.physics.OverworldCollision(linksawakening.rom.RomTables.load(rom)),
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
-        session.components.location().shouldGetLostInMysteriousWoods = true;
+        RoomSessionInspection.component(session, RoomLocationState.class).shouldGetLostInMysteriousWoods = true;
         var result = session.tickEntities(new EntityTickInputs(
                 3,
                 new LinkPosition(260, -1, 257, 5, 0),
@@ -146,22 +158,26 @@ class RoomRuntimeTest {
                 0,
                 new SwordBox(false, 0, 0, 0, 0)));
         org.junit.jupiter.api.Assertions.assertTrue(result.isEmpty());
-        assertEquals(4, session.components.followers().followingLinkX);
-        assertEquals(255, session.components.followers().followingLinkY);
-        assertEquals(1, session.components.followers().followingLinkZ);
-        assertEquals(5, session.components.followers().followingLinkDirection);
-        assertEquals(0xE1, session.components.entityFrame().currentLinkMotionState);
-        org.junit.jupiter.api.Assertions.assertFalse(session.components.location().shouldGetLostInMysteriousWoods);
+        assertEquals(4, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkX);
+        assertEquals(255, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkY);
+        assertEquals(1, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkZ);
+        assertEquals(5, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkDirection);
+        assertEquals(
+                0xE1, RoomSessionInspection.component(session, RoomEntitySessionState.class).currentLinkMotionState);
+        org.junit.jupiter.api.Assertions.assertFalse(
+                RoomSessionInspection.component(session, RoomLocationState.class).shouldGetLostInMysteriousWoods);
     }
 
     @Test
     void disabledPresentationHasNoEffectsAndKeepsTheEntityRequestGateOff() {
         var session = RoomRenderAllocationTest.room();
-        var effects = session.components.transientVfxSystem();
-        org.junit.jupiter.api.Assertions.assertNotNull(session.components.droppableRupeeSystem());
+        var effects = RoomSessionInspection.component(session, TransientVfxSystem.class);
+        org.junit.jupiter.api.Assertions.assertNotNull(
+                RoomSessionInspection.component(session, DroppableRupeeSystem.class));
         assertEquals(-1, effects.spawn(linksawakening.vfx.TransientVfxType.POOF, 16, 32));
         assertEquals(0, effects.activeCount());
         org.junit.jupiter.api.Assertions.assertFalse(
-                session.components.entityEffects().transientVfxEnabled());
+                RoomSessionInspection.component(session, RoomEntitySimulation.EffectsDependencies.class)
+                        .transientVfxEnabled());
     }
 }

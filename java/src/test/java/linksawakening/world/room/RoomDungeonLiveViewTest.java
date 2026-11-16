@@ -17,7 +17,7 @@ class RoomDungeonLiveViewTest {
         bytes[RomSymbols.MapLayout12.offset()] = 9;
         bytes[RomSymbols.MapLayout11.offset()] = 10;
         var session = RoomRenderAllocationTest.room(bytes);
-        var world = session.components.roomState();
+        var world = RoomSessionInspection.component(session, RoomWorldState.class);
         world.indoorARoomStatus[7] = 21;
         world.indoorBRoomStatus[8] = 22;
         world.indoorBRoomStatus[9] = 23;
@@ -54,6 +54,6 @@ class RoomDungeonLiveViewTest {
                         session.loadedRoomOrNull().contents.puzzles,
                         session.loadedRoomOrNull().contents.overrides),
                 session.loadedRoomOrNull().entities,
-                session.components.roomRuntimeServices()));
+                RoomSessionInspection.component(session, RoomRuntime.Services.class)));
     }
 }

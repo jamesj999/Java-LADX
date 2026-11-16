@@ -13,21 +13,57 @@ import linksawakening.world.object.OverworldBushInteraction;
 final class RoomSessionContext {
     private final RoomSessionComponents.Builder values = new RoomSessionComponents.Builder();
 
-    static RoomSessionComponents create(
+    static Wiring create(
             RoomSessionConfig config,
             LoadedRoomHandle loadedRooms,
             java.util.function.Consumer<RoomRuntime> installRoom,
-            java.util.function.UnaryOperator<RoomRuntime> roomLoaded,
-            Runnable resetRoomTransients) {
-        return new RoomSessionContext(config, loadedRooms, installRoom, roomLoaded, resetRoomTransients).values.build();
+            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
+        return new RoomSessionContext(config, loadedRooms, installRoom, roomLoaded).wire(loadedRooms);
+    }
+
+    record Wiring(
+            RoomRoleViews roles,
+            RoomDoors doors,
+            RoomTransitions transitions,
+            RoomPlayerItems playerItems,
+            RoomStory story,
+            RoomFrameInputApplier frameInputs,
+            EntityFrameResults frameResults,
+            RoomDungeonLiveView dungeonView) {}
+
+    private Wiring wire(LoadedRoomHandle rooms) {
+        RoomSessionComponents c = values.build();
+        RoomRoleViews roles = new RoomRoleViews(
+                c.entityBridge(),
+                new RoomEntityControl(new RoomEntityControl.Dependencies(
+                        c.entityBridge(), c.entityInputs(), c.followers(), c.roomSessionViews())),
+                c.roomLoadCoordinator(),
+                c.roomState(),
+                new RoomProgression(
+                        new RoomProgression.Dependencies(
+                                c.entityFrame(), c.location(), c.terrain(), c.roomLoadCoordinator()),
+                        rooms),
+                c.roomObjectMutations());
+        return new Wiring(
+                roles,
+                c.roomDoorInteractions(),
+                c.roomTransitionController(),
+                c.roomPlayerItemActions(),
+                c.roomStoryState(),
+                new RoomFrameInputApplier(
+                        c.entityInputs(), c.entityBridge(), c.entityFrame(), roles.entityState(), c.roomStoryState()),
+                new EntityFrameResults(
+                        new LinkOutputs(c.linkOutputsDependencies(), c.entityBridge()),
+                        new RewardOutputs(c.rewardOutputsDependencies(), c.entityBridge()),
+                        new PresentationOutputs(c.entityBridge())),
+                c.roomState().view());
     }
 
     private RoomSessionContext(
             RoomSessionConfig config,
             LoadedRoomHandle loadedRooms,
             java.util.function.Consumer<RoomRuntime> installRoom,
-            java.util.function.UnaryOperator<RoomRuntime> roomLoaded,
-            Runnable resetRoomTransients) {
+            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
 
         var romData = config.romData();
         var gpu = config.gpu();
@@ -79,6 +115,12 @@ final class RoomSessionContext {
                 values.droppableRupeeSystem,
                 values.entityFrame,
                 values.transientVfxSystem));
+        RoomTransientState transients = values.roomTransientState;
+        Runnable resetRoomTransients = () -> {
+            RoomRuntime loaded = loadedRooms.currentOrNull();
+            if (loaded == null) transients.clearTransientRoomState();
+            else transients.clearTransientRoomState(loaded.contents);
+        };
         values.roomCollisionQueries = new RoomCollisionQueries(new RoomCollisionQueries.Dependencies(
                 values.entityFrame,
                 values.terrain,
@@ -266,6 +308,8 @@ final class RoomSessionContext {
                 loadedRooms,
                 new RoomEntityBridge.Dependencies(
                         values.entityFrame,
+                        values.roomState,
+                        values.entityInputs,
                         values.followers,
                         values.items,
                         values.location,
