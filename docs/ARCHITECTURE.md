@@ -83,7 +83,9 @@ package placement does not imply that every pair is independent.
 
 The root contains `GameSession`, the public `HeadlessGameDriver` entry point,
 `LaunchOptions` and `FramePacer`. `GameSession` owns one desktop/headless frame loop and delegates to the
-objects built by `app.wiring.SessionWiring`.
+objects built by `app.wiring.SessionWiring`. Its retained `RecordingControl` is
+constructed before wiring because launch options can start recording before
+host initialization; the control decorates the host when wiring builds it.
 
 | Package | Responsibility |
 | --- | --- |
@@ -159,8 +161,19 @@ editor bindings still use functional reads/writes for editable values.
 `GameOverFlow`, `DialogBlockerPolicy`, `DebugTeleporter`, `SessionInput`,
 `FramePresentation` and `SessionShutdown` own their respective behavior.
 Required service references are validated at construction. Opening-story presence remains confined to its lifecycle owner. Closed menus and
-death/game-over sequences use explicit inactive/active states; absent selected
-swords are equipment-domain values.
+death/game-over sequences use explicit inactive/active states. GameplayScreen
+asks its driver to render the current recovery sequence: PassOutController
+applies its GameOver presentation only in that state, without exporting a
+nullable menu snapshot. Absent selected swords are equipment-domain values.
+
+Other app absences have independent lifetimes: wake-up/shield motions may be
+absent after loading or debug entry; configured start scenes and respawn points
+may be unspecified; effect/dialog/sound requests may have no result. Diagnostic
+Tarin/sword values retain their documented sentinels. Input caches distinguish
+unseeded entries from reusable snapshots. Session/host resources and navigator
+attachment have initialization/shutdown boundaries; the spare key buffer is
+borrowed during reentrant dispatch. Public static input/cooldown helpers retain
+their existing nullable boundary contracts. These are not inactive screens.
 
 `HeadlessGameDriver` retains its public input/stepping API. Its nested `State`
 and `Diagnostics` implement the `HeadlessState` and `SessionDiagnostics`
@@ -286,8 +299,9 @@ traversal respectively. LinkMotionStatus contains explicit shared mode/recovery
 gates. LinkMotion composes LinkPosition for XY subpixels, speeds and position
 shadows, plus LinkCollisionState for probe/mask/door-warp state. LinkAirborne
 owns jump/landing orchestration, LinkPitFall owns pit probing and fall timing,
-and LinkElevation is their explicit height/speed state. These state fields are
-private; no implementation superclass remains.
+and LinkElevation is their explicit height/speed state. Position, collision and
+elevation storage is private; small shared animation/item
+state holders also have package-visible fields. No implementation superclass remains.
 
 LinkAnimator owns pose selection and scripted presentations. LinkSpriteComposer
 receives selected pose values and owns body tile composition/equipment draw
@@ -371,6 +385,15 @@ and source collision ordering are unchanged. Immutable ground samples are reused
 per cell and replaced when object or physics values change. Physics remains input-free,
 enforced by StateDependencyTest.
 
+### `recording`
+
+RecordingControl owns recording configuration, toggle/close, output naming and
+host status. Its inactive capture state is a reusable no-op. GameplayRecorder
+owns encoder processes and frame/audio output; RecordingHost taps mixed PCM
+before device buffering. GameSession calls begin before update and capture
+after composition. Turning recording off detaches the audio tap before closing
+the encoder. Recording-off frame paths allocate no objects.
+
 ### `render`
 
 Frame scenes, indexed planes, OAM submission, hardware composition and GL presentation.
@@ -389,7 +412,8 @@ Rom construction uses validated `of` or explicitly alignment-unchecked
 `unchecked`; its constructor is private. Tests use `TestRoms.partial` for
 synthetic buffers. RomTables exposes themed table holders only: all deprecated
 aggregate methods and RomUtil delegates are removed. The five app wiring byte
-handoffs are migrated, and no backing-array escape hatch remains. Shared storage,
+handoffs are migrated, and no public backing-array escape hatch remains.
+Package-visible backingStorage supports identity assertions in ROM tests. Shared storage,
 partial-buffer validation timing and read bounds are unchanged.
 
 ### `save`
@@ -643,7 +667,7 @@ buffers; UI setters retain their original copying contracts. Historical scroll
 rooms continue to use owned snapshots.
 
 With escape analysis disabled, whole-frame idle/walking/inventory measure
-0 / approximately 139.5 / 0 B/frame. Update-only idle/active measure 0 / 137.
+0 / approximately 139.5 / 0 B/frame. Update-only idle/active measure 0 / approximately 138.
 Their budgets are 0/175/0 and 0/172 respectively. Reusable assembly, construction
 and representative VFX composition measure zero. Recording disabled contributes
 no steady frame allocation. EntityFrameContext and its LinkState remain immutable
@@ -1087,7 +1111,9 @@ The session uses `FrameAudioPlayer` with host-created `PcmSoundOutput`.
 `MusicDirector.tick()` advances it once per game frame. Sample remainders
 preserve long-term sample totals. Dialog and gameplay effect routing share the
 ROM-backed SFX driver/APU path with music. Headless output discards PCM.
-The session closes its output resources.
+The session closes its output resources. FrameAudioPlayer exposes a register
+observer for diagnostic tracing of the shared music/SFX APU. CutsceneManager
+can observe intro noise requests before forwarding them to the installed sink.
 
 The independent browser retains `OpenAlMusicPlayer` and sample-driven buffering.
 Its transport is not the gameplay frame clock. Native audio is unnecessary for
@@ -1099,7 +1125,8 @@ session gameplay integration described in its final section.
 `RomSymbols` provides generated exact-label addresses. Regeneration uses a
 locally built RGBDS symbol file; normal builds do not require the disassembly.
 `Rom` is a read-only view of caller-owned bytes: callers preserve the backing
-array, while `slice` returns a copy. Prefer typed `u8`, `u16le` and slice reads.
+array. `bytes(address, length)` returns a copy, while `view(address, length)`
+returns a bounded shared RomSlice. Prefer typed `u8`, `u16le` and bounded reads.
 `RomAddress` centralizes bank-window/file-offset conversion and advancement.
 
 `GbcBanks.adjust` mirrors the ROM's bank adjustment explicitly at loader call
@@ -1120,6 +1147,19 @@ Run commands from `java/` with the checked-in Gradle wrapper and JDK 21.
 Unit tests use synthetic data for focused behavior and deterministic boundaries.
 Compiled architecture guards check dependencies and inheritance; behavioral tests
 check execution order. SuppressionReasonTest requires local intent comments.
+Non-world JUnit diagnostics and allocation measurements use TestReporter outside
+measured loops; Gradle records entries as properties in its test-result XML.
+Standalone capture/trace programs retain their CLI output.
+
+Shared TestLinks and HinoxEffects fixtures name test inputs; render tests use the
+existing world RoomEntityBuilder and event builders, preserving ROM slot identity
+and raw byte values. Direct construction remains inside named factories and
+constructor-validation tests. Reflection remains for structural field inventories,
+exhaustive ROM table checksums, constant-contract comparisons and automatic
+scene-parity observer discovery across test fixtures. The standalone
+SwordRngCapture still needs a world-owned inspection fixture for loaded Slime Eye
+state and the slow-transition timer; its old private traversal is not a supported
+session diagnostic API.
 
 ROM integration classes use `@RequiresRom` and `TestRom.open()`.
 The annotation tags and skips integration tests when the ROM is absent;
