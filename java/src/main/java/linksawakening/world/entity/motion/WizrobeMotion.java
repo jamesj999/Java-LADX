@@ -16,8 +16,10 @@ public final class WizrobeMotion {
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: raw +1/$FF step through appearance and disappearance states.
+    final int[] phaseStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: appearance, firing and disappearance phase timer.
+    final int[] phaseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] currentSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -60,11 +62,11 @@ public final class WizrobeMotion {
     }
 
     public int privateState1(int slot) {
-        return privateState1[slot] & 0xFF;
+        return phaseStep[slot] & 0xFF;
     }
 
     public int privateCountdown1(int slot) {
-        return privateCountdown1[slot] & 0xFF;
+        return phaseCountdown[slot] & 0xFF;
     }
 
     public int nextSpriteVariant(int slot) {
@@ -91,8 +93,8 @@ public final class WizrobeMotion {
     private void reset(int slot) {
         state[slot] = 0;
         direction[slot] = 0;
-        privateState1[slot] = 0;
-        privateCountdown1[slot] = 0;
+        phaseStep[slot] = 0;
+        phaseCountdown[slot] = 0;
         currentSpriteVariant[slot] = 0;
     }
 
@@ -160,8 +162,8 @@ public final class WizrobeMotion {
             if (!owner.initialized[slot]) {
                 owner.initialize(slot, entity.spriteVariant());
             }
-            if (owner.privateCountdown1[slot] > 0) {
-                owner.privateCountdown1[slot]--;
+            if (owner.phaseCountdown[slot] > 0) {
+                owner.phaseCountdown[slot]--;
             }
 
             // RenderActiveEntitySpritesPair runs before the state dispatch. Keep
@@ -175,7 +177,7 @@ public final class WizrobeMotion {
             // writes normal physics on its >=2 countdown path, but its $01/$00
             // branches return without touching the table; preserve the previous
             // value for those two frames.
-            physicsFlags = (owner.state[slot] & 0xFF) == 3 && owner.privateCountdown1[slot] >= 0x02
+            physicsFlags = (owner.state[slot] & 0xFF) == 3 && owner.phaseCountdown[slot] >= 0x02
                     ? 0x02
                     : ((owner.state[slot] & 0xFF) == 3 ? currentPhysicsFlags & 0xFF : 0x42);
             projectileSpawn = null;
@@ -215,8 +217,8 @@ public final class WizrobeMotion {
         private boolean advanceState0() {
             if (countdown == 0) {
                 owner.state[slot] = 1;
-                owner.privateState1[slot] = 0x01;
-                owner.privateCountdown1[slot] = 0x20;
+                owner.phaseStep[slot] = 0x01;
+                owner.phaseCountdown[slot] = 0x20;
             }
             nextVariant = 0xFF;
 
@@ -224,10 +226,10 @@ public final class WizrobeMotion {
         }
 
         private boolean advanceState1() {
-            if (owner.privateCountdown1[slot] != 0) {
-                nextVariant = (owner.privateState1[slot] & 0x02) != 0 ? 0 : 0xFF;
+            if (owner.phaseCountdown[slot] != 0) {
+                nextVariant = (owner.phaseStep[slot] & 0x02) != 0 ? 0 : 0xFF;
             } else {
-                owner.state[slot] = (owner.state[slot] + owner.privateState1[slot]) & 0xFF;
+                owner.state[slot] = (owner.state[slot] + owner.phaseStep[slot]) & 0xFF;
                 countdown = 0x30;
             }
 
@@ -236,14 +238,14 @@ public final class WizrobeMotion {
 
         private boolean advanceState2() {
             nextVariant = 0;
-            if (owner.privateCountdown1[slot] < 0x02) {
-                if (owner.privateCountdown1[slot] == 0x01) {
-                    owner.state[slot] = (owner.state[slot] + owner.privateState1[slot]) & 0xFF;
+            if (owner.phaseCountdown[slot] < 0x02) {
+                if (owner.phaseCountdown[slot] == 0x01) {
+                    owner.state[slot] = (owner.state[slot] + owner.phaseStep[slot]) & 0xFF;
                     if (owner.state[slot] == 0x01) {
-                        owner.privateCountdown1[slot] = 0x20;
+                        owner.phaseCountdown[slot] = 0x20;
                     }
                 } else {
-                    owner.privateCountdown1[slot] = 0x18;
+                    owner.phaseCountdown[slot] = 0x18;
                 }
             }
 
@@ -251,15 +253,15 @@ public final class WizrobeMotion {
         }
 
         private boolean advanceState3() {
-            if (owner.privateCountdown1[slot] == 0x28) {
+            if (owner.phaseCountdown[slot] == 0x28) {
                 projectileSpawn = owner.projectileSpawn(entity, owner.direction[slot]);
                 physicsFlags = 0x02;
-            } else if (owner.privateCountdown1[slot] < 0x02) {
-                if (owner.privateCountdown1[slot] == 0x01) {
-                    owner.privateState1[slot] = 0xFF;
+            } else if (owner.phaseCountdown[slot] < 0x02) {
+                if (owner.phaseCountdown[slot] == 0x01) {
+                    owner.phaseStep[slot] = 0xFF;
                     owner.state[slot] = (owner.state[slot] - 1) & 0xFF;
                 } else {
-                    owner.privateCountdown1[slot] = 0x40;
+                    owner.phaseCountdown[slot] = 0x40;
                     owner.direction[slot] =
                             WizrobeMotion.directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
                     nextVariant = owner.direction[slot] + 1;

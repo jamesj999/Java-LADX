@@ -39,8 +39,10 @@ public final class MiniMoldormMotion {
     final int[][] historyY = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
     final int[] historyKey = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: sixteen-entry movement and head-sprite table index.
+    final int[] headingIndex = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState2Table: signed step around the sixteen-heading table.
+    final int[] turnStep = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -66,8 +68,8 @@ public final class MiniMoldormMotion {
         Arrays.fill(historyX[key], 0);
         Arrays.fill(historyY[key], 0);
         inertia[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
+        headingIndex[slot] = 0;
+        turnStep[slot] = 0;
         privateCountdown1[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -88,8 +90,8 @@ public final class MiniMoldormMotion {
         }
         initialized[slot] = false;
         inertia[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
+        headingIndex[slot] = 0;
+        turnStep[slot] = 0;
         privateCountdown1[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -147,11 +149,11 @@ public final class MiniMoldormMotion {
     }
 
     int privateState1(int slot) {
-        return privateState1[slot];
+        return headingIndex[slot];
     }
 
     int privateState2(int slot) {
-        return privateState2[slot];
+        return turnStep[slot];
     }
 
     int speedX(int slot) {
@@ -311,11 +313,11 @@ public final class MiniMoldormMotion {
             }
 
             if (collisionFlags != 0) {
-                owner.privateState1[slot] = (collisionFlags & 0x01) != 0
+                owner.headingIndex[slot] = (collisionFlags & 0x01) != 0
                         ? 0x08
                         : (collisionFlags & 0x02) != 0 ? 0x00 : (collisionFlags & 0x04) != 0 ? 0x04 : 0x0C;
                 if ((randomByteSupplier.getAsInt() & 0x01) == 0) {
-                    owner.privateState2[slot] = -owner.privateState2[slot];
+                    owner.turnStep[slot] = -owner.turnStep[slot];
                 }
                 nextTransitionCountdown = 0x10;
             }
@@ -326,15 +328,15 @@ public final class MiniMoldormMotion {
 
             if (owner.privateCountdown1[slot] == 0) {
                 owner.privateCountdown1[slot] = 0x04;
-                owner.privateState1[slot] = (owner.privateState1[slot] + owner.privateState2[slot]) & 0x0F;
-                owner.headSpriteVariant[slot] = MiniMoldormMotion.HEAD_SPRITE_VARIANTS[owner.privateState1[slot]];
-                owner.speedY[slot] = MiniMoldormMotion.Y_SPEEDS[owner.privateState1[slot]];
-                owner.speedX[slot] = MiniMoldormMotion.X_SPEEDS[owner.privateState1[slot]];
+                owner.headingIndex[slot] = (owner.headingIndex[slot] + owner.turnStep[slot]) & 0x0F;
+                owner.headSpriteVariant[slot] = MiniMoldormMotion.HEAD_SPRITE_VARIANTS[owner.headingIndex[slot]];
+                owner.speedY[slot] = MiniMoldormMotion.Y_SPEEDS[owner.headingIndex[slot]];
+                owner.speedX[slot] = MiniMoldormMotion.X_SPEEDS[owner.headingIndex[slot]];
             }
 
             if (nextTransitionCountdown == 0) {
                 nextTransitionCountdown = 0x10 + (randomByteSupplier.getAsInt() & 0x1F);
-                owner.privateState2[slot] = (randomByteSupplier.getAsInt() & 0x02) - 1;
+                owner.turnStep[slot] = (randomByteSupplier.getAsInt() & 0x02) - 1;
             }
 
             key = owner.historyKey[slot];

@@ -46,7 +46,8 @@ public final class MoblinKingMotion {
     final int[] xAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] yAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] zAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: hop-and-shoot pause; emits the arrow at $0C.
+    final int[] hopShotCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] bodyVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -84,7 +85,7 @@ public final class MoblinKingMotion {
         xAccumulator[slot] = 0;
         yAccumulator[slot] = 0;
         zAccumulator[slot] = 0;
-        privateCountdown1[slot] = 0;
+        hopShotCountdown[slot] = 0;
         privateCountdown2[slot] = 0;
         bodyVariant[slot] = 0;
         weaponFrame[slot] = 0;
@@ -253,8 +254,8 @@ public final class MoblinKingMotion {
         }
 
         private boolean advanceHopAndShoot() {
-            if (owner.privateCountdown1[slot] != 0) {
-                if (owner.privateCountdown1[slot] == 0x0C) {
+            if (owner.hopShotCountdown[slot] != 0) {
+                if (owner.hopShotCountdown[slot] == 0x0C) {
                     int facing = owner.direction[slot] & 1;
                     arrow = new MoblinKingMotion.ArrowRequest(
                             (x + MoblinKingMotion.ARROW_X_OFFSETS[facing]) & 0xFF,
@@ -263,7 +264,7 @@ public final class MoblinKingMotion {
                             0,
                             facing);
                 }
-                variant = owner.privateCountdown1[slot] < 0x0C ? 0 : 2;
+                variant = owner.hopShotCountdown[slot] < 0x0C ? 0 : 2;
                 owner.speedX[slot] = 0;
                 owner.speedY[slot] = 0;
             } else if (slowTransitionCountdown == 0) {
@@ -284,7 +285,7 @@ public final class MoblinKingMotion {
                 owner.direction[slot] = MoblinKingMotion.directionToLink(x, linkX);
                 if (owner.privateCountdown2[slot] == 0) {
                     owner.privateCountdown2[slot] = (randomByteSupplier.getAsInt() & 0x3F) + 0x30;
-                    owner.privateCountdown1[slot] = 0x18;
+                    owner.hopShotCountdown[slot] = 0x18;
                 }
             }
 
@@ -416,8 +417,8 @@ public final class MoblinKingMotion {
             backgroundCollision = inputs.backgroundCollision();
             touchingLink = inputs.touchingLink();
             slot = entity.slot();
-            if (owner.privateCountdown1[slot] > 0) {
-                owner.privateCountdown1[slot]--;
+            if (owner.hopShotCountdown[slot] > 0) {
+                owner.hopShotCountdown[slot]--;
             }
             if (owner.privateCountdown2[slot] > 0) {
                 owner.privateCountdown2[slot]--;

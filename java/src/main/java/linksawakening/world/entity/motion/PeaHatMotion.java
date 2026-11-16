@@ -23,7 +23,8 @@ public final class PeaHatMotion {
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: step added to rotor-animation inertia while taking off or landing.
+    private final int[] rotorAnimationStep = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -37,7 +38,7 @@ public final class PeaHatMotion {
     public void initialize(int slot) {
         state[slot] = 0;
         slowTransitionCountdown[slot] = 0;
-        privateState1[slot] = 0;
+        rotorAnimationStep[slot] = 0;
         privateState2[slot] = 0;
         privateState3[slot] = 0;
         privateState4[slot] = 0;
@@ -90,15 +91,15 @@ public final class PeaHatMotion {
                 if (slowTransitionCountdown[slot] == 0) {
                     state[slot] = 1;
                 }
-                if (privateState1[slot] != 0 && (frame & 0x1F) == 0) {
-                    privateState1[slot]--;
+                if (rotorAnimationStep[slot] != 0 && (frame & 0x1F) == 0) {
+                    rotorAnimationStep[slot]--;
                 }
                 variant = animate(slot);
             }
             case 1 -> {
-                if (privateState1[slot] < 0x08) {
+                if (rotorAnimationStep[slot] < 0x08) {
                     if ((frame & 0x0F) == 0) {
-                        privateState1[slot]++;
+                        rotorAnimationStep[slot]++;
                     }
                     variant = animate(slot);
                 } else {
@@ -144,7 +145,7 @@ public final class PeaHatMotion {
     }
 
     public int privateState1(int slot) {
-        return privateState1[slot];
+        return rotorAnimationStep[slot];
     }
 
     public int privateState4(int slot) {
@@ -168,7 +169,7 @@ public final class PeaHatMotion {
     }
 
     private int animate(int slot) {
-        int sum = privateState1[slot] + inertia[slot];
+        int sum = rotorAnimationStep[slot] + inertia[slot];
         int value = sum & 0xFF;
         boolean carry = sum > 0xFF;
         inertia[slot] = value;

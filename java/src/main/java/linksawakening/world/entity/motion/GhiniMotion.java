@@ -19,7 +19,8 @@ public final class GhiniMotion {
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: time until choosing a new vertical target direction.
+    private final int[] verticalRetargetCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetXDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetYDirection = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -39,7 +40,7 @@ public final class GhiniMotion {
     public void initialize(int slot, int entityType) {
         state[slot] = isHidingType(entityType) ? HIDDEN_STATE : 0;
         transitionCountdown[slot] = 0;
-        privateCountdown1[slot] = 0;
+        verticalRetargetCountdown[slot] = 0;
         privateCountdown2[slot] = 0;
         targetXDirection[slot] = 0;
         targetYDirection[slot] = 0;
@@ -76,9 +77,9 @@ public final class GhiniMotion {
             transitionCountdown[slot] = 0x20 | (random & 0x1F);
             targetXDirection[slot] = random & 0x01;
         }
-        if (privateCountdown1[slot] == 0) {
+        if (verticalRetargetCountdown[slot] == 0) {
             int random = randomByteSupplier.getAsInt() & 0xFF;
-            privateCountdown1[slot] = 0x18 | (random & 0x0F);
+            verticalRetargetCountdown[slot] = 0x18 | (random & 0x0F);
             targetYDirection[slot] = random & 0x01;
         }
 
@@ -94,10 +95,10 @@ public final class GhiniMotion {
             int visualY = (y - z) & 0xFF;
             if (visualY < 0x28) {
                 targetYDirection[slot] = 0;
-                privateCountdown1[slot] = 0x20;
+                verticalRetargetCountdown[slot] = 0x20;
             } else if (visualY >= 0x60) {
                 targetYDirection[slot] = 1;
-                privateCountdown1[slot] = 0x20;
+                verticalRetargetCountdown[slot] = 0x20;
             }
 
             speedX[slot] = approachTarget(speedX[slot], TARGET_X_SPEEDS[targetXDirection[slot]]);
@@ -154,7 +155,7 @@ public final class GhiniMotion {
     }
 
     public int privateCountdown1(int slot) {
-        return privateCountdown1[slot];
+        return verticalRetargetCountdown[slot];
     }
 
     public int targetXDirection(int slot) {
@@ -177,8 +178,8 @@ public final class GhiniMotion {
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
+        if (verticalRetargetCountdown[slot] > 0) {
+            verticalRetargetCountdown[slot]--;
         }
         if (privateCountdown2[slot] > 0) {
             privateCountdown2[slot]--;
@@ -233,9 +234,9 @@ public final class GhiniMotion {
             transitionCountdown[slot] = 0x20 | (random & 0x1F);
             targetXDirection[slot] = random & 0x01;
         }
-        if (privateCountdown1[slot] == 0) {
+        if (verticalRetargetCountdown[slot] == 0) {
             int random = randomByteSupplier.getAsInt() & 0xFF;
-            privateCountdown1[slot] = 0x18 | (random & 0x0F);
+            verticalRetargetCountdown[slot] = 0x18 | (random & 0x0F);
             targetYDirection[slot] = random & 0x01;
         }
 
@@ -254,10 +255,10 @@ public final class GhiniMotion {
         int visualY = (y - z) & 0xFF;
         if (visualY < 0x28) {
             targetYDirection[slot] = 0;
-            privateCountdown1[slot] = 0x20;
+            verticalRetargetCountdown[slot] = 0x20;
         } else if (visualY >= 0x60) {
             targetYDirection[slot] = 1;
-            privateCountdown1[slot] = 0x20;
+            verticalRetargetCountdown[slot] = 0x20;
         }
 
         speedX[slot] = approachTarget(speedX[slot], TARGET_X_SPEEDS[targetXDirection[slot]]);

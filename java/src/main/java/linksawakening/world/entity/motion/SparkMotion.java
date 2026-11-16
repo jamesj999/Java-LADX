@@ -13,7 +13,8 @@ public final class SparkMotion {
     private static final int[] SPEED_X_BY_INDEX = {0x10, 0x00, 0xF0, 0x00, 0x10, 0x00, 0xF0, 0x00};
     private static final int[] COLLISION_MASK_BY_INDEX = {0x01, 0x08, 0x02, 0x04, 0x01, 0x04, 0x02, 0x08};
 
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: four-way wall-following turn index, combined with the winding offset.
+    private final int[] wallTurnIndex = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -24,7 +25,7 @@ public final class SparkMotion {
 
     /** Mirrors EntityInitSparkCounterClockwise/Clockwise in bank $03. */
     public void initialize(int slot, int entityType) {
-        privateState1[slot] = 0;
+        wallTurnIndex[slot] = 0;
         privateState2[slot] = entityType == 0x17 ? 4 : 0;
         transitionCountdown[slot] = 0;
         speedX[slot] = 0;
@@ -54,19 +55,19 @@ public final class SparkMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         RoomEntity moved = withPosition(entity, x, y);
         int collisionMask = collisionMask(moved, backgroundCollision);
-        int tableIndex = (privateState1[slot] + privateState2[slot]) & 0x07;
+        int tableIndex = (wallTurnIndex[slot] + privateState2[slot]) & 0x07;
 
         if ((collisionMask & COLLISION_MASK_BY_INDEX[tableIndex]) != 0) {
-            privateState1[slot] = (privateState1[slot] + 1) & 0x03;
+            wallTurnIndex[slot] = (wallTurnIndex[slot] + 1) & 0x03;
         } else if (transitionCountdown[slot] != 0) {
             if (transitionCountdown[slot] == 6) {
-                privateState1[slot] = (privateState1[slot] + 3) & 0x03;
+                wallTurnIndex[slot] = (wallTurnIndex[slot] + 3) & 0x03;
             }
         } else if ((collisionMask & 0x0F) == 0) {
             transitionCountdown[slot] = 9;
         }
 
-        tableIndex = (privateState1[slot] + privateState2[slot]) & 0x07;
+        tableIndex = (wallTurnIndex[slot] + privateState2[slot]) & 0x07;
         speedY[slot] = SPEED_Y_BY_INDEX[tableIndex];
         speedX[slot] = SPEED_X_BY_INDEX[tableIndex];
         int variant = (frameCounter >>> 1) & 0x01;
@@ -74,7 +75,7 @@ public final class SparkMotion {
     }
 
     public void clear(int slot) {
-        privateState1[slot] = 0;
+        wallTurnIndex[slot] = 0;
         privateState2[slot] = 0;
         transitionCountdown[slot] = 0;
         speedX[slot] = 0;
@@ -85,7 +86,7 @@ public final class SparkMotion {
     }
 
     public int privateState1(int slot) {
-        return privateState1[slot];
+        return wallTurnIndex[slot];
     }
 
     public int privateState2(int slot) {

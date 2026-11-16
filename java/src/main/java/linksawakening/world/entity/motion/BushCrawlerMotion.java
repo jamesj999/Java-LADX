@@ -21,7 +21,8 @@ public final class BushCrawlerMotion {
     static final int[] SPECIAL_SPEED_Y = {0xF0, 0xF4, 0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4};
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: 0 unseeded, 1 room disguise, 2 spawned crawling form.
+    final int[] disguiseMode = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -49,7 +50,7 @@ public final class BushCrawlerMotion {
 
     public void initializeSpecial(int slot) {
         initialize(slot);
-        privateState1[slot] = 2;
+        disguiseMode[slot] = 2;
     }
 
     public Update advance(BushCrawlerFrame inputs) {
@@ -58,7 +59,7 @@ public final class BushCrawlerMotion {
 
     public void clear(int slot) {
         state[slot] = 0;
-        privateState1[slot] = 0;
+        disguiseMode[slot] = 0;
         privateState2[slot] = 0;
         privateState4[slot] = 0;
         speedX[slot] = 0;
@@ -74,7 +75,7 @@ public final class BushCrawlerMotion {
     }
 
     public int privateState1(int slot) {
-        return privateState1[slot];
+        return disguiseMode[slot];
     }
 
     public int privateState4(int slot) {
@@ -248,13 +249,13 @@ public final class BushCrawlerMotion {
             if (!wasInitialized) {
                 owner.initialize(slot);
             }
-            if (owner.privateState1[slot] == 0) {
-                owner.privateState1[slot] = 1;
+            if (owner.disguiseMode[slot] == 0) {
+                owner.disguiseMode[slot] = 1;
                 owner.privateState4[slot] = ((entity.x() & 0xFF) >>> 4) & 0x01;
             }
 
-            crawlOverlayRendered = owner.privateState1[slot] != 2 && owner.privateState2[slot] == 4;
-            renderedVariant = owner.privateState1[slot] == 2 || crawlOverlayRendered
+            crawlOverlayRendered = owner.disguiseMode[slot] != 2 && owner.privateState2[slot] == 4;
+            renderedVariant = owner.disguiseMode[slot] == 2 || crawlOverlayRendered
                     ? (wasInitialized ? owner.presentationVariant[slot] : entity.spriteVariant())
                     : owner.privateState4[slot];
             renderedVisualYOffset = owner.privateState2[slot] == 4 ? -4 : 0;
@@ -263,7 +264,7 @@ public final class BushCrawlerMotion {
             y = entity.y() & 0xFF;
             liftRequested = false;
 
-            if (owner.privateState1[slot] == 2) {
+            if (owner.disguiseMode[slot] == 2) {
                 BushCrawlerMotion.Position moved = owner.move(entity, x, y, backgroundCollision);
                 x = moved.x();
                 y = moved.y();
@@ -293,11 +294,11 @@ public final class BushCrawlerMotion {
                     updated,
                     owner.state[slot],
                     countdown,
-                    owner.privateState1[slot],
+                    owner.disguiseMode[slot],
                     owner.privateState4[slot],
                     renderedVisualYOffset,
                     liftRequested,
-                    owner.privateState1[slot] == 2,
+                    owner.disguiseMode[slot] == 2,
                     crawlOverlayRendered);
         }
 

@@ -28,7 +28,8 @@ public final class MagicRodFireballMotion {
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: remaining fire-transition display ticks.
+    private final int[] fireTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -83,7 +84,7 @@ public final class MagicRodFireballMotion {
         speedY[slot] = PlayerProjectileLaunchSpeed.y(direction, pieceOfPower);
         selectedVariant[slot] = 0;
         collision[slot] = false;
-        privateCountdown1[slot] = 0;
+        fireTransitionCountdown[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         initialized[slot] = true;
@@ -106,7 +107,7 @@ public final class MagicRodFireballMotion {
             initializeSpawn(slot, direction[slot]);
         }
         collision[slot] = true;
-        privateCountdown1[slot] = FIRE_TRANSITION_COUNTDOWN;
+        fireTransitionCountdown[slot] = FIRE_TRANSITION_COUNTDOWN;
     }
 
     /** Decrements the ROM private countdown and reports the exact unload tick. */
@@ -116,15 +117,15 @@ public final class MagicRodFireballMotion {
 
     public boolean tickFireTransition(int slot, boolean timersInteractive) {
         validateSlot(slot);
-        if (privateCountdown1[slot] == 0) {
+        if (fireTransitionCountdown[slot] == 0) {
             return true;
         }
         if (timersInteractive) {
-            privateCountdown1[slot] = (privateCountdown1[slot] - 1) & 0xFF;
+            fireTransitionCountdown[slot] = (fireTransitionCountdown[slot] - 1) & 0xFF;
         }
         // $69CF decrements A only for comparison: a stored countdown of one
         // unloads before drawing fire. The host owns the preceding timer tick.
-        return privateCountdown1[slot] <= 1;
+        return fireTransitionCountdown[slot] <= 1;
     }
 
     public int direction(int slot) {
@@ -144,7 +145,7 @@ public final class MagicRodFireballMotion {
 
     public int privateCountdown1(int slot) {
         validateSlot(slot);
-        return privateCountdown1[slot];
+        return fireTransitionCountdown[slot];
     }
 
     public void clear(int slot) {
@@ -154,7 +155,7 @@ public final class MagicRodFireballMotion {
         speedY[slot] = 0;
         selectedVariant[slot] = 0;
         collision[slot] = false;
-        privateCountdown1[slot] = 0;
+        fireTransitionCountdown[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         initialized[slot] = false;

@@ -33,7 +33,8 @@ public final class CuccoMotion {
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: flashed-frame buildup saturating at $23 before angry spawns.
+    final int[] angerBuildup = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -93,7 +94,7 @@ public final class CuccoMotion {
         state[slot] = 0;
         spriteVariant[slot] = 0;
         direction[slot] = 0;
-        privateState1[slot] = 0;
+        angerBuildup[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
@@ -112,7 +113,7 @@ public final class CuccoMotion {
     }
 
     int privateState1(int slot) {
-        return privateState1[slot];
+        return angerBuildup[slot];
     }
 
     int speedX(int slot) {
@@ -427,7 +428,7 @@ public final class CuccoMotion {
             y = moved.y();
             variant = (frame >>> 1) & 0x01;
             owner.direction[slot] = CuccoMotion.signedByte((linkEntityX - x) & 0xFF) < 0 ? 0 : 1;
-            if (owner.privateState1[slot] == 0x23 && !indoorRoom && (frame & 0x0F) == 0 && angrySpawnSlotAvailable) {
+            if (owner.angerBuildup[slot] == 0x23 && !indoorRoom && (frame & 0x0F) == 0 && angrySpawnSlotAvailable) {
                 int spawnIndex = randomByteSupplier.getAsInt() & 0x0F;
                 int spawnX = SPAWN_X[spawnIndex];
                 int spawnY = SPAWN_Y[spawnIndex];
@@ -531,8 +532,8 @@ public final class CuccoMotion {
                         }
                     }
                 }
-                if (owner.privateState1[slot] != 0x23) {
-                    owner.privateState1[slot] = (owner.privateState1[slot] + 1) & 0xFF;
+                if (owner.angerBuildup[slot] != 0x23) {
+                    owner.angerBuildup[slot] = (owner.angerBuildup[slot] + 1) & 0xFF;
                 }
                 owner.state[slot] = 2;
             }
