@@ -62,7 +62,7 @@ final class ZoraRuntimeTest {
     void usesZorasRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_ZORA)
                         .at(0x40, 0x40)
@@ -229,7 +229,7 @@ final class ZoraRuntimeTest {
                 .at(0x40, 0x40)
                 .spriteDefinition(catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(zora))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(zora))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

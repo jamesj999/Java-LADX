@@ -19,7 +19,7 @@ final class EntityRuntimeFollowersTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -43,7 +43,7 @@ final class EntityRuntimeFollowersTest extends EntityRuntimeTestSupport {
                 .at(0x10, 0x20)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();

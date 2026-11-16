@@ -22,7 +22,7 @@ class EntityBossBattleFlagTest {
             rom = in.readAllBytes();
         }
         var slots = IntStream.range(0, 16).mapToObj(RoomEntity::disabled).toList();
-        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)

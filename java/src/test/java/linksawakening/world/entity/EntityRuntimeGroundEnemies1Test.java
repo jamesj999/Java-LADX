@@ -28,7 +28,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x02);
         runtime.configuration()
                 .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
@@ -64,7 +64,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .spriteVariant(6)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x04);
         runtime.configuration()
                 .setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
@@ -101,7 +101,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         IntSupplier randomBytes = sequence(0x02, 0x03);
 
         // State 0 pauses for ($10 + random & $0F) frames, then state 1
@@ -139,7 +139,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, () -> 0, true));
         for (int frame = 1; frame <= 6; frame++) {
@@ -161,7 +161,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         IntSupplier randomBytes = sequence(0x02, 0x03);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 200, 32, randomBytes));
@@ -188,7 +188,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .spriteVariant(6)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 64, () -> 0));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordState(0));
@@ -210,7 +210,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
 
     @Test
     void swordMoblinPausesMotionAndTimersDuringDialogue() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x14)
                         .at(0x50, 64)
@@ -239,7 +239,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> contact =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -259,7 +259,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
 
     @Test
     void projectileWallImpactAlertsMoblinSwordSlotsProcessedLaterInTheFrame() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x14)
@@ -294,7 +294,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
 
     @Test
     void hideoutMoblinSwordPublishesDialog190OnlyOnce() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x14)
                         .at(0x50, 0x40)
@@ -323,7 +323,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         IntSupplier randomBytes = sequence(0x00, 0x03, 0x01);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 200, 32, randomBytes));
@@ -349,14 +349,14 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> contact =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        RoomEntityRuntime swordRuntime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime swordRuntime = new RoomEntityRuntimeBuilder(initial).build();
         List<EntityCombatEvent> events = swordRuntime
                 .combat()
                 .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
@@ -377,7 +377,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> contact =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -422,7 +422,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> events = runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
@@ -454,7 +454,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> events = runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
@@ -473,7 +473,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         byte[] rom = romWithSwordResult(0x1F, 0xFE);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1F)
                         .at(64, 64)
@@ -518,7 +518,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, sequence(0x00)));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).hardHatSpeedX(0));
@@ -542,7 +542,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> contact =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -561,7 +561,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
     @Test
     void hardHatSwordHitConfiguresAndAppliesTheRomSharedRecoil() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x20)
                         .at(64, 64)
@@ -591,7 +591,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
     @Test
     void hardHatSharedRecoilKeepsStateWhenTheRomBackgroundPathBlocksIt() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x20)
                         .at(64, 64)
@@ -613,7 +613,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
     @Test
     void tektiteAppliesBankSixRecoilBeforeItsOrdinaryMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0D)
                         .at(64, 64)
@@ -638,7 +638,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).armosState(0));
@@ -664,7 +664,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
     @Test
     void armosStatueRequestsLinkFinalPositionWithoutTeleportingTheStatue() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0F)
                         .at(56, 64)

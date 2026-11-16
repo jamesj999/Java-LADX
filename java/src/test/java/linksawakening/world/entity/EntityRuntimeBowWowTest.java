@@ -25,7 +25,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -52,7 +52,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .at(0x88, 0x40)
                 .spriteDefinition(pairDefinition(0x6D, 7))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(bowWow))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(bowWow))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -86,7 +86,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .at(0x88, 0x40)
                 .spriteDefinition(catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(bowWow))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(bowWow))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -122,7 +122,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .at(0x88, 0x40)
                 .spriteDefinition(catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(bowWow))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(bowWow))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -162,7 +162,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(pairDefinition(0x71, 4))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(kid))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(kid))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -183,7 +183,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .at(0x88, 0x40)
                 .spriteDefinition(pairDefinition(0x6D, 7))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(bowWow))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(bowWow))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -204,7 +204,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .at(0x88, 0x40)
                 .spriteDefinition(pairDefinition(0x6D, 7))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(bowWow))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(bowWow))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -235,7 +235,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         EntitySpriteDefinition bowWowDefinition =
                 catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
         EntitySpriteDefinition targetDefinition = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
@@ -267,7 +267,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
@@ -316,7 +316,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
@@ -364,7 +364,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)

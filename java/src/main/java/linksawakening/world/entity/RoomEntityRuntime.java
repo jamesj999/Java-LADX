@@ -131,10 +131,4 @@ public final class RoomEntityRuntime {
     EntityFrameExecution execution() {
         return frameExecution;
     }
-
-    // Seam bridges - removed when world/room adopts the role accessors
-
-    public static RoomEntityRuntimeBuilder builder(RoomEntitySnapshot initial) {
-        return new RoomEntityRuntimeBuilder(initial);
-    }
 }

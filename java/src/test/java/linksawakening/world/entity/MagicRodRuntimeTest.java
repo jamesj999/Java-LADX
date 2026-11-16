@@ -359,7 +359,7 @@ final class MagicRodRuntimeTest {
                         .at(x, y)
                         .spriteDefinition(catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                         .build());
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -371,7 +371,7 @@ final class MagicRodRuntimeTest {
     private static RoomEntityRuntime runtime(boolean indoor) throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        return RoomEntityRuntime.builder(emptySnapshot())
+        return new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

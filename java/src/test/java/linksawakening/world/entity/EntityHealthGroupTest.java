@@ -27,7 +27,7 @@ class EntityHealthGroupTest {
                                 .build()
                         : RoomEntity.disabled(slot))
                 .toList();
-        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)

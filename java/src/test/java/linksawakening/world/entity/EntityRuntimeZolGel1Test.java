@@ -30,7 +30,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
             // level-zero context keeps the one-health entity active so the
             // following handler tick can observe that recoil step.
             EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                             .sourceLoadOrder(0)
                             .type(type)
                             .at(64, 64)
@@ -61,7 +61,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 2);
             EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                             .sourceLoadOrder(0)
                             .type(type)
                             .at(64, 64)
@@ -92,7 +92,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolGelPhysicsUsesRomTemporaryIgnoreHitsForRichBackgroundProbes() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1B)
                         .at(64, 64)
@@ -200,7 +200,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolUsesTheRomInchingAndLeapStateLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1B)
                         .at(64, 64)
@@ -234,7 +234,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         assertEquals(1, combatTables.initialHealth(0x1B));
         EntitySpriteDefinition definition = catalog.forEntityType(0x1B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1B)
                         .at(64, 64)
@@ -292,7 +292,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolStateOneNonLeapBranchClearsStateRatherThanCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1B)
                         .at(64, 64)
@@ -327,7 +327,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolStateTwoSetsItsSpeedBeforeTheRomPhysicsStep() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1B)
                         .at(64, 64)
@@ -354,7 +354,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void gelUsesTheRomSmallEnemyHitboxAndClingingCollisionState() {
         EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1C)
                         .at(64, 64)
@@ -379,7 +379,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
 
     @Test
     void gelExportsClingFlagOnlyWhileItsInteractiveHandlerIsAttached() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1C)
                         .at(64, 64)
@@ -404,7 +404,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void gelReleasesClingingStateAfterRomJoypadCountdownDecrementsThreeTimesPerFrame() {
         EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1C)
                         .at(64, 64)
@@ -441,7 +441,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolUsesTheRomProximityRevealAndRisePhases() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition definition = catalog.forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)
@@ -485,7 +485,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolUsesTheRomSwordAndLinkCollisionPhases() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)
@@ -531,7 +531,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolUsesTheBankSevenRecoilStepBeforeItsHandler() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)
@@ -555,7 +555,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolPreservesBankSevenRecoilWhenTheBackgroundBlocksIt() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)
@@ -581,7 +581,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolStateThreeMovesWithoutTheLaterBackgroundHelper() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)
@@ -625,7 +625,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolFlyingBackgroundHelperForcesTheRomIgnoreHitsValue() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)
@@ -671,7 +671,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolRequestsTheRomJumpJingleWhenItLeavesTheGround() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9B)
                         .at(64, 64)

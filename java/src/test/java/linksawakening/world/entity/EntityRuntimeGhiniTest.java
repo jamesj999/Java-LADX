@@ -26,7 +26,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x00, 0x00)));
         assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTransitionCountdown(0));
@@ -52,7 +52,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> contact =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -77,7 +77,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x1F, 0x0F)));
 
@@ -118,7 +118,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
 
         for (int type : new int[] {0x10, 0x11}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                             snapshot(ghiniEntity(catalog, 0, type, EntityStatus.INIT)))
                     .indoorRoom(false)
                     .randomByteSupplier(sequence(0x00))
@@ -149,7 +149,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
 
-        RoomEntityRuntime normalRuntime = RoomEntityRuntime.builder(
+        RoomEntityRuntime normalRuntime = new RoomEntityRuntimeBuilder(
                         snapshot(ghiniEntity(catalog, 0, 0x12, EntityStatus.ACTIVE)))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
@@ -159,7 +159,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         normalRuntime.tick(EntityTestFrames.frame(normalRuntime, 0, 0x90, 0x90, 0, sequence(0x00)));
         assertNotEquals(0, normalRuntime.inspection().snapshot().slots().get(0).entityFlipAttribute() & 0x20);
 
-        RoomEntityRuntime giantRuntime = RoomEntityRuntime.builder(
+        RoomEntityRuntime giantRuntime = new RoomEntityRuntimeBuilder(
                         snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
@@ -181,7 +181,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
 
         for (int type : new int[] {0x10, 0x11, 0x12}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                             snapshot(ghiniEntity(catalog, 0, type, EntityStatus.ACTIVE)))
                     .indoorRoom(false)
                     .randomByteSupplier(sequence(0x00))
@@ -219,7 +219,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE),
                         ghiniEntity(catalog, 1, 0x11, EntityStatus.ACTIVE),
                         ghiniEntity(catalog, 2, 0x12, EntityStatus.ACTIVE)))

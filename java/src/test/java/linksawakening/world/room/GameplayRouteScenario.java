@@ -60,7 +60,7 @@ import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
@@ -5985,9 +5985,10 @@ final class GameplayRouteScenario {
             route.clearedBossSlots.add(RoomEntity.disabled(slot));
         }
         RoomDebugFixture.of(route.session)
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(route.clearedBossSlots))
-                        .indoorRoom(true)
-                        .build());
+                .replaceEntityRuntimeForTest(
+                        new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(route.clearedBossSlots))
+                                .indoorRoom(true)
+                                .build());
         route.session
                 .entities()
                 .tickEntities(

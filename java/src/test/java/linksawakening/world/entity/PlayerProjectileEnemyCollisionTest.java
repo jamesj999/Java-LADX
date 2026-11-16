@@ -236,7 +236,7 @@ final class PlayerProjectileEnemyCollisionTest {
                         .at(0x40 + dx, (projectileType == 0xDF ? 0x50 : 0x4F) + dy)
                         .spriteDefinition(catalog.forEntityType(targetType, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                         .build());
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

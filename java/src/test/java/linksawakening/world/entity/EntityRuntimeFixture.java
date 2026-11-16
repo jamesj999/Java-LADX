@@ -7,7 +7,7 @@ public final class EntityRuntimeFixture {
     static RoomEntityRuntime emptyRuntime() {
         RoomEntity[] slots = new RoomEntity[RoomEntity.SLOT_COUNT];
         java.util.Arrays.setAll(slots, RoomEntity::disabled);
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(java.util.Arrays.asList(slots)))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(java.util.Arrays.asList(slots)))
                 .randomByteSupplier(() -> 0)
                 .build();
     }

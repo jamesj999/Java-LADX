@@ -25,7 +25,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         List<EntityCombatEvent> contact =
                 runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
@@ -43,7 +43,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void starGivesHorizontalBackgroundCollisionPriorityWhenBouncing() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9C)
                         .at(64, 64)
@@ -66,7 +66,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void starLeavesItsRecoilAndMovementUntouchedDuringNonInteractiveLinkMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9C)
                         .at(64, 64)
@@ -104,7 +104,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void starUsesTheNormalEnemyCombatValuesAndShadowPhysics() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9C)
                         .at(64, 64)
@@ -125,7 +125,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapForwardEndpointPublishesOneRomSwordPokeJingle() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -160,7 +160,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapForwardBackgroundCollisionPublishesTheSameRomJingle() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -189,7 +189,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapBackgroundCollisionKeepsItInItsLaunchState() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -211,7 +211,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapSwordCollisionPublishesTheRomSwordPokeWithoutDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -245,7 +245,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
 
     @Test
     void rockHittingLinkAlsoSuppressesTheWallPokeJingle() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x0A)
                         .at(0x40, 0x50)
                         .spriteDefinition(pairDefinition(0x0A, 1))
@@ -280,7 +280,8 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                 .z(0x09)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotAt(source).withSideScrolling(true))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
+                        snapshotAt(source).withSideScrolling(true))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -304,7 +305,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
 
     @Test
     void clearingAnEntityResetsTheRomHitboxIgnoreFlag() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
         EntityRuntimeFixture.debug(runtime).setHitboxFlagsForTest(0, 0x80);
 
         runtime.lifecycle().clearEntity(0);

@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.testing.AllocationProbe;
-import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.TestEntities;
 import org.junit.jupiter.api.Test;
 
 class RoomLiveBoundaryTest {
     @Test
     void retainedRenderSnapshotOwnsTheEntitiesReadFromALiveRoom() {
-        var runtime = RoomEntityRuntime.builder(TestEntities.room(
+        var runtime = new RoomEntityRuntimeBuilder(TestEntities.room(
                         TestEntities.active(9).slot(0).at(64, 64).build()))
                 .build();
         var live = runtime.inspection().view();
@@ -48,7 +48,7 @@ class RoomLiveBoundaryTest {
 
     @Test
     void publicRoomEntitiesStayOwnedWhileInternalReadsUseTheLiveView() {
-        var runtime = RoomEntityRuntime.builder(TestEntities.room(
+        var runtime = new RoomEntityRuntimeBuilder(TestEntities.room(
                         TestEntities.active(0x3E).slot(0).at(64, 64).build()))
                 .build();
         var loaded = new LoadedRoom(new LoadedRoomSpec(

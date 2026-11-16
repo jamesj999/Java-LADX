@@ -19,7 +19,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
     @Test
     void laserParentRotatesEveryEightFramesAndSpawnsAnInvisibleRomSensor() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x2A)
                         .at(0x40, 0x50)
@@ -46,7 +46,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
     @Test
     void laserParentSpawnsBeamAtRomCountdownTenWithCopiedSpeed() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x2A)
                         .at(0x40, 0x50)
@@ -91,8 +91,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
                     .spriteVariant(-1)
                     .build());
         }
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(entities)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(entities)).build();
         EntityRuntimeFixture.debug(runtime).setLaserParentForTest(0, 0x10, 0x20, 0xF0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x10, 0x10, () -> 0));
@@ -107,7 +106,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
     @Test
     void laserSensorClearsAndArmsItsParentWhenLinkEntersTheRomWindow() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x2A)
                         .at(0x40, 0x50)
@@ -136,7 +135,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
 
     @Test
     void laserBeamUsesRomFixedPointMovementAndEmitsTheTransientBeamVfx() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x2B)
                         .at(0x20, 0x30)
                         .spriteDefinition(EntitySpriteDefinition.unsupported(0x2B))
@@ -166,7 +165,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
 
     @Test
     void laserBeamMirrorShieldReflectionReversesTheRomAxisBeforeMovement() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x2B)
                         .at(0x40, 0x50)
                         .spriteDefinition(EntitySpriteDefinition.unsupported(0x2B))

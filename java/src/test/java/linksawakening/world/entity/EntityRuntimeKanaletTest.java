@@ -17,7 +17,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
 
     @Test
     void kanaletKnightAndMadBomberUseNonPersistentGoldenLeafDrops() {
-        RoomEntityRuntime knightRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime knightRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(3)
                         .type(0x51)
                         .at(0x40, 0x50)
@@ -30,7 +30,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
         assertEquals(0xFF, knightRuntime.inspection().snapshot().slots().get(0).sourceLoadOrder());
         assertEquals(0x3C, EntityRuntimeFixture.inspection(knightRuntime).droppedItemForTest(0));
 
-        RoomEntityRuntime bomberRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime bomberRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(2)
                         .type(0x93)
                         .at(0x40, 0x50)
@@ -46,7 +46,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
     @Test
     void kanaletRoomEventDropsGoldenLeafInsteadOfDungeonKey() {
         RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(snapshot()).indoorRoom(true).build();
+                new RoomEntityRuntimeBuilder(snapshot()).indoorRoom(true).build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x14);
 
         int slot = runtime.spawns().spawnRoomEventKeyDrop();
@@ -72,7 +72,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                 .status(EntityStatus.DYING)
                 .spriteDefinition(catalog.forEntityType(0x51, EntityRoomLoader.RoomTable.INDOORS_B, -1))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotAt(knight))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotAt(knight))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -95,7 +95,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
 
     @Test
     void bothKanaletBombableWallsSpawnSwordMoblinsCarryingGoldenLeaves() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x94)
@@ -139,7 +139,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
 
     @Test
     void completedKanaletWallRoomUnloadsWallsWithoutSpawningMoblins() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x94)
                         .at(0x28, 0x40)
@@ -181,7 +181,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                     .spriteVariant(-1)
                     .build());
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(entities))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(entities))
                 .indoorRoom(true)
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x14);
@@ -208,7 +208,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(catalog.forEntityType(0x94, EntityRoomLoader.RoomTable.INDOORS_B, 0x14))
                 .spriteVariant(-1)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(wall))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(wall))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

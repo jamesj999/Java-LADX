@@ -673,7 +673,7 @@ final class TarinRaccoonRuntimeTest {
                         .spriteDefinition(definition)
                         .spriteVariant(variant)
                         .build());
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

@@ -24,7 +24,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                     .at(0x40, 0x50)
                     .spriteDefinition(pairDefinition(0x82, 2))
                     .build();
-            var runtime = RoomEntityRuntime.builder(snapshot(enemy)).build();
+            var runtime = new RoomEntityRuntimeBuilder(snapshot(enemy)).build();
             var events = runtime.combat()
                     .resolveCombat(new EntitySwordContactFrame(1, linkX, 0x58, false, true, false, 0, 0, 0, 0));
             assertEquals(1, events.size());
@@ -51,7 +51,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .at(0x47, 0x38)
                 .spriteDefinition(catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(bar, boss))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(bar, boss))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -104,7 +104,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .at(71, 64)
                 .spriteDefinition(catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(bar, boss))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(bar, boss))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -135,7 +135,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .at(71, 64)
                 .spriteDefinition(catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(bar, boss))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(bar, boss))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -186,7 +186,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .spriteVariant(-1)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(bar, boss))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(bar, boss))
                 .indoorRoom(true)
                 .randomByteSupplier(sequence(0x00, 0x1F))
                 .spriteHandlers(catalog)
@@ -236,7 +236,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .at(0x50, 0x50)
                 .spriteDefinition(catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(bar))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(bar))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

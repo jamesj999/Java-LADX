@@ -39,7 +39,7 @@ final class SlimeEyeRuntimeTest {
                         .status(EntityStatus.INIT)
                         .spriteDefinition(sprites.forEntityType(0x5B, EntityRoomLoader.RoomTable.INDOORS_A))
                         .build());
-        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(list))
+        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(list))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(sprites)

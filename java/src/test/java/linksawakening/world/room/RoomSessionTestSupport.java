@@ -21,6 +21,7 @@ import linksawakening.world.entity.EntityTestFrames;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
@@ -150,7 +151,7 @@ final class RoomSessionTestSupport {
                             -1,
                             false));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

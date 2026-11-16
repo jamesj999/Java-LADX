@@ -12,7 +12,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieBossIntroDelayPausesForInventoryAndRoomTransitions() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)
@@ -45,7 +45,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieJarThresholdSpawnsBodyAndRockThenUnloadsTheJar() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)
@@ -84,7 +84,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void thrownGenieJarCollisionCountsAnImpactAndEmitsBossHurtWave() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)
@@ -108,7 +108,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void thirdThrownGenieJarCollisionRestoresActiveThresholdState() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5C)
                         .at(0x50, 0x68)
@@ -140,7 +140,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void thrownGenieJarTargetOverlapDoesNotCountBeforeTheBackgroundCollisionCheck() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x5C)

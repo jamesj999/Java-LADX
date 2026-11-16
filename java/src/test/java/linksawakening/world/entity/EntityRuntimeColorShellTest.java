@@ -25,7 +25,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(body)
                 .spriteVariant(1)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(initialEntity))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(initialEntity))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -68,7 +68,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     void colorShellsAreAdmittedAsRomCombatTargets() throws IOException {
         RomEnemyCombatTables tables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0xE9)
@@ -108,7 +108,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RuntimeColorShellWorld world = new RuntimeColorShellWorld();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xE9)
                         .at(0x40, 0x40)
@@ -137,7 +137,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     @Test
     void colorShellCompletionUnloadsAndPublishesItsRoomPersistenceMask() {
         RuntimeColorShellWorld world = new RuntimeColorShellWorld();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xE9)
                         .at(0x40, 0x40)
@@ -163,7 +163,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     void romStunStatusUsesColorShellsRawSpecialDamageValueAndRecovers() throws IOException {
         RomEnemyCombatTables tables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0xE9)
                         .at(64, 64)

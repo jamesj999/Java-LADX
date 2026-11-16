@@ -22,7 +22,7 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition ironMaskDefinition =
                 catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x24)
                         .at(0x4D, 0x50)
@@ -66,7 +66,7 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
     void keyDropPointMasterStalfosRoomUsesHookshotPresentationAndReward() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x30)
                         .at(24, 32)
                         .spriteDefinition(definition)

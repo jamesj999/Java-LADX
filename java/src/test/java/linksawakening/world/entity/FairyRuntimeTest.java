@@ -36,7 +36,7 @@ final class FairyRuntimeTest {
     void runsTheFairyHandlerWithItsRomPhysicsAndOptions() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x2F)
                         .at(0x40, 0x40)
@@ -80,7 +80,7 @@ final class FairyRuntimeTest {
                 .spriteDefinition(catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                 .z(0x10)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(source))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(source))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

@@ -26,7 +26,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .at(0x50, 0x60)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x3F))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(tarin))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(tarin))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -61,7 +61,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .at(0x50, 0x60)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x3F))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(tarin))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(tarin))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .build();
@@ -122,7 +122,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(pairDefinition(0x09, 2))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(octorok)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(octorok)).build();
 
         List<EntityCombatEvent> events = runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0));
@@ -169,8 +169,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .deathSpriteVariant(2)
                 .powerRecoilDeath(true)
                 .build();
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(snapshot(initialEntity)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(initialEntity)).build();
 
         assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(0));
         assertEquals(2, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
@@ -178,7 +177,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
     @Test
     void disablingARecoilDeathClearsItsInternalPowerState() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x19)
                         .at(64, 64)
@@ -217,7 +216,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(pairDefinition(0x0B, 2))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(initial)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(initial)).build();
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
             @Override
@@ -259,7 +258,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x40)
                 .spriteDefinition(pairDefinition(0x09, 2))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(initial)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(initial)).build();
 
         assertEquals(0xFF, runtime.commands().thrownDirection(0));
         assertEquals(0x00, runtime.enemies().ledgeTransitionTimer(0));
@@ -277,7 +276,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     @Test
     void aPowerRecoilSwordHitMarksTheRomPowerDeathPresentation() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x19)
                         .at(64, 64)
@@ -322,7 +321,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x24)
                         .at(0x50, 0x50)
@@ -366,7 +365,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     @Test
     void clearingARecoilingEnemyClearsAllRecoilStateBeforeSlotReuse() {
         EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0B)
                         .at(64, 64)
@@ -391,7 +390,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     @Test
     void dyingCleanupClearsRecoilStateWhenTheRomDeathCountdownExpires() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x09)
                         .at(64, 64)
@@ -418,7 +417,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath() throws IOException {
         byte[] rom = romWithSwordResult(0x09, 0xFE);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x09)
                         .at(64, 64)
@@ -471,7 +470,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void unknownRomSpecialDamageRemainsEventDataWithoutChangingHealthOrStatus() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(
                 linksawakening.world.entity.EntityRomTestData.view(romWithSwordResult(0x09, 0xFD)));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x09)
                         .at(64, 64)
@@ -501,7 +500,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void romCombatTablesDriveInitialHealthAndContactDamage() throws IOException {
         RomEnemyCombatTables tables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(
                         new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x09)
@@ -534,7 +533,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void attackContextUsesRomSwordUpgradeDamageInTheRuntime() throws IOException {
         RomEnemyCombatTables tables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x0B)
                         .at(64, 64)
@@ -573,7 +572,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
     void zeroRomSwordResultKeepsHealthAndReportsOnlyTheBump() throws IOException {
         RomEnemyCombatTables tables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x15)
                         .at(64, 64)
@@ -602,7 +601,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
 
-        RoomEntityRuntime compatibilityRuntime = RoomEntityRuntime.builder(
+        RoomEntityRuntime compatibilityRuntime = new RoomEntityRuntimeBuilder(
                         snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
@@ -613,7 +612,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         assertEquals(
                 -1, compatibilityRuntime.inspection().snapshot().slots().get(0).spriteVariant());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
@@ -645,7 +644,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         byte[] rom = romWithSwordResult(0x11, 0x08);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
@@ -669,7 +668,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
 
     @Test
     void swordHitAtLinksExactPositionRecoilsUpAndLeftThroughTheLiveRuntime() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x20)
                         .at(64, 64)
@@ -691,7 +690,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
         int[] types = {0x19, 0x0D, 0x15, 0x1A, 0x16, 0x17, 0x1B, 0x1C};
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 3);
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                             .sourceLoadOrder(0)
                             .type(type)
                             .at(64, 64)
@@ -728,7 +727,7 @@ final class EntityRuntimeCollision1Test extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
 
         RoomEntityBackgroundCollision leftWall = (entity, direction, nextX, nextY) -> direction == 1;

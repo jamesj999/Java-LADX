@@ -19,7 +19,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void enemyArrowAndRockPlayThePokeJingleOnceWhenHittingAWall() {
         for (int type : new int[] {0x0A, 0x0C}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                             .type(type)
                             .at(0x40, 0x50)
                             .spriteDefinition(pairDefinition(type, 4))
@@ -39,7 +39,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void shieldBlockedEnemyArrowAndRockKeepTheTingWithoutAddingAPokeJingle() {
         for (int type : new int[] {0x0A, 0x0C}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                             .type(type)
                             .at(0x40, 0x50)
                             .spriteDefinition(pairDefinition(type, 4))
@@ -68,7 +68,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     void runtimePublishesArrowTransitionVariantsButLeavesRockVariantUnspun() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition arrowDefinition = catalog.forEntityType(0x0C, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime arrowRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x0C)
                         .at(0x20, 0x20)
                         .spriteDefinition(arrowDefinition)
@@ -96,7 +96,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(3, arrowRuntime.inspection().snapshot().slots().get(0).spriteVariant());
 
         EntitySpriteDefinition rockDefinition = catalog.forEntityType(0x0A, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime rockRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime rockRuntime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x0A)
                         .at(0x20, 0x20)
                         .spriteDefinition(rockDefinition)
@@ -117,7 +117,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 rom, 0x03, 0x6BC6, 0x2E, 0x21, 0x2C, 0x21, 0x2C, 0x01, 0x2E, 0x01, 0x2A, 0x41, 0x2A, 0x61, 0x2A, 0x01,
                 0x2A, 0x21);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -153,7 +153,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void pieceOfPowerSelectsTheAlternateShootArrowSpeedTable() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
 
         int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 3, true);
 
@@ -173,7 +173,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(octorokDefinition)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(octorok))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(octorok))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
@@ -225,7 +225,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(pairDefinition(0x09, 8))
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(target))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(target))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
@@ -262,7 +262,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 rom, 0x03, 0x6BC6, 0x2E, 0x21, 0x2C, 0x21, 0x2C, 0x01, 0x2E, 0x01, 0x2A, 0x41, 0x2A, 0x61, 0x2A, 0x01,
                 0x2A, 0x21);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -283,7 +283,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void playerArrowRuntimeDisplaysThePreviousReboundSpinFrame() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
         int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         runtime.tick(
                 EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
@@ -298,8 +298,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void playerArrowReboundUsesTheSideViewRoomGravity() {
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(snapshot().withSideScrolling(true)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot().withSideScrolling(true)).build();
         int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         runtime.tick(
                 EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
@@ -319,7 +318,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void playerArrowCountIsCappedAtTwoAndSlotsCanBeReused() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot()).build();
 
         int first = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         int second = runtime.spawns().spawnArrow(0x40, 0x50, 0, 1);

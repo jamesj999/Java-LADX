@@ -18,7 +18,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void spawnUsesFreeEntitySlotAndCopiesRomProjectileState() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
 
         int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0x07, 3);
 
@@ -36,7 +36,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void duplicateLaunchIsRejectedUntilTheExistingChainIsCleared() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
 
         assertTrue(runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0) >= 0);
         assertEquals(-1, runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0));
@@ -60,8 +60,7 @@ final class RoomEntityRuntimeHookshotTest {
                     .build());
         }
 
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
 
         assertEquals(-1, runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0));
         assertFalse(runtime.inspection().hookshotActive());
@@ -69,7 +68,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void outboundEntityAdvancesWithRomSpeed() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
@@ -80,7 +79,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void returnVectorBringsAnOpenRoomChainBackToLink() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
 
         for (int frame = 0; frame < 0x2A + 0x2A; frame++) {
@@ -92,7 +91,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void sharedBackgroundCollisionStopsTheChainAndDefersTheWallPoke() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
 
         runtime.tick(
@@ -120,7 +119,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void richHookshotableCollisionEntersPullingStateBelowThePointBlankCutoff() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
         boolean[] blocked = {false};
         runtime.configuration()
@@ -144,7 +143,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void pointBlankHookshotableCollisionUnloadsAtTheRomCutoff() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
         runtime.configuration()
                 .setBackgroundInteraction((entity, direction, nextX, nextY) ->
@@ -160,7 +159,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void pullingStateEmitsInverseLinkMotionAfterTheChainStops() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         int slot = runtime.spawns().spawnHookshotChain(0x50, 0x50, 0, 0);
         boolean[] blocked = {false};
         runtime.configuration()
@@ -193,7 +192,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void activeHookshotEmitsTheRomNoiseOnEveryFourthFrame() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
@@ -206,7 +205,7 @@ final class RoomEntityRuntimeHookshotTest {
     @ParameterizedTest
     @ValueSource(strings = {"dialog", "inventory", "transition", "gameplay", "sequence", "got_item"})
     void pauseGatesStopHookshotMovementSoundAndObjectProbes(String gate) {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
         setGate(runtime, gate, true);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0, (entity, direction, x, y) -> {
@@ -224,7 +223,7 @@ final class RoomEntityRuntimeHookshotTest {
 
     @Test
     void creditsTickTheTimerButSkipTheBankEighteenHandler() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0, true));
         assertEquals(0x29, new EntityRoomInspectionQueries(runtime.inspection()).hookshotTransitionCountdown(slot));
@@ -235,7 +234,7 @@ final class RoomEntityRuntimeHookshotTest {
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void ocarinaCancelsTheChainEvenDuringADialog(boolean dialog) {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot()).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot()).build();
         runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 0);
         runtime.configuration().setDialogActive(dialog);
         EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);

@@ -306,7 +306,7 @@ final class MagicPowderRuntimeTest {
                         .at(x, y)
                         .spriteDefinition(catalog.forEntityType(0x15, EntityRoomLoader.RoomTable.OVERWORLD, -1))
                         .build());
-        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -318,7 +318,7 @@ final class MagicPowderRuntimeTest {
     private static RoomEntityRuntime runtime(boolean indoor) throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        return RoomEntityRuntime.builder(emptySnapshot())
+        return new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

@@ -15,7 +15,7 @@ import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RomRandomByteSource;
-import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.TestEntities;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +35,7 @@ class RoomRenderAllocationTest {
                 TestEntities.active(0x3E).slot(1).at(72, 64).build());
         var selection =
                 new EntitySpriteSelection(EntityRoomLoader.RoomTable.INDOORS_A, 1, 0, new int[4], true, new int[6][4]);
-        var runtime = RoomEntityRuntime.builder(initial.withSpriteSelection(selection))
-                .build();
+        var runtime = new RoomEntityRuntimeBuilder(initial.withSpriteSelection(selection)).build();
         runtime.configuration().setChestPlayerLevels(1, 0, 1);
         var session = new RoomSession(new RoomSessionConfig(
                 rom,

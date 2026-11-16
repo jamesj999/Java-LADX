@@ -44,7 +44,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                         .at(56, 32)
                         .spriteDefinition(pairDefinition(0x20, 2))
                         .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
@@ -72,7 +72,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         // EntityRandomSpeedX/Y[1] = (+12, -12). The init handler runs before
         // the first active handler pass.
@@ -103,7 +103,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .status(EntityStatus.INIT)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         // EntityInitWithRandomSpeed[1] = (+12, -12). The Star handler keeps
         // the fifth ROM display-list variant available but selects variants
@@ -128,7 +128,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void inventoryTransitionMakesEntityHandlersNonInteractiveWithoutSkippingThePass() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x9C)
                         .at(64, 64)
@@ -167,7 +167,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapUsesTheRomRandomDirectionAndFourStateLaunchLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -220,7 +220,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapLaunchPublishesOneRomWhooshNoise() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -247,7 +247,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapBlockedLaunchDoesNotPublishTheWhooshNoise() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -267,7 +267,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void spikeTrapFallsBackToTheRomVerticalLaunchTable() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x27)
                         .at(64, 64)
@@ -302,7 +302,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -347,7 +347,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .at(0x40, 0x50)
                 .spriteDefinition(moblinDefinition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(entities))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(entities))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -375,7 +375,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                     .spriteDefinition(pairDefinition(type, 4))
                     .z(8)
                     .build();
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(kid))
+            RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(kid))
                     .indoorRoom(false)
                     .randomByteSupplier(() -> 0)
                     .build();
@@ -403,7 +403,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                         .at(40, 32)
                         .spriteDefinition(definition)
                         .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         assertEquals(1 << 3, runtime.lifecycle().clearEntity(0));
         assertEquals(0, runtime.lifecycle().clearEntity(1));
@@ -424,7 +424,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .at(24, 32)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
 
@@ -450,8 +450,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .z(0x13)
                 .build();
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.builder(snapshot(initialEntity)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(initialEntity)).build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
         RoomEntity first = runtime.inspection().snapshot().slots().get(0);
@@ -473,11 +472,10 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(pairDefinition(0x86, 7))
                 .z(0x13)
                 .build();
-        RoomEntityRuntime belowLinkZ =
-                RoomEntityRuntime.builder(snapshot(entity)).build();
+        RoomEntityRuntime belowLinkZ = new RoomEntityRuntimeBuilder(snapshot(entity)).build();
         assertNull(belowLinkZ.pickups().collectIfNeeded(1, 24, 47, true, true, 0, 0x0B));
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(entity)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(entity)).build();
         EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(1, 24, 47, true, true, 0, 0x0C);
 
         assertNotNull(pickup);
@@ -499,7 +497,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .spriteVariant(5)
                 .z(0x13)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(entity)).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(entity)).build();
         runtime.configuration().setGroundInteractionSideScrolling(true);
 
         EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(0, 24, 47, true, true, 0, 0x00);
@@ -519,14 +517,14 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .build());
 
-        assertNull(RoomEntityRuntime.builder(initial).build().pickups().collectIfNeeded(1, 24, 34, true, true));
-        assertNull(RoomEntityRuntime.builder(initial).build().pickups().collectIfNeeded(1, 24, 34, false, false));
+        assertNull(new RoomEntityRuntimeBuilder(initial).build().pickups().collectIfNeeded(1, 24, 34, true, true));
+        assertNull(new RoomEntityRuntimeBuilder(initial).build().pickups().collectIfNeeded(1, 24, 34, false, false));
     }
 
     @Test
     void outdoorHeartUsesTheRomObjectUnderEntityRevealPath() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x2D)
                         .at(0x40, 0x50)
@@ -556,7 +554,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void outdoorFairyUsesTheSharedRevealVectorBeforeItsHoverHandler() {
         EntitySpriteDefinition definition = pairDefinition(0x2F, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x2F)
                         .at(0x40, 0x50)
@@ -586,7 +584,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EnemyDropResolver resolver = new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom));
 
-        RoomEntityRuntime staticRuntime = RoomEntityRuntime.builder(snapshotAt(dyingEntity(0, 0, 0x09, catalog)))
+        RoomEntityRuntime staticRuntime = new RoomEntityRuntimeBuilder(snapshotAt(dyingEntity(0, 0, 0x09, catalog)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -603,7 +601,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(0, staticRuntime.inspection().killOrderAt(0));
         assertEquals(1, staticRuntime.outbox().consumePendingClearedEntityMask());
 
-        RoomEntityRuntime dynamicRuntime = RoomEntityRuntime.builder(snapshotAt(dyingEntity(0, -1, 0x09, catalog)))
+        RoomEntityRuntime dynamicRuntime = new RoomEntityRuntimeBuilder(snapshotAt(dyingEntity(0, -1, 0x09, catalog)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -628,7 +626,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(
                         snapshot(dyingEntity(0, 0, 0x09, catalog), dyingEntity(1, 1, 0x0B, catalog)))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)

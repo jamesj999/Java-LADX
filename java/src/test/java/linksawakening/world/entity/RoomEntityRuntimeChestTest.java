@@ -21,7 +21,7 @@ final class RoomEntityRuntimeChestTest {
     void chestInitializesWithTheRomOpenAnimationAndRewardEvent() {
         byte[] rom = loadRom();
         ChestContentsTable chestTable = new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom)));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
@@ -53,7 +53,7 @@ final class RoomEntityRuntimeChestTest {
     void chestEmitsTheRomPresentationSoundAtInertiaEightAndDialogAtThirtyEight() {
         byte[] rom = loadRom();
         ChestContentsTable chestTable = new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom)));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
@@ -98,7 +98,7 @@ final class RoomEntityRuntimeChestTest {
     @Test
     void zolChestUsesTheRomSpawnStateBeforeTheZolHandlerAdvancesIt() {
         byte[] rom = loadRom();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))

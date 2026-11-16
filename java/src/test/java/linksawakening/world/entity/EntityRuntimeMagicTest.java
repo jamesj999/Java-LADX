@@ -29,7 +29,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
                 .at(64, 64)
                 .spriteDefinition(definition)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x57));
         assertEquals(2, runtime.enemies().enemyHealth(0));
@@ -66,7 +66,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
 
     @Test
     void armosKnightStartsTheRomMinibossMusicAfterTheBossIntroDelay() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x88)
                         .at(0x50, 0x60)
@@ -93,7 +93,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x18)
                         .at(64, 64)
@@ -120,7 +120,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         byte[] rom = syntheticRom();
         write(rom, 0x05, 0x7EF8, 0x0E, 0x13);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot())
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -163,7 +163,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
             randomCalls.incrementAndGet();
             return 0x03;
         };
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(randomBytes)
                 .build();
@@ -188,7 +188,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
     @Test
     void pairoddUsesTheBankFourRecoilStepBeforeItsHandler() {
         EntitySpriteDefinition definition = pairDefinition(0x57, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x57)
                         .at(64, 64)
@@ -219,7 +219,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .z(3)
                 .build());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial)
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -272,7 +272,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
     @Test
     void pairoddProjectileIsRemovedAfterRoomObjectIntersectionAndQueuesRomVfx() {
         EntitySpriteDefinition definition = pairDefinition(0x58, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x58)
                         .at(0x40, 0x40)
                         .spriteDefinition(definition)
@@ -306,7 +306,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
     @Test
     void pairoddProjectileKeepsItsLinkCollisionPathWhenTheRoomObjectPasses() {
         EntitySpriteDefinition definition = pairDefinition(0x58, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .type(0x58)
                         .at(0x40, 0x40)
                         .spriteDefinition(definition)
@@ -347,7 +347,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
                 .spriteVariant(-1)
                 .z(0x07)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotAt(source))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotAt(source))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -398,7 +398,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
                 .spriteVariant(-1)
                 .z(0x09)
                 .build();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotAt(source))
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshotAt(source))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
