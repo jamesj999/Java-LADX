@@ -11,8 +11,6 @@ import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
-import linksawakening.world.entity.RoomEntityRuntime.SlimeKeyTransitionUpdate;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -28,20 +26,29 @@ import linksawakening.world.room.ChestContentsTable;
 
 /** ROM pickup, reveal and drop mechanics, sharing the owning room slot table. */
 public final class EntityPickupController {
-    private final RoomEntityRuntime.CommonDroppableUpdate[] commonUpdates =
-            new RoomEntityRuntime.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
+    public record SlimeKeyTransitionUpdate(
+            RoomEntity entity,
+            int nextTransitionCountdown,
+            boolean holdAboveLink,
+            boolean unload,
+            SlimeKeyRewardEvent reward) {}
+
+    public record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {}
+
+    private final EntityPickupController.CommonDroppableUpdate[] commonUpdates =
+            new EntityPickupController.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
 
     {
         java.util.Arrays.fill(
-                commonUpdates, new RoomEntityRuntime.CommonDroppableUpdate(RoomEntity.disabled(0), false));
+                commonUpdates, new EntityPickupController.CommonDroppableUpdate(RoomEntity.disabled(0), false));
     }
 
     // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
     @SuppressWarnings("ReferenceEquality")
-    RoomEntityRuntime.CommonDroppableUpdate commonUpdate(RoomEntity entity, boolean hidden) {
+    EntityPickupController.CommonDroppableUpdate commonUpdate(RoomEntity entity, boolean hidden) {
         var previous = commonUpdates[entity.slot()];
         if (previous.entity() != entity || previous.hidden() != hidden) {
-            previous = new RoomEntityRuntime.CommonDroppableUpdate(entity, hidden);
+            previous = new EntityPickupController.CommonDroppableUpdate(entity, hidden);
             commonUpdates[entity.slot()] = previous;
         }
         return previous;
@@ -523,7 +530,7 @@ public final class EntityPickupController {
             this.owner = java.util.Objects.requireNonNull(owner, "owner");
         }
 
-        linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate run() {
+        linksawakening.world.entity.EntityPickupController.CommonDroppableUpdate run() {
 
             slot = entity.slot();
             hiddenState = owner.bossRewards.readDroppablePrivateState3(slot);
@@ -601,7 +608,7 @@ public final class EntityPickupController {
 
         private boolean inUse;
 
-        linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate run(
+        linksawakening.world.entity.EntityPickupController.CommonDroppableUpdate run(
                 linksawakening.world.entity.RoomEntity entity,
                 int linkEntityX,
                 int linkEntityY,

@@ -603,14 +603,8 @@ public final class RoomEntityRuntime {
     }
 
     /** Shared result path of ApplySwordIntersectionWithObjects ($7CAB). */
-    enum ProjectileObjectCollision {
-        NONE,
-        BLOCKED,
-        UNLOAD
-    }
 
     /** Common bank-$03 collision pass for entity {@code $DF}. */
-    record ProjectileEntityCollision(boolean unload, boolean blocked) {}
 
     /**
      * Ports the Iron Mask target branch of bank-$03 {@code func_003_75A2} for
@@ -677,15 +671,6 @@ public final class RoomEntityRuntime {
     public int options1(int slot) {
         return this.slotProperties.options1(slot);
     }
-
-    public record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {}
-
-    public record SlimeKeyTransitionUpdate(
-            RoomEntity entity,
-            int nextTransitionCountdown,
-            boolean holdAboveLink,
-            boolean unload,
-            SlimeKeyRewardEvent reward) {}
 
     public EntityEffectConsumption entityEffects() {
         return effects;

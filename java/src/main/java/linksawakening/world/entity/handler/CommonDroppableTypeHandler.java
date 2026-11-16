@@ -12,9 +12,9 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityPickupController.CommonDroppableUpdate;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
 
 /** ROM handler stages for CommonDroppableType. */
 final class CommonDroppableTypeHandler {

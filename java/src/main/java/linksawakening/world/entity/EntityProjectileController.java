@@ -9,8 +9,6 @@ import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.entity.RoomEntityRuntime.ProjectileEntityCollision;
-import linksawakening.world.entity.RoomEntityRuntime.ProjectileObjectCollision;
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.MagicPowderObjectAction;
@@ -32,6 +30,14 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ArrowEntityHandler, BoomerangEntityHandler and MagicRodFireballEntityHandler collision/object effects. */
 public final class EntityProjectileController {
+    record ProjectileEntityCollision(boolean unload, boolean blocked) {}
+
+    enum ProjectileObjectCollision {
+        NONE,
+        BLOCKED,
+        UNLOAD
+    }
+
     final boolean indoorRoom;
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombState bombInteractions;
@@ -1101,7 +1107,7 @@ public final class EntityProjectileController {
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntityObjectSample object;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.RoomEntityRuntime.ProjectileObjectCollision objectCollision;
+        private linksawakening.world.entity.EntityProjectileController.ProjectileObjectCollision objectCollision;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity positioned;
 
