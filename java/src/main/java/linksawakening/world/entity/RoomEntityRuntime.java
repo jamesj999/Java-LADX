@@ -170,18 +170,6 @@ public final class RoomEntityRuntime {
         commands().updateHouseTarinPresentation(linkX, linkY);
     }
 
-    public int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return spawns().spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
-    }
-
-    public int spawnPushedBlock(int x, int y) {
-        return spawns().spawnPushedBlock(x, y);
-    }
-
-    public int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) {
-        return spawns().spawnLiftedRoomObject(x, y, romDirection, spriteVariant);
-    }
-
     public void movePushedBlock(int slot, int x, int y) {
         commands().movePushedBlock(slot, x, y);
     }
@@ -192,51 +180,5 @@ public final class RoomEntityRuntime {
 
     public void removePushedBlock(int slot) {
         commands().removePushedBlock(slot);
-    }
-
-    public int spawnRoomEventKeyDrop() {
-        return spawns().spawnRoomEventKeyDrop();
-    }
-
-    public int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        return spawns().spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
-    }
-
-    public int spawnBoomerang(
-            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
-        return spawns().spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
-    }
-
-    public int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return spawns().spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
-    }
-
-    public int spawnMagicRodFireball(
-            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        return spawns().spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
-    }
-
-    public int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return spawns().spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
-    }
-
-    public int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return spawns().spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
-    }
-
-    public int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
-        return spawns().spawnLiftableRockSmash(entityX, entityY, sourceSpriteVariant);
-    }
-
-    public int spawnLiftableRockRubble(int entityX, int entityY) {
-        return spawns().spawnLiftableRockRubble(entityX, entityY);
-    }
-
-    public int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY, boolean allowDrop) {
-        return spawns().spawnShovelDrop(objectLeft, objectTop, linkEntityX, linkEntityY, allowDrop);
-    }
-
-    public int spawnChestWithItem(int objectLeft, int objectTop, int itemType) {
-        return spawns().spawnChestWithItem(objectLeft, objectTop, itemType);
     }
 }

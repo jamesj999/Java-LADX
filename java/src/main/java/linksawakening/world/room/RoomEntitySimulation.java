@@ -108,8 +108,14 @@ final class RoomEntitySimulation {
         if (dependencies.items().pendingShovelDrop != null) {
             PendingShovelDrop drop = dependencies.items().pendingShovelDrop;
             dependencies.items().pendingShovelDrop = null;
-            loaded.entities.spawnShovelDrop(
-                    drop.objectLeft(), drop.objectTop(), drop.linkEntityX(), drop.linkEntityY(), drop.allowDrop());
+            loaded.entities
+                    .spawns()
+                    .spawnShovelDrop(
+                            drop.objectLeft(),
+                            drop.objectTop(),
+                            drop.linkEntityX(),
+                            drop.linkEntityY(),
+                            drop.allowDrop());
         }
     }
 
