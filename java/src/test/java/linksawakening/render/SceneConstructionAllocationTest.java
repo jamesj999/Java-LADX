@@ -20,7 +20,7 @@ final class SceneConstructionAllocationTest {
 
     @ParameterizedTest
     @CsvSource({"false,false", "true,false", "false,true", "true,true"})
-    void representativeBuildAndDrawAllocation(boolean highEntityTypes, boolean borrowedPlanes) {
+    void buildAndDrawAllocationForOwnedAndBorrowedPlanes(boolean highEntityTypes, boolean borrowedPlanes) {
         var fixture = new SceneConstructionFixture(highEntityTypes);
         var builder = new GameFrameSceneBuilder();
         fixture.configure(builder);

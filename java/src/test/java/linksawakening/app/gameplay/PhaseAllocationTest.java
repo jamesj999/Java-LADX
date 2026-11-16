@@ -20,7 +20,7 @@ class PhaseAllocationTest {
     private static volatile Object observed;
 
     @Test
-    void phaseAllocations() throws Exception {
+    void retainedGameplayPhasesReportPerStepAllocation() throws Exception {
         try (var session = AllocationSessions.active()) {
             var c = session.flows().simulation();
             var story = new DialogStoryPhase();
