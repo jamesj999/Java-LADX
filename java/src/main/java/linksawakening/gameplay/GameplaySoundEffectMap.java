@@ -1,6 +1,7 @@
 package linksawakening.gameplay;
 
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -114,6 +115,6 @@ public final class GameplaySoundEffectMap {
                 event,
                 catalog.find(namespace, id)
                         .orElseThrow(() -> new IllegalStateException("Missing gameplay sound effect: " + namespace
-                                + " 0x" + Integer.toHexString(id).toUpperCase(java.util.Locale.ROOT))));
+                                + " 0x" + Integer.toHexString(id).toUpperCase(Locale.ROOT))));
     }
 }

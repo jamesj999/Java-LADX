@@ -52,7 +52,7 @@ public final class FileMenuScreen implements Screen {
                             dependencies.saves().saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes()));
         } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
             SaveSlotState saved = dependencies.saves().saveRamStore.readSlot(action.selectedSlot());
-            dependencies.screens().currentSaveSlot = action.selectedSlot();
+            dependencies.screens().selectSaveSlot(action.selectedSlot());
             if (saved.spawnPositionX() == 0) {
                 dependencies.actions().startNewGame();
             } else {

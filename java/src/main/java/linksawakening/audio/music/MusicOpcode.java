@@ -1,5 +1,7 @@
 package linksawakening.audio.music;
 
+import java.util.Locale;
+
 /** Classifies bytes in the ROM music command stream. */
 final class MusicOpcode {
     private MusicOpcode() {}
@@ -88,6 +90,6 @@ final class MusicOpcode {
 
     private static IllegalArgumentException unsupported(int opcode, int channel) {
         return new IllegalArgumentException("Unsupported music opcode 0x"
-                + Integer.toHexString(opcode).toUpperCase(java.util.Locale.ROOT) + " on channel " + channel);
+                + Integer.toHexString(opcode).toUpperCase(Locale.ROOT) + " on channel " + channel);
     }
 }

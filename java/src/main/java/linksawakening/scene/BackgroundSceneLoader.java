@@ -40,7 +40,7 @@ public final class BackgroundSceneLoader {
                 RomBank.loadPalettes(romData, sceneAddress(spec.palettesBank(), spec.palettesAddr() + 0x40), 8));
     }
 
-    /** Preserve the legacy scene specification's file-offset arithmetic, including CPU-window aliases. */
+    /** Preserve the scene specification's file-offset arithmetic, including CPU-window aliases. */
     private static RomAddress sceneAddress(int bank, int address) {
         return RomAddress.fromOffset(RomBank.romOffset(bank, address));
     }

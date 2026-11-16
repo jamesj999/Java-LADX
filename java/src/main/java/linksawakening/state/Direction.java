@@ -17,7 +17,7 @@ public enum Direction {
         this.romIndex = romIndex;
     }
 
-    /** Sentinel classification for legacy switches whose default accepts arbitrary integers. */
+    /** Sentinel classification for switches whose default accepts arbitrary integers. */
     public static Direction fromJavaOrUnknown(int value) {
         return value >= 0 && value <= 3 ? fromJava(value) : UNKNOWN;
     }

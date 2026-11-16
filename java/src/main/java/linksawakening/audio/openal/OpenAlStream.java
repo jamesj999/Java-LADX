@@ -3,6 +3,7 @@ package linksawakening.audio.openal;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.LongSupplier;
 import org.lwjgl.BufferUtils;
@@ -205,7 +206,7 @@ final class OpenAlStream {
         int error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
             throw new IllegalStateException("OpenAL " + operation + " failed: 0x"
-                    + Integer.toHexString(error).toUpperCase(java.util.Locale.ROOT));
+                    + Integer.toHexString(error).toUpperCase(Locale.ROOT));
         }
     }
 

@@ -1,6 +1,7 @@
 package linksawakening.gameplay;
 
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +44,6 @@ public final class DialogSoundEffectMap {
                 event,
                 catalog.find(namespace, id)
                         .orElseThrow(() -> new IllegalStateException("Missing dialog sound effect: " + namespace + " 0x"
-                                + Integer.toHexString(id).toUpperCase(java.util.Locale.ROOT))));
+                                + Integer.toHexString(id).toUpperCase(Locale.ROOT))));
     }
 }

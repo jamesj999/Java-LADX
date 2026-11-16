@@ -1,5 +1,6 @@
 package linksawakening.app.gameplay.recovery;
 
+import java.util.Objects;
 import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -22,13 +23,13 @@ public final class PassOutController {
 
     private record Dying(LinkPassOutAnimation animation) implements Sequence {
         Dying {
-            java.util.Objects.requireNonNull(animation);
+            Objects.requireNonNull(animation);
         }
     }
 
     private record GameOver(GameOverPresentation menu) implements Sequence {
         GameOver {
-            java.util.Objects.requireNonNull(menu);
+            Objects.requireNonNull(menu);
         }
     }
 

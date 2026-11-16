@@ -1,5 +1,6 @@
 package linksawakening.audio.sfx;
 
+import java.util.Locale;
 import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
@@ -51,7 +52,7 @@ final class RomSoundEffectTables {
     private void requireReadable(int offset, int length) {
         if (offset < 0 || offset + length > romData.size()) {
             throw new IllegalArgumentException("SFX table read outside ROM at offset 0x"
-                    + Integer.toHexString(offset).toUpperCase(java.util.Locale.ROOT));
+                    + Integer.toHexString(offset).toUpperCase(Locale.ROOT));
         }
     }
 }

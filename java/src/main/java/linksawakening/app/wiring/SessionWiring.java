@@ -118,7 +118,7 @@ public final class SessionWiring {
                 wired.router(),
                 new RoomMusicSelection(
                         wired.music(), s.player().playerState(), s.world().roomSession()));
-        state.screens().currentScreen = screens.title();
+        state.screens().selectScreen(screens.title());
         var teleporter = new DebugTeleporter(
                 s.world().roomSession(),
                 s.player().link(),

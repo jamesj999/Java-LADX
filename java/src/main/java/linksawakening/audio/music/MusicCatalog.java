@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -202,7 +203,7 @@ public final class MusicCatalog {
         int pointerOffset = new RomAddress(bank, pointerAddress).offset();
         requireReadableWord(romData, pointerOffset, bank, pointerAddress);
         int headerAddress = readLittleEndianWord(romData, pointerOffset);
-        // Preserve the legacy header offset even for zero pointers in partial test ROMs.
+        // Preserve the header offset even for zero pointers in partial test ROMs.
         int romOffset = (bank == 0 ? headerAddress : bank * 0x4000 + (headerAddress - 0x4000));
         return new MusicTrack(id, nameFor(id), bank, pointerAddress, headerAddress, romOffset);
     }
@@ -226,6 +227,6 @@ public final class MusicCatalog {
     }
 
     private static String formatHex(int value) {
-        return "0x" + Integer.toHexString(value).toUpperCase(java.util.Locale.ROOT);
+        return "0x" + Integer.toHexString(value).toUpperCase(Locale.ROOT);
     }
 }
