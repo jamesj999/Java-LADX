@@ -9,6 +9,14 @@ final class EntityBossInspectionFixture {
         runtime = room;
     }
 
+    void setSlimeEyeState(int slot, int value) {
+        runtime.execution().slimeEye().encounter.state[slot] = value;
+    }
+
+    void setSlimeEyeHalf(int slot, int value) {
+        runtime.execution().slimeEye().encounter.half[slot] = value;
+    }
+
     int geniePrivateState1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.execution().genie().geniePrivateState1(slot) & 0xFF;

@@ -5,7 +5,10 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 
-/** Test-only traversal of composed owners; never adds a production facade or runtime reflection alias. */
+/**
+ * Finds composed owners for room fixtures without exposing a production wiring inventory.
+ * Reflection is confined here: the facade intentionally exports roles, not its private dependency graph.
+ */
 final class RoomSessionInspection {
     private RoomSessionInspection() {}
 

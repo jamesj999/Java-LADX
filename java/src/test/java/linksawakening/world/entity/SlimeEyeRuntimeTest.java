@@ -168,8 +168,8 @@ final class SlimeEyeRuntimeTest {
             boolean half = !name.equals("body-drop");
             boolean dead = name.equals("half-death");
             // Disclosed isolated comparison setup: preset handler state, not a D3 route.
-            set(r, "state", dead ? 0 : half ? 2 : 1);
-            set(r, "half", half ? 1 : 0);
+            EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, dead ? 0 : half ? 2 : 1);
+            EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, half ? 1 : 0);
             r.inspection().physicsTables.writeEnemyTransitionCountdown(0, 0);
             r.inspection().combatTables.writeEnemyHealth(0, dead ? 0 : half ? 5 : 0x50);
             r.inspection()
@@ -219,12 +219,6 @@ final class SlimeEyeRuntimeTest {
             }
             Files.writeString(directory.resolve(name + "-engine.tsv"), trace);
         }
-    }
-
-    private void set(RoomEntityRuntime r, String field, int value) throws Exception {
-        var reflected = SlimeEyeController.State.class.getDeclaredField(field);
-        reflected.setAccessible(true);
-        ((int[]) reflected.get(r.execution().slimeEye().encounter))[0] = value;
     }
 
     @Test
@@ -373,8 +367,8 @@ final class SlimeEyeRuntimeTest {
     void romArrowImmunityAndLethalSwordReenterHalfDeathHandlerThenClearSlotState() throws Exception {
         var r = runtime();
         tick(r);
-        set(r, "half", 1);
-        set(r, "state", 1);
+        EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, 1);
+        EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, 1);
         r.inspection()
                 .slots
                 .replace(0, EntitySnapshots.withZ(r.inspection().slots.get(0), 0));
@@ -402,8 +396,8 @@ final class SlimeEyeRuntimeTest {
     void halfPegasusHitClearsBootsBeforeDamageAndRecoilSkipsHopIntegration() throws Exception {
         var r = runtime();
         tick(r);
-        set(r, "half", 1);
-        set(r, "state", 1);
+        EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, 1);
+        EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, 1);
         r.inspection()
                 .slots
                 .replace(0, EntitySnapshots.withZ(r.inspection().slots.get(0), 1));
@@ -444,8 +438,8 @@ final class SlimeEyeRuntimeTest {
     void ordinaryHalfSwordHitRequestsFourFrameLinkPush() throws Exception {
         var r = runtime();
         tick(r);
-        set(r, "half", 1);
-        set(r, "state", 0);
+        EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, 1);
+        EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, 0);
         r.inspection()
                 .slots
                 .replace(0, EntitySnapshots.withZ(r.inspection().slots.get(0), 0));
