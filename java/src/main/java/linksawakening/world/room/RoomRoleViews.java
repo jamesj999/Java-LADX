@@ -17,9 +17,7 @@ record RoomRoleViews(
                         components.roomSessionViews(),
                         session)),
                 new RoomRoomsView(new RoomRoomsView.Dependencies(components.roomLoadCoordinator()), session),
-                new RoomDungeonView(
-                        new RoomDungeonView.Dependencies(components.roomSessionViews(), components.roomState()),
-                        session),
+                components.roomState(),
                 new RoomProgressView(
                         new RoomProgressView.Dependencies(
                                 components.entityFrame(), components.location(), components.terrain()),

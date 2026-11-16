@@ -44,7 +44,7 @@ final class RoomSessionContext {
         var randomByteSource = config.randomByteSource();
         values.entityRandomByteSource = java.util.Objects.requireNonNull(randomByteSource);
         values.romData = romData;
-        values.roomState = new RoomWorldState(romData);
+        values.roomState = new RoomWorldState(romData, loadedRooms);
         values.scrollNavigation = new RoomScrollNavigation(romData, values.roomState);
         values.indoorTorchPaletteEffect = new IndoorTorchPaletteEffect(romData);
         values.gpu = gpu;

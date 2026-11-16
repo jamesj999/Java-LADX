@@ -97,7 +97,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         components = RoomSessionContext.create(
                 config, loadedRooms, this::installRoom, this::roomLoaded, this::resetRoomTransients);
 
-        dungeonView = new RoomDungeonLiveView(components.roomState(), -1);
+        dungeonView = components.roomState().view();
         roles = RoomRoleViews.create(components, this);
         doors = components.roomDoorInteractions();
         transitions = new RoomTransitionsView(components.roomTransitionController(), this);
@@ -818,14 +818,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
 
     void setHeartPiecesCount(int count) {
         if (hasRoom()) loadedRoom.entities.setHeartPiecesCount(count);
-    }
-
-    RoomDungeon.View dungeonView() {
-        return dungeonView;
-    }
-
-    byte[] dungeonMinimapRoomStatusSnapshot() {
-        return hasRoom() ? components.roomState().dungeonMinimapRoomStatusSnapshot(loadedRoom.room) : new byte[64];
     }
 
     void resetGuardianAcornCounterOnHurt() {

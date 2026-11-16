@@ -7,7 +7,26 @@ import linksawakening.rom.RomSymbols;
 import linksawakening.world.transition.Warp;
 
 /** Persistent room-status regions, dungeon inventory, and ROM map-layout queries. */
-final class RoomWorldState {
+final class RoomWorldState implements RoomDungeon {
+    private final LoadedRoomHandle rooms;
+    private final RoomDungeonLiveView view;
+
+    @Override
+    public RoomDungeonLiveView view() {
+        return view;
+    }
+
+    @Override
+    public void setDungeonItemForDebug(int mapId, int index, int value) {
+        dungeonItemState.setFlagForDebug(mapId, index, value);
+    }
+
+    @Override
+    public byte[] dungeonMinimapRoomStatusSnapshot() {
+        RoomRuntime room = rooms.currentOrNull();
+        return room == null ? new byte[64] : dungeonMinimapRoomStatusSnapshot(room.room);
+    }
+
     private static final int ROOM_STATUS_TABLE_SIZE = 0x100;
     private final Rom romData;
     private static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
@@ -19,47 +38,59 @@ final class RoomWorldState {
     final byte[] dungeonProgressFlags = new byte[0x1A];
     final DungeonItemState dungeonItemState = new DungeonItemState();
 
-    RoomWorldState(Rom romData) {
+    RoomWorldState(Rom romData, LoadedRoomHandle rooms) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
+        view = new RoomDungeonLiveView(this, -1);
         this.romData = romData;
     }
 
-    byte[] overworldRoomStatusSnapshot() {
+    @Override
+    public byte[] overworldRoomStatusSnapshot() {
         return overworldRoomStatus.clone();
     }
 
-    byte[] indoorARoomStatusSnapshot() {
+    @Override
+    public byte[] indoorARoomStatusSnapshot() {
         return indoorARoomStatus.clone();
     }
 
-    byte[] indoorBRoomStatusSnapshot() {
+    @Override
+    public byte[] indoorBRoomStatusSnapshot() {
         return indoorBRoomStatus.clone();
     }
 
-    byte[] colorDungeonRoomStatusSnapshot() {
+    @Override
+    public byte[] colorDungeonRoomStatusSnapshot() {
         return Arrays.copyOf(colorDungeonRoomStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE);
     }
 
-    byte[] dungeonItemFlagsSnapshot() {
+    @Override
+    public byte[] dungeonItemFlagsSnapshot() {
         return dungeonItemState.dungeonItemFlagsSnapshot();
     }
 
-    byte[] colorDungeonItemFlagsSnapshot() {
+    @Override
+    public byte[] colorDungeonItemFlagsSnapshot() {
         return dungeonItemState.colorDungeonItemFlagsSnapshot();
     }
 
-    byte[] currentDungeonItemFlagsSnapshot() {
+    @Override
+    public byte[] currentDungeonItemFlagsSnapshot() {
         return dungeonItemState.currentFlagsSnapshot();
     }
 
-    void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
+    @Override
+    public void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
         dungeonItemState.restore(dungeonFlags, colorFlags);
     }
 
-    byte[] dungeonProgressFlagsSnapshot() {
+    @Override
+    public byte[] dungeonProgressFlagsSnapshot() {
         return Arrays.copyOf(dungeonProgressFlags, 0x08);
     }
 
-    void restoreDungeonProgressFlags(byte[] flags) {
+    @Override
+    public void restoreDungeonProgressFlags(byte[] flags) {
         requireLength(flags, 0x08, "dungeonProgressFlags");
         Arrays.fill(dungeonProgressFlags, (byte) 0);
         System.arraycopy(flags, 0, dungeonProgressFlags, 0, flags.length);
