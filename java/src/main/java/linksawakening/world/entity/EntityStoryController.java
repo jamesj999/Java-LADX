@@ -42,7 +42,7 @@ public final class EntityStoryController {
     final EntityRoomInspection roomInspection;
     final EntityRoomVariables roomVariables;
     final EntitySlotLifecycle lifecycle;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final EntitySpriteViews spriteViews;
     final EntityPlayerCommands playerCommands;
 
@@ -62,7 +62,7 @@ public final class EntityStoryController {
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntitySpriteViews spriteViews,
             EntityPlayerCommands playerCommands) {
         this.state = java.util.Objects.requireNonNull(state, "state");
@@ -102,7 +102,7 @@ public final class EntityStoryController {
         int slot = entity.slot();
         int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
         int facingVariant = ((yDistance < 0 ? 0 : 2) ^ 2) + ((frameCounter >>> 3) & 0x01);
-        this.slots[slot] = withVariant(entity, facingVariant);
+        this.slots.replace(slot, withVariant(entity, facingVariant));
         switch (this.state.readKidKidnapState(slot)) {
             case 0 -> {
                 this.state.writeKidKidnapDelay(slot, 0x30);
@@ -119,13 +119,21 @@ public final class EntityStoryController {
                 } else {
                     EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
                             entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x08);
-                    this.slots[slot] = withPositionAndVariant(
-                            entity,
-                            addFallingSpeedToPosition(
-                                    entity.x(), vector.x() & 0xFF, this.state.storageKidSpeedXAccumulator(), slot),
-                            addFallingSpeedToPosition(
-                                    entity.y(), vector.y() & 0xFF, this.state.storageKidSpeedYAccumulator(), slot),
-                            facingVariant);
+                    this.slots.replace(
+                            slot,
+                            withPositionAndVariant(
+                                    entity,
+                                    addFallingSpeedToPosition(
+                                            entity.x(),
+                                            vector.x() & 0xFF,
+                                            this.state.storageKidSpeedXAccumulator(),
+                                            slot),
+                                    addFallingSpeedToPosition(
+                                            entity.y(),
+                                            vector.y() & 0xFF,
+                                            this.state.storageKidSpeedYAccumulator(),
+                                            slot),
+                                    facingVariant));
                     this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
                 }
             }
@@ -141,7 +149,7 @@ public final class EntityStoryController {
                     z = 0;
                     this.state.writeKidZSpeed(slot, (frameCounter & 31) == 0 ? 0x10 : 0);
                 }
-                this.slots[slot] = withZ(this.slots[slot], z);
+                this.slots.replace(slot, withZ(this.slots.get(slot), z));
                 int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
                 if (this.linkState.actionButtonsHeld
                         && !this.linkState.dialogActive
@@ -165,7 +173,7 @@ public final class EntityStoryController {
         int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
         int direction = Math.abs(xDistance) >= Math.abs(yDistance) ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
         int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
-        runtime.slots[entity.slot()] = withVariant(entity, variant);
+        runtime.slots.replace(entity.slot(), withVariant(entity, variant));
         boolean linkFacingMadam = (runtime.linkState.lastRomLinkDirection ^ 0x01) == direction;
         boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28 && ((xDistance + 0x10) & 0xFF) < 0x20;
         if (runtime.linkState.actionButtonAHeld
@@ -254,7 +262,7 @@ public final class EntityStoryController {
                 this.state.owlState().readOwlSpeedZ(slot),
                 this.state.owlState().storageOwlZAccumulator(),
                 slot);
-        this.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
+        this.slots.replace(slot, withZ(withPositionAndVariant(flying, x, y, 0), z));
         if ((frameCounter & 0x07) == 0) {
             this.events.pendingEntityEvents.add(
                     new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x05));
@@ -489,7 +497,7 @@ public final class EntityStoryController {
             owner.state.owlState().writeOwlSpeedX(slot, 0x18);
             owner.state.owlState().writeOwlSpeedY(slot, 0x10);
             owner.state.owlState().writeOwlSpeedZ(slot, 0xFC);
-            owner.slots[slot] = withZ(entity, 0x20);
+            owner.slots.replace(slot, withZ(entity, 0x20));
             owner.state.owlState().writeOwlEventState(slot, 1);
 
             return true;
@@ -520,7 +528,7 @@ public final class EntityStoryController {
                     slot);
             if (flying.z() == 0) {
                 owner.state.owlState().writeOwlEventState(slot, 2);
-                owner.slots[slot] = withPositionAndVariant(flying, x, y, 0);
+                owner.slots.replace(slot, withPositionAndVariant(flying, x, y, 0));
                 return false;
             }
             int z = addFallingSpeedToPosition(
@@ -541,7 +549,7 @@ public final class EntityStoryController {
                                 approachSignedByteZero(owner.state.owlState().readOwlSpeedY(slot)));
             }
             if (signedByte(z) <= 0) z = 0;
-            owner.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
+            owner.slots.replace(slot, withZ(withPositionAndVariant(flying, x, y, 0), z));
 
             return true;
         }
@@ -553,7 +561,7 @@ public final class EntityStoryController {
             if (RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
                 owner.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
             }
-            owner.slots[slot] = owner.roomInspection.owlPresentation(entity, frameCounter);
+            owner.slots.replace(slot, owner.roomInspection.owlPresentation(entity, frameCounter));
             int globalDialogId =
                     owner.state.owlState().readOwlDialogResolver().applyAsInt(owner.roomVariables.readEntityRoomId());
             owner.events.pendingDialogRequests.add(
@@ -569,7 +577,7 @@ public final class EntityStoryController {
                 return false;
             }
             owner.blockLinkForOwl(slot);
-            owner.slots[slot] = owner.roomInspection.owlPresentation(entity, frameCounter);
+            owner.slots.replace(slot, owner.roomInspection.owlPresentation(entity, frameCounter));
             if (owner.linkState.dialogActive) {
                 if (owner.physicsTables.readEnemyTransitionCountdown(slot) > 0) {
                     owner.physicsTables.postEnemyTransitionCountdown(slot, 1);
@@ -698,7 +706,7 @@ public final class EntityStoryController {
                 }
                 default -> throw new IllegalStateException("Invalid Richard state");
             }
-            owner.slots[slot] = updated;
+            owner.slots.replace(slot, updated);
         }
 
         private boolean advanceState0() {
@@ -716,7 +724,7 @@ public final class EntityStoryController {
         private boolean advanceState1() {
             if (!owner.roomInspection.sourceNpcInteractionAllowed(
                     xDistance, yDistance, linkAirborne, directionToLink(xDistance, yDistance))) {
-                owner.slots[slot] = updated;
+                owner.slots.replace(slot, updated);
                 return false;
             }
             if (owner.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() != 0) {
@@ -746,7 +754,7 @@ public final class EntityStoryController {
 
         private boolean advanceState2() {
             if (owner.linkState.dialogActive || owner.linkState.inventoryAppearing) {
-                owner.slots[slot] = updated;
+                owner.slots.replace(slot, updated);
                 return false;
             }
             owner.events.pendingDialogRequests.add(
@@ -849,7 +857,7 @@ public final class EntityStoryController {
             slot = entity.slot();
             if (owner.state.readKidBall(slot)) {
                 if (owner.state.preKidPlayTimer(slot, -1) <= 0) {
-                    owner.slots[slot] = withStatus(entity, EntityStatus.DISABLED);
+                    owner.slots.replace(slot, withStatus(entity, EntityStatus.DISABLED));
                     owner.state.writeKidBall(slot, false);
                     return false;
                 }
@@ -863,7 +871,7 @@ public final class EntityStoryController {
                         owner.state.postKidZSpeed(slot, -1) & 255,
                         owner.state.storageKidSpeedYAccumulator(),
                         slot);
-                owner.slots[slot] = withZ(withPositionAndVariant(entity, x, entity.y(), 0), z);
+                owner.slots.replace(slot, withZ(withPositionAndVariant(entity, x, entity.y(), 0), z));
                 return false;
             }
             if (owner.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() == 0x80) {
@@ -887,7 +895,7 @@ public final class EntityStoryController {
                 z = 0;
                 owner.state.writeKidZSpeed(slot, 0);
             }
-            owner.slots[slot] = withZ(entity, z);
+            owner.slots.replace(slot, withZ(entity, z));
             timer = owner.state.readKidPlayTimer(slot);
             if (timer > 0) timer--;
             return true;
@@ -899,24 +907,25 @@ public final class EntityStoryController {
                 if (owner.state.readKidPlayState(slot) == 0) {
                     owner.state.writeKidPlayState(slot, 1);
                     timer = 0x80;
-                    int ball =
-                            EntitySlotAllocator.findFreeSlot(owner.slots, owner.combatTables, owner.slots.length - 1);
+                    int ball = owner.slots.findFree(owner.combatTables, owner.slots.size() - 1);
                     if (ball >= 0 && owner.spriteHandlers.supportsPresentation()) {
                         var definition = owner.spriteViews.forKidBall();
-                        owner.slots[ball] = new RoomEntity(
+                        owner.slots.replace(
                                 ball,
-                                -1,
-                                0x71,
-                                entity.x(),
-                                entity.y(),
-                                EntityStatus.ACTIVE,
-                                definition,
-                                0,
-                                0,
-                                0,
-                                0,
-                                -1,
-                                false);
+                                new RoomEntity(
+                                        ball,
+                                        -1,
+                                        0x71,
+                                        entity.x(),
+                                        entity.y(),
+                                        EntityStatus.ACTIVE,
+                                        definition,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        -1,
+                                        false));
                         owner.lifecycle.initializeHealthGroup(ball);
                         owner.physicsTables.writeEnemyPhysicsFlags(ball, ENTITY_PHYSICS_HARMLESS);
                         owner.combatTables.writeEnemyHitboxFlags(ball, 0);
@@ -935,7 +944,7 @@ public final class EntityStoryController {
                     timer = 0x60;
                 }
             } else if (owner.state.readKidPlayState(slot) == 1 && timer < 0x60) {
-                owner.slots[slot] = withVariant(owner.slots[slot], entity.type() == 0x71 ? 2 : 0);
+                owner.slots.replace(slot, withVariant(owner.slots.get(slot), entity.type() == 0x71 ? 2 : 0));
                 if (timer < 0x40 && landed) owner.state.writeKidZSpeed(slot, 8);
             }
             owner.state.writeKidPlayTimer(slot, timer);

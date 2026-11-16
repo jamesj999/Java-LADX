@@ -26,7 +26,7 @@ public final class EntityRuntimeConfiguration {
     private final EntityProjectileState projectiles;
     private final EntityRoomVariables roomVariables;
     private final EntityStoryState story;
-    private final RoomEntity[] slots;
+    private final EntitySlots slots;
     private final SlimeEyeController slimeEye;
     private final EntitySpriteViews spriteViews;
 
@@ -42,7 +42,7 @@ public final class EntityRuntimeConfiguration {
             EntityProjectileState projectiles,
             EntityRoomVariables roomVariables,
             EntityStoryState story,
-            RoomEntity[] slots,
+            EntitySlots slots,
             SlimeEyeController slimeEye,
             EntitySpriteViews spriteViews) {
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -223,7 +223,9 @@ public final class EntityRuntimeConfiguration {
     public void setEntityRoomId(int roomId) {
         EntitySlotValidation.validateByte(roomId, "Entity room id");
         this.roomVariables.writeEntityRoomId(roomId);
-        for (RoomEntity entity : this.slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
+
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) continue;
             SecretSeashellMotion seashell = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
             seashell.ensureInitialized(entity.slot(), roomId);
@@ -291,10 +293,14 @@ public final class EntityRuntimeConfiguration {
         this.pickups.writeChestPlayerLevelsKnown(true);
         if (this.spriteHandlers.supportsPresentation()) {
             EntitySpriteDefinition pickupDefinition = this.spriteViews.forSwordShieldPickup(swordLevel == 0);
-            for (int index = 0; index < this.slots.length; index++) {
-                if (this.slots[index].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
-                    this.slots[index] =
-                            withDefinition(this.slots[index], pickupDefinition, this.slots[index].spriteVariant());
+            for (int index = 0; index < this.slots.size(); index++) {
+                if (this.slots.get(index).type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
+                    this.slots.replace(
+                            index,
+                            withDefinition(
+                                    this.slots.get(index),
+                                    pickupDefinition,
+                                    this.slots.get(index).spriteVariant()));
                 }
             }
         }

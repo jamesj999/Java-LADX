@@ -96,7 +96,7 @@ public final class RoomEntityRuntime {
     final EntityPickupInspection pickupInspection;
     final EntityEnemyInspection enemyInspection;
 
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final java.util.List<RoomEntity> slotEntities;
 
     // Optional ROM-backed data; absent in ROM-free or unconfigured presentation state.
@@ -161,8 +161,8 @@ public final class RoomEntityRuntime {
 
         Rom romData = builder.rom();
 
-        this.slots = initial.slots().toArray(RoomEntity[]::new);
-        this.slotEntities = java.util.Arrays.asList(slots);
+        this.slots = new EntitySlots(initial.slots());
+        this.slotEntities = slots.view();
         this.entityState.presentationState.initializeSelection(initial.spriteSelection(), indoorRoom);
         this.spriteTiles = initial.spriteTiles();
         this.entityState.physicsTables.writeGroundInteractionSideScrolling(initial.sideScrolling());
@@ -625,11 +625,11 @@ public final class RoomEntityRuntime {
     }
 
     int findFreeEntitySlot() {
-        return EntitySlotAllocator.findFreeSlot(slots, entityState.combatTables, slots.length - 1);
+        return slots.findFree(entityState.combatTables, slots.size() - 1);
     }
 
     int findFreeEntitySlotAtMost(int highestSlot) {
-        return EntitySlotAllocator.findFreeSlot(slots, entityState.combatTables, highestSlot);
+        return slots.findFree(entityState.combatTables, highestSlot);
     }
 
     /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail for a bomb. */

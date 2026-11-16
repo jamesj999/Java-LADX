@@ -95,7 +95,7 @@ public final class EntityFrameExecution {
     }
 
     public void replaceEntity(RoomEntity replacement) {
-        runtime.slots[this.slotFrame().index()] = replacement;
+        runtime.slots.replace(this.slotFrame().index(), replacement);
     }
 
     public List<RoomEntity> entities() {
@@ -103,7 +103,7 @@ public final class EntityFrameExecution {
     }
 
     public RoomEntity entityAt(int slotIndex) {
-        return runtime.slots[slotIndex];
+        return runtime.slots.get(slotIndex);
     }
 
     public void emit(DialogRequest event) {

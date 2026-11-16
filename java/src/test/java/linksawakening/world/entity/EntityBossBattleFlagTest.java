@@ -52,7 +52,7 @@ class EntityBossBattleFlagTest {
     void laterBossInitSetsFlagAndDeathDoesNotClearItButRoomResetDoes() throws IOException {
         var runtime = runtime();
         assertFalse(runtime.inspection().inBossBattle());
-        runtime.slots[15] = entity(15, 0x81);
+        runtime.slots.replace(15, entity(15, 0x81));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertTrue(runtime.inspection().inBossBattle());
         runtime.lifecycle.disableEntityWithoutPersistence(15);
@@ -65,29 +65,29 @@ class EntityBossBattleFlagTest {
     @Test
     void nonBossAndDefeatedBossDoNotSetFlag() throws IOException {
         var runtime = runtime();
-        runtime.slots[15] = entity(15, 9);
+        runtime.slots.replace(15, entity(15, 9));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertFalse(runtime.inspection().inBossBattle());
-        runtime.slots[14] = entity(14, 0x81);
+        runtime.slots.replace(14, entity(14, 0x81));
         runtime.entityState.roomVariables.writeEntityRoomStatus(0x20);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertFalse(runtime.inspection().inBossBattle());
-        assertEquals(EntityStatus.DISABLED, runtime.slots[14].status());
+        assertEquals(EntityStatus.DISABLED, runtime.slots.get(14).status());
     }
 
     @Test
     void battleFlagSuppressesPowerUpsButStillAllowsOrdinaryDrops() throws IOException {
         var runtime = runtime();
         var source = entity(0, 9);
-        runtime.slots[0] = source;
-        runtime.slots[15] = entity(15, 0x81);
+        runtime.slots.replace(0, source);
+        runtime.slots.replace(15, entity(15, 0x81));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.bossRewards.state.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
-        runtime.bossRewards.handleTerminalEnemyDeath(runtime.slots[0], () -> 0);
+        runtime.bossRewards.handleTerminalEnemyDeath(runtime.slots.get(0), () -> 0);
         assertFalse(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
         var peaceful = runtime();
-        peaceful.slots[0] = source;
+        peaceful.slots.replace(0, source);
         peaceful.initializeHealthGroup(0);
         peaceful.bossRewards.state.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
         peaceful.bossRewards.handleTerminalEnemyDeath(source, () -> 0);

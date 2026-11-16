@@ -45,12 +45,14 @@ class EntityHealthGroupTest {
         runtime.entityState.slotView.setHealthGroup(0, 12);
         runtime.lifecycle.disableEntityWithoutPersistence(0);
         assertEquals(0, runtime.entityState.slotView.healthGroup(0));
-        runtime.slots[0] = new RoomEntityBuilder()
-                .sourceLoadOrder(0)
-                .type(0x18)
-                .at(64, 80)
-                .spriteDefinition(EntitySpriteDefinition.unsupported(0x18))
-                .build();
+        runtime.slots.replace(
+                0,
+                new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x18)
+                        .at(64, 80)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x18))
+                        .build());
         runtime.initializeHealthGroup(0);
         assertEquals(12, runtime.entityState.slotView.healthGroup(0));
     }
@@ -58,16 +60,18 @@ class EntityHealthGroupTest {
     @Test
     void gibdoTransformationReinitializesGroupFromTheNewType() throws IOException {
         var runtime = runtime();
-        var old = runtime.slots[0];
-        runtime.slots[0] = new RoomEntityBuilder()
-                .sourceLoadOrder(0)
-                .type(0x1F)
-                .at(old.x(), old.y())
-                .status(EntityStatus.BURNING)
-                .spriteDefinition(EntitySpriteDefinition.unsupported(0x1F))
-                .build();
+        var old = runtime.slots.get(0);
+        runtime.slots.replace(
+                0,
+                new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1F)
+                        .at(old.x(), old.y())
+                        .status(EntityStatus.BURNING)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x1F))
+                        .build());
         runtime.entityState.slotView.setHealthGroup(0, 0);
-        runtime.lifecycle.finishBurning(runtime.slots[0]);
+        runtime.lifecycle.finishBurning(runtime.slots.get(0));
         assertEquals(runtime.enemyCombatTables.healthGroup(0x1E), runtime.entityState.slotView.healthGroup(0));
     }
 
@@ -94,17 +98,17 @@ class EntityHealthGroupTest {
         assertEquals(
                 runtime.enemyCombatTables.resolveSwordDamage(9, group, attack).numericDamage(),
                 events.get(0).enemyDamage());
-        assertEquals(9, runtime.slots[0].type());
+        assertEquals(9, runtime.slots.get(0).type());
     }
 
     @Test
     void mutatedGroupSuppressesDropForTheSameEntityType() throws IOException {
         var normal = runtime();
-        normal.bossRewards.handleTerminalEnemyDeath(normal.slots[0], () -> 0);
+        normal.bossRewards.handleTerminalEnemyDeath(normal.slots.get(0), () -> 0);
         assertTrue(normal.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
         var changed = runtime();
         changed.entityState.slotView.setHealthGroup(0, 12); // Destroyed group offset zero: no drop.
-        changed.bossRewards.handleTerminalEnemyDeath(changed.slots[0], () -> 0);
+        changed.bossRewards.handleTerminalEnemyDeath(changed.slots.get(0), () -> 0);
         assertTrue(changed.inspection().snapshot().loadedEntities().isEmpty());
     }
 }

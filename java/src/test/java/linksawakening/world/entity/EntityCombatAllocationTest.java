@@ -17,8 +17,8 @@ class EntityCombatAllocationTest {
         var frame =
                 new EnemyCombatFrame(0, 120, 120, false, 0, true, true, 56, 32, 56, 24, EnemyAttackContext.standard());
         Runnable hit = () -> {
-            runtime.slots[0] = first;
-            runtime.slots[1] = second;
+            runtime.slots.replace(0, first);
+            runtime.slots.replace(1, second);
             for (int slot = 0; slot < 2; slot++) {
                 runtime.entityState.combatTables.writeEnemyHealth(slot, 4);
                 runtime.entityState.combatTables.writeEnemyFlashCountdown(slot, 0);

@@ -22,7 +22,7 @@ public final class EntityEnemyInspection {
     final EntityRoomInspection roomInspection;
     final EntityRoomVariables roomVariables;
     final EntitySlotPresentation slotProperties;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
 
     EntityEnemyInspection(
             EntityBossState bossRewards,
@@ -36,7 +36,7 @@ public final class EntityEnemyInspection {
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlotPresentation slotProperties,
-            RoomEntity[] slots) {
+            EntitySlots slots) {
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -68,28 +68,28 @@ public final class EntityEnemyInspection {
     }
 
     public int physicsFlags(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.physicsTables.readEnemyPhysicsFlags(slot);
     }
 
     public int transitionCountdown(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.physicsTables.readEnemyTransitionCountdown(slot);
     }
 
     public int enemyHealth(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.combatTables.readEnemyHealth(slot);
     }
 
     public int enemyIgnoreHitsCountdown(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.combatTables.readEnemyIgnoreHitsCountdown(slot);
@@ -101,7 +101,7 @@ public final class EntityEnemyInspection {
     }
 
     public int fallingTargetX(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.physicsTables.readFallingTargetX(slot);

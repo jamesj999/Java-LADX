@@ -165,9 +165,11 @@ final class SlimeEyeRuntimeTest {
             set(r, "half", half ? 1 : 0);
             r.entityState.physicsTables.writeEnemyTransitionCountdown(0, 0);
             r.entityState.combatTables.writeEnemyHealth(0, dead ? 0 : half ? 5 : 0x50);
-            r.slots[0] = EntitySnapshots.withZ(
-                    EntitySnapshots.withStatus(r.slots[0], dead ? EntityStatus.DYING : EntityStatus.ACTIVE),
-                    half ? 0 : 0x7E);
+            r.slots.replace(
+                    0,
+                    EntitySnapshots.withZ(
+                            EntitySnapshots.withStatus(r.slots.get(0), dead ? EntityStatus.DYING : EntityStatus.ACTIVE),
+                            half ? 0 : 0x7E));
             StringBuilder trace = new StringBuilder(header);
             for (int i = 0; i < 33; i++)
                 r.entityState
@@ -177,7 +179,7 @@ final class SlimeEyeRuntimeTest {
             frame = 39;
             for (int i = 0; i < (dead ? 226 : 145); i++) {
                 tick(r);
-                var e = r.slots[0];
+                var e = r.slots.get(0);
                 // Cleared ROM slots retain position and state bytes; the engine disables its value.
                 trace.append(frame & 255)
                         .append('\t')
@@ -362,15 +364,15 @@ final class SlimeEyeRuntimeTest {
         tick(r);
         set(r, "half", 1);
         set(r, "state", 1);
-        r.slots[0] = EntitySnapshots.withZ(r.slots[0], 0);
+        r.slots.replace(0, EntitySnapshots.withZ(r.slots.get(0), 0));
         r.entityState.combatTables.writeEnemyHealth(0, 1);
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x5B));
-        r.projectiles.applyPlayerProjectileDamage(r.slots[0], EntityRomConstants.DAMAGE_TYPE_ARROW, 0x20, 0);
-        assertEquals(EntityStatus.ACTIVE, r.slots[0].status());
+        r.projectiles.applyPlayerProjectileDamage(r.slots.get(0), EntityRomConstants.DAMAGE_TYPE_ARROW, 0x20, 0);
+        assertEquals(EntityStatus.ACTIVE, r.slots.get(0).status());
         assertEquals(1, r.entityState.combatTables.readEnemyHealth(0));
         r.entityState.physicsTables.writeEnemyTransitionCountdown(0, 0);
-        sword(r, r.slots[0], false);
-        assertEquals(EntityStatus.DYING, r.slots[0].status());
+        sword(r, r.slots.get(0), false);
+        assertEquals(EntityStatus.DYING, r.slots.get(0).status());
         tick(r); // active handler's lethal collision frame
         tick(r); // first destruction handler visit
         assertEquals(1, r.slimeEye.state(0));
@@ -386,10 +388,10 @@ final class SlimeEyeRuntimeTest {
         tick(r);
         set(r, "half", 1);
         set(r, "state", 1);
-        r.slots[0] = EntitySnapshots.withZ(r.slots[0], 1);
+        r.slots.replace(0, EntitySnapshots.withZ(r.slots.get(0), 1));
         r.entityState.physicsTables.writeEnemyTransitionCountdown(0, 0);
         r.entityState.combatTables.writeEnemyHealth(0, 5);
-        var e = r.slots[0];
+        var e = r.slots.get(0);
         var events = r.resolveCombat(new EntityVerticalContactFrame(
                 frame,
                 80,
@@ -407,14 +409,14 @@ final class SlimeEyeRuntimeTest {
         assertEquals(0x10, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
         assertTrue(events.getFirst().linkCollisionResponse().active());
         tick(r);
-        int z = r.slots[0].z();
+        int z = r.slots.get(0).z();
         assertEquals(
                 0x18,
                 r.entityState.combatTables.readEnemyFlashCountdown(0),
                 "Fresh hit flash is not aged before its source call site");
         for (int i = 0; i < 10; i++) {
             tick(r);
-            assertEquals(z, r.slots[0].z(), "04:6DC8 discards the half handler return during recoil");
+            assertEquals(z, r.slots.get(0).z(), "04:6DC8 discards the half handler return during recoil");
         }
         assertEquals(0, r.entityState.combatTables.readEnemyIgnoreHitsCountdown(0));
     }
@@ -425,9 +427,9 @@ final class SlimeEyeRuntimeTest {
         tick(r);
         set(r, "half", 1);
         set(r, "state", 0);
-        r.slots[0] = EntitySnapshots.withZ(r.slots[0], 0);
+        r.slots.replace(0, EntitySnapshots.withZ(r.slots.get(0), 0));
         r.entityState.combatTables.writeEnemyHealth(0, 5);
-        var e = r.slots[0];
+        var e = r.slots.get(0);
         var events = r.resolveCombat(new EntityVerticalContactFrame(
                 frame, 80, 88, false, true, true, e.x() + 8, 4, e.y() + 8, 4, EnemyAttackContext.standard()));
         assertEquals(4, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());

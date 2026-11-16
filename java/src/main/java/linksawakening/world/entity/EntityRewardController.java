@@ -46,7 +46,7 @@ public final class EntityRewardController {
     final EntityRoomVariables roomVariables;
     final EntitySlotLifecycle lifecycle;
     final EntityStoryState story;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final EntitySpriteViews spriteViews;
     final EntityPlayerCommands playerCommands;
 
@@ -65,7 +65,7 @@ public final class EntityRewardController {
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntityStoryState story,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntitySpriteViews spriteViews,
             EntityPlayerCommands playerCommands,
             EntityPickupState pickups,
@@ -114,27 +114,29 @@ public final class EntityRewardController {
     }
 
     void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0 || !this.spriteHandlers.supportsPresentation()) {
             return;
         }
         int[] xOffsets = {0x0A, -0x06};
         int[] speedX = {0x04, 0xFC};
         EntitySpriteDefinition definition = this.spriteViews.forInstrumentShard();
-        this.slots[freeSlot] = new RoomEntity(
+        this.slots.replace(
                 freeSlot,
-                -1,
-                source.type(),
-                (source.x() + xOffsets[offsetIndex]) & 0xFF,
-                (source.y() - 0x08) & 0xFF,
-                EntityStatus.ACTIVE,
-                definition,
-                variant & 0x01,
-                0,
-                0,
-                0,
-                -1,
-                false);
+                new RoomEntity(
+                        freeSlot,
+                        -1,
+                        source.type(),
+                        (source.x() + xOffsets[offsetIndex]) & 0xFF,
+                        (source.y() - 0x08) & 0xFF,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        variant & 0x01,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false));
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.state.writeInstrumentParticleKind(freeSlot, 1);
         this.state.writeInstrumentParticleSpeedX(freeSlot, speedX[offsetIndex]);
@@ -168,7 +170,7 @@ public final class EntityRewardController {
                 state.readInstrumentParticleSpeedY(slot),
                 state.storageInstrumentParticleYAccumulator(),
                 slot);
-        this.slots[slot] = withPositionAndVariant(entity, x, y, entity.spriteVariant());
+        this.slots.replace(slot, withPositionAndVariant(entity, x, y, entity.spriteVariant()));
     }
 
     public void advanceToadstoolPickup(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) {
@@ -195,7 +197,7 @@ public final class EntityRewardController {
         this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held =
                 withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
-        this.slots[slot] = withZ(held, linkZ & 0xFF);
+        this.slots.replace(slot, withZ(held, linkZ & 0xFF));
     }
 
     public void advanceSwordPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ) {
@@ -237,7 +239,7 @@ public final class EntityRewardController {
                 linkX,
                 (linkY - 0x10) & 0xFF,
                 entity.type() == 0x33 ? (frame >>> 4) & 1 : entity.spriteVariant());
-        this.slots[slot] = withZ(held, linkZ & 0xFF);
+        this.slots.replace(slot, withZ(held, linkZ & 0xFF));
     }
 
     public void refreshInstrumentPalette(EntityStatus status, int slot, int frame) {
@@ -387,7 +389,7 @@ public final class EntityRewardController {
             }
             romDirection = romDirectionForJavaDirection(linkDirection);
 
-            for (int index = owner.slots.length - 1; index >= 0; index--) {
+            for (int index = owner.slots.size() - 1; index >= 0; index--) {
                 EntityPickupEvent pickup = collectSlot(index);
                 if (pickup != null) return pickup;
             }
@@ -396,7 +398,7 @@ public final class EntityRewardController {
 
         private EntityPickupEvent collectSlot(int index) {
 
-            RoomEntity entity = owner.slots[index];
+            RoomEntity entity = owner.slots.get(index);
             if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
                 owner.motions
                         .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
@@ -611,7 +613,7 @@ public final class EntityRewardController {
             owner.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
             owner.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
             held = withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
-            owner.slots[slot] = withZ(held, linkZ & 0xFF);
+            owner.slots.replace(slot, withZ(held, linkZ & 0xFF));
             return true;
         }
 
@@ -769,7 +771,7 @@ public final class EntityRewardController {
         private boolean advanceState1() {
             owner.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
             if (owner.physicsTables.readSlowTransitionCountdown(slot) == 0) {
-                owner.slots[slot] = withVariant(owner.slots[slot], -1);
+                owner.slots.replace(slot, withVariant(owner.slots.get(slot), -1));
                 owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x20);
                 owner.state.writeSwordPickupState(slot, 2);
                 owner.events.pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(slot, 0x20));
@@ -788,7 +790,7 @@ public final class EntityRewardController {
                     new LinkSwordSpinPoseRequest(slot, owner.physicsTables.readEnemyTransitionCountdown(slot)));
             if (owner.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
                 owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x20);
-                owner.slots[slot] = withVariant(owner.slots[slot], 0);
+                owner.slots.replace(slot, withVariant(owner.slots.get(slot), 0));
                 owner.state.writeSwordPickupState(slot, 3);
             }
 

@@ -41,7 +41,7 @@ public final class EntityRoomInspection {
     final EntitySlotPresentation slotProperties;
     final EntityStoryState story;
     final RomEnemyCombatTables enemyCombatTables;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
 
     private final RoomEntitySnapshot liveView;
 
@@ -68,7 +68,7 @@ public final class EntityRoomInspection {
             EntitySlotPresentation slotProperties,
             EntityStoryState story,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntity[] slots) {
+            EntitySlots slots) {
         this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -94,10 +94,10 @@ public final class EntityRoomInspection {
     }
 
     public LiftedEntityState liftedEntityState() {
-        if (this.liftThrow.readLiftedEntitySlot() < 0 || this.liftThrow.readLiftedEntitySlot() >= this.slots.length) {
+        if (this.liftThrow.readLiftedEntitySlot() < 0 || this.liftThrow.readLiftedEntitySlot() >= this.slots.size()) {
             return LiftedEntityState.none();
         }
-        RoomEntity entity = this.slots[this.liftThrow.readLiftedEntitySlot()];
+        RoomEntity entity = this.slots.get(this.liftThrow.readLiftedEntitySlot());
         if (!entity.loaded() || entity.status() != EntityStatus.LIFTED) {
             return LiftedEntityState.none();
         }
@@ -117,12 +117,14 @@ public final class EntityRoomInspection {
 
     int contactDamage(int slot) {
         return this.enemyCombatTables.contactDamage(
-                this.slots[slot].type(), this.combatTables.readEnemyHealthGroup(slot));
+                this.slots.get(slot).type(), this.combatTables.readEnemyHealthGroup(slot));
     }
 
     public int activeProjectileCount() {
         int count = 0;
-        for (RoomEntity entity : this.slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
+
             if (!entity.loaded()) {
                 continue;
             }
@@ -138,7 +140,9 @@ public final class EntityRoomInspection {
     }
 
     public boolean boomerangActive() {
-        for (RoomEntity entity : this.slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
+
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOOMERANG) {
                 return true;
             }
@@ -183,11 +187,16 @@ public final class EntityRoomInspection {
     }
 
     boolean isLoadedEntityOfType(int slot, int type) {
-        return slot >= 0 && slot < this.slots.length && this.slots[slot].loaded() && this.slots[slot].type() == type;
+        return slot >= 0
+                && slot < this.slots.size()
+                && this.slots.get(slot).loaded()
+                && this.slots.get(slot).type() == type;
     }
 
     public boolean bombActive() {
-        for (RoomEntity entity : this.slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
+
             if (entity.loaded()
                     && entity.type() == EntityRomConstants.ENTITY_BOMB
                     && !this.bombInteractions.bombFinalPresentationPending(entity.slot())) {
@@ -207,7 +216,7 @@ public final class EntityRoomInspection {
     }
 
     int hookshotSlot() {
-        for (int slot = 0; slot < this.slots.length; slot++) {
+        for (int slot = 0; slot < this.slots.size(); slot++) {
             if (this.motions
                     .get(HookshotChainMotion.class, HookshotChainMotion::new)
                     .active(slot)) {
@@ -280,7 +289,9 @@ public final class EntityRoomInspection {
     }
 
     public RoomEntity firstLoadedEntityOfType(int type) {
-        for (RoomEntity candidate : this.slots) {
+        for (int candidateSlotIndex = 0; candidateSlotIndex < this.slots.size(); candidateSlotIndex++) {
+            RoomEntity candidate = this.slots.get(candidateSlotIndex);
+
             if (candidate.loaded() && candidate.type() == type) {
                 return candidate;
             }
@@ -356,7 +367,9 @@ public final class EntityRoomInspection {
 
     public String instrumentTrace() {
         StringBuilder trace = new StringBuilder().append(this.presentationState.readActiveMusic() ? 1 : 0);
-        for (RoomEntity entity : this.slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
+
             if (entity.loaded()
                     && entity.type() == 0x39
                     && this.rewards.readInstrumentParticleKind(entity.slot()) == 0) {
@@ -375,7 +388,8 @@ public final class EntityRoomInspection {
     }
 
     public String moblinKingTrace() {
-        for (RoomEntity entity : this.slots)
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 int slot = entity.slot();
                 return "%d,%d,%d,%d,%d,%d,%d"
@@ -390,6 +404,7 @@ public final class EntityRoomInspection {
                                 this.physicsTables.readEnemyTransitionCountdown(slot),
                                 this.physicsTables.readSlowTransitionCountdown(slot));
             }
+        }
         return "-1";
     }
 
@@ -571,8 +586,8 @@ public final class EntityRoomInspection {
         // These handlers test story state before drawing ($05:4E78,
         // $05:51CE, $05:4BF1). Apply the same gates to pre-tick snapshots,
         // including room transitions which pause entity advancement.
-        var presentedSlots = new java.util.ArrayList<RoomEntity>(runtime.slots.length);
-        for (int slot = 0; slot < runtime.slots.length; slot++)
+        var presentedSlots = new java.util.ArrayList<RoomEntity>(runtime.slots.size());
+        for (int slot = 0; slot < runtime.slots.size(); slot++)
             presentedSlots.add(entityRoomQueriesPresentedEntity(runtime, slot));
         return new RoomEntitySnapshot(
                 presentedSlots,
@@ -604,7 +619,7 @@ public final class EntityRoomInspection {
             int slot, /* Source identity of the cached projection, or UNREAD_PRESENTATION. */
             RoomEntity previousSource,
             /* Immutable cached projection, seeded with UNREAD_PRESENTATION. */ RoomEntity previousPresentation) {
-        RoomEntity entity = runtime.slots[slot];
+        RoomEntity entity = runtime.slots.get(slot);
         boolean hidden = entity.type() == 0x3E
                 && (runtime.indoorRoom
                         ? entityRoomQueriesIndoorMarinAbsent(runtime) || runtime.story.readHouseTradeItem() >= 7

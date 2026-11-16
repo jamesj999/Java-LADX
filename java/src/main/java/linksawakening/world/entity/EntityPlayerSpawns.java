@@ -39,7 +39,7 @@ public final class EntityPlayerSpawns {
     final EntityRoomVariables roomVariables;
     final EntitySlotLifecycle lifecycle;
     final EntitySlotProperties slotProperties;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final EntityChestContents chestContentsTable;
     final EntityPlayerCommands playerCommands;
@@ -65,7 +65,7 @@ public final class EntityPlayerSpawns {
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntityChestContents chestContentsTable,
             EntityPlayerCommands playerCommands) {
         this.indoorRoom = indoorRoom;
@@ -93,7 +93,7 @@ public final class EntityPlayerSpawns {
     }
 
     void spawnIronMasksMask(int x, int y, int variant, int sourceHookshotSlot) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -115,7 +115,7 @@ public final class EntityPlayerSpawns {
                 0,
                 -1,
                 false);
-        this.slots[freeSlot] = mask;
+        this.slots.replace(freeSlot, mask);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
@@ -148,7 +148,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.hookshotActive()) {
             return -1;
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -170,7 +170,7 @@ public final class EntityPlayerSpawns {
                 (linkEntityZ + 1) & 0xFF,
                 -1,
                 false);
-        this.slots[freeSlot] = chain;
+        this.slots.replace(freeSlot, chain);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.motions
                 .get(HookshotChainMotion.class, HookshotChainMotion::new)
@@ -192,27 +192,29 @@ public final class EntityPlayerSpawns {
     }
 
     int spawnPushedBlock(int x, int y) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
         EntitySpriteDefinition definition =
                 this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_PUSHED_BLOCK);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        this.slots[freeSlot] = new RoomEntity(
+        this.slots.replace(
                 freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_PUSHED_BLOCK,
-                x & 0xFF,
-                y & 0xFF,
-                EntityStatus.ACTIVE,
-                definition,
-                variant,
-                0,
-                0,
-                0,
-                -1,
-                false);
+                new RoomEntity(
+                        freeSlot,
+                        -1,
+                        EntityRomConstants.ENTITY_PUSHED_BLOCK,
+                        x & 0xFF,
+                        y & 0xFF,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        variant,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false));
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.physicsTables.writeEnemyPhysicsFlags(
                 freeSlot,
@@ -224,27 +226,29 @@ public final class EntityPlayerSpawns {
     }
 
     int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
         EntitySpriteDefinition definition =
                 this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
         int variant = definition.supported() ? spriteVariant : -1;
-        this.slots[freeSlot] = new RoomEntity(
+        this.slots.replace(
                 freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_LIFTABLE_ROCK,
-                x & 0xFF,
-                y & 0xFF,
-                EntityStatus.ACTIVE,
-                definition,
-                variant,
-                0,
-                0,
-                0,
-                -1,
-                false);
+                new RoomEntity(
+                        freeSlot,
+                        -1,
+                        EntityRomConstants.ENTITY_LIFTABLE_ROCK,
+                        x & 0xFF,
+                        y & 0xFF,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        variant,
+                        0,
+                        0,
+                        0,
+                        -1,
+                        false));
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.physicsTables.writeEnemyPhysicsFlags(
                 freeSlot,
@@ -261,7 +265,7 @@ public final class EntityPlayerSpawns {
         this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         if (!this.playerCommands.beginLift(freeSlot, romDirection)) {
-            this.slots[freeSlot] = RoomEntity.disabled(freeSlot);
+            this.slots.clear(freeSlot);
             return -1;
         }
         this.events.pendingEntityEvents.add(new EntityCombatEvent(
@@ -296,7 +300,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.activeProjectileCount() != 0) {
             return -1;
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -317,7 +321,7 @@ public final class EntityPlayerSpawns {
                 (linkEntityZ + 1) & 0xFF,
                 -1,
                 false);
-        this.slots[freeSlot] = boomerang;
+        this.slots.replace(freeSlot, boomerang);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.motions.get(BoomerangMotion.class, BoomerangMotion::new).clear(freeSlot);
         this.motions
@@ -346,7 +350,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.activeProjectileCount() != 0) {
             return -1;
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -368,7 +372,7 @@ public final class EntityPlayerSpawns {
                 (linkEntityZ + 1) & 0xFF,
                 -1,
                 false);
-        this.slots[freeSlot] = beam;
+        this.slots.replace(freeSlot, beam);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).clear(freeSlot);
         this.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).initializeSpawn(freeSlot, romDirection);
@@ -404,7 +408,7 @@ public final class EntityPlayerSpawns {
 
     int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -428,7 +432,7 @@ public final class EntityPlayerSpawns {
                 linkEntityZ & 0xFF,
                 -1,
                 false);
-        this.slots[freeSlot] = sprinkle;
+        this.slots.replace(freeSlot, sprinkle);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.projectiles.writeMagicPowderState(freeSlot, 0);
         this.physicsTables.writeEnemyTransitionCountdown(
@@ -454,7 +458,7 @@ public final class EntityPlayerSpawns {
     }
 
     void spawnMusicalNote(int linkEntityX, int linkEntityY, int animationPhase) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -478,7 +482,7 @@ public final class EntityPlayerSpawns {
                 0,
                 -1,
                 false);
-        this.slots[freeSlot] = note;
+        this.slots.replace(freeSlot, note);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.projectiles.writeMusicalNoteInertia(freeSlot, EntityRomConstants.MUSICAL_NOTE_INITIAL_INERTIA);
         this.projectiles.writeMusicalNoteSpeedX(freeSlot, phase == 0 ? 0x06 : 0x01);
@@ -502,7 +506,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.bombActive()) {
             return -1;
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -523,7 +527,7 @@ public final class EntityPlayerSpawns {
                 (linkEntityZ + 1) & 0xFF,
                 -1,
                 false);
-        this.slots[freeSlot] = bomb;
+        this.slots.replace(freeSlot, bomb);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.bombInteractions.state.writeBombDirection(freeSlot, romDirection);
         this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).startPlacedBomb(freeSlot, romDirection);
@@ -593,7 +597,7 @@ public final class EntityPlayerSpawns {
     }
 
     public int spawnBombFromBombArrow(RoomEntity arrow) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -614,7 +618,7 @@ public final class EntityPlayerSpawns {
                 arrow.z(),
                 -1,
                 false);
-        this.slots[freeSlot] = bomb;
+        this.slots.replace(freeSlot, bomb);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.bombInteractions.state.writeBombDirection(
                 freeSlot,
@@ -645,7 +649,7 @@ public final class EntityPlayerSpawns {
         if (!this.indoorRoom) {
             return false;
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return false;
         }
@@ -666,7 +670,7 @@ public final class EntityPlayerSpawns {
                 0,
                 -1,
                 false);
-        this.slots[freeSlot] = bridge;
+        this.slots.replace(freeSlot, bridge);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.motions
                 .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
@@ -694,7 +698,7 @@ public final class EntityPlayerSpawns {
         }
 
         int itemType = (this.defaultRandomByteSupplier.getAsInt() & 0x01) == 0 ? 0x2E : 0x2D;
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -717,7 +721,7 @@ public final class EntityPlayerSpawns {
                 0,
                 -1,
                 false);
-        this.slots[freeSlot] = drop;
+        this.slots.replace(freeSlot, drop);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.pickups.resetEnemyDropState(freeSlot);
         this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0x80);
@@ -756,7 +760,7 @@ public final class EntityPlayerSpawns {
         if (itemType < 0 || itemType > ChestContentsTable.CHEST_ZOL) {
             throw new IllegalArgumentException("Chest item variant out of range: " + itemType);
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -778,7 +782,7 @@ public final class EntityPlayerSpawns {
                 0,
                 -1,
                 false);
-        this.slots[freeSlot] = chest;
+        this.slots.replace(freeSlot, chest);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEnemyPhysicsFlags(freeSlot, EntityRomConstants.CHEST_INITIAL_PHYSICS_FLAGS);
@@ -805,7 +809,7 @@ public final class EntityPlayerSpawns {
             int initialCountdown,
             int physicsFlags,
             int soundId) {
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -832,7 +836,7 @@ public final class EntityPlayerSpawns {
                 0,
                 -1,
                 false);
-        runtime.slots[freeSlot] = smash;
+        runtime.slots.replace(freeSlot, smash);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         runtime.liftThrow.writeLiftableRockSmashActive(freeSlot, true);
         runtime.liftThrow.writeLiftableRockSmashCountdown(freeSlot, initialCountdown);
@@ -878,7 +882,7 @@ public final class EntityPlayerSpawns {
         if (runtime.inspection.activeProjectileCount() >= 0x02) {
             return -1;
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -899,7 +903,7 @@ public final class EntityPlayerSpawns {
                 (linkEntityZ + 1) & 0xFF,
                 -1,
                 false);
-        runtime.slots[freeSlot] = arrow;
+        runtime.slots.replace(freeSlot, arrow);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         runtime.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new).clear(freeSlot);
         runtime.motions
@@ -928,10 +932,12 @@ public final class EntityPlayerSpawns {
             runtime.bombInteractions.state.writeLatestDroppedBombEntityIndex(-1);
             runtime.bombInteractions.state.writePlayerArrowBombArrow(freeSlot, true);
             {
-                runtime.slots[freeSlot] = runtime.spriteHandlers.present(
-                        runtime.slots[freeSlot],
-                        runtime.slotProperties.spriteViews().forBombArrow(),
-                        romDirection);
+                runtime.slots.replace(
+                        freeSlot,
+                        runtime.spriteHandlers.present(
+                                runtime.slots.get(freeSlot),
+                                runtime.slotProperties.spriteViews().forBombArrow(),
+                                romDirection));
             }
         } else {
             runtime.bombInteractions.state.writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);
@@ -957,7 +963,7 @@ public final class EntityPlayerSpawns {
         if (runtime.inspection.activeProjectileCount() >= 0x02) {
             return -1;
         }
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -980,7 +986,7 @@ public final class EntityPlayerSpawns {
                 (linkEntityZ + 1) & 0xFF,
                 -1,
                 false);
-        runtime.slots[freeSlot] = fireball;
+        runtime.slots.replace(freeSlot, fireball);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         runtime.motions
                 .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)

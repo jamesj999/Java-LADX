@@ -49,7 +49,7 @@ final class EntityDebugConfigurationFixture {
 
     void setBombTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.slots[slot].loaded() || runtime.slots[slot].type() != EntityRomConstants.ENTITY_BOMB) {
+        if (!runtime.slots.get(slot).loaded() || runtime.slots.get(slot).type() != EntityRomConstants.ENTITY_BOMB) {
             throw new IllegalArgumentException("Entity slot does not contain a bomb: " + slot);
         }
         runtime.entityState.physicsTables.writeEnemyTransitionCountdown(slot, value);
@@ -125,7 +125,7 @@ final class EntityDebugConfigurationFixture {
     void setDroppableRevealedForTest(int slot, int slowCountdown) {
         EntitySlotValidation.validateCountdownTestValue(slot, slowCountdown);
         EntitySlotValidation.validateEntitySlot(slot);
-        int type = runtime.slots[slot].type();
+        int type = runtime.slots.get(slot).type();
         if (!isCommonDroppableType(type)) {
             throw new IllegalArgumentException("Entity slot is not an ordinary droppable: " + slot);
         }
@@ -162,7 +162,7 @@ final class EntityDebugConfigurationFixture {
 
     void setHinoxStateForTest(int slot, int state) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (runtime.slots[slot].type() != EntityRomConstants.ENTITY_HINOX) {
+        if (runtime.slots.get(slot).type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
         MotionTestFixture.setStateForTest(
@@ -171,7 +171,7 @@ final class EntityDebugConfigurationFixture {
 
     void setHinoxSpeedForTest(int slot, int speedX, int speedY) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (runtime.slots[slot].type() != EntityRomConstants.ENTITY_HINOX) {
+        if (runtime.slots.get(slot).type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
         MotionTestFixture.setSpeedForTest(
@@ -311,7 +311,7 @@ final class EntityDebugConfigurationFixture {
                 privateState1,
                 privateCountdown1,
                 direction,
-                runtime.slots[slot].spriteVariant());
+                runtime.slots.get(slot).spriteVariant());
         runtime.entityState.physicsTables.writeEnemyTransitionCountdown(slot, transitionCountdown);
         runtime.entityState.physicsTables.writeEnemyPhysicsFlags(slot, 0x42);
     }
@@ -393,7 +393,7 @@ final class EntityDebugConfigurationFixture {
         if (variant < -1 || variant > 0xFF) {
             throw new IllegalArgumentException("Invalid sprite variant: " + variant);
         }
-        runtime.slots[slot] = withVariant(runtime.slots[slot], variant);
+        runtime.slots.replace(slot, withVariant(runtime.slots.get(slot), variant));
     }
 
     void setThrownDirectionForTest(int slot, int value) {
@@ -442,7 +442,7 @@ final class EntityDebugConfigurationFixture {
 
     void configureEnemyRecoilForTest(int slot, int linkEntityX, int linkEntityY, int length) {
         EntitySlotValidation.validateEntitySlot(slot);
-        RoomEntity entity = runtime.slots[slot];
+        RoomEntity entity = runtime.slots.get(slot);
         if (!entity.loaded()) {
             throw new IllegalArgumentException("Entity slot is not loaded: " + slot);
         }

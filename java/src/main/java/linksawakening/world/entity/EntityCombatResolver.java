@@ -55,7 +55,7 @@ final class EntityCombatResolver {
     final EntitySlotProperties slotProperties;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final RomEnemyCombatTables enemyCombatTables;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final SlimeEyeController slimeEye;
     final EntityFrameRandom frameRandom;
     private final EntityCombatSlot slotScratch;
@@ -77,7 +77,7 @@ final class EntityCombatResolver {
             EntityRoomInspection roomInspection,
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntity[] slots,
+            EntitySlots slots,
             SlimeEyeController slimeEye,
             EntityFrameRandom frameRandom) {
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -110,7 +110,7 @@ final class EntityCombatResolver {
     }
 
     boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        RoomEntity entity = this.slots[slot];
+        RoomEntity entity = this.slots.get(slot);
         if (entity.type() != EntityRomConstants.ENTITY_LEEVER || entity.status() != EntityStatus.ACTIVE) return false;
         deferredLeeverContact[slot] = true;
         contactLinkX[slot] = linkX;
@@ -164,8 +164,8 @@ final class EntityCombatResolver {
         events.clear();
         EntityCombatSlot slot = this.acquireSlot();
         try {
-            for (int index = runtime.slots.length - 1; index >= 0; index--) {
-                slot.reset(inputs, events, runtime.slots[index]);
+            for (int index = runtime.slots.size() - 1; index >= 0; index--) {
+                slot.reset(inputs, events, runtime.slots.get(index));
                 resolveSlotCombat(slot);
             }
         } finally {
@@ -737,7 +737,7 @@ final class EntityCombatResolver {
         runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x0A);
         runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
-        runtime.slots[slot.entity.slot()] = withStatus(slot.entity, EntityStatus.BURNING);
+        runtime.slots.replace(slot.entity.slot(), withStatus(slot.entity, EntityStatus.BURNING));
         slot.secondarySoundChannel = EntityCombatEvent.SoundChannel.NOISE;
         slot.secondarySoundId = 0x12;
     }
@@ -754,7 +754,7 @@ final class EntityCombatResolver {
         runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x0A);
         runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
-        runtime.slots[slot.entity.slot()] = withStatus(slot.entity, EntityStatus.STUNNED);
+        runtime.slots.replace(slot.entity.slot(), withStatus(slot.entity, EntityStatus.STUNNED));
     }
 
     private static void entitySwordStatusDie(EntityCombatSlot slot) {
@@ -790,10 +790,12 @@ final class EntityCombatResolver {
         }
         runtime.combatTables.writePowerRecoilDeath(
                 slot.entity.slot(), frame.attackContext().powerRecoil());
-        runtime.slots[slot.entity.slot()] = withDeathPresentation(
-                withStatus(slot.entity, EntityStatus.DYING),
-                -1,
-                runtime.combatTables.readPowerRecoilDeath(slot.entity.slot()));
+        runtime.slots.replace(
+                slot.entity.slot(),
+                withDeathPresentation(
+                        withStatus(slot.entity, EntityStatus.DYING),
+                        -1,
+                        runtime.combatTables.readPowerRecoilDeath(slot.entity.slot())));
     }
 
     private static void entitySwordStatusFlashSurvivor(EntityCombatSlot slot) {
@@ -817,7 +819,7 @@ final class EntityCombatResolver {
         if (slot.entity.type() == EntityRomConstants.ENTITY_ZOL) {
             slot.entity = runtime.spriteHandlers.present(
                     slot.entity, runtime.slotProperties.spriteViews().forZolSlimeEye(), slot.entity.spriteVariant());
-            runtime.slots[slot.entity.slot()] = slot.entity;
+            runtime.slots.replace(slot.entity.slot(), slot.entity);
         }
     }
 

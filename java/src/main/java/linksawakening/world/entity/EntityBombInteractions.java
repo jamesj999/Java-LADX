@@ -33,7 +33,7 @@ public final class EntityBombInteractions {
     final EntityPhysicsTables physicsTables;
     final EntitySlotProperties slotProperties;
     final RomEnemyCombatTables enemyCombatTables;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final EntitySlotLifecycle lifecycle;
 
     EntityBombInteractions(
@@ -48,7 +48,7 @@ public final class EntityBombInteractions {
             EntityPhysicsTables physicsTables,
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntitySlotLifecycle lifecycle) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -66,13 +66,16 @@ public final class EntityBombInteractions {
     }
 
     void applyInitialBombArrowCandidateState(int slot, int romDirection) {
-        int x = this.slots[slot].x() + bombArrowXOffset(romDirection);
-        int y = this.slots[slot].y() + bombArrowYOffset(romDirection);
-        this.slots[slot] = withPositionAndVariant(this.slots[slot], x, y, this.slots[slot].spriteVariant());
+        int x = this.slots.get(slot).x() + bombArrowXOffset(romDirection);
+        int y = this.slots.get(slot).y() + bombArrowYOffset(romDirection);
+        this.slots.replace(
+                slot,
+                withPositionAndVariant(
+                        this.slots.get(slot), x, y, this.slots.get(slot).spriteVariant()));
         state.writeBombPrivateCountdown3(slot, 0x03);
         state.writeLastBombPlacementPlayedBump(!this.physicsTables.readGroundInteractionSideScrolling());
         if (this.physicsTables.readGroundInteractionSideScrolling()) {
-            this.slots[slot] = withZ(this.slots[slot], 0);
+            this.slots.replace(slot, withZ(this.slots.get(slot), 0));
         }
         // ConvertToBombArrowIfNeeded zeros speeds, but BombEntityHandler
         // must still run gravity and floor contact on subsequent frames.
@@ -83,19 +86,21 @@ public final class EntityBombInteractions {
 
     void markArrowAsBombArrow(int slot) {
         state.writePlayerArrowBombArrow(slot, true);
-        RoomEntity arrow = this.slots[slot];
+        RoomEntity arrow = this.slots.get(slot);
         if (arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
-            this.slots[slot] = this.spriteHandlers.present(
-                    arrow,
-                    this.slotProperties.spriteViews().forBombArrow(),
-                    this.motions
-                            .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                            .direction(slot));
+            this.slots.replace(
+                    slot,
+                    this.spriteHandlers.present(
+                            arrow,
+                            this.slotProperties.spriteViews().forBombArrow(),
+                            this.motions
+                                    .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                                    .direction(slot)));
         }
     }
 
     void finalizePendingBombPresentations() {
-        for (int slot = 0; slot < this.slots.length; slot++) {
+        for (int slot = 0; slot < this.slots.size(); slot++) {
             if (state.bombFinalPresentationPending(slot)) {
                 this.lifecycle.clearEntity(slot);
             }
@@ -134,7 +139,7 @@ public final class EntityBombInteractions {
                 };
         int variant = decision.explosionVariant().orElse(0);
         RoomEntity updated = withDefinition(entity, definition, variant);
-        this.slots[index] = updated;
+        this.slots.replace(index, updated);
         this.queueBombExplosionInteractions(
                 updated, decision, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
         if (decision.unloadAfterPresentation()) {
@@ -184,8 +189,8 @@ public final class EntityBombInteractions {
         }
         runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
 
-        for (int targetSlot = runtime.slots.length - 1; targetSlot >= 0; targetSlot--) {
-            RoomEntity target = runtime.slots[targetSlot];
+        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+            RoomEntity target = runtime.slots.get(targetSlot);
             if (target.status().value() < EntityStatus.ACTIVE.value()
                     || (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot)
                                     & (EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP
@@ -263,7 +268,7 @@ public final class EntityBombInteractions {
                         targetSlot, (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot) + 2) & 0xFF);
                 runtime.physicsTables.writeEntityOptions1Override(
                         targetSlot, runtime.slotProperties.options1(targetSlot) & 0xC2);
-                runtime.slots[targetSlot] = withStatus(target, EntityStatus.BURNING);
+                runtime.slots.replace(targetSlot, withStatus(target, EntityStatus.BURNING));
                 secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
                 secondarySoundId = 0x12;
             } else if (rawDamage == 0xFF) {
@@ -271,7 +276,7 @@ public final class EntityBombInteractions {
                 runtime.combatTables.writeEnemyStunnedCountdown(targetSlot, 0xFF);
                 runtime.combatTables.writeEnemyFlashCountdown(targetSlot, 0);
                 runtime.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-                runtime.slots[targetSlot] = withStatus(target, EntityStatus.STUNNED);
+                runtime.slots.replace(targetSlot, withStatus(target, EntityStatus.STUNNED));
             } else if (rawDamage == 0xFD) {
                 // The ROM's FD action is dispatched by the target's own
                 // entity-specific branch. Preserve it as a special result;
@@ -284,8 +289,8 @@ public final class EntityBombInteractions {
                     // dying countdown; $40 is the Piece-of-Power override.
                     runtime.combatTables.writeDyingCountdown(targetSlot, 0x2F);
                     runtime.combatTables.writePowerRecoilDeath(targetSlot, false);
-                    runtime.slots[targetSlot] =
-                            withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false);
+                    runtime.slots.replace(
+                            targetSlot, withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false));
                 } else {
                     runtime.combatTables.writeEnemyFlashCountdown(targetSlot, 0x18);
                     runtime.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);

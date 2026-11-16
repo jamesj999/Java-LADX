@@ -47,7 +47,7 @@ public final class EntityBossRewards {
     final EntityRoomVariables roomVariables;
     final EntitySlotLifecycle lifecycle;
     final EntitySlotProperties slotProperties;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
 
     final EntityLinkState linkState;
 
@@ -64,7 +64,7 @@ public final class EntityBossRewards {
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntityLinkState linkState) {
         this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
 
@@ -88,12 +88,12 @@ public final class EntityBossRewards {
         if (killed.type() != 0x12) return;
         int[] drops = {0x2D, 0x2E, 0x38, 0x37};
         for (int slot = RoomEntity.SLOT_COUNT - 1; slot >= 0; slot--) {
-            RoomEntity other = this.slots[slot];
+            RoomEntity other = this.slots.get(slot);
             if (slot == killed.slot()
                     || (other.type() != 0x10 && other.type() != 0x11)
                     || this.motions.get(GhiniMotion.class, GhiniMotion::new).state(slot) != 0
                     || other.status() == EntityStatus.DISABLED) continue;
-            this.slots[slot] = withStatus(other, EntityStatus.DYING);
+            this.slots.replace(slot, withStatus(other, EntityStatus.DYING));
             this.combatTables.writeDyingCountdown(slot, 0x1F);
             state.writeDroppedItemBySlot(slot, drops[random.getAsInt() & 3]);
         }
@@ -222,10 +222,12 @@ public final class EntityBossRewards {
             source = runtime.spriteHandlers.present(
                     source, runtime.slotProperties.spriteViews().forMoblinKingState(12, -1, source.z() != 0), 0);
         }
-        runtime.slots[slot] = withFlipAttribute(
-                source,
-                runtime.physicsTables.readBaseEntityFlipAttribute(slot)
-                        ^ ((runtime.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10));
+        runtime.slots.replace(
+                slot,
+                withFlipAttribute(
+                        source,
+                        runtime.physicsTables.readBaseEntityFlipAttribute(slot)
+                                ^ ((runtime.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10)));
         if (this.state.readBossDeathProducerState(slot) == 0) {
             runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
             runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
@@ -273,10 +275,12 @@ public final class EntityBossRewards {
                             tailState,
                             frameCounter),
                     0);
-            runtime.slots[slot] = withFlipAttribute(
-                    rendered,
-                    runtime.physicsTables.readBaseEntityFlipAttribute(slot)
-                            ^ ((runtime.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10));
+            runtime.slots.replace(
+                    slot,
+                    withFlipAttribute(
+                            rendered,
+                            runtime.physicsTables.readBaseEntityFlipAttribute(slot)
+                                    ^ ((runtime.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10)));
         }
 
         switch (this.state.readBossDeathProducerState(slot)) {
@@ -340,7 +344,7 @@ public final class EntityBossRewards {
 
     void spawnMoldormHeartContainer(RoomEntity source) {
         var runtime = this;
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -349,20 +353,22 @@ public final class EntityBossRewards {
         EntitySpriteDefinition definition =
                 runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_HEART_CONTAINER);
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        runtime.slots[freeSlot] = new RoomEntity(
+        runtime.slots.replace(
                 freeSlot,
-                -1,
-                EntityRomConstants.ENTITY_HEART_CONTAINER,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                definition,
-                variant,
-                0,
-                0,
-                source.z(),
-                -1,
-                false);
+                new RoomEntity(
+                        freeSlot,
+                        -1,
+                        EntityRomConstants.ENTITY_HEART_CONTAINER,
+                        x,
+                        y,
+                        EntityStatus.ACTIVE,
+                        definition,
+                        variant,
+                        0,
+                        0,
+                        source.z(),
+                        -1,
+                        false));
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.motions
@@ -404,7 +410,7 @@ public final class EntityBossRewards {
         this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held =
                 withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
-        this.slots[slot] = withZ(held, linkZ & 0xFF);
+        this.slots.replace(slot, withZ(held, linkZ & 0xFF));
     }
 
     void advanceBossKeyDropProducer(RoomEntity source, IntSupplier randomByteSupplier) {
@@ -416,10 +422,10 @@ public final class EntityBossRewards {
     void handleBowWowTargetContact(
             RoomEntity source, BowWowMotion.TargetContact contact, IntSupplier randomByteSupplier) {
         int targetSlot = contact.slot();
-        if (targetSlot < 0 || targetSlot >= this.slots.length) {
+        if (targetSlot < 0 || targetSlot >= this.slots.size()) {
             return;
         }
-        RoomEntity target = this.slots[targetSlot];
+        RoomEntity target = this.slots.get(targetSlot);
         if (!target.loaded()) {
             return;
         }

@@ -86,10 +86,12 @@ final class EntitySlotPresentation {
         return bowWowChainOam;
     }
 
-    void updatePincerBodyOam(RoomEntity[] slots, EntityMotionRegistry motions) {
+    void updatePincerBodyOam(EntitySlots slots, EntityMotionRegistry motions) {
         List<PincerBodyOam.Entry> entries = pincerEntries;
         entries.clear();
-        for (RoomEntity entity : slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < slots.size(); entitySlotIndex++) {
+            RoomEntity entity = slots.get(entitySlotIndex);
+
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
                 continue;
             }

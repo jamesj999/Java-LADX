@@ -60,7 +60,7 @@ public final class EntityPickupController {
     final EntitySlotLifecycle lifecycle;
     final EntitySlotProperties slotProperties;
     final EntityStoryState story;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final EntityChestContents chestContentsTable;
 
     EntityPickupController(
@@ -77,7 +77,7 @@ public final class EntityPickupController {
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             EntityStoryState story,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntityChestContents chestContentsTable) {
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
@@ -261,7 +261,7 @@ public final class EntityPickupController {
         }
         this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
         this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
-        this.slots[slot] = withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z);
+        this.slots.replace(slot, withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z));
     }
 
     public void initializeChestEntity(RoomEntity entity) {
@@ -278,7 +278,9 @@ public final class EntityPickupController {
                 EntityCombatEvent.SoundChannel.NOISE,
                 EntityRomConstants.CHEST_OPEN_NOISE_ID));
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
-            for (RoomEntity candidate : this.slots) {
+            for (int candidateSlotIndex = 0; candidateSlotIndex < this.slots.size(); candidateSlotIndex++) {
+                RoomEntity candidate = this.slots.get(candidateSlotIndex);
+
                 if (candidate.loaded() && candidate.type() == EntityRomConstants.ENTITY_OWL_EVENT) {
                     this.story.owlState().writeOwlPrivateCountdown1(candidate.slot(), 0x38);
                     break;
@@ -343,13 +345,13 @@ public final class EntityPickupController {
             this.lifecycle.clearEntity(slot);
             return true;
         }
-        this.slots[index] = withPositionAndVariant(entity, entity.x(), y, itemType);
+        this.slots.replace(index, withPositionAndVariant(entity, entity.x(), y, itemType));
         return false;
     }
 
     void spawnChestZol(RoomEntity chest) {
         var runtime = this;
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -369,7 +371,7 @@ public final class EntityPickupController {
                 0x06,
                 -1,
                 false);
-        runtime.slots[freeSlot] = zol;
+        runtime.slots.replace(freeSlot, zol);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareChestSpawn(freeSlot);
         runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
@@ -384,7 +386,7 @@ public final class EntityPickupController {
 
     void spawnEnemyDrop(RoomEntity source, int itemType) {
         var runtime = this;
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -409,7 +411,7 @@ public final class EntityPickupController {
                 source.z(),
                 -1,
                 false);
-        runtime.slots[freeSlot] = drop;
+        runtime.slots.replace(freeSlot, drop);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         this.resetEnemyDropState(freeSlot);
         runtime.physicsTables.writeSlowTransitionCountdown(freeSlot, 0x80);
@@ -452,7 +454,7 @@ public final class EntityPickupController {
 
     int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) {
         var runtime = this;
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -473,7 +475,7 @@ public final class EntityPickupController {
                 z,
                 -1,
                 false);
-        runtime.slots[freeSlot] = drop;
+        runtime.slots.replace(freeSlot, drop);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         this.resetEnemyDropState(freeSlot);
         runtime.motions

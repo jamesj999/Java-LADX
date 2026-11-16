@@ -31,18 +31,24 @@ final class EntityRoomInspectionQueries {
 
     int activePlayerArrowCount() {
         int count = 0;
-        for (RoomEntity entity : runtime.slots) {
-            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ARROW) {
-                count++;
+        for (int entitySlotIndex = 0; entitySlotIndex < runtime.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = runtime.slots.get(entitySlotIndex);
+            {
+                if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ARROW) {
+                    count++;
+                }
             }
         }
         return count;
     }
 
     int activeBoomerangSlot() {
-        for (RoomEntity entity : runtime.slots) {
-            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOOMERANG) {
-                return entity.slot();
+        for (int entitySlotIndex = 0; entitySlotIndex < runtime.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = runtime.slots.get(entitySlotIndex);
+            {
+                if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOOMERANG) {
+                    return entity.slot();
+                }
             }
         }
         return -1;
@@ -267,7 +273,7 @@ final class EntityRoomInspectionQueries {
     }
 
     int slowTransitionCountdown(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.physicsTables.readSlowTransitionCountdown(slot);
