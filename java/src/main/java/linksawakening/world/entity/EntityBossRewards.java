@@ -55,10 +55,8 @@ public final class EntityBossRewards {
             EntityBossState state,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupController pickups,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
@@ -66,6 +64,8 @@ public final class EntityBossRewards {
             EntitySlotProperties slotProperties,
             EntitySlots slots,
             EntityLinkState linkState) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
 
         this.state = java.util.Objects.requireNonNull(state, "state");
@@ -344,7 +344,7 @@ public final class EntityBossRewards {
 
     void spawnMoldormHeartContainer(RoomEntity source) {
         var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }

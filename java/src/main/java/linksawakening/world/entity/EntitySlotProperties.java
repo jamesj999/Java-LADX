@@ -54,19 +54,19 @@ public final class EntitySlotProperties {
             boolean indoorRoom,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPresentationState presentationState,
             EntityProjectileState projectiles,
-            EntityRoomInspection inspection,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlots slots,
             EntitySlotLifecycle lifecycle) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntityRoomInspection inspection = roomInspection;
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");

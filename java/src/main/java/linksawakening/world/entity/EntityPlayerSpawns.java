@@ -46,21 +46,16 @@ public final class EntityPlayerSpawns {
 
     EntityPlayerSpawns(
             boolean indoorRoom,
-            /* Optional RNG override; null selects the room-owned ROM-compatible source. */ java.util.function
-                            .IntSupplier
-                    defaultRandomByteSupplier,
+            java.util.function.IntSupplier defaultRandomByteSupplier,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombInteractions bombInteractions,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupController pickups,
             EntityPresentationState presentationState,
             EntityProjectileState projectiles,
-            EntityRoomInspection inspection,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
@@ -68,6 +63,9 @@ public final class EntityPlayerSpawns {
             EntitySlots slots,
             EntityChestContents chestContentsTable,
             EntityPlayerCommands playerCommands) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntityRoomInspection inspection = roomInspection;
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier =
                 java.util.Objects.requireNonNull(defaultRandomByteSupplier, "randomByteSupplier");
@@ -93,7 +91,7 @@ public final class EntityPlayerSpawns {
     }
 
     void spawnIronMasksMask(int x, int y, int variant, int sourceHookshotSlot) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -148,7 +146,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.hookshotActive()) {
             return -1;
         }
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -192,7 +190,7 @@ public final class EntityPlayerSpawns {
     }
 
     public int spawnPushedBlock(int x, int y) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -226,7 +224,7 @@ public final class EntityPlayerSpawns {
     }
 
     public int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -301,7 +299,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.activeProjectileCount() != 0) {
             return -1;
         }
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -351,7 +349,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.activeProjectileCount() != 0) {
             return -1;
         }
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -409,7 +407,7 @@ public final class EntityPlayerSpawns {
 
     public int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -459,7 +457,7 @@ public final class EntityPlayerSpawns {
     }
 
     void spawnMusicalNote(int linkEntityX, int linkEntityY, int animationPhase) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -507,7 +505,7 @@ public final class EntityPlayerSpawns {
         if (this.inspection.bombActive()) {
             return -1;
         }
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -598,7 +596,7 @@ public final class EntityPlayerSpawns {
     }
 
     public int spawnBombFromBombArrow(RoomEntity arrow) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -650,7 +648,7 @@ public final class EntityPlayerSpawns {
         if (!this.indoorRoom) {
             return false;
         }
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return false;
         }
@@ -699,7 +697,7 @@ public final class EntityPlayerSpawns {
         }
 
         int itemType = (this.defaultRandomByteSupplier.getAsInt() & 0x01) == 0 ? 0x2E : 0x2D;
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -761,7 +759,7 @@ public final class EntityPlayerSpawns {
         if (itemType < 0 || itemType > ChestContentsTable.CHEST_ZOL) {
             throw new IllegalArgumentException("Chest item variant out of range: " + itemType);
         }
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -810,7 +808,7 @@ public final class EntityPlayerSpawns {
             int initialCountdown,
             int physicsFlags,
             int soundId) {
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -883,7 +881,7 @@ public final class EntityPlayerSpawns {
         if (runtime.inspection.activeProjectileCount() >= 0x02) {
             return -1;
         }
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -964,7 +962,7 @@ public final class EntityPlayerSpawns {
         if (runtime.inspection.activeProjectileCount() >= 0x02) {
             return -1;
         }
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }

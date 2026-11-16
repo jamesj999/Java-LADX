@@ -43,15 +43,15 @@ public final class EntityEnemySpawns {
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupController pickups,
             EntitySlotProperties slotProperties,
             EntitySlots slots,
             EntitySlotLifecycle lifecycle) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -86,7 +86,7 @@ public final class EntityEnemySpawns {
     }
 
     public boolean spawnKanaletWallMoblin(RoomEntity wall) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return false;
         }
@@ -123,7 +123,7 @@ public final class EntityEnemySpawns {
     }
 
     public void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -163,7 +163,7 @@ public final class EntityEnemySpawns {
     }
 
     public void spawnGopongaProjectile(RoomEntity source, GiantGopongaMotion.ProjectileSpawn spawn) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -206,7 +206,7 @@ public final class EntityEnemySpawns {
     }
 
     public void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -249,7 +249,7 @@ public final class EntityEnemySpawns {
     }
 
     public void spawnZombieChild(ZombieMotion.SpawnRequest spawn) {
-        int freeSlot = this.slots.findFree(this.combatTables, 0x05);
+        int freeSlot = this.slots.findFree(0x05);
         if (freeSlot < 0) {
             return;
         }
@@ -293,7 +293,7 @@ public final class EntityEnemySpawns {
     }
 
     public void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -339,7 +339,7 @@ public final class EntityEnemySpawns {
     }
 
     public void spawnWizrobeProjectile(RoomEntity source, WizrobeMotion.ProjectileSpawn spawn) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -382,7 +382,7 @@ public final class EntityEnemySpawns {
     }
 
     public boolean spawnEvasiveClone(RoomEntity source, StalfosEvasiveMotion.CloneRequest request) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return false;
         }
@@ -444,7 +444,7 @@ public final class EntityEnemySpawns {
         if (!this.spriteHandlers.supportsPresentation()) {
             return;
         }
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -494,7 +494,7 @@ public final class EntityEnemySpawns {
     }
 
     public boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
-        int freeSlot = this.slots.findFree(this.combatTables, 7);
+        int freeSlot = this.slots.findFree(7);
         if (freeSlot < 0) {
             return false;
         }
@@ -534,7 +534,7 @@ public final class EntityEnemySpawns {
     }
 
     void spawnLaserSensor(RoomEntity parent) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -573,7 +573,7 @@ public final class EntityEnemySpawns {
     }
 
     boolean spawnLaserBeam(RoomEntity parent) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return false;
         }
@@ -650,7 +650,7 @@ public final class EntityEnemySpawns {
         EntitySlotValidation.validateByte(speedX, "Enemy bomb X speed");
         EntitySlotValidation.validateByte(speedY, "Enemy bomb Y speed");
         EntitySlotValidation.validateByte(speedZ, "Enemy bomb Z speed");
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
@@ -725,7 +725,7 @@ public final class EntityEnemySpawns {
         if (!runtime.spriteHandlers.supportsPresentation()) {
             return;
         }
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }

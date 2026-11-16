@@ -57,19 +57,19 @@ public final class EntityRewardController {
             EntityRewardState state,
             EntityMotionRegistry motions,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
-            EntityPhysicsTables physicsTables,
             EntityPresentationState presentationState,
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntityStoryState story,
             EntitySlots slots,
-            EntitySpriteViews spriteViews,
             EntityPlayerCommands playerCommands,
             EntityPickupState pickups,
             EntityBossState bossRewards) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntitySpriteViews spriteViews = spriteHandlers;
         this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
 
@@ -114,7 +114,7 @@ public final class EntityRewardController {
     }
 
     void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) {
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0 || !this.spriteHandlers.supportsPresentation()) {
             return;
         }

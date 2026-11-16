@@ -119,13 +119,11 @@ public final class EntitySlotLifecycle {
             EntityWarpController warpState,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
             EntityProjectileState projectiles,
@@ -136,11 +134,11 @@ public final class EntitySlotLifecycle {
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
             SlimeEyeController.State slimeEye,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ java.util.function
-                            .IntUnaryOperator
-                    entityProperties,
+            java.util.function.IntUnaryOperator entityProperties,
             EntityRoomInspection inspection,
             EntitySlotPresentation slotPresentation) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
         this.slotPresentation = java.util.Objects.requireNonNull(slotPresentation, "slotPresentation");
 
@@ -259,7 +257,7 @@ public final class EntitySlotLifecycle {
         this.combatTables.writePowerRecoilDeath(slot, false);
         this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
 
-        int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot >= 0) {
             this.physicsTables.writeBaseEntityFlipAttribute(
                     freeSlot, this.physicsTables.readBaseEntityFlipAttribute(original.slot()));

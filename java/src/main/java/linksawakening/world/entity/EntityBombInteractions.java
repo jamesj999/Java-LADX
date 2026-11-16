@@ -40,16 +40,16 @@ public final class EntityBombInteractions {
             EntityBombState state,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
             EntitySlotLifecycle lifecycle) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");

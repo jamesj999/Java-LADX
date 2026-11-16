@@ -48,20 +48,20 @@ public final class SlimeEyeController {
 
     SlimeEyeController(
             State encounter,
-            java.util.List<RoomEntity> slotEntities,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossRewards bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
-            /* Optional encounter tables; absent in ROM-free runtimes. */ Rom rom) {
+            Rom rom) {
+        java.util.List<RoomEntity> slotEntities = slots.view();
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.readByte = rom == null
                 ? address -> {
                     throw new IllegalStateException("Slime Eye requires ROM encounter tables");
@@ -348,7 +348,7 @@ public final class SlimeEyeController {
     }
 
     int spawn(int type, int x, int y, int z) {
-        int s = this.slots.findFree(this.combatTables, this.slots.size() - 1);
+        int s = this.slots.findFree(this.slots.size() - 1);
         if (s < 0) return -1;
         this.lifecycle.disableEntityWithoutPersistence(s);
         var definition = type == 0x1B && this.spriteHandlers.supportsPresentation()

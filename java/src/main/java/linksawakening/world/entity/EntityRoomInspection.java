@@ -49,17 +49,13 @@ public final class EntityRoomInspection {
             EntityWarpController warpState,
             boolean indoorRoom,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ linksawakening.gpu
-                            .EntitySpriteTileSnapshot
-                    spriteTiles,
+            linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
             EntityProjectileState projectiles,
@@ -69,6 +65,8 @@ public final class EntityRoomInspection {
             EntityStoryState story,
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");

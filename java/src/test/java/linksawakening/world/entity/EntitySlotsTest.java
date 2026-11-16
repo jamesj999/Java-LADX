@@ -29,17 +29,17 @@ class EntitySlotsTest {
     @Test
     void allocationSearchIsDescendingAndResetsOnlyTheSelectedHitbox() {
         var slots = new EntitySlots(List.of(RoomEntity.disabled(0), RoomEntity.disabled(1), RoomEntity.disabled(2)));
-        var combat = new EntityCombatTables();
+        var combat = slots.combat();
         combat.writeEnemyHitboxFlags(0, 7);
         combat.writeEnemyHitboxFlags(1, 8);
         combat.writeEnemyHitboxFlags(2, 9);
-        assertEquals(2, slots.findFree(combat, 15));
+        assertEquals(2, slots.findFree(15));
         assertEquals(0, combat.readEnemyHitboxFlags(2));
         assertEquals(8, combat.readEnemyHitboxFlags(1));
         slots.replace(2, TestEntities.active(0x09).slot(2).build());
-        assertEquals(1, slots.findFree(combat, 2));
+        assertEquals(1, slots.findFree(2));
         assertEquals(0, combat.readEnemyHitboxFlags(1));
         assertEquals(7, combat.readEnemyHitboxFlags(0));
-        assertEquals(-1, slots.findFree(combat, -1));
+        assertEquals(-1, slots.findFree(-1));
     }
 }

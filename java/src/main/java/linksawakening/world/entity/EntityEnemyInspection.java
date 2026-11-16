@@ -26,17 +26,17 @@ public final class EntityEnemyInspection {
 
     EntityEnemyInspection(
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
-            EntityRoomInspection inspection,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlotPresentation slotProperties,
             EntitySlots slots) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntityRoomInspection inspection = roomInspection;
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");

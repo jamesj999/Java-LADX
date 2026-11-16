@@ -69,17 +69,17 @@ public final class EntityCombatResolver {
             EntityBackgroundMechanics backgroundMechanics,
             EntityBombInteractions bombInteractions,
             EntityBossRewards bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityRoomInspection roomInspection,
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
             SlimeEyeController slimeEye,
             EntityFrameRandom frameRandom) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");

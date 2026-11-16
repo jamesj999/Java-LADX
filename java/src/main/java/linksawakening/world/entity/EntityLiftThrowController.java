@@ -46,11 +46,9 @@ public final class EntityLiftThrowController {
             boolean indoorRoom,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombState bombInteractions,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
             EntityProjectileController projectiles,
@@ -60,6 +58,8 @@ public final class EntityLiftThrowController {
             EntitySlotLifecycle lifecycle,
             EntityPlayerCommands playerCommands,
             EntityPlayerSpawns playerSpawns) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -147,7 +147,7 @@ public final class EntityLiftThrowController {
         if (runtime.spriteHandlers.supportsPresentation()) {
             var definition = runtime.spriteHandlers.decodeSingle(0x9D, 0x19, 0x4020, 1, 0);
             for (int piece = 0; piece < 6; piece++) {
-                int slot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+                int slot = runtime.slots.findFree(runtime.slots.size() - 1);
                 if (slot < 0) break;
                 runtime.slots.replace(
                         slot,
@@ -416,7 +416,7 @@ public final class EntityLiftThrowController {
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
 
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return true;
         }

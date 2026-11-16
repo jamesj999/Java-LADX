@@ -33,15 +33,15 @@ public final class GenieEntityController {
     GenieEntityController(
             State encounter,
             EntityBossRewards bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPlayerSpawns entityPlayerSpawns,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             EntitySlots slots) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
@@ -230,7 +230,7 @@ public final class GenieEntityController {
     int spawnGenieEntity(
             int x, int y, int privateState1, int transitionCountdown, int health, int physicsFlags, int hitboxFlags) {
         var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }

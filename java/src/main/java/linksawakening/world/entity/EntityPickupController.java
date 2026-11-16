@@ -74,11 +74,9 @@ public final class EntityPickupController {
             EntityPickupState state,
             boolean indoorRoom,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPresentationState presentationState,
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
@@ -86,6 +84,8 @@ public final class EntityPickupController {
             EntityStoryState story,
             EntitySlots slots,
             EntityChestContents chestContentsTable) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
@@ -358,7 +358,7 @@ public final class EntityPickupController {
 
     void spawnChestZol(RoomEntity chest) {
         var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -393,7 +393,7 @@ public final class EntityPickupController {
 
     void spawnEnemyDrop(RoomEntity source, int itemType) {
         var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
@@ -461,7 +461,7 @@ public final class EntityPickupController {
 
     int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) {
         var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.combatTables, runtime.slots.size() - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }

@@ -39,16 +39,16 @@ public final class EntityPlayerCommands {
 
     EntityPlayerCommands(
             EntityBombState bombInteractions,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPresentationState presentationState,
             EntityRewardState rewards,
             EntityRoomInspection inspection,
             EntitySlotProperties slotProperties,
             EntitySlots slots) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");

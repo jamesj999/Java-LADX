@@ -93,7 +93,6 @@ public final class EntityFrameExecution {
             EntityBackgroundMechanics backgroundMechanics,
             EntityLiftThrowController liftThrow,
             EntitySlots slots,
-            java.util.List<RoomEntity> slotEntities,
             EntitySlotLifecycle lifecycle,
             EntityEnemySpawns entityEnemySpawns,
             EntityPlayerSpawns entityPlayerSpawns,
@@ -114,14 +113,15 @@ public final class EntityFrameExecution {
             EntityEventChannels events,
             EntityPresentationState presentationState,
             EntityMotionRegistry motions,
-            EntityCombatTables combatTables,
-            EntityPhysicsTables physicsTables,
             EntityRoomVariables roomVariables,
             EntityLinkState linkState,
             boolean indoorRoom,
             RomEnemyCombatTables enemyCombatTables,
             EntityCombatResolver combat,
             EntityPlayerCommands playerCommands) {
+        java.util.List<RoomEntity> slotEntities = slots.view();
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "spriteHandlers");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
@@ -410,7 +410,6 @@ public final class EntityFrameExecution {
                             backgroundMechanics,
                             liftThrow,
                             slots,
-                            slotEntities,
                             lifecycle,
                             entityEnemySpawns,
                             entityPlayerSpawns,
@@ -431,8 +430,6 @@ public final class EntityFrameExecution {
                             events,
                             presentationState,
                             motions,
-                            combatTables,
-                            physicsTables,
                             roomVariables,
                             linkState,
                             indoorRoom,

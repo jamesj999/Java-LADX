@@ -58,11 +58,9 @@ public final class EntityProjectileController {
             boolean indoorRoom,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombState bombInteractions,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPlayerSpawns entityPlayerSpawns,
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
@@ -70,6 +68,8 @@ public final class EntityProjectileController {
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
             EntityProjectileState state) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.indoorRoom = indoorRoom;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");

@@ -56,16 +56,16 @@ public final class EntityBackgroundMechanics {
     EntityBackgroundMechanics(
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
             EntityEventChannels events,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlots slots,
-            EntitySpriteViews spriteViews,
             EntitySlotLifecycle lifecycle) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntitySpriteViews spriteViews = spriteHandlers;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");

@@ -124,3 +124,25 @@ internal slot queries were removed. Their behavior remains on the appropriate
 combat, reward, spawn, lifecycle or slot owner. Validation in deferred recoil and
 thrown-direction queries moved with the operation. The pipeline owns frame RNG
 preparation and the Link-speed/deferred-recoil cleanup around a tick.
+
+## Constructor ownership review
+
+The immutable entity values and the combat/physics columns use the same fixed
+ROM slot identity. `EntitySlots` owns all three, and its descending free-slot
+search resets its own combat column. Controllers receive that slot owner rather
+than independently supplied combat and physics tables. The cached list view is
+also obtained from the same owner. This prevents mismatched table wiring rather
+than merely hiding constructor arguments in a record.
+
+Inspection and sprite-cache arguments which were the same instance at both
+positions are supplied once. Internal read aliases retain their original query
+behavior. No new Services/Dependencies bundle or forwarding interface was added.
+
+Some constructors intentionally still have more than eight inputs. Frame
+execution names the separate behavior owners actually used by handlers. The
+runtime constructor names its public roles. Lifecycle must reset independent
+entity-family owners at the original slot-reset sites, and inspection must read
+those families without owning their behavior. These are explicit edges, not
+parameters to combine into an aggregate service locator merely to meet a limit.
+The review groups the shared slot storage and removes duplicate identities;
+it does not change the order of lifecycle resets or move queries through a hub.

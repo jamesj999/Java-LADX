@@ -52,19 +52,19 @@ public final class EntityStoryController {
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
-            EntityRoomInspection inspection,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlots slots,
-            EntitySpriteViews spriteViews,
             EntityPlayerCommands playerCommands) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntityRoomInspection inspection = roomInspection;
+        EntitySpriteViews spriteViews = spriteHandlers;
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.motions = java.util.Objects.requireNonNull(motions, "motions");
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -907,7 +907,7 @@ public final class EntityStoryController {
                 if (owner.state.readKidPlayState(slot) == 0) {
                     owner.state.writeKidPlayState(slot, 1);
                     timer = 0x80;
-                    int ball = owner.slots.findFree(owner.combatTables, owner.slots.size() - 1);
+                    int ball = owner.slots.findFree(owner.slots.size() - 1);
                     if (ball >= 0 && owner.spriteHandlers.supportsPresentation()) {
                         var definition = owner.spriteViews.forKidBall();
                         owner.slots.replace(

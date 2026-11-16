@@ -64,10 +64,8 @@ final class EntityRoomInitialization {
             boolean indoorRoom,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityRewardState rewards,
             EntitySlotProperties slotProperties,
@@ -75,6 +73,8 @@ final class EntityRoomInitialization {
             GenieEntityController genie,
             EntitySlots slots,
             EntitySlotLifecycle lifecycle) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");

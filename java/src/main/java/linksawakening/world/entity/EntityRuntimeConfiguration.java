@@ -36,15 +36,15 @@ public final class EntityRuntimeConfiguration {
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
             EntityProjectileState projectiles,
             EntityRoomVariables roomVariables,
             EntityStoryState story,
             EntitySlots slots,
-            SlimeEyeController slimeEye,
-            EntitySpriteViews spriteViews) {
+            SlimeEyeController slimeEye) {
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntitySpriteViews spriteViews = spriteHandlers;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
