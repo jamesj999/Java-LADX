@@ -844,10 +844,11 @@ within the entity boundary.
 
 ## Rooms and world
 
-`world.room.RoomSession` owns the loaded-room lifecycle. Its one optional
-`RoomRuntime` field is absent before the first room load; that absence is never
-represented by a fake room or empty entity runtime. The facade decides each
-operation's no-room policy: cached/persistent writes still run, loaded effects
+`world.room.RoomSession` owns the loaded-room lifecycle through one
+`LoadedRoomHandle`. Its optional `RoomRuntime` is absent before the first room
+load; absence is never represented by a fake room or empty entity runtime.
+Behavior owners resolve the current generation at their operation boundary and
+preserve the no-room policy: cached/persistent writes still run, loaded effects
 may be skipped, queries keep their original default or required-room exception.
 The [operation matrix](archive/history/room-lifecycle.md#final-no-room-operation-matrix)
 and [null audit](archive/history/room-null-audit.md) record those contracts.
@@ -861,15 +862,15 @@ runtime, preserving door/shutter initialization order. Follower synchronization
 can replace the entity runtime while retaining the same room contents. Room
 installation publishes the generation; listener notification follows the
 original configuration order. If a listener synchronously loads another room,
-the outer load continues against the generation it published. Warp palette
-history is sampled after map-boundary callbacks, as in the source sequence.
-The facade dispatches the ordered transient reset at the original load phase,
+subsequent source-ordered load work uses the generation returned by the
+notification callback. Warp palette history is sampled after map-boundary callbacks, as in the source sequence.
+The loader invokes the wiring-bound transient reset at the original load phase,
 including when subsequent room acquisition fails; the previous generation's
 transient flags/overrides still clear before that error.
 
-Room-only collaborators receive the generation or its specific parts as an
-operation argument. They do not query nullable active-room/runtime fields or
-current-value suppliers. `RoomLocationState` and `RoomEntitySessionState` contain
+Role entry points use the explicit loaded-room handle. Loaded-only algorithms
+receive a non-null generation or its specific parts as an operation argument;
+they do not query ambient active-room/runtime suppliers. `RoomLocationState` and `RoomEntitySessionState` contain
 no loaded-room aliases. Registers that survive room replacement, including the
 Link ground registers, switch-block state, title/music clocks, progression,
 follower inputs and session output queues, retain their distinct session/world
@@ -878,18 +879,47 @@ persistent world data, reset sequences and story progression respectively.
 A structural test prevents room/runtime aliases and current-value suppliers
 from returning to session bags, outboxes or live projections.
 
-The `doors()`, `transitions()`, `playerItems()`, `story()`, `entities()`,
-`entityState()`, `rooms()`, `dungeon()`, `progress()` and `terrain()` accessors
-return cached, focused role views that remain usable across room replacement.
-`RoomSession` has no project superclass or compatibility inheritance. The roles
-and frame adapters are composed; internal drain and boundary-operation ports
-route lifecycle decisions to the facade without exposing a current-runtime
-lookup. `RoomEntityOutbox` owns session queues and drain staging, rather than a
-runtime supplier. Boundary records, including `LinkGroundFrame`,
-`ShovelStartResult`, `ArrowShotResult` and `ChestOpenResult`, are top-level types.
-The former entity-test bridges, reflection alias and all deprecated probe
-constructors have been removed. App input caches use the canonical raw-value
-constructors directly.
+The facade contains lifecycle publication/notification, `hasRoom()`, cached role/result
+accessors and the two `tickEntities(...)` entry points. Both tick forms delegate
+to RoomFrameInputApplier. No role routes behavioral operations through RoomSession,
+and no main room implementation references its type. Publication and load
+notification are explicit lifecycle callbacks, not operation forwarding or
+current-value suppliers.
+
+Roles are implemented by their behavior owners:
+
+- `RoomDoors`: RoomDoorInteractions, composing chest and lift interactions.
+- `RoomPlayerItems`: RoomPlayerItemActions, composing shovel behavior and projectile dispatch.
+- `RoomTransitions`: RoomTransitionController, composing loading and boundary services;
+  its coordinator factory supplies exact dependencies instead of inspecting a facade.
+- `RoomStory`: RoomStoryState, composing remembered flags, NPC presentation and follower synchronization.
+- `RoomRooms`: RoomLoadCoordinator, owning load commands and current-generation queries.
+- `RoomDungeon`: RoomWorldState, owning persistent flags, snapshots and its retained minimap view.
+- `RoomProgress`: RoomProgression, ordering respawn/reset operations across location,
+  entity-drop and terrain state, then reapplying loaded drop configuration when required.
+- `RoomTerrain`: RoomObjectMutations, owning cracked-floor and crystal mutations.
+- `RoomEntities`: RoomEntityBridge, owning room/entity tick integration, combat,
+  pickups and the outbox drain boundary.
+- `RoomEntityState`: RoomEntityControl, composing input configuration, runtime
+  control/inspection and their shared metadata owners rather than the facade.
+
+RoomFrameInputApplier applies inputs in their original setter order, including
+both low-health configuration steps, then invokes the entity owner. Tick registers
+are observed through RoomFollowerState.observeLink, RoomEntitySessionState.observeMotionState
+and RoomLocationState.beginEntityTick; the facade writes none of their fields.
+RoomEntityInputs distinguishes remembered inputs from updates applied to a loaded
+runtime. Output ports reference the entity owner directly, retaining drain order,
+queue clearing, reentrancy and immutable ownership contracts.
+
+RoomSessionComponents is a construction inventory used only by RoomSessionContext.
+The wiring hands the facade role contracts, frame sequence/results and lifecycle
+view support, never the inventory. Callbacks capture their specific state/handle,
+not the wiring inventory. `architecture.RoomFacadeTest` checks symbolic class-file
+references and class metadata: facade isolation, construction-inventory isolation,
+public entry-point shape and absence of facade fields on role implementations.
+Test-only RoomSessionInspection observes composed owners without adding production
+inspection aliases or retaining a wiring bag. The [dependency report](archive/history/room-hub-removal.md)
+lists every remaining facade method and main-code class-file reference.
 
 Construction takes `RoomSessionConfig`, which validates required long-lived
 collaborators once. Optional presentation outputs are normalized eagerly to a

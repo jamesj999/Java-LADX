@@ -25,6 +25,7 @@ No file-length targets or implementation inheritance are part of the design.
 | [Platform round 4](platform-round-4.md) | GPU/audio composition, reusable presentation and resource lifetimes |
 | [Room integration round 5](room-integration-round-5.md) | Production fast-path adoption, whole-frame baselines and frame pacing |
 | [Frame input allocation](frame-input-allocation.md) | Borrowed phase/boundary registers versus retained immutable values; walking 580.3 → 139.5 B/frame EA off |
+| [Room hub removal](room-hub-removal.md) | Direct role owners, lifecycle-only facade, construction inventory isolation and compiled-reference acceptance guards |
 | [Build hardening](build-hardening.md) | Per-check main/test baseline, risk and array-record audits, scoped suppressions and final strict compiler policy |
 
 This final integration closed the explicit room-projection and production
