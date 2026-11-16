@@ -9,7 +9,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
@@ -435,19 +434,15 @@ final class LinkTest extends LinkFixture {
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
                 .build();
-        Field walkFrame = LinkAnimationState.class.getDeclaredField("walkFrame");
-        walkFrame.setAccessible(true);
-        walkFrame.setInt(link.linkAnimationState, 1);
-        Field walkTickCounter = LinkAnimationState.class.getDeclaredField("walkTickCounter");
-        walkTickCounter.setAccessible(true);
-        walkTickCounter.setInt(link.linkAnimationState, 3);
+        link.linkAnimationState.walkFrame = 1;
+        link.linkAnimationState.walkTickCounter = 3;
 
         link.animation().faceRomDirectionPreservingWalkPhase(0);
 
         assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
         assertEquals(0x0B, resolvedAnimationState(link));
-        assertEquals(1, walkFrame.getInt(link.linkAnimationState));
-        assertEquals(3, walkTickCounter.getInt(link.linkAnimationState));
+        assertEquals(1, link.linkAnimationState.walkFrame);
+        assertEquals(3, link.linkAnimationState.walkTickCounter);
     }
 
     @Test

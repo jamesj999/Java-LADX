@@ -9,8 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import linksawakening.rom.Rom;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 final class GpuAllocationTest {
+    private final TestReporter reporter;
+
+    GpuAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void animationUploadsAndStableSnapshotsDoNotAllocate() {
         byte[] data = new byte[0x100000];
@@ -20,7 +27,7 @@ final class GpuAllocationTest {
         gpu.loadAnimatedTilesGroup(rom, 9);
         double tick = AllocationProbe.bytesPerIteration(5000, 1000, () -> gpu.tickAnimatedTiles(rom));
         double snapshot = AllocationProbe.bytesPerIteration(5000, 1000, gpu::snapshotEntityTiles);
-        System.out.println("Animated tiles bytes/tick=" + tick + " stable snapshot bytes/call=" + snapshot);
+        reporter.publishEntry("Animated tiles bytes/tick=" + tick + " stable snapshot bytes/call=" + snapshot);
         assertTrue(tick < 16);
         assertTrue(snapshot < 16);
     }

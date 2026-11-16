@@ -8,17 +8,24 @@ import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Update-only budgets include audio/world work, but exclude framebuffer composition. */
 @RequiresRom
 final class SessionAllocationTest {
+    private final TestReporter reporter;
+
+    SessionAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void simulationAllocation() throws Exception {
         var session = newGame();
         try {
             long bytesPerFrame = measure(session);
             assertTrue(session.diagnostics().dialogController().isActive(), "Opening dialog sample");
-            System.out.println("Idle simulation allocation bytes/frame: " + bytesPerFrame);
+            reporter.publishEntry("Idle simulation allocation bytes/frame: " + bytesPerFrame);
             // Round 7 EA-off achieved zero steady idle allocation.
             assertTrue(bytesPerFrame <= 0, "Idle simulation bytes/frame: " + bytesPerFrame);
         } finally {
@@ -42,7 +49,7 @@ final class SessionAllocationTest {
             assertFalse(session.diagnostics().dialogController().isActive());
             assertEquals(70, session.diagnostics().link().position().romEntityX(), "Left the bed");
             long bytesPerFrame = measure(session);
-            System.out.println("Active simulation allocation bytes/frame: " + bytesPerFrame);
+            reporter.publishEntry("Active simulation allocation bytes/frame: " + bytesPerFrame);
             // EA-off achieved 137; +25% headroom.
             // Remaining costs are changed immutable app/world frame values;
             // this total-step budget is not an app-only attribution claim.

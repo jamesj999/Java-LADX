@@ -149,7 +149,7 @@ public final class ScreenRouter {
         state.screens().fileSave.clear();
         state.opening().wakeUp(null);
         state.opening().shield(null);
-        state.screens().currentSaveSlot = -1;
+        state.screens().selectSaveSlot(-1);
         player.link().motion().resetTransientStateForDebug();
         player.playerState().playerInitialization().initializeDebugState();
         world.roomSession().story().initializeNewGameWorldState();
@@ -157,7 +157,7 @@ public final class ScreenRouter {
         world.roomSession().story().setBirdKeyOwned(true);
         world.roomSession().story().setTailKeyOwned(true);
         actions.navigator().show(ScreenKind.GAMEPLAY);
-        state.debug().debugNoClip = false;
+        state.debug().setNoClip(false);
         player.link().animation().setDirection(Direction.DOWN.javaIndex());
         rom.gpu().loadBaseTiles(rom.romData());
         loadOverworldScreen();
@@ -167,7 +167,7 @@ public final class ScreenRouter {
     public void startConfiguredLocationGameplay() {
         state.screens().fileMenu.clear();
         state.screens().fileSave.clear();
-        state.screens().currentSaveSlot = -1;
+        state.screens().selectSaveSlot(-1);
         state.opening().wakeUp(null);
         state.opening().shield(null);
         actions.navigator().show(ScreenKind.GAMEPLAY);

@@ -18,6 +18,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.HookshotChainOam;
 import linksawakening.world.entity.PincerBodyOam;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,20 @@ final class EntityRenderLayerTest {
         writeSolidTile(gpu, 0x41, 1);
         var definition = pairDefinition(
                 new EntitySpriteDefinition.OamAttribute(0x40, 0), new EntitySpriteDefinition.OamAttribute(0x40, 0));
-        var entity = new RoomEntity(0, 0, 0x35, 56, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false);
+        var entity = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x35)
+                .at(56, 64)
+                .status(EntityStatus.INIT)
+                .spriteDefinition(definition)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(
                         snapshot(null, gpu.snapshotEntityTiles(), entity),
@@ -61,7 +75,20 @@ final class EntityRenderLayerTest {
         palettes[2][1] = 0x123456;
         palettes[4][1] = 0xABCDEF;
         for (int flash : new int[] {0, 0x10}) {
-            var entity = new RoomEntity(0, 0, 0xE4, 56, 64, EntityStatus.DYING, definition, 0, flash, 0, 0, -1, false);
+            var entity = new RoomEntityBuilder()
+                    .slot(0)
+                    .sourceLoadOrder(0)
+                    .type(0xE4)
+                    .at(56, 64)
+                    .status(EntityStatus.DYING)
+                    .spriteDefinition(definition)
+                    .spriteVariant(0)
+                    .entityFlipAttribute(flash)
+                    .spriteTileOffset(0)
+                    .z(0)
+                    .deathSpriteVariant(-1)
+                    .powerRecoilDeath(false)
+                    .build();
             byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
             new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity), palettes, new ScrollController())
                     .render(new RenderContext(buffer, gpu));
@@ -81,7 +108,20 @@ final class EntityRenderLayerTest {
         writeSolidTile(gpu, 0xAD, 2);
         var definition = pairDefinition(
                 new EntitySpriteDefinition.OamAttribute(0xAC, 0), new EntitySpriteDefinition.OamAttribute(0x40, 0));
-        var entity = new RoomEntity(0, 0, 0x35, 56, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        var entity = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x35)
+                .at(56, 64)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(definition)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         int[][] palettes = {{0, 0x112233, 0x445566, 0x778899}};
         new EntityRenderLayer(snapshot(null, tiles, entity), palettes, new ScrollController())
@@ -103,8 +143,20 @@ final class EntityRenderLayerTest {
         for (var position : DialogController.BoxPosition.values()) {
             int threshold = position == DialogController.BoxPosition.TOP ? 0x3E : 0x58;
             for (int rawY = threshold - 1; rawY <= threshold; rawY++) {
-                var entity =
-                        new RoomEntity(0, 0, 0x7A, 40, rawY, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+                var entity = new RoomEntityBuilder()
+                        .slot(0)
+                        .sourceLoadOrder(0)
+                        .type(0x7A)
+                        .at(40, rawY)
+                        .status(EntityStatus.ACTIVE)
+                        .spriteDefinition(definition)
+                        .spriteVariant(0)
+                        .entityFlipAttribute(0)
+                        .spriteTileOffset(0)
+                        .z(0)
+                        .deathSpriteVariant(-1)
+                        .powerRecoilDeath(false)
+                        .build();
                 byte[] buffer = filledBuffer(0x11, 0x22, 0x33);
                 new EntityRenderLayer(
                                 snapshot(entity),
@@ -155,8 +207,20 @@ final class EntityRenderLayerTest {
                 EntitySpriteDefinition.Shape.SINGLE,
                 0,
                 List.of(new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x84, 0x00), null)));
-        RoomEntity sword =
-                new RoomEntity(0, 0, 0x31, 0x58, 0x60, EntityStatus.ACTIVE, swordDefinition, 0, 0, 0, 0, -1, false);
+        RoomEntity sword = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x31)
+                .at(0x58, 0x60)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(swordDefinition)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), sword), palettes, new ScrollController())
@@ -190,8 +254,20 @@ final class EntityRenderLayerTest {
                 EntitySpriteDefinition.Shape.SINGLE,
                 0,
                 List.of(new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x84, 0x17), null)));
-        RoomEntity sword =
-                new RoomEntity(0, 0, 0x31, 0x58, 0x60, EntityStatus.ACTIVE, swordDefinition, 0, 0, 0, 0, -1, false);
+        RoomEntity sword = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x31)
+                .at(0x58, 0x60)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(swordDefinition)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
 
         new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), sword), palettes, new ScrollController())
                 .render(new RenderContext(buffer, gpu));
@@ -217,7 +293,20 @@ final class EntityRenderLayerTest {
                 List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0x40, 3),
                         new EntitySpriteDefinition.OamAttribute(0x40, 0x23))));
-        RoomEntity entity = new RoomEntity(3, 0, 0x6D, 0x40, 0x50, EntityStatus.ACTIVE, head, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .slot(3)
+                .sourceLoadOrder(0)
+                .type(0x6D)
+                .at(0x40, 0x50)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(head)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
         RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
                 .withBowWowChainOam(List.of(
                         new linksawakening.world.entity.BowWowChain.Entry(3, 0x40, 0x50, 0x4E),
@@ -245,8 +334,20 @@ final class EntityRenderLayerTest {
                 List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0xFF, 0x00),
                         new EntitySpriteDefinition.OamAttribute(0xFF, 0x20))));
-        RoomEntity entity =
-                new RoomEntity(3, 0, 0xB0, 0x4C, 0x58, EntityStatus.ACTIVE, hiddenPincer, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .slot(3)
+                .sourceLoadOrder(0)
+                .type(0xB0)
+                .at(0x4C, 0x58)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(hiddenPincer)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
         RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
                 .withPincerBodyOam(PincerBodyOam.entries(3, 0x40, 0x50, 0x4C, 0x58, 3));
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];

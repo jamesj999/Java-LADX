@@ -20,9 +20,16 @@ import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 @RequiresRom
 final class MabeCollisionSweepTest {
+    private final TestReporter reporter;
+
+    MabeCollisionSweepTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     private static final int[] ROOMS = {0xB1, 0xA1, 0xB0, 0xB2, 0xC1};
     // LinkCollisionPointsX/Y ($02:6E15/6E1D), in Java down/up/left/right order.
     private static final int[][] XS = {{6, 9}, {6, 9}, {4, 4}, {11, 11}};
@@ -71,7 +78,7 @@ final class MabeCollisionSweepTest {
                     }
                 }
         }
-        System.out.println("ROM-passable tile movement cases=" + cases + "; mismatches=" + mismatches);
+        reporter.publishEntry("ROM-passable tile movement cases=" + cases + "; mismatches=" + mismatches);
         assertTrue(mismatches.isEmpty(), mismatches.toString());
     }
 
@@ -135,7 +142,7 @@ final class MabeCollisionSweepTest {
                         }
                     }
             }
-            System.out.println("Full-session ROM-passable cases=" + cases + "; stationary samples=" + entityBlocks
+            reporter.publishEntry("Full-session ROM-passable cases=" + cases + "; stationary samples=" + entityBlocks
                     + "; invisible blockers=" + invisible);
             assertTrue(invisible.isEmpty(), invisible.toString());
         } finally {

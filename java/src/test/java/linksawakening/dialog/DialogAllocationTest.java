@@ -8,8 +8,15 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 class DialogAllocationTest {
+    private final TestReporter reporter;
+
+    DialogAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void printingTicksStayWithinAllocationBudget() throws ReflectiveOperationException {
         var lookup = MethodHandles.privateLookupIn(DialogController.class, MethodHandles.lookup());
@@ -29,7 +36,7 @@ class DialogAllocationTest {
             dialog.consumeSoundEvents();
         });
         assertTrue(printed[0] > 1000);
-        System.out.println("Dialog printing bytes/frame=" + bytesPerFrame);
+        reporter.publishEntry("Dialog printing bytes/frame=" + bytesPerFrame);
         assertTrue(bytesPerFrame <= 8, "bytes/frame=" + bytesPerFrame);
     }
 

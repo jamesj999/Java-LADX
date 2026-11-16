@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.event.HinoxLinkEffectRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,19 @@ class EntityBoundaryBehaviorTest {
         p.vitals().setMaxHearts(3);
         p.vitals().setHealth(24);
         p.vitals().setInvincibilityCounter(16);
-        var r = new HinoxLinkEffectRequest(0, 0, 0, 0, 0, 0, 0, 0, 4, false, false);
+        var r = new linksawakening.testing.HinoxEffects()
+                .sourceSlot(0)
+                .heldX(0)
+                .heldY(0)
+                .heldZ(0)
+                .speedX(0)
+                .speedY(0)
+                .velocityZ(0)
+                .airborneState(0)
+                .damage(4)
+                .motionBlocked(false)
+                .applyHeldLinkPose(false)
+                .build();
         LinkWriteApplier.applyHinoxEffect(link(), p, r);
         assertEquals(4, p.vitals().subtractHealthBuffer());
         assertEquals(0x50, p.vitals().invincibilityCounter());
@@ -55,21 +66,19 @@ class EntityBoundaryBehaviorTest {
     @Test
     void ordinaryProjectileResponseWritesRecoilInsteadOfPullingImmediately() {
         var l = link();
-        var r = new EntityProjectileEvent(
-                0,
-                1,
-                EntityProjectileEvent.Kind.SHIELD_BLOCK,
-                0,
-                0,
-                EntityProjectileEvent.SoundChannel.NONE,
-                -1,
-                false,
-                false,
-                0,
-                0,
-                16,
-                0,
-                10);
+        var r = EntityProjectileEvent.builder(0, 1, EntityProjectileEvent.Kind.SHIELD_BLOCK)
+                .collisionValue(0)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.NONE)
+                .soundId(-1)
+                .remove(false)
+                .swordPokeVfx(false)
+                .swordPokeX(0)
+                .swordPokeY(0)
+                .linkSpeedX(16)
+                .linkSpeedY(0)
+                .linkIgnoreCollisionCountdown(10)
+                .build();
         l.apply(LinkCommandAdapter.from(r));
         assertEquals(64, l.position().pixelX());
         l.motion().update();

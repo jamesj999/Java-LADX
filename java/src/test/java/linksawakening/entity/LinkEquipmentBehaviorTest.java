@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicBoolean;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Ocarina;
@@ -269,9 +268,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
-        Field countdown = LinkItemState.class.getDeclaredField("romAttackStepAnimationCountdown");
-        countdown.setAccessible(true);
-        countdown.setInt(link.linkItemState, 0x80);
+        link.linkItemState.romAttackStepAnimationCountdown = 0x80;
 
         assertEquals(0x80, link.equipment().romAttackStepAnimationCountdown());
 

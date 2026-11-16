@@ -20,9 +20,16 @@ import linksawakening.world.room.RoomStory;
 import linksawakening.world.room.RoomTerrain;
 import linksawakening.world.room.RoomTransitions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Symbolic dependencies and class metadata keep role implementation independent of the lifecycle facade. */
 class RoomFacadeTest {
+    private final TestReporter reporter;
+
+    RoomFacadeTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     private static final String ROOM = "linksawakening/world/room/";
     private static final String FACADE = ROOM + "RoomSession";
     private static final String WIRING = ROOM + "RoomSessionContext";
@@ -48,7 +55,7 @@ class RoomFacadeTest {
             if (owner.equals(FACADE) || owner.equals(WIRING)) continue;
             assertFalse(type.references().contains(FACADE), type.name() + " must receive its specific dependencies");
         }
-        System.out.println("RoomSession references: "
+        reporter.publishEntry("RoomSession references: "
                 + types.stream()
                         .filter(type -> type.references().contains(FACADE))
                         .map(ClassFileReferences.CompiledType::name)

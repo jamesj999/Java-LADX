@@ -7,7 +7,7 @@ import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 
-/** Bundled-ROM compatibility entry point for intro scene resources; runtime injection remains explicit. */
+/** Bundled-ROM entry point for intro scene resources; runtime injection remains explicit. */
 final class IntroResources {
     private IntroResources() {}
 

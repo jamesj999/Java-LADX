@@ -89,21 +89,19 @@ final class EnemyProjectileEventConsumerTest {
                 player,
                 new ItemRegistry());
         RecordingSoundSink sounds = new RecordingSoundSink();
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x0A,
-                EntityProjectileEvent.Kind.LINK_DAMAGE,
-                0xFF,
-                0x08,
-                EntityProjectileEvent.SoundChannel.WAVE,
-                0x03,
-                false,
-                false,
-                0,
-                0,
-                0xF0,
-                0x14,
-                0x10);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0xFF)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(false)
+                .swordPokeVfx(false)
+                .swordPokeX(0)
+                .swordPokeY(0)
+                .linkSpeedX(0xF0)
+                .linkSpeedY(0x14)
+                .linkIgnoreCollisionCountdown(0x10)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
         link.motion().update();
@@ -129,21 +127,19 @@ final class EnemyProjectileEventConsumerTest {
                 player,
                 new ItemRegistry());
         RecordingSoundSink sounds = new RecordingSoundSink();
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x02,
-                EntityProjectileEvent.Kind.LINK_DAMAGE,
-                0,
-                0,
-                EntityProjectileEvent.SoundChannel.NONE,
-                -1,
-                false,
-                false,
-                0,
-                0,
-                0x20,
-                0xE0,
-                0);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.NONE)
+                .soundId(-1)
+                .remove(false)
+                .swordPokeVfx(false)
+                .swordPokeX(0)
+                .swordPokeY(0)
+                .linkSpeedX(0x20)
+                .linkSpeedY(0xE0)
+                .linkIgnoreCollisionCountdown(0)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
         link.motion().update();
@@ -203,21 +199,19 @@ final class EnemyProjectileEventConsumerTest {
         player.vitals().setHealth(16);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x58,
-                EntityProjectileEvent.Kind.SWORD_HIT,
-                0xFF,
-                0,
-                EntityProjectileEvent.SoundChannel.JINGLE,
-                0x09,
-                true,
-                true,
-                0x40,
-                0x50,
-                0,
-                0,
-                0x0C);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x58, EntityProjectileEvent.Kind.SWORD_HIT)
+                .collisionValue(0xFF)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.JINGLE)
+                .soundId(0x09)
+                .remove(true)
+                .swordPokeVfx(true)
+                .swordPokeX(0x40)
+                .swordPokeY(0x50)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .linkIgnoreCollisionCountdown(0x0C)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 

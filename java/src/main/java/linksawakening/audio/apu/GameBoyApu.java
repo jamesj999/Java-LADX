@@ -3,6 +3,7 @@ package linksawakening.audio.apu;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /** Deterministic register-driven Game Boy stereo synthesizer. */
@@ -255,7 +256,7 @@ public final class GameBoyApu {
     private static void validateRegister(int register) {
         if (register < 0 || register >= REGISTER_COUNT) {
             throw new IllegalArgumentException("APU register out of range: 0x"
-                    + Integer.toHexString(register).toUpperCase(java.util.Locale.ROOT));
+                    + Integer.toHexString(register).toUpperCase(Locale.ROOT));
         }
     }
 }

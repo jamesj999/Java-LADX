@@ -10,8 +10,15 @@ import linksawakening.rom.RomSymbols;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 class InventoryAllocationTest {
+    private final TestReporter reporter;
+
+    InventoryAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void hudAndInventorySubmissionStayWithinAllocationBudget() {
         byte[] bytes = new byte[0x100000];
@@ -37,7 +44,7 @@ class InventoryAllocationTest {
         });
         assertArrayEquals(retainedTiles, retainedSnapshot.tiles());
         assertArrayEquals(retainedAttributes, retainedSnapshot.attributes());
-        System.out.println("HUD/inventory submission bytes/frame=" + bytesPerFrame);
+        reporter.publishEntry("HUD/inventory submission bytes/frame=" + bytesPerFrame);
         assertTrue(bytesPerFrame <= 8, "bytes/frame=" + bytesPerFrame);
     }
 

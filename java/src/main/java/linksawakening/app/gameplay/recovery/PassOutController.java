@@ -1,9 +1,11 @@
 package linksawakening.app.gameplay.recovery;
 
+import java.util.Objects;
 import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.ui.FileMenuFrameSnapshot;
+import linksawakening.render.GameFrameState;
+import linksawakening.render.RenderScreen;
 
 /**
  * Bank 0 death dispatch and bank 1 animation; screen loading follows in a later stage. One instance is
@@ -22,13 +24,13 @@ public final class PassOutController {
 
     private record Dying(LinkPassOutAnimation animation) implements Sequence {
         Dying {
-            java.util.Objects.requireNonNull(animation);
+            Objects.requireNonNull(animation);
         }
     }
 
     private record GameOver(GameOverPresentation menu) implements Sequence {
         GameOver {
-            java.util.Objects.requireNonNull(menu);
+            Objects.requireNonNull(menu);
         }
     }
 
@@ -43,8 +45,11 @@ public final class PassOutController {
         sequence = Inactive.INSTANCE;
     }
 
-    public FileMenuFrameSnapshot snapshot() {
-        return sequence instanceof GameOver over ? over.menu().snapshot() : null;
+    /** Applies a menu only while the recovery sequence owns an active game-over presentation. */
+    public GameFrameState renderState(GameFrameState state) {
+        if (!(sequence instanceof GameOver over)) return state;
+        var snapshot = over.menu().snapshot();
+        return state.reset().withScreen(RenderScreen.FILE_SAVE).withFileMenuFrame(snapshot);
     }
 
     public boolean tick(GameplaySimulation context, boolean dialog) {

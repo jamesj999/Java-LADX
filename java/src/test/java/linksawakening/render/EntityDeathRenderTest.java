@@ -20,6 +20,7 @@ import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
 
@@ -49,22 +50,34 @@ final class EntityDeathRenderTest {
             for (boolean power : new boolean[] {false, true}) {
                 for (int variant = 0; variant < 4; variant++) {
                     for (int flash : new int[] {0, 0x10}) {
-                        var expected = new RoomEntity(
-                                0, 0, type, 64, 64, EntityStatus.DYING, body, 0, flash, 0, 0, variant, power);
-                        var inherited = new RoomEntity(
-                                0,
-                                0,
-                                type,
-                                64,
-                                64,
-                                EntityStatus.DYING,
-                                body,
-                                0,
-                                flash | 0x60,
-                                type == 0x09 ? 0x30 : 0,
-                                0,
-                                variant,
-                                power);
+                        var expected = new RoomEntityBuilder()
+                                .slot(0)
+                                .sourceLoadOrder(0)
+                                .type(type)
+                                .at(64, 64)
+                                .status(EntityStatus.DYING)
+                                .spriteDefinition(body)
+                                .spriteVariant(0)
+                                .entityFlipAttribute(flash)
+                                .spriteTileOffset(0)
+                                .z(0)
+                                .deathSpriteVariant(variant)
+                                .powerRecoilDeath(power)
+                                .build();
+                        var inherited = new RoomEntityBuilder()
+                                .slot(0)
+                                .sourceLoadOrder(0)
+                                .type(type)
+                                .at(64, 64)
+                                .status(EntityStatus.DYING)
+                                .spriteDefinition(body)
+                                .spriteVariant(0)
+                                .entityFlipAttribute(flash | 0x60)
+                                .spriteTileOffset(type == 0x09 ? 0x30 : 0)
+                                .z(0)
+                                .deathSpriteVariant(variant)
+                                .powerRecoilDeath(power)
+                                .build();
                         byte[] baseline = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
                         byte[] actual = baseline.clone();
                         new EntityRenderLayer(snapshot(selection, expected), palettes, new ScrollController())
@@ -133,7 +146,20 @@ final class EntityDeathRenderTest {
         EntitySpriteSelection selection = new EntitySpriteSelection(
                         EntityRoomLoader.RoomTable.OVERWORLD, 0, 0, new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
                 .withDeathSpriteDefinitions(normal, power);
-        RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING, body, 0, 0, 0, 0, 3, true);
+        RoomEntity entity = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(24, 32)
+                .status(EntityStatus.DYING)
+                .spriteDefinition(body)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(3)
+                .powerRecoilDeath(true)
+                .build();
         byte[] buffer = filledBuffer(0x7A, 0x6B, 0x5C);
 
         new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
@@ -170,7 +196,20 @@ final class EntityDeathRenderTest {
                         EntityRoomLoader.RoomTable.OVERWORLD, 0, 0, new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
                 .withDeathSpriteDefinitions(
                         rectangleDefinition(0x5488, 0x28, 0x01), rectangleDefinition(0x54C8, 0x2A, 0x02));
-        RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING, body, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(24, 32)
+                .status(EntityStatus.DYING)
+                .spriteDefinition(body)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
@@ -204,7 +243,20 @@ final class EntityDeathRenderTest {
                         EntityRoomLoader.RoomTable.OVERWORLD, 0, 0, new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
                 .withDeathSpriteDefinitions(
                         rectangleDefinition(0x5488, 0x2C, 0x01), rectangleDefinition(0x54C8, 0x2E, 0x02));
-        RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING, body, 0, 0, 0, 0, 3, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(24, 32)
+                .status(EntityStatus.DYING)
+                .spriteDefinition(body)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(3)
+                .powerRecoilDeath(false)
+                .build();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())

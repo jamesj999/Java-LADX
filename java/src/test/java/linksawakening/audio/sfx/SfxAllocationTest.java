@@ -7,8 +7,15 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 final class SfxAllocationTest {
+    private final TestReporter reporter;
+
+    SfxAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void activeSfxTickDoesNotAllocate() {
         byte[] bytes = new byte[0x80000];
@@ -44,7 +51,7 @@ final class SfxAllocationTest {
         });
         assertTrue(engine.isPlaying(), "measurement must retain an active effect");
         assertTrue(apu.isChannelActive(4), "synthetic handlers must emit a live voice");
-        System.out.println("Active SFX allocation bytes/tick=" + allocated);
+        reporter.publishEntry("Active SFX allocation bytes/tick=" + allocated);
         assertTrue(allocated < 16, "SFX allocated " + allocated + " bytes/tick");
     }
 }

@@ -1,5 +1,6 @@
 package linksawakening.audio.music;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntPredicate;
@@ -126,7 +127,7 @@ public final class MusicDriver {
     }
 
     static String hex(int value) {
-        return "0x" + Integer.toHexString(value).toUpperCase(java.util.Locale.ROOT);
+        return "0x" + Integer.toHexString(value).toUpperCase(Locale.ROOT);
     }
 
     private void parseUntilTimeConsumed(MusicChannelState state) {

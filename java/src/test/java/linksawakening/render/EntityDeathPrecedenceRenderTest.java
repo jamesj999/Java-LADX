@@ -15,6 +15,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
 
@@ -55,8 +56,34 @@ final class EntityDeathPrecedenceRenderTest {
                 .withDeathSpriteDefinitions(
                         rectangleDefinition(0x5488, 0x32, 0x01), rectangleDefinition(0x54C8, 0x34, 0x02))
                 .withSpriteOverride(0x09, override);
-        RoomEntity dying = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING, body, 0, 0, 0, 0, 3, true);
-        RoomEntity active = new RoomEntity(1, 1, 0x09, 64, 32, EntityStatus.ACTIVE, body, 0, 0, 0, 0, -1, false);
+        RoomEntity dying = new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(24, 32)
+                .status(EntityStatus.DYING)
+                .spriteDefinition(body)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(3)
+                .powerRecoilDeath(true)
+                .build();
+        RoomEntity active = new RoomEntityBuilder()
+                .slot(1)
+                .sourceLoadOrder(1)
+                .type(0x09)
+                .at(64, 32)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(body)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(selection, dying, active), palettes, new ScrollController())
@@ -96,8 +123,20 @@ final class EntityDeathPrecedenceRenderTest {
 
         byte[] normalBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(
-                        snapshot(
-                                new RoomEntity(0, 0, 0x02, 24, 32, EntityStatus.ACTIVE, normal, 0, 0, 0, 0, -1, false)),
+                        snapshot(new RoomEntityBuilder()
+                                .slot(0)
+                                .sourceLoadOrder(0)
+                                .type(0x02)
+                                .at(24, 32)
+                                .status(EntityStatus.ACTIVE)
+                                .spriteDefinition(normal)
+                                .spriteVariant(0)
+                                .entityFlipAttribute(0)
+                                .spriteTileOffset(0)
+                                .z(0)
+                                .deathSpriteVariant(-1)
+                                .powerRecoilDeath(false)
+                                .build()),
                         palettes,
                         new ScrollController())
                 .render(new RenderContext(normalBuffer, gpu));
@@ -106,8 +145,20 @@ final class EntityDeathPrecedenceRenderTest {
 
         byte[] warningBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(
-                        snapshot(new RoomEntity(
-                                0, 0, 0x02, 24, 32, EntityStatus.ACTIVE, warning, 0, 0, 0, 0, -1, false)),
+                        snapshot(new RoomEntityBuilder()
+                                .slot(0)
+                                .sourceLoadOrder(0)
+                                .type(0x02)
+                                .at(24, 32)
+                                .status(EntityStatus.ACTIVE)
+                                .spriteDefinition(warning)
+                                .spriteVariant(0)
+                                .entityFlipAttribute(0)
+                                .spriteTileOffset(0)
+                                .z(0)
+                                .deathSpriteVariant(-1)
+                                .powerRecoilDeath(false)
+                                .build()),
                         palettes,
                         new ScrollController())
                 .render(new RenderContext(warningBuffer, gpu));
@@ -116,8 +167,20 @@ final class EntityDeathPrecedenceRenderTest {
 
         byte[] explosionBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(
-                        snapshot(new RoomEntity(
-                                0, 0, 0x02, 24, 32, EntityStatus.ACTIVE, explosion, 0, 0, 0, 0, -1, false)),
+                        snapshot(new RoomEntityBuilder()
+                                .slot(0)
+                                .sourceLoadOrder(0)
+                                .type(0x02)
+                                .at(24, 32)
+                                .status(EntityStatus.ACTIVE)
+                                .spriteDefinition(explosion)
+                                .spriteVariant(0)
+                                .entityFlipAttribute(0)
+                                .spriteTileOffset(0)
+                                .z(0)
+                                .deathSpriteVariant(-1)
+                                .powerRecoilDeath(false)
+                                .build()),
                         palettes,
                         new ScrollController())
                 .render(new RenderContext(explosionBuffer, gpu));

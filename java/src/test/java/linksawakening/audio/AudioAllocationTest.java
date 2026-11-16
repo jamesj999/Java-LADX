@@ -14,8 +14,15 @@ import linksawakening.audio.sfx.SoundEffectPlayback;
 import linksawakening.rom.Rom;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 final class AudioAllocationTest {
+    private final TestReporter reporter;
+
+    AudioAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void steadyStateAllocation() {
         byte[] rom = syntheticRom();
@@ -27,7 +34,7 @@ final class AudioAllocationTest {
             driver.tick60Hz();
             apu.renderInto(samples, 0, 800);
         });
-        System.out.println("Audio allocation bytes/tick=" + bytes);
+        reporter.publishEntry("Audio allocation bytes/tick=" + bytes);
         assertTrue(bytes < 16, "Audio allocated " + bytes + " bytes/tick");
     }
 
@@ -39,7 +46,7 @@ final class AudioAllocationTest {
         var mixer = new FrameAudioMixer(driver, apu, SoundEffectPlayback.none());
         double bytes = AllocationProbe.bytesPerIteration(5000, 1000, mixer::renderBufferPcm);
         assertTrue(driver.isPlaying(), "measurement must keep sequencing active");
-        System.out.println("Frame mixer allocation bytes/buffer=" + bytes);
+        reporter.publishEntry("Frame mixer allocation bytes/buffer=" + bytes);
         assertTrue(bytes < 16, "Frame mixer allocated " + bytes + " bytes/buffer");
     }
 
@@ -52,7 +59,7 @@ final class AudioAllocationTest {
             player.play(new MusicTrack(1, "frame allocation", 0x1b, 0x4077, 0x5000, 0x1b * 0x4000 + 0x1000));
             double bytes = AllocationProbe.bytesPerIteration(5000, 1000, player::update);
             assertTrue(player.isMusicPlaying());
-            System.out.println("Frame audio allocation bytes/frame=" + bytes);
+            reporter.publishEntry("Frame audio allocation bytes/frame=" + bytes);
             assertTrue(bytes < 16, "Frame audio allocated " + bytes + " bytes/frame");
         }
     }

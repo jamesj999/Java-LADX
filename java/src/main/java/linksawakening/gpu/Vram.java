@@ -94,7 +94,7 @@ final class Vram {
             throw new IllegalArgumentException("Tile destination exceeds VRAM bounds");
         }
 
-        // The legacy selector's bank-zero row uses a flat ROM offset,
+        // The selector's bank-zero row uses a flat ROM offset,
         // including addresses outside ROM0's CPU window. Preserve that API.
         // Retain the original CPU-window validation for switchable banks.
         if (!(bank == 0 && address >= 0x4000)

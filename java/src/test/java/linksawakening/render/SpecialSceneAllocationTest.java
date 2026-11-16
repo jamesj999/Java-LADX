@@ -7,9 +7,16 @@ import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSprite;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** ROM-free guards for presentation outside the ordinary overworld frame. */
 final class SpecialSceneAllocationTest {
+    private final TestReporter reporter;
+
+    SpecialSceneAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     static GameFrameState intro() {
         int[] tiles = new int[1024], attrs = new int[1024], x = new int[144], y = new int[144];
         for (int i = 0; i < x.length; i++) {
@@ -70,7 +77,7 @@ final class SpecialSceneAllocationTest {
             state.copyFrom(input);
             builder.build(state).drawTo(fixture.output, fixture.gpu);
         });
-        System.out.println(input.screen() + " special build+draw bytes/frame=" + bytes);
+        reporter.publishEntry(input.screen() + " special build+draw bytes/frame=" + bytes);
         // Measured zero with EA off; use the 16-byte probe floor for zero baselines.
         assertTrue(bytes < 16, "Special build+draw bytes/frame=" + bytes);
     }

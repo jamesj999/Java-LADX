@@ -12,7 +12,7 @@ package linksawakening.equipment;
  * <p>All methods have no-op defaults so implementations only override what
  * they need.
  */
-// Integer facing arguments preserve legacy unknown-value fallbacks at the equipment/render boundary.
+// Integer facing arguments preserve unknown-value fallbacks at the equipment/render boundary.
 public interface EquipmentItem {
 
     CollisionBox NO_COLLISION = new Bounds(false, 0, 0, 0, 0);

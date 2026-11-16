@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.ui.FileMenuFrameSnapshot;
+import linksawakening.render.GameFrameState;
 import org.junit.jupiter.api.Test;
 
 class GameplayKeyQueueTest {
@@ -62,8 +62,8 @@ class GameplayKeyQueueTest {
         }
 
         @Override
-        public FileMenuFrameSnapshot gameOver() {
-            return null;
+        public GameFrameState renderState(GameFrameState state) {
+            return state;
         }
     }
 }

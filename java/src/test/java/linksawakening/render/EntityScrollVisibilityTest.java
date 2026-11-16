@@ -9,6 +9,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gpu.GPU;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
@@ -121,7 +122,20 @@ final class EntityScrollVisibilityTest {
     }
 
     private static RoomEntity entity(int type, int x, int y, int z, EntitySpriteDefinition definition) {
-        return new RoomEntity(0, 0, type, x, y, EntityStatus.ACTIVE, definition, 0, 0, 0, z, -1, false);
+        return new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(x, y)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(definition)
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(z)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
     }
 
     private static byte[] draw(RoomEntity entity, ScrollController scroll) {

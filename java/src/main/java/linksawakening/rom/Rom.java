@@ -13,7 +13,7 @@ public final class Rom {
 
     /**
      * Wraps caller-owned bytes without bank-alignment validation, for partial buffers and
-     * legacy loaders. Null validation and all read bounds checks still apply; no copy is made.
+     * unaligned loaders. Null validation and all read bounds checks still apply; no copy is made.
      * Prefer {@link #of(byte[])} for complete ROMs.
      */
     public static Rom unchecked(byte[] data) {
@@ -94,6 +94,11 @@ public final class Rom {
 
     public RomCursor cursor(RomAddress address) {
         return new RomCursor(view(address, size() - checkedOffset(address, 0)));
+    }
+
+    /** Borrowed backing storage for package-level ownership checks; callers must not mutate it. */
+    byte[] backingStorage() {
+        return data;
     }
 
     int unsignedByteAt(int offset) {

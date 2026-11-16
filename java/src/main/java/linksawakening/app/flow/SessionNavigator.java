@@ -48,7 +48,7 @@ public final class SessionNavigator implements ScreenNavigator, RoomLoadListener
 
     @Override
     public void show(ScreenKind kind) {
-        state.currentScreen = screen(kind);
+        state.selectScreen(screen(kind));
     }
 
     @Override

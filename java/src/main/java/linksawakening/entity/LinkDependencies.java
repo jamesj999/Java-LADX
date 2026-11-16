@@ -36,7 +36,7 @@ public record LinkDependencies(
         Objects.requireNonNull(tunicPalette, "tunicPalette");
     }
 
-    /** Adapts legacy nullable constructor arguments at the construction boundary only. */
+    /** Adapts nullable constructor arguments at the construction boundary only. */
     static LinkDependencies legacy(
             InputState input,
             InputConfig config,

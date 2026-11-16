@@ -42,6 +42,11 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         music.tick60Hz();
     }
 
+    /** Observes the mixed music/SFX register writes without changing audio routing. */
+    public void setRegisterObserver(linksawakening.audio.apu.RegisterObserver observer) {
+        apu.setPrimitiveRegisterObserver(observer);
+    }
+
     public void playSoundEffect(SoundEffect effect) {
         effects.play(effect);
     }

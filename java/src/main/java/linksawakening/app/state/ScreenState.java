@@ -9,4 +9,12 @@ public final class ScreenState {
     public final FileSaveState fileSave = new FileSaveState();
 
     public int currentSaveSlot = -1;
+
+    public void selectScreen(Screen screen) {
+        currentScreen = screen;
+    }
+
+    public void selectSaveSlot(int slot) {
+        currentSaveSlot = slot;
+    }
 }
