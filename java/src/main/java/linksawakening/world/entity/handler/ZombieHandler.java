@@ -5,6 +5,8 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityPresentationFlags;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
@@ -17,14 +19,14 @@ final class ZombieHandler {
     static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_ZOMBIE, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
-                ENTITY_ZOMBIE, EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION, 0, ZombieHandler::phase2Zombie);
+                ENTITY_ZOMBIE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                0,
+                frame -> phase2Zombie(frame.slotFrame(), frame.presentation()));
         registry.registerTick(ENTITY_ZOMBIE, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 11, ZombieHandler::phase4Zombie);
     }
 
-    private static boolean phase2Zombie(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-        var presentationFlags = state.presentation();
-
+    private static boolean phase2Zombie(EntitySlotExecution slotState, EntityPresentationFlags presentationFlags) {
         if (slotState.wasInitializing()) {
             // The room-loaded Zombie is only a hidden spawn marker; its
             // bank-$18 handler never renders the parent entity.

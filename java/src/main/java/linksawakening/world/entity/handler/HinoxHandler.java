@@ -38,13 +38,13 @@ final class HinoxHandler {
         // Owning frame execution is stable for this cached scratch holder.
         private final linksawakening.world.entity.EntityFrameExecution state;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        private linksawakening.world.entity.EntitySlotExecution slotState;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        private linksawakening.world.entity.EntityFrameInputLatch frameInput;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+        private linksawakening.world.entity.EntityTimerGates timerGates;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
+        private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         HinoxHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
             this.state = java.util.Objects.requireNonNull(state, "state");

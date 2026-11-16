@@ -4,6 +4,8 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_CROW;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotExecution;
+import linksawakening.world.entity.EntitySlotView;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
@@ -13,15 +15,17 @@ import linksawakening.world.entity.motion.CrowMotion;
 final class CrowHandler {
     static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_CROW, (entity, random) -> initialize(registry, entity));
-        registry.registerTick(ENTITY_CROW, EntityTickStage.PHASE_1_LEAF_PRODUCER, 0, CrowHandler::phase1Crow);
+        registry.registerTick(
+                ENTITY_CROW,
+                EntityTickStage.PHASE_1_LEAF_PRODUCER,
+                0,
+                frame -> phase1Crow(frame.slotFrame(), frame.slot()));
         registry.registerTick(ENTITY_CROW, EntityTickStage.PHASE_3_AFTER_LASER, 4, CrowHandler::phase3Crow);
     }
 
-    private static boolean phase1Crow(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
-        if (state.slot().ignoreHits(slotState.entity().slot()) >= 0x10) {
-            state.slot().shiftIgnoreHitsRight(slotState.entity().slot(), 2);
+    private static boolean phase1Crow(EntitySlotExecution slotState, EntitySlotView slot) {
+        if (slot.ignoreHits(slotState.entity().slot()) >= 0x10) {
+            slot.shiftIgnoreHitsRight(slotState.entity().slot(), 2);
         }
         return true;
     }

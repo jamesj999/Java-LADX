@@ -5,6 +5,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.motion.WizrobeMotion;
@@ -13,15 +14,16 @@ import linksawakening.world.entity.motion.WizrobeMotion;
 final class WizrobeHandler {
     static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
-                ENTITY_WIZROBE, EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION, 7, WizrobeHandler::phase2Wizrobe);
+                ENTITY_WIZROBE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                7,
+                frame -> phase2Wizrobe(frame.slotFrame()));
         registry.registerTick(
                 ENTITY_WIZROBE, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 6, WizrobeHandler::phase2Wizrobe2);
         registry.registerTick(ENTITY_WIZROBE, EntityTickStage.PHASE_3_AFTER_LASER, 14, WizrobeHandler::phase3Wizrobe);
     }
 
-    private static boolean phase2Wizrobe(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
+    private static boolean phase2Wizrobe(EntitySlotExecution slotState) {
         if (slotState.wasInitializing()) {
             // EntityInitWizrobe decrements the initial display-list variant
             // before the first active handler dispatch.

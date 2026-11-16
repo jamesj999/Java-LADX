@@ -4,8 +4,11 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_ARROW
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_KING;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
 
+import linksawakening.world.entity.EntityBossRewards;
 import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityFrameInputLatch;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -21,17 +24,18 @@ import linksawakening.world.entity.motion.RoamingEnemyMotion;
 final class MoblinKingHandler {
     static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
-                ENTITY_MOBLIN_KING, EntityTickStage.PHASE_2_DYING, 0, MoblinKingHandler::phase2MoblinKing);
+                ENTITY_MOBLIN_KING,
+                EntityTickStage.PHASE_2_DYING,
+                0,
+                frame -> phase2MoblinKing(frame.slotFrame(), frame.inputs(), frame.bossRewards()));
         registry.registerTick(
                 ENTITY_MOBLIN_KING, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 5, MoblinKingHandler::phase4MoblinKing);
     }
 
-    private static boolean phase2MoblinKing(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-        var frameInput = state.inputs();
-
-        state.bossRewards()
-                .advanceMoblinKingDestruction(slotState.entity(), frameInput.frame(), frameInput.randomByteSupplier());
+    private static boolean phase2MoblinKing(
+            EntitySlotExecution slotState, EntityFrameInputLatch frameInput, EntityBossRewards bossRewards) {
+        bossRewards.advanceMoblinKingDestruction(
+                slotState.entity(), frameInput.frame(), frameInput.randomByteSupplier());
         return false;
     }
 
@@ -44,13 +48,13 @@ final class MoblinKingHandler {
         // Owning frame execution is stable for this cached scratch holder.
         private final linksawakening.world.entity.EntityFrameExecution state;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        private linksawakening.world.entity.EntitySlotExecution slotState;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        private linksawakening.world.entity.EntityFrameInputLatch frameInput;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+        private linksawakening.world.entity.EntityTimerGates timerGates;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityPresentationFlags presentationFlags;
+        private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         MoblinKingHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
             this.state = java.util.Objects.requireNonNull(state, "state");

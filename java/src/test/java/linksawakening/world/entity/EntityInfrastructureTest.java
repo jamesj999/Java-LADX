@@ -17,6 +17,51 @@ import org.junit.jupiter.api.Test;
 
 class EntityInfrastructureTest {
     @Test
+    void acquisitionReusesGroupsAndReentrantExecutionOwnsSeparateScratch() {
+        var runtime = EntityRuntimeFixture.emptyRuntime();
+        var execution = runtime.execution();
+        var context = EntityTestFrames.frame(runtime, 0);
+        var acquired = execution.acquire(context);
+        var slot = acquired.slotFrame();
+        var inputs = acquired.inputs();
+        var timers = acquired.gates();
+        var presentation = acquired.presentation();
+        slot.index(9);
+        inputs.frameCounter(44);
+        timers.freezeGenieTimers(true);
+        presentation.preserveGhiniPresentation(true);
+
+        var nested = execution.acquire(context);
+        assertNotSame(acquired, nested);
+        assertNotSame(slot, nested.slotFrame());
+        assertNotSame(inputs, nested.inputs());
+        assertNotSame(timers, nested.gates());
+        assertNotSame(presentation, nested.presentation());
+        assertEquals(0, nested.slotFrame().index());
+        assertEquals(0, nested.inputs().frameCounter());
+        assertFalse(nested.gates().freezeGenieTimers());
+        assertFalse(nested.presentation().preserveGhiniPresentation());
+        assertEquals(9, slot.index());
+        assertEquals(44, inputs.frameCounter());
+        assertTrue(timers.freezeGenieTimers());
+        assertTrue(presentation.preserveGhiniPresentation());
+        nested.release();
+        acquired.release();
+
+        var reused = execution.acquire(context);
+        assertSame(acquired, reused);
+        assertSame(slot, reused.slotFrame());
+        assertSame(inputs, reused.inputs());
+        assertSame(timers, reused.gates());
+        assertSame(presentation, reused.presentation());
+        assertEquals(0, slot.index());
+        assertEquals(0, inputs.frameCounter());
+        assertFalse(timers.freezeGenieTimers());
+        assertFalse(presentation.preserveGhiniPresentation());
+        reused.release();
+    }
+
+    @Test
     void dispatchSiteKeepsRepeatedVisitsAndStopsAtTheFirstEarlyReturn() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().execution();

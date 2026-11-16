@@ -3,8 +3,11 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
 
+import linksawakening.world.entity.EntityBossRewards;
 import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityFrameInputLatch;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
@@ -15,7 +18,10 @@ import linksawakening.world.entity.motion.RollingBonesMotion;
 final class RollingBonesHandler {
     static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
-                ENTITY_ROLLING_BONES, EntityTickStage.PHASE_2_DYING, 2, RollingBonesHandler::phase2RollingBones);
+                ENTITY_ROLLING_BONES,
+                EntityTickStage.PHASE_2_DYING,
+                2,
+                frame -> phase2RollingBones(frame.slotFrame(), frame.inputs(), frame.bossRewards()));
         registry.registerTick(
                 ENTITY_ROLLING_BONES,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
@@ -23,11 +29,9 @@ final class RollingBonesHandler {
                 RollingBonesHandler::phase4RollingBones);
     }
 
-    private static boolean phase2RollingBones(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-        var frameInput = state.inputs();
-
-        state.bossRewards().advanceRollingBonesDestruction(slotState.entity(), frameInput.randomByteSupplier());
+    private static boolean phase2RollingBones(
+            EntitySlotExecution slotState, EntityFrameInputLatch frameInput, EntityBossRewards bossRewards) {
+        bossRewards.advanceRollingBonesDestruction(slotState.entity(), frameInput.randomByteSupplier());
         return false;
     }
 

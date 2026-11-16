@@ -4,6 +4,8 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_DOG;
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotExecution;
+import linksawakening.world.entity.EntitySlotView;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
@@ -16,16 +18,18 @@ import linksawakening.world.entity.motion.DogMotion.DogFrame;
 final class DogHandler {
     static void install(EntityHandlerRegistry registry) {
         registry.registerInitializer(ENTITY_DOG, (entity, random) -> initialize(registry, entity));
-        registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 2, DogHandler::phase1Dog);
+        registry.registerTick(
+                ENTITY_DOG,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                2,
+                frame -> phase1Dog(frame.slotFrame(), frame.slot()));
         registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 14, DogHandler::phase4Dog);
     }
 
-    private static boolean phase1Dog(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
+    private static boolean phase1Dog(EntitySlotExecution slotState, EntitySlotView slot) {
         if (slotState.status() == EntityStatus.ACTIVE) {
             // DogEntityHandler writes this before ReturnIfNonInteractive_19.
-            state.slot().setHealth(slotState.entity().slot(), DogMotion.HANDLER_HEALTH);
+            slot.setHealth(slotState.entity().slot(), DogMotion.HANDLER_HEALTH);
         }
         return true;
     }

@@ -2,8 +2,10 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIFTABLE_ROCK;
 
-import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityFrameInputLatch;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityLiftThrowController;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 
@@ -14,17 +16,14 @@ final class LiftableRockHandler {
                 ENTITY_LIFTABLE_ROCK,
                 EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
                 13,
-                LiftableRockHandler::phase1LiftableRock);
+                frame -> phase1LiftableRock(frame.slotFrame(), frame.inputs(), frame.liftThrow()));
     }
 
-    private static boolean phase1LiftableRock(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-        var frameInput = state.inputs();
-
+    private static boolean phase1LiftableRock(
+            EntitySlotExecution slotState, EntityFrameInputLatch frameInput, EntityLiftThrowController liftThrow) {
         if (slotState.status() == EntityStatus.ACTIVE
-                && state.liftThrow().liftableRockSmashActive(slotState.entity().slot())) {
-
-            state.liftThrow().advanceLiftableRockSmash(slotState.index(), slotState.entity(), frameInput.frame());
+                && liftThrow.liftableRockSmashActive(slotState.entity().slot())) {
+            liftThrow.advanceLiftableRockSmash(slotState.index(), slotState.entity(), frameInput.frame());
             return false;
         }
         return true;

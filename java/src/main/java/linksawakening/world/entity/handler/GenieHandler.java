@@ -3,10 +3,13 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_GENIE;
 
 import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityFrameInputLatch;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityLinkCollisionRules;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.GenieEntityController;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.motion.BossIntroMotion;
@@ -15,37 +18,42 @@ import linksawakening.world.entity.motion.GenieMotion;
 /** ROM handler stages for Genie. */
 final class GenieHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, 0, GenieHandler::phase1Genie);
-        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, 1, GenieHandler::phase1Genie2);
-        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_2_DYING, 1, GenieHandler::phase2Genie);
+        registry.registerTick(
+                ENTITY_GENIE,
+                EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS,
+                0,
+                frame -> phase1Genie(frame.slotFrame(), frame.genie()));
+        registry.registerTick(
+                ENTITY_GENIE,
+                EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS,
+                1,
+                frame -> phase1Genie2(frame.slotFrame(), frame.genie()));
+        registry.registerTick(
+                ENTITY_GENIE,
+                EntityTickStage.PHASE_2_DYING,
+                1,
+                frame -> phase2Genie(frame.slotFrame(), frame.inputs(), frame.genie()));
         registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 0, GenieHandler::phase4Genie);
     }
 
-    private static boolean phase1Genie(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
-        if (state.genie().geniePrivateCountdown1(slotState.entity().slot()) > 0) {
-            state.genie().decrementGeniePrivateCountdown1(slotState.entity().slot());
+    private static boolean phase1Genie(EntitySlotExecution slotState, GenieEntityController genie) {
+        if (genie.geniePrivateCountdown1(slotState.entity().slot()) > 0) {
+            genie.decrementGeniePrivateCountdown1(slotState.entity().slot());
         }
         return true;
     }
 
-    private static boolean phase1Genie2(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-
-        if (state.genie().geniePrivateCountdown2(slotState.entity().slot()) > 0) {
-            state.genie().decrementGeniePrivateCountdown2(slotState.entity().slot());
+    private static boolean phase1Genie2(EntitySlotExecution slotState, GenieEntityController genie) {
+        if (genie.geniePrivateCountdown2(slotState.entity().slot()) > 0) {
+            genie.decrementGeniePrivateCountdown2(slotState.entity().slot());
         }
         return true;
     }
 
-    private static boolean phase2Genie(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-        var frameInput = state.inputs();
-
-        if (state.genie().geniePrivateState1(slotState.entity().slot()) == 1) {
-            state.genie()
-                    .advanceGenieDestruction(slotState.entity(), frameInput.frame(), frameInput.randomByteSupplier());
+    private static boolean phase2Genie(
+            EntitySlotExecution slotState, EntityFrameInputLatch frameInput, GenieEntityController genie) {
+        if (genie.geniePrivateState1(slotState.entity().slot()) == 1) {
+            genie.advanceGenieDestruction(slotState.entity(), frameInput.frame(), frameInput.randomByteSupplier());
             return false;
         }
         return true;
@@ -60,11 +68,11 @@ final class GenieHandler {
         // Owning frame execution is stable for this cached scratch holder.
         private final linksawakening.world.entity.EntityFrameExecution state;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntitySlotExecution slotState;
+        private linksawakening.world.entity.EntitySlotExecution slotState;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityFrameInputs frameInput;
+        private linksawakening.world.entity.EntityFrameInputLatch frameInput;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution.EntityTimerGates timerGates;
+        private linksawakening.world.entity.EntityTimerGates timerGates;
 
         GenieHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
             this.state = java.util.Objects.requireNonNull(state, "state");
@@ -84,7 +92,6 @@ final class GenieHandler {
         private boolean completedResult;
 
         private boolean advanceIntroAndJar() {
-
             slotState = state.slotFrame();
             frameInput = state.inputs();
             timerGates = state.gates();
@@ -120,7 +127,6 @@ final class GenieHandler {
                             || state.roomInspection().genieState0Interactive(frameInput.creditsGameplay()))) {
                 state.genie().advanceGenieJar(slotState.entity(), frameInput.linkEntityY());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-
                     completedResult = false;
                     return false;
                 }
@@ -130,7 +136,6 @@ final class GenieHandler {
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 state.genie().advanceGenieAppearance(slotState.entity());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-
                     completedResult = false;
                     return false;
                 }
@@ -140,12 +145,10 @@ final class GenieHandler {
         }
 
         private boolean advanceBodyOrFireball() {
-
             if (state.genie().geniePrivateState1(slotState.entity().slot()) == 3
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 state.genie().advanceGenieSideProjectile(slotState.entity(), frameInput.frameCounter());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-
                     completedResult = false;
                     return false;
                 }
@@ -160,7 +163,6 @@ final class GenieHandler {
                 }
                 state.genie().advanceGenieFireball(slotState.entity(), frameInput.frameCounter());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-
                     completedResult = false;
                     return false;
                 }
@@ -188,7 +190,6 @@ final class GenieHandler {
                                 frameInput.linkEntityY(),
                                 frameInput.randomByteSupplier());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
-
                     completedResult = false;
                     return false;
                 }
