@@ -25,7 +25,6 @@ class EntityRuntimeShapeTest {
             "applyMarinWakeUpPresentation(int,int,int)",
             "beginLift(int,int)",
             "builder(RoomEntitySnapshot)",
-            "clearEntity(int)",
             "consumeBombExplosionEvents()",
             "consumeHeartPieceUpdates()",
             "consumePendingChestRewardEvents()",

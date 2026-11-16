@@ -19,7 +19,7 @@ class RoomLiveBoundaryTest {
         var live = runtime.inspection().view();
         var render = new RoomRenderSnapshot(new int[] {1}, new int[] {0}, new int[][] {{0, 0, 0, 0}}, live);
         assertEquals(1, render.entities().loadedEntities().size());
-        runtime.clearEntity(0);
+        runtime.lifecycle().clearEntity(0);
         assertTrue(live.loadedEntities().isEmpty());
         assertEquals(1, render.entities().loadedEntities().size());
         assertSame(render.entities(), render.entities().ownedCopy());

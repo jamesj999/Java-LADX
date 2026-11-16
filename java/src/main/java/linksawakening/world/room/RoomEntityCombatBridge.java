@@ -30,7 +30,7 @@ final class RoomEntityCombatBridge {
 
     int clearEntity(RoomRuntime loaded, int slot) {
 
-        int mask = loaded.entities.clearEntity(slot);
+        int mask = loaded.entities.lifecycle().clearEntity(slot);
         if (mask != 0) {
             dependencies.entityFrame().recentRoomEntityClears.addMask(loaded.room.roomId(), mask);
         }

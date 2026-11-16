@@ -183,10 +183,6 @@ public final class RoomEntityRuntime {
         return new RoomEntityRuntimeBuilder(initial);
     }
 
-    public int clearEntity(int slot) {
-        return lifecycle().clearEntity(slot);
-    }
-
     public void setHeartPiecesCount(int count) {
         configuration().setHeartPiecesCount(count);
     }
