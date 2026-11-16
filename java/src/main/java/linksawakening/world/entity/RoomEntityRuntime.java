@@ -138,16 +138,8 @@ public final class RoomEntityRuntime {
         return enemies().gelClingingToLink();
     }
 
-    public void setFreeMovementMode(boolean enabled) {
-        configuration().setFreeMovementMode(enabled);
-    }
-
     public static RoomEntityRuntimeBuilder builder(RoomEntitySnapshot initial) {
         return new RoomEntityRuntimeBuilder(initial);
-    }
-
-    public void setHeartPiecesCount(int count) {
-        configuration().setHeartPiecesCount(count);
     }
 
     public void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {

@@ -26,12 +26,12 @@ final class RoomEntityInputs {
 
     void updateHeartPiecesCount(int count) {
         RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) loaded.entities.setHeartPiecesCount(count);
+        if (loaded != null) loaded.entities.configuration().setHeartPiecesCount(count);
     }
 
     void updateFreeMovementMode(boolean enabled) {
         RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) loaded.entities.setFreeMovementMode(enabled);
+        if (loaded != null) loaded.entities.configuration().setFreeMovementMode(enabled);
     }
 
     void updateEntityActionButtonsHeld(boolean held) {
