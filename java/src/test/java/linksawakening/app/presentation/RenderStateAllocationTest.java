@@ -9,10 +9,17 @@ import linksawakening.render.GameFrameSceneBuilder;
 import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Covers frame-state assembly and scene construction, excluding GPU composition. */
 @RequiresRom
 class RenderStateAllocationTest {
+    private final TestReporter reporter;
+
+    RenderStateAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     private static volatile FrameScene observed;
     private static volatile Object snapshot;
 
@@ -29,7 +36,7 @@ class RenderStateAllocationTest {
                 session.frameClock().advance();
                 observed = builder.build(assembler.currentGameFrameState());
             });
-            System.out.println("Reusable assembly / assembly+scene bytes: " + assembly + " / " + scene);
+            reporter.publishEntry("Reusable assembly / assembly+scene bytes: " + assembly + " / " + scene);
             assertEquals(0.0, assembly);
             assertEquals(0.0, scene);
             assertTrue(observed.layerCount() > 0);
@@ -45,7 +52,7 @@ class RenderStateAllocationTest {
                 session.frameClock().advance();
                 observed = builder.build(assembler.currentGameFrameState());
             });
-            System.out.println("Assembly + scene bytes/frame: " + bytes);
+            reporter.publishEntry("Assembly + scene bytes/frame: " + bytes);
             assertTrue(observed.layerCount() > 0);
             double roomBytes = AllocationProbe.bytesPerIteration(
                     600,
@@ -56,8 +63,8 @@ class RenderStateAllocationTest {
                     AllocationProbe.bytesPerIteration(600, 120, () -> snapshot = assembler.currentGameFrameState());
             var frame = assembler.currentGameFrameState();
             double sceneBytes = AllocationProbe.bytesPerIteration(600, 120, () -> observed = builder.build(frame));
-            System.out.println("Room snapshot / assembled state / scene-only bytes: " + roomBytes + " / " + stateBytes
-                    + " / " + sceneBytes);
+            reporter.publishEntry("Room snapshot / assembled state / scene-only bytes: " + roomBytes + " / "
+                    + stateBytes + " / " + sceneBytes);
             assertTrue(stateBytes - roomBytes <= 100, "App frame-state overhead: " + (stateBytes - roomBytes));
             // EA-off baseline 17,840; achieved 16,960. Includes world snapshot defensive copies.
             assertTrue(bytes <= 21_200, "Assembly + scene bytes/frame: " + bytes);

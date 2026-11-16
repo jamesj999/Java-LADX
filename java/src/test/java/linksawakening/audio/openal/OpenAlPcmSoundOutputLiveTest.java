@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.app.GameSession;
 import linksawakening.gameplay.PcmSoundOutput;
+import org.junit.jupiter.api.TestReporter;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -13,6 +14,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 @linksawakening.testing.RequiresRom
 @EnabledIfEnvironmentVariable(named = "LA_LIVE_AUDIO", matches = "1")
 class OpenAlPcmSoundOutputLiveTest {
+    private final TestReporter reporter;
+
+    OpenAlPcmSoundOutputLiveTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void headlessSessionSurvivesDesktopPacingStallsBurstsAndInterrupts(boolean intro) throws Exception {
@@ -57,7 +64,8 @@ class OpenAlPcmSoundOutputLiveTest {
                 }
                 session.headlessFrame();
                 if (frame % 60 == 0 || !output.isAvailable()) {
-                    System.out.printf("LIVE intro=%s frame=%d %s%n", intro, frame, output.diagnostics());
+                    reporter.publishEntry(
+                            String.format("LIVE intro=%s frame=%d %s%n", intro, frame, output.diagnostics()));
                 }
                 assertTrue(output.isAvailable(), output.diagnostics());
                 if (frame == 140 || frame == 340)
@@ -72,10 +80,10 @@ class OpenAlPcmSoundOutputLiveTest {
                     }
                 } else nextFrame = System.nanoTime();
             }
-            System.out.println("LIVE final " + output.diagnostics());
-            System.out.printf(
+            reporter.publishEntry("LIVE final " + output.diagnostics());
+            reporter.publishEntry(String.format(
                     "LIVE max PCM call %.3f ms, max pressure resync %.3f ms%n",
-                    peakCallNanos[0] / 1_000_000.0, peakCallNanos[1] / 1_000_000.0);
+                    peakCallNanos[0] / 1_000_000.0, peakCallNanos[1] / 1_000_000.0));
         } finally {
             Thread.interrupted(); // Do not leak the deliberate interrupt to JUnit.
         }

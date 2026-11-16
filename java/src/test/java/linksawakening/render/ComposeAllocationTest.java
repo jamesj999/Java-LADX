@@ -8,9 +8,16 @@ import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Measures steady-state indexed scene submission and composition without ROM data. */
 final class ComposeAllocationTest {
+    private final TestReporter reporter;
+
+    ComposeAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void composeAllocationBudget() {
         GPU gpu = new GPU();
@@ -29,7 +36,7 @@ final class ComposeAllocationTest {
         TestDrawObservers.CURRENT.remove();
         try {
             long bytes = (long) AllocationProbe.bytesPerIteration(1000, 200, () -> scene.drawTo(output, gpu));
-            System.out.println("Compose allocation: " + bytes + " bytes/frame");
+            reporter.publishEntry("Compose allocation: " + bytes + " bytes/frame");
             assertTrue(bytes < 4096, "Expected <4096 bytes/frame, measured " + bytes);
         } finally {
             if (observer != null) TestDrawObservers.CURRENT.set(observer);

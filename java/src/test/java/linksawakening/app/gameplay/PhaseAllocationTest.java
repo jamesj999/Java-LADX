@@ -6,10 +6,17 @@ import linksawakening.app.AllocationSessions;
 import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Measures retained phases separately; entity world ticks are measured by SessionAllocationTest. */
 @RequiresRom
 class PhaseAllocationTest {
+    private final TestReporter reporter;
+
+    PhaseAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     private static volatile Object observed;
 
     @Test
@@ -36,9 +43,9 @@ class PhaseAllocationTest {
         }
     }
 
-    private static void report(String name, Runnable action) {
+    private void report(String name, Runnable action) {
         double bytes = AllocationProbe.bytesPerIteration(600, 120, action);
-        System.out.println(name + " bytes/step: " + bytes);
+        reporter.publishEntry(name + " bytes/step: " + bytes);
         assertTrue(bytes >= 0);
     }
 }

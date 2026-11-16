@@ -5,8 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 class DialogTextAllocationTest {
+    private final TestReporter reporter;
+
+    DialogTextAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     private static volatile String retained;
 
     @Test
@@ -34,7 +41,7 @@ class DialogTextAllocationTest {
         double bytes = AllocationProbe.bytesPerIteration(4000, 1000, () -> retained = dialog.visibleText());
         assertEquals(expected, retained);
         assertTrue(expected.length() >= 16);
-        System.out.println("Static dialog text bytes/read=" + bytes);
+        reporter.publishEntry("Static dialog text bytes/read=" + bytes);
         assertTrue(bytes <= 0, "bytes/read=" + bytes);
     }
 }

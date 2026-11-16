@@ -12,10 +12,17 @@ import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Full simulation, render assembly, scene building and composition into a retained capture buffer. */
 @RequiresRom
 class WholeFrameAllocationTest {
+    private final TestReporter reporter;
+
+    WholeFrameAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void idleOpeningDialog() throws Exception {
         try (var session = newGame()) {
@@ -91,7 +98,7 @@ class WholeFrameAllocationTest {
             input.run();
             assertSame(output, session.headlessFrame(output));
         });
-        System.out.println(label + " whole-frame bytes: " + bytes);
+        reporter.publishEntry(label + " whole-frame bytes: " + bytes);
         // EA-off achieved 0 idle/inventory and 139.6 walking; +25% headroom.
         int budget =
                 switch (label) {

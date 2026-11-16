@@ -8,10 +8,17 @@ import linksawakening.equipment.Sword;
 import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Isolates the immutable entity frame inputs from the world entity tick. */
 @RequiresRom
 class EntityAllocationTest {
+    private final TestReporter reporter;
+
+    EntityAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     private static volatile Object observed;
 
     @Test
@@ -24,7 +31,7 @@ class EntityAllocationTest {
                 session.frameClock().advance();
                 observed = inputs.create(c, sword);
             });
-            System.out.println("Entity inputs bytes/frame: " + bytes);
+            reporter.publishEntry("Entity inputs bytes/frame: " + bytes);
             assertTrue(bytes <= 50, "Entity frame input bytes: " + bytes);
         }
     }
@@ -39,7 +46,7 @@ class EntityAllocationTest {
                 session.frameClock().advance();
                 observed = inputs.borrow(c, sword);
             });
-            System.out.println("Borrowed entity inputs bytes/frame: " + bytes);
+            reporter.publishEntry("Borrowed entity inputs bytes/frame: " + bytes);
             assertTrue(bytes == 0, "Borrowed entity frame input bytes: " + bytes);
         }
     }
@@ -52,7 +59,7 @@ class EntityAllocationTest {
                     c.roomSession(), c.link(), session.gameplaySounds(), c.transientVfxSystem(), c.musicDirector());
             var events = List.<linksawakening.world.entity.event.EntityProjectileEvent>of();
             double bytes = AllocationProbe.bytesPerIteration(600, 120, () -> phase.applyResults(c, events));
-            System.out.println("Entity results without world tick bytes/frame: " + bytes);
+            reporter.publishEntry("Entity results without world tick bytes/frame: " + bytes);
             assertTrue(bytes <= 350, "Entity result application bytes: " + bytes);
         }
     }

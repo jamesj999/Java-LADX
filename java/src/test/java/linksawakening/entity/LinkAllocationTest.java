@@ -18,8 +18,15 @@ import linksawakening.state.PlayerState;
 import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.TestLinks;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 class LinkAllocationTest {
+    private final TestReporter reporter;
+
+    LinkAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @Test
     void walkingAndRepeatedSwordSwingsStayWithinAllocationBudget() {
         byte[] bytes = new byte[0x100000];
@@ -62,7 +69,7 @@ class LinkAllocationTest {
         });
         assertTrue(observed[0]);
         assertTrue(observed[1]);
-        System.out.println("Link walking/sword bytes/frame=" + bytesPerFrame);
+        reporter.publishEntry("Link walking/sword bytes/frame=" + bytesPerFrame);
         assertTrue(bytesPerFrame <= 8, "bytes/frame=" + bytesPerFrame);
     }
 }

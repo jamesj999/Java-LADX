@@ -7,10 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 final class SceneConstructionAllocationTest {
+    private final TestReporter reporter;
+
+    SceneConstructionAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     @ParameterizedTest
     @CsvSource({"false,false", "true,false", "false,true", "true,true"})
     void representativeBuildAndDrawAllocation(boolean highEntityTypes, boolean borrowedPlanes) {
@@ -30,7 +37,7 @@ final class SceneConstructionAllocationTest {
             state.link().position().setPixelPosition(40 + (frame[0] & 7), 40);
             builder.build(state).drawTo(fixture.output, fixture.gpu);
         });
-        System.out.println("Representative build+draw bytes/frame=" + bytes);
+        reporter.publishEntry("Representative build+draw bytes/frame=" + bytes);
         // Live VFX observations remove the last owned slot snapshots; EA-off measured zero.
         assertTrue(bytes == 0, "Build+draw bytes/frame=" + bytes);
     }
@@ -44,7 +51,7 @@ final class SceneConstructionAllocationTest {
         FrameScene scene = builder.build(state);
         double bytes = AllocationProbe.bytesPerIteration(1000, 200, () -> builder.build(state));
         assertSame(scene, builder.build(state));
-        System.out.println("Reusable construction bytes/frame=" + bytes);
+        reporter.publishEntry("Reusable construction bytes/frame=" + bytes);
         assertTrue(bytes < 16);
     }
 }

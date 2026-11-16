@@ -5,8 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 class StartupAllocationTest {
+    private final TestReporter reporter;
+
+    StartupAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
     private static volatile Object retained;
 
     @Test
@@ -18,7 +25,7 @@ class StartupAllocationTest {
             retained = motion.tickMarinPresentation(0, 80, 64, 56, 52);
         });
         assertFalse(motion.complete());
-        System.out.println("Startup bed/presentation bytes/tick=" + bytes);
+        reporter.publishEntry("Startup bed/presentation bytes/tick=" + bytes);
         assertTrue(bytes <= 0, "bytes/tick=" + bytes);
     }
 }
