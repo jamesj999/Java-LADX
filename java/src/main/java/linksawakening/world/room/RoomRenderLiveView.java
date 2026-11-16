@@ -1,5 +1,6 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.RoomEntitySnapshot;
@@ -16,8 +17,8 @@ final class RoomRenderLiveView implements RoomRenderSnapshot.View {
     private int[][] spritePalettes = EMPTY_PALETTES;
 
     private RoomRenderLiveView(ActiveRoom room, Visuals visuals) {
-        this.room = java.util.Objects.requireNonNull(room);
-        this.visuals = java.util.Objects.requireNonNull(visuals);
+        this.room = Objects.requireNonNull(room);
+        this.visuals = Objects.requireNonNull(visuals);
     }
 
     static RoomRenderLiveView snapshot(ActiveRoom room) {
@@ -48,7 +49,7 @@ final class RoomRenderLiveView implements RoomRenderSnapshot.View {
 
     private record RuntimeVisuals(RoomEntityRuntime runtime) implements Visuals {
         RuntimeVisuals {
-            java.util.Objects.requireNonNull(runtime);
+            Objects.requireNonNull(runtime);
         }
 
         @Override

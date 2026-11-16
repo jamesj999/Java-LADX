@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
@@ -56,7 +58,7 @@ public final class WingedOctorokMotion {
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        IntSupplier randomByteSupplier = inputs.randomByteSupplier();
         RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         int transitionCountdown = inputs.transitionCountdown();
         int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
@@ -235,7 +237,7 @@ public final class WingedOctorokMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown,
@@ -248,7 +250,7 @@ public final class WingedOctorokMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown,
             int ignoreHitsCountdown,
@@ -271,7 +273,7 @@ public final class WingedOctorokMotion {
         private int linkEntityX;
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int ignoreHitsCountdown;
@@ -299,7 +301,7 @@ public final class WingedOctorokMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         WingedOctorokStep(WingedOctorokMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.WingedOctorokMotion.Update run() {

@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -300,7 +302,7 @@ public final class HinoxMotion {
             int linkY,
             int linkZ,
             int linkMotionState,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction,
             int entityCollisionFlagsForFrame,
             int flashCountdown) {
@@ -322,7 +324,7 @@ public final class HinoxMotion {
         private int linkZ;
         private int linkMotionState;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int entityCollisionFlagsForFrame;
         private int flashCountdown;
@@ -345,7 +347,7 @@ public final class HinoxMotion {
         private int spriteVariant;
 
         HinoxStep(HinoxMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         private HinoxMotion.Update run() {

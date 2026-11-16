@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -253,7 +254,7 @@ public final class ZombieMotion {
             int physicsFlags,
             int linkEntityX,
             int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityObjectQuery objectQuery,
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {
@@ -273,7 +274,7 @@ public final class ZombieMotion {
         private int physicsFlags;
         private int linkEntityX;
         private int linkEntityY;
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
@@ -294,7 +295,7 @@ public final class ZombieMotion {
         private int variant;
 
         ZombieStep(ZombieMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.ZombieMotion.Update run() {

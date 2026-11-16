@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.rom.RomBank;
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test;
 final class EntityRoomLoaderTest {
 
     @Test
-    void roomDropsAreInvisibleBeforeTheFirstSimulationTick() throws java.io.IOException {
+    void roomDropsAreInvisibleBeforeTheFirstSimulationTick() throws IOException {
         byte[] rom;
         try (var input = linksawakening.testing.TestRom.open()) {
             rom = input.readAllBytes();

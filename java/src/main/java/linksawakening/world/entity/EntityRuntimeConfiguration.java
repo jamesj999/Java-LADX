@@ -45,20 +45,20 @@ public final class EntityRuntimeConfiguration {
             SlimeEyeController slimeEye) {
         EntityPhysicsTables physicsTables = slots.physics();
         EntitySpriteViews spriteViews = spriteHandlers;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
-        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.story = Objects.requireNonNull(story, "story");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.slimeEye = Objects.requireNonNull(slimeEye, "slimeEye");
+        this.spriteViews = Objects.requireNonNull(spriteViews, "spriteViews");
     }
 
     public void setBoomerangSoundCounterForFrame(int counter) {
@@ -320,7 +320,7 @@ public final class EntityRuntimeConfiguration {
 
     public void setColorShellWorld(ColorShellWorld world) {
         var colorShellMotion = this.motions.get(ColorShellMotion.class, ColorShellMotion::new);
-        colorShellMotion.writeColorShellWorld(java.util.Objects.requireNonNullElse(world, ColorShellWorld.none()));
+        colorShellMotion.writeColorShellWorld(Objects.requireNonNullElse(world, ColorShellWorld.none()));
     }
 
     public void setSwitchBlockAnimationActive(boolean active) {

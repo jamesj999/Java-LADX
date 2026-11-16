@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
 import linksawakening.world.entity.motion.MoldormMotion;
 
@@ -15,10 +16,10 @@ final class EntityBossInspection {
             EntityEnemyInspection enemyInspection,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables) {
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.enemyInspection = Objects.requireNonNull(enemyInspection, "enemyInspection");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
     }
 
     int armosKnightState(int slot) {

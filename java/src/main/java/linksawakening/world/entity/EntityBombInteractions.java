@@ -10,6 +10,7 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -50,19 +51,19 @@ public final class EntityBombInteractions {
             EntitySlotLifecycle lifecycle) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.state = java.util.Objects.requireNonNull(state, "state");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.state = Objects.requireNonNull(state, "state");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
     }
 
     void applyInitialBombArrowCandidateState(int slot, int romDirection) {

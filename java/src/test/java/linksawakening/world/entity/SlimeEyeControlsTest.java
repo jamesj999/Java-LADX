@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import linksawakening.app.GameSession;
 import linksawakening.entity.Link;
@@ -82,7 +84,7 @@ final class SlimeEyeControlsTest {
                     } else {
                         RoomEntity target = active.stream()
                                 .filter(e -> e.z() < 0x70)
-                                .min(java.util.Comparator.comparingInt(e -> distance(link, e.x(), e.y())))
+                                .min(Comparator.comparingInt(e -> distance(link, e.x(), e.y())))
                                 .orElse(active.getFirst());
                         if (target.z() < 32) approach(desired, link, target.x(), target.y());
                         else move(desired, link, 80, 100, -1);
@@ -133,7 +135,7 @@ final class SlimeEyeControlsTest {
                                                 runtime.inspection()
                                                         .physicsTables
                                                         .readEnemyTransitionCountdown(e.slot())))
-                                .collect(java.util.stream.Collectors.joining(";")))
+                                .collect(Collectors.joining(";")))
                         .append('\n');
                 if (!body
                         && after.size() == 1

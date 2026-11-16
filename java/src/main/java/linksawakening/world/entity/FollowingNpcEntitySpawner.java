@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.EntitySpriteSelection;
@@ -145,9 +146,9 @@ public final class FollowingNpcEntitySpawner {
         // Absent only while scratch is inactive; synchronization requires position history.
         private linksawakening.world.entity.LinkPositionHistory history;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.List<linksawakening.world.entity.RoomEntity> slots;
+        private List<linksawakening.world.entity.RoomEntity> slots;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.Map<java.lang.Integer, linksawakening.entity.EntitySpriteDefinition> overrides;
+        private Map<Integer, linksawakening.entity.EntitySpriteDefinition> overrides;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.FollowingNpcState state;
         private boolean changed;
@@ -155,7 +156,7 @@ public final class FollowingNpcEntitySpawner {
         private linksawakening.world.entity.RoomEntitySnapshot snapshot;
 
         FollowingNpcEntitySpawnerFrameStep(FollowingNpcEntitySpawner owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.FollowingNpcEntitySpawner.Result run() {

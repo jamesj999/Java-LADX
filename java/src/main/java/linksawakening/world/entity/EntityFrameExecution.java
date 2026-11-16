@@ -1,6 +1,9 @@
 package linksawakening.world.entity;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -55,7 +58,7 @@ public final class EntityFrameExecution {
     private final EntityBackgroundMechanics backgroundMechanics;
     private final EntityLiftThrowController liftThrow;
     private final EntitySlots slots;
-    private final java.util.List<RoomEntity> slotEntities;
+    private final List<RoomEntity> slotEntities;
     private final EntitySlotLifecycle lifecycle;
     private final EntityEnemySpawns entityEnemySpawns;
     private final EntityPlayerSpawns entityPlayerSpawns;
@@ -117,43 +120,43 @@ public final class EntityFrameExecution {
             RomEnemyCombatTables enemyCombatTables,
             EntityCombatResolver combat,
             EntityPlayerCommands playerCommands) {
-        java.util.List<RoomEntity> slotEntities = slots.view();
+        List<RoomEntity> slotEntities = slots.view();
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "spriteHandlers");
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.entityEnemySpawns = java.util.Objects.requireNonNull(entityEnemySpawns, "entityEnemySpawns");
-        this.entityPlayerSpawns = java.util.Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
-        this.genie = java.util.Objects.requireNonNull(genie, "genie");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
-        this.warpMotion = java.util.Objects.requireNonNull(warpMotion, "warpMotion");
-        this.entityHandlers = java.util.Objects.requireNonNull(entityHandlers, "entityHandlers");
-        this.linkView = java.util.Objects.requireNonNull(linkView, "linkView");
-        this.slotView = java.util.Objects.requireNonNull(slotView, "slotView");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "spriteHandlers");
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.slotEntities = Objects.requireNonNull(slotEntities, "slotEntities");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.entityEnemySpawns = Objects.requireNonNull(entityEnemySpawns, "entityEnemySpawns");
+        this.entityPlayerSpawns = Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.rewards = Objects.requireNonNull(rewards, "rewards");
+        this.story = Objects.requireNonNull(story, "story");
+        this.slimeEye = Objects.requireNonNull(slimeEye, "slimeEye");
+        this.genie = Objects.requireNonNull(genie, "genie");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.enemyInspection = Objects.requireNonNull(enemyInspection, "enemyInspection");
+        this.warpMotion = Objects.requireNonNull(warpMotion, "warpMotion");
+        this.entityHandlers = Objects.requireNonNull(entityHandlers, "entityHandlers");
+        this.linkView = Objects.requireNonNull(linkView, "linkView");
+        this.slotView = Objects.requireNonNull(slotView, "slotView");
+        this.events = Objects.requireNonNull(events, "events");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
         this.indoorRoom = indoorRoom;
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
-        this.combat = java.util.Objects.requireNonNull(combat, "combat");
-        this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
+        this.combat = Objects.requireNonNull(combat, "combat");
+        this.playerCommands = Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
     // Absent between acquisitions; release deliberately drops the previous frame input.
@@ -352,7 +355,7 @@ public final class EntityFrameExecution {
         events.projectileLaunch(request);
     }
 
-    public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {
+    public <T> T motion(Class<T> type, Supplier<? extends T> factory) {
         return motions.get(type, factory);
     }
 
@@ -451,7 +454,7 @@ public final class EntityFrameExecution {
 
     private final EntityMotionRegistry scratch = new EntityMotionRegistry();
 
-    public <T> T scratch(Class<T> type, java.util.function.Function<EntityFrameExecution, ? extends T> factory) {
+    public <T> T scratch(Class<T> type, Function<EntityFrameExecution, ? extends T> factory) {
         return scratch.get(type, this, factory);
     }
 

@@ -7,7 +7,9 @@ import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
 import static linksawakening.world.entity.EntityTypeRules.usesSharedRecoil;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.SlimeEyeController.SlimeEyeCombatFrame;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.ArmosMotion;
@@ -80,21 +82,21 @@ public final class EntityCombatResolver {
             EntityFrameRandom frameRandom) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
-        this.frameRandom = java.util.Objects.requireNonNull(frameRandom, "frameRandom");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.slimeEye = Objects.requireNonNull(slimeEye, "slimeEye");
+        this.frameRandom = Objects.requireNonNull(frameRandom, "frameRandom");
         slotScratch = new EntityCombatSlot(this);
     }
 
@@ -122,7 +124,7 @@ public final class EntityCombatResolver {
     }
 
     void clearDeferredContactRecoil() {
-        java.util.Arrays.fill(deferredLeeverContact, false);
+        Arrays.fill(deferredLeeverContact, false);
     }
 
     void finishLeeverContactRecoil(RoomEntity moved) {
@@ -802,7 +804,7 @@ public final class EntityCombatResolver {
         final EntityCombatResolver runtime;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private EnemyCombatInputs inputs;
-        private java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
+        private List<linksawakening.world.entity.event.EntityCombatEvent> events;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity entity;
         private boolean booBuddyAllowsLinkCollision;
@@ -840,12 +842,12 @@ public final class EntityCombatResolver {
         private boolean swordResultApplied;
 
         EntityCombatSlot(EntityCombatResolver runtime) {
-            this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
+            this.runtime = Objects.requireNonNull(runtime, "runtime");
         }
 
         void reset(
                 EnemyCombatInputs inputs,
-                java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events,
+                List<linksawakening.world.entity.event.EntityCombatEvent> events,
                 RoomEntity entity) {
             this.inputs = inputs;
             this.events = events;

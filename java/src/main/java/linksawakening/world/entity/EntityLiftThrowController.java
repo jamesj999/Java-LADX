@@ -9,6 +9,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
@@ -60,24 +61,24 @@ public final class EntityLiftThrowController {
             EntityPlayerSpawns playerSpawns) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.genie = java.util.Objects.requireNonNull(genie, "genie");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
-        this.playerSpawns = java.util.Objects.requireNonNull(playerSpawns, "playerSpawns");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.genie = Objects.requireNonNull(genie, "genie");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.playerCommands = Objects.requireNonNull(playerCommands, "playerCommands");
+        this.playerSpawns = Objects.requireNonNull(playerSpawns, "playerSpawns");
     }
 
     public RoomEntity advanceLiftedEntity(

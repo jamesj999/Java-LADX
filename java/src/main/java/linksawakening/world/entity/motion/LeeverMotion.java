@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -135,7 +136,7 @@ public final class LeeverMotion {
         private int linkEntityX;
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
@@ -143,7 +144,7 @@ public final class LeeverMotion {
         private int variant;
 
         LeeverFrameStep(LeeverMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.RoomEntity run() {
@@ -264,7 +265,7 @@ public final class LeeverMotion {
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
-                java.util.function.IntSupplier randomByteSupplier,
+                IntSupplier randomByteSupplier,
                 linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
             if (inUse) {
                 return new LeeverFrameStep(owner)

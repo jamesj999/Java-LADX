@@ -1,11 +1,13 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
+
 /** Read-only view of the live Link-relative inputs. */
 public final class EntityLinkView {
     private final EntityLinkState state;
 
     EntityLinkView(EntityLinkState state) {
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state");
     }
 
     public boolean actionButtonAHeld() {

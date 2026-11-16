@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
@@ -18,7 +19,7 @@ public final class RewardOutputs {
 
     RewardOutputs(Dependencies dependencies, RoomEntityOutputSource source) {
         this.dependencies = dependencies;
-        this.source = java.util.Objects.requireNonNull(source);
+        this.source = Objects.requireNonNull(source);
     }
 
     public List<ChestRewardEvent> consumeChestRewardEvents() {
@@ -104,7 +105,7 @@ public final class RewardOutputs {
 
     record Dependencies(RoomEntitySessionState entityRuntimeState) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
         }
     }
 }

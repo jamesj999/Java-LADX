@@ -5,6 +5,7 @@ import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRI
 import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 
+import java.util.Objects;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityFrameExecution;
@@ -45,7 +46,7 @@ final class HookshotChainHandler {
         private linksawakening.world.entity.EntityTimerGates timerGates;
 
         HookshotChainHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-            this.state = java.util.Objects.requireNonNull(state, "state");
+            this.state = Objects.requireNonNull(state, "state");
         }
 
         boolean run() {

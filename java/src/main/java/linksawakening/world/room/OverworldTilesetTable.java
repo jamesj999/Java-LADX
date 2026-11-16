@@ -1,5 +1,6 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
@@ -14,7 +15,7 @@ public final class OverworldTilesetTable {
 
     /** Uses the caller-owned typed ROM; no copy or bank-alignment check is introduced. */
     public OverworldTilesetTable(Rom romData) {
-        this.rom = java.util.Objects.requireNonNull(romData, "data");
+        this.rom = Objects.requireNonNull(romData, "data");
     }
 
     public int tilesetIdForRoom(int roomId) {

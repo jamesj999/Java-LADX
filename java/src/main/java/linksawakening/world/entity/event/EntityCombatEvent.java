@@ -1,5 +1,6 @@
 package linksawakening.world.entity.event;
 
+import java.util.Locale;
 import linksawakening.world.entity.RoomEntity;
 
 /** A single room-entity combat result produced by the ROM collision pass. */
@@ -165,11 +166,11 @@ public record EntityCombatEvent(
         }
         if (channel == SoundChannel.NONE && id != -1) {
             throw new IllegalArgumentException(
-                    "A sound id requires a " + label.toLowerCase(java.util.Locale.getDefault()) + " sound channel");
+                    "A sound id requires a " + label.toLowerCase(Locale.getDefault()) + " sound channel");
         }
         if (channel != SoundChannel.NONE && id == -1) {
             throw new IllegalArgumentException(
-                    "A " + label.toLowerCase(java.util.Locale.getDefault()) + " sound channel requires a sound id");
+                    "A " + label.toLowerCase(Locale.getDefault()) + " sound channel requires a sound id");
         }
     }
 

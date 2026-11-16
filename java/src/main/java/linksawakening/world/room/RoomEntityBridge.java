@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;
 import linksawakening.world.entity.EnemyCombatInputs;
@@ -130,20 +131,19 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     }
 
     @Override
-    public java.util.List<linksawakening.world.entity.event.EntityCombatEvent> resolveEntityCombat(
-            EnemyCombatInputs inputs) {
-        if (inputs instanceof EntityCombatInputs owned) java.util.Objects.requireNonNull(owned.sword(), "sword");
+    public List<linksawakening.world.entity.event.EntityCombatEvent> resolveEntityCombat(EnemyCombatInputs inputs) {
+        if (inputs instanceof EntityCombatInputs owned) Objects.requireNonNull(owned.sword(), "sword");
         else inputs.swordCollisionActive();
         RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? java.util.List.of() : loaded.interactions.resolveEntityCombat(inputs);
+        return loaded == null ? List.of() : loaded.interactions.resolveEntityCombat(inputs);
     }
 
     @Override
     public linksawakening.world.entity.EntityPickupEvent collectEntityIfNeeded(EntityPickupFrameInputs inputs) {
         // Evaluate both required groups before the no-room default, preserving boundary validation.
         if (inputs instanceof EntityPickupInputs owned) {
-            java.util.Objects.requireNonNull(owned.link(), "link");
-            java.util.Objects.requireNonNull(owned.sword(), "sword");
+            Objects.requireNonNull(owned.link(), "link");
+            Objects.requireNonNull(owned.sword(), "sword");
         } else {
             inputs.linkDirection();
             inputs.swordActive();
@@ -443,7 +443,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     private final RoomEntitySimulation roomEntitySimulation;
 
     RoomEntityBridge(LoadedRoomHandle rooms, Dependencies dependencies) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
         outbox = dependencies.entityFrame().outbox;
 
@@ -530,19 +530,19 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
             Rom romData,
             RoomLoadCoordinator roomLoadCoordinator) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityEffects, "entityEffects");
-            java.util.Objects.requireNonNull(entityConfiguration, "entityConfiguration");
-            java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
-            java.util.Objects.requireNonNull(gpu, "gpu");
-            java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(entityInputs, "entityInputs");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(entityEffects, "entityEffects");
+            Objects.requireNonNull(entityConfiguration, "entityConfiguration");
+            Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
+            Objects.requireNonNull(gpu, "gpu");
+            Objects.requireNonNull(romData, "romData");
+            Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
         }
     }
 }

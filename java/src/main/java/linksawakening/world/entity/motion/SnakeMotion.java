@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -193,7 +194,7 @@ public final class SnakeMotion {
         private int linkEntityX;
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int slot;
@@ -207,7 +208,7 @@ public final class SnakeMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         SnakeFrameStep(SnakeMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.SnakeMotion.Update run() {
@@ -316,7 +317,7 @@ public final class SnakeMotion {
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
-                java.util.function.IntSupplier randomByteSupplier,
+                IntSupplier randomByteSupplier,
                 linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision,
                 int transitionCountdown) {
             if (inUse) {

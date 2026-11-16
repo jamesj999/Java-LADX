@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -214,7 +215,7 @@ public final class MiniMoldormMotion {
         private int flashCountdown;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private int frameCounter;
         private int slot;
         private int nextTransitionCountdown;
@@ -228,7 +229,7 @@ public final class MiniMoldormMotion {
         private linksawakening.world.entity.RoomEntity moved;
 
         MiniMoldormFrameStep(MiniMoldormMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.MiniMoldormMotion.Update run() {
@@ -351,7 +352,7 @@ public final class MiniMoldormMotion {
                 int ignoreHitsCountdown,
                 int flashCountdown,
                 linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
-                java.util.function.IntSupplier randomByteSupplier,
+                IntSupplier randomByteSupplier,
                 int frameCounter) {
             if (inUse) {
                 return new MiniMoldormFrameStep(owner)

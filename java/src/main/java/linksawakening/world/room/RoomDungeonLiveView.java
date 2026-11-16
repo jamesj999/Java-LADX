@@ -14,7 +14,7 @@ final class RoomDungeonLiveView implements RoomDungeon.View {
     private static final byte[] NO_STATUSES = new byte[0];
 
     RoomDungeonLiveView(RoomWorldState world, int mapId) {
-        this.world = java.util.Objects.requireNonNull(world);
+        this.world = Objects.requireNonNull(world);
         this.roomMapId = mapId;
     }
 

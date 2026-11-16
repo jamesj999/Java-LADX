@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
@@ -197,7 +198,7 @@ public final class ArmosKnightMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         ArmosKnightStep(ArmosKnightMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.ArmosKnightMotion.Update run() {

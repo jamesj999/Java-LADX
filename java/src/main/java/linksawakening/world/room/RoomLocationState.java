@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.W_TILESET_NO_UPDATE;
 
+import java.util.Objects;
 import linksawakening.world.transition.Warp;
 
 final class RoomLocationState {
@@ -27,7 +28,7 @@ final class RoomLocationState {
     boolean shouldGetLostInMysteriousWoods;
 
     void onMapBoundaryWarp(Runnable callback) {
-        mapBoundaryWarp = java.util.Objects.requireNonNull(callback);
+        mapBoundaryWarp = Objects.requireNonNull(callback);
     }
 
     void setRespawnPoint(Warp point, int indoorRoom) {

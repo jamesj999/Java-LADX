@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -242,7 +244,7 @@ public final class CuccoMotion {
         boolean linkInteractive = inputs.linkInteractive();
         boolean powerBraceletHeld = inputs.powerBraceletHeld();
         boolean linkAttackStepActive = inputs.linkAttackStepActive();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        IntSupplier randomByteSupplier = inputs.randomByteSupplier();
         RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         boolean indoorRoom = inputs.indoorRoom();
         boolean marinFollowing = inputs.marinFollowing();
@@ -281,7 +283,7 @@ public final class CuccoMotion {
             boolean linkInteractive,
             boolean powerBraceletHeld,
             boolean linkAttackStepActive,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             boolean indoorRoom,
             boolean marinFollowing,
@@ -298,7 +300,7 @@ public final class CuccoMotion {
             boolean linkInteractive,
             boolean powerBraceletHeld,
             boolean linkAttackStepActive,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             boolean indoorRoom,
             boolean marinFollowing,
@@ -325,7 +327,7 @@ public final class CuccoMotion {
         private boolean powerBraceletHeld;
         private boolean linkAttackStepActive;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private boolean indoorRoom;
         private boolean marinFollowing;
@@ -357,7 +359,7 @@ public final class CuccoMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         CuccoStep(linksawakening.world.entity.motion.CuccoMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.CuccoMotion.Update run() {

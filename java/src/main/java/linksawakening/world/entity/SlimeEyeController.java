@@ -7,6 +7,9 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.function.ToIntFunction;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
@@ -28,7 +31,7 @@ public final class SlimeEyeController {
     private static final RomAddress HALF_SPEED_X = RomSymbols.Data_004_4E94; // ROM Data_004_4E94
     private static final RomAddress HALF_SPEED_Y = RomSymbols.Data_004_4E9C; // ROM Data_004_4E9C
 
-    final java.util.List<RoomEntity> slotEntities;
+    final List<RoomEntity> slotEntities;
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBossRewards bossRewards;
@@ -43,7 +46,7 @@ public final class SlimeEyeController {
     final EntitySlots slots;
     final State encounter;
     // The ROM-free reader retains the original encounter-table precondition.
-    private final java.util.function.ToIntFunction<RomAddress> readByte;
+    private final ToIntFunction<RomAddress> readByte;
     private int screenShakeCountdown;
 
     SlimeEyeController(
@@ -59,7 +62,7 @@ public final class SlimeEyeController {
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
             Rom rom) {
-        java.util.List<RoomEntity> slotEntities = slots.view();
+        List<RoomEntity> slotEntities = slots.view();
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         this.readByte = rom == null
@@ -67,20 +70,20 @@ public final class SlimeEyeController {
                     throw new IllegalStateException("Slime Eye requires ROM encounter tables");
                 }
                 : rom::u8;
-        this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
-        this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.encounter = Objects.requireNonNull(encounter, "encounter");
+        this.slotEntities = Objects.requireNonNull(slotEntities, "slotEntities");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
+        this.slots = Objects.requireNonNull(slots, "slots");
     }
 
     public void setScreenShakeCountdown(int value) {
@@ -531,7 +534,7 @@ public final class SlimeEyeController {
             int sh,
             // Optional attack details; null selects the existing default attack context.
             EnemyAttackContext attack,
-            java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events) {}
+            List<linksawakening.world.entity.event.EntityCombatEvent> events) {}
 
     static final class SlimeEyeCombatStep {
         private final linksawakening.world.entity.SlimeEyeController owner;
@@ -551,14 +554,14 @@ public final class SlimeEyeController {
         private int sh;
         // Optional attack details; null selects the existing default attack context.
         private linksawakening.world.entity.EnemyAttackContext attack;
-        private java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
+        private List<linksawakening.world.entity.event.EntityCombatEvent> events;
         private int s;
         private boolean isHalf;
         private int hitbox;
         private boolean hit;
 
         SlimeEyeCombatStep(linksawakening.world.entity.SlimeEyeController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -742,7 +745,7 @@ public final class SlimeEyeController {
         private linksawakening.world.entity.RoomEntity e;
 
         SlimeEyeHalfStep(linksawakening.world.entity.SlimeEyeController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {

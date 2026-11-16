@@ -11,6 +11,7 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
+import java.util.Objects;
 import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -63,24 +64,24 @@ public final class EntityStoryController {
         EntityPhysicsTables physicsTables = slots.physics();
         EntityRoomInspection inspection = roomInspection;
         EntitySpriteViews spriteViews = spriteHandlers;
-        this.state = java.util.Objects.requireNonNull(state, "state");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
-        this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
+        this.state = Objects.requireNonNull(state, "state");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.inspection = Objects.requireNonNull(inspection, "inspection");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.spriteViews = Objects.requireNonNull(spriteViews, "spriteViews");
+        this.playerCommands = Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
     /** Bank 06:607F–620D. Speeds use the ROM's sixteenth-pixel units. */
@@ -368,7 +369,7 @@ public final class EntityStoryController {
         private int slot;
 
         OwlEventStep(linksawakening.world.entity.EntityStoryController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -624,7 +625,7 @@ public final class EntityStoryController {
         private linksawakening.world.entity.RoomEntity updated;
 
         RichardStep(linksawakening.world.entity.EntityStoryController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -812,7 +813,7 @@ public final class EntityStoryController {
         private int timer;
 
         VillageNpcFrameStep(linksawakening.world.entity.EntityStoryController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {

@@ -7,6 +7,8 @@ import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.IntUnaryOperator;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.AntiFairyMotion;
@@ -110,7 +112,7 @@ public final class EntitySlotLifecycle {
     final EntitySlots slots;
     final SlimeEyeController.State slimeEye;
     // Optional ROM data, absent in ROM-free runtimes.
-    final java.util.function.IntUnaryOperator entityProperties;
+    final IntUnaryOperator entityProperties;
 
     final EntityRoomInspection inspection;
     final EntitySlotPresentation slotPresentation;
@@ -134,35 +136,35 @@ public final class EntitySlotLifecycle {
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
             SlimeEyeController.State slimeEye,
-            java.util.function.IntUnaryOperator entityProperties,
+            IntUnaryOperator entityProperties,
             EntityRoomInspection inspection,
             EntitySlotPresentation slotPresentation) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
-        this.slotPresentation = java.util.Objects.requireNonNull(slotPresentation, "slotPresentation");
+        this.inspection = Objects.requireNonNull(inspection, "inspection");
+        this.slotPresentation = Objects.requireNonNull(slotPresentation, "slotPresentation");
 
-        this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.genie = java.util.Objects.requireNonNull(genie, "genie");
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
-        this.entityProperties = java.util.Objects.requireNonNull(entityProperties, "entity options");
+        this.warpState = Objects.requireNonNull(warpState, "warpState");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.enemyInspection = Objects.requireNonNull(enemyInspection, "enemyInspection");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.rewards = Objects.requireNonNull(rewards, "rewards");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.story = Objects.requireNonNull(story, "story");
+        this.genie = Objects.requireNonNull(genie, "genie");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.slimeEye = Objects.requireNonNull(slimeEye, "slimeEye");
+        this.entityProperties = Objects.requireNonNull(entityProperties, "entity options");
     }
 
     boolean initializeBossBattle(RoomEntity entity) {

@@ -1,5 +1,8 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.EnemyDropResolver;
@@ -16,8 +19,8 @@ final class RoomSessionContext {
     static Wiring create(
             RoomSessionConfig config,
             LoadedRoomHandle loadedRooms,
-            java.util.function.Consumer<RoomRuntime> installRoom,
-            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
+            Consumer<RoomRuntime> installRoom,
+            UnaryOperator<RoomRuntime> roomLoaded) {
         return new RoomSessionContext(config, loadedRooms, installRoom, roomLoaded).wire(loadedRooms);
     }
 
@@ -61,8 +64,8 @@ final class RoomSessionContext {
     private RoomSessionContext(
             RoomSessionConfig config,
             LoadedRoomHandle loadedRooms,
-            java.util.function.Consumer<RoomRuntime> installRoom,
-            java.util.function.UnaryOperator<RoomRuntime> roomLoaded) {
+            Consumer<RoomRuntime> installRoom,
+            UnaryOperator<RoomRuntime> roomLoaded) {
 
         var romData = config.romData();
         var gpu = config.gpu();
@@ -77,7 +80,7 @@ final class RoomSessionContext {
                 ? new DroppableRupeeSystem(0, () -> 0)
                 : config.presentation().droppableRupeeSystem();
         var randomByteSource = config.randomByteSource();
-        values.entityRandomByteSource = java.util.Objects.requireNonNull(randomByteSource);
+        values.entityRandomByteSource = Objects.requireNonNull(randomByteSource);
         values.romData = romData;
         values.roomState = new RoomWorldState(romData, loadedRooms);
         values.scrollNavigation = new RoomScrollNavigation(romData, values.roomState);

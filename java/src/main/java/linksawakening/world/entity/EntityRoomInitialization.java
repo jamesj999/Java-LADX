@@ -9,6 +9,7 @@ import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 import static linksawakening.world.entity.EntityTypeRules.isLaserType;
 
 import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.handler.EntityHandlerFamilies;
 import linksawakening.world.entity.motion.BombiteMotion;
@@ -75,21 +76,21 @@ final class EntityRoomInitialization {
             EntitySlotLifecycle lifecycle) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
+        this.warpState = Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.genie = java.util.Objects.requireNonNull(genie, "genie");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.rewards = Objects.requireNonNull(rewards, "rewards");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.story = Objects.requireNonNull(story, "story");
+        this.genie = Objects.requireNonNull(genie, "genie");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
     }
 
     EntityHandlerRegistry createEntityHandlers() {
@@ -119,8 +120,8 @@ final class EntityRoomInitialization {
             for (int row = 0; row < 18; row++) {
                 int tile = romData.u8(ENTITYPRESENTATIONROM_HINT_TILES.plus(row * 4 + 3));
                 int attr = romData.u8(ENTITYPRESENTATIONROM_HINT_ATTRIBUTES.plus(row * 4 + 3));
-                java.util.Arrays.fill(this.rewards.storageInstrumentHintTiles(), row * 20, (row + 1) * 20, tile);
-                java.util.Arrays.fill(this.rewards.storageInstrumentHintAttributes(), row * 20, (row + 1) * 20, attr);
+                Arrays.fill(this.rewards.storageInstrumentHintTiles(), row * 20, (row + 1) * 20, tile);
+                Arrays.fill(this.rewards.storageInstrumentHintAttributes(), row * 20, (row + 1) * 20, attr);
             }
         }
     }

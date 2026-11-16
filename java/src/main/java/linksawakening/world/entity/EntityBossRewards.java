@@ -7,6 +7,7 @@ import static linksawakening.world.entity.EntitySnapshots.withZ;
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
@@ -65,21 +66,21 @@ public final class EntityBossRewards {
             EntityLinkState linkState) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
 
-        this.state = java.util.Objects.requireNonNull(state, "state");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.state = Objects.requireNonNull(state, "state");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.slots = Objects.requireNonNull(slots, "slots");
     }
 
     /** ApplySwordDamagesToEnemy, $03:7361: preserve descending RNG order. */
@@ -436,12 +437,12 @@ public final class EntityBossRewards {
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity source;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private int slot;
         private int state;
 
         BossKeyDropStep(linksawakening.world.entity.EntityBossRewards owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -592,7 +593,7 @@ public final class EntityBossRewards {
 
         private boolean inUse;
 
-        void run(linksawakening.world.entity.RoomEntity source, java.util.function.IntSupplier randomByteSupplier) {
+        void run(linksawakening.world.entity.RoomEntity source, IntSupplier randomByteSupplier) {
             if (inUse) {
                 new BossKeyDropStep(owner).run(source, randomByteSupplier);
                 return;

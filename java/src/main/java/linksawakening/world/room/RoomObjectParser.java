@@ -59,6 +59,7 @@ import static linksawakening.world.room.RoomObjectFormat.WALLED_PIT_OBJECT_OFFSE
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
@@ -618,7 +619,7 @@ final class RoomObjectParser {
 
     record Dependencies(Rom romData) {
         Dependencies {
-            java.util.Objects.requireNonNull(romData, "romData");
+            Objects.requireNonNull(romData, "romData");
         }
     }
 

@@ -3,6 +3,7 @@ package linksawakening.world.entity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import linksawakening.world.entity.motion.GhiniMotion;
 import org.junit.jupiter.api.Test;
 
@@ -20,8 +21,8 @@ class GhiniDeathCascadeTest {
 
     @Test
     void cascadeDrawsOnlyForVisibleNonzeroSlotsInDescendingOrder() {
-        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(java.util.stream.IntStream.range(0, 16)
-                        .mapToObj(slot -> entity(slot, 0, EntityStatus.DISABLED))
+        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(IntStream.range(0, 16)
+                        .mapToObj((slot) -> entity(slot, 0, EntityStatus.DISABLED))
                         .toList()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)

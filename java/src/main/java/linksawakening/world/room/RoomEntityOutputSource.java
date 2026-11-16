@@ -21,9 +21,9 @@ import linksawakening.world.entity.event.SideViewPotLinkRequest;
 
 /** Entity-owner drain port; each drain preserves its unloaded default before accessing a runtime. */
 interface RoomEntityOutputSource {
-    java.util.List<linksawakening.world.entity.event.WarpLinkStateRequest> consumeWarpLinkStateRequests();
+    List<linksawakening.world.entity.event.WarpLinkStateRequest> consumeWarpLinkStateRequests();
 
-    java.util.List<linksawakening.world.entity.event.HeartPiecePickupUpdate> consumeHeartPieceUpdates();
+    List<linksawakening.world.entity.event.HeartPiecePickupUpdate> consumeHeartPieceUpdates();
 
     void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target);
 

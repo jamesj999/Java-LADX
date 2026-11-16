@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
@@ -48,9 +49,9 @@ public final class EntityEffectConsumption {
 
     EntityEffectConsumption(
             EntityEventChannels events, EntityPresentationState presentationState, EntityRoomVariables roomVariables) {
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
     }
 
     public boolean consumePendingSwitchBlockAnimationRequest() {

@@ -1,6 +1,7 @@
 package linksawakening.world.entity;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.RandomAccess;
 
@@ -14,10 +15,10 @@ final class EntityLiveSlotList extends AbstractList<RoomEntity> implements Rando
     private final RoomEntity[] presentations = new RoomEntity[RoomEntity.SLOT_COUNT];
 
     EntityLiveSlotList(EntityRoomInspection runtime, boolean loadedOnly) {
-        this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
+        this.runtime = Objects.requireNonNull(runtime, "runtime");
         this.loadedOnly = loadedOnly;
-        java.util.Arrays.fill(sources, EntityRoomInspection.UNREAD_PRESENTATION);
-        java.util.Arrays.fill(presentations, EntityRoomInspection.UNREAD_PRESENTATION);
+        Arrays.fill(sources, EntityRoomInspection.UNREAD_PRESENTATION);
+        Arrays.fill(presentations, EntityRoomInspection.UNREAD_PRESENTATION);
     }
 
     @Override

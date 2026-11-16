@@ -42,8 +42,8 @@ final class EntitySlotPipeline {
     private final EntityFrameRandom frameRandom;
 
     EntitySlotPipeline(EntityFrameExecution frameExecution, EntityFrameRandom frameRandom) {
-        this.frameExecution = java.util.Objects.requireNonNull(frameExecution);
-        this.frameRandom = java.util.Objects.requireNonNull(frameRandom);
+        this.frameExecution = Objects.requireNonNull(frameExecution);
+        this.frameRandom = Objects.requireNonNull(frameRandom);
     }
 
     EntityFrameContext frameContext(int frameCounter) {

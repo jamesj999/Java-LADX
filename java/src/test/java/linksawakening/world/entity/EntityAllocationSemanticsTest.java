@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.motion.MoldormMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
@@ -92,7 +93,7 @@ final class EntityAllocationSemanticsTest {
         var first = motion.advance(
                 entity, 0, 0, 0, 0, 5, () -> 36, linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
         var retained = first.segments();
-        var values = java.util.List.copyOf(retained);
+        var values = List.copyOf(retained);
         for (int frame = 1; frame < 80; frame++) {
             entity = motion.advance(
                             entity,

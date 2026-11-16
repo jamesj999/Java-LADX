@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 
 /** Shared pickups slot state, independent of behavior dispatch and construction order. */
@@ -89,7 +91,7 @@ final class EntityPickupState {
     }
 
     {
-        java.util.Arrays.setAll(heartPiecePickup, ignored -> HeartPiecePickupMotion.inactive());
+        Arrays.setAll(heartPiecePickup, ignored -> HeartPiecePickupMotion.inactive());
     }
 
     HeartPiecePickupMotion readHeartPiecePickup(int slot) {
@@ -97,7 +99,7 @@ final class EntityPickupState {
     }
 
     HeartPiecePickupMotion writeHeartPiecePickup(int slot, HeartPiecePickupMotion value) {
-        heartPiecePickup[slot] = java.util.Objects.requireNonNull(value, "pickup sequence");
+        heartPiecePickup[slot] = Objects.requireNonNull(value, "pickup sequence");
         return heartPiecePickup[slot];
     }
 

@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
@@ -187,7 +189,7 @@ public final class BombiteMotion {
             int privateCountdown1,
             int enemyIgnoreHitsCountdown,
             boolean runningWithPegasusBoots,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
         public BombiteFrame {
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
@@ -209,7 +211,7 @@ public final class BombiteMotion {
         private int enemyIgnoreHitsCountdown;
         private boolean runningWithPegasusBoots;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int nextTransition;
@@ -226,7 +228,7 @@ public final class BombiteMotion {
         private linksawakening.world.entity.RoomEntity moved;
 
         BombiteStep(BombiteMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.BombiteMotion.Update run() {

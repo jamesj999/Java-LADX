@@ -1,6 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.IntPredicate;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.BowWowChain;
@@ -37,7 +39,7 @@ public final class BowWowMotion {
     private final boolean[] chainAvailable = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     {
-        java.util.Arrays.setAll(chains, ignored -> new BowWowChain());
+        Arrays.setAll(chains, ignored -> new BowWowChain());
     }
 
     final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -91,10 +93,10 @@ public final class BowWowMotion {
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
         int linkEntityZ = inputs.linkEntityZ();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        IntSupplier randomByteSupplier = inputs.randomByteSupplier();
         RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
-        java.util.List<RoomEntity> entities = inputs.entities();
-        java.util.function.IntPredicate canEatEntity = inputs.canEatEntity();
+        List<RoomEntity> entities = inputs.entities();
+        IntPredicate canEatEntity = inputs.canEatEntity();
         this.tickTimers(entity.slot());
         return this.advanceAfterTimers(new BowWowFrame(
                 entity,
@@ -398,10 +400,10 @@ public final class BowWowMotion {
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
         int linkEntityZ = inputs.linkEntityZ();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        IntSupplier randomByteSupplier = inputs.randomByteSupplier();
         RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
-        java.util.List<RoomEntity> entities = inputs.entities();
-        java.util.function.IntPredicate canEatEntity = inputs.canEatEntity();
+        List<RoomEntity> entities = inputs.entities();
+        IntPredicate canEatEntity = inputs.canEatEntity();
         return owner.advanceAfterTimers(new BowWowCollisionFrame(
                 entity,
                 frameCounter,
@@ -453,10 +455,10 @@ public final class BowWowMotion {
             int linkEntityX,
             int linkEntityY,
             int linkEntityZ,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
-            java.util.List<RoomEntity> entities,
-            java.util.function.IntPredicate canEatEntity,
+            List<RoomEntity> entities,
+            IntPredicate canEatEntity,
             int bowWowState) {
         public BowWowCollisionFrame {
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
@@ -469,10 +471,10 @@ public final class BowWowMotion {
             int linkEntityX,
             int linkEntityY,
             int linkEntityZ,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
-            java.util.List<RoomEntity> entities,
-            java.util.function.IntPredicate canEatEntity) {}
+            List<RoomEntity> entities,
+            IntPredicate canEatEntity) {}
 
     static final class BowWowStep {
         private final linksawakening.world.entity.motion.BowWowMotion owner;
@@ -485,12 +487,12 @@ public final class BowWowMotion {
         private int linkEntityY;
         private int linkEntityZ;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.List<linksawakening.world.entity.RoomEntity> entities;
+        private List<linksawakening.world.entity.RoomEntity> entities;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntPredicate canEatEntity;
+        private IntPredicate canEatEntity;
         private int bowWowState;
         private int slot;
         private int variant;
@@ -504,7 +506,7 @@ public final class BowWowMotion {
                 targetContact;
 
         BowWowStep(linksawakening.world.entity.motion.BowWowMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.BowWowMotion.Update run() {
@@ -721,8 +723,8 @@ public final class BowWowMotion {
             int linkEntityX,
             int linkEntityY,
             int linkEntityZ,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
-            java.util.List<RoomEntity> entities,
-            java.util.function.IntPredicate canEatEntity) {}
+            List<RoomEntity> entities,
+            IntPredicate canEatEntity) {}
 }

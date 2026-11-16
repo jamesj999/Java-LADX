@@ -3,6 +3,7 @@ package linksawakening.world.entity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** One motion instance per type and room, created on its first use. */
@@ -17,7 +18,7 @@ final class EntityMotionRegistry {
         return get(type, factory, Supplier::get);
     }
 
-    <T, C> T get(Class<T> type, C context, java.util.function.Function<? super C, ? extends T> factory) {
+    <T, C> T get(Class<T> type, C context, Function<? super C, ? extends T> factory) {
         Object motion = motions.getOrDefault(type, Entry.UNCREATED);
         if (motion == Entry.UNCREATED) {
             motion = Objects.requireNonNull(factory.apply(context), "motion");

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
@@ -407,6 +408,6 @@ final class EnemyProjectileCollisionTest {
         for (RoomEntity entity : entities) {
             slots[entity.slot()] = entity;
         }
-        return new RoomEntitySnapshot(java.util.Arrays.asList(slots), null, null);
+        return new RoomEntitySnapshot(Arrays.asList(slots), null, null);
     }
 }

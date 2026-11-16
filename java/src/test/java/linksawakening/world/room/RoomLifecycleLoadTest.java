@@ -4,6 +4,8 @@ import static linksawakening.world.room.RoomSessionTestSupport.newSession;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
@@ -43,7 +45,7 @@ class RoomLifecycleLoadTest {
     @Test
     void reentrantLoadListenerPublishesBeforeNotificationAndOuterWorkUsesItsReplacement() {
         RoomSession[] holder = new RoomSession[1];
-        var observed = new java.util.ArrayList<Integer>();
+        var observed = new ArrayList<Integer>();
         holder[0] = newSession(room -> {
             org.junit.jupiter.api.Assertions.assertSame(room, holder[0].rooms().activeRoomOrNull());
             observed.add(room.roomId());
@@ -52,7 +54,7 @@ class RoomLifecycleLoadTest {
         });
         var session = holder[0];
         session.rooms().loadInitialOverworld(0xA2);
-        assertEquals(java.util.List.of(0xA2, 0xA3), observed);
+        assertEquals(List.of(0xA2, 0xA3), observed);
         assertEquals(0xA3, session.rooms().currentRoomId());
         var active = session.rooms().activeRoomOrNull();
         // A distinct callback-time mutation proves the outer continuation uses the replacement map.

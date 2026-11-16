@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import linksawakening.world.entity.motion.CrowMotion;
 import linksawakening.world.entity.motion.FishMotion;
@@ -13,8 +14,8 @@ final class EntityFlyingEnemyInspection {
     private final EntityPhysicsTables physicsTables;
 
     EntityFlyingEnemyInspection(EntityMotionRegistry motions, EntityPhysicsTables physicsTables) {
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
     }
 
     int keeseState(int slot) {

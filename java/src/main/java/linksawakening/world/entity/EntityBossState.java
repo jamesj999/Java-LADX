@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.world.entity.motion.EnemyDropMotion;
 import linksawakening.world.entity.motion.FairyMotion;
 import linksawakening.world.entity.motion.HookshotChainMotion;
@@ -135,7 +136,7 @@ final class EntityBossState {
     }
 
     EnemyDropResolver writeEnemyDropResolver(EnemyDropResolver value) {
-        enemyDropResolver = java.util.Objects.requireNonNullElse(value, EnemyDropResolver.NONE);
+        enemyDropResolver = Objects.requireNonNullElse(value, EnemyDropResolver.NONE);
         return enemyDropResolver;
     }
 

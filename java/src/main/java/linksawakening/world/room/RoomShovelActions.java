@@ -14,6 +14,7 @@ import static linksawakening.world.room.RoomSessionRules.SHOVEL_STATE_DUG;
 import static linksawakening.world.room.RoomSessionRules.SHOVEL_TARGET_X;
 import static linksawakening.world.room.RoomSessionRules.SHOVEL_TARGET_Y;
 
+import java.util.Objects;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.event.DialogRequest;
@@ -159,17 +160,17 @@ final class RoomShovelActions {
             RoomSessionViews roomSessionViews,
             RoomObjectMutations roomTileRedraw) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomPlayerItemActions, "roomPlayerItemActions");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(romTables, "romTables");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomPlayerItemActions, "roomPlayerItemActions");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }
     }
 }

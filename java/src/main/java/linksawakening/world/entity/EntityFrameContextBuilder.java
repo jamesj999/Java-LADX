@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 
 /** Named frame inputs; service references and their evaluation order are retained. */
@@ -54,7 +55,7 @@ public final class EntityFrameContextBuilder {
     }
 
     public EntityFrameContextBuilder randomByteSupplier(IntSupplier value) {
-        randomByteSupplier = java.util.Objects.requireNonNullElse(value, EntityFrameRandom.REQUIRED_SOURCE);
+        randomByteSupplier = Objects.requireNonNullElse(value, EntityFrameRandom.REQUIRED_SOURCE);
         return this;
     }
 

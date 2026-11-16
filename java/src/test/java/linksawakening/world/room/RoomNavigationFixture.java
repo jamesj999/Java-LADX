@@ -32,6 +32,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
 import linksawakening.entity.Link;
@@ -760,7 +761,7 @@ final class RoomNavigationFixture {
             RomTables romTables,
             int startX,
             int startY,
-            java.util.function.BiPredicate<Integer, Integer> target) {
+            BiPredicate<Integer, Integer> target) {
         int width = RoomConstants.ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE + 1;
         int height = RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE + 1;
         boolean[][] visited = new boolean[height][width];
@@ -768,9 +769,9 @@ final class RoomNavigationFixture {
         int[][] parentY = new int[height][width];
         int[][] parentAction = new int[height][width];
         for (int row = 0; row < height; row++) {
-            java.util.Arrays.fill(parentX[row], -1);
-            java.util.Arrays.fill(parentY[row], -1);
-            java.util.Arrays.fill(parentAction[row], -1);
+            Arrays.fill(parentX[row], -1);
+            Arrays.fill(parentY[row], -1);
+            Arrays.fill(parentAction[row], -1);
         }
         int clampedX = Math.max(0, Math.min(startX, width - 1));
         int clampedY = Math.max(0, Math.min(startY, height - 1));
@@ -1077,8 +1078,8 @@ final class RoomNavigationFixture {
         int[][] parentX = new int[height][width];
         int[][] parentY = new int[height][width];
         for (int row = 0; row < height; row++) {
-            java.util.Arrays.fill(parentX[row], -1);
-            java.util.Arrays.fill(parentY[row], -1);
+            Arrays.fill(parentX[row], -1);
+            Arrays.fill(parentY[row], -1);
         }
         int clampedX = Math.max(0, Math.min(startX, width - 1));
         int clampedY = Math.max(0, Math.min(startY, height - 1));
@@ -1139,7 +1140,7 @@ final class RoomNavigationFixture {
             int startX,
             int startY,
             int targetDirection,
-            java.util.function.BiPredicate<Integer, Integer> landingAllowed) {
+            BiPredicate<Integer, Integer> landingAllowed) {
         int width = RoomConstants.ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE + 1;
         int height = RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE + 1;
         boolean[][] visited = new boolean[height][width];
@@ -1226,7 +1227,7 @@ final class RoomNavigationFixture {
 
     static int[] roomWithPitAt(int col, int row) {
         int[] roomObjectsArea = new int[0x100];
-        java.util.Arrays.fill(roomObjectsArea, 0xFF);
+        Arrays.fill(roomObjectsArea, 0xFF);
         roomObjectsArea[ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + col] = OBJECT_NORMAL_PIT;
         return roomObjectsArea;
     }

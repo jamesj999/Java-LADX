@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -267,7 +268,7 @@ public final class StalfosEvasiveMotion {
             boolean actionButtonsHeld,
             int transitionCountdown,
             int ignoreHitsCountdown,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int mapId) {
         public StalfosEvasiveFrame {
@@ -288,7 +289,7 @@ public final class StalfosEvasiveMotion {
         private int transitionCountdown;
         private int ignoreHitsCountdown;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int mapId;
         private int slot;
@@ -307,7 +308,7 @@ public final class StalfosEvasiveMotion {
         private int variant;
 
         StalfosEvasiveFrameStep(StalfosEvasiveMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run() {

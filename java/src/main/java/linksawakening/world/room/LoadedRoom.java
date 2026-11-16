@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.Warp;
 
@@ -109,11 +110,11 @@ public record LoadedRoom(
         hash = 31 * hash + System.identityHashCode(graphics.tileIds());
         hash = 31 * hash + System.identityHashCode(graphics.tileAttrs());
         hash = 31 * hash + System.identityHashCode(graphics.palettes());
-        hash = 31 * hash + java.util.Objects.hashCode(exits.warps());
+        hash = 31 * hash + Objects.hashCode(exits.warps());
         hash = 31 * hash + Boolean.hashCode(exits.indoorHasSouthEntrance());
         hash = 31 * hash + Integer.hashCode(exits.shutterDoorMask());
         hash = 31 * hash + Integer.hashCode(exits.staircaseLocation());
-        hash = 31 * hash + java.util.Objects.hashCode(entities);
+        hash = 31 * hash + Objects.hashCode(entities);
         return hash;
     }
 

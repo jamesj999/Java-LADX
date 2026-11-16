@@ -10,6 +10,8 @@ import static linksawakening.world.entity.EntitySnapshots.withZ;
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
+import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -38,8 +40,7 @@ public final class EntityPickupController {
             new EntityPickupController.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
 
     {
-        java.util.Arrays.fill(
-                commonUpdates, new EntityPickupController.CommonDroppableUpdate(RoomEntity.disabled(0), false));
+        Arrays.fill(commonUpdates, new EntityPickupController.CommonDroppableUpdate(RoomEntity.disabled(0), false));
     }
 
     // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
@@ -85,21 +86,21 @@ public final class EntityPickupController {
             EntityChestContents chestContentsTable) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.story = Objects.requireNonNull(story, "story");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.chestContentsTable = Objects.requireNonNull(chestContentsTable, "chest contents");
     }
 
     void initializeCommonDroppable(RoomEntity entity) {
@@ -512,7 +513,7 @@ public final class EntityPickupController {
         private int hiddenState;
 
         DroppablePickupFrameStep(linksawakening.world.entity.EntityPickupController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.EntityPickupController.CommonDroppableUpdate run() {

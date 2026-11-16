@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
@@ -161,7 +162,7 @@ final class ThrownEntityMotionTest {
                 0,
                 EntitySpriteDefinition.Shape.PAIR,
                 0,
-                java.util.List.of(new EntitySpriteDefinition.Variant(
+                List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0, 0), new EntitySpriteDefinition.OamAttribute(2, 0))));
         return new RoomEntityBuilder()
                 .slot(slot)

@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
@@ -39,7 +40,7 @@ final class RoomWorldState implements RoomDungeon {
     final DungeonItemState dungeonItemState = new DungeonItemState();
 
     RoomWorldState(Rom romData, LoadedRoomHandle rooms) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
         view = new RoomDungeonLiveView(this, -1);
         this.romData = romData;
     }

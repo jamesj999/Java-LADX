@@ -23,6 +23,7 @@ import static linksawakening.world.room.RoomSessionRules.TAIL_CAVE_RUMBLE_GATE_F
 import static linksawakening.world.room.RoomSessionRules.TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
 import static linksawakening.world.room.RoomSessionRules.TAIL_KEYHOLE_DIALOG_ID;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
@@ -42,7 +43,7 @@ final class RoomDoorInteractions implements RoomDoors {
     private final RoomLiftInteractions roomLiftInteractions;
 
     RoomDoorInteractions(LoadedRoomHandle rooms, Dependencies dependencies) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
         roomChestInteractions = new RoomChestInteractions(new RoomChestInteractions.Dependencies(
                 dependencies.chestContentsTable(),
@@ -664,19 +665,19 @@ final class RoomDoorInteractions implements RoomDoors {
             RoomWorldState roomState,
             RoomObjectMutations roomTileRedraw) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(puzzles, "puzzles");
+            Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(romData, "romData");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }
     }
 

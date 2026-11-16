@@ -1,5 +1,7 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
+
 /** Cached player inputs and gates supplied to each room entity runtime. */
 final class RoomEntityInputs {
     void clearDialogAfterWarp() {
@@ -11,7 +13,7 @@ final class RoomEntityInputs {
     private final LoadedRoomHandle rooms;
 
     RoomEntityInputs(LoadedRoomHandle rooms) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
     }
 
     void updateLiftStrengthBoost(boolean redTunic, boolean power) {

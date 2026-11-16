@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.testing.TestRoms;
@@ -196,7 +197,7 @@ final class IndoorTorchPaletteEffectTest {
                 throw new AssertionError("Missing ROM resource");
             }
             return stream.readAllBytes();
-        } catch (java.io.IOException exception) {
+        } catch (IOException exception) {
             throw new AssertionError(exception);
         }
     }

@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -164,7 +165,7 @@ public final class MoblinKingMotion {
             int transitionCountdown,
             int slowTransitionCountdown,
             int frameCounter,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             boolean touchingLink) {
         public MoblinKingFrame {
@@ -204,7 +205,7 @@ public final class MoblinKingMotion {
         private int variant;
 
         MoblinKingStep(MoblinKingMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         private MoblinKingMotion.Update run() {

@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -353,7 +354,7 @@ public final class ZolGelMotion {
             int linkEntityX,
             int linkEntityY,
             int linkEntityZ,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction,
             int frameCounter,
             int ignoreHitsCountdown,
@@ -373,7 +374,7 @@ public final class ZolGelMotion {
         private int linkEntityY;
         private int linkEntityZ;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int frameCounter;
         private int ignoreHitsCountdown;
@@ -393,7 +394,7 @@ public final class ZolGelMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         ZolGelStep(linksawakening.world.entity.motion.ZolGelMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.ZolGelMotion.Update run() {

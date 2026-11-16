@@ -8,7 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
@@ -88,7 +90,7 @@ class EntityInfrastructureTest {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().execution();
         frame.slotFrame().entity(RoomEntity.disabled(15));
-        var visited = new java.util.ArrayList<Integer>();
+        var visited = new ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE;
         registry.registerTick(255, site, 2, actual -> {
             visited.add(2);
@@ -115,7 +117,7 @@ class EntityInfrastructureTest {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = EntityRuntimeFixture.emptyRuntime().execution();
         frame.slotFrame().entity(RoomEntity.disabled(15));
-        var visited = new java.util.ArrayList<Integer>();
+        var visited = new ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
         registry.registerTick(254, site, 0, actual -> {
             fail("Earlier visits must not repeat");
@@ -186,7 +188,7 @@ class EntityInfrastructureTest {
     void registryPreservesSlotAndRandomServiceIdentity() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         RoomEntity entity = RoomEntity.disabled(15);
-        java.util.function.IntSupplier random = () -> 123;
+        IntSupplier random = () -> 123;
         registry.register(255, (actual, source) -> {
             assertSame(entity, actual);
             assertSame(random, source);
@@ -228,7 +230,7 @@ class EntityInfrastructureTest {
 
     @Test
     void effectiveFrameCopyPreservesInputAndServiceIdentity() {
-        java.util.function.IntSupplier random = () -> 91;
+        IntSupplier random = () -> 91;
         RoomEntityBackgroundCollision collision = (entity, direction, x, y) -> false;
         EntityFrameContext original = EntityFrameContext.builder()
                 .frameCounter(4)

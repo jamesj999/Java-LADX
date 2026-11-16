@@ -2,6 +2,7 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_TARIN;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityLinkCollisionRules;
@@ -56,7 +57,7 @@ final class TarinHandler {
         private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         TarinHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-            this.state = java.util.Objects.requireNonNull(state, "state");
+            this.state = Objects.requireNonNull(state, "state");
         }
 
         boolean run() {

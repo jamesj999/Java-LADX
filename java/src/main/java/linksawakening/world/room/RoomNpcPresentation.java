@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntitySnapshot;
 
@@ -50,7 +51,7 @@ final class RoomNpcPresentation {
 
     record Dependencies(RoomFollowerState followers) {
         Dependencies {
-            java.util.Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(followers, "followers");
         }
     }
 }

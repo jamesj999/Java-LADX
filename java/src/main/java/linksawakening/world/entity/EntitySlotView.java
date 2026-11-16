@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 
 /** Reused view of ROM slot state, preserving array indexing and values. */
@@ -9,9 +10,9 @@ public final class EntitySlotView {
     private final UnmaskedIronMaskMotion ironMask;
 
     EntitySlotView(EntityCombatTables combat, EntityPhysicsTables physics, UnmaskedIronMaskMotion ironMask) {
-        this.combat = java.util.Objects.requireNonNull(combat, "combat");
-        this.physics = java.util.Objects.requireNonNull(physics, "physics");
-        this.ironMask = java.util.Objects.requireNonNull(ironMask, "ironMask");
+        this.combat = Objects.requireNonNull(combat, "combat");
+        this.physics = Objects.requireNonNull(physics, "physics");
+        this.ironMask = Objects.requireNonNull(ironMask, "ironMask");
     }
 
     public int transitionCountdown(int slot) {

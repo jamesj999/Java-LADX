@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -74,7 +76,7 @@ public final class LikeLikeMotion {
             int linkItemB,
             int shieldLevel,
             int slowTransitionCountdown,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
         public LikeLikeFrame {
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
@@ -98,7 +100,7 @@ public final class LikeLikeMotion {
         private int shieldLevel;
         private int slowTransitionCountdown;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int renderedVariant;
@@ -106,7 +108,7 @@ public final class LikeLikeMotion {
         private int stolenShieldLevel;
 
         LikeLikeFrameStep(LikeLikeMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.LikeLikeMotion.Update run() {

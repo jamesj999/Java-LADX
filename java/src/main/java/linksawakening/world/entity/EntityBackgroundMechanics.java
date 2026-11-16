@@ -7,6 +7,7 @@ import static linksawakening.world.entity.EntityTypeRules.isEnemyProjectileType;
 import static linksawakening.world.entity.EntityTypeRules.isRoamingEnemyType;
 import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
 
+import java.util.Objects;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
@@ -66,18 +67,18 @@ public final class EntityBackgroundMechanics {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         EntitySpriteViews spriteViews = spriteHandlers;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.enemyInspection = Objects.requireNonNull(enemyInspection, "enemyInspection");
+        this.events = Objects.requireNonNull(events, "events");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.spriteViews = Objects.requireNonNull(spriteViews, "spriteViews");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
     }
 
     public RoomEntityBackgroundInteraction interaction() {

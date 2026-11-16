@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.FollowingNpcState;
@@ -95,12 +96,12 @@ final class RoomEntitySimulation {
             RoomItemUseState items,
             RoomLocationState location) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(entityBridge, "entityBridge");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
         }
     }
 
@@ -228,20 +229,20 @@ final class RoomEntitySimulation {
             RoomStoryState roomStoryState,
             RoomTransitionController roomTransitionController) {
         SetupDependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
-            java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
-            java.util.Objects.requireNonNull(owlStatueDialogResolver, "owlStatueDialogResolver");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
-            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(puzzles, "puzzles");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(entityBridge, "entityBridge");
+            Objects.requireNonNull(entityInputs, "entityInputs");
+            Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
+            Objects.requireNonNull(owlStatueDialogResolver, "owlStatueDialogResolver");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(roomStoryState, "roomStoryState");
+            Objects.requireNonNull(roomTransitionController, "roomTransitionController");
         }
     }
 
@@ -402,20 +403,20 @@ final class RoomEntitySimulation {
             TransientVfxSystem transientVfxSystem,
             boolean transientVfxEnabled) {
         EffectsDependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-            java.util.Objects.requireNonNull(roomEntityRewards, "roomEntityRewards");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
-            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
-            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(entityBridge, "entityBridge");
+            Objects.requireNonNull(roomEntityRewards, "roomEntityRewards");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+            Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
         }
     }
 }

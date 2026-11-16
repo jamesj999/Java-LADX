@@ -5,6 +5,8 @@ import static linksawakening.world.room.RoomSessionRules.W_TILESET_NO_UPDATE;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.Rom;
@@ -33,8 +35,7 @@ final class RoomStoryState implements RoomStory {
     }
 
     @Override
-    public void setFollowerSpriteOverrides(
-            java.util.Map<Integer, linksawakening.entity.EntitySpriteDefinition> overrides) {
+    public void setFollowerSpriteOverrides(Map<Integer, linksawakening.entity.EntitySpriteDefinition> overrides) {
         RoomRuntime loaded = rooms.currentOrNull();
         if (loaded != null) setFollowerSpriteOverrides(loaded, overrides);
     }
@@ -104,8 +105,8 @@ final class RoomStoryState implements RoomStory {
     private final RoomFollowerSynchronizer roomFollowerSynchronizer;
 
     RoomStoryState(LoadedRoomHandle rooms, RoomTransientState transients, Dependencies dependencies) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
-        this.transients = java.util.Objects.requireNonNull(transients);
+        this.rooms = Objects.requireNonNull(rooms);
+        this.transients = Objects.requireNonNull(transients);
         this.dependencies = dependencies;
         roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(dependencies.followers()));
         roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
@@ -324,27 +325,27 @@ final class RoomStoryState implements RoomStory {
             linksawakening.world.entity.EnemyDropResolver dropResolver,
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            java.util.function.Consumer<RoomRuntime> installRoom,
+            Consumer<RoomRuntime> installRoom,
             RoomRuntime.Services roomRuntimeServices) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
-            java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
-            java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
-            java.util.Objects.requireNonNull(followingNpcEntitySpawner, "followingNpcEntitySpawner");
-            java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
-            java.util.Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
-            java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(dropResolver, "dropResolver");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(puzzles, "puzzles");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
+            Objects.requireNonNull(entityInputs, "entityInputs");
+            Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
+            Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
+            Objects.requireNonNull(followingNpcEntitySpawner, "followingNpcEntitySpawner");
+            Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
+            Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
+            Objects.requireNonNull(romData, "romData");
+            Objects.requireNonNull(romTables, "romTables");
+            Objects.requireNonNull(dropResolver, "dropResolver");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
         }
     }
 

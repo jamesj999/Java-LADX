@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
+
 /** The padded-room object cell sampled by an entity handler. */
 public record RoomEntityObjectSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {
     public RoomEntityObjectSample {
@@ -15,7 +17,7 @@ public record RoomEntityObjectSample(int objectId, int physicsFlag, int objectLe
     public static final RoomEntityObjectSample UNSAMPLED = new RoomEntityObjectSample(0xFF, 0, 0, 0);
 
     public static RoomEntityObjectSample orAbsent(RoomEntityObjectSample value) {
-        return java.util.Objects.requireNonNullElse(value, UNSAMPLED);
+        return Objects.requireNonNullElse(value, UNSAMPLED);
     }
 
     // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.

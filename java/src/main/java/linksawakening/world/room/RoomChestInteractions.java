@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_CHEST_OPEN;
 
+import java.util.Objects;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
 import linksawakening.state.Direction;
@@ -82,13 +83,13 @@ final class RoomChestInteractions {
             RoomWorldState roomState,
             RoomObjectMutations roomTileRedraw) {
         Dependencies {
-            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(romData, "romData");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }
     }
 }

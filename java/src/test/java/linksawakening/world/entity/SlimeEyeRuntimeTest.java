@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
@@ -156,8 +159,8 @@ final class SlimeEyeRuntimeTest {
 
     @Test
     void writesIsolatedProductionHandlerTracesForEmulatorComparison() throws Exception {
-        var directory = java.nio.file.Path.of("build/slime-eye");
-        java.nio.file.Files.createDirectories(directory);
+        var directory = Path.of("build/slime-eye");
+        Files.createDirectories(directory);
         String header = "frame\tstatus\tstate\tx\ty\tz\tspeedZ\tcountdown\tvariant\tprivate4\tslow\thealth\n";
         for (String name : List.of("body-drop", "half-rise-drop", "half-death")) {
             var r = runtime();
@@ -214,7 +217,7 @@ final class SlimeEyeRuntimeTest {
                         .append(r.inspection().combatTables.readEnemyHealth(0))
                         .append('\n');
             }
-            java.nio.file.Files.writeString(directory.resolve(name + "-engine.tsv"), trace);
+            Files.writeString(directory.resolve(name + "-engine.tsv"), trace);
         }
     }
 
@@ -349,7 +352,7 @@ final class SlimeEyeRuntimeTest {
                                 new linksawakening.world.transition.ScrollController(),
                                 new linksawakening.world.transition.TransitionController()))
                 .drawTo(pixels, gpu);
-        var image = new java.awt.image.BufferedImage(160, 144, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        var image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < 144; y++)
             for (int x = 0; x < 160; x++) {
                 int offset = (y * 160 + x) * 4;
@@ -361,8 +364,8 @@ final class SlimeEyeRuntimeTest {
                                 | ((pixels[offset + 1] & 255) << 8)
                                 | (pixels[offset + 2] & 255));
             }
-        var directory = java.nio.file.Path.of("build/slime-eye");
-        java.nio.file.Files.createDirectories(directory);
+        var directory = Path.of("build/slime-eye");
+        Files.createDirectories(directory);
         javax.imageio.ImageIO.write(image, "png", directory.resolve(name).toFile());
     }
 

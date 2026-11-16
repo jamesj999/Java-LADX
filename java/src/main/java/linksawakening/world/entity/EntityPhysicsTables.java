@@ -1,5 +1,8 @@
 package linksawakening.world.entity;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /** Owned PhysicsTables storage; preserves ROM slot indexing. */
 final class EntityPhysicsTables {
     private RoomEntityGroundInteraction groundInteraction = RoomEntityGroundInteraction.NONE;
@@ -32,7 +35,7 @@ final class EntityPhysicsTables {
     }
 
     RoomEntityGroundInteraction writeGroundInteraction(RoomEntityGroundInteraction value) {
-        groundInteraction = java.util.Objects.requireNonNullElse(value, RoomEntityGroundInteraction.NONE);
+        groundInteraction = Objects.requireNonNullElse(value, RoomEntityGroundInteraction.NONE);
         return groundInteraction;
     }
 
@@ -196,7 +199,7 @@ final class EntityPhysicsTables {
     }
 
     void resetOptionsOverrides() {
-        java.util.Arrays.fill(entityOptions1Override, -1);
+        Arrays.fill(entityOptions1Override, -1);
     }
 
     boolean readEnemyProjectileSpawnedThisFrame(int slot) {
@@ -209,7 +212,7 @@ final class EntityPhysicsTables {
     }
 
     void clearEnemyProjectileSpawnedThisFrame() {
-        java.util.Arrays.fill(enemyProjectileSpawnedThisFrame, false);
+        Arrays.fill(enemyProjectileSpawnedThisFrame, false);
     }
 
     boolean readDynamicEntitySpawnedThisFrame(int slot) {
@@ -222,7 +225,7 @@ final class EntityPhysicsTables {
     }
 
     void clearDynamicEntitySpawnedThisFrame() {
-        java.util.Arrays.fill(dynamicEntitySpawnedThisFrame, false);
+        Arrays.fill(dynamicEntitySpawnedThisFrame, false);
     }
 
     int readEntityPrivateState4(int slot) {

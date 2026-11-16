@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -185,7 +186,7 @@ public final class BomberMotion {
             int linkEntityY,
             int romLinkDirection,
             boolean swordAnimationActive,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {}
 
     static final class BomberFrameStep {
@@ -200,7 +201,7 @@ public final class BomberMotion {
         private int romLinkDirection;
         private boolean swordAnimationActive;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int x;
@@ -217,7 +218,7 @@ public final class BomberMotion {
         private boolean playJingle;
 
         BomberFrameStep(BomberMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.BomberMotion.Update run() {

@@ -6,6 +6,8 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
+import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
@@ -34,7 +36,7 @@ public final class EntityPlayerCommands {
     private final RoomEntity[] marinPresentations = new RoomEntity[8];
 
     {
-        java.util.Arrays.fill(marinPresentations, UNREAD_PRESENTATION);
+        Arrays.fill(marinPresentations, UNREAD_PRESENTATION);
     }
 
     EntityPlayerCommands(
@@ -49,17 +51,17 @@ public final class EntityPlayerCommands {
             EntitySlots slots) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
-        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.rewards = Objects.requireNonNull(rewards, "rewards");
+        this.inspection = Objects.requireNonNull(inspection, "inspection");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.slots = Objects.requireNonNull(slots, "slots");
     }
 
     public boolean beginLift(int slot, int romDirection) {

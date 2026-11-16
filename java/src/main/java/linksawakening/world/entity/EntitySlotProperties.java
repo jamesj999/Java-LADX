@@ -8,6 +8,8 @@ import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.IntUnaryOperator;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.BooBuddyMotion;
@@ -67,23 +69,23 @@ public final class EntitySlotProperties {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         EntityRoomInspection inspection = roomInspection;
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.inspection = Objects.requireNonNull(inspection, "inspection");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
         this.puzzleCountdown = physicsTables::readEnemyTransitionCountdown;
         this.puzzleEntities = slots.view();
     }
@@ -350,10 +352,10 @@ public final class EntitySlotProperties {
         };
     }
 
-    final java.util.function.IntUnaryOperator puzzleCountdown;
-    private final java.util.List<RoomEntity> puzzleEntities;
+    final IntUnaryOperator puzzleCountdown;
+    private final List<RoomEntity> puzzleEntities;
 
-    java.util.List<RoomEntity> puzzleEntities() {
+    List<RoomEntity> puzzleEntities() {
         return puzzleEntities;
     }
 

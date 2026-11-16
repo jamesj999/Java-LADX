@@ -6,6 +6,8 @@ import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
@@ -41,17 +43,17 @@ public final class GenieEntityController {
             EntitySlots slots) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.entityPlayerSpawns = java.util.Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.encounter = Objects.requireNonNull(encounter, "encounter");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.entityPlayerSpawns = Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.slots = Objects.requireNonNull(slots, "slots");
     }
 
     public void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) {
@@ -411,7 +413,7 @@ public final class GenieEntityController {
     }
 
     void beginFrame() {
-        java.util.Arrays.fill(encounter.genieImpactRegisteredThisFrame, false);
+        Arrays.fill(encounter.genieImpactRegisteredThisFrame, false);
     }
 
     final GenieJarStep genieJarStep = new GenieJarStep(this);
@@ -563,7 +565,7 @@ public final class GenieEntityController {
         }
 
         void beginFrame() {
-            java.util.Arrays.fill(genieImpactRegisteredThisFrame, false);
+            Arrays.fill(genieImpactRegisteredThisFrame, false);
         }
     }
 
@@ -575,7 +577,7 @@ public final class GenieEntityController {
         private int linkEntityX;
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private int slot;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity moved;
@@ -583,7 +585,7 @@ public final class GenieEntityController {
         private int boundary;
 
         GenieBodyStep(linksawakening.world.entity.GenieEntityController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -847,7 +849,7 @@ public final class GenieEntityController {
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
-                java.util.function.IntSupplier randomByteSupplier) {
+                IntSupplier randomByteSupplier) {
             if (inUse) {
                 new GenieBodyStep(owner).run(body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier);
                 return;
@@ -897,7 +899,7 @@ public final class GenieEntityController {
         private boolean activatedThisTick;
 
         GenieJarStep(linksawakening.world.entity.GenieEntityController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {

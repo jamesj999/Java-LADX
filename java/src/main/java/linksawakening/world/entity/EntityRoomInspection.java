@@ -3,7 +3,9 @@ package linksawakening.world.entity;
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.HeartPieceVisual;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
@@ -67,27 +69,27 @@ public final class EntityRoomInspection {
             EntitySlots slots) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
+        this.warpState = Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
         this.spriteTiles = spriteTiles;
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.rewards = Objects.requireNonNull(rewards, "rewards");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.story = Objects.requireNonNull(story, "story");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
+        this.slots = Objects.requireNonNull(slots, "slots");
         this.liveView = RoomEntitySnapshot.liveView(this);
     }
 
@@ -575,7 +577,7 @@ public final class EntityRoomInspection {
         // These handlers test story state before drawing ($05:4E78,
         // $05:51CE, $05:4BF1). Apply the same gates to pre-tick snapshots,
         // including room transitions which pause entity advancement.
-        var presentedSlots = new java.util.ArrayList<RoomEntity>(runtime.slots.size());
+        var presentedSlots = new ArrayList<RoomEntity>(runtime.slots.size());
         for (int slot = 0; slot < runtime.slots.size(); slot++)
             presentedSlots.add(entityRoomQueriesPresentedEntity(runtime, slot));
         return new RoomEntitySnapshot(

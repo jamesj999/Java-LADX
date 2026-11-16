@@ -1459,7 +1459,7 @@ final class RoomDoorAndObjectInteractionTest {
         var frame = new LinkGroundFrame(40, 40, false, false, false, false, 0, 0, 0);
         session.terrain().tickCrackedFloor(frame, false); // seed the previous ground probe
         session.rooms().activeRoomOrNull().roomObjectsArea()[index] = 0xDF;
-        var sounds = new java.util.ArrayList<GameplaySoundEvent>();
+        var sounds = new ArrayList<GameplaySoundEvent>();
         session.entityState().setColorShellSoundSink(sounds::add);
         for (int i = 0; i < 39; i++) assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertFalse(session.terrain()
@@ -1476,7 +1476,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0xDF, session.rooms().activeRoomOrNull().roomObjectsArea()[index]);
         assertTrue(session.terrain().tickCrackedFloor(frame, false));
         assertEquals(0xAE, session.rooms().activeRoomOrNull().roomObjectsArea()[index]);
-        assertEquals(java.util.List.of(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE), sounds);
+        assertEquals(List.of(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE), sounds);
         // A pit does not reach Default, so its frame retains wC1C9.
         assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertEquals(40, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
@@ -1492,7 +1492,7 @@ final class RoomDoorAndObjectInteractionTest {
     void pushedBlockPlaysRumbleOnlyWhenMovementStarts() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x04);
-        var sounds = new java.util.ArrayList<GameplaySoundEvent>();
+        var sounds = new ArrayList<GameplaySoundEvent>();
         session.entityState().setColorShellSoundSink(sounds::add);
         for (int tick = 0; tick < 63; tick++) {
             session.doors()
@@ -1500,7 +1500,7 @@ final class RoomDoorAndObjectInteractionTest {
         }
         assertTrue(sounds.isEmpty());
         session.doors().tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
-        assertEquals(java.util.List.of(GameplaySoundEvent.BLOCK_PUSH), sounds);
+        assertEquals(List.of(GameplaySoundEvent.BLOCK_PUSH), sounds);
         session.doors().tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         assertEquals(1, sounds.size());
 

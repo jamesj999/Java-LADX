@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
 /**
@@ -22,8 +23,7 @@ public final class RomRandomByteSource implements IntSupplier {
 
     private Trace trace = Trace.NONE;
 
-    public void setObserver(
-            /* Optional observer; null disables tracing. */ java.util.function.Consumer<Draw> observer) {
+    public void setObserver(/* Optional observer; null disables tracing. */ Consumer<Draw> observer) {
         this.trace = observer == null
                 ? Trace.NONE
                 : (frame, scanline, previous, value) -> observer.accept(new Draw(frame, scanline, previous, value));

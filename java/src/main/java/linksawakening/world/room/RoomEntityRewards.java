@@ -5,6 +5,7 @@ import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
 import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_2;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.InstrumentCompletionEvent;
 import linksawakening.world.entity.event.RichardProgressEvent;
@@ -140,13 +141,13 @@ final class RoomEntityRewards {
             RoomWorldState roomState,
             RoomStoryState roomStoryState) {
         Dependencies {
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(entityInputs, "entityInputs");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(roomStoryState, "roomStoryState");
         }
     }
 }

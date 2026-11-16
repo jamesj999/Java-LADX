@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -153,7 +154,7 @@ public final class StalfosAggressiveMotion {
         private int variant;
 
         StalfosAggressiveFrameStep(StalfosAggressiveMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.RoomEntity run() {
@@ -270,7 +271,7 @@ public final class StalfosAggressiveMotion {
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
-                java.util.function.IntSupplier randomByteSupplier,
+                IntSupplier randomByteSupplier,
                 linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
             if (inUse) {
                 return new StalfosAggressiveFrameStep(owner)

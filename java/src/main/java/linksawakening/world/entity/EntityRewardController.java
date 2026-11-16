@@ -11,6 +11,7 @@ import static linksawakening.world.entity.EntityTypeRules.isRuntimeFloatingItem;
 import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
 import static linksawakening.world.entity.EntityTypeRules.requiresHeldPickupTransition;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
@@ -69,23 +70,23 @@ public final class EntityRewardController {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         EntitySpriteViews spriteViews = spriteHandlers;
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
 
-        this.state = java.util.Objects.requireNonNull(state, "state");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
-        this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
+        this.state = Objects.requireNonNull(state, "state");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.story = Objects.requireNonNull(story, "story");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.spriteViews = Objects.requireNonNull(spriteViews, "spriteViews");
+        this.playerCommands = Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
     void startInstrumentPickup(int slot) {
@@ -361,7 +362,7 @@ public final class EntityRewardController {
         private int romDirection;
 
         EntitySlotLifecycleFrameStep(EntityRewardController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.EntityPickupEvent run() {
@@ -513,13 +514,13 @@ public final class EntityRewardController {
         private int linkEntityY;
         private int linkZ;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private int slot;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity held;
 
         InstrumentPickupStep(linksawakening.world.entity.EntityRewardController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -656,7 +657,7 @@ public final class EntityRewardController {
                 int linkEntityX,
                 int linkEntityY,
                 int linkZ,
-                java.util.function.IntSupplier randomByteSupplier) {
+                IntSupplier randomByteSupplier) {
             if (inUse) {
                 new InstrumentPickupStep(owner)
                         .run(entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier);
@@ -697,7 +698,7 @@ public final class EntityRewardController {
         private int slot;
 
         ItemPickupFrameStep(linksawakening.world.entity.EntityRewardController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {

@@ -3,6 +3,7 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOLDORM;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityBossRewards;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityFrameInputLatch;
@@ -111,7 +112,7 @@ final class MoldormHandler {
         private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         MoldormHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-            this.state = java.util.Objects.requireNonNull(state, "state");
+            this.state = Objects.requireNonNull(state, "state");
         }
 
         boolean run() {

@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -316,7 +317,7 @@ public final class TarinRaccoonMotion {
         private linksawakening.world.entity.RoomEntity entity;
 
         TarinRaccoonStep(linksawakening.world.entity.motion.TarinRaccoonMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.TarinRaccoonMotion.Update run() {

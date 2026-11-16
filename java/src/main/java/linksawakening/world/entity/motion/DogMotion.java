@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -280,7 +281,7 @@ public final class DogMotion {
             int linkDirection,
             boolean actionButtonAHeld,
             boolean dialogActive,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction) {
         public DogFrame {
             backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
@@ -301,7 +302,7 @@ public final class DogMotion {
         private int linkDirection;
         private boolean actionButtonAHeld;
         private boolean dialogActive;
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int countdown;
@@ -316,7 +317,7 @@ public final class DogMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         DogStep(DogMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.DogMotion.Update run() {

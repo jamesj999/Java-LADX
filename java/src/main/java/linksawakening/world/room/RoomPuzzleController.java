@@ -32,6 +32,7 @@ import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
 import static linksawakening.world.room.RoomSessionRules.SWITCH_BUTTON_PRESSED;
 import static linksawakening.world.room.RoomSessionRules.SWITCH_BUTTON_PRESS_FRAMES;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
@@ -404,19 +405,19 @@ final class RoomPuzzleController {
             RoomObjectMutations roomTileRedraw,
             TransientVfxSystem transientVfxSystem) {
         Dependencies {
-            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
-            java.util.Objects.requireNonNull(gpu, "gpu");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(puzzles, "puzzles");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(entityInputs, "entityInputs");
+            Objects.requireNonNull(gpu, "gpu");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(romData, "romData");
+            Objects.requireNonNull(romTables, "romTables");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }
     }
 

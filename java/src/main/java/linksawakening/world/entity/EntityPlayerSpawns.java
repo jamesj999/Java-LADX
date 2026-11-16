@@ -2,6 +2,8 @@ package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.BombMotion;
@@ -21,7 +23,7 @@ import linksawakening.world.room.ChestContentsTable;
 public final class EntityPlayerSpawns {
     final boolean indoorRoom;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final java.util.function.IntSupplier defaultRandomByteSupplier;
+    final IntSupplier defaultRandomByteSupplier;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBombInteractions bombInteractions;
@@ -46,7 +48,7 @@ public final class EntityPlayerSpawns {
 
     EntityPlayerSpawns(
             boolean indoorRoom,
-            java.util.function.IntSupplier defaultRandomByteSupplier,
+            IntSupplier defaultRandomByteSupplier,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombInteractions bombInteractions,
             EntityBossState bossRewards,
@@ -67,27 +69,26 @@ public final class EntityPlayerSpawns {
         EntityPhysicsTables physicsTables = slots.physics();
         EntityRoomInspection inspection = roomInspection;
         this.indoorRoom = indoorRoom;
-        this.defaultRandomByteSupplier =
-                java.util.Objects.requireNonNull(defaultRandomByteSupplier, "randomByteSupplier");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
-        this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
+        this.defaultRandomByteSupplier = Objects.requireNonNull(defaultRandomByteSupplier, "randomByteSupplier");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.inspection = Objects.requireNonNull(inspection, "inspection");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.chestContentsTable = Objects.requireNonNull(chestContentsTable, "chest contents");
+        this.playerCommands = Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
     void spawnIronMasksMask(int x, int y, int variant, int sourceHookshotSlot) {

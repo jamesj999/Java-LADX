@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -113,7 +114,7 @@ public final class FishMotion {
         private linksawakening.world.entity.RoomEntity entity;
         private int transitionCountdown;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int slot;
         private int countdown;
@@ -126,7 +127,7 @@ public final class FishMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         FishFrameStep(FishMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.FishMotion.Update run() {
@@ -234,7 +235,7 @@ public final class FishMotion {
         linksawakening.world.entity.motion.FishMotion.Update run(
                 linksawakening.world.entity.RoomEntity entity,
                 int transitionCountdown,
-                java.util.function.IntSupplier randomByteSupplier,
+                IntSupplier randomByteSupplier,
                 linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
             if (inUse) {
                 return new FishFrameStep(owner)

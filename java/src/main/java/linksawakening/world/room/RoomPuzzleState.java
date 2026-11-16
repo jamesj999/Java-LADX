@@ -1,5 +1,8 @@
 package linksawakening.world.room;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** ROM puzzle/title/music registers that survive room replacement; PerRoom is owned by RoomContents. */
 final class RoomPuzzleState {
     int switchButtonPressed;
@@ -35,7 +38,7 @@ final class RoomPuzzleState {
         int shutterCloseTicks;
         int shutterCloseLocation = -1;
         boolean shutterCloseStarted;
-        final java.util.Map<Integer, Integer> shutterTileOverrides = new java.util.HashMap<>();
+        final Map<Integer, Integer> shutterTileOverrides = new HashMap<>();
         int tailCaveKeyholeCountdown;
         boolean tailCaveFinalMotionBlockPending;
         int nextWorldMusicTrackCountdown;

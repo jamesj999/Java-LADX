@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import java.util.Arrays;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
@@ -130,7 +131,7 @@ final class RoomTransitionDoorsTest {
         assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);
         assertEquals(0x0B, objectAt(session, 0x39));
         assertEquals(0x0C, objectAt(session, 0x49));
-        assertFalse(java.util.Arrays.equals(closedEastDoorTiles, roomObjectTiles(session, 0x39)));
+        assertFalse(Arrays.equals(closedEastDoorTiles, roomObjectTiles(session, 0x39)));
     }
 
     @Test

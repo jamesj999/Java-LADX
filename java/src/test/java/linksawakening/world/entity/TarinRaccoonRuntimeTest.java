@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -658,7 +659,7 @@ final class TarinRaccoonRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(
                 ENTITY_TARIN, indoor ? EntityRoomLoader.RoomTable.INDOORS_B : EntityRoomLoader.RoomTable.OVERWORLD);
-        List<RoomEntity> slots = new java.util.ArrayList<>();
+        List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }

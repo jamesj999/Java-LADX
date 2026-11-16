@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteSelection;
 
 /** Owned PresentationState storage; preserves ROM slot indexing. */
@@ -41,7 +42,7 @@ final class EntityPresentationState {
     EntitySpriteSelection writeSpriteSelection(
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
                     value) {
-        spriteSelection = java.util.Objects.requireNonNullElse(value, emptySelection);
+        spriteSelection = Objects.requireNonNullElse(value, emptySelection);
         return spriteSelection;
     }
 

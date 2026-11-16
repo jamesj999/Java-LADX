@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomNavigationFixture.PowderApproach;
 import static linksawakening.world.room.RoomNavigationFixture.SwordApproach;
 
+import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
@@ -71,7 +72,7 @@ final class GameplayRouteState {
     int tailKeyOwlExitDeadline;
     int[] routeToTailCave;
     int[] tailCaveRouteRooms;
-    java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent> tailCaveSounds;
+    ArrayList<linksawakening.gameplay.GameplaySoundEvent> tailCaveSounds;
     int rumbleTicks;
     boolean shookRight;
     boolean shookLeft;
@@ -113,7 +114,7 @@ final class GameplayRouteState {
     boolean heardWarpJingle;
     int slowWarpTicks;
     boolean instrumentOwlDialogOpened;
-    java.util.ArrayList<java.lang.Integer> instrumentOwlDialogs;
+    ArrayList<Integer> instrumentOwlDialogs;
     int instrumentOwlDeadline;
     int instrumentOwlExitDeadline;
     int[] routeToKidnappingWarning;

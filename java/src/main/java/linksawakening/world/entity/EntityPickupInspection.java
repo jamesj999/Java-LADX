@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.world.entity.motion.BombiteMotion;
 import linksawakening.world.entity.motion.ColorShellMotion;
 import linksawakening.world.entity.motion.SecretSeashellMotion;
@@ -12,9 +13,9 @@ final class EntityPickupInspection {
 
     EntityPickupInspection(
             EntityBombState bombInteractions, EntityMotionRegistry motions, EntityPhysicsTables physicsTables) {
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
     }
 
     int keyDropTransitionCountdown(int slot) {
