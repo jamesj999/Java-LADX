@@ -53,8 +53,8 @@ final class MabeWellRegressionTest {
         var sounds = new ArrayList<GameplaySoundEvent>();
         var link = new Link(input, config, tables, collision, null, player, new ItemRegistry(), sounds::add);
         var transition = new TransitionController();
-        var coordinator = new RoomTransitionCoordinator(
-                room, new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
+        var coordinator = room.transitions()
+                .coordinator(new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
         link.position().setRoomEntryPixelPosition(80, 32);
         input.onKeyEvent(config.downKey(), 1);
         for (int frame = 0; frame < 160 && !link.airborne().isFallingIntoPit(); frame++) {

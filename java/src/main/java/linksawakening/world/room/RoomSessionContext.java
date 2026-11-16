@@ -177,6 +177,7 @@ final class RoomSessionContext {
                 loadedRooms,
                 new RoomLoadCoordinator.Dependencies(
                         values.entityFrame,
+                        values.puzzles,
                         values.followers,
                         values.location,
                         values.terrain,
@@ -213,15 +214,21 @@ final class RoomSessionContext {
                 values.roomSessionViews,
                 values.roomState,
                 values.roomStoryState));
-        values.roomTransitionController = new RoomTransitionController(new RoomTransitionController.Dependencies(
-                values.followers,
-                values.items,
-                values.location,
-                values.entityFrame,
-                values.manboWarpResolver,
-                values.roomLoadCoordinator,
-                values.roomState,
-                values.scrollNavigation));
+        values.roomTransitionController = new RoomTransitionController(
+                loadedRooms,
+                new RoomTransitionController.Dependencies(
+                        values.followers,
+                        values.puzzles,
+                        values.roomCollisionQueries,
+                        values.roomSessionViews,
+                        values.roomStoryState,
+                        values.items,
+                        values.location,
+                        values.entityFrame,
+                        values.manboWarpResolver,
+                        values.roomLoadCoordinator,
+                        values.roomState,
+                        values.scrollNavigation));
         values.entityEffects = new RoomEntitySimulation.EffectsDependencies(
                 values.entityFrame,
                 values.followers,

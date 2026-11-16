@@ -68,6 +68,6 @@ final class WorldWiring {
             ScrollController scroll,
             GameplaySoundSink sounds) {
         rooms.progress().onMapBoundaryWarp(player.equipmentLevels()::clearActivePowerUpForWarp);
-        return new RoomTransitionCoordinator(rooms, new RoomBoundaryController(), transition, scroll, sounds);
+        return rooms.transitions().coordinator(new RoomBoundaryController(), transition, scroll, sounds);
     }
 }

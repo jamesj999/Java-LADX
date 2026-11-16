@@ -13,16 +13,129 @@ import static linksawakening.world.room.RoomSessionRules.STAIRCASE_ACTIVE;
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_INACTIVE;
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_NONE;
 
+import linksawakening.entity.Link;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
 /** Room replacement and scroll setup for GameplayWorldLoadRoomHandler ($01:442B). */
-final class RoomTransitionController {
+final class RoomTransitionController implements RoomTransitions, RoomBoundaryOperations {
+    private final LoadedRoomHandle rooms;
+
+    @Override
+    public void applyWarp(Warp warp, Link link) {
+        var destination = dependencies.roomLoadCoordinator().acquireWarp(warp).room;
+        link.motion()
+                .setRoomPhysicsForRoom(
+                        dependencies.roomSessionViews().roomLoadToken(),
+                        destination.mapId(),
+                        destination.roomId(),
+                        destination.mapCategory());
+        link.position().setRoomEntryPixelPosition(warp.javaPixelX(), warp.javaPixelY());
+    }
+
+    @Override
+    public boolean handlePendingInstrumentTransition(RoomTransitionCoordinator coordinator, Link link) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null && coordinator.handlePendingInstrumentTransition(loaded, link);
+    }
+
+    @Override
+    public boolean handlePendingManboTransition(RoomTransitionCoordinator coordinator, Link link) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null && coordinator.handlePendingManboTransition(loaded, link);
+    }
+
+    @Override
+    public void handleOverworldBoundary(RoomTransitionCoordinator coordinator, Link link) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) coordinator.handleOverworldBoundary(loaded, link);
+    }
+
+    @Override
+    public void handleWarpAndIndoorBoundaries(RoomTransitionCoordinator coordinator, Link link) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) coordinator.handleWarpAndIndoorBoundaries(loaded, link);
+    }
+
+    @Override
+    public Warp pollStaircaseWarp(int x, int y, int z, boolean carrying) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? pollStaircaseWarp(loaded, x, y, z, carrying) : null;
+    }
+
+    @Override
+    public Warp consumeInstrumentTransitionRequest() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? consumeInstrumentTransitionRequest(loaded) : null;
+    }
+
+    @Override
+    public Warp consumeManboPondTransitionRequest() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? consumeManboPondTransitionRequest(loaded) : null;
+    }
+
+    @Override
+    public boolean startOcarina(int countdown, int flags, int song) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        RoomTransitionController.validateOcarina(countdown, flags, song);
+        return loaded != null && beginOcarina(countdown, flags, song);
+    }
+
+    @Override
+    public void startAdjacentIndoorScroll(
+            linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        startAdjacentIndoorScroll(java.util.Objects.requireNonNull(loaded), scroll, direction, x, y);
+    }
+
+    @Override
+    public void startAdjacentOverworldScroll(
+            linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        startAdjacentOverworldScroll(java.util.Objects.requireNonNull(loaded), scroll, direction, x, y);
+    }
+
+    @Override
+    public void loadWarpDestination(Warp warp) {
+        dependencies.roomLoadCoordinator().acquireWarp(warp);
+    }
+
+    @Override
+    public int tickDungeonTitleMessage(
+            boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (dependencies.puzzles().dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
+        if (--dependencies.puzzles().dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement)
+            return -1;
+        return 0x56 + java.util.Objects.requireNonNull(loaded).room.mapId();
+    }
+
+    @Override
+    public RoomTransitionCoordinator coordinator(
+            linksawakening.world.transition.RoomBoundaryController boundary,
+            linksawakening.world.transition.TransitionController transition,
+            ScrollController scroll,
+            linksawakening.gameplay.GameplaySoundSink sound) {
+        return new RoomTransitionCoordinator(
+                new RoomTransitionCoordinator.Dependencies(
+                        dependencies.roomCollisionQueries(),
+                        dependencies.roomSessionViews(),
+                        dependencies.roomStoryState(),
+                        this),
+                this,
+                boundary,
+                transition,
+                scroll,
+                sound);
+    }
+
     private final Dependencies dependencies;
 
-    RoomTransitionController(Dependencies dependencies) {
+    RoomTransitionController(LoadedRoomHandle rooms, Dependencies dependencies) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
     }
 
@@ -91,7 +204,7 @@ final class RoomTransitionController {
                 direction, linkScreenX, linkScreenY, previousRoom, RoomInteractionGeometry.scrollTarget(direction));
     }
 
-    boolean startOcarina(int countdown, int songFlags, int selectedSong) {
+    boolean beginOcarina(int countdown, int songFlags, int selectedSong) {
         if (dependencies.items().ocarinaPlaybackCountdown != 0) {
             return false;
         }
@@ -105,11 +218,13 @@ final class RoomTransitionController {
         return true;
     }
 
-    boolean ocarinaPlaying() {
+    @Override
+    public boolean ocarinaPlaying() {
         return dependencies.items().ocarinaPlaybackCountdown != 0;
     }
 
-    int ocarinaAnimationState() {
+    @Override
+    public int ocarinaAnimationState() {
         if (!this.ocarinaPlaying()) {
             return -1;
         }
@@ -215,6 +330,10 @@ final class RoomTransitionController {
 
     record Dependencies(
             RoomFollowerState followers,
+            RoomPuzzleState puzzles,
+            RoomCollisionQueries roomCollisionQueries,
+            RoomSessionViews roomSessionViews,
+            RoomStoryState roomStoryState,
             RoomItemUseState items,
             RoomLocationState location,
             RoomEntitySessionState entityRuntimeState,
@@ -224,6 +343,10 @@ final class RoomTransitionController {
             RoomScrollNavigation scrollNavigation) {
         Dependencies {
             java.util.Objects.requireNonNull(followers, "followers");
+            java.util.Objects.requireNonNull(puzzles, "puzzles");
+            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
             java.util.Objects.requireNonNull(items, "items");
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");

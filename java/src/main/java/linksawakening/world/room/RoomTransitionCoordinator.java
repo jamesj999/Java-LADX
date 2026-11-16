@@ -18,29 +18,6 @@ public final class RoomTransitionCoordinator {
     private final ScrollController scrollController;
     private final GameplaySoundSink soundSink;
 
-    public RoomTransitionCoordinator(
-            RoomSession roomSession,
-            RoomBoundaryController boundaryController,
-            TransitionController transitionController,
-            ScrollController scrollController) {
-        this(roomSession, boundaryController, transitionController, scrollController, GameplaySoundSink.none());
-    }
-
-    public RoomTransitionCoordinator(
-            RoomSession roomSession,
-            RoomBoundaryController boundaryController,
-            TransitionController transitionController,
-            ScrollController scrollController,
-            GameplaySoundSink soundSink) {
-        this(
-                dependencies(roomSession),
-                roomSession,
-                boundaryController,
-                transitionController,
-                scrollController,
-                soundSink);
-    }
-
     RoomTransitionCoordinator(
             Dependencies dependencyValues,
             RoomBoundaryOperations boundaryOperations,
@@ -204,14 +181,6 @@ public final class RoomTransitionCoordinator {
             java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
             java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
         }
-    }
-
-    private static Dependencies dependencies(RoomSession roomSession) {
-        return new Dependencies(
-                roomSession.components.roomCollisionQueries(),
-                roomSession.components.roomSessionViews(),
-                roomSession.components.roomStoryState(),
-                roomSession.components.roomTransitionController());
     }
 
     private boolean handleIndoorBoundary(RoomRuntime loaded, Link link, ActiveRoom room) {

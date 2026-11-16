@@ -2,7 +2,6 @@ package linksawakening.world.room;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.entity.Link;
 import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityPickupFrameInputs;
@@ -26,10 +25,9 @@ import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
-import linksawakening.world.transition.Warp;
 
 /** Public room API delegating to room-scoped collaborators. */
-public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOperations {
+public final class RoomSession implements RoomEntityOutputSource {
 
     /** Applies the live frame inputs in source order before ticking slots. */
     public List<EntityProjectileEvent> tickEntities(EntityFrameValues inputs) {
@@ -98,7 +96,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         dungeonView = components.roomState().view();
         roles = RoomRoleViews.create(components, this, loadedRooms);
         doors = components.roomDoorInteractions();
-        transitions = new RoomTransitionsView(components.roomTransitionController(), this);
+        transitions = components.roomTransitionController();
         playerItems = components.roomPlayerItemActions();
         story = components.roomStoryState();
         frameInputs = new RoomFrameInputApplier(
@@ -594,135 +592,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         roomLoadListener.roomLoaded(room.room);
         // A listener may synchronously replace the room. Continue against that published generation.
         return java.util.Objects.requireNonNull(loadedRoom);
-    }
-
-    RoomLoadCoordinator.PreviousPalettes previousPalettes() {
-        if (!hasRoom()) return RoomLoadCoordinator.PreviousPalettes.NONE;
-        return RoomLoadCoordinator.PreviousPalettes.from(loadedRoom);
-    }
-
-    int tickDungeonTitleMessage(
-            boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) {
-        if (components.puzzles().dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
-        if (--components.puzzles().dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement) return -1;
-        return 0x56 + java.util.Objects.requireNonNull(loadedRoom).room.mapId();
-    }
-
-    RoomRuntime loadWarpDestination(Warp warp) {
-        // GameplayWorldLoadRoomHandler ($01:442B) clears $C000..$D2FF,
-        // including the recent-room ring and transient entity-clear masks.
-        // Scrolling between adjacent rooms does not take this path.
-        int category = warp.category();
-        boolean wasIndoor = hasRoom() && loadedRoom.room.mapCategory() != Warp.CATEGORY_OVERWORLD;
-        if (category != Warp.CATEGORY_SIDESCROLL) {
-            Warp spawn = warp;
-            int indoorRoom = wasIndoor ? components.location().indoorMapPosition : -1;
-            if (indoorRoom < 0) indoorRoom = components.location().respawnIndoorRoom;
-            if (warp.category() == Warp.CATEGORY_INDOOR && (warp.destMap() < 0x0A || warp.destMap() == 0xFF)) {
-                var rom = components.romData();
-                var address = new linksawakening.rom.RomAddress(
-                        0x14, warp.destMap() == 0xFF ? 0x4E3C : 0x4DF1 + warp.destMap() * 5);
-                spawn = new Warp(
-                        rom.u8(address),
-                        rom.u8(address.plus(1)),
-                        rom.u8(address.plus(2)),
-                        rom.u8(address.plus(3)),
-                        rom.u8(address.plus(4)),
-                        -1);
-                indoorRoom = warp.destMap() == 0xFF
-                        ? 0x3A
-                        : rom.u8(new linksawakening.rom.RomAddress(0x14, 0x4E41 + warp.destMap()));
-            }
-            components.location().setRespawnPoint(spawn, indoorRoom);
-        }
-        components.entityFrame().recentRoomEntityClears.reset();
-        // hFreeWarpDataAddress is the source wIsIndoor ($00:18AD–18B0).
-        // $00:1904/$00:1952 clear only when destination indoor status differs.
-        if (wasIndoor != (warp.category() != Warp.CATEGORY_OVERWORLD)) {
-            components.location().mapBoundaryWarp.run();
-        }
-        components.puzzles().dungeonTitleMessageCountdown = 0;
-        RoomRuntime loaded;
-        if (warp.category() == Warp.CATEGORY_OVERWORLD) {
-            if (wasIndoor) {
-                components.gpu().loadBaseOverworldTiles(components.romData());
-                components.location().currentOverworldTilesetId = RoomSessionRules.W_TILESET_NO_UPDATE;
-            }
-            loaded = components.roomLoadCoordinator().acquireLoadOverworld(warp.destRoom());
-            components.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(warp.destRoom());
-        } else {
-            loaded = components
-                    .roomLoadCoordinator()
-                    .loadIndoor(previousPalettes(), warp.destMap(), warp.destRoom(), warp.category());
-            // $00:194C-1965: old wIsIndoor is hFreeWarpDataAddress.
-            if (!wasIndoor && warp.destMap() < 0x0A) components.puzzles().dungeonTitleMessageCountdown = 0x30;
-        }
-        return loaded;
-    }
-
-    void startAdjacentOverworldScroll(
-            linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
-        components
-                .roomTransitionController()
-                .startAdjacentOverworldScroll(java.util.Objects.requireNonNull(loadedRoom), scroll, direction, x, y);
-    }
-
-    void startAdjacentIndoorScroll(
-            linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
-        components
-                .roomTransitionController()
-                .startAdjacentIndoorScroll(java.util.Objects.requireNonNull(loadedRoom), scroll, direction, x, y);
-    }
-
-    boolean startOcarina(int countdown, int flags, int song) {
-        RoomTransitionController.validateOcarina(countdown, flags, song);
-        return hasRoom() && components.roomTransitionController().startOcarina(countdown, flags, song);
-    }
-
-    Warp consumeManboPondTransitionRequest() {
-        return hasRoom() ? components.roomTransitionController().consumeManboPondTransitionRequest(loadedRoom) : null;
-    }
-
-    Warp consumeInstrumentTransitionRequest() {
-        return hasRoom() ? components.roomTransitionController().consumeInstrumentTransitionRequest(loadedRoom) : null;
-    }
-
-    Warp pollStaircaseWarp(int x, int y, int z, boolean carrying) {
-        return hasRoom()
-                ? components.roomTransitionController().pollStaircaseWarp(loadedRoom, x, y, z, carrying)
-                : null;
-    }
-
-    @Override
-    public void handleWarpAndIndoorBoundaries(RoomTransitionCoordinator coordinator, Link link) {
-        if (hasRoom()) coordinator.handleWarpAndIndoorBoundaries(loadedRoom, link);
-    }
-
-    @Override
-    public void handleOverworldBoundary(RoomTransitionCoordinator coordinator, Link link) {
-        if (hasRoom()) coordinator.handleOverworldBoundary(loadedRoom, link);
-    }
-
-    @Override
-    public boolean handlePendingManboTransition(RoomTransitionCoordinator coordinator, Link link) {
-        return hasRoom() && coordinator.handlePendingManboTransition(loadedRoom, link);
-    }
-
-    @Override
-    public boolean handlePendingInstrumentTransition(RoomTransitionCoordinator coordinator, Link link) {
-        return hasRoom() && coordinator.handlePendingInstrumentTransition(loadedRoom, link);
-    }
-
-    @Override
-    public void applyWarp(Warp warp, Link link) {
-        var destination = loadWarpDestination(warp).room;
-        link.motion()
-                .setRoomPhysicsForRoom(
-                        components.roomSessionViews().roomLoadToken(),
-                        destination.mapId(),
-                        destination.roomId(),
-                        destination.mapCategory());
-        link.position().setRoomEntryPixelPosition(warp.javaPixelX(), warp.javaPixelY());
     }
 
     @Override

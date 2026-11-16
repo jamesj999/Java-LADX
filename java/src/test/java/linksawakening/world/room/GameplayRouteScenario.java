@@ -122,8 +122,8 @@ final class GameplayRouteScenario {
 
         route.scroll = new ScrollController();
         route.transition = new TransitionController();
-        route.coordinator = new RoomTransitionCoordinator(
-                route.session, new RoomBoundaryController(), route.transition, route.scroll);
+        route.coordinator =
+                route.session.transitions().coordinator(new RoomBoundaryController(), route.transition, route.scroll);
         route.inputState = new InputState();
         route.inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         route.itemRegistry = new ItemRegistry();
@@ -339,8 +339,8 @@ final class GameplayRouteScenario {
                 .findFirst()
                 .orElseThrow();
         assertEquals(0x24, route.witchHut.tileLocation());
-        route.coordinator = new RoomTransitionCoordinator(
-                route.session, new RoomBoundaryController(), route.transition, route.scroll);
+        route.coordinator =
+                route.session.transitions().coordinator(new RoomBoundaryController(), route.transition, route.scroll);
         route.link
                 .position()
                 .setPixelPosition(

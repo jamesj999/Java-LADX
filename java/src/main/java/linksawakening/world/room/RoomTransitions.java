@@ -4,6 +4,19 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
 public interface RoomTransitions {
+    RoomTransitionCoordinator coordinator(
+            linksawakening.world.transition.RoomBoundaryController boundary,
+            linksawakening.world.transition.TransitionController transition,
+            ScrollController scroll,
+            linksawakening.gameplay.GameplaySoundSink sound);
+
+    default RoomTransitionCoordinator coordinator(
+            linksawakening.world.transition.RoomBoundaryController boundary,
+            linksawakening.world.transition.TransitionController transition,
+            ScrollController scroll) {
+        return coordinator(boundary, transition, scroll, linksawakening.gameplay.GameplaySoundSink.none());
+    }
+
     void loadWarpDestination(Warp warp);
 
     int tickDungeonTitleMessage(
