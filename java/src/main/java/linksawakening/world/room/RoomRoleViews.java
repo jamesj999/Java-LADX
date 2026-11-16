@@ -16,7 +16,7 @@ record RoomRoleViews(
                         components.followers(),
                         components.roomSessionViews(),
                         session)),
-                new RoomRoomsView(new RoomRoomsView.Dependencies(components.roomLoadCoordinator()), session),
+                components.roomLoadCoordinator(),
                 components.roomState(),
                 new RoomProgression(
                         new RoomProgression.Dependencies(

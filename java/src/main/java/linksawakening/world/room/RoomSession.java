@@ -11,7 +11,6 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
-import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
@@ -549,74 +548,17 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         return loadedRoom.entities.enemies().enemyHealth(slot);
     }
 
-    ActiveRoom activeRoom() {
-        return hasRoom() ? loadedRoom.room : null;
-    }
-
-    boolean hasActiveRoom() {
-        return hasRoom();
-    }
-
-    int currentRoomId() {
-        return java.util.Objects.requireNonNull(loadedRoom).room.roomId();
-    }
-
-    int mapCategory() {
-        return java.util.Objects.requireNonNull(loadedRoom).room.mapCategory();
-    }
-
-    int mapId() {
-        return java.util.Objects.requireNonNull(loadedRoom).room.mapId();
-    }
-
-    int indoorRoomPositionForSave() {
-        if (!hasRoom() || activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD) {
-            return -1;
-        }
-        return components.location().indoorMapPosition;
-    }
-
-    int[][] palettes() {
-        return !hasRoom() ? null : activeRoom().palettes();
-    }
-
-    boolean heartPiecePickupActive() {
-        return hasRoom() && loadedRoom.entities.inspection().heartPiecePickupActive();
-    }
-
     @Override
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
         if (!hasRoom()) return List.of();
         var updates = loadedRoom.entities.consumeHeartPieceUpdates();
         for (int i = 0; i < updates.size(); i++) {
             if (updates.get(i).complete()) {
-                components.roomState().markCompleted(activeRoom());
+                components.roomState().markCompleted(loadedRoom.room);
                 break;
             }
         }
         return updates;
-    }
-
-    String instrumentTrace() {
-        return !hasRoom() ? "" : loadedRoom.entities.inspection().instrumentTrace();
-    }
-
-    String moblinKingTrace() {
-        return !hasRoom() ? "-1" : loadedRoom.entities.inspection().moblinKingTrace();
-    }
-
-    RoomRenderSnapshot.View renderView() {
-        return hasRoom() ? loadedRoom.renderView : null;
-    }
-
-    RoomRenderSnapshot renderSnapshot() {
-        return hasRoom() ? loadedRoom.renderSnapshot() : null;
-    }
-
-    LiftedEntityState liftedEntityState() {
-        return !hasRoom()
-                ? LiftedEntityState.none()
-                : loadedRoom.entities.inspection().liftedEntityState();
     }
 
     void setHeartPiecesCount(int count) {
@@ -657,26 +599,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
     RoomLoadCoordinator.PreviousPalettes previousPalettes() {
         if (!hasRoom()) return RoomLoadCoordinator.PreviousPalettes.NONE;
         return RoomLoadCoordinator.PreviousPalettes.from(loadedRoom);
-    }
-
-    void loadInitialOverworld(int room) {
-        components.roomLoadCoordinator().loadInitialOverworld(room);
-    }
-
-    void loadOverworld(int room) {
-        components.roomLoadCoordinator().loadOverworld(room);
-    }
-
-    void loadIndoor(int map, int room) {
-        components.roomLoadCoordinator().loadIndoor(previousPalettes(), map, room);
-    }
-
-    void loadIndoor(int map, int room, int category) {
-        components.roomLoadCoordinator().loadIndoor(previousPalettes(), map, room, category);
-    }
-
-    void loadIndoorFromSavedPosition(int map, int room, int position) {
-        components.roomLoadCoordinator().loadIndoorFromSavedPosition(previousPalettes(), map, room, position);
     }
 
     int tickDungeonTitleMessage(
@@ -726,7 +648,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
                 components.gpu().loadBaseOverworldTiles(components.romData());
                 components.location().currentOverworldTilesetId = RoomSessionRules.W_TILESET_NO_UPDATE;
             }
-            loaded = components.roomLoadCoordinator().loadOverworld(warp.destRoom());
+            loaded = components.roomLoadCoordinator().acquireLoadOverworld(warp.destRoom());
             components.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(warp.destRoom());
         } else {
             loaded = components
@@ -820,10 +742,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
 
     void setLiftStrengthBoost(boolean redTunic, boolean power) {
         if (hasRoom()) loadedRoom.entities.configuration().setLiftStrengthBoost(redTunic, power);
-    }
-
-    ActiveRoom requireActiveRoom() {
-        return java.util.Objects.requireNonNull(loadedRoom).room;
     }
 
     /** ResetRoomVariables runs even when subsequent room acquisition fails. */

@@ -37,7 +37,7 @@ final class RoomTransitionController {
             dependencies.roomState().overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
         }
         dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(nextRoomId);
-        dependencies.roomLoadCoordinator().loadOverworld(nextRoomId, true);
+        dependencies.roomLoadCoordinator().acquireLoadOverworld(nextRoomId, true);
         if (discoveredTailKeyRoom) {
             dependencies
                     .entityRuntimeState()
@@ -54,7 +54,7 @@ final class RoomTransitionController {
             RoomRuntime loaded, ScrollController scrollController, int linkScreenX, int linkScreenY) {
         RoomRenderSnapshot previousRoom = loaded.renderSnapshot();
         dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
-        dependencies.roomLoadCoordinator().loadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
+        dependencies.roomLoadCoordinator().acquireLoadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
         scrollController.start(
                 ScrollController.UP,
                 linkScreenX,

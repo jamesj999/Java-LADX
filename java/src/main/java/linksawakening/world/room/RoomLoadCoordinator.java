@@ -17,30 +17,157 @@ import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.RoomEntitySnapshot;
+import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.object.SwitchBlockAnimation;
 import linksawakening.world.transition.Warp;
 
 /** LoadRoom: coordinates ROM room acquisition, initialization and entity replacement. */
-final class RoomLoadCoordinator {
+final class RoomLoadCoordinator implements RoomRooms {
+    private final LoadedRoomHandle rooms;
     private final Dependencies dependencies;
+
+    PreviousPalettes previousPalettes() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded == null ? PreviousPalettes.NONE : PreviousPalettes.from(loaded);
+    }
+
+    @Override
+    public boolean musicSelectionIsScroll() {
+        return musicSelectionIsScroll;
+    }
+
+    @Override
+    public ActiveRoom requireActiveRoom() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return java.util.Objects.requireNonNull(loaded).room;
+    }
+
+    @Override
+    public void loadIndoorFromSavedPosition(int map, int room, int position) {
+        loadIndoorFromSavedPosition(previousPalettes(), map, room, position);
+    }
+
+    @Override
+    public void loadIndoor(int map, int room, int category) {
+        loadIndoor(previousPalettes(), map, room, category);
+    }
+
+    @Override
+    public void loadIndoor(int map, int room) {
+        loadIndoor(previousPalettes(), map, room);
+    }
+
+    @Override
+    public void loadOverworld(int room) {
+        acquireLoadOverworld(room);
+    }
+
+    @Override
+    public void loadInitialOverworld(int room) {
+        acquireLoadInitialOverworld(room);
+    }
+
+    @Override
+    public LiftedEntityState liftedEntityState() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded == null
+                ? LiftedEntityState.none()
+                : loaded.entities.inspection().liftedEntityState();
+    }
+
+    @Override
+    public RoomRenderSnapshot renderSnapshotOrNull() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? loaded.renderSnapshot() : null;
+    }
+
+    @Override
+    public RoomRenderSnapshot.View renderViewOrNull() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? loaded.renderView : null;
+    }
+
+    @Override
+    public String moblinKingTrace() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded == null ? "-1" : loaded.entities.inspection().moblinKingTrace();
+    }
+
+    @Override
+    public String instrumentTrace() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded == null ? "" : loaded.entities.inspection().instrumentTrace();
+    }
+
+    @Override
+    public boolean heartPiecePickupActive() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null && loaded.entities.inspection().heartPiecePickupActive();
+    }
+
+    @Override
+    public int[][] palettesOrNull() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded == null ? null : loaded.room.palettes();
+    }
+
+    @Override
+    public int indoorRoomPositionForSave() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null || loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            return -1;
+        }
+        return dependencies.location().indoorMapPosition;
+    }
+
+    @Override
+    public int mapId() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return java.util.Objects.requireNonNull(loaded).room.mapId();
+    }
+
+    @Override
+    public int mapCategory() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return java.util.Objects.requireNonNull(loaded).room.mapCategory();
+    }
+
+    @Override
+    public int currentRoomId() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return java.util.Objects.requireNonNull(loaded).room.roomId();
+    }
+
+    @Override
+    public boolean hasActiveRoom() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null;
+    }
+
+    @Override
+    public ActiveRoom activeRoomOrNull() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? loaded.room : null;
+    }
 
     boolean musicSelectionIsScroll;
 
-    RoomLoadCoordinator(Dependencies dependencies) {
+    RoomLoadCoordinator(LoadedRoomHandle rooms, Dependencies dependencies) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
     }
 
-    RoomRuntime loadInitialOverworld(int roomId) {
+    RoomRuntime acquireLoadInitialOverworld(int roomId) {
         dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
         this.loadRoomSpecificTilesIfNeeded(roomId);
-        return this.loadOverworld(roomId);
+        return this.acquireLoadOverworld(roomId);
     }
 
-    RoomRuntime loadOverworld(int roomId) {
-        return loadOverworld(roomId, false);
+    RoomRuntime acquireLoadOverworld(int roomId) {
+        return acquireLoadOverworld(roomId, false);
     }
 
-    RoomRuntime loadOverworld(int roomId, boolean scrolling) {
+    RoomRuntime acquireLoadOverworld(int roomId, boolean scrolling) {
         musicSelectionIsScroll = scrolling;
         dependencies.location().roomLoadSerial++;
         dependencies.location().indoorMapPosition = -1;
