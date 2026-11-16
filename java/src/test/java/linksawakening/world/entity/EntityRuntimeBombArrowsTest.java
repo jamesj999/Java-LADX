@@ -34,8 +34,8 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        int candidateBomb = runtime.spawnBomb(0x40, 0x50, 0, 0);
-        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int candidateBomb = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         assertTrue(EntityRuntimeFixture.inspection(runtime).isBombArrowForTest(arrowSlot));
         assertEquals(
                 EntityStatus.DISABLED,
@@ -48,7 +48,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0x03, runtime.enemies().transitionCountdown(15));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(arrowSlot).status());
@@ -65,10 +65,10 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
         assertEquals(0x06, EntityRuntimeFixture.inspection(runtime).bombArrowCooldownForTest());
 
-        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
 
         assertEquals(
                 EntityStatus.DISABLED,
@@ -90,10 +90,10 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     void placingWithinTheBombArrowWindowMarksTheLatestArrowButKeepsTheBomb() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
 
-        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 1);
+        int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 1);
         assertEquals(0x06, EntityRuntimeFixture.inspection(runtime).bombArrowCooldownForTest());
 
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 1);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 1);
 
         assertTrue(runtime.inspection().snapshot().slots().get(bombSlot).loaded());
         assertTrue(EntityRuntimeFixture.inspection(runtime).isBombArrowForTest(arrowSlot));
@@ -105,14 +105,14 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     void bombArrowCooldownExpiresAfterSixEntityFrames() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
 
-        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         assertFalse(EntityRuntimeFixture.inspection(runtime).isBombArrowForTest(arrowSlot));
         for (int frame = 0; frame < 6; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
         }
 
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).bombArrowCooldownForTest());
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
         assertTrue(runtime.inspection().snapshot().slots().get(bombSlot).loaded());
         assertFalse(EntityRuntimeFixture.inspection(runtime).isBombArrowForTest(arrowSlot));
         assertEquals(0x06, EntityRuntimeFixture.inspection(runtime).bombArrowCooldownForTest());
@@ -128,8 +128,8 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
-        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         assertTrue(EntityRuntimeFixture.inspection(runtime).isBombArrowForTest(arrowSlot));
         assertEquals(
                 EntityStatus.DISABLED,
@@ -148,7 +148,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(
                 List.of(new EntityCombatEvent(
                         explosion.slot(), 0x02, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(arrowSlot).status());

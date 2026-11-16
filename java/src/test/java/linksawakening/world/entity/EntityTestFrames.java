@@ -5,7 +5,7 @@ import java.util.function.IntSupplier;
 /** Frame input fixtures for runtime tests. */
 public final class EntityTestFrames {
     public static EntityFrameContext frame(RoomEntityRuntime runtime, int frameCounter) {
-        return runtime.frameContext(frameCounter);
+        return runtime.pipeline().frameContext(frameCounter);
     }
 
     public static EntityFrameContext frame(
@@ -275,8 +275,8 @@ public final class EntityTestFrames {
                 .swordWidth(0)
                 .swordY(0)
                 .swordHeight(0)
-                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
-                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .linkSpeedX(runtime.inspection().linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.inspection().linkState.currentLinkSpeedY)
                 .creditsGameplay(false)
                 .handlerLinkCollisionEnabled(
                         projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
@@ -336,8 +336,8 @@ public final class EntityTestFrames {
                 .swordWidth(swordWidth)
                 .swordY(swordY)
                 .swordHeight(swordHeight)
-                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
-                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .linkSpeedX(runtime.inspection().linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.inspection().linkState.currentLinkSpeedY)
                 .creditsGameplay(false)
                 .handlerLinkCollisionEnabled(
                         projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
@@ -377,8 +377,8 @@ public final class EntityTestFrames {
                 .swordWidth(swordWidth)
                 .swordY(swordY)
                 .swordHeight(swordHeight)
-                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
-                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .linkSpeedX(runtime.inspection().linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.inspection().linkState.currentLinkSpeedY)
                 .creditsGameplay(false)
                 .handlerLinkCollisionEnabled(
                         projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
@@ -423,8 +423,8 @@ public final class EntityTestFrames {
                 .swordWidth(swordWidth)
                 .swordY(swordY)
                 .swordHeight(swordHeight)
-                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
-                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .linkSpeedX(runtime.inspection().linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.inspection().linkState.currentLinkSpeedY)
                 .creditsGameplay(false)
                 .handlerLinkCollisionEnabled(
                         projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
@@ -553,8 +553,8 @@ public final class EntityTestFrames {
                 .swordWidth(0)
                 .swordY(0)
                 .swordHeight(0)
-                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
-                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .linkSpeedX(runtime.inspection().linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.inspection().linkState.currentLinkSpeedY)
                 .creditsGameplay(false)
                 .handlerLinkCollisionEnabled(
                         projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
@@ -597,8 +597,8 @@ public final class EntityTestFrames {
                 .swordWidth(swordWidth)
                 .swordY(swordY)
                 .swordHeight(swordHeight)
-                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
-                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .linkSpeedX(runtime.inspection().linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.inspection().linkState.currentLinkSpeedY)
                 .creditsGameplay(false)
                 .handlerLinkCollisionEnabled(
                         projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)
@@ -642,8 +642,8 @@ public final class EntityTestFrames {
                 .swordWidth(swordWidth)
                 .swordY(swordY)
                 .swordHeight(swordHeight)
-                .linkSpeedX(runtime.entityState.linkState.currentLinkSpeedX)
-                .linkSpeedY(runtime.entityState.linkState.currentLinkSpeedY)
+                .linkSpeedX(runtime.inspection().linkState.currentLinkSpeedX)
+                .linkSpeedY(runtime.inspection().linkState.currentLinkSpeedY)
                 .creditsGameplay(false)
                 .handlerLinkCollisionEnabled(
                         projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE)

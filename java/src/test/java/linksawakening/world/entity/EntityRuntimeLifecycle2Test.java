@@ -233,7 +233,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00)));
 
-        List<EntityCombatEvent> launchEvents = runtime.consumePendingEntityEvents();
+        List<EntityCombatEvent> launchEvents = runtime.outbox().consumePendingEntityEvents();
         assertEquals(1, launchEvents.size());
         assertEquals(0, launchEvents.get(0).slot());
         assertEquals(0x27, launchEvents.get(0).type());
@@ -241,7 +241,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(0x0A, launchEvents.get(0).soundId());
 
         runtime.tick(EntityTestFrames.frame(runtime, 3, 80, 64, sequence(0x00)));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -261,7 +261,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
         runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00), wall));
 
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -382,7 +382,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x60, () -> 0));
             assertEquals(
                     List.of(new LinkFinalPositionRequest(0, true, true, false)),
-                    runtime.consumePendingLinkFinalPositionRequests());
+                    runtime.outbox().consumePendingLinkFinalPositionRequests());
         }
     }
 
@@ -405,8 +405,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                         .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        assertEquals(1 << 3, runtime.clearEntity(0));
-        assertEquals(0, runtime.clearEntity(1));
+        assertEquals(1 << 3, runtime.lifecycle().clearEntity(0));
+        assertEquals(0, runtime.lifecycle().clearEntity(1));
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(0).status());
@@ -428,8 +428,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0));
 
-        assertNull(runtime.collectIfNeeded(0, 24, 34, false, true));
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
+        assertNull(runtime.pickups().collectIfNeeded(0, 24, 34, false, true));
+        EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(1, 24, 34, false, true);
 
         assertNotNull(pickup);
         assertEquals(0, pickup.slot());
@@ -475,10 +475,10 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .build();
         RoomEntityRuntime belowLinkZ =
                 RoomEntityRuntime.builder(snapshot(entity)).build();
-        assertNull(belowLinkZ.collectIfNeeded(1, 24, 47, true, true, 0, 0x0B));
+        assertNull(belowLinkZ.pickups().collectIfNeeded(1, 24, 47, true, true, 0, 0x0B));
 
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(entity)).build();
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 47, true, true, 0, 0x0C);
+        EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(1, 24, 47, true, true, 0, 0x0C);
 
         assertNotNull(pickup);
         assertEquals(0x86, pickup.type());
@@ -502,7 +502,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(entity)).build();
         runtime.configuration().setGroundInteractionSideScrolling(true);
 
-        EntityPickupEvent pickup = runtime.collectIfNeeded(0, 24, 47, true, true, 0, 0x00);
+        EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(0, 24, 47, true, true, 0, 0x00);
 
         assertNotNull(pickup);
         assertEquals(0xE5, pickup.type());
@@ -519,8 +519,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .spriteDefinition(definition)
                 .build());
 
-        assertNull(RoomEntityRuntime.builder(initial).build().collectIfNeeded(1, 24, 34, true, true));
-        assertNull(RoomEntityRuntime.builder(initial).build().collectIfNeeded(1, 24, 34, false, false));
+        assertNull(RoomEntityRuntime.builder(initial).build().pickups().collectIfNeeded(1, 24, 34, true, true));
+        assertNull(RoomEntityRuntime.builder(initial).build().pickups().collectIfNeeded(1, 24, 34, false, false));
     }
 
     @Test
@@ -544,7 +544,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
 
         assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState3(0));
         assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState4(0));
-        assertEquals(0x0A, runtime.options1(0));
+        assertEquals(0x0A, runtime.execution().slotProperties().options1(0));
         assertEquals(0x18, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(0));
         assertEquals(0x0C, runtime.inspection().dropSpeedX(0));
         assertEquals(0x0C, new EntityRoomInspectionQueries(runtime.inspection()).dropSpeedY(0));
@@ -572,7 +572,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
         assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).droppablePrivateState3(0));
-        assertEquals(0x0A, runtime.options1(0));
+        assertEquals(0x0A, runtime.execution().slotProperties().options1(0));
         // $629C returns past the fairy handler on the reveal frame too.
         assertEquals(0x0C, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedX(0));
         assertEquals(0x0C, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedY(0));
@@ -601,7 +601,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 staticRuntime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, new EntityRoomInspectionQueries(staticRuntime.inspection()).killCount());
         assertEquals(0, staticRuntime.inspection().killOrderAt(0));
-        assertEquals(1, staticRuntime.consumePendingClearedEntityMask());
+        assertEquals(1, staticRuntime.outbox().consumePendingClearedEntityMask());
 
         RoomEntityRuntime dynamicRuntime = RoomEntityRuntime.builder(snapshotAt(dyingEntity(0, -1, 0x09, catalog)))
                 .indoorRoom(false)
@@ -620,7 +620,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 new EnemyDropResolver.CounterState(0, 0),
                 dynamicRuntime.inspection().enemyDropCounters());
-        assertEquals(0, dynamicRuntime.consumePendingClearedEntityMask());
+        assertEquals(0, dynamicRuntime.outbox().consumePendingClearedEntityMask());
     }
 
     @Test
@@ -654,6 +654,6 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 new EnemyDropResolver.CounterState(1, 1), runtime.inspection().enemyDropCounters());
         assertEquals(1, randomReads.get());
-        assertEquals(0b11, runtime.consumePendingClearedEntityMask());
+        assertEquals(0b11, runtime.outbox().consumePendingClearedEntityMask());
     }
 }

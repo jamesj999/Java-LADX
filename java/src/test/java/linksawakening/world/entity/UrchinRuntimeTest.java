@@ -59,7 +59,7 @@ final class UrchinRuntimeTest {
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
         assertTrue(RoomEntityCombatRules.supportsLinkCollision(ENTITY_URCHIN));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(0x02, runtime.options1(0));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(0));
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertTrue(RoomEntityCombatRules.overlapsLink(
                 runtime.inspection().snapshot().slots().get(0), 0x4C, 0x40));
@@ -81,8 +81,8 @@ final class UrchinRuntimeTest {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0));
 
         assertEquals(1, events.size());
         EntityCombatEvent event = events.getFirst();
@@ -106,8 +106,8 @@ final class UrchinRuntimeTest {
                 .spriteHandlers(catalog)
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0));
 
         assertEquals(0x04, events.getFirst().linkDamage());
     }
@@ -244,8 +244,9 @@ final class UrchinRuntimeTest {
         assertEquals(0x3F, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertEquals(List.of(new LinkFinalPositionRequest(0)), runtime.consumePendingLinkFinalPositionRequests());
-        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        assertEquals(
+                List.of(new LinkFinalPositionRequest(0)), runtime.outbox().consumePendingLinkFinalPositionRequests());
+        List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x3E, events.get(0).soundId());
@@ -285,8 +286,9 @@ final class UrchinRuntimeTest {
                 new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false)));
 
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(List.of(new LinkFinalPositionRequest(0)), runtime.consumePendingLinkFinalPositionRequests());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertEquals(
+                List.of(new LinkFinalPositionRequest(0)), runtime.outbox().consumePendingLinkFinalPositionRequests());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     private static void assertUrchinSprites(EntitySpriteDefinition definition, int address, int[][] expected) {

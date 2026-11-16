@@ -35,12 +35,12 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(2, runtime.enemies().enemyHealth(0));
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> firstHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, firstHit.size());
         assertTrue(firstHit.get(0).swordHit());
         assertEquals(
@@ -52,8 +52,9 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         RoomEntity afterFirstHit = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> secondHit = runtime.resolveCombat(new EntitySwordContactFrame(
-                0x19, 120, 120, false, true, true, afterFirstHit.x() + 8, 1, afterFirstHit.y() + 8, 1));
+        List<EntityCombatEvent> secondHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(
+                        0x19, 120, 120, false, true, true, afterFirstHit.x() + 8, 1, afterFirstHit.y() + 8, 1));
         assertEquals(1, secondHit.size());
         assertEquals(
                 EntityStatus.DYING,
@@ -76,14 +77,14 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
 
         for (int frame = 0; frame < 0x20; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
-            assertEquals(-1, runtime.consumePendingMusicTrack());
+            assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
         }
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x20, 0x50, 0x60, () -> 0));
-        assertEquals(0x50, runtime.consumePendingMusicTrack());
+        assertEquals(0x50, runtime.outbox().consumePendingMusicTrack());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x21, 0x50, 0x60, () -> 0));
-        assertEquals(-1, runtime.consumePendingMusicTrack());
+        assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
     }
 
     @Test
@@ -181,7 +182,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(3, runtime.flyingEnemies().pairoddDirection(0));
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x57, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x3C)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -261,7 +262,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(0x18, runtime.flyingEnemies().pairoddProjectileSpeedY(15));
         assertEquals(0, runtime.flyingEnemies().pairoddProjectileDirection(15));
 
-        assertEquals(0, runtime.clearEntity(15));
+        assertEquals(0, runtime.lifecycle().clearEntity(15));
         assertEquals(0, runtime.flyingEnemies().pairoddProjectileSpeedX(15));
         assertEquals(
                 EntityStatus.DISABLED,
@@ -381,7 +382,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(0x10, runtime.inspection().dropSpeedZ(14));
         assertEquals(
                 List.of(new EntityCombatEvent(15, 0x87, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -429,6 +430,6 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         assertEquals(0x18, runtime.inspection().dropSpeedZ(14));
         assertEquals(
                 List.of(new EntityCombatEvent(15, 0x5F, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 }

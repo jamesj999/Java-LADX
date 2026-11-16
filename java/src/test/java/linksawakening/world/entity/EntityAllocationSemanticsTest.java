@@ -19,11 +19,16 @@ final class EntityAllocationSemanticsTest {
         RoomEntitySnapshot owned = runtime.inspection().snapshot();
         RoomEntitySnapshot view = runtime.inspection().view();
         assertSame(view, runtime.inspection().view());
-        runtime.slots.replace(0, EntitySnapshots.withPositionAndVariant(runtime.slots.get(0), 80, 88, 1));
+        runtime.inspection()
+                .slots
+                .replace(
+                        0,
+                        EntitySnapshots.withPositionAndVariant(
+                                runtime.inspection().slots.get(0), 80, 88, 1));
         assertEquals(64, owned.slots().getFirst().x());
         assertEquals(80, view.slots().getFirst().x());
         assertThrows(UnsupportedOperationException.class, () -> view.slots().set(0, RoomEntity.disabled(0)));
-        runtime.slots.replace(0, RoomEntity.disabled(0));
+        runtime.inspection().slots.replace(0, RoomEntity.disabled(0));
         assertTrue(view.loadedEntities().isEmpty());
         assertEquals(1, owned.loadedEntities().size());
     }
@@ -33,8 +38,13 @@ final class EntityAllocationSemanticsTest {
         RoomEntityRuntime runtime = runtime();
         RoomEntitySnapshot view = runtime.inspection().view();
         RoomEntitySnapshot transformed = view.withVisualYOffset(0, 3);
-        runtime.slots.replace(0, EntitySnapshots.withPositionAndVariant(runtime.slots.get(0), 80, 88, 1));
-        runtime.entityState.physicsTables.writeFallingVisualYOffset(0, 7);
+        runtime.inspection()
+                .slots
+                .replace(
+                        0,
+                        EntitySnapshots.withPositionAndVariant(
+                                runtime.inspection().slots.get(0), 80, 88, 1));
+        runtime.inspection().physicsTables.writeFallingVisualYOffset(0, 7);
         assertEquals(64, transformed.slots().getFirst().x());
         assertEquals(3, transformed.visualYOffset(0));
         assertEquals(7, view.visualYOffset(0));

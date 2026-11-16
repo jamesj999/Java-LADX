@@ -404,4 +404,12 @@ public final class EntityRuntimeConfiguration {
         this.presentationState.writePaletteDataFlags(paletteDataFlags);
         this.presentationState.writeDefaultMusicTrack(defaultMusicTrack);
     }
+
+    public void setFreeMovementMode(boolean enabled) {
+        roomVariables.writeFreeMovementMode(enabled);
+    }
+
+    public void setHeartPiecesCount(int count) {
+        pickups.writeHeartPiecesCount(count);
+    }
 }

@@ -54,7 +54,7 @@ final class ArrowPauseTest {
             assertEquals(before.y(), paused.y());
             assertEquals(before.z(), paused.z());
             assertEquals(gate.equals("got_item") ? 0x17 : 0x18, countdown(runtime, type));
-            assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+            assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
             setGate(runtime, gate, false);
             tick(runtime, 2, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
             assertEquals(gate.equals("got_item") ? 0x16 : 0x17, countdown(runtime, type));
@@ -100,7 +100,7 @@ final class ArrowPauseTest {
         tick(runtime, 1, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0x18, countdown(runtime, type));
         assertEquals(0x42, runtime.inspection().snapshot().slots().get(0).x());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
     }
 
@@ -181,7 +181,7 @@ final class ArrowPauseTest {
                 .spriteHandlers(catalog)
                 .build();
         if (type == 0) {
-            assertEquals(15, runtime.spawnArrow(0x40, 0x50, 0, 0));
+            assertEquals(15, runtime.spawns().spawnArrow(0x40, 0x50, 0, 0));
         }
         return runtime;
     }

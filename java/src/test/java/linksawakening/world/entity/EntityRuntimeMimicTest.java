@@ -43,10 +43,10 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         assertEquals(4, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(0x08, runtime.options1(0));
+        assertEquals(0x08, runtime.execution().slotProperties().options1(0));
 
-        List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> contact = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x18, contact.get(0).linkDamage());
     }
@@ -86,7 +86,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         assertEquals(0x02, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(0x48, runtime.options1(0));
+        assertEquals(0x48, runtime.execution().slotProperties().options1(0));
 
         runtime.tick(EntityTestFrames.frame(
                 runtime,
@@ -100,10 +100,10 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
                 3,
                 0));
         assertEquals(0x3E, runtime.inspection().snapshot().slots().get(0).x());
-        assertEquals(0x08, runtime.options1(0));
+        assertEquals(0x08, runtime.execution().slotProperties().options1(0));
 
-        List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x3E, 0x50, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> contact = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x3E, 0x50, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
     }
@@ -139,10 +139,10 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
                 0,
                 3,
                 0));
-        assertEquals(0x48, runtime.options1(0));
+        assertEquals(0x48, runtime.execution().slotProperties().options1(0));
 
-        List<EntityCombatEvent> swordHit = runtime.resolveCombat(
-                new EntitySwordContactFrame(1, 0x50, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10));
+        List<EntityCombatEvent> swordHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x50, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10));
 
         assertEquals(1, swordHit.size());
         assertEquals(0, swordHit.get(0).enemyDamage());
@@ -194,11 +194,12 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
                 0,
                 0,
                 0));
-        assertEquals(0x08, runtime.options1(0));
+        assertEquals(0x08, runtime.execution().slotProperties().options1(0));
 
         RoomEntity maskedMimic = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> swordHit = runtime.resolveCombat(new EntitySwordContactFrame(
-                2, 0x40, 0x70, false, true, true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08));
+        List<EntityCombatEvent> swordHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(
+                        2, 0x40, 0x70, false, true, true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08));
 
         assertEquals(1, swordHit.size());
         assertEquals(1, swordHit.get(0).enemyDamage());

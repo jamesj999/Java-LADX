@@ -13,32 +13,32 @@ final class EntityRoomInspectionFixture {
     }
 
     int bombArrowCooldownForTest() {
-        return runtime.bombInteractions.state.readBombArrowCooldown();
+        return runtime.execution().bombInteractions().state.readBombArrowCooldown();
     }
 
     boolean isBombArrowForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.bombInteractions.state.readPlayerArrowBombArrow(slot);
+        return runtime.execution().bombInteractions().state.readPlayerArrowBombArrow(slot);
     }
 
     int bombPrivateCountdown1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.bombInteractions.state.readBombPrivateCountdown1(slot) & 0xFF;
+        return runtime.execution().bombInteractions().state.readBombPrivateCountdown1(slot) & 0xFF;
     }
 
     int swordPickupStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.rewards.state.readSwordPickupState(slot);
+        return runtime.pickups().state.readSwordPickupState(slot);
     }
 
     int slowTransitionCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState.physicsTables.readSlowTransitionCountdown(slot);
+        return runtime.inspection().physicsTables.readSlowTransitionCountdown(slot);
     }
 
     int threeOfAKindStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
                 .state(slot);
@@ -46,12 +46,12 @@ final class EntityRoomInspectionFixture {
 
     int transitionCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState.physicsTables.readEnemyTransitionCountdown(slot);
+        return runtime.inspection().physicsTables.readEnemyTransitionCountdown(slot);
     }
 
     int hinoxStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(HinoxMotion.class, HinoxMotion::new)
                 .state(slot);
@@ -59,7 +59,7 @@ final class EntityRoomInspectionFixture {
 
     int hinoxSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(HinoxMotion.class, HinoxMotion::new)
                 .speedX(slot);
@@ -67,7 +67,7 @@ final class EntityRoomInspectionFixture {
 
     int hinoxSpeedYForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(HinoxMotion.class, HinoxMotion::new)
                 .speedY(slot);
@@ -75,12 +75,12 @@ final class EntityRoomInspectionFixture {
 
     int enemyHealthForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState.combatTables.readEnemyHealth(slot);
+        return runtime.inspection().combatTables.readEnemyHealth(slot);
     }
 
     int tarinRaccoonStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                 .state(slot);
@@ -88,51 +88,51 @@ final class EntityRoomInspectionFixture {
 
     int bombPrivateState4ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.bombInteractions.state.readBombPrivateState4(slot) & 0xFF;
+        return runtime.execution().bombInteractions().state.readBombPrivateState4(slot) & 0xFF;
     }
 
     int entityRoomStatusForTest() {
-        return runtime.entityState.roomVariables.readEntityRoomStatus() & 0xFF;
+        return runtime.inspection().roomVariables.readEntityRoomStatus() & 0xFF;
     }
 
     int warpTransitionCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.warpState.readWarpTransitionCountdown(slot) & 0xFF;
+        return runtime.inspection().warpState.readWarpTransitionCountdown(slot) & 0xFF;
     }
 
     int owlEventStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.story.state.owlState().readOwlEventState(slot);
+        return runtime.execution().story().state.owlState().readOwlEventState(slot);
     }
 
     int owlPrivateCountdown1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.story.state.owlState().readOwlPrivateCountdown1(slot);
+        return runtime.execution().story().state.owlState().readOwlPrivateCountdown1(slot);
     }
 
     int sideViewPlatformSpeedYForTest(int slot) {
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .speedY(slot);
     }
 
     int sideViewPlatformSpeedXForTest(int slot) {
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .speedX(slot);
     }
 
     int sideViewPlatformPrivateState2ForTest(int slot) {
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .privateState2(slot);
     }
 
     int sideViewPlatformPrivateState4ForTest(int slot) {
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .privateState4(slot);
@@ -140,6 +140,6 @@ final class EntityRoomInspectionFixture {
 
     int droppedItemForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.bossRewards.state.readDroppedItemBySlot(slot);
+        return runtime.execution().bossRewards().state.readDroppedItemBySlot(slot);
     }
 }

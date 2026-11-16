@@ -77,12 +77,12 @@ final class BeachOpeningRuntimeTest {
         RoomEntity sword = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x84, sword.spriteDefinition().variant(0).first().tile());
 
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, sword.x(), sword.y(), false, true, 3, 0);
+        EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(1, sword.x(), sword.y(), false, true, 3, 0);
         assertNotNull(pickup);
         assertEquals(0, pickup.persistentClearMask());
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x58, 0x60, () -> 0));
-        assertEquals(0x0F, runtime.consumePendingMusicTrack());
-        assertTrue(runtime.consumePendingSwordPickupRewards().isEmpty());
+        assertEquals(0x0F, runtime.outbox().consumePendingMusicTrack());
+        assertTrue(runtime.outbox().consumePendingSwordPickupRewards().isEmpty());
 
         boolean foundSwordDialog = false;
         boolean foundOverworldIntro = false;
@@ -94,23 +94,23 @@ final class BeachOpeningRuntimeTest {
         List<SwordPickupRewardEvent> rewards = List.of();
         for (int frame = 3; frame < 0x240 && rewards.isEmpty(); frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x58, 0x60, () -> 0));
-            foundSwordDialog |= runtime.consumePendingDialogRequests().stream()
+            foundSwordDialog |= runtime.outbox().consumePendingDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x09B);
-            int musicTrack = runtime.consumePendingMusicTrack();
+            int musicTrack = runtime.outbox().consumePendingMusicTrack();
             foundOverworldIntro |= musicTrack == 0x31;
             foundNormalOverworld |= musicTrack == 0x05;
-            foundSpinNoise |= runtime.consumePendingEntityEvents().stream()
+            foundSpinNoise |= runtime.outbox().consumePendingEntityEvents().stream()
                     .anyMatch(event ->
                             event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x03);
-            List<LinkSwordSpinPoseRequest> spinRequests = runtime.consumePendingLinkSwordSpinPoseRequests();
-            List<LinkMotionBlockRequest> motionBlockRequests = runtime.consumePendingLinkMotionBlockRequests();
+            List<LinkSwordSpinPoseRequest> spinRequests = runtime.outbox().consumePendingLinkSwordSpinPoseRequests();
+            List<LinkMotionBlockRequest> motionBlockRequests = runtime.outbox().consumePendingLinkMotionBlockRequests();
             foundSpinPose |= !spinRequests.isEmpty();
             if (spinRequests.stream().anyMatch(request -> request.countdown() != 0x20)) {
                 foundSpinFrameWithoutMotionBlock |= motionBlockRequests.isEmpty();
             }
             foundFinalPose |=
-                    !runtime.consumePendingLinkSwordFinalPoseRequests().isEmpty();
-            rewards = runtime.consumePendingSwordPickupRewards();
+                    !runtime.outbox().consumePendingLinkSwordFinalPoseRequests().isEmpty();
+            rewards = runtime.outbox().consumePendingSwordPickupRewards();
         }
 
         assertTrue(foundSwordDialog);
@@ -153,10 +153,10 @@ final class BeachOpeningRuntimeTest {
         runtime.configuration().setToadstoolPlayerState(false, 0);
         runtime.configuration().setOwlDefaultMusicResolver(roomId -> 0x09);
 
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 0x58, 0x60, false, true, 3, 0);
+        EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(1, 0x58, 0x60, false, true, 3, 0);
         assertNotNull(pickup);
         assertEquals(0x01, pickup.persistentClearMask());
-        assertEquals(0x10, runtime.consumePendingMusicTrack());
+        assertEquals(0x10, runtime.outbox().consumePendingMusicTrack());
 
         boolean heldAboveLink = false;
         boolean linkBlocked = false;
@@ -164,9 +164,11 @@ final class BeachOpeningRuntimeTest {
         List<ToadstoolRewardEvent> rewards = List.of();
         for (int frame = 2; frame < 0x100 && rewards.isEmpty(); frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x48, 0x50, () -> 0));
-            heldAboveLink |= !runtime.consumePendingLinkHeldItemPoseRequests().isEmpty();
-            linkBlocked |= !runtime.consumePendingLinkMotionBlockRequests().isEmpty();
-            boolean opened = runtime.consumePendingDialogRequests().stream()
+            heldAboveLink |=
+                    !runtime.outbox().consumePendingLinkHeldItemPoseRequests().isEmpty();
+            linkBlocked |=
+                    !runtime.outbox().consumePendingLinkMotionBlockRequests().isEmpty();
+            boolean opened = runtime.outbox().consumePendingDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x00F);
             dialogOpened |= opened;
             if (opened) {
@@ -174,7 +176,7 @@ final class BeachOpeningRuntimeTest {
                 for (int wait = 0; wait < 360; wait++) {
                     runtime.tick(EntityTestFrames.frame(runtime, frame + wait, 0x48, 0x50, () -> 0));
                     assertTrue(
-                            runtime.consumePendingToadstoolRewards().isEmpty(),
+                            runtime.outbox().consumePendingToadstoolRewards().isEmpty(),
                             "Reading the dialogue must not grant or hide the held mushroom");
                     assertEquals(
                             EntityStatus.ACTIVE,
@@ -182,14 +184,14 @@ final class BeachOpeningRuntimeTest {
                 }
                 runtime.configuration().setDialogActive(false);
             }
-            rewards = runtime.consumePendingToadstoolRewards();
+            rewards = runtime.outbox().consumePendingToadstoolRewards();
         }
 
         assertTrue(heldAboveLink);
         assertTrue(linkBlocked);
         assertTrue(dialogOpened);
         assertEquals(List.of(new ToadstoolRewardEvent(0)), rewards);
-        assertEquals(0x09, runtime.consumePendingMusicTrack());
+        assertEquals(0x09, runtime.outbox().consumePendingMusicTrack());
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(0).status());
@@ -235,11 +237,11 @@ final class BeachOpeningRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x3F, 0x44, () -> 0));
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
-        assertEquals(-1, runtime.consumePendingMusicTrack());
+        assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x44, () -> 0));
         assertEquals(1, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
-        assertEquals(0x22, runtime.consumePendingMusicTrack());
+        assertEquals(0x22, runtime.outbox().consumePendingMusicTrack());
 
         boolean dialogOpened = false;
         boolean linkBlocked = false;
@@ -247,12 +249,13 @@ final class BeachOpeningRuntimeTest {
         int frame = 2;
         while (!dialogOpened && frame < 0x300) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x58, 0x60, () -> 0));
-            dialogOpened |= runtime.consumePendingDialogRequests().stream()
+            dialogOpened |= runtime.outbox().consumePendingDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x0D9);
-            linkBlocked |= !runtime.consumePendingLinkMotionBlockRequests().isEmpty();
+            linkBlocked |=
+                    !runtime.outbox().consumePendingLinkMotionBlockRequests().isEmpty();
             fallenPoseRequested |=
-                    !runtime.consumePendingLinkFallenPoseRequests().isEmpty();
-            assertTrue(runtime.consumePendingOwlEventCompletions().isEmpty());
+                    !runtime.outbox().consumePendingLinkFallenPoseRequests().isEmpty();
+            assertTrue(runtime.outbox().consumePendingOwlEventCompletions().isEmpty());
         }
 
         assertTrue(dialogOpened);
@@ -260,10 +263,10 @@ final class BeachOpeningRuntimeTest {
         assertFalse(fallenPoseRequested);
         for (int countdown = 0x0F; countdown > 0; countdown--) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x58, 0x60, () -> 0));
-            assertTrue(runtime.consumePendingOwlEventCompletions().isEmpty());
+            assertTrue(runtime.outbox().consumePendingOwlEventCompletions().isEmpty());
         }
         runtime.tick(EntityTestFrames.frame(runtime, frame, 0x58, 0x60, () -> 0));
-        assertEquals(List.of(new OwlEventCompletion(0)), runtime.consumePendingOwlEventCompletions());
+        assertEquals(List.of(new OwlEventCompletion(0)), runtime.outbox().consumePendingOwlEventCompletions());
     }
 
     @Test
@@ -286,18 +289,18 @@ final class BeachOpeningRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x58, 0x44, () -> 0));
         while (EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0) != 2 && frame < 200) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x58, 0x45, () -> 0));
-            runtime.consumePendingLinkMotionBlockRequests();
+            runtime.outbox().consumePendingLinkMotionBlockRequests();
         }
         assertEquals(2, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
         // Captured ROM: C111 counts 5..1 while C1A8 retains the pre-decrement
         // value. No motion-block write occurs in these state-2 frames.
         for (int delay = 0; delay < 5; delay++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x58, 0x45 + delay, () -> 0));
-            assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
-            assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+            assertTrue(runtime.outbox().consumePendingLinkMotionBlockRequests().isEmpty());
+            assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
         }
         runtime.tick(EntityTestFrames.frame(runtime, frame, 0x58, 0x4A, () -> 0));
-        assertEquals(1, runtime.consumePendingDialogRequests().size());
+        assertEquals(1, runtime.outbox().consumePendingDialogRequests().size());
     }
 
     @Test
@@ -313,7 +316,7 @@ final class BeachOpeningRuntimeTest {
         assertEquals(
                 EntityStatus.DISABLED,
                 swordless.inspection().snapshot().slots().get(0).status());
-        assertEquals(-1, swordless.consumePendingMusicTrack());
+        assertEquals(-1, swordless.outbox().consumePendingMusicTrack());
 
         RoomEntityRuntime armed = owlRuntime(catalog, rom);
         armed.configuration().setEntityRoomId(0x80);
@@ -324,17 +327,17 @@ final class BeachOpeningRuntimeTest {
 
         armed.tick(EntityTestFrames.frame(armed, 0, 0x50, 0x50, () -> 0));
         assertEquals(1, EntityRuntimeFixture.inspection(armed).owlEventStateForTest(0));
-        assertEquals(0x22, armed.consumePendingMusicTrack());
+        assertEquals(0x22, armed.outbox().consumePendingMusicTrack());
         armed.tick(EntityTestFrames.frame(armed, 1, 0x50, 0x50, () -> 0));
-        assertEquals(List.of(new LinkFacingRequest(0, 0)), armed.consumePendingLinkFacingRequests());
-        assertTrue(armed.consumePendingEntityEvents().stream()
+        assertEquals(List.of(new LinkFacingRequest(0, 0)), armed.outbox().consumePendingLinkFacingRequests());
+        assertTrue(armed.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x2D));
         assertEquals(
                 EntitySpriteDefinition.Shape.PAIR,
                 armed.inspection().snapshot().slots().get(0).spriteDefinition().shape());
         armed.tick(EntityTestFrames.frame(armed, 2, 0x50, 0x50, () -> 0));
-        assertFalse(armed.consumePendingEntityEvents().stream()
+        assertFalse(armed.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x2D));
 
@@ -371,7 +374,7 @@ final class BeachOpeningRuntimeTest {
                 EntityStatus.ACTIVE,
                 ordered.inspection().snapshot().slots().get(0).status());
         assertEquals(2, EntityRuntimeFixture.inspection(ordered).owlEventStateForTest(0));
-        assertEquals(0x22, ordered.consumePendingMusicTrack());
+        assertEquals(0x22, ordered.outbox().consumePendingMusicTrack());
     }
 
     @Test
@@ -400,7 +403,7 @@ final class BeachOpeningRuntimeTest {
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
 
         runtime.configuration().setTailKeyOwned(true);
-        int chestSlot = runtime.spawnChestWithItem(0x38, 0x31, ChestContentsTable.CHEST_TAIL_KEY);
+        int chestSlot = runtime.spawns().spawnChestWithItem(0x38, 0x31, ChestContentsTable.CHEST_TAIL_KEY);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
         assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, chestSlot);
         assertEquals(0x37, EntityRuntimeFixture.inspection(runtime).owlPrivateCountdown1ForTest(0));
@@ -428,12 +431,12 @@ final class BeachOpeningRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x3B, 0x50, 0x50, () -> 0));
         assertEquals(1, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
-        assertEquals(0x22, runtime.consumePendingMusicTrack());
+        assertEquals(0x22, runtime.outbox().consumePendingMusicTrack());
 
         boolean dialogOpened = false;
         for (int frame = 0x3C; frame < 0x300 && !dialogOpened; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x50, () -> 0));
-            dialogOpened = runtime.consumePendingDialogRequests().stream()
+            dialogOpened = runtime.outbox().consumePendingDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x0C1);
         }
         assertTrue(dialogOpened);

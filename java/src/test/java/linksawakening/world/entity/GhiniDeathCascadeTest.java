@@ -27,28 +27,29 @@ class GhiniDeathCascadeTest {
                 .randomByteSupplier(() -> 0)
                 .build();
         var killed = entity(8, 0x12, EntityStatus.DYING);
-        runtime.slots.replace(8, killed);
-        runtime.slots.replace(15, entity(15, 0x10, EntityStatus.ACTIVE));
-        runtime.slots.replace(12, entity(12, 0x11, EntityStatus.STUNNED));
-        runtime.slots.replace(9, entity(9, 0x10, EntityStatus.DISABLED));
-        runtime.slots.replace(7, entity(7, 0x10, EntityStatus.ACTIVE));
-        runtime.entityState
+        runtime.inspection().slots.replace(8, killed);
+        runtime.inspection().slots.replace(15, entity(15, 0x10, EntityStatus.ACTIVE));
+        runtime.inspection().slots.replace(12, entity(12, 0x11, EntityStatus.STUNNED));
+        runtime.inspection().slots.replace(9, entity(9, 0x10, EntityStatus.DISABLED));
+        runtime.inspection().slots.replace(7, entity(7, 0x10, EntityStatus.ACTIVE));
+        runtime.inspection()
                 .motions
                 .get(GhiniMotion.class, GhiniMotion::new)
                 .initialize(7, 0x10); // Hidden state 1 is excluded.
-        runtime.slots.replace(3, entity(3, 0x12, EntityStatus.ACTIVE));
+        runtime.inspection().slots.replace(3, entity(3, 0x12, EntityStatus.ACTIVE));
         var draws = new AtomicInteger();
-        runtime.bossRewards.cascadeGhiniDeath(killed, draws::getAndIncrement);
+        runtime.execution().bossRewards().cascadeGhiniDeath(killed, draws::getAndIncrement);
         assertEquals(2, draws.get());
-        assertEquals(0x2D, runtime.bossRewards.state.readDroppedItemBySlot(15));
-        assertEquals(0x2E, runtime.bossRewards.state.readDroppedItemBySlot(12));
-        assertEquals(0x2E, runtime.bossRewards.state.readDroppedItemBySlot(8));
+        assertEquals(0x2D, runtime.execution().bossRewards().state.readDroppedItemBySlot(15));
+        assertEquals(0x2E, runtime.execution().bossRewards().state.readDroppedItemBySlot(12));
+        assertEquals(0x2E, runtime.execution().bossRewards().state.readDroppedItemBySlot(8));
         for (int slot : new int[] {15, 12}) {
-            assertEquals(EntityStatus.DYING, runtime.slots.get(slot).status());
-            assertEquals(0x1F, runtime.entityState.combatTables.readDyingCountdown(slot));
+            assertEquals(
+                    EntityStatus.DYING, runtime.inspection().slots.get(slot).status());
+            assertEquals(0x1F, runtime.inspection().combatTables.readDyingCountdown(slot));
         }
-        assertEquals(EntityStatus.ACTIVE, runtime.slots.get(7).status());
-        assertEquals(EntityStatus.ACTIVE, runtime.slots.get(3).status());
-        assertEquals(EntityStatus.DISABLED, runtime.slots.get(9).status());
+        assertEquals(EntityStatus.ACTIVE, runtime.inspection().slots.get(7).status());
+        assertEquals(EntityStatus.ACTIVE, runtime.inspection().slots.get(3).status());
+        assertEquals(EntityStatus.DISABLED, runtime.inspection().slots.get(9).status());
     }
 }

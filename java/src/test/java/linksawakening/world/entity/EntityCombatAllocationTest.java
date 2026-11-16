@@ -17,14 +17,14 @@ class EntityCombatAllocationTest {
         var frame =
                 new EnemyCombatFrame(0, 120, 120, false, 0, true, true, 56, 32, 56, 24, EnemyAttackContext.standard());
         Runnable hit = () -> {
-            runtime.slots.replace(0, first);
-            runtime.slots.replace(1, second);
+            runtime.inspection().slots.replace(0, first);
+            runtime.inspection().slots.replace(1, second);
             for (int slot = 0; slot < 2; slot++) {
-                runtime.entityState.combatTables.writeEnemyHealth(slot, 4);
-                runtime.entityState.combatTables.writeEnemyFlashCountdown(slot, 0);
-                runtime.entityState.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
+                runtime.inspection().combatTables.writeEnemyHealth(slot, 4);
+                runtime.inspection().combatTables.writeEnemyFlashCountdown(slot, 0);
+                runtime.inspection().combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
             }
-            var events = runtime.resolveCombat(frame);
+            var events = runtime.combat().resolveCombat(frame);
             assertEquals(2, events.size());
             assertTrue(events.get(0).swordHit());
             assertTrue(events.get(1).swordHit());

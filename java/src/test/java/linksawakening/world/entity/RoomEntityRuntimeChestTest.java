@@ -29,7 +29,7 @@ final class RoomEntityRuntimeChestTest {
                 .chestContentsTable(chestTable)
                 .build();
 
-        int slot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_POWER_BRACELET);
+        int slot = runtime.spawns().spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_POWER_BRACELET);
         assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, slot);
         assertEquals(
                 EntityStatus.INIT,
@@ -43,10 +43,10 @@ final class RoomEntityRuntimeChestTest {
         assertEquals(0x58, initialized.y());
         assertEquals(ChestContentsTable.CHEST_POWER_BRACELET, initialized.spriteVariant());
         assertEquals(0xC2, runtime.enemies().physicsFlags(slot));
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x04));
-        assertEquals(1, runtime.consumePendingChestRewardEvents().size());
+        assertEquals(1, runtime.outbox().consumePendingChestRewardEvents().size());
     }
 
     @Test
@@ -60,23 +60,23 @@ final class RoomEntityRuntimeChestTest {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(chestTable)
                 .build();
-        int slot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_RUPEES_50);
+        int slot = runtime.spawns().spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_RUPEES_50);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        runtime.consumePendingEntityEvents();
-        runtime.consumePendingChestRewardEvents();
+        runtime.outbox().consumePendingEntityEvents();
+        runtime.outbox().consumePendingChestRewardEvents();
         for (int frame = 1; frame <= 8; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
 
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x01));
 
         for (int frame = 9; frame <= 0x26; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
-        assertEquals(List.of(new DialogRequest(0, 0xAC)), runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0xAC)), runtime.outbox().consumePendingDialogRequests());
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(slot).status());
@@ -87,10 +87,10 @@ final class RoomEntityRuntimeChestTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
             assertEquals(displayedItem, runtime.inspection().snapshot().slots().get(slot));
         }
-        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
         runtime.configuration().setDialogActive(false);
         runtime.tick(EntityTestFrames.frame(runtime, 0x27, 0, 0, () -> 0));
-        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
         runtime.tick(EntityTestFrames.frame(runtime, 0x28, 0, 0, () -> 0));
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
     }
@@ -105,7 +105,7 @@ final class RoomEntityRuntimeChestTest {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
-        int chestSlot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_ZOL);
+        int chestSlot = runtime.spawns().spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_ZOL);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
@@ -118,7 +118,7 @@ final class RoomEntityRuntimeChestTest {
         assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedX(zolSlot));
         assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).zolSpeedZ(zolSlot));
         assertEquals(0x50, new EntityEnemyInspectionQueries(runtime.enemies()).zolPrivateCountdown1(zolSlot));
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x1D));
     }

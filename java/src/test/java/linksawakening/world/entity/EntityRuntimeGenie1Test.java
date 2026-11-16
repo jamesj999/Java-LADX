@@ -99,7 +99,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals((jar.y() - 0x26) & 0xFF, appearance.y());
         assertEquals(2, EntityRuntimeFixture.bosses(runtime).geniePrivateState1ForTest(appearance.slot()));
         assertEquals(0x47, runtime.enemies().transitionCountdown(appearance.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x06));
     }
@@ -119,7 +119,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x6F, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x6F, () -> 0));
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x20));
 
@@ -181,7 +181,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
         assertEquals(1, EntityRuntimeFixture.bosses(runtime).genieActiveStateForTest(1));
         assertEquals(0xFF, EntityRuntimeFixture.bosses(runtime).geniePrivateCountdown1ForTest(1));
-        assertEquals(List.of(new DialogRequest(0, 0x52)), runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x52)), runtime.outbox().consumePendingDialogRequests());
     }
 
     @Test
@@ -202,7 +202,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals(4, EntityRuntimeFixture.bosses(runtime).genieActiveStateForTest(0));
         assertEquals(0x08, runtime.enemies().enemyHealth(0));
         assertEquals(0xFF, EntityRuntimeFixture.bosses(runtime).geniePrivateCountdown1ForTest(0));
-        assertEquals(List.of(new DialogRequest(0, 0x53)), runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x53)), runtime.outbox().consumePendingDialogRequests());
     }
 
     @Test
@@ -234,7 +234,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals(0x0C, EntityRuntimeFixture.bosses(runtime).genieSpeedXForTest(projectile.slot()));
         assertEquals(0x42, runtime.enemies().physicsFlags(projectile.slot()));
 
-        runtime.clearEntity(0);
+        runtime.lifecycle().clearEntity(0);
         for (int frame = 1; frame <= 80; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x70, () -> 0));
         }
@@ -272,11 +272,11 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals(0x40, fireball.y());
         assertEquals(0x24, EntityRuntimeFixture.bosses(runtime).genieSpeedZForTest(fireball.slot()));
         assertEquals(0x12, runtime.enemies().physicsFlags(fireball.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x28));
 
-        runtime.clearEntity(0);
+        runtime.lifecycle().clearEntity(0);
         for (int frame = 1; frame <= 80; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x70, () -> 0));
         }
@@ -299,7 +299,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
 
-        assertFalse(runtime.consumePendingLinkFinalPositionRequests().isEmpty());
+        assertFalse(runtime.outbox().consumePendingLinkFinalPositionRequests().isEmpty());
     }
 
     @Test
@@ -378,7 +378,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals(0xC7, runtime.enemies().transitionCountdown(controller.slot()));
         assertEquals(0x50, controller.x());
         assertEquals(0x28, controller.y());
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x1F));
     }
@@ -402,7 +402,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals(5, EntityRuntimeFixture.bosses(runtime).genieActiveStateForTest(0));
         assertEquals(0x80, runtime.enemies().transitionCountdown(0));
         assertEquals(0x0C, EntityRuntimeFixture.enemies(runtime).hitboxFlagsForTest(0));
-        assertEquals(0x81, runtime.options1(0));
+        assertEquals(0x81, runtime.execution().slotProperties().options1(0));
     }
 
     @Test
@@ -458,7 +458,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
                 .findFirst()
                 .orElseThrow();
         assertEquals(4, EntityRuntimeFixture.bosses(runtime).geniePrivateState1ForTest(fireball.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x28));
     }
@@ -497,7 +497,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
                 .orElseThrow();
         assertEquals(0x88, heart.x());
         assertEquals(0x20, heart.y());
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x1A));
     }
@@ -521,7 +521,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
 
         assertFalse(runtime.enemies().transientVfxRequests().isEmpty());
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x13));
     }
@@ -540,14 +540,14 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setGeniePrivateState1ForTest(0, 1);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
-        runtime.consumePendingEntityEvents();
+        runtime.outbox().consumePendingEntityEvents();
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x50, () -> 0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x50, 0x50, () -> 0));
 
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE && event.soundId() == 0x10));
     }
@@ -609,7 +609,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(List.of(), runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(List.of(), runtime.outbox().consumePendingLinkFinalPositionRequests());
 
         runtime.configuration().setDialogActive(false);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x68, () -> 0));
@@ -617,7 +617,7 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
         assertEquals(0, groundCalls.get());
 
         EntityRuntimeFixture.debug(runtime).setGeniePrivateState4ForTest(0, 2);
-        runtime.clearEntity(0);
+        runtime.lifecycle().clearEntity(0);
         assertEquals(0, EntityRuntimeFixture.bosses(runtime).geniePrivateState1ForTest(0));
         assertEquals(0, EntityRuntimeFixture.bosses(runtime).geniePrivateState4ForTest(0));
     }
@@ -637,16 +637,16 @@ final class EntityRuntimeGenie1Test extends EntityRuntimeTestSupport {
 
         for (int frame = 0; frame < 0x20; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
-            assertEquals(-1, runtime.consumePendingMusicTrack());
-            assertEquals(List.of(), runtime.consumePendingDialogRequests());
+            assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
+            assertEquals(List.of(), runtime.outbox().consumePendingDialogRequests());
         }
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x20, 0x50, 0x70, () -> 0));
-        assertEquals(0x19, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new DialogRequest(0, 0xB4)), runtime.consumePendingDialogRequests());
+        assertEquals(0x19, runtime.outbox().consumePendingMusicTrack());
+        assertEquals(List.of(new DialogRequest(0, 0xB4)), runtime.outbox().consumePendingDialogRequests());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x21, 0x50, 0x70, () -> 0));
-        assertEquals(-1, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(), runtime.consumePendingDialogRequests());
+        assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
+        assertEquals(List.of(), runtime.outbox().consumePendingDialogRequests());
     }
 }

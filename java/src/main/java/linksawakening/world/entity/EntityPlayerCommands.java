@@ -16,7 +16,7 @@ import linksawakening.world.entity.motion.SideViewPotMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** Player lift, throw, block movement and held-item presentation commands. */
-final class EntityPlayerCommands {
+public final class EntityPlayerCommands {
     final EntityBombState bombInteractions;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -62,7 +62,7 @@ final class EntityPlayerCommands {
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
     }
 
-    boolean beginLift(int slot, int romDirection) {
+    public boolean beginLift(int slot, int romDirection) {
         EntitySlotValidation.validateEntitySlot(slot);
         EntitySlotValidation.validateRomDirection(romDirection);
         RoomEntity entity = this.slots.get(slot);
@@ -101,7 +101,7 @@ final class EntityPlayerCommands {
         return true;
     }
 
-    boolean throwLiftedEntity(int romDirection) {
+    public boolean throwLiftedEntity(int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
         LiftedEntityState state = this.inspection.liftedEntityState();
         if (!state.active() || state.carryState() != 0x01) {
@@ -148,7 +148,7 @@ final class EntityPlayerCommands {
         return true;
     }
 
-    void movePushedBlock(int slot, int x, int y) {
+    public void movePushedBlock(int slot, int x, int y) {
         if (slot < 0
                 || slot >= this.slots.size()
                 || this.slots.get(slot).type() != EntityRomConstants.ENTITY_PUSHED_BLOCK
@@ -174,7 +174,7 @@ final class EntityPlayerCommands {
                         false));
     }
 
-    void removePushedBlock(int slot) {
+    public void removePushedBlock(int slot) {
         if (slot >= 0
                 && slot < this.slots.size()
                 && this.slots.get(slot).type() == EntityRomConstants.ENTITY_PUSHED_BLOCK) {
@@ -182,7 +182,7 @@ final class EntityPlayerCommands {
         }
     }
 
-    boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
         for (int slot = 0; slot < this.slots.size(); slot++) {
             RoomEntity entity = this.slots.get(slot);
             if (entity.loaded() && entity.type() == 0x3E) {
@@ -222,7 +222,7 @@ final class EntityPlayerCommands {
         return value;
     }
 
-    void updateHouseTarinPresentation(int linkX, int linkY) {
+    public void updateHouseTarinPresentation(int linkX, int linkY) {
         for (int slot = 0; slot < this.slots.size(); slot++) {
             RoomEntity entity = this.slots.get(slot);
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_TARIN) {
@@ -260,5 +260,10 @@ final class EntityPlayerCommands {
         int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
         RoomEntity held = withPositionAndVariant(entity, x, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         this.slots.replace(slot, withZ(held, linkZ & 0xFF));
+    }
+
+    public int thrownDirection(int slot) {
+        EntitySlotValidation.validateEntitySlot(slot);
+        return liftThrow.readThrownDirection(slot) & 0xFF;
     }
 }

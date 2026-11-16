@@ -96,12 +96,12 @@ final class GiantGopongaRuntimeTest {
 
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
         assertEquals(0x00, runtime.enemies().physicsFlags(0));
-        assertEquals(0x02, runtime.options1(0));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(0));
         assertEquals(0x04, RoomEntityCombatRules.initialHealth(ENTITY_GIANT_GOPONGA_FLOWER));
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_GIANT_GOPONGA_FLOWER));
 
-        List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x4A, 0x40, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> contact = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x4A, 0x40, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
     }
@@ -165,7 +165,7 @@ final class GiantGopongaRuntimeTest {
 
         assertEquals(
                 List.of(new LinkFinalPositionRequest(0, true, true, false)),
-                runtime.consumePendingLinkFinalPositionRequests());
+                runtime.outbox().consumePendingLinkFinalPositionRequests());
     }
 
     @Test
@@ -197,7 +197,7 @@ final class GiantGopongaRuntimeTest {
         assertEquals(0x40, projectile.x());
         assertEquals(0x40, projectile.y());
         assertEquals(0x42, runtime.enemies().physicsFlags(projectile.slot()));
-        assertEquals(0x02, runtime.options1(projectile.slot()));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(projectile.slot()));
         assertEquals(0x30, runtime.enemies().enemyHealth(projectile.slot()));
     }
 

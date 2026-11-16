@@ -65,7 +65,7 @@ final class WitchRatRuntimeTest {
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_WITCH_RAT));
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_WITCH_RAT));
         assertEquals(0xD2, runtime.enemies().physicsFlags(0));
-        assertEquals(0x02, runtime.options1(0));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(0));
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
     }
 

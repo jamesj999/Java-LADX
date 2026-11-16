@@ -108,11 +108,11 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(15).status());
-        assertEquals(0x20, runtime.consumePendingRoomStatusMask());
+        assertEquals(0x20, runtime.outbox().consumePendingRoomStatusMask());
         assertEquals(
                 List.of(new EntityCombatEvent(
                         15, HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -141,7 +141,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                     0,
                     interactive));
         }
-        assertEquals(0x50, runtime.consumePendingMusicTrack());
+        assertEquals(0x50, runtime.outbox().consumePendingMusicTrack());
     }
 
     @Test
@@ -156,10 +156,11 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setHinoxStateForTest(0, HinoxMotion.STATE_GRAB);
         EntityRuntimeFixture.debug(runtime).setEnemyHealthForTest(0, 1);
 
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(0, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
-        assertTrue(runtime.resolveCombat(
-                        new EntitySwordContactFrame(1, 0x40, 0x40, false, true, true, 0x40, 0x10, 0x40, 0x10))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, true, 0x40, 0x10, 0x40, 0x10))
                 .isEmpty());
         assertEquals(
                 EntityStatus.ACTIVE,
@@ -213,7 +214,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false)));
 
-        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
         assertTrue(events.contains(new EntityCombatEvent(
                 0, HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20)));
         assertTrue(events.contains(new EntityCombatEvent(

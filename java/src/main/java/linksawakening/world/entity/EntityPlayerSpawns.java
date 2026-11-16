@@ -144,7 +144,7 @@ public final class EntityPlayerSpawns {
                 .setMaskSourceHookshotSlot(freeSlot, (sourceHookshotSlot + 1) & 0xFF);
     }
 
-    int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+    public int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         if (this.inspection.hookshotActive()) {
             return -1;
         }
@@ -191,7 +191,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnPushedBlock(int x, int y) {
+    public int spawnPushedBlock(int x, int y) {
         int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
@@ -225,7 +225,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) {
+    public int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) {
         int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
@@ -278,24 +278,25 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnRoomEventKeyDrop() {
+    public int spawnRoomEventKeyDrop() {
         int itemType = this.roomVariables.readEntityMapId() >= 0x0A && this.roomVariables.readEntityMapId() != 0xFF
                 ? EntityRomConstants.ENTITY_HIDING_SLIME_KEY
                 : EntityRomConstants.ENTITY_KEY_DROP_POINT;
         return this.pickups.spawnKeyDropAt(itemType, 0x28, 0x3C, 0, 0x70, 0, 0);
     }
 
-    int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+    public int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         return EntityPlayerSpawns.playerProjectileSpawnsSpawnArrow(
                 this, linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
 
-    int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+    public int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
         return EntityPlayerSpawns.playerProjectileSpawnsSpawnArrow(
                 this, linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
     }
 
-    int spawnBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
+    public int spawnBoomerang(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
         EntitySlotValidation.validateRomDirection(romDirection);
         if (this.inspection.activeProjectileCount() != 0) {
             return -1;
@@ -345,7 +346,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+    public int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
         if (this.inspection.activeProjectileCount() != 0) {
             return -1;
@@ -395,18 +396,18 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+    public int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         return EntityPlayerSpawns.playerProjectileSpawnsSpawnMagicRodFireball(
                 this, linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
 
-    int spawnMagicRodFireball(
+    public int spawnMagicRodFireball(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
         return EntityPlayerSpawns.playerProjectileSpawnsSpawnMagicRodFireball(
                 this, linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
     }
 
-    int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+    public int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
         int freeSlot = this.slots.findFree(this.combatTables, this.slots.size() - 1);
         if (freeSlot < 0) {
@@ -499,7 +500,7 @@ public final class EntityPlayerSpawns {
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
-    int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+    public int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
         this.bombInteractions.state.writeLastBombPlacementPlayedBump(false);
         this.bombInteractions.finalizePendingBombPresentations();
@@ -692,7 +693,7 @@ public final class EntityPlayerSpawns {
         return true;
     }
 
-    int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY, boolean allowDrop) {
+    public int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY, boolean allowDrop) {
         if ((this.defaultRandomByteSupplier.getAsInt() & 0x07) != 0 || !allowDrop) {
             return -1;
         }
@@ -753,7 +754,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnChestWithItem(int objectLeft, int objectTop, int itemType) {
+    public int spawnChestWithItem(int objectLeft, int objectTop, int itemType) {
         this.chestContentsTable.requireSpawnTable();
         EntitySlotValidation.validateByte(objectLeft, "Chest object left");
         EntitySlotValidation.validateByte(objectTop, "Chest object top");

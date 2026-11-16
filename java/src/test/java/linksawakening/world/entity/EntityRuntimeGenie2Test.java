@@ -32,15 +32,15 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
         for (int frame = 0x20; frame < 0x40; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
         }
-        assertEquals(-1, runtime.consumePendingMusicTrack());
+        assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
 
         EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(false);
         for (int frame = 0x40; frame < 0x60; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
-            assertEquals(-1, runtime.consumePendingMusicTrack());
+            assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
         }
         runtime.tick(EntityTestFrames.frame(runtime, 0x60, 0x50, 0x70, () -> 0));
-        assertEquals(0x19, runtime.consumePendingMusicTrack());
+        assertEquals(0x19, runtime.outbox().consumePendingMusicTrack());
     }
 
     @Test
@@ -77,7 +77,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
         assertEquals(0x50, rock.x());
         assertEquals(0x68, rock.y());
         assertEquals(0xC4, runtime.enemies().physicsFlags(rock.slot()));
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x29));
     }
@@ -101,7 +101,7 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.THROWN,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE && event.soundId() == 0x07));
     }

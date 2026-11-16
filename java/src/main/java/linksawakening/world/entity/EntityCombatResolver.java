@@ -40,7 +40,7 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 
 /** DefaultEnemyDamageCollisionHandler and ApplySwordDamagesToEnemy, in ROM collision order. */
-final class EntityCombatResolver {
+public final class EntityCombatResolver {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
@@ -109,7 +109,10 @@ final class EntityCombatResolver {
         if (slot == slotScratch) slotScratchInUse = false;
     }
 
-    boolean deferContactRecoil(int slot, int linkX, int linkY) {
+    public boolean deferContactRecoil(int slot, int linkX, int linkY) {
+        EntitySlotValidation.validateEntitySlot(slot);
+        EntitySlotValidation.validateByte(linkX, "Link X");
+        EntitySlotValidation.validateByte(linkY, "Link Y");
         RoomEntity entity = this.slots.get(slot);
         if (entity.type() != EntityRomConstants.ENTITY_LEEVER || entity.status() != EntityStatus.ACTIVE) return false;
         deferredLeeverContact[slot] = true;
@@ -148,7 +151,7 @@ final class EntityCombatResolver {
                         .build());
     }
 
-    List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
+    public List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
         var runtime = this;
 
         int linkVerticalVelocity = inputs.linkVerticalVelocity();
@@ -1009,5 +1012,85 @@ final class EntityCombatResolver {
                         .linkCollisionResponse(slot.linkCollisionResponse)
                         .build());
         return true;
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntityAttackContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkVerticalVelocity,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                EnemyAttackContext.standard()));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntitySwordContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                0,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                EnemyAttackContext.standard()));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntityVerticalContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        EnemyAttackContext attackContext = inputs.attackContext();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                0,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                attackContext));
     }
 }

@@ -80,7 +80,7 @@ final class PokeyRuntimeTest {
 
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(0x02, runtime.options1(0));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
@@ -124,7 +124,7 @@ final class PokeyRuntimeTest {
         assertEquals(0x4CD5, segment.spriteDefinition().address());
         assertEquals(0x01, runtime.enemies().enemyHealth(segment.slot()));
         assertEquals(0x12, runtime.enemies().physicsFlags(segment.slot()));
-        assertEquals(0x02, runtime.options1(segment.slot()));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(segment.slot()));
         assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).pokeyPrivateState1(segment.slot()));
         assertEquals(
                 0x18, new EntityRoomInspectionQueries(runtime.inspection()).pokeyTransitionCountdown(segment.slot()));

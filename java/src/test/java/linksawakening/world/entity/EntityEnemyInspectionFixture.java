@@ -11,7 +11,7 @@ final class EntityEnemyInspectionFixture {
 
     int enemyRecoilSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                 .recoilSpeedX(slot);
@@ -19,7 +19,7 @@ final class EntityEnemyInspectionFixture {
 
     int enemyRecoilSpeedYForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                 .recoilSpeedY(slot);
@@ -27,11 +27,11 @@ final class EntityEnemyInspectionFixture {
 
     int musicalNoteInertiaForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.projectiles.state.readMusicalNoteInertia(slot);
+        return runtime.execution().projectiles().state.readMusicalNoteInertia(slot);
     }
 
     int hitboxFlagsForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState.combatTables.readEnemyHitboxFlags(slot);
+        return runtime.inspection().combatTables.readEnemyHitboxFlags(slot);
     }
 }

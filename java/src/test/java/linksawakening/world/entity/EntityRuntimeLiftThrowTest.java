@@ -60,7 +60,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                     .build());
             RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-            EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
+            EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(1, 24, 34, false, true);
 
             assertNotNull(pickup);
             assertEquals(1, pickup.persistentClearMask());
@@ -68,16 +68,18 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                     EntityStatus.ACTIVE,
                     runtime.inspection().snapshot().slots().get(0).status());
             assertFalse(runtime.inspection().liftedEntityState().active());
-            assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
+            assertNull(runtime.pickups().collectIfNeeded(1, 24, 34, false, true));
             for (int frame = 0; frame < 46; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame));
             assertEquals(
-                    List.of(new DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)), runtime.consumePendingDialogRequests());
+                    List.of(new DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)),
+                    runtime.outbox().consumePendingDialogRequests());
             runtime.configuration().setDialogActive(true);
             for (int frame = 46; frame < 246; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame));
             assertTrue(runtime.inspection().powerUpPickupSequenceActive());
             assertFalse(runtime.inspection().liftedEntityState().active());
             assertEquals(
-                    List.of(new LinkHeldItemPoseRequest(0, true)), runtime.consumePendingLinkHeldItemPoseRequests());
+                    List.of(new LinkHeldItemPoseRequest(0, true)),
+                    runtime.outbox().consumePendingLinkHeldItemPoseRequests());
             runtime.configuration().setDialogActive(false);
             runtime.tick(EntityTestFrames.frame(runtime, 246));
             assertFalse(runtime.inspection().powerUpPickupSequenceActive());
@@ -98,7 +100,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        int slot = runtime.spawnLiftableRockSmash(0x58, 0x60, 0x01);
+        int slot = runtime.spawns().spawnLiftableRockSmash(0x58, 0x60, 0x01);
 
         RoomEntity initial = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, initial.status());
@@ -109,10 +111,10 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntitySpriteDefinition.Shape.DYNAMIC, initial.spriteDefinition().shape());
         assertEquals(0xD4, runtime.enemies().physicsFlags(slot));
-        assertEquals(0x0A, runtime.options1(slot));
+        assertEquals(0x0A, runtime.execution().slotProperties().options1(slot));
         assertEquals(
                 0x05,
-                runtime.consumePendingEntityEvents().stream()
+                runtime.outbox().consumePendingEntityEvents().stream()
                         .filter(event -> event.type() == 0x05)
                         .findFirst()
                         .orElseThrow()
@@ -144,15 +146,15 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        int slot = runtime.spawnLiftableRockRubble(0x48, 0x4F);
+        int slot = runtime.spawns().spawnLiftableRockRubble(0x48, 0x4F);
 
         RoomEntity rubble = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, rubble.status());
         assertEquals(0x05, rubble.type());
         assertEquals(0x05, rubble.spriteVariant());
         assertEquals(0xC4, runtime.enemies().physicsFlags(slot));
-        assertEquals(0x0A, runtime.options1(slot));
-        assertEquals(List.of(), runtime.consumePendingEntityEvents());
+        assertEquals(0x0A, runtime.execution().slotProperties().options1(slot));
+        assertEquals(List.of(), runtime.outbox().consumePendingEntityEvents());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x05, runtime.inspection().snapshot().slots().get(slot).spriteVariant());

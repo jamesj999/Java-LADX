@@ -50,7 +50,7 @@ final class CuccoRuntimeTest {
                 .build();
 
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
-        assertEquals(0x02, runtime.options1(0));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(0));
         runtime.configuration().setActionButtonsHeld(true, false);
         runtime.configuration().setLikeLikeLinkInventory(0x03, 0x00);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
@@ -58,7 +58,7 @@ final class CuccoRuntimeTest {
         assertEquals(
                 EntityStatus.LIFTED,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .noneMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE));
     }
 
@@ -81,8 +81,8 @@ final class CuccoRuntimeTest {
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x00, () -> 0));
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0));
 
         assertFalse(events.isEmpty());
         assertEquals(0, events.getFirst().linkDamage());

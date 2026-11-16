@@ -164,4 +164,11 @@ public final class EntityEnemyInspection {
                 && !this.linkState.inventoryAppearing
                 && this.linkState.linkPlayingOcarinaCountdown == 0;
     }
+
+    public boolean gelClingingToLink() {
+        return motions.get(
+                        linksawakening.world.entity.motion.ZolGelMotion.class,
+                        linksawakening.world.entity.motion.ZolGelMotion::new)
+                .readGelClingingToLink();
+    }
 }

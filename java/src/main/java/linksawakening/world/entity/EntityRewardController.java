@@ -305,12 +305,12 @@ public final class EntityRewardController {
     final ItemPickupFrameStep itemPickupFrameStep = new ItemPickupFrameStep(this);
     final InstrumentPickupStep instrumentPickupStep = new InstrumentPickupStep(this);
 
-    EntityPickupEvent collectIfNeeded(
+    public EntityPickupEvent collectIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
         return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, 0, 0);
     }
 
-    EntityPickupEvent collectIfNeeded(
+    public EntityPickupEvent collectIfNeeded(
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
@@ -320,7 +320,7 @@ public final class EntityRewardController {
         return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, 0);
     }
 
-    EntityPickupEvent collectIfNeeded(
+    public EntityPickupEvent collectIfNeeded(
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
@@ -343,7 +343,7 @@ public final class EntityRewardController {
                 0));
     }
 
-    EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
+    public EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
         return entitySlotLifecycleFrameStep.run(inputs);
     }
 

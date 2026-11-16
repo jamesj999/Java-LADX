@@ -16,6 +16,7 @@ import static linksawakening.world.entity.EntityTypeRules.usesSharedRecoil;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -37,6 +38,37 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ExecuteEntities: prepare one frame, visit slots in descending order, then commit room presentation. */
 final class EntitySlotPipeline {
+    private final EntityFrameExecution frameExecution;
+    private final EntityFrameRandom frameRandom;
+
+    EntitySlotPipeline(EntityFrameExecution frameExecution, EntityFrameRandom frameRandom) {
+        this.frameExecution = java.util.Objects.requireNonNull(frameExecution);
+        this.frameRandom = java.util.Objects.requireNonNull(frameRandom);
+    }
+
+    EntityFrameContext frameContext(int frameCounter) {
+        IntSupplier randomByteSupplier = frameRandom.forFrame(frameCounter);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .randomByteSupplier(randomByteSupplier)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .handlerLinkCollisionEnabled(true)
+                .build();
+    }
+
+    List<EntityProjectileEvent> tick(EntityFrameContext context) {
+        EntitySlotValidation.validateByte(context.linkSpeedX(), "Link X speed");
+        EntitySlotValidation.validateByte(context.linkSpeedY(), "Link Y speed");
+        frameExecution.linkState().currentLinkSpeedX = context.linkSpeedX();
+        frameExecution.linkState().currentLinkSpeedY = context.linkSpeedY();
+        try {
+            return advanceFrame(frameExecution, context);
+        } finally {
+            frameExecution.combat().clearDeferredContactRecoil();
+            frameExecution.linkState().currentLinkSpeedX = 0;
+            frameExecution.linkState().currentLinkSpeedY = 0;
+        }
+    }
 
     static List<EntityProjectileEvent> advanceFrame(EntityFrameExecution frameExecution, EntityFrameContext context) {
         EntityFrameExecution state = frameExecution.acquire(context);

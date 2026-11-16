@@ -73,14 +73,14 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 (sourceZ + 1) & 0xFF,
                 runtime.inspection().snapshot().slots().get(14).z());
         assertEquals(0x16, runtime.inspection().dropSpeedZ(14));
-        assertNull(runtime.collectIfNeeded(1, sourceX, sourceY + 2, false, true));
+        assertNull(runtime.pickups().collectIfNeeded(1, sourceX, sourceY + 2, false, true));
 
         for (int frame = 2; frame <= 24; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).dropPrivateCountdown1(14));
         runtime.tick(EntityTestFrames.frame(runtime, 25, 0, 0, () -> 0));
-        EntityPickupEvent pickup = runtime.collectIfNeeded(25, sourceX, sourceY + 2, false, true);
+        EntityPickupEvent pickup = runtime.pickups().collectIfNeeded(25, sourceX, sourceY + 2, false, true);
         assertNotNull(pickup);
         assertEquals(14, pickup.slot());
         assertEquals(0x2E, pickup.type());
@@ -179,6 +179,6 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         assertFalse(runtime.inspection().snapshot().slots().stream()
                 .anyMatch(entity -> entity.loaded() && (entity.type() == 0x2D || entity.type() == 0x2E)));
         assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).killCount());
-        assertEquals(1, runtime.consumePendingClearedEntityMask());
+        assertEquals(1, runtime.outbox().consumePendingClearedEntityMask());
     }
 }

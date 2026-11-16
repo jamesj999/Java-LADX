@@ -24,7 +24,7 @@ final class SwordBeamRuntimeTest {
     @Test
     void spawnRunsTheRomInitialStateThenMovesAndEmitsBeamVfx() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        int slot = runtime.spawnSwordBeam(0x40, 0x40, 0, 0);
+        int slot = runtime.spawns().spawnSwordBeam(0x40, 0x40, 0, 0);
 
         assertEquals(0x0F, slot);
         assertEquals(1, runtime.inspection().activeProjectileCount());
@@ -55,7 +55,7 @@ final class SwordBeamRuntimeTest {
         assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).swordBeamSpeedY(slot));
         assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).swordBeamState(slot));
         assertEquals(-1, first.spriteVariant());
-        assertTrue(runtime.consumePendingEntityEvents().stream()
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x3B));
 
@@ -80,7 +80,7 @@ final class SwordBeamRuntimeTest {
     @Test
     void swordBeamStopsOnTheCommonObjectIntersection() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        int slot = runtime.spawnSwordBeam(0x40, 0x40, 0, 0);
+        int slot = runtime.spawns().spawnSwordBeam(0x40, 0x40, 0, 0);
         runtime.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x01, 0x01, 0x40, 0x40));
 
@@ -95,17 +95,17 @@ final class SwordBeamRuntimeTest {
     void swordBeamSpawnIsBlockedByAnyExistingPlayerProjectile() throws IOException {
         RoomEntityRuntime runtime = runtime();
 
-        int first = runtime.spawnSwordBeam(0x40, 0x40, 0, 0);
+        int first = runtime.spawns().spawnSwordBeam(0x40, 0x40, 0, 0);
 
         assertTrue(first >= 0);
-        assertEquals(-1, runtime.spawnSwordBeam(0x40, 0x40, 0, 0));
+        assertEquals(-1, runtime.spawns().spawnSwordBeam(0x40, 0x40, 0, 0));
         assertEquals(1, runtime.inspection().activeProjectileCount());
     }
 
     @Test
     void swordBeamStopsAtOppositeDirectionalBarrierAfterItsCrossingCounterExpires() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        int slot = runtime.spawnSwordBeam(0x40, 0x40, 0, 0);
+        int slot = runtime.spawns().spawnSwordBeam(0x40, 0x40, 0, 0);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 0xD1, 0x40, 0x40));
         tick(runtime, 0, 0x40, 0x40, 0);
         tick(runtime, 1, 0x40, 0x40, 0);
@@ -118,7 +118,7 @@ final class SwordBeamRuntimeTest {
     @CsvSource({"0", "1", "2", "3"})
     void blockedBeamEmitsItsPokeAtThePreMovementVisualPosition(int direction) throws IOException {
         RoomEntityRuntime runtime = runtime();
-        int slot = runtime.spawnSwordBeam(0x40, 0x50, 7, direction);
+        int slot = runtime.spawns().spawnSwordBeam(0x40, 0x50, 7, direction);
         tick(runtime, 0, 0x40, 0x50, direction);
         RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 1, 0x40, 0x40));
@@ -135,7 +135,7 @@ final class SwordBeamRuntimeTest {
     @Test
     void physicsFFRemovesTheBeamWithoutTheOrdinaryImpactSpark() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        int slot = runtime.spawnSwordBeam(0x40, 0x50, 0, 0);
+        int slot = runtime.spawns().spawnSwordBeam(0x40, 0x50, 0, 0);
         tick(runtime, 0, 0x40, 0x50, 0);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 0xFF, 0x40, 0x40));
         tick(runtime, 3, 0x40, 0x50, 0);

@@ -35,7 +35,8 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
         assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
-        assertEquals(0x24, runtime.consumePendingEntityEvents().getFirst().soundId());
+        assertEquals(
+                0x24, runtime.outbox().consumePendingEntityEvents().getFirst().soundId());
 
         int frame = 34;
         while (new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0) != 4 && frame < 200) {
@@ -46,7 +47,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
         boolean foundSecondJumpJingle = false;
         for (int count = 0; count < 40; count++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
-            List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+            List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
             if (!events.isEmpty()) {
                 assertEquals(1, events.size());
                 assertEquals(

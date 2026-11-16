@@ -86,7 +86,7 @@ final class MarinWakeUpEntityRuntimeTest {
                 .indoorRoom(true)
                 .build();
 
-        runtime.applyMarinWakeUpPresentation(0x50, 0x58, 4);
+        runtime.commands().applyMarinWakeUpPresentation(0x50, 0x58, 4);
 
         RoomEntity marin = runtime.inspection().snapshot().slots().get(3);
         assertEquals(0x50, marin.x());

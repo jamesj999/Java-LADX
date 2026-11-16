@@ -29,10 +29,10 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, wall));
             assertEquals(
                     List.of(new EntityCombatEvent(0, type, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
-                    runtime.consumePendingEntityEvents());
+                    runtime.outbox().consumePendingEntityEvents());
 
             runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0, wall));
-            assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+            assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         }
     }
 
@@ -60,7 +60,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
             assertEquals(
                     0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyProjectileTransitionCountdown(0));
             assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
-            assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+            assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         }
     }
 
@@ -124,7 +124,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        int slot = runtime.spawnArrow(0x40, 0x50, 0x07, 3);
+        int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0x07, 3);
 
         assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, slot);
         RoomEntity arrow = runtime.inspection().snapshot().slots().get(slot);
@@ -138,7 +138,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(0x03, arrow.spriteDefinition().bank());
         assertEquals(0x6BC6, arrow.spriteDefinition().address());
         assertEquals(0x42, runtime.enemies().physicsFlags(slot));
-        assertEquals(0x12, runtime.options1(slot));
+        assertEquals(0x12, runtime.execution().slotProperties().options1(slot));
         assertEquals(1, runtime.enemies().enemyIgnoreHitsCountdown(slot));
         // ShootArrow calls label_140F after SpawnPlayerProjectile. The
         // initial $20 movement table is replaced by data_13AD/data_13B5.
@@ -155,7 +155,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     void pieceOfPowerSelectsTheAlternateShootArrowSpeedTable() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
 
-        int slot = runtime.spawnArrow(0x40, 0x50, 0, 3, true);
+        int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 3, true);
 
         assertEquals(0x40, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedY(slot));
         assertEquals(0x00, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedX(slot));
@@ -180,7 +180,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         assertEquals(14, arrowSlot);
 
         // $75A2 checks (hFrameCounter XOR targetSlot) bit 0. Slot 15 is
@@ -206,7 +206,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                         .secondarySoundId(-1)
                         .swordPokeVfx(null)
                         .build()),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(arrowSlot).status());
@@ -232,7 +232,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(
                         new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
-        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
 
         // Target slot 15 is skipped by the even-frame damage cadence. The
         // arrow hits a wall instead, then overlaps the target on frame 1.
@@ -240,7 +240,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 runtime, 0, 0, 0, () -> 0, (entity, direction, x, y) -> entity.type() == 0 && direction == 0));
         assertEquals(
                 0x18, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(arrowSlot));
-        runtime.consumePendingEntityEvents();
+        runtime.outbox().consumePendingEntityEvents();
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         assertEquals(1, runtime.enemies().enemyHealth(15));
@@ -252,7 +252,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(arrowSlot).status());
         assertEquals(
                 0x17, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(arrowSlot));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -268,7 +268,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
                 .build();
-        int slot = runtime.spawnArrow(0x40, 0x50, 0x00, 0);
+        int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0x00, 0);
 
         runtime.tick(
                 EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
@@ -278,13 +278,13 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(0xF4, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowSpeedX(slot));
         assertEquals(
                 List.of(new EntityCombatEvent(slot, 0x00, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
     void playerArrowRuntimeDisplaysThePreviousReboundSpinFrame() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
-        int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         runtime.tick(
                 EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
 
@@ -300,7 +300,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     void playerArrowReboundUsesTheSideViewRoomGravity() {
         RoomEntityRuntime runtime =
                 RoomEntityRuntime.builder(snapshot().withSideScrolling(true)).build();
-        int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int slot = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
         runtime.tick(
                 EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> direction == 0));
         int startingZ = runtime.inspection().snapshot().slots().get(slot).z();
@@ -321,17 +321,17 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     void playerArrowCountIsCappedAtTwoAndSlotsCanBeReused() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
 
-        int first = runtime.spawnArrow(0x40, 0x50, 0, 0);
-        int second = runtime.spawnArrow(0x40, 0x50, 0, 1);
+        int first = runtime.spawns().spawnArrow(0x40, 0x50, 0, 0);
+        int second = runtime.spawns().spawnArrow(0x40, 0x50, 0, 1);
 
         assertEquals(15, first);
         assertEquals(14, second);
-        assertEquals(-1, runtime.spawnArrow(0x40, 0x50, 0, 2));
+        assertEquals(-1, runtime.spawns().spawnArrow(0x40, 0x50, 0, 2));
         assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).activePlayerArrowCount());
 
-        runtime.clearEntity(first);
+        runtime.lifecycle().clearEntity(first);
 
-        assertEquals(15, runtime.spawnArrow(0x40, 0x50, 0, 2));
+        assertEquals(15, runtime.spawns().spawnArrow(0x40, 0x50, 0, 2));
         assertEquals(2, new EntityRoomInspectionQueries(runtime.inspection()).activePlayerArrowCount());
     }
 }

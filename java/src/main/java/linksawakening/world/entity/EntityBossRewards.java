@@ -642,4 +642,8 @@ public final class EntityBossRewards {
             }
         }
     }
+
+    void resetRoomVariables() {
+        state.writeInBossBattle(false);
+    }
 }

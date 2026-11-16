@@ -54,7 +54,7 @@ final class FairyRuntimeTest {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0xB1, runtime.enemies().physicsFlags(0));
-        assertEquals(0x13, runtime.options1(0));
+        assertEquals(0x13, runtime.execution().slotProperties().options1(0));
         assertEquals(0x30, runtime.enemies().transitionCountdown(0));
         assertEquals(0x07, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedX(0));
         assertEquals(0xF8, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedY(0));
@@ -98,7 +98,7 @@ final class FairyRuntimeTest {
         RoomEntity fairy = runtime.inspection().snapshot().slots().get(14);
         assertEquals(0x10, fairy.z());
         assertEquals(0xB1, runtime.enemies().physicsFlags(14));
-        assertEquals(0x13, runtime.options1(14));
+        assertEquals(0x13, runtime.execution().slotProperties().options1(14));
         assertEquals(0, runtime.inspection().dropSpeedZ(14));
     }
 

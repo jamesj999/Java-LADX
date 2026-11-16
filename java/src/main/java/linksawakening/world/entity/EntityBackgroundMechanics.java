@@ -130,7 +130,7 @@ public final class EntityBackgroundMechanics {
         }
     }
 
-    void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
+    public void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
         if (slot >= 0
                 && slot < this.slots.size()
                 && this.slots.get(slot).type() == EntityRomConstants.ENTITY_PUSHED_BLOCK
