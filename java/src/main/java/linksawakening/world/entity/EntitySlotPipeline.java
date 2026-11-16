@@ -38,8 +38,8 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 /** ExecuteEntities: prepare one frame, visit slots in descending order, then commit room presentation. */
 final class EntitySlotPipeline {
 
-    static List<EntityProjectileEvent> advanceFrame(RoomEntityRuntime runtime, EntityFrameContext context) {
-        EntityFrameExecution state = runtime.frameExecution.acquire(context);
+    static List<EntityProjectileEvent> advanceFrame(EntityFrameExecution frameExecution, EntityFrameContext context) {
+        EntityFrameExecution state = frameExecution.acquire(context);
         try {
             return advancePreparedFrame(state);
         } finally {
@@ -57,7 +57,7 @@ final class EntitySlotPipeline {
         prepareLateFrameEvents(state);
         prepareFollowerState(state);
 
-        for (state.slotFrame().index(state.runtime().slots.size() - 1);
+        for (state.slotFrame().index(state.slots().size() - 1);
                 state.slotFrame().index() >= 0;
                 state.slotFrame().postIndex(-1)) {
             if (!prepareSlotAndTimers(state)) continue;
@@ -295,7 +295,7 @@ final class EntitySlotPipeline {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
-        slotState.entity(state.runtime().slots.get(slotState.index()));
+        slotState.entity(state.slots().get(slotState.index()));
         if (state.liftThrow().advanceStatueRubble(slotState.entity(), timerGates.sideViewPotInteractive()))
             return false;
         slotState.moldormIntroOpenedThisFrame(false);
@@ -316,7 +316,7 @@ final class EntitySlotPipeline {
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_AFTER_SPAWN_GUARD, state)) return false;
         slotState.kanaletLeafProducer((slotState.entity().type() == EntityRomConstants.ENTITY_CROW
-                        && !state.runtime().indoorRoom
+                        && !state.indoorRoom()
                         && state.roomVariables().readEntityRoomId() == 0x58)
                 || slotState.entity().type() == EntityRomConstants.ENTITY_MAD_BOMBER
                 || (slotState.entity().type() == EntityRomConstants.ENTITY_KNIGHT
@@ -333,7 +333,7 @@ final class EntitySlotPipeline {
                     .writeDroppedItemBySlot(slotState.entity().slot(), EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
             if (slotState.entity().sourceLoadOrder() != 0xFF) {
                 slotState.entity(withSourceLoadOrder(slotState.entity(), 0xFF));
-                state.runtime().slots.replace(slotState.index(), slotState.entity());
+                state.slots().replace(slotState.index(), slotState.entity());
             }
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS, state)) return false;
@@ -347,7 +347,7 @@ final class EntitySlotPipeline {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
-        timerGates.freezeTarinTimers(!state.runtime().indoorRoom
+        timerGates.freezeTarinTimers(!state.indoorRoom()
                 && slotState.entity().type() == EntityRomConstants.ENTITY_TARIN
                 && state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                                 .state(slotState.entity().slot())
@@ -411,10 +411,8 @@ final class EntitySlotPipeline {
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, state)) return false;
         if (slotState.entity().sourceLoadOrder() == -1
-                && state.runtime()
-                        .enemyInspection
-                        .isDisabledFollower(slotState.entity().type())) {
-            state.runtime().clearEntity(slotState.entity().slot());
+                && state.enemyInspection().isDisabledFollower(slotState.entity().type())) {
+            state.lifecycle().clearEntity(slotState.entity().slot());
             return false;
         }
 
@@ -526,7 +524,7 @@ final class EntitySlotPipeline {
             if (slotState.entity().type() == EntityRomConstants.ENTITY_LEEVER
                     && timerGates.handlerInteractive()
                     && timerGates.handlerLinkCollisionEnabled()) {
-                state.runtime().finishLeeverContactRecoil(slotState.updated());
+                state.combat().finishLeeverContactRecoil(slotState.updated());
             }
         }
 
@@ -548,8 +546,7 @@ final class EntitySlotPipeline {
         if (!state.handlers().tick(EntityTickStage.PHASE_2_LIFTED, state)) return false;
         slotState.liftedRomDirection(frameInput.romLinkDirection());
         if (!state.handlers().tick(EntityTickStage.PHASE_2_LIFTED_FOLLOWER, state)) return false;
-        state.runtime()
-                .slots
+        state.slots()
                 .replace(
                         slotState.index(),
                         state.liftThrow()
@@ -574,7 +571,7 @@ final class EntitySlotPipeline {
                         state.physicsTables().readGroundInteractionSideScrolling(),
                         frameInput.romLinkDirection(),
                         frameInput.frame());
-        state.runtime().slots.replace(slotState.index(), thrown);
+        state.slots().replace(slotState.index(), thrown);
         if (thrown.status() == EntityStatus.THROWN) {
             state.liftThrow().collideThrownEntityWithEntities(thrown, frameInput.frame());
         }
@@ -598,8 +595,7 @@ final class EntitySlotPipeline {
                             << 2)
                     & 0x10;
         }
-        state.runtime()
-                .slots
+        state.slots()
                 .replace(
                         slotState.index(),
                         new RoomEntity(
@@ -649,8 +645,7 @@ final class EntitySlotPipeline {
                             .entity()
                     : slotState.entity();
             updated = state.slotProperties().refreshColorShellDisplay(updated, slotState.status());
-            state.runtime()
-                    .slots
+            state.slots()
                     .replace(
                             slotState.index(),
                             withDeathPresentation(
@@ -669,8 +664,7 @@ final class EntitySlotPipeline {
                 == 0) {
             state.lifecycle().finishBurning(slotState.entity());
         } else {
-            state.runtime()
-                    .slots
+            state.slots()
                     .replace(
                             slotState.index(),
                             state.slotProperties().refreshColorShellDisplay(slotState.entity(), slotState.status()));
@@ -693,17 +687,15 @@ final class EntitySlotPipeline {
                                 != 0)
                 && RoomEntityPickupRules.overlapsLink(
                         slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY())) {
-            if (state.runtime().beginLift(slotState.entity().slot(), frameInput.romLinkDirection())) {
-                state.runtime()
-                        .slots
+            if (state.playerCommands().beginLift(slotState.entity().slot(), frameInput.romLinkDirection())) {
+                state.slots()
                         .replace(
                                 slotState.index(),
                                 state.liftThrow()
                                         .advanceLiftedEntity(
                                                 state.liftThrow()
-                                                        .renderLiftedBomb(state.runtime()
-                                                                .slots
-                                                                .get(slotState.index())),
+                                                        .renderLiftedBomb(
+                                                                state.slots().get(slotState.index())),
                                                 frameInput.linkEntityX(),
                                                 frameInput.linkEntityY(),
                                                 frameInput.linkZ(),
@@ -712,16 +704,14 @@ final class EntitySlotPipeline {
             return false;
         }
         if (state.combatTables().readEnemyStunnedCountdown(slotState.entity().slot()) == 0) {
-            state.runtime()
-                    .slots
+            state.slots()
                     .replace(
                             slotState.index(),
                             state.slotProperties()
                                     .refreshColorShellDisplay(
                                             withStatus(slotState.entity(), EntityStatus.ACTIVE), EntityStatus.ACTIVE));
         } else {
-            state.runtime()
-                    .slots
+            state.slots()
                     .replace(
                             slotState.index(),
                             state.slotProperties().refreshColorShellDisplay(slotState.entity(), slotState.status()));
@@ -734,7 +724,7 @@ final class EntitySlotPipeline {
         var frameInput = state.inputs();
 
         if (!state.handlers().tick(EntityTickStage.PHASE_2_BEFORE_INITIALIZE, state)) return false;
-        if (!state.runtime().initializeBossBattle(slotState.entity())) return false;
+        if (!state.lifecycle().initializeBossBattle(slotState.entity())) return false;
         slotState.status(EntityStatus.ACTIVE);
         state.pickups().initializeEntityTimers(slotState.entity());
         state.handlers().initialize(slotState.entity(), frameInput.randomByteSupplier());
@@ -757,7 +747,7 @@ final class EntitySlotPipeline {
             if (state.physicsTables()
                             .readSlowTransitionCountdown(slotState.entity().slot())
                     == 0) {
-                state.runtime().clearEntity(slotState.entity().slot());
+                state.lifecycle().clearEntity(slotState.entity().slot());
                 return false;
             }
         }
@@ -835,10 +825,9 @@ final class EntitySlotPipeline {
                         .isSensor(slotState.entity().slot())) {
             int ownerSlot = state.motion(LaserMotion.class, LaserMotion::new)
                     .parentSlot(slotState.entity().slot());
-            RoomEntity owner =
-                    ownerSlot >= 0 && ownerSlot < state.runtime().slots.size()
-                            ? state.runtime().slots.get(ownerSlot)
-                            : null;
+            RoomEntity owner = ownerSlot >= 0 && ownerSlot < state.slots().size()
+                    ? state.slots().get(ownerSlot)
+                    : null;
             LaserMotion.SensorUpdate sensorUpdate = state.motion(LaserMotion.class, LaserMotion::new)
                     .advanceSensor(
                             slotState.entity(),
@@ -848,7 +837,7 @@ final class EntitySlotPipeline {
                             frameInput.projectileLinkState().invincibilityCounter());
             if (sensorUpdate.triggeredParent()
                     && ownerSlot >= 0
-                    && ownerSlot < state.runtime().slots.size()) {
+                    && ownerSlot < state.slots().size()) {
                 // LaserLinkSensorHandler starts the parent's visible
                 // pre-fire flash at the same time as its $20 countdown.
                 state.combatTables().writeEnemyFlashCountdown(ownerSlot, 0x10);
@@ -945,8 +934,8 @@ final class EntitySlotPipeline {
                                 state.linkState().followingLinkZ,
                                 frameInput.randomByteSupplier(),
                                 frameInput.backgroundCollision(),
-                                state.runtime().slots.view(),
-                                state.runtime().enemyCombatTables::canBowWowEatEntity,
+                                state.slots().view(),
+                                state.enemyCombatTables()::canBowWowEatEntity,
                                 state.motion(BowWowMotion.class, BowWowMotion::new)
                                         .readBowWowState()));
                 slotState.updated(bowWowUpdate.entity());
@@ -1193,8 +1182,7 @@ final class EntitySlotPipeline {
                 || slotState.updated().y() != slotState.originalEntity().y()
                 || slotState.renderFlipAttribute() != slotState.originalEntity().entityFlipAttribute()
                 || slotState.updated().z() != slotState.originalEntity().z()) {
-            state.runtime()
-                    .slots
+            state.slots()
                     .replace(
                             slotState.index(),
                             withPresentation(

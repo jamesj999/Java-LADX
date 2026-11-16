@@ -66,7 +66,7 @@ public final class RoomEntityRuntime {
     final EntityProjectileState projectileState = new EntityProjectileState();
     final EntityWarpController warpState = new EntityWarpController();
     final EntityRuntimeState entityState = new EntityRuntimeState();
-    final EntityFrameExecution frameExecution = new EntityFrameExecution(this);
+    final EntityFrameExecution frameExecution;
 
     private final EntityPlayerCommands playerCommands;
 
@@ -515,6 +515,42 @@ public final class RoomEntityRuntime {
         if (builder.hasRom()) roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = builder.hasRom() ? new WarpMotion(romData) : WarpMotion.DISABLED;
 
+        this.frameExecution = new EntityFrameExecution(
+                slotProperties,
+                spriteHandlers,
+                backgroundMechanics,
+                liftThrow,
+                slots,
+                slotEntities,
+                lifecycle,
+                entityEnemySpawns,
+                entityPlayerSpawns,
+                projectiles,
+                bombInteractions,
+                rewards,
+                story,
+                slimeEye,
+                genie,
+                pickups,
+                bossRewards,
+                roomInspection,
+                enemyInspection,
+                warpMotion,
+                entityHandlers,
+                entityState.linkView,
+                entityState.slotView,
+                entityState.events,
+                entityState.presentationState,
+                entityState.motions,
+                entityState.combatTables,
+                entityState.physicsTables,
+                entityState.roomVariables,
+                entityState.linkState,
+                indoorRoom,
+                enemyCombatTables,
+                combat,
+                playerCommands);
+
         resetRoomVariables();
         roomInitialization.initializeRoomSlots(initial);
     }
@@ -563,7 +599,7 @@ public final class RoomEntityRuntime {
 
     /** Source-ordered frame gates and descending slot dispatch. */
     private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) {
-        return EntitySlotPipeline.advanceFrame(this, context);
+        return EntitySlotPipeline.advanceFrame(frameExecution, context);
     }
 
     /** Shared result path of ApplySwordIntersectionWithObjects ($7CAB). */

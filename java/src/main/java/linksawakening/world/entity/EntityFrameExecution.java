@@ -52,10 +52,110 @@ public final class EntityFrameExecution {
         return presentation;
     }
 
-    private final RoomEntityRuntime runtime;
+    private final EntitySlotProperties slotProperties;
+    private final EntitySpriteViews spriteHandlers;
+    private final EntityBackgroundMechanics backgroundMechanics;
+    private final EntityLiftThrowController liftThrow;
+    private final EntitySlots slots;
+    private final java.util.List<RoomEntity> slotEntities;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntityEnemySpawns entityEnemySpawns;
+    private final EntityPlayerSpawns entityPlayerSpawns;
+    private final EntityProjectileController projectiles;
+    private final EntityBombInteractions bombInteractions;
+    private final EntityRewardController rewards;
+    private final EntityStoryController story;
+    private final SlimeEyeController slimeEye;
+    private final GenieEntityController genie;
+    private final EntityPickupController pickups;
+    private final EntityBossRewards bossRewards;
+    private final EntityRoomInspection roomInspection;
+    private final EntityEnemyInspection enemyInspection;
+    private final WarpMotion warpMotion;
+    private final EntityHandlerRegistry entityHandlers;
+    private final EntityLinkView linkView;
+    private final EntitySlotView slotView;
+    private final EntityEventChannels events;
+    private final EntityPresentationState presentationState;
+    private final EntityMotionRegistry motions;
+    private final EntityCombatTables combatTables;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityRoomVariables roomVariables;
+    private final EntityLinkState linkState;
+    private final boolean indoorRoom;
+    private final RomEnemyCombatTables enemyCombatTables;
+    private final EntityCombatResolver combat;
+    private final EntityPlayerCommands playerCommands;
 
-    RoomEntityRuntime runtime() {
-        return runtime;
+    EntityFrameExecution(
+            EntitySlotProperties slotProperties,
+            EntitySpriteViews spriteHandlers,
+            EntityBackgroundMechanics backgroundMechanics,
+            EntityLiftThrowController liftThrow,
+            EntitySlots slots,
+            java.util.List<RoomEntity> slotEntities,
+            EntitySlotLifecycle lifecycle,
+            EntityEnemySpawns entityEnemySpawns,
+            EntityPlayerSpawns entityPlayerSpawns,
+            EntityProjectileController projectiles,
+            EntityBombInteractions bombInteractions,
+            EntityRewardController rewards,
+            EntityStoryController story,
+            SlimeEyeController slimeEye,
+            GenieEntityController genie,
+            EntityPickupController pickups,
+            EntityBossRewards bossRewards,
+            EntityRoomInspection roomInspection,
+            EntityEnemyInspection enemyInspection,
+            WarpMotion warpMotion,
+            EntityHandlerRegistry entityHandlers,
+            EntityLinkView linkView,
+            EntitySlotView slotView,
+            EntityEventChannels events,
+            EntityPresentationState presentationState,
+            EntityMotionRegistry motions,
+            EntityCombatTables combatTables,
+            EntityPhysicsTables physicsTables,
+            EntityRoomVariables roomVariables,
+            EntityLinkState linkState,
+            boolean indoorRoom,
+            RomEnemyCombatTables enemyCombatTables,
+            EntityCombatResolver combat,
+            EntityPlayerCommands playerCommands) {
+        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
+        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "spriteHandlers");
+        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
+        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
+        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.entityEnemySpawns = java.util.Objects.requireNonNull(entityEnemySpawns, "entityEnemySpawns");
+        this.entityPlayerSpawns = java.util.Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
+        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
+        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
+        this.story = java.util.Objects.requireNonNull(story, "story");
+        this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
+        this.genie = java.util.Objects.requireNonNull(genie, "genie");
+        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
+        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
+        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
+        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
+        this.warpMotion = java.util.Objects.requireNonNull(warpMotion, "warpMotion");
+        this.entityHandlers = java.util.Objects.requireNonNull(entityHandlers, "entityHandlers");
+        this.linkView = java.util.Objects.requireNonNull(linkView, "linkView");
+        this.slotView = java.util.Objects.requireNonNull(slotView, "slotView");
+        this.events = java.util.Objects.requireNonNull(events, "events");
+        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
+        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
+        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
+        this.indoorRoom = indoorRoom;
+        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
+        this.combat = java.util.Objects.requireNonNull(combat, "combat");
+        this.playerCommands = java.util.Objects.requireNonNull(playerCommands, "playerCommands");
     }
 
     // Absent between acquisitions; release deliberately drops the previous frame input.
@@ -66,228 +166,280 @@ public final class EntityFrameExecution {
         return context;
     }
 
-    EntityFrameExecution(RoomEntityRuntime runtime) {
-        this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
-    }
-
     public EntitySpriteViews spriteViews() {
-        return runtime.slotProperties.spriteViews();
+        return slotProperties.spriteViews();
     }
 
     public EntitySpriteViews sprites() {
-        return runtime.spriteHandlers;
+        return spriteHandlers;
     }
 
     public EntityBackgroundMechanics background() {
-        return runtime.backgroundMechanics;
+        return backgroundMechanics;
     }
 
     public EntityLiftThrowController liftThrow() {
-        return runtime.liftThrow;
+        return liftThrow;
     }
 
     public EntityLinkView link() {
-        return runtime.entityState.linkView;
+        return linkView;
     }
 
     public EntitySlotView slot() {
-        return runtime.entityState.slotView;
+        return slotView;
     }
 
     public void replaceEntity(RoomEntity replacement) {
-        runtime.slots.replace(this.slotFrame().index(), replacement);
+        slots.replace(this.slotFrame().index(), replacement);
     }
 
     public List<RoomEntity> entities() {
-        return runtime.slotEntities;
+        return slotEntities;
     }
 
     public RoomEntity entityAt(int slotIndex) {
-        return runtime.slots.get(slotIndex);
+        return slots.get(slotIndex);
     }
 
     public void emit(DialogRequest event) {
-        runtime.entityState.events.pendingDialogRequests.add(event);
+        events.pendingDialogRequests.add(event);
     }
 
     public void emit(DungeonWarpRequest event) {
-        runtime.entityState.events.pendingDungeonWarpRequests.add(event);
+        events.pendingDungeonWarpRequests.add(event);
     }
 
     public void emit(EntityCombatEvent event) {
-        runtime.entityState.events.pendingEntityEvents.add(event);
+        events.pendingEntityEvents.add(event);
     }
 
     public void emit(HinoxLinkEffectRequest event) {
-        runtime.entityState.events.pendingHinoxLinkEffectRequests.add(event);
+        events.pendingHinoxLinkEffectRequests.add(event);
     }
 
     public void emit(KeyQuicksandEvent event) {
-        runtime.entityState.events.pendingKeyQuicksandEvents.add(event);
+        events.pendingKeyQuicksandEvents.add(event);
     }
 
     public void emit(KeyRewardEvent event) {
-        runtime.entityState.events.pendingKeyRewardEvents.add(event);
+        events.pendingKeyRewardEvents.add(event);
     }
 
     public void emit(LikeLikeEvent event) {
-        runtime.entityState.events.pendingLikeLikeEvents.add(event);
+        events.pendingLikeLikeEvents.add(event);
     }
 
     public void emit(LinkAttackClearRequest event) {
-        runtime.entityState.events.pendingLinkAttackClearRequests.add(event);
+        events.pendingLinkAttackClearRequests.add(event);
     }
 
     public void emit(LinkFacingRequest event) {
-        runtime.entityState.events.pendingLinkFacingRequests.add(event);
+        events.pendingLinkFacingRequests.add(event);
     }
 
     public void emit(LinkFallenPoseRequest event) {
-        runtime.entityState.events.pendingLinkFallenPoseRequests.add(event);
+        events.pendingLinkFallenPoseRequests.add(event);
     }
 
     public void emit(LinkMotionBlockRequest event) {
-        runtime.entityState.events.pendingLinkMotionBlockRequests.add(event);
+        events.pendingLinkMotionBlockRequests.add(event);
     }
 
     public void emit(RoomStatusPersistenceRequest event) {
-        runtime.entityState.events.pendingRoomStatusPersistenceRequests.add(event);
+        events.pendingRoomStatusPersistenceRequests.add(event);
     }
 
     public void emit(RoosterLinkStateRequest event) {
-        runtime.entityState.events.pendingRoosterLinkStateRequests.add(event);
+        events.pendingRoosterLinkStateRequests.add(event);
     }
 
     public void emit(ScreenShakeRequest event) {
-        runtime.entityState.events.pendingScreenShakeRequests.add(event);
+        events.pendingScreenShakeRequests.add(event);
     }
 
     public void emit(SideViewPlatformLinkRequest event) {
-        runtime.entityState.events.pendingSideViewPlatformLinkRequests.add(event);
+        events.pendingSideViewPlatformLinkRequests.add(event);
     }
 
     public void emit(SlimeKeyRewardEvent event) {
-        runtime.entityState.events.pendingSlimeKeyRewardEvents.add(event);
+        events.pendingSlimeKeyRewardEvents.add(event);
     }
 
     public void emit(WarpLinkStateRequest event) {
-        runtime.entityState.events.pendingWarpLinkStateRequests.add(event);
+        events.pendingWarpLinkStateRequests.add(event);
     }
 
     public void emit(WitchExchangeEvent event) {
-        runtime.entityState.events.pendingWitchExchangeEvents.add(event);
+        events.pendingWitchExchangeEvents.add(event);
     }
 
     public void emit(WitchRewardEvent event) {
-        runtime.entityState.events.pendingWitchRewardEvents.add(event);
+        events.pendingWitchRewardEvents.add(event);
     }
 
     public void emit(TransientVfxRequest event) {
-        runtime.entityState.events.transientVfxRequests.add(event);
+        events.transientVfxRequests.add(event);
     }
 
     public EntitySlotLifecycle lifecycle() {
-        return runtime.lifecycle;
+        return lifecycle;
     }
 
     public EntityEnemySpawns enemySpawns() {
-        return runtime.entityEnemySpawns;
+        return entityEnemySpawns;
     }
 
     public EntityPlayerSpawns playerSpawns() {
-        return runtime.entityPlayerSpawns;
+        return entityPlayerSpawns;
     }
 
     public EntityProjectileController projectiles() {
-        return runtime.projectiles;
+        return projectiles;
     }
 
     public EntitySlotProperties slotProperties() {
-        return runtime.slotProperties;
+        return slotProperties;
     }
 
     public EntityBombInteractions bombInteractions() {
-        return runtime.bombInteractions;
+        return bombInteractions;
     }
 
     public EntityRewardController rewards() {
-        return runtime.rewards;
+        return rewards;
     }
 
     public EntityStoryController story() {
-        return runtime.story;
+        return story;
     }
 
     public SlimeEyeController slimeEye() {
-        return runtime.slimeEye;
+        return slimeEye;
     }
 
     public GenieEntityController genie() {
-        return runtime.genie;
+        return genie;
     }
 
     public EntityPickupController pickups() {
-        return runtime.pickups;
+        return pickups;
     }
 
     public EntityBossRewards bossRewards() {
-        return runtime.bossRewards;
+        return bossRewards;
     }
 
     public EntityRoomInspection roomInspection() {
-        return runtime.roomInspection;
+        return roomInspection;
     }
 
     public EntityEnemyInspection enemyInspection() {
-        return runtime.enemyInspection;
+        return enemyInspection;
     }
 
     public WarpMotion warpMotion() {
-        return runtime.warpMotion;
+        return warpMotion;
     }
 
     public void requestMusic(int track) {
-        runtime.entityState.presentationState.writePendingMusicTrack(track);
+        presentationState.writePendingMusicTrack(track);
     }
 
     public void emit(linksawakening.world.entity.event.HookshotBridgeUpdate update) {
-        runtime.entityState.events.hookshotBridgeUpdates.add(update);
+        events.hookshotBridgeUpdates.add(update);
     }
 
     public void emit(RoamingEnemyMotion.LaunchRequest request) {
-        runtime.entityState.events.projectileLaunchRequests.add(request);
+        events.projectileLaunchRequests.add(request);
     }
 
     public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {
-        return runtime.entityState.motions.get(type, factory);
+        return motions.get(type, factory);
     }
 
     EntityCombatTables combatTables() {
-        return runtime.entityState.combatTables;
+        return combatTables;
     }
 
     EntityPhysicsTables physicsTables() {
-        return runtime.entityState.physicsTables;
+        return physicsTables;
     }
 
     EntityRoomVariables roomVariables() {
-        return runtime.entityState.roomVariables;
+        return roomVariables;
     }
 
     EntityLinkState linkState() {
-        return runtime.entityState.linkState;
+        return linkState;
     }
 
     EntityEventChannels events() {
-        return runtime.entityState.events;
+        return events;
     }
 
     EntityHandlerRegistry handlers() {
-        return runtime.entityHandlers;
+        return entityHandlers;
+    }
+
+    EntitySlots slots() {
+        return slots;
+    }
+
+    boolean indoorRoom() {
+        return indoorRoom;
+    }
+
+    RomEnemyCombatTables enemyCombatTables() {
+        return enemyCombatTables;
+    }
+
+    EntityCombatResolver combat() {
+        return combat;
+    }
+
+    EntityPlayerCommands playerCommands() {
+        return playerCommands;
     }
 
     EntityFrameExecution acquire(EntityFrameContext next) {
-        if (inUse) return new EntityFrameExecution(runtime).acquire(next);
+        if (inUse)
+            return new EntityFrameExecution(
+                            slotProperties,
+                            spriteHandlers,
+                            backgroundMechanics,
+                            liftThrow,
+                            slots,
+                            slotEntities,
+                            lifecycle,
+                            entityEnemySpawns,
+                            entityPlayerSpawns,
+                            projectiles,
+                            bombInteractions,
+                            rewards,
+                            story,
+                            slimeEye,
+                            genie,
+                            pickups,
+                            bossRewards,
+                            roomInspection,
+                            enemyInspection,
+                            warpMotion,
+                            entityHandlers,
+                            linkView,
+                            slotView,
+                            events,
+                            presentationState,
+                            motions,
+                            combatTables,
+                            physicsTables,
+                            roomVariables,
+                            linkState,
+                            indoorRoom,
+                            enemyCombatTables,
+                            combat,
+                            playerCommands)
+                    .acquire(next);
         inUse = true;
         context = next;
         inputs.reset();
