@@ -14,7 +14,7 @@ import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.object.OverworldBushInteraction;
 
-/** Wiring result consumed only by the facade and composed role/output adapters. */
+/** Construction inventory used only inside RoomSessionContext; never retained by a runtime role. */
 record RoomSessionComponents(
         RoomLocationState location,
         RoomTerrainState terrain,

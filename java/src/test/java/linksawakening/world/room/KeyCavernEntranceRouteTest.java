@@ -43,7 +43,7 @@ final class KeyCavernEntranceRouteTest {
         TransitionController transition = new TransitionController();
         ScrollController scroll = new ScrollController();
         RoomTransitionCoordinator coordinator =
-                new RoomTransitionCoordinator(session, new RoomBoundaryController(), transition, scroll);
+                session.transitions().coordinator(new RoomBoundaryController(), transition, scroll);
         InputState input = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         Link link = new Link(input, inputConfig, tables, collision, null, new PlayerState(), new ItemRegistry());

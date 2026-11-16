@@ -56,7 +56,7 @@ class CrackedFloorGroundPhysicsTest {
         session.terrain().tickCrackedFloor(standing(), false); // establish the preceding probe
         object(session, 0x33, 0xDF);
         count(session, frames);
-        assertEquals(frames, session.components.terrain().crackedFloorCounter);
+        assertEquals(frames, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
     }
 
     @Test
@@ -67,8 +67,7 @@ class CrackedFloorGroundPhysicsTest {
         assertTrue(session.terrain().tickCrackedFloor(standing(), false));
         assertEquals(
                 0xAE,
-                session.components
-                        .roomSessionViews()
+                RoomSessionInspection.component(session, RoomSessionViews.class)
                         .objectAtRoomLocation(session.rooms().activeRoomOrNull(), 0x33));
     }
 
@@ -79,12 +78,17 @@ class CrackedFloorGroundPhysicsTest {
         session.rooms().loadInitialOverworld(0x40);
         object(session, 0x33, 0xDF);
         count(session, 50);
-        assertEquals(0x01, session.components.terrain().linkGroundObjectPhysics); // ROM overworld $DF = SOLID
-        assertEquals(17, session.components.terrain().crackedFloorCounter); // wIsIndoor=0: $02:77F7-77FB
+        assertEquals(
+                0x01,
+                RoomSessionInspection.component(session, RoomTerrainState.class)
+                        .linkGroundObjectPhysics); // ROM overworld $DF = SOLID
+        assertEquals(
+                17,
+                RoomSessionInspection.component(session, RoomTerrainState.class)
+                        .crackedFloorCounter); // wIsIndoor=0: $02:77F7-77FB
         assertEquals(
                 0xDF,
-                session.components
-                        .roomSessionViews()
+                RoomSessionInspection.component(session, RoomSessionViews.class)
                         .objectAtRoomLocation(session.rooms().activeRoomOrNull(), 0x33));
     }
 
@@ -95,11 +99,13 @@ class CrackedFloorGroundPhysicsTest {
         // $02:75C4 -> 76C0 -> 7757 -> Default -> $7858/$786C.
         // Even different coordinates must not cause a fresh GetObjectUnderLink probe.
         session.terrain().tickCrackedFloor(frame(56, 56, false, false, true, false), false);
-        assertEquals(0, session.components.terrain().crackedFloorCounter);
-        assertEquals(0x33, session.components.terrain().linkGroundRoomPosition);
-        assertEquals(0x33, session.components.terrain().linkGroundFinalRoomPosition);
-        assertEquals(0xDF, session.components.terrain().linkGroundObjectUnderEntity);
-        assertEquals(0, session.components.terrain().linkGroundObjectPhysics);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
+        assertEquals(0x33, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundRoomPosition);
+        assertEquals(
+                0x33, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundFinalRoomPosition);
+        assertEquals(
+                0xDF, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundObjectUnderEntity);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundObjectPhysics);
         count(session, 39);
         assertTrue(session.terrain().tickCrackedFloor(standing(), false));
     }
@@ -113,9 +119,9 @@ class CrackedFloorGroundPhysicsTest {
         for (int i = 0; i < 50; i++) {
             assertFalse(session.terrain().tickCrackedFloor(frame(56, 56, false, true, true, true), true));
         }
-        assertEquals(39, session.components.terrain().crackedFloorCounter);
-        assertEquals(0x33, session.components.terrain().linkGroundRoomPosition);
-        assertEquals(0, session.components.terrain().linkGroundObjectPhysics);
+        assertEquals(39, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
+        assertEquals(0x33, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundRoomPosition);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundObjectPhysics);
         assertTrue(session.terrain().tickCrackedFloor(standing(), false));
     }
 
@@ -128,8 +134,9 @@ class CrackedFloorGroundPhysicsTest {
         count(session, 1); // $02:76EC -> water handler returns before Default
         // $02:75C4 -> 76C0 -> 76EC, so $7858 is not reached.
         session.terrain().tickCrackedFloor(frame(56, 56, false, true, true, false), true);
-        assertEquals(17, session.components.terrain().crackedFloorCounter);
-        assertEquals(water, session.components.terrain().linkGroundObjectUnderEntity);
+        assertEquals(17, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
+        assertEquals(
+                water, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundObjectUnderEntity);
     }
 
     @Test
@@ -137,14 +144,14 @@ class CrackedFloorGroundPhysicsTest {
         var session = session();
         seedCrack(session, 17);
         session.terrain().tickCrackedFloor(standing(), true); // $02:7854/785C -> $786C
-        assertEquals(0, session.components.terrain().crackedFloorCounter);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
         count(session, 17);
         session.terrain().tickCrackedFloor(frame(40, 40, false, true, false, false), false);
-        assertEquals(0, session.components.terrain().crackedFloorCounter);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
         count(session, 17);
         object(session, 0x33, 0x0D);
         session.terrain().tickCrackedFloor(standing(), false);
-        assertEquals(0, session.components.terrain().crackedFloorCounter);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
     }
 
     @Test
@@ -155,21 +162,37 @@ class CrackedFloorGroundPhysicsTest {
         // An entity can move Link before this update. Comparing this frame's
         // pre/post XY (both 56,40) would incorrectly preserve the count.
         session.terrain().tickCrackedFloor(frame(56, 40, false, false, false, false), false);
-        assertEquals(0x33, session.components.terrain().linkGroundFinalRoomPosition); // $02:7589 copy
-        assertEquals(0x34, session.components.terrain().linkGroundRoomPosition); // $02:7525 probe
-        assertEquals(0, session.components.terrain().crackedFloorCounter);
+        assertEquals(
+                0x33,
+                RoomSessionInspection.component(session, RoomTerrainState.class)
+                        .linkGroundFinalRoomPosition); // $02:7589 copy
+        assertEquals(
+                0x34,
+                RoomSessionInspection.component(session, RoomTerrainState.class)
+                        .linkGroundRoomPosition); // $02:7525 probe
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
         session.terrain().tickCrackedFloor(frame(57, 41, false, false, false, false), false);
-        assertEquals(1, session.components.terrain().crackedFloorCounter); // movement inside a cell does not reset
+        assertEquals(
+                1,
+                RoomSessionInspection.component(session, RoomTerrainState.class)
+                        .crackedFloorCounter); // movement inside a cell does not reset
         for (int i = 0; i < 3; i++) {
             session.terrain().tickCrackedFloor(frame(40, 40, true, false, false, false), false);
         }
-        assertEquals(0x34, session.components.terrain().linkGroundRoomPosition); // no new airborne probe
-        assertEquals(0x34, session.components.terrain().linkGroundFinalRoomPosition);
-        assertEquals(1, session.components.terrain().crackedFloorCounter);
+        assertEquals(
+                0x34,
+                RoomSessionInspection.component(session, RoomTerrainState.class)
+                        .linkGroundRoomPosition); // no new airborne probe
+        assertEquals(
+                0x34, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundFinalRoomPosition);
+        assertEquals(1, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
         session.terrain().tickCrackedFloor(standing(), false);
-        assertEquals(0x34, session.components.terrain().linkGroundFinalRoomPosition); // older than the last frame's XY
-        assertEquals(0x33, session.components.terrain().linkGroundRoomPosition);
-        assertEquals(0, session.components.terrain().crackedFloorCounter);
+        assertEquals(
+                0x34,
+                RoomSessionInspection.component(session, RoomTerrainState.class)
+                        .linkGroundFinalRoomPosition); // older than the last frame's XY
+        assertEquals(0x33, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundRoomPosition);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
     }
 
     @Test
@@ -179,11 +202,12 @@ class CrackedFloorGroundPhysicsTest {
         object(session, 0x34, 0xDF);
         // $02:4588 has no $7589 copy; its comparison still uses the saved final sample.
         assertFalse(session.terrain().tickCrackedFloorOnLanding(standing(), false));
-        assertEquals(18, session.components.terrain().crackedFloorCounter);
+        assertEquals(18, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
         assertFalse(session.terrain().tickCrackedFloor(frame(56, 40, false, false, false, false), false));
-        assertEquals(0x33, session.components.terrain().linkGroundFinalRoomPosition);
-        assertEquals(0x34, session.components.terrain().linkGroundRoomPosition);
-        assertEquals(0, session.components.terrain().crackedFloorCounter);
+        assertEquals(
+                0x33, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundFinalRoomPosition);
+        assertEquals(0x34, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundRoomPosition);
+        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
     }
 
     @Test
@@ -194,9 +218,10 @@ class CrackedFloorGroundPhysicsTest {
         assertTrue(session.playerItems().hookshotActive());
         object(session, 0x34, 0xDF);
         session.terrain().tickCrackedFloor(frame(56, 40, false, false, false, false), false);
-        assertEquals(0x33, session.components.terrain().linkGroundFinalRoomPosition);
-        assertEquals(0x34, session.components.terrain().linkGroundRoomPosition);
-        assertEquals(17, session.components.terrain().crackedFloorCounter);
+        assertEquals(
+                0x33, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundFinalRoomPosition);
+        assertEquals(0x34, RoomSessionInspection.component(session, RoomTerrainState.class).linkGroundRoomPosition);
+        assertEquals(17, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
     }
 
     @Test
@@ -229,7 +254,9 @@ class CrackedFloorGroundPhysicsTest {
     private static int objectWithPhysics(RoomSession session, int physics) {
         for (int object = 0; object < 256; object++) {
             object(session, 0x33, object);
-            if (session.components.overworldCollision().objectPhysicsFlagAtPoint(48, 52) == physics) return object;
+            if (RoomSessionInspection.component(session, OverworldCollision.class)
+                            .objectPhysicsFlagAtPoint(48, 52)
+                    == physics) return object;
         }
         throw new AssertionError("No ROM object for physics=" + physics);
     }

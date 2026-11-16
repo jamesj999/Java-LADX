@@ -6,51 +6,51 @@ import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
 
-final class RoomEntityStateView implements RoomEntityState {
+final class RoomEntityControl implements RoomEntityState {
     private final Dependencies dependencies;
 
-    RoomEntityStateView(Dependencies dependencies) {
+    RoomEntityControl(Dependencies dependencies) {
         this.dependencies = dependencies;
     }
 
     @Override
     public void resetGuardianAcornCounterOnHurt() {
-        dependencies.session().resetGuardianAcornCounterOnHurt();
+        dependencies.entityBridge().resetGuardianAcornCounterOnHurt();
     }
 
     @Override
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
-        dependencies.session().setEntityActionButtonsHeld(actionButtonsHeld);
+        dependencies.entityInputs().updateEntityActionButtonsHeld(actionButtonsHeld);
     }
 
     @Override
     public boolean gelClingingToLink() {
-        return dependencies.session().gelClingingToLink();
+        return dependencies.entityBridge().gelClingingToLink();
     }
 
     @Override
     public void setEntityDialogActive(boolean active) {
-        dependencies.session().setEntityDialogActive(active);
+        dependencies.entityInputs().updateEntityDialogActive(active);
     }
 
     @Override
     public void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        dependencies.session().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
+        dependencies.entityInputs().updateEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
     }
 
     @Override
     public void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        dependencies.session().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        dependencies.entityInputs().updateEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
     }
 
     @Override
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        dependencies.session().setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        dependencies.entityInputs().updateToadstoolPlayerState(hasToadstool, magicPowderCount);
     }
 
     @Override
     public void setEntityScreenShakeCountdown(int countdown) {
-        dependencies.session().setEntityScreenShakeCountdown(countdown);
+        dependencies.entityInputs().updateEntityScreenShakeCountdown(countdown);
     }
 
     @Override
@@ -63,17 +63,17 @@ final class RoomEntityStateView implements RoomEntityState {
 
     @Override
     public void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
-        dependencies.session().setEntityPowerBraceletButtonHeld(buttonHeld);
+        dependencies.entityInputs().updateEntityPowerBraceletButtonHeld(buttonHeld);
     }
 
     @Override
     public void setEntityBombButtonHeld(boolean buttonHeld) {
-        dependencies.session().setEntityBombButtonHeld(buttonHeld);
+        dependencies.entityInputs().updateEntityBombButtonHeld(buttonHeld);
     }
 
     @Override
     public void setEntityAttackStepAnimationCountdown(int countdown) {
-        dependencies.session().setEntityAttackStepAnimationCountdown(countdown);
+        dependencies.entityInputs().updateEntityAttackStepAnimationCountdown(countdown);
     }
 
     @Override
@@ -83,27 +83,27 @@ final class RoomEntityStateView implements RoomEntityState {
 
     @Override
     public boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return dependencies.session().deferContactRecoil(slot, linkX, linkY);
+        return dependencies.entityBridge().deferContactRecoil(slot, linkX, linkY);
     }
 
     @Override
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return dependencies.session().consumeLinkAttackClearRequests();
+        return dependencies.entityBridge().consumeLinkAttackClearRequests();
     }
 
     @Override
     public boolean gotItemPresentationActive() {
-        return dependencies.session().gotItemPresentationActive();
+        return dependencies.entityBridge().gotItemPresentationActive();
     }
 
     @Override
     public boolean powerUpPickupSequenceActive() {
-        return dependencies.session().powerUpPickupSequenceActive();
+        return dependencies.entityBridge().powerUpPickupSequenceActive();
     }
 
     @Override
     public boolean swordPickupSequenceActive() {
-        return dependencies.session().swordPickupSequenceActive();
+        return dependencies.entityBridge().swordPickupSequenceActive();
     }
 
     @Override
@@ -113,7 +113,7 @@ final class RoomEntityStateView implements RoomEntityState {
 
     @Override
     public List<DialogRequest> consumeEntityDialogRequests() {
-        return dependencies.session().consumeEntityDialogRequests();
+        return dependencies.entityBridge().consumeEntityDialogRequests();
     }
 
     @Override
@@ -123,7 +123,7 @@ final class RoomEntityStateView implements RoomEntityState {
 
     @Override
     public int clearEntity(int slot) {
-        return dependencies.session().clearEntity(slot);
+        return dependencies.entityBridge().clearEntity(slot);
     }
 
     @Override
@@ -133,25 +133,24 @@ final class RoomEntityStateView implements RoomEntityState {
 
     @Override
     public int entityHealth(int slot) {
-        return dependencies.session().entityHealth(slot);
+        return dependencies.entityBridge().entityHealth(slot);
     }
 
     @Override
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
-        dependencies.roomSessionViews().setColorShellSoundSink(soundSink);
+        dependencies.entityFrame().setColorShellSoundSink(soundSink);
     }
 
     record Dependencies(
             RoomEntityBridge entityBridge,
             RoomEntityInputs entityInputs,
             RoomFollowerState followers,
-            RoomSessionViews roomSessionViews,
-            RoomSession session) {
+            RoomEntitySessionState entityFrame) {
         Dependencies {
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
         }
     }
 }

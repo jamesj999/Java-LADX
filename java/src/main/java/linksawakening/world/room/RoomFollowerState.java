@@ -4,6 +4,13 @@ import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.LinkPositionHistory;
 
 final class RoomFollowerState {
+    void observeLink(int x, int y, int z, int direction) {
+        followingLinkX = x & 0xFF;
+        followingLinkY = y & 0xFF;
+        followingLinkZ = z & 0xFF;
+        followingLinkDirection = direction & 0xFF;
+    }
+
     final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     FollowingNpcState followingNpcState = FollowingNpcState.none();
     int followingLinkX = 8;

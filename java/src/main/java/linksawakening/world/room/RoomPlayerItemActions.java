@@ -5,11 +5,148 @@ import linksawakening.rom.RomTables;
 import linksawakening.world.object.OverworldBushInteraction;
 
 /** ApplyLinkMotionState player-item dispatch; lift, chest and shovel routines retain their own action state. */
-final class RoomPlayerItemActions {
+final class RoomPlayerItemActions implements RoomPlayerItems {
+    @Override
+    public boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? throwLiftedEntity(loaded, linkDirection) : false;
+    }
+
+    @Override
+    public boolean fireHookshot(
+            int linkEntityX,
+            int linkEntityY,
+            int linkEntityZ,
+            int romDirection,
+            boolean linkAirborne,
+            boolean linkPushing) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null
+                ? fireHookshot(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing)
+                : false;
+    }
+
+    @Override
+    public boolean fireBoomerang(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null
+                ? fireBoomerang(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask)
+                : false;
+    }
+
+    @Override
+    public boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? fireSwordBeam(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection) : false;
+    }
+
+    @Override
+    public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null
+                ? fireMagicRodFireball(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : false;
+    }
+
+    @Override
+    public boolean fireMagicRodFireball(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null
+                ? fireMagicRodFireball(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower)
+                : false;
+    }
+
+    @Override
+    public boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null
+                ? sprinkleMagicPowder(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : false;
+    }
+
+    @Override
+    public ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (romDirection < 0 || romDirection > 3)
+            throw new IllegalArgumentException("ROM shovel direction out of range: " + romDirection);
+        return loaded != null
+                ? startShovel(loaded, linkEntityX, linkEntityY, romDirection, linkAirborne)
+                : new ShovelStartResult(false, true, -1);
+    }
+
+    @Override
+    public void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) advanceShovel(loaded, linkEntityX, linkEntityY, romDirection, timer);
+    }
+
+    @Override
+    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? placeBomb(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection) : false;
+    }
+
+    @Override
+    public boolean lastBombPlacementPlayedBump() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? lastBombPlacementPlayedBump(loaded) : false;
+    }
+
+    @Override
+    public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? shootArrow(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection) : false;
+    }
+
+    @Override
+    public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null
+                ? shootArrowResult(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection)
+                : new ArrowShotResult(false, false);
+    }
+
+    @Override
+    public ArrowShotResult shootArrowResult(
+            int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null
+                ? shootArrowResult(loaded, linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower)
+                : new ArrowShotResult(false, false);
+    }
+
+    @Override
+    public int activeProjectileCount() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? activeProjectileCount(loaded) : 0;
+    }
+
+    @Override
+    public boolean bombActive() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? bombActive(loaded) : false;
+    }
+
+    @Override
+    public boolean hookshotActive() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? hookshotActive(loaded) : false;
+    }
+
+    @Override
+    public boolean boomerangActive() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null ? boomerangActive(loaded) : false;
+    }
+
+    private final LoadedRoomHandle rooms;
 
     private final RoomShovelActions roomShovelActions;
 
-    RoomPlayerItemActions(Dependencies dependencies) {
+    RoomPlayerItemActions(LoadedRoomHandle rooms, Dependencies dependencies) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
 
         roomShovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
                 dependencies.entityRuntimeState(),
@@ -123,7 +260,8 @@ final class RoomPlayerItemActions {
         roomShovelActions.advanceShovel(loaded, linkEntityX, linkEntityY, romDirection, timer);
     }
 
-    int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
+    @Override
+    public int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
         return roomShovelActions.shovelAnimationState(javaDirection, timer);
     }
 

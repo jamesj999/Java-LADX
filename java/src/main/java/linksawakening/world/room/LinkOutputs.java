@@ -12,40 +12,40 @@ import linksawakening.world.entity.event.RoosterLinkStateRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
 
 public final class LinkOutputs {
-    private final RoomEntityOutputSource session;
+    private final RoomEntityOutputSource source;
     private final Dependencies dependencies;
 
-    LinkOutputs(Dependencies dependencies, RoomEntityOutputSource session) {
+    LinkOutputs(Dependencies dependencies, RoomEntityOutputSource source) {
         this.dependencies = dependencies;
-        this.session = java.util.Objects.requireNonNull(session);
+        this.source = java.util.Objects.requireNonNull(source);
     }
 
     public void drainPositionWrites(LinkWriteSink.Positions target) {
-        var platforms = session.consumeSideViewPlatformLinkRequests();
-        var pots = session.consumeSideViewPotLinkRequests();
-        var positions = session.consumeLinkFinalPositionRequests();
+        var platforms = source.consumeSideViewPlatformLinkRequests();
+        var pots = source.consumeSideViewPotLinkRequests();
+        var positions = source.consumeLinkFinalPositionRequests();
         RoomLinkWrites.visitPositions(platforms, pots, positions, target);
     }
 
     public void drainAttackWrites(LinkWriteSink.Attacks target) {
-        var clears = session.consumeLinkAttackClearRequests();
-        var steps = session.consumeLinkAttackStepRequests();
+        var clears = source.consumeLinkAttackClearRequests();
+        var steps = source.consumeLinkAttackStepRequests();
         RoomLinkWrites.visitAttacks(clears, steps, target);
     }
 
     public List<LinkWrite> consumePositionWrites() {
-        var platforms = session.consumeSideViewPlatformLinkRequests();
-        var pots = session.consumeSideViewPotLinkRequests();
-        var positions = session.consumeLinkFinalPositionRequests();
+        var platforms = source.consumeSideViewPlatformLinkRequests();
+        var pots = source.consumeSideViewPotLinkRequests();
+        var positions = source.consumeLinkFinalPositionRequests();
         return RoomLinkWrites.positions(platforms, pots, positions);
     }
 
     public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
-        return session.consumeLinkMotionBlockRequests();
+        return source.consumeLinkMotionBlockRequests();
     }
 
     public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
-        return session.consumeWarpLinkStateRequests();
+        return source.consumeWarpLinkStateRequests();
     }
 
     public boolean consumeWorldLinkMotionBlockRequest() {
@@ -53,36 +53,35 @@ public final class LinkOutputs {
     }
 
     public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
-        return session.consumeLinkFallenPoseRequests();
+        return source.consumeLinkFallenPoseRequests();
     }
 
     public List<LinkFacingRequest> consumeLinkFacingRequests() {
-        return session.consumeLinkFacingRequests();
+        return source.consumeLinkFacingRequests();
     }
 
     public List<LinkWrite> consumeAttackWrites() {
-        return RoomLinkWrites.attacks(
-                session.consumeLinkAttackClearRequests(), session.consumeLinkAttackStepRequests());
+        return RoomLinkWrites.attacks(source.consumeLinkAttackClearRequests(), source.consumeLinkAttackStepRequests());
     }
 
     public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
-        return session.consumeLinkHeldItemPoseRequests();
+        return source.consumeLinkHeldItemPoseRequests();
     }
 
     public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
-        return session.consumeLinkSwordSpinPoseRequests();
+        return source.consumeLinkSwordSpinPoseRequests();
     }
 
     public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
-        return session.consumeLinkSwordFinalPoseRequests();
+        return source.consumeLinkSwordFinalPoseRequests();
     }
 
     public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
-        return session.consumeRoosterLinkStateRequests();
+        return source.consumeRoosterLinkStateRequests();
     }
 
     public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
-        return session.consumeHinoxLinkEffectRequests();
+        return source.consumeHinoxLinkEffectRequests();
     }
 
     record Dependencies(RoomEntityBridge entityBridge) {

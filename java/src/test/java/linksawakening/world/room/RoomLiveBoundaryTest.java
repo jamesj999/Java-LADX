@@ -28,17 +28,18 @@ class RoomLiveBoundaryTest {
     @Test
     void emptyRoomAndEntityOutboxDrainsAndMergesAllocateNothing() {
         var session = RoomRenderAllocationTest.room();
-        var box = session.components.entityFrame().outbox;
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
+        var bridge = RoomSessionInspection.component(session, RoomEntityBridge.class);
         Runnable drain = () -> {
-            session.consumeEntityEvents();
-            session.consumeEntityDialogRequests();
-            session.consumeScreenShakeRequests();
-            session.consumeHinoxLinkEffectRequests();
+            bridge.consumeEntityEvents();
+            bridge.consumeEntityDialogRequests();
+            bridge.consumeScreenShakeRequests();
+            bridge.consumeHinoxLinkEffectRequests();
             RoomLinkWrites.positions(
-                    session.consumeSideViewPlatformLinkRequests(),
-                    session.consumeSideViewPotLinkRequests(),
-                    session.consumeLinkFinalPositionRequests());
-            RoomLinkWrites.attacks(session.consumeLinkAttackClearRequests(), session.consumeLinkAttackStepRequests());
+                    bridge.consumeSideViewPlatformLinkRequests(),
+                    bridge.consumeSideViewPotLinkRequests(),
+                    bridge.consumeLinkFinalPositionRequests());
+            RoomLinkWrites.attacks(bridge.consumeLinkAttackClearRequests(), bridge.consumeLinkAttackStepRequests());
             box.consumeChestRewardEvents();
             box.consumeHeartContainerRewards();
         };

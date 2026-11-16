@@ -1,5 +1,6 @@
 package linksawakening.world.room;
 
+import linksawakening.physics.OverworldCollision;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityTypeRules;
 import linksawakening.world.entity.RoomEntity;
@@ -18,43 +19,46 @@ final class RoomDebugFixture {
     }
 
     int overworldRoomStatusForTest(int roomId) {
-        return session.components.roomState().overworldRoomStatusForTest(roomId);
+        return RoomSessionInspection.component(session, RoomWorldState.class).overworldRoomStatusForTest(roomId);
     }
 
     int indoorRoomStatusForTest(int mapId, int roomId) {
-        return session.components.roomState().indoorRoomStatusForTest(mapId, roomId);
+        return RoomSessionInspection.component(session, RoomWorldState.class).indoorRoomStatusForTest(mapId, roomId);
     }
 
     void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) {
-        session.components.entityFrame().enemyDropCounters =
+        RoomSessionInspection.component(session, RoomEntitySessionState.class).enemyDropCounters =
                 new EnemyDropResolver.CounterState(droppedItemCount, droppedBombArrowCount);
     }
 
     EnemyDropResolver.CounterState enemyDropCountersForTest() {
-        return session.components.entityFrame().enemyDropCounters;
+        return RoomSessionInspection.component(session, RoomEntitySessionState.class).enemyDropCounters;
     }
 
     void setSwitchButtonPressedForTest(int value) {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException("Switch-button state must be an unsigned byte");
         }
-        session.components.puzzles().switchButtonPressed = value;
+        RoomSessionInspection.component(session, RoomPuzzleState.class).switchButtonPressed = value;
     }
 
     int switchButtonPressedForTest() {
-        return session.components.puzzles().switchButtonPressed;
+        return RoomSessionInspection.component(session, RoomPuzzleState.class).switchButtonPressed;
     }
 
     int bombDirectionForTest(int slot) {
         return !session.hasRoom()
                 ? 0xFF
-                : session.loadedRoomOrNull().entities.inspection().bombDirection(slot);
+                : RoomSessionInspection.loadedRoom(session)
+                        .entities
+                        .inspection()
+                        .bombDirection(slot);
     }
 
     void setColorShellStateForTest(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
         if (session.hasRoom()) {
-            session.loadedRoomOrNull()
+            RoomSessionInspection.loadedRoom(session)
                     .entities
                     .debug()
                     .setColorShellState(slot, state, transitionCountdown, direction, speedX, speedY);
@@ -65,24 +69,24 @@ final class RoomDebugFixture {
         if (!session.hasRoom()) {
             return 0;
         }
-        return session.loadedRoomOrNull().entities.inspection().groundStatus(slot);
+        return RoomSessionInspection.loadedRoom(session).entities.inspection().groundStatus(slot);
     }
 
     void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
         if (session.hasRoom()) {
-            session.loadedRoomOrNull().entities.debug().setEnemyIgnoreHitsCountdown(slot, value);
+            RoomSessionInspection.loadedRoom(session).entities.debug().setEnemyIgnoreHitsCountdown(slot, value);
         }
     }
 
     void setEntityThrownDirectionForTest(int slot, int value) {
         if (session.hasRoom()) {
-            session.loadedRoomOrNull().entities.configuration().setThrownDirection(slot, value);
+            RoomSessionInspection.loadedRoom(session).entities.configuration().setThrownDirection(slot, value);
         }
     }
 
     void setEntityLedgeTimerForTest(int slot, int value) {
         if (session.hasRoom()) {
-            session.loadedRoomOrNull().entities.configuration().setLedgeTransitionTimer(slot, value);
+            RoomSessionInspection.loadedRoom(session).entities.configuration().setLedgeTransitionTimer(slot, value);
         }
     }
 
@@ -90,39 +94,40 @@ final class RoomDebugFixture {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException("Switch-block state must be an unsigned byte: " + value);
         }
-        session.components.terrain().switchBlocksState = value;
-        session.components.roomLoadCoordinator().synchronizeSwitchBlockCollisionState();
+        RoomSessionInspection.component(session, RoomTerrainState.class).switchBlocksState = value;
+        RoomSessionInspection.component(session, RoomLoadCoordinator.class).synchronizeSwitchBlockCollisionState();
     }
 
     void setSwitchableObjectAnimationStageForTest(int value) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException("Switch-block animation stage must be an unsigned byte: " + value);
         }
-        session.components.terrain().switchableObjectAnimationStage = value;
+        RoomSessionInspection.component(session, RoomTerrainState.class).switchableObjectAnimationStage = value;
     }
 
     int entitySwitchBlocksStateForTest() {
-        return session.components.terrain().switchBlocksState & 0xFF;
+        return RoomSessionInspection.component(session, RoomTerrainState.class).switchBlocksState & 0xFF;
     }
 
     int switchableObjectAnimationStageForTest() {
-        return session.components.terrain().switchableObjectAnimationStage & 0xFF;
+        return RoomSessionInspection.component(session, RoomTerrainState.class).switchableObjectAnimationStage & 0xFF;
     }
 
     boolean linkCollisionPointBlockedForTest(int pixelX, int pixelY) {
-        return session.components.overworldCollision().pointBlocked(pixelX, pixelY);
+        return RoomSessionInspection.component(session, OverworldCollision.class)
+                .pointBlocked(pixelX, pixelY);
     }
 
     int entityLedgeTimerForTest(int slot) {
         return !session.hasRoom()
                 ? 0
-                : session.loadedRoomOrNull().entities.enemies().ledgeTransitionTimer(slot);
+                : RoomSessionInspection.loadedRoom(session).entities.enemies().ledgeTransitionTimer(slot);
     }
 
     int entityFallingTargetXForTest(int slot) {
         return !session.hasRoom()
                 ? 0
-                : session.loadedRoomOrNull().entities.enemies().fallingTargetX(slot);
+                : RoomSessionInspection.loadedRoom(session).entities.enemies().fallingTargetX(slot);
     }
 
     int entityTransitionCountdownForTest(int slot) {
@@ -133,59 +138,72 @@ final class RoomDebugFixture {
                 ? null
                 : session.rooms().activeRoomOrNull().entityView().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
-                ? session.loadedRoomOrNull().entities.inspection().warpTransitionCountdown(slot)
-                : session.loadedRoomOrNull().entities.enemies().transitionCountdown(slot);
+                ? RoomSessionInspection.loadedRoom(session)
+                        .entities
+                        .inspection()
+                        .warpTransitionCountdown(slot)
+                : RoomSessionInspection.loadedRoom(session).entities.enemies().transitionCountdown(slot);
     }
 
     int roomTriggerCountForTest() {
-        return session.loadedRoomOrNull().contents.puzzles.roomTriggerCount & 0xFF;
+        return RoomSessionInspection.loadedRoom(session).contents.puzzles.roomTriggerCount & 0xFF;
     }
 
     int activeRoomEventForTest() {
-        return session.loadedRoomOrNull().contents.puzzles.activeRoomEvent & 0xFF;
+        return RoomSessionInspection.loadedRoom(session).contents.puzzles.activeRoomEvent & 0xFF;
     }
 
     boolean hasDungeonInstrumentForTest(int mapId) {
         return mapId >= 0
-                && mapId < session.components.roomState().dungeonProgressFlags.length
-                && (session.components.roomState().dungeonProgressFlags[mapId] & 0x02) != 0;
+                && mapId < RoomSessionInspection.component(session, RoomWorldState.class).dungeonProgressFlags.length
+                && (RoomSessionInspection.component(session, RoomWorldState.class).dungeonProgressFlags[mapId] & 0x02)
+                        != 0;
     }
 
     int indoorTorchPaletteEffectAddressForTest() {
-        return session.components.indoorTorchPaletteEffect().effectAddress();
+        return RoomSessionInspection.component(session, IndoorTorchPaletteEffect.class)
+                .effectAddress();
     }
 
     void igniteIndoorTorchPaletteForTest() {
-        session.components.indoorTorchPaletteEffect().igniteTorch();
+        RoomSessionInspection.component(session, IndoorTorchPaletteEffect.class).igniteTorch();
     }
 
     void setRoomTriggerCountForTest(int value) {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException("Room trigger count must be an unsigned byte");
         }
-        session.loadedRoomOrNull().contents.puzzles.roomTriggerCount = value;
+        RoomSessionInspection.loadedRoom(session).contents.puzzles.roomTriggerCount = value;
     }
 
     int entityDropSpeedXForTest(int slot) {
         return !session.hasRoom()
                 ? 0
-                : session.loadedRoomOrNull().entities.inspection().dropSpeedX(slot);
+                : RoomSessionInspection.loadedRoom(session)
+                        .entities
+                        .inspection()
+                        .dropSpeedX(slot);
     }
 
     int entityDropSpeedZForTest(int slot) {
         return !session.hasRoom()
                 ? 0
-                : session.loadedRoomOrNull().entities.inspection().dropSpeedZ(slot);
+                : RoomSessionInspection.loadedRoom(session)
+                        .entities
+                        .inspection()
+                        .dropSpeedZ(slot);
     }
 
     void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
         session.installRoom(new RoomRuntime(
-                session.loadedRoomOrNull().contents, runtime, session.components.roomRuntimeServices()));
+                RoomSessionInspection.loadedRoom(session).contents,
+                runtime,
+                RoomSessionInspection.component(session, RoomRuntime.Services.class)));
     }
 
     int entityPhysicsFlagsForTest(int slot) {
         return !session.hasRoom()
                 ? 0
-                : session.loadedRoomOrNull().entities.enemies().physicsFlags(slot);
+                : RoomSessionInspection.loadedRoom(session).entities.enemies().physicsFlags(slot);
     }
 }

@@ -34,13 +34,15 @@ import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
 
 /** ApplyLinkMotionState indoor key blocks and dungeon entrance interactions. */
-final class RoomDoorInteractions {
+final class RoomDoorInteractions implements RoomDoors {
+    private final LoadedRoomHandle rooms;
     private final Dependencies dependencies;
     private final RoomChestInteractions roomChestInteractions;
 
     private final RoomLiftInteractions roomLiftInteractions;
 
-    RoomDoorInteractions(Dependencies dependencies) {
+    RoomDoorInteractions(LoadedRoomHandle rooms, Dependencies dependencies) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
         roomChestInteractions = new RoomChestInteractions(new RoomChestInteractions.Dependencies(
                 dependencies.chestContentsTable(),
@@ -61,6 +63,158 @@ final class RoomDoorInteractions {
                 dependencies.roomSessionViews(),
                 dependencies.roomTileRedraw(),
                 this));
+    }
+
+    @Override
+    public ChestOpenResult tryOpenChest(
+            int linkPixelX, int linkPixelY, Direction linkDirection, boolean actionPressed, int swordLevel) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return new ChestOpenResult(false, -1, -1, -1);
+        }
+        return tryOpenChest(loaded, linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
+    }
+
+    @Override
+    public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryUnlockIndoorKeyDoor(loaded.contents, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    @Override
+    public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryPushIndoorBlock(loaded, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    @Override
+    public boolean tryLiftObject(
+            int x,
+            int y,
+            Direction direction,
+            boolean held,
+            int buttons,
+            boolean power,
+            int level,
+            boolean anyPowerUp) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryLiftObject(loaded, x, y, direction, held, buttons, power, level, anyPowerUp);
+    }
+
+    @Override
+    public boolean tryLiftObject(
+            int x, int y, Direction direction, boolean held, int buttons, boolean power, int level) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryLiftObject(loaded, x, y, direction, held, buttons, power, level);
+    }
+
+    @Override
+    public boolean tryLiftIndoorObject(
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryLiftIndoorObject(
+                loaded, linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
+    }
+
+    @Override
+    public boolean tryLiftIndoorObject(
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask,
+            boolean pieceOfPowerActive) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryLiftIndoorObject(
+                loaded,
+                linkPixelX,
+                linkPixelY,
+                linkDirection,
+                braceletButtonHeld,
+                pressedButtonsMask,
+                pieceOfPowerActive);
+    }
+
+    @Override
+    public boolean tryInteractWithIndoorBlock(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryInteractWithIndoorBlock(loaded, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    @Override
+    public boolean tryUnlockIndoorKeyholeBlock(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryUnlockIndoorKeyholeBlock(loaded.contents, linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    @Override
+    public boolean tryUnlockTailCaveKeyhole(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, boolean hasTailKey) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryUnlockTailCaveKeyhole(
+                loaded.contents, linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
+    }
+
+    @Override
+    public boolean tryUnlockKeyCavernKeyhole(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, int goldenLeavesCount) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tryUnlockKeyCavernKeyhole(
+                loaded.contents, linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
+    }
+
+    @Override
+    public int tickTailCaveKeyholeSequence() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return 0;
+        }
+        return tickTailCaveKeyholeSequence(loaded.contents);
+    }
+
+    @Override
+    public boolean tailCaveKeyholeSequenceActive() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null) {
+            return false;
+        }
+        return tailCaveKeyholeSequenceActive(loaded.contents);
     }
 
     ChestOpenResult tryOpenChest(

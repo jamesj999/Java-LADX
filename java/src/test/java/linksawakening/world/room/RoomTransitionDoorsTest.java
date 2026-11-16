@@ -144,8 +144,8 @@ final class RoomTransitionDoorsTest {
         assertFalse(session.rooms().activeRoomOrNull().hasWarps());
 
         ScrollController scrollController = new ScrollController();
-        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), new TransitionController(), scrollController);
+        RoomTransitionCoordinator coordinator = session.transitions()
+                .coordinator(new RoomBoundaryController(), new TransitionController(), scrollController);
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),
@@ -189,8 +189,8 @@ final class RoomTransitionDoorsTest {
                 session.rooms().activeRoomOrNull().firstWarp().category());
 
         TransitionController transition = new TransitionController();
-        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), transition, new ScrollController());
+        RoomTransitionCoordinator coordinator =
+                session.transitions().coordinator(new RoomBoundaryController(), transition, new ScrollController());
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),
@@ -226,7 +226,7 @@ final class RoomTransitionDoorsTest {
         TransitionController transition = new TransitionController();
         ScrollController scroll = new ScrollController();
         RoomTransitionCoordinator coordinator =
-                new RoomTransitionCoordinator(session, new RoomBoundaryController(), transition, scroll);
+                session.transitions().coordinator(new RoomBoundaryController(), transition, scroll);
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),
@@ -260,7 +260,7 @@ final class RoomTransitionDoorsTest {
         TransitionController transition = new TransitionController();
         ScrollController scroll = new ScrollController();
         RoomTransitionCoordinator coordinator =
-                new RoomTransitionCoordinator(session, new RoomBoundaryController(), transition, scroll);
+                session.transitions().coordinator(new RoomBoundaryController(), transition, scroll);
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),

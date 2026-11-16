@@ -38,8 +38,8 @@ final class RoomTransitionBoundariesTest {
         RoomSession session = newSession(rom, tables, collision);
         session.rooms().loadInitialOverworld(0x82);
         ScrollController scroll = new ScrollController();
-        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), new TransitionController(), scroll);
+        RoomTransitionCoordinator coordinator =
+                session.transitions().coordinator(new RoomBoundaryController(), new TransitionController(), scroll);
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),
@@ -96,8 +96,8 @@ final class RoomTransitionBoundariesTest {
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
         ScrollController scroll = new ScrollController();
-        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), new TransitionController(), scroll);
+        RoomTransitionCoordinator coordinator =
+                session.transitions().coordinator(new RoomBoundaryController(), new TransitionController(), scroll);
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),
@@ -127,8 +127,9 @@ final class RoomTransitionBoundariesTest {
         link.motion().setRomPhysicsModifier(0x02);
         RoomSession restoredSession = newSession(rom, romTables, collision);
         restoredSession.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
-        RoomTransitionCoordinator restoredCoordinator = new RoomTransitionCoordinator(
-                restoredSession, new RoomBoundaryController(), new TransitionController(), new ScrollController());
+        RoomTransitionCoordinator restoredCoordinator = restoredSession
+                .transitions()
+                .coordinator(new RoomBoundaryController(), new TransitionController(), new ScrollController());
         restoredCoordinator.handleWarpAndIndoorBoundaries(link);
         assertEquals(
                 0x01, link.motion().romPhysicsModifier(), "a new session reload restores the source entry default");
@@ -164,8 +165,8 @@ final class RoomTransitionBoundariesTest {
             link.position().setRoomEntryPixelPosition(64, 64);
             link.position().setPixelPosition(16, 16);
             TransitionController transition = new TransitionController();
-            RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
-                    session, new RoomBoundaryController(), transition, new ScrollController());
+            RoomTransitionCoordinator coordinator =
+                    session.transitions().coordinator(new RoomBoundaryController(), transition, new ScrollController());
             runUntilPitFallStarts(link);
             coordinator.handleWarpAndIndoorBoundaries(link);
             assertFalse(transition.isActive());
@@ -203,8 +204,8 @@ final class RoomTransitionBoundariesTest {
         assertTrue(session.story().shouldGetLostInMysteriousWoods());
 
         ScrollController scroll = new ScrollController();
-        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), new TransitionController(), scroll);
+        RoomTransitionCoordinator coordinator =
+                session.transitions().coordinator(new RoomBoundaryController(), new TransitionController(), scroll);
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),
@@ -219,7 +220,7 @@ final class RoomTransitionBoundariesTest {
 
         assertEquals(0x63, session.rooms().currentRoomId());
         assertTrue(scroll.isActive());
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x1E));
     }
@@ -235,8 +236,8 @@ final class RoomTransitionBoundariesTest {
         session.entities().tickEntities(0);
 
         TransitionController transitionController = new TransitionController();
-        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), transitionController, new ScrollController());
+        RoomTransitionCoordinator coordinator = session.transitions()
+                .coordinator(new RoomBoundaryController(), transitionController, new ScrollController());
         Link link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),

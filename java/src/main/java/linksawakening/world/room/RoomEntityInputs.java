@@ -2,6 +2,134 @@ package linksawakening.world.room;
 
 /** Cached player inputs and gates supplied to each room entity runtime. */
 final class RoomEntityInputs {
+    void clearDialogAfterWarp() {
+        entityDialogActive = false;
+        entityDialogCooldown = 0;
+        entityInventoryAppearing = false;
+    }
+
+    private final LoadedRoomHandle rooms;
+
+    RoomEntityInputs(LoadedRoomHandle rooms) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
+    }
+
+    void updateLiftStrengthBoost(boolean redTunic, boolean power) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) loaded.entities.configuration().setLiftStrengthBoost(redTunic, power);
+    }
+
+    void updateEntityScreenShakeCountdown(int countdown) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) loaded.entities.configuration().setScreenShakeCountdown(countdown);
+    }
+
+    void updateHeartPiecesCount(int count) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) loaded.entities.setHeartPiecesCount(count);
+    }
+
+    void updateFreeMovementMode(boolean enabled) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) loaded.entities.setFreeMovementMode(enabled);
+    }
+
+    void updateEntityActionButtonsHeld(boolean held) {
+        updateEntityActionButtonsHeld(held, held);
+    }
+
+    void updateEntityFinalPositionX(int positionX) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityFinalPositionX(positionX);
+        if (loaded != null) applyFinalPositionX(loaded, positionX);
+    }
+
+    void updateEntityAttackStepAnimationCountdown(int countdown) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityAttackStepAnimationCountdown(countdown);
+        if (loaded != null) applyAttackStepAnimationCountdown(loaded, countdown);
+    }
+
+    void updateEntityBombButtonHeld(boolean buttonHeld) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityBombButtonHeld(buttonHeld);
+        if (loaded != null) applyBombButtonHeld(loaded, buttonHeld);
+    }
+
+    void updateEntityPowerBraceletButtonHeld(boolean buttonHeld) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityPowerBraceletButtonHeld(buttonHeld);
+        if (loaded != null) applyPowerBraceletButtonHeld(loaded, buttonHeld);
+    }
+
+    void updateSecretSeashellPegasusCollisionState(
+            boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY);
+        if (loaded != null)
+            applySecretSeashellPegasusCollisionState(
+                    loaded, screenShakeActive, collisionActive, collisionX, collisionY);
+    }
+
+    void updateEntityGoldenLeavesCount(int goldenLeavesCount) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityGoldenLeavesCount(goldenLeavesCount);
+        if (loaded != null) applyGoldenLeavesCount(loaded, goldenLeavesCount);
+    }
+
+    void updateToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        if (loaded != null) applyToadstoolPlayerState(loaded, hasToadstool, magicPowderCount);
+    }
+
+    void updateEntityInventorySlots(int itemA, int itemB) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityInventorySlots(itemA, itemB);
+        if (loaded != null) applyInventorySlots(loaded, itemA, itemB);
+    }
+
+    void updateEntityPressedButtonsMask(int pressedButtonsMask) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityPressedButtonsMask(pressedButtonsMask);
+        if (loaded != null) applyPressedButtonsMask(loaded, pressedButtonsMask);
+    }
+
+    void updateEntityJoypadHeld(boolean joypadHeld) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityJoypadHeld(joypadHeld);
+        if (loaded != null) applyJoypadHeld(loaded, joypadHeld);
+    }
+
+    void updateEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        if (loaded != null) applyActionButtonsHeld(loaded, actionButtonAHeld, actionButtonBHeld);
+    }
+
+    void updateEntityMusicActive(boolean active) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityMusicActive(active);
+        if (loaded != null) applyMusicActive(loaded, active);
+    }
+
+    void updateEntityDialogAskSelectionIndex(int selectionIndex) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityDialogAskSelectionIndex(selectionIndex);
+        if (loaded != null) applyDialogAskSelectionIndex(loaded, selectionIndex);
+    }
+
+    void updateEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
+        if (loaded != null) applyTalkState(loaded, inventoryAppearing, dialogCooldown, windowY);
+    }
+
+    void updateEntityDialogActive(boolean active) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        setEntityDialogActive(active);
+        if (loaded != null) applyDialogActive(loaded, active);
+    }
 
     int entityGoldenLeavesCount;
     boolean actionButtonsHeld;

@@ -35,10 +35,30 @@ import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
 
 /** ApplyLinkMotionState and bomb/projectile object writes, including their immediate tile redraws. */
-final class RoomObjectMutations {
+final class RoomObjectMutations implements RoomTerrain {
+    @Override
+    public boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null && tickCrackedFloor(loaded, frame, dialogGotItemActive);
+    }
+
+    @Override
+    public boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null && applyCrackedFloorGroundPhysics(loaded.contents, frame, dialogGotItemActive);
+    }
+
+    @Override
+    public boolean breakIndoorSwordCrystal(int location) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null && breakIndoorSwordCrystal(loaded, location);
+    }
+
+    private final LoadedRoomHandle rooms;
     private final Dependencies dependencies;
 
-    RoomObjectMutations(Dependencies dependencies) {
+    RoomObjectMutations(LoadedRoomHandle rooms, Dependencies dependencies) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
     }
 

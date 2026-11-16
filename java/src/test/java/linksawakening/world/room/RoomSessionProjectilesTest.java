@@ -67,8 +67,10 @@ final class RoomSessionProjectilesTest {
 
         assertEquals(
                 List.of(new SideViewPlatformLinkRequest(0, 0, 0x40, 0x02, true, true)),
-                session.consumeSideViewPlatformLinkRequests());
-        assertTrue(session.consumeSideViewPlatformLinkRequests().isEmpty());
+                RoomSessionInspection.component(session, RoomEntityBridge.class).consumeSideViewPlatformLinkRequests());
+        assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class)
+                .consumeSideViewPlatformLinkRequests()
+                .isEmpty());
     }
 
     @Test
@@ -137,8 +139,9 @@ final class RoomSessionProjectilesTest {
         for (int frame = 0; frame < 136; frame++) {
             int currentFrame = frame;
             session.entities().tickEntities(frame, 0, 0);
-            List<BombExplosionEvent> events =
-                    session.components.entityBridge().outbox.consumeBombExplosionEvents();
+            List<BombExplosionEvent> events = RoomSessionInspection.component(session, RoomEntityBridge.class)
+                    .outbox
+                    .consumeBombExplosionEvents();
             assertTrue(
                     events.isEmpty(),
                     () -> "frame=" + currentFrame + " countdown="
@@ -147,14 +150,14 @@ final class RoomSessionProjectilesTest {
         }
         session.entities().tickEntities(136, 0, 0);
 
-        List<BombExplosionEvent> events =
-                session.components.entityBridge().outbox.consumeBombExplosionEvents();
+        List<BombExplosionEvent> events = RoomSessionInspection.component(session, RoomEntityBridge.class)
+                .outbox
+                .consumeBombExplosionEvents();
         assertEquals(1, events.size());
         assertTrue(events.getFirst().targetsRoomObjects());
         assertEquals(0x16, events.getFirst().countdown());
         assertEquals(BombExplosionEvent.DAMAGE_TYPE_BOMB, events.getFirst().damageType());
-        assertTrue(session.components
-                .entityBridge()
+        assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class)
                 .outbox
                 .consumeBombExplosionEvents()
                 .isEmpty());
@@ -179,8 +182,12 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x04, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         assertEquals(0, vfx.activeCount());
-        assertTrue(session.components.entityBridge().outbox.consumeBombExplosionEvents().stream()
-                .anyMatch(event -> event.targetsRoomObjects() && event.countdown() == 0x16));
+        assertTrue(
+                RoomSessionInspection.component(session, RoomEntityBridge.class)
+                        .outbox
+                        .consumeBombExplosionEvents()
+                        .stream()
+                        .anyMatch(event -> event.targetsRoomObjects() && event.countdown() == 0x16));
     }
 
     @Test
@@ -270,7 +277,8 @@ final class RoomSessionProjectilesTest {
             assertEquals(0x19, entity.spriteDefinition().bank());
             assertEquals(0x7B50, entity.spriteDefinition().address());
         }
-        List<EntityCombatEvent> events = session.consumeEntityEvents();
+        List<EntityCombatEvent> events =
+                RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x02, events.getFirst().soundId());
@@ -282,10 +290,9 @@ final class RoomSessionProjectilesTest {
         session.rooms().loadInitialOverworld(0x92);
         fillActiveObjects(session, 0x6E);
 
-        EntityBackgroundCollisionResult result = session.components
-                .roomCollisionQueries()
+        EntityBackgroundCollisionResult result = RoomSessionInspection.component(session, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        session.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(session),
                         syntheticEntity(HookshotChainMotion.ENTITY_TYPE),
                         EntityBackgroundCollisionResult.RIGHT,
                         0x40,
@@ -349,7 +356,7 @@ final class RoomSessionProjectilesTest {
         byte[] indoorB = new byte[0x100];
         indoorB[0xC7] = 0x10;
         session.story().restoreRoomStatuses(new byte[0x100], new byte[0x100], indoorB, new byte[0x20]);
-        session.setEntityGoldenLeavesCount(5);
+        RoomSessionInspection.component(session, RoomEntityInputs.class).updateEntityGoldenLeavesCount(5);
         session.rooms().loadIndoor(0x10, 0xC7);
         RoomEntity richard = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)
@@ -367,7 +374,9 @@ final class RoomSessionProjectilesTest {
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(
                 List.of(new RichardProgressEvent(richard.slot(), RichardProgressEvent.Kind.RETURN_ALL_LEAVES, 0xFF)),
-                session.components.entityBridge().outbox.consumeRichardProgressEvents());
+                RoomSessionInspection.component(session, RoomEntityBridge.class)
+                        .outbox
+                        .consumeRichardProgressEvents());
 
         session.entityState().setEntityActionButtonsHeld(false, false);
         for (int frame = 3; frame <= 34; frame++) {
@@ -378,17 +387,20 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x58, movedRichard.x());
 
         session.entities().tickEntities(35, 0x78, 0x20, 0, Direction.DOWN.javaIndex());
-        Warp warp = session.components.roomTransitionController().consumeClearedDungeonWarp();
+        Warp warp = RoomSessionInspection.component(session, RoomTransitionController.class)
+                .consumeClearedDungeonWarp();
         assertEquals(Warp.CATEGORY_INDOOR, warp.category());
         assertEquals(0x11, warp.destMap());
         assertEquals(0xD8, warp.destRoom());
         assertEquals(0x88, warp.destX());
         assertEquals(0x70, warp.destY());
-        assertEquals(0x30, session.consumePendingMusicFadeOutCountdown());
+        assertEquals(
+                0x30,
+                RoomSessionInspection.component(session, RoomEntityBridge.class).consumePendingMusicFadeOutCountdown());
         assertEquals(
                 List.of(new EntityCombatEvent(
                         richard.slot(), 0x95, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x06)),
-                session.consumeEntityEvents());
+                RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents());
     }
 
     @Test
@@ -409,14 +421,14 @@ final class RoomSessionProjectilesTest {
             session.entityState().advanceBoomerangSoundClock(false);
         }
         assertTrue(session.playerItems().fireBoomerang(0x40, 0x50, 0, 0, 0));
-        session.consumeEntityEvents();
+        RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents();
         session.entityState().advanceBoomerangSoundClock(true);
         session.entities().tickEntities(0, 0, 0);
-        assertTrue(
-                session.consumeEntityEvents().stream().anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
+        assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents().stream()
+                .anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
         session.entityState().advanceBoomerangSoundClock(true);
         session.entities().tickEntities(1, 0, 0);
-        assertFalse(
-                session.consumeEntityEvents().stream().anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
+        assertFalse(RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents().stream()
+                .anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
     }
 }

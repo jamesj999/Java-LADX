@@ -19,7 +19,7 @@ import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
 
-/** Narrow event-drain port; the session decides unloaded defaults before accessing a runtime. */
+/** Entity-owner drain port; each drain preserves its unloaded default before accessing a runtime. */
 interface RoomEntityOutputSource {
     java.util.List<linksawakening.world.entity.event.WarpLinkStateRequest> consumeWarpLinkStateRequests();
 

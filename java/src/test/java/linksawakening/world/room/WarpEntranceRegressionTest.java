@@ -43,8 +43,8 @@ final class WarpEntranceRegressionTest {
                 new linksawakening.world.entity.RomRandomByteSource()));
         var transition = new TransitionController();
         var sounds = new java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
-        var coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
+        var coordinator = session.transitions()
+                .coordinator(new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var link = new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
@@ -90,8 +90,8 @@ final class WarpEntranceRegressionTest {
                 new linksawakening.world.entity.RomRandomByteSource()));
         var transition = new TransitionController();
         var sounds = new java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
-        var coordinator = new RoomTransitionCoordinator(
-                session, new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
+        var coordinator = session.transitions()
+                .coordinator(new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
         var link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),

@@ -7,14 +7,17 @@ public final class RoomFrameTestAccess {
     private RoomFrameTestAccess() {}
 
     public static linksawakening.world.entity.RoomEntityRuntime runtime(RoomSession room) {
-        return room.hasRoom() ? room.loadedRoomOrNull().entities : null;
+        return room.hasRoom() ? RoomSessionInspection.loadedRoom(room).entities : null;
     }
 
     public static void music(RoomSession room, int track) {
-        room.components.entityBridge().outbox.pendingRoomMusicTrack = track;
+        RoomSessionInspection.component(room, RoomEntityBridge.class).outbox.pendingRoomMusicTrack = track;
     }
 
     public static void heart(RoomSession room) {
-        room.components.entityBridge().outbox.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(0));
+        RoomSessionInspection.component(room, RoomEntityBridge.class)
+                .outbox
+                .pendingHeartContainerRewards
+                .add(new HeartContainerRewardEvent(0));
     }
 }

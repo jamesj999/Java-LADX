@@ -6,37 +6,37 @@ import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 
 public final class PresentationOutputs {
-    private final RoomEntityOutputSource session;
+    private final RoomEntityOutputSource source;
 
-    PresentationOutputs(RoomEntityOutputSource session) {
-        this.session = java.util.Objects.requireNonNull(session);
+    PresentationOutputs(RoomEntityOutputSource source) {
+        this.source = java.util.Objects.requireNonNull(source);
     }
 
     public List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return session.consumeScreenShakeRequests();
+        return source.consumeScreenShakeRequests();
     }
 
     public List<EntityCombatEvent> consumeEntityEvents() {
-        return session.consumeEntityEvents();
+        return source.consumeEntityEvents();
     }
 
     public int consumePendingMusicFadeOutCountdown() {
-        return session.consumePendingMusicFadeOutCountdown();
+        return source.consumePendingMusicFadeOutCountdown();
     }
 
     public int consumePendingMusicTrack() {
-        return session.consumePendingMusicTrack();
+        return source.consumePendingMusicTrack();
     }
 
     public List<LikeLikeEvent> consumeLikeLikeEvents() {
-        return session.consumeLikeLikeEvents();
+        return source.consumeLikeLikeEvents();
     }
 
     public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
-        session.drainEntityEvents(target);
+        source.drainEntityEvents(target);
     }
 
     public linksawakening.world.entity.event.DialogRequest consumeFirstEntityDialogRequest() {
-        return session.consumeFirstEntityDialogRequest();
+        return source.consumeFirstEntityDialogRequest();
     }
 }

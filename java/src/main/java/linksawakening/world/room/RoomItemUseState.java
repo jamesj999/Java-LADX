@@ -1,6 +1,12 @@
 package linksawakening.world.room;
 
 final class RoomItemUseState {
+    void finishOcarinaPlayback() {
+        ocarinaPlaybackCountdown = 0;
+        ocarinaAnimationCounter = 0;
+        ocarinaAnimationPhase = 0;
+    }
+
     /** Absent when no shovel drop awaits the next entity pass. */
     PendingShovelDrop pendingShovelDrop;
 

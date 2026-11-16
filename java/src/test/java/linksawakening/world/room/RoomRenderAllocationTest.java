@@ -58,7 +58,7 @@ class RoomRenderAllocationTest {
         session.installRoom(new RoomRuntime(
                 new RoomContents(active, new RoomPuzzleState.PerRoom(), new RoomTerrainState.Overrides()),
                 runtime,
-                session.components.roomRuntimeServices()));
+                RoomSessionInspection.component(session, RoomRuntime.Services.class)));
         return session;
     }
 
@@ -103,7 +103,9 @@ class RoomRenderAllocationTest {
         session.rooms().activeRoomOrNull().tileIds()[0] = 7;
         session.rooms().activeRoomOrNull().palettes()[0][0] = 11;
         session.dungeon().setDungeonItemForDebug(0, 0, 1);
-        session.components.roomState().dungeonItemState.loadForMap(0, true);
+        RoomSessionInspection.component(session, RoomWorldState.class)
+                .dungeonItemState
+                .loadForMap(0, true);
         assertSame(view, session.rooms().renderViewOrNull());
         assertEquals(7, view.tileId(0));
         assertEquals(11, view.paletteColor(0, 0));
