@@ -7,30 +7,13 @@ final class DialogText {
 
     private static final String DEFAULT_PLAYER_NAME = "LINK";
     private static final int NAME_LENGTH = 5;
+    private static final char ASK_MARKER = '\u00FE';
     private String playerName = DEFAULT_PLAYER_NAME;
 
-    record ParsedText(String text) {}
+    private final int lineWidth;
 
-    private static void appendSpace(StringBuilder builder) {
-        if (!builder.isEmpty() && builder.charAt(builder.length() - 1) != '\n') {
-            builder.append(' ');
-        }
-    }
-
-    private static String normalizeAskMarkers(String value) {
-        return value.replace("<ask>", String.valueOf(ASK_MARKER));
-    }
-
-    private static String stripAfterTerminator(String value) {
-        int atTerminator = value.indexOf('@');
-        int byteTerminator = value.indexOf('\u00FF');
-        int terminator = Math.min(
-                atTerminator < 0 ? Integer.MAX_VALUE : atTerminator,
-                byteTerminator < 0 ? Integer.MAX_VALUE : byteTerminator);
-        if (terminator == Integer.MAX_VALUE) {
-            return value;
-        }
-        return value.substring(0, terminator);
+    DialogText(int lineWidth) {
+        this.lineWidth = lineWidth;
     }
 
     public void setPlayerName(String playerName) {
@@ -84,6 +67,34 @@ final class DialogText {
         return formatted.toString();
     }
 
+    ParsedText parse(String rawText) {
+        String normalized = normalizeAskMarkers(rawText);
+        String terminated = stripAfterTerminator(normalized);
+        return new ParsedText(substituteNameTokens(terminated));
+    }
+
+    private static void appendSpace(StringBuilder builder) {
+        if (!builder.isEmpty() && builder.charAt(builder.length() - 1) != '\n') {
+            builder.append(' ');
+        }
+    }
+
+    private static String normalizeAskMarkers(String value) {
+        return value.replace("<ask>", String.valueOf(ASK_MARKER));
+    }
+
+    private static String stripAfterTerminator(String value) {
+        int atTerminator = value.indexOf('@');
+        int byteTerminator = value.indexOf('\u00FF');
+        int terminator = Math.min(
+                atTerminator < 0 ? Integer.MAX_VALUE : atTerminator,
+                byteTerminator < 0 ? Integer.MAX_VALUE : byteTerminator);
+        if (terminator == Integer.MAX_VALUE) {
+            return value;
+        }
+        return value.substring(0, terminator);
+    }
+
     private int appendWord(StringBuilder wrapped, String word, int lineLength) {
         int remaining = word.length();
         int offset = 0;
@@ -101,12 +112,6 @@ final class DialogText {
             lineLength += count;
         }
         return lineLength;
-    }
-
-    ParsedText parse(String rawText) {
-        String normalized = normalizeAskMarkers(rawText);
-        String terminated = stripAfterTerminator(normalized);
-        return new ParsedText(substituteNameTokens(terminated));
     }
 
     private String substituteNameTokens(String value) {
@@ -128,10 +133,5 @@ final class DialogText {
         return index < playerName.length() ? playerName.charAt(index) : ' ';
     }
 
-    private final int lineWidth;
-    private static final char ASK_MARKER = '\u00FE';
-
-    DialogText(int lineWidth) {
-        this.lineWidth = lineWidth;
-    }
+    record ParsedText(String text) {}
 }

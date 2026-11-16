@@ -6,10 +6,6 @@ import linksawakening.dialog.DialogController;
 final class DialogRenderLayer implements HardwareRenderLayer {
     private DialogWindowPainter windowPainter = DialogWindowPainter.ROM;
 
-    void windowPainter(DialogWindowPainter painter) {
-        windowPainter = painter == null ? DialogWindowPainter.ROM : painter;
-    }
-
     private DialogController dialogController;
     private int[] backgroundPalette;
     private int[][] objectPalettes;
@@ -20,14 +16,6 @@ final class DialogRenderLayer implements HardwareRenderLayer {
     }
 
     public DialogRenderLayer(
-            DialogController dialogController, int[] backgroundPalette, int[][] objectPalettes, int frameCounter) {
-        this.dialogController = dialogController;
-        this.backgroundPalette = backgroundPalette;
-        this.objectPalettes = objectPalettes;
-        this.frameCounter = frameCounter;
-    }
-
-    void configure(
             DialogController dialogController, int[] backgroundPalette, int[][] objectPalettes, int frameCounter) {
         this.dialogController = dialogController;
         this.backgroundPalette = backgroundPalette;
@@ -50,5 +38,17 @@ final class DialogRenderLayer implements HardwareRenderLayer {
                     false,
                     true,
                     objectPalettes[2]);
+    }
+
+    void windowPainter(DialogWindowPainter painter) {
+        windowPainter = painter == null ? DialogWindowPainter.ROM : painter;
+    }
+
+    void configure(
+            DialogController dialogController, int[] backgroundPalette, int[][] objectPalettes, int frameCounter) {
+        this.dialogController = dialogController;
+        this.backgroundPalette = backgroundPalette;
+        this.objectPalettes = objectPalettes;
+        this.frameCounter = frameCounter;
     }
 }

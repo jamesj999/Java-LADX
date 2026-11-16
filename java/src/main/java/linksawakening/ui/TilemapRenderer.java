@@ -67,10 +67,6 @@ public final class TilemapRenderer {
         }
     }
 
-    private static int resolveSignedBgTileIndex(int tileId) {
-        return tileId < 0x80 ? tileId + 0x100 : tileId;
-    }
-
     public static void submit(
             linksawakening.render.HardwareFrame frame,
             GPU gpu,
@@ -98,6 +94,10 @@ public final class TilemapRenderer {
             }
     }
 
+    private static int resolveSignedBgTileIndex(int tileId) {
+        return tileId < 0x80 ? tileId + 0x100 : tileId;
+    }
+
     /** Arguments shared by render operations. */
     public static final class Region {
         private int tileWidth;
@@ -107,14 +107,6 @@ public final class TilemapRenderer {
 
         public Region(int tileWidth, int tileHeight, int offsetX, int offsetY) {
             set(tileWidth, tileHeight, offsetX, offsetY);
-        }
-
-        Region set(int tileWidth, int tileHeight, int offsetX, int offsetY) {
-            this.tileWidth = tileWidth;
-            this.tileHeight = tileHeight;
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
-            return this;
         }
 
         public int tileWidth() {
@@ -131,6 +123,14 @@ public final class TilemapRenderer {
 
         public int offsetY() {
             return offsetY;
+        }
+
+        Region set(int tileWidth, int tileHeight, int offsetX, int offsetY) {
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            return this;
         }
     }
 }

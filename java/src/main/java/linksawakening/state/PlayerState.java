@@ -13,10 +13,6 @@ public final class PlayerState {
     // A/B slot and the selected subscreen slot (see bank20.asm:5FDB).
     public static final int SUBSCREEN_SLOT_COUNT = 10;
 
-    public PlayerState() {
-        super();
-    }
-
     private final Inventory inventory = new Inventory();
     private final Progression progression = new Progression();
     private final EquipmentLevels equipmentLevels = new EquipmentLevels();
@@ -33,6 +29,10 @@ public final class PlayerState {
             new PlayerInitialization(ammunition, equipmentLevels, inventory, playerSounds, progression, vitals, wallet);
     private final PlayerSaveLoader playerSaveLoader =
             new PlayerSaveLoader(ammunition, equipmentLevels, inventory, playerSounds, progression, vitals, wallet);
+
+    public PlayerState() {
+        super();
+    }
 
     public Inventory inventory() {
         return inventory;

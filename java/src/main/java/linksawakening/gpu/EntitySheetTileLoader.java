@@ -6,11 +6,6 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 
 final class EntitySheetTileLoader {
-    private final Vram target;
-
-    EntitySheetTileLoader(Vram target) {
-        this.target = target;
-    }
 
     private static final int[] NPC_TILES_BANKS_GBC = {
         0x00,
@@ -30,6 +25,11 @@ final class EntitySheetTileLoader {
         RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot4
     };
     private static final int COLOR_DUNGEON_ROOM_COUNT = 0x16;
+    private final Vram target;
+
+    EntitySheetTileLoader(Vram target) {
+        this.target = target;
+    }
 
     public void loadEntitySpriteSheets(Rom romData, int[] sheetValues) {
         if (sheetValues == null || sheetValues.length != 4) {

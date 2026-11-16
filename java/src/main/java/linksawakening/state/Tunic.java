@@ -12,10 +12,6 @@ public enum Tunic {
         this.romValue = romValue;
     }
 
-    public int romValue() {
-        return romValue;
-    }
-
     public static Tunic fromRom(int value) {
         return switch (value) {
             case 0 -> GREEN;
@@ -23,5 +19,9 @@ public enum Tunic {
             case 2 -> BLUE;
             default -> throw new IllegalArgumentException("Unknown Tunic ROM value: " + value);
         };
+    }
+
+    public int romValue() {
+        return romValue;
     }
 }

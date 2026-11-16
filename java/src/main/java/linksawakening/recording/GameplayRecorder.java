@@ -91,17 +91,6 @@ public final class GameplayRecorder implements AutoCloseable {
         }
     }
 
-    private Process start(String name, List<String> arguments) throws IOException {
-        var command = new ArrayList<String>();
-        command.add(options.ffmpeg());
-        command.addAll(List.of("-hide_banner", "-loglevel", "error", "-nostdin", "-n"));
-        command.addAll(arguments);
-        return new ProcessBuilder(command)
-                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                .redirectError(temporary.resolve(name + ".log").toFile())
-                .start();
-    }
-
     /** Reset before simulation; paused frames receive silence, not stale audio. */
     public void beginFrame() {
         requireOpen();
@@ -131,10 +120,6 @@ public final class GameplayRecorder implements AutoCloseable {
             failed = true;
             throw new UncheckedIOException("Recording encoder failed: " + diagnostics(), e);
         }
-    }
-
-    private void requireOpen() {
-        if (closed || failed) throw new IllegalStateException("Recording is closed or failed");
     }
 
     public long frameCount() {
@@ -186,6 +171,21 @@ public final class GameplayRecorder implements AutoCloseable {
             stop(audio);
             removeTemporary(temporary);
         }
+    }
+
+    private Process start(String name, List<String> arguments) throws IOException {
+        var command = new ArrayList<String>();
+        command.add(options.ffmpeg());
+        command.addAll(List.of("-hide_banner", "-loglevel", "error", "-nostdin", "-n"));
+        command.addAll(arguments);
+        return new ProcessBuilder(command)
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(temporary.resolve(name + ".log").toFile())
+                .start();
+    }
+
+    private void requireOpen() {
+        if (closed || failed) throw new IllegalStateException("Recording is closed or failed");
     }
 
     private void await(Process process) throws IOException {

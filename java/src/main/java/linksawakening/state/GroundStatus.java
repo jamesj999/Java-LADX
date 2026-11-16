@@ -13,10 +13,6 @@ public enum GroundStatus {
         this.romValue = romValue;
     }
 
-    public int romValue() {
-        return romValue;
-    }
-
     public static GroundStatus fromRom(int value) {
         return switch (value) {
             case 0 -> NORMAL;
@@ -25,5 +21,9 @@ public enum GroundStatus {
             case 7 -> PIT;
             default -> throw new IllegalArgumentException("Unknown GroundStatus ROM value: " + value);
         };
+    }
+
+    public int romValue() {
+        return romValue;
     }
 }

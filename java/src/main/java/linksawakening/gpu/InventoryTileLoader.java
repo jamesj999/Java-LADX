@@ -5,21 +5,17 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
 final class InventoryTileLoader {
-    private final Vram target;
-
-    InventoryTileLoader(Vram target) {
-        this.target = target;
-    }
 
     private static final int OCARINA_SYMBOLS_TILES_BANK = GbcBanks.adjust(RomSymbols.OcarinaSymbolsTiles.bank());
     private static final int OCARINA_SYMBOLS_TILES_ADDR = RomSymbols.OcarinaSymbolsTiles.address();
     private static final int SHARED_VFX_TILES_BANK = GbcBanks.adjust(RomSymbols.CharacterVfxTiles.bank());
     private static final int SHARED_VFX_TILES_ADDR = RomSymbols.CharacterVfxTiles.address();
+    private final Vram target;
 
     private boolean powderIconIsToadstool;
 
-    void resetPowderIcon() {
-        powderIconIsToadstool = false;
+    InventoryTileLoader(Vram target) {
+        this.target = target;
     }
 
     public void updatePowderInventoryTiles(Rom romData, boolean hasToadstool) {
@@ -88,5 +84,9 @@ final class InventoryTileLoader {
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK, SHARED_VFX_TILES_ADDR, 0x04, 0x20);
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK, SHARED_VFX_TILES_ADDR + 0x40, 0x04, 0x24);
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK, SHARED_VFX_TILES_ADDR + 0x60, 0x04, 0x26);
+    }
+
+    void resetPowderIcon() {
+        powderIconIsToadstool = false;
     }
 }

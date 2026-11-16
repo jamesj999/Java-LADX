@@ -10,17 +10,6 @@ import linksawakening.state.PlayerState;
 public final class Arrow implements EquipmentItem {
     private static final int MAX_ACTIVE_PROJECTILES = 0x02;
     private static final int SHOOTING_COUNTDOWN = 0x10;
-    /** Contract for shoot target. */
-    public interface ShootTarget {
-        boolean shootArrow();
-
-        int activeProjectileCount();
-
-        /** Mirrors ShootArrow's conditional whoosh when no bomb arrow is made. */
-        default boolean playWhooshForLastShot() {
-            return true;
-        }
-    }
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
@@ -67,6 +56,17 @@ public final class Arrow implements EquipmentItem {
     public void tick(boolean buttonHeld, int frameCounter) {
         if (shootingCountdown > 0) {
             shootingCountdown--;
+        }
+    }
+    /** Contract for shoot target. */
+    public interface ShootTarget {
+        boolean shootArrow();
+
+        int activeProjectileCount();
+
+        /** Mirrors ShootArrow's conditional whoosh when no bomb arrow is made. */
+        default boolean playWhooshForLastShot() {
+            return true;
         }
     }
 }

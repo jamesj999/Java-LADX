@@ -32,6 +32,8 @@ public final class GameBoyApu {
     private static final int REGISTER_COUNT = NR52 + 1;
     private static final double MIX_AMPLITUDE = 4096.0;
 
+    private static final RegisterObserver NO_OBSERVER = (register, value) -> {};
+
     // CGB capacitor charge factor at the 4,194,304 Hz APU clock (Pan Docs,
     // Audio_details.md, "Obscure Behavior"). Convert it to the output sample rate.
     private final double capacitorCharge;
@@ -43,6 +45,9 @@ public final class GameBoyApu {
     private final SquareChannel channel2;
     private final WaveChannel channel3;
     private final NoiseChannel channel4;
+    // Mutable diagnostic subscription data; the synthesizer always has one non-null sink.
+    // Replacing a subscription does not replace any channel or audio collaborator.
+    private final List<RegisterObserver> registerObservers = new ArrayList<>(List.of(NO_OBSERVER));
 
     public GameBoyApu(int sampleRate) {
         if (sampleRate <= 0) {
@@ -71,11 +76,6 @@ public final class GameBoyApu {
     public int sampleRate() {
         return sampleRate;
     }
-
-    private static final RegisterObserver NO_OBSERVER = (register, value) -> {};
-    // Mutable diagnostic subscription data; the synthesizer always has one non-null sink.
-    // Replacing a subscription does not replace any channel or audio collaborator.
-    private final List<RegisterObserver> registerObservers = new ArrayList<>(List.of(NO_OBSERVER));
 
     /** Primitive diagnostic tap; null disables observation. */
     public void setPrimitiveRegisterObserver(RegisterObserver observer) {

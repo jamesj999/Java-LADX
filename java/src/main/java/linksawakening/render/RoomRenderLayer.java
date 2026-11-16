@@ -30,16 +30,6 @@ final class RoomRenderLayer implements HardwareRenderLayer {
 
     RoomRenderLayer() {}
 
-    void configure(
-            int[] tiles, int[] attrs, int[][] palettes, ScrollController scroll, TransitionController transition) {
-        currentSnapshot = null;
-        tileIds = tiles;
-        tileAttrs = attrs;
-        roomPalettes = palettes;
-        scrollController = scroll;
-        transitionController = transition;
-    }
-
     // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
     @SuppressWarnings("ReferenceEquality")
     @Override
@@ -92,6 +82,16 @@ final class RoomRenderLayer implements HardwareRenderLayer {
         }
         HardwareBackgroundRenderer.renderRoom(
                 frame, gpu, tileIds, tileAttrs, roomPalettes, offsets.currentX() + shakeX, offsets.currentY() + shakeY);
+    }
+
+    void configure(
+            int[] tiles, int[] attrs, int[][] palettes, ScrollController scroll, TransitionController transition) {
+        currentSnapshot = null;
+        tileIds = tiles;
+        tileAttrs = attrs;
+        roomPalettes = palettes;
+        scrollController = scroll;
+        transitionController = transition;
     }
 
     private RoomOffsets roomOffsets() {

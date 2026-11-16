@@ -7,6 +7,28 @@ final class LinkMotionStatus {
 
     private LinkMotionState motionState = LinkMotionState.DEFAULT;
 
+    private int recoverCountdown;
+
+    private boolean recoveringInWater;
+
+    private int slowWalkingSpeed;
+
+    private int itemUsageContext;
+
+    private boolean romInteractiveMotionBlocked;
+
+    private int romInteractiveMotionBlockValue;
+
+    private boolean debugNoClip;
+
+    private int frameCounter;
+
+    private boolean gelClinging;
+
+    private int gelMotionFrame;
+
+    LinkMotionStatus() {}
+
     LinkMotionState motionState() {
         return motionState;
     }
@@ -15,8 +37,6 @@ final class LinkMotionStatus {
         motionState = value;
         return motionState;
     }
-
-    private int recoverCountdown;
 
     int recoverCountdown() {
         return recoverCountdown;
@@ -27,8 +47,6 @@ final class LinkMotionStatus {
         return recoverCountdown;
     }
 
-    private boolean recoveringInWater;
-
     boolean recoveringInWater() {
         return recoveringInWater;
     }
@@ -37,8 +55,6 @@ final class LinkMotionStatus {
         recoveringInWater = value;
         return recoveringInWater;
     }
-
-    private int slowWalkingSpeed;
 
     int slowWalkingSpeed() {
         return slowWalkingSpeed;
@@ -49,8 +65,6 @@ final class LinkMotionStatus {
         return slowWalkingSpeed;
     }
 
-    private int itemUsageContext;
-
     int itemUsageContext() {
         return itemUsageContext;
     }
@@ -59,8 +73,6 @@ final class LinkMotionStatus {
         itemUsageContext = value;
         return itemUsageContext;
     }
-
-    private boolean romInteractiveMotionBlocked;
 
     boolean romInteractiveMotionBlocked() {
         return romInteractiveMotionBlocked;
@@ -71,8 +83,6 @@ final class LinkMotionStatus {
         return romInteractiveMotionBlocked;
     }
 
-    private int romInteractiveMotionBlockValue;
-
     int romInteractiveMotionBlockValue() {
         return romInteractiveMotionBlockValue;
     }
@@ -81,8 +91,6 @@ final class LinkMotionStatus {
         romInteractiveMotionBlockValue = value;
         return romInteractiveMotionBlockValue;
     }
-
-    private boolean debugNoClip;
 
     boolean debugNoClip() {
         return debugNoClip;
@@ -93,8 +101,6 @@ final class LinkMotionStatus {
         return debugNoClip;
     }
 
-    private int frameCounter;
-
     int frameCounter() {
         return frameCounter;
     }
@@ -103,8 +109,6 @@ final class LinkMotionStatus {
         frameCounter = value;
         return frameCounter;
     }
-
-    private boolean gelClinging;
 
     boolean gelClinging() {
         return gelClinging;
@@ -115,8 +119,6 @@ final class LinkMotionStatus {
         return gelClinging;
     }
 
-    private int gelMotionFrame;
-
     int gelMotionFrame() {
         return gelMotionFrame;
     }
@@ -125,8 +127,6 @@ final class LinkMotionStatus {
         gelMotionFrame = value;
         return gelMotionFrame;
     }
-
-    LinkMotionStatus() {}
 
     /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
     void blockNextRomMotionFrame() {

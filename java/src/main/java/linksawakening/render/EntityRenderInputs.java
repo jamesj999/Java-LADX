@@ -9,29 +9,6 @@ import linksawakening.world.transition.ScrollController;
 final class EntityRenderInputs {
     private EntityRenderInputs() {}
 
-    static final class Offset {
-        private int x, y;
-
-        Offset(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        int x() {
-            return x;
-        }
-
-        int y() {
-            return y;
-        }
-
-        Offset set(int x, int y) {
-            this.x = x;
-            this.y = y;
-            return this;
-        }
-    }
-
     static Offset currentRoomOffset(ScrollController scrollController) {
         return currentRoomOffset(scrollController, new Offset(0, 0));
     }
@@ -83,5 +60,28 @@ final class EntityRenderInputs {
             throw new IllegalArgumentException("Object palette index is unavailable: " + paletteIndex);
         }
         return palettes[paletteIndex];
+    }
+
+    static final class Offset {
+        private int x, y;
+
+        Offset(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        int x() {
+            return x;
+        }
+
+        int y() {
+            return y;
+        }
+
+        Offset set(int x, int y) {
+            this.x = x;
+            this.y = y;
+            return this;
+        }
     }
 }

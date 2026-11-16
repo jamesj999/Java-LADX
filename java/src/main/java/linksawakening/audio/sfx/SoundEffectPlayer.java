@@ -9,10 +9,6 @@ import linksawakening.rom.Rom;
 
 /** Frame-driven facade over ROM-backed sound effect execution. */
 public final class SoundEffectPlayer implements SoundEffectPlayback {
-    @Override
-    public boolean available() {
-        return true;
-    }
 
     private static final String ROM_RESOURCE = "rom/azle.gbc";
 
@@ -35,6 +31,11 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         Objects.requireNonNull(apu, "apu");
         this.catalog = Objects.requireNonNull(catalog, "catalog");
         engine = new RomSoundEffectEngine(Objects.requireNonNull(romData, "romData"), apu);
+    }
+
+    @Override
+    public boolean available() {
+        return true;
     }
 
     public SoundEffectCatalog catalog() {

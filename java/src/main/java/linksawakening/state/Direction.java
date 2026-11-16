@@ -17,18 +17,6 @@ public enum Direction {
         this.romIndex = romIndex;
     }
 
-    public int javaIndex() {
-        return javaIndex;
-    }
-
-    public int romIndex() {
-        return romIndex;
-    }
-
-    public int romValue() {
-        return romIndex;
-    }
-
     /** Sentinel classification for legacy switches whose default accepts arbitrary integers. */
     public static Direction fromJavaOrUnknown(int value) {
         return value >= 0 && value <= 3 ? fromJava(value) : UNKNOWN;
@@ -63,5 +51,17 @@ public enum Direction {
     /** Legacy sword presentation treats unrecognized engine directions as down. */
     public static Direction fromJavaOrDown(int value) {
         return value >= 0 && value <= 3 ? fromJava(value) : DOWN;
+    }
+
+    public int javaIndex() {
+        return javaIndex;
+    }
+
+    public int romIndex() {
+        return romIndex;
+    }
+
+    public int romValue() {
+        return romIndex;
     }
 }

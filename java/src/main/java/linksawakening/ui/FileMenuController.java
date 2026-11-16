@@ -14,11 +14,6 @@ import linksawakening.scene.BackgroundSceneCatalog;
 
 /** Slot selection, copy/erase and frame publication for ROM FileSelectionHandler. */
 public final class FileMenuController {
-    private final FileNameEntry nameEntry;
-
-    private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
-
-    private final List<IntroSprite> spriteScratch = new ArrayList<>();
 
     private static final int NAME_LENGTH = 5;
 
@@ -39,6 +34,11 @@ public final class FileMenuController {
     private static final int FILE_NEW_SAVE_SLOT_1_TILE = 0xAB;
 
     private static final int DARK_BACKGROUND_TILE = 0x7E;
+    private final FileNameEntry nameEntry;
+
+    private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
+
+    private final List<IntroSprite> spriteScratch = new ArrayList<>();
 
     private final Function<String, BackgroundScene> sceneProvider;
 
@@ -117,6 +117,33 @@ public final class FileMenuController {
         refreshSnapshot();
     }
 
+    public FileMenuFrameSnapshot snapshot() {
+        return snapshot;
+    }
+
+    public Mode mode() {
+        return mode;
+    }
+
+    public FileMenuAction tick(InputState inputState, InputConfig inputConfig) {
+        Objects.requireNonNull(inputState, "inputState");
+        Objects.requireNonNull(inputConfig, "inputConfig");
+        frameCounter = (frameCounter + 1) & 0xFF;
+
+        FileMenuAction action =
+                switch (mode) {
+                    case SELECT -> tickSelection(inputState, inputConfig);
+                    case CREATE -> nameEntry.tick(inputState, inputConfig, selectedSlot);
+                    case ERASE_PICK -> tickErasePick(inputState, inputConfig);
+                    case ERASE_CONFIRM -> tickEraseConfirm(inputState, inputConfig);
+                    case COPY_SOURCE -> tickCopySource(inputState, inputConfig);
+                    case COPY_TARGET -> tickCopyTarget(inputState, inputConfig);
+                    case COPY_CONFIRM -> tickCopyConfirm(inputState, inputConfig);
+                };
+        refreshSnapshot();
+        return action;
+    }
+
     private static boolean activated(InputState inputState, InputConfig inputConfig) {
         return inputState.wasPressed(inputConfig.aKey()) || inputState.wasPressed(inputConfig.menuOpenKey());
     }
@@ -157,33 +184,6 @@ public final class FileMenuController {
             }
         }
         return copy;
-    }
-
-    public FileMenuFrameSnapshot snapshot() {
-        return snapshot;
-    }
-
-    public Mode mode() {
-        return mode;
-    }
-
-    public FileMenuAction tick(InputState inputState, InputConfig inputConfig) {
-        Objects.requireNonNull(inputState, "inputState");
-        Objects.requireNonNull(inputConfig, "inputConfig");
-        frameCounter = (frameCounter + 1) & 0xFF;
-
-        FileMenuAction action =
-                switch (mode) {
-                    case SELECT -> tickSelection(inputState, inputConfig);
-                    case CREATE -> nameEntry.tick(inputState, inputConfig, selectedSlot);
-                    case ERASE_PICK -> tickErasePick(inputState, inputConfig);
-                    case ERASE_CONFIRM -> tickEraseConfirm(inputState, inputConfig);
-                    case COPY_SOURCE -> tickCopySource(inputState, inputConfig);
-                    case COPY_TARGET -> tickCopyTarget(inputState, inputConfig);
-                    case COPY_CONFIRM -> tickCopyConfirm(inputState, inputConfig);
-                };
-        refreshSnapshot();
-        return action;
     }
 
     private FileMenuAction tickSelection(InputState inputState, InputConfig inputConfig) {

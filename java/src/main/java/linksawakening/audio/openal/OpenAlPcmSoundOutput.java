@@ -68,10 +68,6 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
         return lastFailure;
     }
 
-    int sourceState() {
-        return device.state();
-    }
-
     /** Diagnostic queries must not hide the original playback failure with a second AL error. */
     public String diagnostics() {
         return String.format(
@@ -89,15 +85,6 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
                 !hasFailure() ? "none" : conciseMessage(lastFailure));
     }
 
-    private int querySafely(IntSupplier query) {
-        if (closed) return -1;
-        try {
-            return query.getAsInt();
-        } catch (RuntimeException | LinkageError ignored) {
-            return -1;
-        }
-    }
-
     @Override
     public void play(short[] pcm, int rate) {
         play(pcm, rate, false, false);
@@ -111,6 +98,39 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     @Override
     public void playFrame(short[] pcm, int rate) {
         play(pcm, rate, false, true);
+    }
+
+    @Override
+    public void close() {
+        if (closed) return;
+        closed = true;
+        available = false;
+        try {
+            device.makeCurrent();
+            resetQueue();
+        } catch (RuntimeException | LinkageError failure) {
+            DebugLog.warning("PCM cleanup: " + conciseMessage(failure));
+        } finally {
+            try {
+                device.close();
+            } catch (RuntimeException | LinkageError failure) {
+                DebugLog.warning("PCM device cleanup: " + conciseMessage(failure));
+            }
+            allocatedBuffers.clear();
+        }
+    }
+
+    int sourceState() {
+        return device.state();
+    }
+
+    private int querySafely(IntSupplier query) {
+        if (closed) return -1;
+        try {
+            return query.getAsInt();
+        } catch (RuntimeException | LinkageError ignored) {
+            return -1;
+        }
     }
 
     private void play(short[] pcm, int rate, boolean replace, boolean streaming) {
@@ -215,26 +235,6 @@ public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
         allocatedBuffers.clear();
         bufferQueue.clear();
         buffering.reset();
-    }
-
-    @Override
-    public void close() {
-        if (closed) return;
-        closed = true;
-        available = false;
-        try {
-            device.makeCurrent();
-            resetQueue();
-        } catch (RuntimeException | LinkageError failure) {
-            DebugLog.warning("PCM cleanup: " + conciseMessage(failure));
-        } finally {
-            try {
-                device.close();
-            } catch (RuntimeException | LinkageError failure) {
-                DebugLog.warning("PCM device cleanup: " + conciseMessage(failure));
-            }
-            allocatedBuffers.clear();
-        }
     }
 
     private static String conciseMessage(Throwable failure) {

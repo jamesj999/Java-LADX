@@ -56,12 +56,6 @@ final class NativePcmAlDevice implements PcmAlDevice {
         return query(AL10.AL_BUFFERS_PROCESSED);
     }
 
-    private int query(int property) {
-        int result = AL10.alGetSourcei(source, property);
-        check("query PCM source");
-        return result;
-    }
-
     @Override
     public int createBuffer(short[] pcm, int sampleRate) {
         int buffer = AL10.alGenBuffers();
@@ -125,13 +119,6 @@ final class NativePcmAlDevice implements PcmAlDevice {
         createSource();
     }
 
-    private void createSource() {
-        source = AL10.alGenSources();
-        check("create PCM source");
-        AL10.alSourcef(source, AL10.AL_GAIN, 1.0f);
-        check("configure PCM source");
-    }
-
     @Override
     public boolean connected() {
         return device != MemoryUtil.NULL
@@ -156,6 +143,19 @@ final class NativePcmAlDevice implements PcmAlDevice {
                 device = MemoryUtil.NULL;
             }
         }
+    }
+
+    private int query(int property) {
+        int result = AL10.alGetSourcei(source, property);
+        check("query PCM source");
+        return result;
+    }
+
+    private void createSource() {
+        source = AL10.alGenSources();
+        check("create PCM source");
+        AL10.alSourcef(source, AL10.AL_GAIN, 1.0f);
+        check("configure PCM source");
     }
 
     private static void check(String operation) {

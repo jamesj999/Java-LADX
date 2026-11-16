@@ -50,14 +50,6 @@ final class InventoryInstrumentPanel implements InventoryGraphics.Instruments {
             tiles.writeVRAM(0xD00 + i, (byte) data.u8(linksawakening.rom.RomAddress.fromOffset(source + i)));
     }
 
-    int[] tilemapForInstrument(int index, int flags) {
-        return instrumentTileView(index, flags).clone();
-    }
-
-    private int[] instrumentTileView(int index, int flags) {
-        return instrumentTiles[index][(flags & 2) == 0 ? 0 : 1];
-    }
-
     /** Borrowed palette rows, consumed synchronously by render/submit before the next call. */
     @Override
     public int[][] framePalettes(int[][] base, int frame) {
@@ -69,19 +61,6 @@ final class InventoryInstrumentPanel implements InventoryGraphics.Instruments {
         cyclingPalette[2] = cycleColors[phase][1];
         paletteScratch[7] = cyclingPalette;
         return paletteScratch;
-    }
-
-    int position(int index) {
-        return positions[index];
-    }
-
-    int[][] palettes(int[][] base, int frame) {
-        int[][] result = base.clone();
-        result[7] = base[7].clone();
-        int phase = (frame >>> 3) & 15;
-        result[7][1] = cycleColors[phase][0];
-        result[7][2] = cycleColors[phase][1];
-        return result;
     }
 
     /** func_020_62DE: the blinking SELECT prompt between two arrows. */
@@ -157,5 +136,26 @@ final class InventoryInstrumentPanel implements InventoryGraphics.Instruments {
             }
         }
         frameModel.sprite8x16(tiles, 0x4A, 0x9B - 8, y, true, false, objectPalettes[6]);
+    }
+
+    int[] tilemapForInstrument(int index, int flags) {
+        return instrumentTileView(index, flags).clone();
+    }
+
+    int position(int index) {
+        return positions[index];
+    }
+
+    int[][] palettes(int[][] base, int frame) {
+        int[][] result = base.clone();
+        result[7] = base[7].clone();
+        int phase = (frame >>> 3) & 15;
+        result[7][1] = cycleColors[phase][0];
+        result[7][2] = cycleColors[phase][1];
+        return result;
+    }
+
+    private int[] instrumentTileView(int index, int flags) {
+        return instrumentTiles[index][(flags & 2) == 0 ? 0 : 1];
     }
 }

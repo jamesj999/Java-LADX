@@ -28,15 +28,15 @@ enum FloatingPickup {
         };
     }
 
-    private static IllegalArgumentException invalidVariant(int entityType, int sourceVariant) {
-        return new IllegalArgumentException("Invalid floating item variant 0x"
-                + Integer.toHexString(sourceVariant) + " for entity 0x"
-                + Integer.toHexString(entityType));
-    }
-
     public static void validateEntityType(int entityType) {
         if (entityType != 0x86 && entityType != 0xE5) {
             throw new IllegalArgumentException("Not a floating item entity type: 0x" + Integer.toHexString(entityType));
         }
+    }
+
+    private static IllegalArgumentException invalidVariant(int entityType, int sourceVariant) {
+        return new IllegalArgumentException("Invalid floating item variant 0x"
+                + Integer.toHexString(sourceVariant) + " for entity 0x"
+                + Integer.toHexString(entityType));
     }
 }

@@ -14,80 +14,18 @@ final class LinkAirborne {
 
     private final LinkElevation elevation = new LinkElevation();
     private final LinkPitFall pit;
-
-    LinkElevation elevation() {
-        return elevation;
-    }
-
-    LinkPitFall pit() {
-        return pit;
-    }
     /** wD475, set by the top-view pit warp and cleared at ground level. */
     private boolean spinningPitWarpArrival;
-
-    boolean spinningPitWarpArrival() {
-        return spinningPitWarpArrival;
-    }
-
-    boolean spinningPitWarpArrival(boolean value) {
-        spinningPitWarpArrival = value;
-        return spinningPitWarpArrival;
-    }
     /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
     private boolean overworldLedgeFallActive;
-
-    boolean overworldLedgeFallActive() {
-        return overworldLedgeFallActive;
-    }
-
-    boolean overworldLedgeFallActive(boolean value) {
-        overworldLedgeFallActive = value;
-        return overworldLedgeFallActive;
-    }
     /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
     private boolean directionalLedgeJumpMotionLocked;
 
-    boolean directionalLedgeJumpMotionLocked() {
-        return directionalLedgeJumpMotionLocked;
-    }
-
-    boolean directionalLedgeJumpMotionLocked(boolean value) {
-        directionalLedgeJumpMotionLocked = value;
-        return directionalLedgeJumpMotionLocked;
-    }
-
     private int directionalLedgeJumpSpeedX;
 
-    int directionalLedgeJumpSpeedX() {
-        return directionalLedgeJumpSpeedX;
-    }
-
-    int directionalLedgeJumpSpeedX(int value) {
-        directionalLedgeJumpSpeedX = value;
-        return directionalLedgeJumpSpeedX;
-    }
-
     private int directionalLedgeJumpSpeedY;
-
-    int directionalLedgeJumpSpeedY() {
-        return directionalLedgeJumpSpeedY;
-    }
-
-    int directionalLedgeJumpSpeedY(int value) {
-        directionalLedgeJumpSpeedY = value;
-        return directionalLedgeJumpSpeedY;
-    }
     /** Mirrors wC191, the collision-probe countdown for directional ledges. */
     private int directionalLedgeCollisionCounter;
-
-    int directionalLedgeCollisionCounter() {
-        return directionalLedgeCollisionCounter;
-    }
-
-    int directionalLedgeCollisionCounter(int value) {
-        directionalLedgeCollisionCounter = value;
-        return directionalLedgeCollisionCounter;
-    }
 
     private final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
@@ -102,22 +40,6 @@ final class LinkAirborne {
     private final LinkComponentRef<LinkSignals> linkSignals;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
     private final LinkComponentRef<LinkSwimming> linkSwimming;
-
-    static final class Dependencies {
-        LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkControls> linkControls;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
-        LinkComponentRef<LinkItemState> linkItemState;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkSideView> linkSideView;
-        LinkComponentRef<LinkSignals> linkSignals;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-        LinkComponentRef<LinkSwimming> linkSwimming;
-    }
 
     LinkAirborne(Dependencies dependencies) {
         dialogGotItemSequence = Objects.requireNonNull(dependencies.dialogGotItemSequence, "dialogGotItemSequence");
@@ -134,6 +56,68 @@ final class LinkAirborne {
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
         linkSwimming = Objects.requireNonNull(dependencies.linkSwimming, "linkSwimming");
         pit = new LinkPitFall(linkAnimationState, linkDamage, linkMotion, linkServices, linkSignals, elevation);
+    }
+
+    LinkElevation elevation() {
+        return elevation;
+    }
+
+    LinkPitFall pit() {
+        return pit;
+    }
+
+    boolean spinningPitWarpArrival() {
+        return spinningPitWarpArrival;
+    }
+
+    boolean spinningPitWarpArrival(boolean value) {
+        spinningPitWarpArrival = value;
+        return spinningPitWarpArrival;
+    }
+
+    boolean overworldLedgeFallActive() {
+        return overworldLedgeFallActive;
+    }
+
+    boolean overworldLedgeFallActive(boolean value) {
+        overworldLedgeFallActive = value;
+        return overworldLedgeFallActive;
+    }
+
+    boolean directionalLedgeJumpMotionLocked() {
+        return directionalLedgeJumpMotionLocked;
+    }
+
+    boolean directionalLedgeJumpMotionLocked(boolean value) {
+        directionalLedgeJumpMotionLocked = value;
+        return directionalLedgeJumpMotionLocked;
+    }
+
+    int directionalLedgeJumpSpeedX() {
+        return directionalLedgeJumpSpeedX;
+    }
+
+    int directionalLedgeJumpSpeedX(int value) {
+        directionalLedgeJumpSpeedX = value;
+        return directionalLedgeJumpSpeedX;
+    }
+
+    int directionalLedgeJumpSpeedY() {
+        return directionalLedgeJumpSpeedY;
+    }
+
+    int directionalLedgeJumpSpeedY(int value) {
+        directionalLedgeJumpSpeedY = value;
+        return directionalLedgeJumpSpeedY;
+    }
+
+    int directionalLedgeCollisionCounter() {
+        return directionalLedgeCollisionCounter;
+    }
+
+    int directionalLedgeCollisionCounter(int value) {
+        directionalLedgeCollisionCounter = value;
+        return directionalLedgeCollisionCounter;
     }
 
     // Integer.compare is specified to return -1, 0 or 1; the ROM acceleration uses that signed step.
@@ -342,5 +326,21 @@ final class LinkAirborne {
         linkAnimationState.get().movingThisFrame = false;
         linkMotion.get().position().lastRomSpeedX(linkMotion.get().position().lastRomSpeedY(0));
         return openForItem;
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkSideView> linkSideView;
+        LinkComponentRef<LinkSignals> linkSignals;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
+        LinkComponentRef<LinkSwimming> linkSwimming;
     }
 }

@@ -13,14 +13,14 @@ final class LinkRenderLayer implements HardwareRenderLayer {
         this.scrollController = scrollController;
     }
 
-    void configure(Link link, ScrollController scrollController) {
-        this.link = link;
-        this.scrollController = scrollController;
-    }
-
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         collectOam(frame);
+    }
+
+    void configure(Link link, ScrollController scrollController) {
+        this.link = link;
+        this.scrollController = scrollController;
     }
 
     private void collectOam(OamSink sink) {

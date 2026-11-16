@@ -237,6 +237,10 @@ public final class IndexedRenderer {
         drawSpriteTile8x16(buffer, top, bottom, screenX, screenY, flipX, flipY, palette);
     }
 
+    public static int resolveSignedBgTileIndex(int tileId) {
+        return tileId < 0x80 ? tileId + 0x100 : tileId;
+    }
+
     private static void drawSpriteTile8x16(
             byte[] buffer,
             Tile top,
@@ -248,9 +252,5 @@ public final class IndexedRenderer {
             int[] palette) {
         drawSpriteTile(buffer, top, screenX, screenY, flipX, flipY, palette);
         drawSpriteTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
-    }
-
-    public static int resolveSignedBgTileIndex(int tileId) {
-        return tileId < 0x80 ? tileId + 0x100 : tileId;
     }
 }

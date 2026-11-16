@@ -37,26 +37,26 @@ class RecordingShortcutTest {
             game.initializeHeadlessNewGame();
             for (int i = 0; i < 12; i++) game.headlessFrame();
             game.onKeyEvent(KEY_F9, PRESS);
-            assertNull(game.recorder);
+            assertNull(game.recording.currentRecorder());
             assertTrue(Files.size(first) > 0);
             game.onKeyEvent(KEY_F9, REPEAT);
             game.onKeyEvent(KEY_F9, RELEASE);
-            assertNull(game.recorder);
+            assertNull(game.recording.currentRecorder());
             game.headlessFrame(); // Detached audio must not write to the closed recorder.
             game.onKeyEvent(KEY_F9, PRESS);
-            var restarted = game.recorder;
+            var restarted = game.recording.currentRecorder();
             assertNotNull(restarted);
             game.onKeyEvent(KEY_F9, REPEAT);
             game.onKeyEvent(KEY_F9, RELEASE);
-            assertSame(restarted, game.recorder);
+            assertSame(restarted, game.recording.currentRecorder());
             for (int i = 0; i < 18; i++) game.headlessFrame();
             assertEquals(18, restarted.frameCount());
             // A recording remains stoppable after moving to another screen.
             game.router().startTitleScreenWithoutIntro();
             game.onKeyEvent(KEY_F9, PRESS);
-            assertNull(game.recorder);
+            assertNull(game.recording.currentRecorder());
             game.onKeyEvent(KEY_F9, PRESS);
-            assertNull(game.recorder, "Do not start new recordings outside gameplay");
+            assertNull(game.recording.currentRecorder(), "Do not start new recordings outside gameplay");
             game.headlessFrame();
         }
         try (var paths = Files.list(directory)) {

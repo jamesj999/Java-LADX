@@ -98,6 +98,36 @@ final class AudioBrowserFrame extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
     }
 
+    void applySoundEffectFilter() {
+        SoundEffect selected = soundEffectList.getSelectedValue();
+        fillSoundEffectList(soundEffectBrowserModel.filteredEffects(soundEffectSearchField.getText()));
+        if (selected != null) {
+            soundEffectList.setSelectedValue(selected, true);
+        }
+        if (soundEffectList.getSelectedIndex() < 0 && soundEffectListModel.getSize() > 0) {
+            soundEffectList.setSelectedIndex(0);
+        }
+        refreshSoundEffectMetadata();
+        refreshTransportAvailability();
+    }
+
+    void playSelectedSoundEffect() {
+        SoundEffect effect = soundEffectList.getSelectedValue();
+        if (effect == null) {
+            statusLabel.setText("No SFX selected");
+            return;
+        }
+        if (transportState.playbackActive()) {
+            player.stop();
+            transportState.soundEffectPreviewStarted();
+        }
+        player.playSoundEffect(effect);
+        String message = player.statusMessage();
+        statusLabel.setText(Objects.requireNonNullElse(message, "").isBlank() ? "SFX triggered" : message);
+        refreshChannelActivity();
+        refreshTransportAvailability();
+    }
+
     private void configureWindow() {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(760, 420));
@@ -191,19 +221,6 @@ final class AudioBrowserFrame extends JFrame {
         refreshMetadata();
     }
 
-    void applySoundEffectFilter() {
-        SoundEffect selected = soundEffectList.getSelectedValue();
-        fillSoundEffectList(soundEffectBrowserModel.filteredEffects(soundEffectSearchField.getText()));
-        if (selected != null) {
-            soundEffectList.setSelectedValue(selected, true);
-        }
-        if (soundEffectList.getSelectedIndex() < 0 && soundEffectListModel.getSize() > 0) {
-            soundEffectList.setSelectedIndex(0);
-        }
-        refreshSoundEffectMetadata();
-        refreshTransportAvailability();
-    }
-
     private void fillTrackList(List<MusicTrack> tracks) {
         trackListModel.clear();
         for (MusicTrack track : tracks) {
@@ -237,23 +254,6 @@ final class AudioBrowserFrame extends JFrame {
             transportState.playbackStopped();
         }
         statusLabel.setText(player.statusMessage());
-        refreshChannelActivity();
-        refreshTransportAvailability();
-    }
-
-    void playSelectedSoundEffect() {
-        SoundEffect effect = soundEffectList.getSelectedValue();
-        if (effect == null) {
-            statusLabel.setText("No SFX selected");
-            return;
-        }
-        if (transportState.playbackActive()) {
-            player.stop();
-            transportState.soundEffectPreviewStarted();
-        }
-        player.playSoundEffect(effect);
-        String message = player.statusMessage();
-        statusLabel.setText(Objects.requireNonNullElse(message, "").isBlank() ? "SFX triggered" : message);
         refreshChannelActivity();
         refreshTransportAvailability();
     }
@@ -326,32 +326,6 @@ final class AudioBrowserFrame extends JFrame {
         if (!available) {
             String message = player.statusMessage();
             statusLabel.setText(Objects.requireNonNullElse(message, "").isBlank() ? "Audio unavailable" : message);
-        }
-    }
-
-    private static final class TrackCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(
-                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof MusicTrack track) {
-                setText(MusicBrowserModel.hexByte(track.id()) + " " + track.name());
-            }
-            return this;
-        }
-    }
-
-    private static final class SoundEffectCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(
-                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof SoundEffect effect) {
-                setText(effect.namespace().name() + " "
-                        + SoundEffectBrowserModel.hexByte(effect.id()) + " "
-                        + effect.name());
-            }
-            return this;
         }
     }
 
@@ -445,5 +419,31 @@ final class AudioBrowserFrame extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
         panel.add(statusLabel, BorderLayout.CENTER);
         return panel;
+    }
+
+    private static final class TrackCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(
+                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof MusicTrack track) {
+                setText(MusicBrowserModel.hexByte(track.id()) + " " + track.name());
+            }
+            return this;
+        }
+    }
+
+    private static final class SoundEffectCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(
+                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof SoundEffect effect) {
+                setText(effect.namespace().name() + " "
+                        + SoundEffectBrowserModel.hexByte(effect.id()) + " "
+                        + effect.name());
+            }
+            return this;
+        }
     }
 }

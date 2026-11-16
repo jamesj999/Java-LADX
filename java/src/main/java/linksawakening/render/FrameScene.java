@@ -32,8 +32,20 @@ public final class FrameScene {
         return new FrameScene(layers);
     }
 
+    static FrameScene borrowed(List<RenderLayer> layers, HardwareFrame frame) {
+        return new FrameScene(layers, true, frame);
+    }
+
+    static FrameScene of(List<RenderLayer> layers, HardwareFrame frame) {
+        return new FrameScene(layers, false, frame);
+    }
+
     public void drawTo(byte[] buffer, GPU gpu) {
         drawTo(buffer, gpu, observer);
+    }
+
+    public int layerCount() {
+        return layers.size();
     }
 
     void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
@@ -72,20 +84,8 @@ public final class FrameScene {
         return frame;
     }
 
-    static FrameScene borrowed(List<RenderLayer> layers, HardwareFrame frame) {
-        return new FrameScene(layers, true, frame);
-    }
-
-    static FrameScene of(List<RenderLayer> layers, HardwareFrame frame) {
-        return new FrameScene(layers, false, frame);
-    }
-
     FrameScene observedBy(FrameDrawObserver observer) {
         this.observer = observer == null ? FrameDrawObserver.NONE : observer;
         return this;
-    }
-
-    public int layerCount() {
-        return layers.size();
     }
 }

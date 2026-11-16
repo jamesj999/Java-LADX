@@ -4,13 +4,6 @@ import linksawakening.audio.apu.GameBoyApu;
 
 /** Channel register emission, wave loading and timed articulation. */
 final class MusicVoiceEmitter {
-    private final MusicDriver driver;
-    private final GameBoyApu apu;
-
-    MusicVoiceEmitter(MusicDriver driver, GameBoyApu apu) {
-        this.driver = driver;
-        this.apu = apu;
-    }
 
     private static final int WAVE_RAM_BYTES = 16;
     private static final int TRIGGER = 0x80;
@@ -55,6 +48,8 @@ final class MusicVoiceEmitter {
     private static final int[] NOISE_FF_FOLLOW_UP_REGISTERS = {0x00, 0x42, 0x02, 0xC0};
     private static final int NOISE_FF_START_TICKS = 2;
     private static final int NOISE_FF_FOLLOW_UP_TICKS = 4;
+    private final MusicDriver driver;
+    private final GameBoyApu apu;
 
     int waveformPointer;
 
@@ -73,6 +68,11 @@ final class MusicVoiceEmitter {
     int channel3VolumeEffectMode;
 
     int channel3VolumeEffectCounter;
+
+    MusicVoiceEmitter(MusicDriver driver, GameBoyApu apu) {
+        this.driver = driver;
+        this.apu = apu;
+    }
 
     void loadWaveform() {
         if (driver.sfxOwnsChannel.test(3)) return;

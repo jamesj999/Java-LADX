@@ -4,93 +4,36 @@ import java.util.Arrays;
 
 /** Immutable copies of SwordTables ROM lookup data. */
 public final class SwordTables {
-    private final boolean bladeCollisionEnabled;
-
-    /** Whether this data set includes a physical blade, rather than animation only. */
-    public boolean bladeCollisionEnabled() {
-        return bladeCollisionEnabled;
-    }
     // LinkDirectionToLinkAnimationState1: original loader length.
     private static final int SWORD_ANIM_STATE_LENGTH = 24;
-    private final int[] swordAnimState;
     // LinkDirectionToSwordDirection: original loader length.
     private static final int SWORD_DIRECTION_LENGTH = 24;
-    private final int[] swordDirection;
     // LinkDirectionToSwordAnimationState: original loader length.
     private static final int SWORD_SPIN_ANIMATION_STATE_LENGTH = 32;
-    private final int[] swordSpinAnimationState;
     // LinkDirectionToAbsolute: original loader length.
     private static final int SWORD_SPIN_ABSOLUTE_DIRECTION_LENGTH = 32;
-    private final int[] swordSpinAbsoluteDirection;
     // LinkDirectionTo_wC13A: original loader length.
     private static final int SWORD_X_OFFSET_LENGTH = 24;
-    private final byte[] swordXOffset;
     // LinkDirectionTo_wC139: original loader length.
     private static final int SWORD_Y_OFFSET_LENGTH = 24;
-    private final byte[] swordYOffset;
     // LinkDirectionTo_wC13B: original loader length.
     private static final int SWORD_Y_BASE_LENGTH = 24;
-    private final byte[] swordYBase;
     // LinkDirectionToStaticSwordCollitionCheckNeeded: original loader length.
     private static final int SWORD_COLLISION_NEEDED_LENGTH = 24;
-    private final int[] swordCollisionNeeded;
     // LinkDirectionTo_wC141: original loader length.
     private static final int SWORD_COLLISION_WIDTH_LENGTH = 24;
-    private final int[] swordCollisionWidth;
     // LinkDirectionToOffset: original loader length.
     private static final int SWORD_COLLISION_OFFSET_LENGTH = 24;
-    private final int[] swordCollisionOffset;
     // LinkDirectionTo_wC143: original loader length.
     private static final int SWORD_COLLISION_HEIGHT_LENGTH = 24;
-    private final int[] swordCollisionHeight;
     // Data_020_4A93: original loader length.
     private static final int SWORD_SPRITE_TILES_LENGTH = 16;
-    private final int[] swordSpriteTiles;
     // Data_020_4AA3: original loader length.
     private static final int SWORD_SPRITE_ATTRS_LENGTH = 16;
-    private final int[] swordSpriteAttrs;
     // SwordCollisionMapX: original loader length.
     private static final int STATIC_SWORD_COLLISION_X_LENGTH = 12;
-    private final byte[] staticSwordCollisionX;
     // SwordCollisionMapY: original loader length.
     private static final int STATIC_SWORD_COLLISION_Y_LENGTH = 12;
-    private final byte[] staticSwordCollisionY;
-
-    /** Animation-only sword: no blade OAM or collision, with the existing spin cadence. */
-    public static SwordTables animationOnly() {
-        return new SwordTables();
-    }
-
-    private SwordTables() {
-        bladeCollisionEnabled = false;
-        swordAnimState = new int[SWORD_ANIM_STATE_LENGTH];
-        swordDirection = new int[SWORD_DIRECTION_LENGTH];
-        swordSpinAnimationState = new int[SWORD_SPIN_ANIMATION_STATE_LENGTH];
-        swordSpinAbsoluteDirection = new int[SWORD_SPIN_ABSOLUTE_DIRECTION_LENGTH];
-        swordXOffset = new byte[SWORD_X_OFFSET_LENGTH];
-        swordYOffset = new byte[SWORD_Y_OFFSET_LENGTH];
-        swordYBase = new byte[SWORD_Y_BASE_LENGTH];
-        swordCollisionNeeded = new int[SWORD_COLLISION_NEEDED_LENGTH];
-        swordCollisionWidth = new int[SWORD_COLLISION_WIDTH_LENGTH];
-        swordCollisionOffset = new int[SWORD_COLLISION_OFFSET_LENGTH];
-        swordCollisionHeight = new int[SWORD_COLLISION_HEIGHT_LENGTH];
-        swordSpriteTiles = new int[SWORD_SPRITE_TILES_LENGTH];
-        swordSpriteAttrs = new int[SWORD_SPRITE_ATTRS_LENGTH];
-        staticSwordCollisionX = new byte[STATIC_SWORD_COLLISION_X_LENGTH];
-        staticSwordCollisionY = new byte[STATIC_SWORD_COLLISION_Y_LENGTH];
-        Arrays.fill(swordAnimState, 0xFF);
-        Arrays.fill(swordSpriteTiles, 0xFF);
-        for (int direction = 0; direction < 4; direction++) {
-            System.arraycopy(
-                    SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[direction], 0, swordSpinAnimationState, direction * 8, 8);
-            System.arraycopy(
-                    SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[direction],
-                    0,
-                    swordSpinAbsoluteDirection,
-                    direction * 8,
-                    8);
-        }
-    }
     // bank2.asm:46C9-46E8. Indexed as (base hLinkDirection << 3) + spin sector.
     private static final int[][] SPIN_ANIMATION_STATE_BY_BASE_DIRECTION = {
         {
@@ -129,6 +72,58 @@ public final class SwordTables {
             2, 0, 0, 3
         },
     };
+    private final boolean bladeCollisionEnabled;
+    private final int[] swordAnimState;
+    private final int[] swordDirection;
+    private final int[] swordSpinAnimationState;
+    private final int[] swordSpinAbsoluteDirection;
+    private final byte[] swordXOffset;
+    private final byte[] swordYOffset;
+    private final byte[] swordYBase;
+    private final int[] swordCollisionNeeded;
+    private final int[] swordCollisionWidth;
+    private final int[] swordCollisionOffset;
+    private final int[] swordCollisionHeight;
+    private final int[] swordSpriteTiles;
+    private final int[] swordSpriteAttrs;
+    private final byte[] staticSwordCollisionX;
+    private final byte[] staticSwordCollisionY;
+
+    /** Animation-only sword: no blade OAM or collision, with the existing spin cadence. */
+    public static SwordTables animationOnly() {
+        return new SwordTables();
+    }
+
+    private SwordTables() {
+        bladeCollisionEnabled = false;
+        swordAnimState = new int[SWORD_ANIM_STATE_LENGTH];
+        swordDirection = new int[SWORD_DIRECTION_LENGTH];
+        swordSpinAnimationState = new int[SWORD_SPIN_ANIMATION_STATE_LENGTH];
+        swordSpinAbsoluteDirection = new int[SWORD_SPIN_ABSOLUTE_DIRECTION_LENGTH];
+        swordXOffset = new byte[SWORD_X_OFFSET_LENGTH];
+        swordYOffset = new byte[SWORD_Y_OFFSET_LENGTH];
+        swordYBase = new byte[SWORD_Y_BASE_LENGTH];
+        swordCollisionNeeded = new int[SWORD_COLLISION_NEEDED_LENGTH];
+        swordCollisionWidth = new int[SWORD_COLLISION_WIDTH_LENGTH];
+        swordCollisionOffset = new int[SWORD_COLLISION_OFFSET_LENGTH];
+        swordCollisionHeight = new int[SWORD_COLLISION_HEIGHT_LENGTH];
+        swordSpriteTiles = new int[SWORD_SPRITE_TILES_LENGTH];
+        swordSpriteAttrs = new int[SWORD_SPRITE_ATTRS_LENGTH];
+        staticSwordCollisionX = new byte[STATIC_SWORD_COLLISION_X_LENGTH];
+        staticSwordCollisionY = new byte[STATIC_SWORD_COLLISION_Y_LENGTH];
+        Arrays.fill(swordAnimState, 0xFF);
+        Arrays.fill(swordSpriteTiles, 0xFF);
+        for (int direction = 0; direction < 4; direction++) {
+            System.arraycopy(
+                    SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[direction], 0, swordSpinAnimationState, direction * 8, 8);
+            System.arraycopy(
+                    SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[direction],
+                    0,
+                    swordSpinAbsoluteDirection,
+                    direction * 8,
+                    8);
+        }
+    }
 
     private SwordTables(Rom rom) {
         bladeCollisionEnabled = true;
@@ -154,6 +149,11 @@ public final class SwordTables {
 
     public static SwordTables load(Rom rom) {
         return new SwordTables(rom);
+    }
+
+    /** Whether this data set includes a physical blade, rather than animation only. */
+    public boolean bladeCollisionEnabled() {
+        return bladeCollisionEnabled;
     }
 
     /**

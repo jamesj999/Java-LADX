@@ -15,10 +15,6 @@ final class LinkControls {
         linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
     }
 
-    static final class Dependencies {
-        LinkComponentRef<LinkServices> linkServices;
-    }
-
     boolean accessButtonWasPressed(int key) {
         return key >= 0 && linkServices.get().inputState.wasPressed(key);
     }
@@ -39,5 +35,9 @@ final class LinkControls {
     int accessRomPressedButtonsMask() {
 
         return accessBuildJoypadMask();
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkServices> linkServices;
     }
 }

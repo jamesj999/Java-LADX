@@ -69,6 +69,11 @@ final class EntityRenderLayer implements HardwareRenderLayer {
         painter = new EntitySpritePainter(dialogPosition);
     }
 
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        submitEntities(RenderContext.indexed(gpu, frame));
+    }
+
     void configure(
             RoomEntitySnapshot snapshot,
             int[][] palettes,
@@ -105,11 +110,6 @@ final class EntityRenderLayer implements HardwareRenderLayer {
                 objectPalettes,
                 EntityRenderInputs.currentRoomOffset(scrollController, currentOffset),
                 currentSprites);
-    }
-
-    @Override
-    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        submitEntities(RenderContext.indexed(gpu, frame));
     }
 
     private void renderSnapshot(

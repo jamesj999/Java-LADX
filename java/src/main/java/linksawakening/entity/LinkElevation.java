@@ -5,6 +5,10 @@ final class LinkElevation {
 
     private boolean airborne;
 
+    private int zSubPixels;
+
+    private int zVelocity;
+
     boolean airborne() {
         return airborne;
     }
@@ -14,8 +18,6 @@ final class LinkElevation {
         return airborne;
     }
 
-    private int zSubPixels;
-
     int zSubPixels() {
         return zSubPixels;
     }
@@ -24,8 +26,6 @@ final class LinkElevation {
         zSubPixels = value;
         return zSubPixels;
     }
-
-    private int zVelocity;
 
     int zVelocity() {
         return zVelocity;

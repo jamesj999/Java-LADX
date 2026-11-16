@@ -11,46 +11,13 @@ final class LinkRoomPhysics {
 
     private int physicsModifier;
 
-    int physicsModifier() {
-        return physicsModifier;
-    }
-
-    int physicsModifier(int value) {
-        physicsModifier = value;
-        return physicsModifier;
-    }
-
     private long physicsRoomLoadToken = -1;
-
-    long physicsRoomLoadToken(long value) {
-        physicsRoomLoadToken = value;
-        return physicsRoomLoadToken;
-    }
 
     private int physicsRoomMapId = -1;
 
-    int physicsRoomMapId(int value) {
-        physicsRoomMapId = value;
-        return physicsRoomMapId;
-    }
-
     private int physicsRoomId = -1;
 
-    int physicsRoomId() {
-        return physicsRoomId;
-    }
-
-    int physicsRoomId(int value) {
-        physicsRoomId = value;
-        return physicsRoomId;
-    }
-
     private int physicsRoomCategory = -1;
-
-    int physicsRoomCategory(int value) {
-        physicsRoomCategory = value;
-        return physicsRoomCategory;
-    }
 
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkDamage> linkDamage;
@@ -72,6 +39,39 @@ final class LinkRoomPhysics {
         this.linkMotion = linkMotion;
         this.linkServices = linkServices;
         this.status = status;
+    }
+
+    int physicsModifier() {
+        return physicsModifier;
+    }
+
+    int physicsModifier(int value) {
+        physicsModifier = value;
+        return physicsModifier;
+    }
+
+    long physicsRoomLoadToken(long value) {
+        physicsRoomLoadToken = value;
+        return physicsRoomLoadToken;
+    }
+
+    int physicsRoomMapId(int value) {
+        physicsRoomMapId = value;
+        return physicsRoomMapId;
+    }
+
+    int physicsRoomId() {
+        return physicsRoomId;
+    }
+
+    int physicsRoomId(int value) {
+        physicsRoomId = value;
+        return physicsRoomId;
+    }
+
+    int physicsRoomCategory(int value) {
+        physicsRoomCategory = value;
+        return physicsRoomCategory;
     }
 
     /** ApplyRoomTransition's completion path ($02:793D-$7977). */

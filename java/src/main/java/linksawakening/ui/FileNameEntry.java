@@ -7,6 +7,16 @@ import linksawakening.input.InputState;
 final class FileNameEntry {
     private static final int NAME_LENGTH = 5;
 
+    private static final int NAME_ENTRY_CHARACTER_COUNT = 0x40;
+
+    private final int[] nameEntryCharacterTable;
+
+    private int selectedCharacter;
+
+    private int namePosition;
+
+    private int[] currentName = new int[NAME_LENGTH];
+
     FileNameEntry(int[] characters) {
         nameEntryCharacterTable = characters;
     }
@@ -28,16 +38,6 @@ final class FileNameEntry {
     int[] currentName() {
         return currentName;
     }
-
-    private static final int NAME_ENTRY_CHARACTER_COUNT = 0x40;
-
-    private final int[] nameEntryCharacterTable;
-
-    private int selectedCharacter;
-
-    private int namePosition;
-
-    private int[] currentName = new int[NAME_LENGTH];
 
     FileMenuAction tick(InputState inputState, InputConfig inputConfig, int selectedSlot) {
         // FileCreationInteractiveHandler $01:4AB2 checks START before editing.

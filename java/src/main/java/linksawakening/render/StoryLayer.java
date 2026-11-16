@@ -8,14 +8,9 @@ import linksawakening.world.transition.ScrollController;
 
 /** Retains one story-pose role and immutable heart-piece OAM metadata across frames.  Hardware analogue: OBJ story poses, ground effects and heart meter. */
 final class StoryLayer implements HardwareRenderLayer {
-    enum Kind {
-        SHADOW,
-        GRASS,
-        MARIN,
-        TARIN,
-        GOT_ITEM,
-        HEART
-    }
+
+    private static final int[][] PAIR_TILES = {{0x40, 0x42}, {0x42, 0x40}, {0x44, 0x46}, {0x48, 0x4A}, {0x48, 0x4C}};
+    private static final int SHIELD_TILE = 0x86;
 
     private final Kind kind;
     private GameFrameState state;
@@ -24,16 +19,6 @@ final class StoryLayer implements HardwareRenderLayer {
 
     StoryLayer(Kind kind) {
         this.kind = kind;
-    }
-
-    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
-    @SuppressWarnings("ReferenceEquality")
-    void configure(GameFrameState state) {
-        this.state = state;
-        if (kind == Kind.HEART && state.roomInputs.heart != heart) {
-            heart = state.roomInputs.heart;
-            heartPairs = heart.spritePairs();
-        }
     }
 
     @Override
@@ -75,8 +60,15 @@ final class StoryLayer implements HardwareRenderLayer {
         }
     }
 
-    private static final int[][] PAIR_TILES = {{0x40, 0x42}, {0x42, 0x40}, {0x44, 0x46}, {0x48, 0x4A}, {0x48, 0x4C}};
-    private static final int SHIELD_TILE = 0x86;
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
+    void configure(GameFrameState state) {
+        this.state = state;
+        if (kind == Kind.HEART && state.roomInputs.heart != heart) {
+            heart = state.roomInputs.heart;
+            heartPairs = heart.spritePairs();
+        }
+    }
 
     static void submitMarinBed(
             Link link,
@@ -193,5 +185,14 @@ final class StoryLayer implements HardwareRenderLayer {
                 false,
                 palette,
                 false);
+    }
+
+    enum Kind {
+        SHADOW,
+        GRASS,
+        MARIN,
+        TARIN,
+        GOT_ITEM,
+        HEART
     }
 }

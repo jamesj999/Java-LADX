@@ -18,12 +18,12 @@ final class RomSoundEffectEngine {
     private static final int AUDIO_STATE_START = 0xD300;
     private static final int AUDIO_STATE_END = 0xD3FF;
     static final int MAX_INSTRUCTIONS_PER_TICK = 20_000;
+    private static final SoundEffectNamespace[] NAMESPACES = SoundEffectNamespace.values();
 
     // Range-checked real-time reads retain the caller-owned bytes without mutation.
     // Avoid RomAddress construction on every interpreted instruction/operand fetch.
     private final linksawakening.rom.RomSlice romBytes;
     private final GameBoyApu apu;
-    private static final SoundEffectNamespace[] NAMESPACES = SoundEffectNamespace.values();
     private final SfxCpu cpu = new SfxCpu(this);
     private final int[] memory = new int[0x10000];
     private final RomSoundEffectTables tables;
@@ -101,35 +101,6 @@ final class RomSoundEffectEngine {
         if (restoreWave) write8(0xD3E7, 1);
     }
 
-    private void enableApu() {
-        apu.writeRegister(GameBoyApu.NR52, 0x80);
-        apu.writeRegister(GameBoyApu.NR50, 0x77);
-        apu.writeRegister(GameBoyApu.NR51, 0xFF);
-        memory[0xFF00 | GameBoyApu.NR52] = 0x80;
-        memory[0xFF00 | GameBoyApu.NR50] = 0x77;
-        memory[0xFF00 | GameBoyApu.NR51] = 0xFF;
-    }
-
-    private void clearAudioState() {
-        Arrays.fill(memory, AUDIO_STATE_START, AUDIO_STATE_END + 1, 0);
-    }
-
-    private static int entryAddress(SoundEffectNamespace namespace) {
-        return switch (namespace) {
-            case JINGLE -> PLAY_ACTIVE_JINGLE;
-            case WAVE -> PLAY_ACTIVE_WAVE;
-            case NOISE -> PLAY_ACTIVE_NOISE;
-        };
-    }
-
-    private static int activeAddress(SoundEffectNamespace namespace) {
-        return switch (namespace) {
-            case JINGLE -> W_ACTIVE_JINGLE;
-            case WAVE -> W_ACTIVE_WAVE;
-            case NOISE -> W_ACTIVE_NOISE;
-        };
-    }
-
     int read8(int address) {
         address &= 0xFFFF;
         if (address >= 0x4000 && address <= 0x7FFF) {
@@ -173,5 +144,34 @@ final class RomSoundEffectEngine {
 
     static String hex16(int value) {
         return String.format("%04X", value & 0xFFFF);
+    }
+
+    private void enableApu() {
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0xFF);
+        memory[0xFF00 | GameBoyApu.NR52] = 0x80;
+        memory[0xFF00 | GameBoyApu.NR50] = 0x77;
+        memory[0xFF00 | GameBoyApu.NR51] = 0xFF;
+    }
+
+    private void clearAudioState() {
+        Arrays.fill(memory, AUDIO_STATE_START, AUDIO_STATE_END + 1, 0);
+    }
+
+    private static int entryAddress(SoundEffectNamespace namespace) {
+        return switch (namespace) {
+            case JINGLE -> PLAY_ACTIVE_JINGLE;
+            case WAVE -> PLAY_ACTIVE_WAVE;
+            case NOISE -> PLAY_ACTIVE_NOISE;
+        };
+    }
+
+    private static int activeAddress(SoundEffectNamespace namespace) {
+        return switch (namespace) {
+            case JINGLE -> W_ACTIVE_JINGLE;
+            case WAVE -> W_ACTIVE_WAVE;
+            case NOISE -> W_ACTIVE_NOISE;
+        };
     }
 }

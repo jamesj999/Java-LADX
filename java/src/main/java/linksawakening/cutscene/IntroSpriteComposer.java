@@ -20,15 +20,6 @@ final class IntroSpriteComposer {
     private final List<IntroRomData.OamEntry> shipTiles;
     private final List<IntroRomData.OamEntry> additionalShipTiles;
 
-    record Assets(
-            List<IntroRomData.SpritePair> marinVariants,
-            List<IntroRomData.SpritePair> inertLinkVariants,
-            List<IntroRomData.SpritePair> sparkleVariants,
-            List<List<IntroRomData.OamEntry>> lightningTiles,
-            int[] shipHeave,
-            List<IntroRomData.OamEntry> shipTiles,
-            List<IntroRomData.OamEntry> additionalShipTiles) {}
-
     IntroSpriteComposer(IntroRomData rom, Assets assets) {
         this.rom = rom;
         this.marinVariants = assets.marinVariants();
@@ -158,4 +149,13 @@ final class IntroSpriteComposer {
     void beginFrame(int clock) {
         random.beginFrame(clock, 0);
     }
+
+    record Assets(
+            List<IntroRomData.SpritePair> marinVariants,
+            List<IntroRomData.SpritePair> inertLinkVariants,
+            List<IntroRomData.SpritePair> sparkleVariants,
+            List<List<IntroRomData.OamEntry>> lightningTiles,
+            int[] shipHeave,
+            List<IntroRomData.OamEntry> shipTiles,
+            List<IntroRomData.OamEntry> additionalShipTiles) {}
 }

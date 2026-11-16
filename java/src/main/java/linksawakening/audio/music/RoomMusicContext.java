@@ -26,11 +26,6 @@ public record RoomMusicContext(
         this(roomId, mapId, indoor, sideScrolling, swordLevel, bossDefeated, activePowerUp, false);
     }
 
-    public RoomMusicContext forScroll() {
-        return new RoomMusicContext(
-                roomId, mapId, indoor, sideScrolling, swordLevel, bossDefeated, activePowerUp, true);
-    }
-
     public RoomMusicContext {
         roomId &= 0xFF;
         mapId &= 0xFF;
@@ -60,5 +55,10 @@ public record RoomMusicContext(
 
     public static RoomMusicContext sideScrolling(int mapId, int roomId, int swordLevel) {
         return new RoomMusicContext(roomId, mapId, true, true, swordLevel, false, 0);
+    }
+
+    public RoomMusicContext forScroll() {
+        return new RoomMusicContext(
+                roomId, mapId, indoor, sideScrolling, swordLevel, bossDefeated, activePowerUp, true);
     }
 }

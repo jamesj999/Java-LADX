@@ -10,33 +10,11 @@ final class LinkPitFall {
 
     private boolean fallingIntoPit;
 
-    boolean fallingIntoPit() {
-        return fallingIntoPit;
-    }
-
-    boolean fallingIntoPit(boolean value) {
-        fallingIntoPit = value;
-        return fallingIntoPit;
-    }
-
     private GroundStatus groundStatus = GroundStatus.NORMAL;
-
-    GroundStatus groundStatus() {
-        return groundStatus;
-    }
-
-    GroundStatus groundStatus(GroundStatus value) {
-        groundStatus = value;
-        return groundStatus;
-    }
 
     private int pitSlippingCounter;
 
     private int fallingFrameCounter;
-
-    int fallingFrameCounter() {
-        return fallingFrameCounter;
-    }
 
     private int pitSlipTargetTopLeftX;
 
@@ -66,6 +44,28 @@ final class LinkPitFall {
         this.linkServices = linkServices;
         this.linkSignals = linkSignals;
         this.elevation = elevation;
+    }
+
+    boolean fallingIntoPit() {
+        return fallingIntoPit;
+    }
+
+    boolean fallingIntoPit(boolean value) {
+        fallingIntoPit = value;
+        return fallingIntoPit;
+    }
+
+    GroundStatus groundStatus() {
+        return groundStatus;
+    }
+
+    GroundStatus groundStatus(GroundStatus value) {
+        groundStatus = value;
+        return groundStatus;
+    }
+
+    int fallingFrameCounter() {
+        return fallingFrameCounter;
     }
 
     boolean linkOverPit() {

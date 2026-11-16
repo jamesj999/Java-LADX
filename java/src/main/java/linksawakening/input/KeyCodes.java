@@ -1,7 +1,6 @@
 package linksawakening.input;
 /** Engine key/action codes. Numeric values preserve existing GLFW bindings and config files. */
 public final class KeyCodes {
-    private KeyCodes() {}
 
     public static final int KEY_F9 = 298;
 
@@ -25,4 +24,6 @@ public final class KeyCodes {
     public static final int KEY_RIGHT = 262;
     public static final int KEY_A = 65;
     public static final int KEY_0 = 48;
+
+    private KeyCodes() {}
 }

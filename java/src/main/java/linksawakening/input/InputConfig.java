@@ -71,6 +71,26 @@ public final class InputConfig {
         this.selectKey = selectKey;
     }
 
+    public static InputConfig loadFromResources() {
+        return AppConfig.loadFromResources().inputConfig();
+    }
+
+    public static InputConfig fromKeyNames(Map<String, String> entries) {
+        int menuOpenKey = resolveKey(entries.getOrDefault("menuOpenKey", "ENTER"));
+        int upKey = resolveKey(entries.getOrDefault("upKey", "UP"));
+        int downKey = resolveKey(entries.getOrDefault("downKey", "DOWN"));
+        int leftKey = resolveKey(entries.getOrDefault("leftKey", "LEFT"));
+        int rightKey = resolveKey(entries.getOrDefault("rightKey", "RIGHT"));
+        int aKey = resolveKey(entries.getOrDefault("aKey", "Z"));
+        int bKey = resolveKey(entries.getOrDefault("bKey", "X"));
+        int selectKey = resolveKey(entries.getOrDefault("selectKey", "TAB"));
+        String recordingName = entries.getOrDefault("recordingKey", "F9").toUpperCase(Locale.ROOT);
+        int recordingKey = KEY_NAME_TO_CODE.getOrDefault(recordingName, KEY_F9);
+        if (!KEY_NAME_TO_CODE.containsKey(recordingName))
+            DebugLog.warning("Unknown recording key: " + recordingName + " (falling back to F9)");
+        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, recordingKey);
+    }
+
     public int menuOpenKey() {
         return menuOpenKey;
     }
@@ -105,26 +125,6 @@ public final class InputConfig {
 
     public int selectKey() {
         return selectKey;
-    }
-
-    public static InputConfig loadFromResources() {
-        return AppConfig.loadFromResources().inputConfig();
-    }
-
-    public static InputConfig fromKeyNames(Map<String, String> entries) {
-        int menuOpenKey = resolveKey(entries.getOrDefault("menuOpenKey", "ENTER"));
-        int upKey = resolveKey(entries.getOrDefault("upKey", "UP"));
-        int downKey = resolveKey(entries.getOrDefault("downKey", "DOWN"));
-        int leftKey = resolveKey(entries.getOrDefault("leftKey", "LEFT"));
-        int rightKey = resolveKey(entries.getOrDefault("rightKey", "RIGHT"));
-        int aKey = resolveKey(entries.getOrDefault("aKey", "Z"));
-        int bKey = resolveKey(entries.getOrDefault("bKey", "X"));
-        int selectKey = resolveKey(entries.getOrDefault("selectKey", "TAB"));
-        String recordingName = entries.getOrDefault("recordingKey", "F9").toUpperCase(Locale.ROOT);
-        int recordingKey = KEY_NAME_TO_CODE.getOrDefault(recordingName, KEY_F9);
-        if (!KEY_NAME_TO_CODE.containsKey(recordingName))
-            DebugLog.warning("Unknown recording key: " + recordingName + " (falling back to F9)");
-        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, recordingKey);
     }
 
     // Suspected defect: ASCII key parsing depends on the default locale; propose Locale.ROOT with a Turkish-locale

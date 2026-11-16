@@ -12,24 +12,11 @@ public final class MarinWakeUpMotion {
     };
     private static final int[] MARIN_VARIANT_FOR_DIRECTION = {6, 4, 2, 0};
 
-    private enum State {
-        TOSSING,
-        AWAKE,
-        COMPLETE
-    }
-
     private static final Update[] BED_POSES = bedPoses();
     private static final Update WAKE = new Update(true, WAKE_DIALOG, true, false, LINK_BED_X, LINK_BED_Y, 3);
     private static final Update LEAVE = new Update(false, WAKE_DIALOG, false, true, LINK_BED_X, LINK_BED_Y, 3);
     private static final Update FINISHED = new Update(false, WAKE_DIALOG, false, false, LINK_BED_X, LINK_BED_Y, 3);
     private final MarinPresentation[] marinPoses = new MarinPresentation[8];
-
-    private static Update[] bedPoses() {
-        Update[] poses = new Update[5];
-        for (int i = 0; i < poses.length; i++)
-            poses[i] = new Update(false, WAKE_DIALOG, true, false, LINK_BED_X, LINK_BED_Y, i);
-        return poses;
-    }
 
     private State state = State.TOSSING;
     private int slowTossingCountdown = 127;
@@ -117,6 +104,13 @@ public final class MarinWakeUpMotion {
         return directionToLink(marinX, marinY, linkX, linkY) == (linkDirection ^ 0x01);
     }
 
+    private static Update[] bedPoses() {
+        Update[] poses = new Update[5];
+        for (int i = 0; i < poses.length; i++)
+            poses[i] = new Update(false, WAKE_DIALOG, true, false, LINK_BED_X, LINK_BED_Y, i);
+        return poses;
+    }
+
     private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
         int distanceX = (byte) (linkX - entityX);
         int distanceY = (byte) (linkY - entityY);
@@ -124,6 +118,12 @@ public final class MarinWakeUpMotion {
             return distanceY < 0 ? 2 : 3;
         }
         return distanceX < 0 ? 1 : 0;
+    }
+
+    private enum State {
+        TOSSING,
+        AWAKE,
+        COMPLETE
     }
     /** Immutable update values. */
     public record Update(

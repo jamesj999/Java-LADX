@@ -27,11 +27,11 @@ public final class Tile {
         colorIndex[y * 8 + x] = color;
     }
 
-    Tile frozenCopy() {
-        return new Tile(colorIndex.clone(), true);
-    }
-
     public Tile copy() {
         return new Tile(colorIndex.clone());
+    }
+
+    Tile frozenCopy() {
+        return new Tile(colorIndex.clone(), true);
     }
 }

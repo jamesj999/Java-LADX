@@ -46,29 +46,6 @@ final class RoomInputs {
         captured = room;
     }
 
-    private void captureLive(RoomRenderView room) {
-        if (liveTiles == null || liveTiles.length != room.tileCount()) liveTiles = new int[room.tileCount()];
-        if (liveAttributes == null || liveAttributes.length != room.attributeCount())
-            liveAttributes = new int[room.attributeCount()];
-        if (livePalettes == null || livePalettes.length != room.paletteCount())
-            livePalettes = new int[room.paletteCount()][];
-        for (int i = 0; i < liveTiles.length; i++) liveTiles[i] = room.tileId(i);
-        for (int i = 0; i < liveAttributes.length; i++) liveAttributes[i] = room.tileAttribute(i);
-        for (int p = 0; p < livePalettes.length; p++) {
-            if (livePalettes[p] == null || livePalettes[p].length != room.colorCount(p))
-                livePalettes[p] = new int[room.colorCount(p)];
-            for (int c = 0; c < livePalettes[p].length; c++) livePalettes[p][c] = room.paletteColor(p, c);
-        }
-        set(
-                liveTiles,
-                liveAttributes,
-                livePalettes,
-                room.entities(),
-                room.instrumentWarp(),
-                room.heartPiece(),
-                room.linkGrassPalette());
-    }
-
     void set(
             int[] tiles,
             int[] attributes,
@@ -110,5 +87,28 @@ final class RoomInputs {
         return tiles == null
                 ? null
                 : new RoomRenderSnapshot(tiles, attributes, palettes, entities, warp, heart, grassPalette);
+    }
+
+    private void captureLive(RoomRenderView room) {
+        if (liveTiles == null || liveTiles.length != room.tileCount()) liveTiles = new int[room.tileCount()];
+        if (liveAttributes == null || liveAttributes.length != room.attributeCount())
+            liveAttributes = new int[room.attributeCount()];
+        if (livePalettes == null || livePalettes.length != room.paletteCount())
+            livePalettes = new int[room.paletteCount()][];
+        for (int i = 0; i < liveTiles.length; i++) liveTiles[i] = room.tileId(i);
+        for (int i = 0; i < liveAttributes.length; i++) liveAttributes[i] = room.tileAttribute(i);
+        for (int p = 0; p < livePalettes.length; p++) {
+            if (livePalettes[p] == null || livePalettes[p].length != room.colorCount(p))
+                livePalettes[p] = new int[room.colorCount(p)];
+            for (int c = 0; c < livePalettes[p].length; c++) livePalettes[p][c] = room.paletteColor(p, c);
+        }
+        set(
+                liveTiles,
+                liveAttributes,
+                livePalettes,
+                room.entities(),
+                room.instrumentWarp(),
+                room.heartPiece(),
+                room.linkGrassPalette());
     }
 }

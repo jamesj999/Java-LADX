@@ -11,11 +11,19 @@ import linksawakening.world.entity.RomRandomByteSource;
 
 /** Swing, charge and movement gates from CheckItemsToUse and UpdateLinkAnimation. */
 public final class Sword implements EquipmentItem {
-    private final SwordSpin spin;
 
     private static final int DRAW_FRAMES = 4;
     private static final int SWING_START_FRAMES = 3;
     private static final int SWING_MIDDLE_FRAMES = 8;
+
+    public static final int STATE_NONE = 0;
+    public static final int STATE_DRAW = 1;
+    public static final int STATE_SWING_START = 2;
+    public static final int STATE_SWING_MIDDLE = 3;
+    public static final int STATE_SWING_END = 4;
+    public static final int STATE_HOLDING = 5;
+    public static final int MAX_CHARGE = 40;
+    private final SwordSpin spin;
 
     private final SwordTables swordTables;
     private final SwordRenderer renderer;
@@ -79,18 +87,6 @@ public final class Sword implements EquipmentItem {
                 beamTarget);
     }
 
-    /** Immutable blade data, with explicit invisible assets for action-only actors. */
-    public record Assets(SwordTables tables, SwordSpriteSheet sprites) {
-        public Assets {
-            Objects.requireNonNull(tables, "tables");
-            Objects.requireNonNull(sprites, "sprites");
-        }
-
-        public static Assets animationOnly() {
-            return new Assets(SwordTables.animationOnly(), SwordSpriteSheet.invisible());
-        }
-    }
-
     public Sword(Assets assets) {
         this(assets, GameplaySoundSink.none(), new RomRandomByteSource(), SwordPalette.compatibility(), () -> false);
     }
@@ -114,15 +110,6 @@ public final class Sword implements EquipmentItem {
         this.beamTarget = Objects.requireNonNull(beamTarget, "beamTarget");
 
         spin = new SwordSpin(swordTables);
-    }
-
-    private static GameplaySoundEvent swordSwingSound(int randomByte) {
-        return switch (randomByte & 0x03) {
-            case 0 -> GameplaySoundEvent.SWORD_SWING_A;
-            case 1 -> GameplaySoundEvent.SWORD_SWING_B;
-            case 2 -> GameplaySoundEvent.SWORD_SWING_C;
-            default -> GameplaySoundEvent.SWORD_SWING_D;
-        };
     }
 
     public int state() {
@@ -393,6 +380,15 @@ public final class Sword implements EquipmentItem {
                 swordTables.swordCollisionHeight(romDirection, state));
     }
 
+    private static GameplaySoundEvent swordSwingSound(int randomByte) {
+        return switch (randomByte & 0x03) {
+            case 0 -> GameplaySoundEvent.SWORD_SWING_A;
+            case 1 -> GameplaySoundEvent.SWORD_SWING_B;
+            case 2 -> GameplaySoundEvent.SWORD_SWING_C;
+            default -> GameplaySoundEvent.SWORD_SWING_D;
+        };
+    }
+
     // Flash is driven by bit 2 of the global frame counter during HOLDING at
     // max charge (bank0.asm:17BF computes `(hFrameCounter << 2) & $10`).
     private boolean chargedFlashActive() {
@@ -416,6 +412,18 @@ public final class Sword implements EquipmentItem {
         return state;
     }
 
+    /** Immutable blade data, with explicit invisible assets for action-only actors. */
+    public record Assets(SwordTables tables, SwordSpriteSheet sprites) {
+        public Assets {
+            Objects.requireNonNull(tables, "tables");
+            Objects.requireNonNull(sprites, "sprites");
+        }
+
+        public static Assets animationOnly() {
+            return new Assets(SwordTables.animationOnly(), SwordSpriteSheet.invisible());
+        }
+    }
+
     /** Optional bridge to the room-owned ROM sword-beam entity. */
     public interface BeamTarget {
         boolean fireSwordBeam();
@@ -428,12 +436,4 @@ public final class Sword implements EquipmentItem {
             return new CollisionBox(false, 0, 0, 0, 0);
         }
     }
-
-    public static final int STATE_NONE = 0;
-    public static final int STATE_DRAW = 1;
-    public static final int STATE_SWING_START = 2;
-    public static final int STATE_SWING_MIDDLE = 3;
-    public static final int STATE_SWING_END = 4;
-    public static final int STATE_HOLDING = 5;
-    public static final int MAX_CHARGE = 40;
 }

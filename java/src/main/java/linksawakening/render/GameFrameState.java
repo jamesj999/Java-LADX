@@ -16,112 +16,22 @@ import linksawakening.world.transition.TransitionController;
 
 /** Same-thread screen-discriminated inputs with persistent sections. Refill before build; captures use test-side FrameSnapshots. */
 public final class GameFrameState {
-    public GameFrameState() {}
-
-    public static GameFrameState empty() {
-        return new GameFrameState();
-    }
 
     public final OverworldInputs overworld = new OverworldInputs();
-    /** Always-present overworld section; presence denotes intentionally omitted presentation components. */
-    public static final class OverworldInputs {
-        private final Presence<RoomRenderView> room = new Presence<>();
-        private final Presence<ScrollController> scrollController = new Presence<>();
-        private final Presence<TransitionController> transitionController = new Presence<>();
-        private final Presence<Link> link = new Presence<>();
-        private final Presence<TransientVfxSystem> transientVfxSystem = new Presence<>();
-        private final Presence<CutLeavesEffectRenderer> cutLeavesEffectRenderer = new Presence<>();
-        private final Presence<int[]> transientVfxPalette = new Presence<>();
-        private final Presence<DroppableRupeeSystem> droppableRupeeSystem = new Presence<>();
-        private final Presence<InventoryController> inventoryController = new Presence<>();
-        private final Presence<DialogController> dialogController = new Presence<>();
-
-        public boolean hasRoom() {
-            return room.present;
-        }
-
-        public boolean hasScrollController() {
-            return scrollController.present;
-        }
-
-        public boolean hasTransitionController() {
-            return transitionController.present;
-        }
-
-        public boolean hasLink() {
-            return link.present;
-        }
-
-        public boolean hasTransientVfxSystem() {
-            return transientVfxSystem.present;
-        }
-
-        public boolean hasCutLeavesEffectRenderer() {
-            return cutLeavesEffectRenderer.present;
-        }
-
-        public boolean hasTransientVfxPalette() {
-            return transientVfxPalette.present;
-        }
-
-        public boolean hasDroppableRupeeSystem() {
-            return droppableRupeeSystem.present;
-        }
-
-        public boolean hasInventoryController() {
-            return inventoryController.present;
-        }
-
-        public boolean hasDialogController() {
-            return dialogController.present;
-        }
-    }
 
     public final BackgroundInputs background = new BackgroundInputs();
-    /** Always-present background section; presence denotes intentionally omitted presentation components. */
-    public static final class BackgroundInputs {
-        private final Presence<int[]> tilemap = new Presence<>();
-        private final Presence<int[]> attrmap = new Presence<>();
-        private final Presence<int[][]> bgPalettes = new Presence<>();
-        private final Presence<int[][]> objPalettes = new Presence<>();
-        private final Presence<CutsceneManager> cutsceneManager = new Presence<>();
-        private final Presence<IntroFrameSnapshot> introFrameSnapshot = new Presence<>();
-        private final Presence<FileMenuFrameSnapshot> fileMenuFrame = new Presence<>();
-
-        public boolean hasTilemap() {
-            return tilemap.present;
-        }
-
-        public boolean hasAttrmap() {
-            return attrmap.present;
-        }
-
-        public boolean hasBgPalettes() {
-            return bgPalettes.present;
-        }
-
-        public boolean hasObjPalettes() {
-            return objPalettes.present;
-        }
-
-        public boolean hasCutsceneManager() {
-            return cutsceneManager.present;
-        }
-
-        public boolean hasIntroFrameSnapshot() {
-            return introFrameSnapshot.present;
-        }
-
-        public boolean hasFileMenuFrame() {
-            return fileMenuFrame.present;
-        }
-    }
 
     private RenderScreen screen = RenderScreen.TITLE;
 
     private int frameCounter;
 
     final RoomInputs roomInputs = new RoomInputs();
+
+    public GameFrameState() {}
+
+    public static GameFrameState empty() {
+        return new GameFrameState();
+    }
 
     public RenderScreen screen() {
         return screen;
@@ -360,6 +270,97 @@ public final class GameFrameState {
     @Override
     public int hashCode() {
         return frameCounter;
+    }
+    /** Always-present overworld section; presence denotes intentionally omitted presentation components. */
+    public static final class OverworldInputs {
+        private final Presence<RoomRenderView> room = new Presence<>();
+        private final Presence<ScrollController> scrollController = new Presence<>();
+        private final Presence<TransitionController> transitionController = new Presence<>();
+        private final Presence<Link> link = new Presence<>();
+        private final Presence<TransientVfxSystem> transientVfxSystem = new Presence<>();
+        private final Presence<CutLeavesEffectRenderer> cutLeavesEffectRenderer = new Presence<>();
+        private final Presence<int[]> transientVfxPalette = new Presence<>();
+        private final Presence<DroppableRupeeSystem> droppableRupeeSystem = new Presence<>();
+        private final Presence<InventoryController> inventoryController = new Presence<>();
+        private final Presence<DialogController> dialogController = new Presence<>();
+
+        public boolean hasRoom() {
+            return room.present;
+        }
+
+        public boolean hasScrollController() {
+            return scrollController.present;
+        }
+
+        public boolean hasTransitionController() {
+            return transitionController.present;
+        }
+
+        public boolean hasLink() {
+            return link.present;
+        }
+
+        public boolean hasTransientVfxSystem() {
+            return transientVfxSystem.present;
+        }
+
+        public boolean hasCutLeavesEffectRenderer() {
+            return cutLeavesEffectRenderer.present;
+        }
+
+        public boolean hasTransientVfxPalette() {
+            return transientVfxPalette.present;
+        }
+
+        public boolean hasDroppableRupeeSystem() {
+            return droppableRupeeSystem.present;
+        }
+
+        public boolean hasInventoryController() {
+            return inventoryController.present;
+        }
+
+        public boolean hasDialogController() {
+            return dialogController.present;
+        }
+    }
+    /** Always-present background section; presence denotes intentionally omitted presentation components. */
+    public static final class BackgroundInputs {
+        private final Presence<int[]> tilemap = new Presence<>();
+        private final Presence<int[]> attrmap = new Presence<>();
+        private final Presence<int[][]> bgPalettes = new Presence<>();
+        private final Presence<int[][]> objPalettes = new Presence<>();
+        private final Presence<CutsceneManager> cutsceneManager = new Presence<>();
+        private final Presence<IntroFrameSnapshot> introFrameSnapshot = new Presence<>();
+        private final Presence<FileMenuFrameSnapshot> fileMenuFrame = new Presence<>();
+
+        public boolean hasTilemap() {
+            return tilemap.present;
+        }
+
+        public boolean hasAttrmap() {
+            return attrmap.present;
+        }
+
+        public boolean hasBgPalettes() {
+            return bgPalettes.present;
+        }
+
+        public boolean hasObjPalettes() {
+            return objPalettes.present;
+        }
+
+        public boolean hasCutsceneManager() {
+            return cutsceneManager.present;
+        }
+
+        public boolean hasIntroFrameSnapshot() {
+            return introFrameSnapshot.present;
+        }
+
+        public boolean hasFileMenuFrame() {
+            return fileMenuFrame.present;
+        }
     }
     /** Reusable explicit absence for intentionally omitted presentation values; never allocated per frame. */
     private static final class Presence<T> {

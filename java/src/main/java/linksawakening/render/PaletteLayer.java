@@ -25,6 +25,14 @@ final class PaletteLayer implements HardwareRenderLayer {
 
     private final Runnable draw = this::drawChild, inner = this::drawInner, sourced = this::drawSourced;
 
+    @Override
+    public void submit(HardwareFrame frame, GPU gpu) {
+        this.frame = frame;
+        this.gpu = gpu;
+        if (inventoryPalette) frame.withPaletteTransforms(background, object, sourced);
+        else drawSourced();
+    }
+
     void configure(RenderLayer layer, GameFrameState state) {
         child = (HardwareRenderLayer) layer;
         passOut = state.screen() == RenderScreen.OVERWORLD
@@ -37,14 +45,6 @@ final class PaletteLayer implements HardwareRenderLayer {
                 && state.inventoryController().transition().blocksWorld();
         inventory = inventoryPalette ? state.inventoryController().transition() : worldPalette;
         source = passOut ? "PassOutPaletteRenderLayer" : layer.getClass().getSimpleName();
-    }
-
-    @Override
-    public void submit(HardwareFrame frame, GPU gpu) {
-        this.frame = frame;
-        this.gpu = gpu;
-        if (inventoryPalette) frame.withPaletteTransforms(background, object, sourced);
-        else drawSourced();
     }
 
     private void drawSourced() {

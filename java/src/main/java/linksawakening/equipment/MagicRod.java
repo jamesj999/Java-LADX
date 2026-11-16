@@ -25,14 +25,6 @@ public final class MagicRod implements EquipmentItem {
     private static final int FORWARD_SWING_THRESHOLD = 0x08;
     private static final int ATTR_FLIP_X = 0x20;
     private static final int ATTR_FLIP_Y = 0x40;
-    /** Contract for launch target. */
-    public interface LaunchTarget {
-        void startMagicRodAttackStep();
-
-        boolean fireMagicRodFireball();
-
-        int activeProjectileCount();
-    }
 
     private final GameplaySoundSink soundSink;
     private final LaunchTarget target;
@@ -218,5 +210,13 @@ public final class MagicRod implements EquipmentItem {
                 (attributes & ATTR_FLIP_X) != 0,
                 (attributes & ATTR_FLIP_Y) != 0,
                 palette);
+    }
+    /** Contract for launch target. */
+    public interface LaunchTarget {
+        void startMagicRodAttackStep();
+
+        boolean fireMagicRodFireball();
+
+        int activeProjectileCount();
     }
 }

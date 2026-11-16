@@ -5,14 +5,6 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
 final class RoomTileLoader {
-    private final Vram target;
-
-    private final AnimatedTiles animation;
-
-    RoomTileLoader(Vram target, AnimatedTiles animation) {
-        this.target = target;
-        this.animation = animation;
-    }
 
     private static final int SWITCH_BLOCK_TILES_BANK = GbcBanks.adjust(RomSymbols.SwitchBlockTiles.bank());
     private static final int SWITCH_BLOCK_TILES_ADDR = RomSymbols.SwitchBlockTiles.address();
@@ -47,6 +39,14 @@ final class RoomTileLoader {
     private static final int COLOR_DUNGEON_BG_BANK = RomSymbols.CameraShopIndoorTiles.bank();
     private static final int CAMERA_SHOP_TILES_ADDR = RomSymbols.CameraShopIndoorTiles.address();
     private static final int W_TILESET_NO_UPDATE = 0xFF;
+    private final Vram target;
+
+    private final AnimatedTiles animation;
+
+    RoomTileLoader(Vram target, AnimatedTiles animation) {
+        this.target = target;
+        this.animation = animation;
+    }
 
     public void loadRoomSpecificTiles(Rom romData, int roomId, int tilesetId) {
         if (tilesetId == W_TILESET_KEEP) {
@@ -114,6 +114,30 @@ final class RoomTileLoader {
         loadRoomOverlay(romData, mapId, roomId, rom);
     }
 
+    public void copySwitchBlockTiles(Rom romData, int sourceOffset, int destinationTile) {
+        if (sourceOffset != 0x00 && sourceOffset != 0x40 && sourceOffset != 0x80) {
+            throw new IllegalArgumentException("Unknown switch-block source offset: " + sourceOffset);
+        }
+        if (destinationTile != 0x104 && destinationTile != 0x108) {
+            throw new IllegalArgumentException("Unknown switch-block destination tile: " + destinationTile);
+        }
+        target.loadTilesFromROM(
+                romData,
+                SWITCH_BLOCK_TILES_BANK,
+                SWITCH_BLOCK_TILES_ADDR + sourceOffset,
+                SWITCH_BLOCK_TILE_COUNT,
+                destinationTile);
+    }
+
+    public void copyPressedFloorSwitchTiles(Rom romData) {
+        target.loadTilesFromROM(
+                romData,
+                PRESSED_FLOOR_SWITCH_TILES_BANK,
+                PRESSED_FLOOR_SWITCH_TILES_ADDR,
+                0x04,
+                PRESSED_FLOOR_SWITCH_VRAM_TILE);
+    }
+
     private void loadMapOverlays(Rom romData, int mapId, Rom rom) {
         // Per-map walls overlay the first 32 tiles of the shared block. Each
         // entry in DungeonWallsTilesPointers is a single high byte — the
@@ -176,29 +200,5 @@ final class RoomTileLoader {
                     romData, COLOR_DUNGEON_BG_BANK, CAMERA_SHOP_TILES_ADDR, 0x20, DUNGEON_ITEMS_VRAM_INDEX);
             return;
         }
-    }
-
-    public void copySwitchBlockTiles(Rom romData, int sourceOffset, int destinationTile) {
-        if (sourceOffset != 0x00 && sourceOffset != 0x40 && sourceOffset != 0x80) {
-            throw new IllegalArgumentException("Unknown switch-block source offset: " + sourceOffset);
-        }
-        if (destinationTile != 0x104 && destinationTile != 0x108) {
-            throw new IllegalArgumentException("Unknown switch-block destination tile: " + destinationTile);
-        }
-        target.loadTilesFromROM(
-                romData,
-                SWITCH_BLOCK_TILES_BANK,
-                SWITCH_BLOCK_TILES_ADDR + sourceOffset,
-                SWITCH_BLOCK_TILE_COUNT,
-                destinationTile);
-    }
-
-    public void copyPressedFloorSwitchTiles(Rom romData) {
-        target.loadTilesFromROM(
-                romData,
-                PRESSED_FLOOR_SWITCH_TILES_BANK,
-                PRESSED_FLOOR_SWITCH_TILES_ADDR,
-                0x04,
-                PRESSED_FLOOR_SWITCH_VRAM_TILE);
     }
 }

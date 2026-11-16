@@ -10,27 +10,11 @@ final class LinkStateMachine {
 
     private final LinkDash dash;
 
-    LinkDash dash() {
-        return dash;
-    }
-
     private final LinkRoomPhysics roomPhysics;
-
-    LinkRoomPhysics roomPhysics() {
-        return roomPhysics;
-    }
 
     private final LinkDoorTraversal door;
 
-    LinkDoorTraversal door() {
-        return door;
-    }
-
     private final LinkMotionStatus status;
-
-    LinkMotionStatus status() {
-        return status;
-    }
 
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
@@ -46,6 +30,8 @@ final class LinkStateMachine {
     private final LinkComponentRef<LinkSideView> linkSideView;
     private final LinkComponentRef<LinkSignals> linkSignals;
     private final LinkComponentRef<LinkSwimming> linkSwimming;
+
+    private final Frame frame = new Frame();
 
     LinkStateMachine(LinkAssembly.MotionDependencies dependencies) {
 
@@ -70,16 +56,20 @@ final class LinkStateMachine {
         door = new LinkDoorTraversal(linkAnimationState, linkAnimator, linkMotion, linkServices, status);
     }
 
-    private final Frame frame = new Frame();
+    LinkDash dash() {
+        return dash;
+    }
 
-    private static final class Frame {
-        int carriedSpeedX;
-        int carriedSpeedY;
-        boolean featherLaunchFrame;
-        int platformVerticalSpeedForThisUpdate;
-        int mask;
-        int speedX;
-        int speedY;
+    LinkRoomPhysics roomPhysics() {
+        return roomPhysics;
+    }
+
+    LinkDoorTraversal door() {
+        return door;
+    }
+
+    LinkMotionStatus status() {
+        return status;
     }
 
     void update() {
@@ -89,6 +79,58 @@ final class LinkStateMachine {
         if (!prepareGroundMotion()) return;
         resolveSpeeds();
         applyMotion();
+    }
+
+    // $02:4409-4427 selects the second row only for Piece of Power.
+    int groundSpeedIndex(int mask) {
+        return (mask & 0x0F) | (linkServices.get().playerState.equipmentLevels().activePowerUp() == 1 ? 0x10 : 0);
+    }
+
+    void updateDebugNoClip() {
+        int mask = linkControls.get().accessBuildJoypadMask();
+        int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
+        if (newDirection != -1) {
+            linkAnimationState.get().direction = Direction.fromJava(newDirection);
+        }
+        int speedX = (byte) linkServices.get().linkMotionTables.linkSpeedX(groundSpeedIndex(mask));
+        int speedY = (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(mask));
+        linkMotion.get().position().lastRomSpeedX(speedX & 0xFF);
+        linkMotion.get().position().lastRomSpeedY(speedY & 0xFF);
+        linkAnimationState.get().movingThisFrame = speedX != 0 || speedY != 0;
+        linkMotion.get().position().subX(linkMotion.get().position().subX() + speedX);
+        linkMotion.get().position().subY(linkMotion.get().position().subY() + speedY);
+        if (linkAnimationState.get().movingThisFrame) {
+            linkAnimationState.get().walkTickCounter++;
+            if (linkAnimationState.get().walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {
+                linkAnimationState.get().walkTickCounter = 0;
+                linkAnimationState.get().walkFrame ^= 1;
+            }
+        } else {
+            linkAnimationState.get().walkTickCounter = 0;
+            linkAnimationState.get().walkFrame = 0;
+        }
+    }
+
+    /** Enables the development movement mode; normal gameplay leaves this off. */
+    void setDebugNoClip(boolean enabled) {
+        status.debugNoClip(enabled);
+        if (enabled) {
+            linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+            linkAirborne.get().pit().fallingIntoPit(false);
+            linkAirborne.get().elevation().airborne(false);
+            linkAirborne.get().elevation().zSubPixels(0);
+            linkAirborne.get().elevation().zVelocity(0);
+        }
+    }
+
+    boolean accessIsDiving() {
+        return status.accessIsSwimming() && roomPhysics.physicsModifier() != 0;
+    }
+
+    void accessSetGelClinging(boolean clinging, int worldFrame) {
+        status.gelClinging(clinging);
+        status.gelMotionFrame(worldFrame & 0xFF);
+        linkGroundMotion.get().worldMotionFrame = worldFrame & 0xFF;
     }
 
     private boolean beginFrame() {
@@ -381,55 +423,13 @@ final class LinkStateMachine {
         }
     }
 
-    // $02:4409-4427 selects the second row only for Piece of Power.
-    int groundSpeedIndex(int mask) {
-        return (mask & 0x0F) | (linkServices.get().playerState.equipmentLevels().activePowerUp() == 1 ? 0x10 : 0);
-    }
-
-    void updateDebugNoClip() {
-        int mask = linkControls.get().accessBuildJoypadMask();
-        int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
-        if (newDirection != -1) {
-            linkAnimationState.get().direction = Direction.fromJava(newDirection);
-        }
-        int speedX = (byte) linkServices.get().linkMotionTables.linkSpeedX(groundSpeedIndex(mask));
-        int speedY = (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(mask));
-        linkMotion.get().position().lastRomSpeedX(speedX & 0xFF);
-        linkMotion.get().position().lastRomSpeedY(speedY & 0xFF);
-        linkAnimationState.get().movingThisFrame = speedX != 0 || speedY != 0;
-        linkMotion.get().position().subX(linkMotion.get().position().subX() + speedX);
-        linkMotion.get().position().subY(linkMotion.get().position().subY() + speedY);
-        if (linkAnimationState.get().movingThisFrame) {
-            linkAnimationState.get().walkTickCounter++;
-            if (linkAnimationState.get().walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {
-                linkAnimationState.get().walkTickCounter = 0;
-                linkAnimationState.get().walkFrame ^= 1;
-            }
-        } else {
-            linkAnimationState.get().walkTickCounter = 0;
-            linkAnimationState.get().walkFrame = 0;
-        }
-    }
-
-    /** Enables the development movement mode; normal gameplay leaves this off. */
-    void setDebugNoClip(boolean enabled) {
-        status.debugNoClip(enabled);
-        if (enabled) {
-            linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
-            linkAirborne.get().pit().fallingIntoPit(false);
-            linkAirborne.get().elevation().airborne(false);
-            linkAirborne.get().elevation().zSubPixels(0);
-            linkAirborne.get().elevation().zVelocity(0);
-        }
-    }
-
-    boolean accessIsDiving() {
-        return status.accessIsSwimming() && roomPhysics.physicsModifier() != 0;
-    }
-
-    void accessSetGelClinging(boolean clinging, int worldFrame) {
-        status.gelClinging(clinging);
-        status.gelMotionFrame(worldFrame & 0xFF);
-        linkGroundMotion.get().worldMotionFrame = worldFrame & 0xFF;
+    private static final class Frame {
+        int carriedSpeedX;
+        int carriedSpeedY;
+        boolean featherLaunchFrame;
+        int platformVerticalSpeedForThisUpdate;
+        int mask;
+        int speedX;
+        int speedY;
     }
 }

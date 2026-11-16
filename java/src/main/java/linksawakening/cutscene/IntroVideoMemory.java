@@ -10,6 +10,8 @@ final class IntroVideoMemory {
     private int[] tilemap;
     private int[] attrmap;
 
+    private int scrollX;
+
     int scrollY() {
         return scrollY;
     }
@@ -63,8 +65,6 @@ final class IntroVideoMemory {
         attrmap = value;
         return value;
     }
-
-    private int scrollX;
 
     int scrollX() {
         return scrollX;

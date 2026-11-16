@@ -5,12 +5,6 @@ import java.util.function.BooleanSupplier;
 
 /** Edge-triggered {@code UseBoomerang} equipment bridge. */
 public final class Boomerang implements EquipmentItem {
-    /** Contract for launch target. */
-    public interface LaunchTarget {
-        boolean fireBoomerang();
-
-        boolean boomerangActive();
-    }
 
     private final LaunchTarget target;
     private final BooleanSupplier itemUseAllowed;
@@ -40,5 +34,11 @@ public final class Boomerang implements EquipmentItem {
     @Override
     public boolean locksFacing() {
         return target.boomerangActive();
+    }
+    /** Contract for launch target. */
+    public interface LaunchTarget {
+        boolean fireBoomerang();
+
+        boolean boomerangActive();
     }
 }

@@ -12,20 +12,6 @@ import linksawakening.state.PlayerState;
  * ordering around the spawn request.
  */
 public final class Bomb implements EquipmentItem {
-    /** Contract for placement target. */
-    public interface PlacementTarget {
-        boolean placeBomb();
-
-        boolean bombActive();
-
-        /**
-         * Mirrors ConvertToBombArrowIfNeeded's top-view placement jingle.
-         * Ordinary placement targets do not need to provide one.
-         */
-        default boolean playBumpForLastPlacement() {
-            return false;
-        }
-    }
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
@@ -66,6 +52,20 @@ public final class Bomb implements EquipmentItem {
         playerState.ammunition().setBombCount(playerState.ammunition().bombCount() - 1);
         if (target.placeBomb() && target.playBumpForLastPlacement()) {
             soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
+        }
+    }
+    /** Contract for placement target. */
+    public interface PlacementTarget {
+        boolean placeBomb();
+
+        boolean bombActive();
+
+        /**
+         * Mirrors ConvertToBombArrowIfNeeded's top-view placement jingle.
+         * Ordinary placement targets do not need to provide one.
+         */
+        default boolean playBumpForLastPlacement() {
+            return false;
         }
     }
 }

@@ -4,12 +4,6 @@ import java.util.Objects;
 
 /** Immutable file save action values. */
 public record FileSaveAction(Type type) {
-    /** Named type values. */
-    public enum Type {
-        NONE,
-        RETURN_TO_GAME,
-        SAVE_AND_QUIT
-    }
 
     public FileSaveAction {
         Objects.requireNonNull(type, "type");
@@ -17,5 +11,11 @@ public record FileSaveAction(Type type) {
 
     public static FileSaveAction none() {
         return new FileSaveAction(Type.NONE);
+    }
+    /** Named type values. */
+    public enum Type {
+        NONE,
+        RETURN_TO_GAME,
+        SAVE_AND_QUIT
     }
 }

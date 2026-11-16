@@ -98,6 +98,28 @@ final class SquareChannel {
         tickEnvelope();
     }
 
+    double render() {
+        if (!dacEnabled()) return 0.0;
+        if (!active) return 1.0; // Digital zero through an enabled DAC.
+
+        int duty = (dutyRegister >>> 6) & 0x03;
+        double steps = frequencyHertz() * 8.0 / sampleRate;
+        double remaining = steps;
+        double highTime = 0;
+        // Integrate every duty edge in this output interval rather than point sampling.
+        while (remaining > 0) {
+            double span = Math.min(remaining, 1.0 - (phase - Math.floor(phase)));
+            highTime += DUTY_PATTERNS[duty][(int) phase & 7] * span;
+            phase = (phase + span) % 8.0;
+            remaining -= span;
+        }
+        return 1.0 - (highTime / steps) * volume / 7.5;
+    }
+
+    boolean dacEnabled() {
+        return (envelopeRegister & 0xF8) != 0;
+    }
+
     private void tickSweep() {
         sweepClockAccumulator += SWEEP_CLOCK_HZ / sampleRate;
         if (sweepClockAccumulator < 1.0) {
@@ -145,28 +167,6 @@ final class SquareChannel {
 
         envelopeClockAccumulator -= envelopePeriod;
         volume = EnvelopeStep.next(volume, envelopeRegister);
-    }
-
-    double render() {
-        if (!dacEnabled()) return 0.0;
-        if (!active) return 1.0; // Digital zero through an enabled DAC.
-
-        int duty = (dutyRegister >>> 6) & 0x03;
-        double steps = frequencyHertz() * 8.0 / sampleRate;
-        double remaining = steps;
-        double highTime = 0;
-        // Integrate every duty edge in this output interval rather than point sampling.
-        while (remaining > 0) {
-            double span = Math.min(remaining, 1.0 - (phase - Math.floor(phase)));
-            highTime += DUTY_PATTERNS[duty][(int) phase & 7] * span;
-            phase = (phase + span) % 8.0;
-            remaining -= span;
-        }
-        return 1.0 - (highTime / steps) * volume / 7.5;
-    }
-
-    boolean dacEnabled() {
-        return (envelopeRegister & 0xF8) != 0;
     }
 
     private void trigger() {

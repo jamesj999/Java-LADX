@@ -5,11 +5,6 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
 final class TitleIntroTileLoader {
-    private final Vram target;
-
-    TitleIntroTileLoader(Vram target) {
-        this.target = target;
-    }
 
     private static final int INTRO_3_TILES_BANK = GbcBanks.adjust(RomSymbols.Intro3Tiles.bank());
     private static final int INTRO_3_TILES_ADDR = RomSymbols.Intro3Tiles.address();
@@ -31,6 +26,11 @@ final class TitleIntroTileLoader {
     private static final int SAVE_MENU_TILES_BANK = RomSymbols.SaveMenuTiles.bank();
     private static final int SAVE_MENU_TILES_ADDR = RomSymbols.SaveMenuTiles.address();
     private static final int SAVE_MENU_TILES_COUNT = 0x50;
+    private final Vram target;
+
+    TitleIntroTileLoader(Vram target) {
+        this.target = target;
+    }
 
     public void loadTitleScreenTiles(Rom romData) {
         target.loadTilesFromROM(romData, TITLE_LOGO_TILES_BANK, TITLE_LOGO_TILES_ADDR, TITLE_LOGO_TILES_COUNT, 0x80);

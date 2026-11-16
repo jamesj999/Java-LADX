@@ -106,12 +106,12 @@ final class NoiseChannel {
         return sum / steps;
     }
 
-    private double digitalOutput() {
-        return 1.0 - ((lfsr & 1) == 0 ? volume / 7.5 : 0);
-    }
-
     boolean dacEnabled() {
         return (envelopeRegister & 0xF8) != 0;
+    }
+
+    private double digitalOutput() {
+        return 1.0 - ((lfsr & 1) == 0 ? volume / 7.5 : 0);
     }
 
     private void trigger() {

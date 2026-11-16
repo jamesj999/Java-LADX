@@ -10,6 +10,7 @@ import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** Owns retained intro/menu planes, snapshot extraction and direct immutable-sprite submission.  Hardware analogue: BG scanlines, VRAM uploads and intro/menu OBJ. */
 final class BackgroundLayers {
+    private static final int[][] REVEAL_MASKS = revealMasks();
     private final Node upload = new Node(0), background = new Node(1), objects = new Node(2);
     private IntroFrameSnapshot capturedIntro;
     private FileMenuFrameSnapshot capturedMenu;
@@ -22,7 +23,6 @@ final class BackgroundLayers {
     private byte[] uploadBytes;
     private List<IntroSprite> sprites;
     private int[] revealTiles;
-    private static final int[][] REVEAL_MASKS = revealMasks();
 
     void fill(List<RenderLayer> layers, GameFrameState state) {
         var menu = state.fileMenuFrame();

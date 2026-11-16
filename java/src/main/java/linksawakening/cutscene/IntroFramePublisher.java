@@ -24,15 +24,15 @@ import linksawakening.scene.BackgroundScene;
 
 /** Owns palette sources, delayed VBlank snapshots and immutable frame publication; reads only phase, video, water and actor components. */
 final class IntroFramePublisher {
+    // Identity sentinels represent VBlank data that has not been latched, not missing services.
+    private static final int[][] UNLATCHED_PALETTES = new int[0][];
+    private static final int[] UNLATCHED_MAP = new int[0];
+    private static final byte[] UNLATCHED_WAVE = new byte[0];
 
     private final IntroFrameSnapshot.Builder snapshotBuilder = new IntroFrameSnapshot.Builder();
     private final Function<String, BackgroundScene> backgroundProvider;
     private final int[] colorModifiers;
     private final IntroRomData.PaletteBlock dxFadeInPalette;
-    // Identity sentinels represent VBlank data that has not been latched, not missing services.
-    private static final int[][] UNLATCHED_PALETTES = new int[0][];
-    private static final int[] UNLATCHED_MAP = new int[0];
-    private static final byte[] UNLATCHED_WAVE = new byte[0];
     private int[][] fadeBg = UNLATCHED_PALETTES, fadeObj = UNLATCHED_PALETTES;
     private int[][] visibleBg = UNLATCHED_PALETTES, visibleObj = UNLATCHED_PALETTES;
     private byte[] visibleWave = UNLATCHED_WAVE;
@@ -55,7 +55,7 @@ final class IntroFramePublisher {
     private final IntroBeachActors actors;
     private final IntroSpriteComposer spriteComposer;
 
-    record PaletteSources(int[] colorModifiers, IntroRomData.PaletteBlock dxFadeInPalette) {}
+    private int paletteLightningCountdown;
 
     IntroFramePublisher(
             IntroRomData rom,
@@ -145,23 +145,6 @@ final class IntroFramePublisher {
                 .build();
     }
 
-    private String substate() {
-        return switch (phase.stage()) {
-            case SEA -> "SEA";
-            case LINK_FACE -> phase.linkFaceTimer() >= LINK_FACE_LIGHTNING_FRAME
-                    ? "LINK_FACE_LIGHTNING"
-                    : phase.linkFaceTimer() >= LINK_FACE_SCREAM_FRAME ? "LINK_FACE_SCREAM" : "LINK_FACE";
-            case SEA_FADE -> "SEA_FADE";
-            case BEACH_LOAD -> "BEACH_LOAD";
-            case BEACH_FADE -> "BEACH_FADE";
-            case BEACH -> "MARIN_STATE_" + actors.marinState();
-            case TITLE_REVEAL -> "TITLE_REVEAL";
-            case TITLE_WAIT -> "TITLE_WAIT";
-            case TITLE_DX -> "TITLE_DX";
-            case COMPLETE -> "STABLE_TITLE";
-        };
-    }
-
     List<IntroSprite> renderSprites(
             int shipX, int shipY, int seaFadeTimer, List<IntroSequence.Lightning> lightning, int clock) {
         List<IntroSprite> rendered = spriteComposer.begin();
@@ -187,44 +170,6 @@ final class IntroFramePublisher {
             spriteComposer.renderTitleSparkle(rendered, clock, phase.titleHoldFrame());
         }
         return List.copyOf(rendered);
-    }
-
-    private int[] lineScrollMap() {
-        if (video.beachScrollStoppedThisFrame()) {
-            int[] lines = new int[144];
-            Arrays.fill(lines, video.beachScrollX());
-            // The CGB handler's direct SCX write (01:774E) reaches the LCD on
-            // scanline 9; the preceding scanlines retain the first section's SCX.
-            Arrays.fill(lines, 0, 9, phase.topLineScroll());
-            return lines;
-        }
-        boolean sea = phase.stage() == Stage.SEA || phase.stage() == Stage.SEA_FADE;
-        boolean beach = phase.stage() == Stage.BEACH_FADE || (phase.stage() == Stage.BEACH && actors.marinState() < 4);
-        if (phase.stage() == Stage.TITLE_REVEAL || phase.stage() == Stage.TITLE_WAIT) {
-            int[] lines = new int[144];
-            Arrays.fill(lines, scrollX());
-            return lines;
-        }
-        if (!sea && !beach) return null;
-        int[] lines = new int[144];
-        for (int y = 0; y < 144; y++) {
-            int section = sea
-                    ? (y < 32 ? 0 : y < 48 ? 1 : y < 64 ? 2 : y < 96 - water.verticalWaveOffset() ? 3 : 4)
-                    : (y < 48 ? 0 : y < 86 ? 1 : y < 104 ? 2 : 3);
-            lines[y] =
-                    beach && y < 48 ? phase.topLineScroll() : (scrollX() + water.sectionScrollOffsets()[section]) & 255;
-        }
-        return lines;
-    }
-
-    private int[] lineScrollYMap() {
-        if (phase.stage() == Stage.TITLE_REVEAL || phase.stage() == Stage.TITLE_WAIT)
-            return rom.titleLineScroll(
-                    phase.titleEffectFrame() == 0 ? 16 : phase.titleEffectFrame() / 2, visibleScrollY);
-        if (phase.stage() != Stage.SEA && phase.stage() != Stage.SEA_FADE) return null;
-        int[] lines = new int[144];
-        for (int y = 64; y < 144; y++) lines[y] = water.verticalWaveOffset();
-        return lines;
     }
 
     void setScene(String sceneId) {
@@ -375,9 +320,64 @@ final class IntroFramePublisher {
         return value;
     }
 
-    private int paletteLightningCountdown;
-
     void paletteLightningCountdown(int value) {
         paletteLightningCountdown = value;
     }
+
+    private String substate() {
+        return switch (phase.stage()) {
+            case SEA -> "SEA";
+            case LINK_FACE -> phase.linkFaceTimer() >= LINK_FACE_LIGHTNING_FRAME
+                    ? "LINK_FACE_LIGHTNING"
+                    : phase.linkFaceTimer() >= LINK_FACE_SCREAM_FRAME ? "LINK_FACE_SCREAM" : "LINK_FACE";
+            case SEA_FADE -> "SEA_FADE";
+            case BEACH_LOAD -> "BEACH_LOAD";
+            case BEACH_FADE -> "BEACH_FADE";
+            case BEACH -> "MARIN_STATE_" + actors.marinState();
+            case TITLE_REVEAL -> "TITLE_REVEAL";
+            case TITLE_WAIT -> "TITLE_WAIT";
+            case TITLE_DX -> "TITLE_DX";
+            case COMPLETE -> "STABLE_TITLE";
+        };
+    }
+
+    private int[] lineScrollMap() {
+        if (video.beachScrollStoppedThisFrame()) {
+            int[] lines = new int[144];
+            Arrays.fill(lines, video.beachScrollX());
+            // The CGB handler's direct SCX write (01:774E) reaches the LCD on
+            // scanline 9; the preceding scanlines retain the first section's SCX.
+            Arrays.fill(lines, 0, 9, phase.topLineScroll());
+            return lines;
+        }
+        boolean sea = phase.stage() == Stage.SEA || phase.stage() == Stage.SEA_FADE;
+        boolean beach = phase.stage() == Stage.BEACH_FADE || (phase.stage() == Stage.BEACH && actors.marinState() < 4);
+        if (phase.stage() == Stage.TITLE_REVEAL || phase.stage() == Stage.TITLE_WAIT) {
+            int[] lines = new int[144];
+            Arrays.fill(lines, scrollX());
+            return lines;
+        }
+        if (!sea && !beach) return null;
+        int[] lines = new int[144];
+        for (int y = 0; y < 144; y++) {
+            int section = sea
+                    ? (y < 32 ? 0 : y < 48 ? 1 : y < 64 ? 2 : y < 96 - water.verticalWaveOffset() ? 3 : 4)
+                    : (y < 48 ? 0 : y < 86 ? 1 : y < 104 ? 2 : 3);
+            lines[y] =
+                    beach && y < 48 ? phase.topLineScroll() : (scrollX() + water.sectionScrollOffsets()[section]) & 255;
+        }
+        return lines;
+    }
+
+    private int[] lineScrollYMap() {
+        if (phase.stage() == Stage.TITLE_REVEAL || phase.stage() == Stage.TITLE_WAIT)
+            return rom.titleLineScroll(
+                    phase.titleEffectFrame() == 0 ? 16 : phase.titleEffectFrame() / 2, visibleScrollY);
+        if (phase.stage() != Stage.SEA && phase.stage() != Stage.SEA_FADE) return null;
+        int[] lines = new int[144];
+        for (int y = 64; y < 144; y++) lines[y] = water.verticalWaveOffset();
+        return lines;
+    }
+
+    record PaletteSources(int[] colorModifiers, IntroRomData.PaletteBlock dxFadeInPalette) {}
 }

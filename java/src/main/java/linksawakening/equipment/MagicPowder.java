@@ -8,21 +8,6 @@ import linksawakening.state.PlayerState;
 
 /** Port of {@code UseMagicPowder} and {@code SprinkleMagicPowder}. */
 public final class MagicPowder implements EquipmentItem {
-    /** Contract for sprinkle target. */
-    public interface SprinkleTarget {
-        /** Allocates the ROM's type-$08 sprinkle entity. */
-        boolean sprinkleMagicPowder();
-
-        /** Writes the ROM's generic item attack-step countdown ($0E). */
-        void startMagicPowderAttackStep();
-
-        /** Mirrors the shared Link attack-step gate before UseMagicPowder. */
-        boolean magicPowderAttackStepActive();
-
-        int linkPositionZ();
-
-        void presentToadstool();
-    }
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
@@ -83,5 +68,20 @@ public final class MagicPowder implements EquipmentItem {
     @Override
     public boolean locksFacing() {
         return target.magicPowderAttackStepActive();
+    }
+    /** Contract for sprinkle target. */
+    public interface SprinkleTarget {
+        /** Allocates the ROM's type-$08 sprinkle entity. */
+        boolean sprinkleMagicPowder();
+
+        /** Writes the ROM's generic item attack-step countdown ($0E). */
+        void startMagicPowderAttackStep();
+
+        /** Mirrors the shared Link attack-step gate before UseMagicPowder. */
+        boolean magicPowderAttackStepActive();
+
+        int linkPositionZ();
+
+        void presentToadstool();
     }
 }

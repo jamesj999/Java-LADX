@@ -158,6 +158,24 @@ public final class EntitySpriteCatalog {
                 .withDeathSpriteDefinitions(death, powerDeath);
     }
 
+    public int[][] loadObjectPalettes() {
+        return loadObjectPalettes(false);
+    }
+
+    public int[][] loadObjectPalettes(boolean includeEaglesTowerPalette) {
+        int paletteCount = includeEaglesTowerPalette ? EAGLES_TOWER_OBJECT_PALETTE_COUNT : OBJECT_PALETTE_COUNT;
+        int[][] palettes = new int[paletteCount][4];
+        int offset = checkedOffset(PALETTE_BANK, OBJECT_PALETTES_ADDRESS, paletteCount * 4 * 2, "object palette table");
+        for (int palette = 0; palette < paletteCount; palette++) {
+            for (int color = 0; color < 4; color++) {
+                int low = romData.u8(RomAddress.fromOffset(offset++));
+                int high = romData.u8(RomAddress.fromOffset(offset++));
+                palettes[palette][color] = RomBank.decodeRgb555(low | (high << 8));
+            }
+        }
+        return palettes;
+    }
+
     private static int applyRoomContextOverride(
             EntityRoomLoader.RoomTable roomTable, int roomId, int groupIndex, int mapId, byte[] overworldRoomStatus) {
         if (roomTable != EntityRoomLoader.RoomTable.OVERWORLD) {
@@ -179,24 +197,6 @@ public final class EntitySpriteCatalog {
     private static boolean roomStatus(byte[] overworldRoomStatus, int roomId) {
         return roomId < overworldRoomStatus.length
                 && (Byte.toUnsignedInt(overworldRoomStatus[roomId]) & OW_ROOM_STATUS_OWL_TALKED) != 0;
-    }
-
-    public int[][] loadObjectPalettes() {
-        return loadObjectPalettes(false);
-    }
-
-    public int[][] loadObjectPalettes(boolean includeEaglesTowerPalette) {
-        int paletteCount = includeEaglesTowerPalette ? EAGLES_TOWER_OBJECT_PALETTE_COUNT : OBJECT_PALETTE_COUNT;
-        int[][] palettes = new int[paletteCount][4];
-        int offset = checkedOffset(PALETTE_BANK, OBJECT_PALETTES_ADDRESS, paletteCount * 4 * 2, "object palette table");
-        for (int palette = 0; palette < paletteCount; palette++) {
-            for (int color = 0; color < 4; color++) {
-                int low = romData.u8(RomAddress.fromOffset(offset++));
-                int high = romData.u8(RomAddress.fromOffset(offset++));
-                palettes[palette][color] = RomBank.decodeRgb555(low | (high << 8));
-            }
-        }
-        return palettes;
     }
 
     private int checkedOffset(int bank, int address, int length, String description) {

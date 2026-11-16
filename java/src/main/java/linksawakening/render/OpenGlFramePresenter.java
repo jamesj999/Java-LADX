@@ -121,6 +121,10 @@ public final class OpenGlFramePresenter {
         glfwSwapBuffers(window);
     }
 
+    public void cleanup() {
+        resources.close();
+    }
+
     private static boolean updateFramebufferViewport(long window) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             var width = stack.mallocInt(1);
@@ -129,10 +133,6 @@ public final class OpenGlFramePresenter {
             GL11.glViewport(0, 0, width.get(0), height.get(0));
             return width.get(0) > 0 && height.get(0) > 0;
         }
-    }
-
-    public void cleanup() {
-        resources.close();
     }
 
     private void uploadTexture(byte[] indexedDisplayBuffer) {
@@ -165,6 +165,34 @@ public final class OpenGlFramePresenter {
         GlShader(ShaderApi api) {
             this.api = api;
             createShaders();
+        }
+
+        public void use() {
+            GL20.glUseProgram(program);
+        }
+
+        public void setUniform1i(String name, int value) {
+            int loc = GL20.glGetUniformLocation(program, name);
+            GL20.glUniform1i(loc, value);
+        }
+
+        public void setUniform1fv(String name, float[] values) {
+            int loc = GL20.glGetUniformLocation(program, name);
+            GL20.glUniform1fv(loc, values);
+        }
+
+        public int getPositionAttrib() {
+            return GL20.glGetAttribLocation(program, "aPosition");
+        }
+
+        public int getTexCoordAttrib() {
+            return GL20.glGetAttribLocation(program, "aTexCoord");
+        }
+
+        public void cleanup() {
+            int owned = program;
+            program = 0;
+            if (owned != 0) api.deleteProgram(owned);
         }
 
         private void createShaders() {
@@ -221,34 +249,6 @@ public final class OpenGlFramePresenter {
             if (!api.compiled(shader))
                 throw new IllegalStateException(stage + " shader compile error: " + api.shaderLog(shader));
             return shader;
-        }
-
-        public void use() {
-            GL20.glUseProgram(program);
-        }
-
-        public void setUniform1i(String name, int value) {
-            int loc = GL20.glGetUniformLocation(program, name);
-            GL20.glUniform1i(loc, value);
-        }
-
-        public void setUniform1fv(String name, float[] values) {
-            int loc = GL20.glGetUniformLocation(program, name);
-            GL20.glUniform1fv(loc, values);
-        }
-
-        public int getPositionAttrib() {
-            return GL20.glGetAttribLocation(program, "aPosition");
-        }
-
-        public int getTexCoordAttrib() {
-            return GL20.glGetAttribLocation(program, "aTexCoord");
-        }
-
-        public void cleanup() {
-            int owned = program;
-            program = 0;
-            if (owned != 0) api.deleteProgram(owned);
         }
     }
 
@@ -344,18 +344,6 @@ public final class OpenGlFramePresenter {
         private final ArrayDeque<Runnable> actions = new ArrayDeque<>();
         private boolean closed;
 
-        void add(Runnable action) {
-            actions.addFirst(action);
-        }
-
-        void closeAfterFailure(Throwable failure) {
-            try {
-                close();
-            } catch (RuntimeException | Error cleanup) {
-                if (cleanup != failure) failure.addSuppressed(cleanup);
-            }
-        }
-
         @Override
         public void close() {
             if (closed) return;
@@ -370,6 +358,18 @@ public final class OpenGlFramePresenter {
                 }
             if (first instanceof Error error) throw error;
             if (first != null) throw (RuntimeException) first;
+        }
+
+        void add(Runnable action) {
+            actions.addFirst(action);
+        }
+
+        void closeAfterFailure(Throwable failure) {
+            try {
+                close();
+            } catch (RuntimeException | Error cleanup) {
+                if (cleanup != failure) failure.addSuppressed(cleanup);
+            }
         }
     }
 }

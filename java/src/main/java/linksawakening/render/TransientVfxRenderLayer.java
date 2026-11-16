@@ -15,10 +15,15 @@ final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private int[] palette;
     private int frameCounter;
 
+    private VfxPoseCache poses;
+
     /** Retained frame adapter; configure supplies its borrowed inputs before submission. */
     TransientVfxRenderLayer() {}
 
-    private VfxPoseCache poses;
+    @Override
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        submitEffects(RenderContext.indexed(gpu, frame));
+    }
 
     void configure(
             TransientVfxSystem system,
@@ -57,10 +62,5 @@ final class TransientVfxRenderLayer implements HardwareRenderLayer {
                         palette);
             }
         }
-    }
-
-    @Override
-    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        submitEffects(RenderContext.indexed(gpu, frame));
     }
 }

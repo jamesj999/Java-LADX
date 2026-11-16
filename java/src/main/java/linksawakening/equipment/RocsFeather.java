@@ -8,10 +8,6 @@ import java.util.Objects;
  * and the item asks Link to start the jump if his current ground state allows it.
  */
 public final class RocsFeather implements EquipmentItem {
-    /** Contract for jump target. */
-    public interface JumpTarget {
-        void useRocsFeather();
-    }
 
     private final JumpTarget target;
 
@@ -22,5 +18,9 @@ public final class RocsFeather implements EquipmentItem {
     @Override
     public void onPress() {
         target.useRocsFeather();
+    }
+    /** Contract for jump target. */
+    public interface JumpTarget {
+        void useRocsFeather();
     }
 }

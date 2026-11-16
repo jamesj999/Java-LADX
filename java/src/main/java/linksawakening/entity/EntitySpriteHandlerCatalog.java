@@ -132,6 +132,19 @@ public final class EntitySpriteHandlerCatalog {
     public static final int LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE = 14;
     public static final int ENTITY_INSTRUMENT_OF_THE_SIRENS = 0x39;
 
+    private final EntitySpriteDecoder decoder;
+    private final EntitySpriteRegistrationData registrations = EntitySpriteRegistrationData.instance();
+    private final BossSpriteComposer bosses;
+    private final EntitySpriteStates states;
+    private final EntityEffectSprites effects;
+
+    public EntitySpriteHandlerCatalog(Rom romData) {
+        decoder = new EntitySpriteDecoder(romData);
+        bosses = new BossSpriteComposer(decoder);
+        states = new EntitySpriteStates(decoder, registrations);
+        effects = new EntityEffectSprites(decoder);
+    }
+
     /** Selects the runtime-dependent display list used by entity $31. */
     public EntitySpriteDefinition forSwordShieldPickup(boolean beachSword) {
         return states.forSwordShieldPickup(beachSword);
@@ -331,19 +344,6 @@ public final class EntitySpriteHandlerCatalog {
     public EntitySpriteDefinition decodeRectangle(
             int entityType, int bank, int address, int variantCount, int spriteCount, int initialVariant) {
         return decoder.decodeRectangle(entityType, bank, address, variantCount, spriteCount, initialVariant);
-    }
-
-    private final EntitySpriteDecoder decoder;
-    private final EntitySpriteRegistrationData registrations = EntitySpriteRegistrationData.instance();
-    private final BossSpriteComposer bosses;
-    private final EntitySpriteStates states;
-    private final EntityEffectSprites effects;
-
-    public EntitySpriteHandlerCatalog(Rom romData) {
-        decoder = new EntitySpriteDecoder(romData);
-        bosses = new BossSpriteComposer(decoder);
-        states = new EntitySpriteStates(decoder, registrations);
-        effects = new EntityEffectSprites(decoder);
     }
 
     public EntitySpriteDefinition forEntityType(int entityType, EntityRoomLoader.RoomTable roomTable) {

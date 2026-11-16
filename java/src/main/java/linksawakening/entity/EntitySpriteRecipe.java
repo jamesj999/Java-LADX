@@ -12,35 +12,6 @@ record EntitySpriteRecipe(
     /** A registration family did not recognize this entity; continue to the next family. */
     static final EntitySpriteRecipe NO_MATCH = special(Kind.UNSUPPORTED, -1);
 
-    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
-    @SuppressWarnings("ReferenceEquality")
-    boolean matched() {
-        return this != NO_MATCH;
-    }
-
-    enum Kind {
-        PAIR,
-        SINGLE,
-        RECTANGLE,
-        UNSUPPORTED,
-        FLOATING_ITEM,
-        COLOR_SHELL,
-        ROCK,
-        OWL,
-        URCHIN,
-        FISH,
-        HIDING_ZOL,
-        MOBLIN_SWORD,
-        IRON_MASK,
-        POKEY,
-        DUNGEON_WARP,
-        SLIME_EYE,
-        MOLDORM,
-        ROLLING_BAR,
-        HOOKSHOT_CHAIN,
-        OWL_STATUE
-    }
-
     static EntitySpriteRecipe pair(int entity, int bank, int address, int variants, int initial) {
         return new EntitySpriteRecipe(
                 Kind.PAIR,
@@ -102,5 +73,34 @@ record EntitySpriteRecipe(
                 2,
                 0,
                 EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+    }
+
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
+    boolean matched() {
+        return this != NO_MATCH;
+    }
+
+    enum Kind {
+        PAIR,
+        SINGLE,
+        RECTANGLE,
+        UNSUPPORTED,
+        FLOATING_ITEM,
+        COLOR_SHELL,
+        ROCK,
+        OWL,
+        URCHIN,
+        FISH,
+        HIDING_ZOL,
+        MOBLIN_SWORD,
+        IRON_MASK,
+        POKEY,
+        DUNGEON_WARP,
+        SLIME_EYE,
+        MOLDORM,
+        ROLLING_BAR,
+        HOOKSHOT_CHAIN,
+        OWL_STATUE
     }
 }

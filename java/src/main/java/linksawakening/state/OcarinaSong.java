@@ -12,14 +12,6 @@ public enum OcarinaSong {
         this.romValue = romValue;
     }
 
-    public int selectionIndex() {
-        return switch (this) {
-            case BALLAD_OF_THE_WIND_FISH -> 0;
-            case MANBO_MAMBO -> 1;
-            case FROGS_SONG_OF_THE_SOUL -> 2;
-        };
-    }
-
     public static OcarinaSong fromSelectionIndex(int index) {
         return switch (index) {
             case 0 -> BALLAD_OF_THE_WIND_FISH;
@@ -29,10 +21,6 @@ public enum OcarinaSong {
         };
     }
 
-    public int romValue() {
-        return romValue;
-    }
-
     public static OcarinaSong fromRom(int value) {
         return switch (value) {
             case 1 -> FROGS_SONG_OF_THE_SOUL;
@@ -40,6 +28,18 @@ public enum OcarinaSong {
             case 4 -> BALLAD_OF_THE_WIND_FISH;
             default -> throw new IllegalArgumentException("Unknown OcarinaSong ROM value: " + value);
         };
+    }
+
+    public int selectionIndex() {
+        return switch (this) {
+            case BALLAD_OF_THE_WIND_FISH -> 0;
+            case MANBO_MAMBO -> 1;
+            case FROGS_SONG_OF_THE_SOUL -> 2;
+        };
+    }
+
+    public int romValue() {
+        return romValue;
     }
 
     /** Tests this song bit without altering other flag bits. */

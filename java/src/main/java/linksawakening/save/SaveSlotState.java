@@ -248,10 +248,6 @@ public record SaveSlotState(
         return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_TARIN_FLAG_OFFSET]);
     }
 
-    private byte[] roomStatus(int offset, int length) {
-        return Arrays.copyOfRange(rawSlot, offset, offset + length);
-    }
-
     static int[] copyExact(int[] values, int expectedLength, String label) {
         Objects.requireNonNull(values, label);
         if (values.length != expectedLength) {
@@ -259,6 +255,10 @@ public record SaveSlotState(
                     label + " must contain " + expectedLength + " bytes, got " + values.length);
         }
         return values.clone();
+    }
+
+    private byte[] roomStatus(int offset, int length) {
+        return Arrays.copyOfRange(rawSlot, offset, offset + length);
     }
 
     private static byte[] copyExact(byte[] values, int expectedLength, String label) {
