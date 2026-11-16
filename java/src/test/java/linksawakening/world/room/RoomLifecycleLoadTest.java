@@ -14,7 +14,7 @@ class RoomLifecycleLoadTest {
     void reloadOwnsFreshRoomStateWhileSourceGroundRegistersSurvive() {
         var session = newSession();
         session.rooms().loadInitialOverworld(0xA2);
-        var first = session.loadedRoomOrNull();
+        var first = RoomSessionInspection.loadedRoom(session);
         first.contents.puzzles.indoorPotPullFrames = 7;
         first.contents.overrides.bombedBlockTileOverrides.add(1);
         RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter = 17;
@@ -22,7 +22,7 @@ class RoomLifecycleLoadTest {
         RoomSessionInspection.component(session, RoomTerrainState.class).switchBlocksState = 2;
         RoomSessionInspection.component(session, RoomPuzzleState.class).dungeonTitleMessageCountdown = 77;
         session.rooms().loadOverworld(0xA2);
-        var next = session.loadedRoomOrNull();
+        var next = RoomSessionInspection.loadedRoom(session);
         assertNotSame(first, next);
         assertNotSame(first.contents.puzzles, next.contents.puzzles);
         assertNotSame(first.contents.overrides, next.contents.overrides);
@@ -63,7 +63,7 @@ class RoomLifecycleLoadTest {
                         .objectIdAtPoint(0, 0));
         assertEquals(
                 active.roomId(),
-                session.loadedRoomOrNull()
+                RoomSessionInspection.loadedRoom(session)
                         .entities
                         .inspection()
                         .view()
@@ -75,14 +75,14 @@ class RoomLifecycleLoadTest {
     void failedRoomAcquisitionStillClearsThePreviousTransientStateBeforeTheError() {
         var session = newSession();
         session.rooms().loadInitialOverworld(0xA2);
-        var previous = session.loadedRoomOrNull();
+        var previous = RoomSessionInspection.loadedRoom(session);
         previous.contents.puzzles.pushedBlockMotionFrames = 7;
         previous.contents.overrides.bombedBlockTileOverrides.add(1);
         long serial =
                 RoomSessionInspection.component(session, RoomSessionViews.class).roomLoadSerial();
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalArgumentException.class, () -> session.rooms().loadOverworld(0x100));
-        org.junit.jupiter.api.Assertions.assertSame(previous, session.loadedRoomOrNull());
+        org.junit.jupiter.api.Assertions.assertSame(previous, RoomSessionInspection.loadedRoom(session));
         assertEquals(0, previous.contents.puzzles.pushedBlockMotionFrames);
         org.junit.jupiter.api.Assertions.assertTrue(previous.contents.overrides.bombedBlockTileOverrides.isEmpty());
         assertEquals(

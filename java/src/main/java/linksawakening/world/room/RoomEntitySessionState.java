@@ -6,6 +6,10 @@ import linksawakening.world.entity.EnemyProjectileCollision;
 
 /** Session-level entity output queues, drop registers and per-frame gates; no loaded-room alias. */
 final class RoomEntitySessionState {
+    void setColorShellSoundSink(GameplaySoundSink sink) {
+        colorShellSoundSink = sink == null ? GameplaySoundSink.none() : sink;
+    }
+
     void observeMotionState(int state) {
         currentLinkMotionState = state & 0xFF;
     }

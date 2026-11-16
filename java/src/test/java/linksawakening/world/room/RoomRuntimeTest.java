@@ -13,13 +13,13 @@ class RoomRuntimeTest {
     void aLoadedGenerationOwnsItsRoomRuntimeAndFreshCollisionScratch() {
         var session = RoomRenderAllocationTest.room();
         var room = session.rooms().activeRoomOrNull();
-        var entities = session.loadedRoomOrNull().entities;
+        var entities = RoomSessionInspection.loadedRoom(session).entities;
         var first = new RoomRuntime(
-                session.loadedRoomOrNull().contents,
+                RoomSessionInspection.loadedRoom(session).contents,
                 entities,
                 RoomSessionInspection.component(session, RoomRuntime.Services.class));
         var replacement = new RoomRuntime(
-                session.loadedRoomOrNull().contents,
+                RoomSessionInspection.loadedRoom(session).contents,
                 entities,
                 RoomSessionInspection.component(session, RoomRuntime.Services.class));
         assertSame(room, first.room);
@@ -36,12 +36,12 @@ class RoomRuntimeTest {
                 NullPointerException.class,
                 () -> new RoomRuntime(
                         null,
-                        session.loadedRoomOrNull().entities,
+                        RoomSessionInspection.loadedRoom(session).entities,
                         RoomSessionInspection.component(session, RoomRuntime.Services.class)));
         assertThrows(
                 NullPointerException.class,
                 () -> new RoomRuntime(
-                        session.loadedRoomOrNull().contents,
+                        RoomSessionInspection.loadedRoom(session).contents,
                         null,
                         RoomSessionInspection.component(session, RoomRuntime.Services.class)));
     }
@@ -107,11 +107,11 @@ class RoomRuntimeTest {
     void installingAReplacementKeepsRetainedRoleObjectsWorking() {
         var session = RoomRenderAllocationTest.room();
         var role = session.entities();
-        var first = session.loadedRoomOrNull();
+        var first = RoomSessionInspection.loadedRoom(session);
         var replacement = new RoomRuntime(
                 first.contents, first.entities, RoomSessionInspection.component(session, RoomRuntime.Services.class));
         session.installRoom(replacement);
-        assertSame(replacement, session.loadedRoomOrNull());
+        assertSame(replacement, RoomSessionInspection.loadedRoom(session));
         assertSame(role, session.entities());
         org.junit.jupiter.api.Assertions.assertTrue(session.hasRoom());
     }

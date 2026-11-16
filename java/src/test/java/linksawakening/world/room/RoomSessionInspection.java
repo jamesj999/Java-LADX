@@ -9,6 +9,10 @@ import java.util.IdentityHashMap;
 final class RoomSessionInspection {
     private RoomSessionInspection() {}
 
+    static RoomRuntime loadedRoom(RoomSession session) {
+        return component(session, LoadedRoomHandle.class).currentOrNull();
+    }
+
     static <T> T component(RoomSession session, Class<T> type) {
         var pending = new ArrayDeque<Object>();
         var visited = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());

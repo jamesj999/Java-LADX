@@ -1,7 +1,5 @@
 package linksawakening.world.room;
 
-import linksawakening.gameplay.GameplaySoundSink;
-
 /** Read-only room queries; borrowed projections follow room replacement and owned snapshots preserve history. */
 final class RoomSessionViews {
     private final Dependencies dependencies;
@@ -56,10 +54,6 @@ final class RoomSessionViews {
 
     void restoreDungeonProgressFlags(byte[] flags) {
         dependencies.roomState().restoreDungeonProgressFlags(flags);
-    }
-
-    void setColorShellSoundSink(GameplaySoundSink soundSink) {
-        dependencies.entityFrame().colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
     }
 
     int objectAtRoomLocation(ActiveRoom room, int location) {

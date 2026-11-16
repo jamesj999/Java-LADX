@@ -88,10 +88,6 @@ public final class RoomSession {
         return frameInputs.tick(inputs);
     }
 
-    RoomRuntime loadedRoomOrNull() {
-        return loadedRooms.currentOrNull();
-    }
-
     void installRoom(RoomRuntime room) {
         loadedRooms.install(room);
         dungeonView.setRoomMap(room.room.mapId());

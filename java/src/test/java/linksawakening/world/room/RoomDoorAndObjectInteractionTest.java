@@ -759,12 +759,12 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(
                 0xDF,
                 RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents));
+                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents));
 
         assertEquals(0, session.doors().tickTailCaveKeyholeSequence());
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
                 > 0x18) {
             session.doors().tickTailCaveKeyholeSequence();
         }
@@ -774,7 +774,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0x0C, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft]);
         assertEquals(0x1F, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
                 > 0x08) {
             session.doors().tickTailCaveKeyholeSequence();
         }
@@ -857,16 +857,16 @@ final class RoomDoorAndObjectInteractionTest {
                 RoomSessionInspection.component(session, RoomEntityBridge.class).consumePendingMusicTrack());
 
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
                 > 0x0A) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         assertEquals(
                 0x50,
                 RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .nextWorldMusicTrackCountdownForTest(session.loadedRoomOrNull().contents));
+                        .nextWorldMusicTrackCountdownForTest(RoomSessionInspection.loadedRoom(session).contents));
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
+                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
                 > 1) {
             session.doors().tickTailCaveKeyholeSequence();
         }
@@ -877,7 +877,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertFalse(session.doors().tailCaveKeyholeSequenceActive());
 
         int remainingMusicFrames = RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                .nextWorldMusicTrackCountdownForTest(session.loadedRoomOrNull().contents);
+                .nextWorldMusicTrackCountdownForTest(RoomSessionInspection.loadedRoom(session).contents);
         for (int frame = 1; frame < remainingMusicFrames; frame++) {
             session.doors().tickTailCaveKeyholeSequence();
             assertEquals(
@@ -1179,7 +1179,7 @@ final class RoomDoorAndObjectInteractionTest {
         fillActiveObjects(session, 0x0E); // Overworld deep-water physics $07.
         EntityBackgroundCollisionResult water = RoomSessionInspection.component(session, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        session.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(session),
                         octorok,
                         EntityBackgroundCollisionResult.RIGHT,
                         octorok.x(),
@@ -1191,7 +1191,7 @@ final class RoomDoorAndObjectInteractionTest {
         fillActiveObjects(session, 0x00); // Overworld solid physics $01.
         EntityBackgroundCollisionResult solid = RoomSessionInspection.component(session, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        session.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(session),
                         octorok,
                         EntityBackgroundCollisionResult.RIGHT,
                         octorok.x(),
@@ -1216,7 +1216,7 @@ final class RoomDoorAndObjectInteractionTest {
         EntityBackgroundCollisionResult indoorResult = RoomSessionInspection.component(
                         indoor, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        indoor.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(indoor),
                         indoorEntity,
                         EntityBackgroundCollisionResult.RIGHT,
                         indoorEntity.x(),
@@ -1237,7 +1237,7 @@ final class RoomDoorAndObjectInteractionTest {
 
         EntityBackgroundCollisionResult evenFrame = RoomSessionInspection.component(outdoor, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        outdoor.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(outdoor),
                         outdoorEntity,
                         EntityBackgroundCollisionResult.RIGHT,
                         outdoorEntity.x(),
@@ -1248,7 +1248,7 @@ final class RoomDoorAndObjectInteractionTest {
 
         EntityBackgroundCollisionResult oddFrame = RoomSessionInspection.component(outdoor, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        outdoor.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(outdoor),
                         outdoorEntity,
                         EntityBackgroundCollisionResult.RIGHT,
                         outdoorEntity.x(),

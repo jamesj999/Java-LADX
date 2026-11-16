@@ -89,7 +89,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
         return loaded == null ? List.of() : loaded.entities.consumePendingLinkAttackClearRequests();
     }
 
-    void updateSetEnemyDropPlayerState(int maxHearts, int health, boolean power) {
+    void updateEnemyDropPlayerState(int maxHearts, int health, boolean power) {
         setEnemyDropPlayerState(maxHearts, health, power);
         configureEnemyDropRuntime();
     }

@@ -25,7 +25,7 @@ import linksawakening.world.transition.Warp;
 final class RoomLoadCoordinator implements RoomRooms {
     private final LoadedRoomHandle rooms;
 
-    RoomRuntime acquireWarp(Warp warp) {
+    RoomRuntime loadWarpGeneration(Warp warp) {
         RoomRuntime previous = rooms.currentOrNull();
         // GameplayWorldLoadRoomHandler ($01:442B) clears $C000..$D2FF,
         // including the recent-room ring and transient entity-clear masks.
@@ -66,7 +66,7 @@ final class RoomLoadCoordinator implements RoomRooms {
                 dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
                 dependencies.location().currentOverworldTilesetId = RoomSessionRules.W_TILESET_NO_UPDATE;
             }
-            loaded = acquireLoadOverworld(warp.destRoom());
+            loaded = loadOverworldGeneration(warp.destRoom());
             loadRoomSpecificTilesIfNeeded(warp.destRoom());
         } else {
             loaded = loadIndoor(previousPalettes(), warp.destMap(), warp.destRoom(), warp.category());
@@ -111,12 +111,12 @@ final class RoomLoadCoordinator implements RoomRooms {
 
     @Override
     public void loadOverworld(int room) {
-        acquireLoadOverworld(room);
+        loadOverworldGeneration(room);
     }
 
     @Override
     public void loadInitialOverworld(int room) {
-        acquireLoadInitialOverworld(room);
+        loadInitialOverworldGeneration(room);
     }
 
     @Override
@@ -209,17 +209,17 @@ final class RoomLoadCoordinator implements RoomRooms {
         this.dependencies = dependencies;
     }
 
-    RoomRuntime acquireLoadInitialOverworld(int roomId) {
+    RoomRuntime loadInitialOverworldGeneration(int roomId) {
         dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
         this.loadRoomSpecificTilesIfNeeded(roomId);
-        return this.acquireLoadOverworld(roomId);
+        return this.loadOverworldGeneration(roomId);
     }
 
-    RoomRuntime acquireLoadOverworld(int roomId) {
-        return acquireLoadOverworld(roomId, false);
+    RoomRuntime loadOverworldGeneration(int roomId) {
+        return loadOverworldGeneration(roomId, false);
     }
 
-    RoomRuntime acquireLoadOverworld(int roomId, boolean scrolling) {
+    RoomRuntime loadOverworldGeneration(int roomId, boolean scrolling) {
         musicSelectionIsScroll = scrolling;
         dependencies.location().roomLoadSerial++;
         dependencies.location().indoorMapPosition = -1;

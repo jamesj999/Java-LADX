@@ -14,11 +14,11 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 
 public final class RewardOutputs {
     private final Dependencies dependencies;
-    private final RoomEntityOutputSource session;
+    private final RoomEntityOutputSource source;
 
-    RewardOutputs(Dependencies dependencies, RoomEntityOutputSource session) {
+    RewardOutputs(Dependencies dependencies, RoomEntityOutputSource source) {
         this.dependencies = dependencies;
-        this.session = java.util.Objects.requireNonNull(session);
+        this.source = java.util.Objects.requireNonNull(source);
     }
 
     public List<ChestRewardEvent> consumeChestRewardEvents() {
@@ -34,7 +34,7 @@ public final class RewardOutputs {
     }
 
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
-        return session.consumeHeartPieceUpdates();
+        return source.consumeHeartPieceUpdates();
     }
 
     public List<HeartContainerRewardEvent> consumeHeartContainerRewards() {

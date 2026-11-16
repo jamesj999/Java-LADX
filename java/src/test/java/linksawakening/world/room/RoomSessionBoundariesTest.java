@@ -176,7 +176,7 @@ final class RoomSessionBoundariesTest {
         RoomDebugFixture.of(session).setEntityIgnoreHitsCountdownForTest(entity.slot(), 1);
         assertFalse(RoomSessionInspection.component(session, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        session.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(session),
                         entity,
                         EntityBackgroundCollisionResult.RIGHT,
                         entity.x(),
@@ -186,7 +186,7 @@ final class RoomSessionBoundariesTest {
         RoomDebugFixture.of(session).setEntityIgnoreHitsCountdownForTest(entity.slot(), 0);
         assertTrue(RoomSessionInspection.component(session, RoomCollisionQueries.class)
                 .entityBackgroundCollisionResultForTest(
-                        session.loadedRoomOrNull(),
+                        RoomSessionInspection.loadedRoom(session),
                         entity,
                         EntityBackgroundCollisionResult.RIGHT,
                         entity.x(),

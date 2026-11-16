@@ -36,7 +36,7 @@ final class RoomSessionContext {
         RoomRoleViews roles = new RoomRoleViews(
                 c.entityBridge(),
                 new RoomEntityControl(new RoomEntityControl.Dependencies(
-                        c.entityBridge(), c.entityInputs(), c.followers(), c.roomSessionViews())),
+                        c.entityBridge(), c.entityInputs(), c.followers(), c.entityFrame())),
                 c.roomLoadCoordinator(),
                 c.roomState(),
                 new RoomProgression(
@@ -50,8 +50,7 @@ final class RoomSessionContext {
                 c.roomTransitionController(),
                 c.roomPlayerItemActions(),
                 c.roomStoryState(),
-                new RoomFrameInputApplier(
-                        c.entityInputs(), c.entityBridge(), c.entityFrame(), roles.entityState(), c.roomStoryState()),
+                new RoomFrameInputApplier(c.entityInputs(), c.entityBridge(), c.entityFrame(), c.roomStoryState()),
                 new EntityFrameResults(
                         new LinkOutputs(c.linkOutputsDependencies(), c.entityBridge()),
                         new RewardOutputs(c.rewardOutputsDependencies(), c.entityBridge()),

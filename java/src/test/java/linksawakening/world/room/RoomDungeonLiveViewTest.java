@@ -51,9 +51,9 @@ class RoomDungeonLiveViewTest {
         session.installRoom(new RoomRuntime(
                 new RoomContents(
                         room,
-                        session.loadedRoomOrNull().contents.puzzles,
-                        session.loadedRoomOrNull().contents.overrides),
-                session.loadedRoomOrNull().entities,
+                        RoomSessionInspection.loadedRoom(session).contents.puzzles,
+                        RoomSessionInspection.loadedRoom(session).contents.overrides),
+                RoomSessionInspection.loadedRoom(session).entities,
                 RoomSessionInspection.component(session, RoomRuntime.Services.class)));
     }
 }

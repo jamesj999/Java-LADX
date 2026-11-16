@@ -367,7 +367,7 @@ final class GameplayRouteScenario {
                 route.playerState.inventory().itemA());
         route.session.entityState().setToadstoolPlayerState(true, 0);
         RoomSessionInspection.component(route.session, RoomEntityInputs.class)
-                .updateSetEntityInventorySlots(
+                .updateEntityInventorySlots(
                         route.playerState.inventory().itemA(),
                         route.playerState.inventory().itemB());
         route.session.entityState().setEntityActionButtonsHeld(true, false);
@@ -450,7 +450,7 @@ final class GameplayRouteScenario {
                 .anyMatch(entity -> entity.type() == 0x3F));
 
         RoomSessionInspection.component(route.session, RoomEntityInputs.class)
-                .updateSetEntityInventorySlots(
+                .updateEntityInventorySlots(
                         route.playerState.inventory().itemA(),
                         route.playerState.inventory().itemB());
         route.session
@@ -575,7 +575,7 @@ final class GameplayRouteScenario {
         assertEquals(
                 0xDF,
                 RoomSessionInspection.component(route.session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(route.session.loadedRoomOrNull().contents));
+                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(route.session).contents));
         route.rumbleTicks = 0;
         route.shookRight = false;
         route.shookLeft = false;
@@ -1470,7 +1470,7 @@ final class GameplayRouteScenario {
                         .getFirst()
                         .globalDialogId());
         route.session.entityState().setEntityDialogActive(true);
-        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityMusicActive(true);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateEntityMusicActive(true);
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
@@ -1478,7 +1478,7 @@ final class GameplayRouteScenario {
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
-        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityMusicActive(false);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateEntityMusicActive(false);
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
@@ -2473,7 +2473,7 @@ final class GameplayRouteScenario {
                 // The first handler tick mirrors Link's down input. The next
                 // sees Link behind that facing and selects vulnerable options $08.
                 RoomSessionInspection.component(route.session, RoomEntityInputs.class)
-                        .updateSetEntityPressedButtonsMask(0x08);
+                        .updateEntityPressedButtonsMask(0x08);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 maskedMimic = route.session
@@ -2500,7 +2500,7 @@ final class GameplayRouteScenario {
                                         && event.enemyDamage() == 1),
                         hitEvents.toString());
                 RoomSessionInspection.component(route.session, RoomEntityInputs.class)
-                        .updateSetEntityPressedButtonsMask(0);
+                        .updateEntityPressedButtonsMask(0);
                 for (int recovery = 0; recovery < 0x30; recovery++) {
                     route.session
                             .entities()
@@ -2549,7 +2549,7 @@ final class GameplayRouteScenario {
                                 .count());
             }
         }
-        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityPressedButtonsMask(0);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateEntityPressedButtonsMask(0);
         route.mimicEventDeadline = route.frame + 0x300;
         while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.mimicEventDeadline) {
@@ -2791,7 +2791,7 @@ final class GameplayRouteScenario {
             int linkEntityX = route.maskedMimic.x();
             int linkEntityY = (route.maskedMimic.y() + 0x20) & 0xFF;
             RoomSessionInspection.component(route.session, RoomEntityInputs.class)
-                    .updateSetEntityPressedButtonsMask(0x08);
+                    .updateEntityPressedButtonsMask(0x08);
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             route.maskedMimic =
@@ -2822,7 +2822,7 @@ final class GameplayRouteScenario {
                                 .count());
             }
             RoomSessionInspection.component(route.session, RoomEntityInputs.class)
-                    .updateSetEntityPressedButtonsMask(0);
+                    .updateEntityPressedButtonsMask(0);
             for (int recovery = 0; recovery < 0x30; recovery++) {
                 route.session
                         .entities()
@@ -3159,7 +3159,7 @@ final class GameplayRouteScenario {
                 assertEquals(0x21, RoomDebugFixture.of(route.session).activeRoomEventForTest());
             }
         }
-        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateSetEntityPressedButtonsMask(0);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateEntityPressedButtonsMask(0);
         route.room30EventDeadline = route.frame + 0x300;
         while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.room30EventDeadline) {
@@ -5710,8 +5710,7 @@ final class GameplayRouteScenario {
         assertEquals(0x78, route.room3BPots.get(1).x());
         assertEquals(0x70, route.room3BPots.get(1).y());
 
-        RoomSessionInspection.component(route.session, RoomEntityInputs.class)
-                .updateSetEntityInventorySlots(0x00, 0x03);
+        RoomSessionInspection.component(route.session, RoomEntityInputs.class).updateEntityInventorySlots(0x00, 0x03);
         route.session.entityState().setEntityPowerBraceletButtonHeld(true);
         route.session.entityState().setEntityActionButtonsHeld(false, true);
         route.session.entityState().setEntityAttackStepAnimationCountdown(0);

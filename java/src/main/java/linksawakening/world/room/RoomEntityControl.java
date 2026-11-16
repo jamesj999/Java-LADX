@@ -20,7 +20,7 @@ final class RoomEntityControl implements RoomEntityState {
 
     @Override
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
-        dependencies.entityInputs().updateSetEntityActionButtonsHeld(actionButtonsHeld);
+        dependencies.entityInputs().updateEntityActionButtonsHeld(actionButtonsHeld);
     }
 
     @Override
@@ -30,27 +30,27 @@ final class RoomEntityControl implements RoomEntityState {
 
     @Override
     public void setEntityDialogActive(boolean active) {
-        dependencies.entityInputs().updateSetEntityDialogActive(active);
+        dependencies.entityInputs().updateEntityDialogActive(active);
     }
 
     @Override
     public void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        dependencies.entityInputs().updateSetEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
+        dependencies.entityInputs().updateEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
     }
 
     @Override
     public void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        dependencies.entityInputs().updateSetEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        dependencies.entityInputs().updateEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
     }
 
     @Override
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        dependencies.entityInputs().updateSetToadstoolPlayerState(hasToadstool, magicPowderCount);
+        dependencies.entityInputs().updateToadstoolPlayerState(hasToadstool, magicPowderCount);
     }
 
     @Override
     public void setEntityScreenShakeCountdown(int countdown) {
-        dependencies.entityInputs().updateSetEntityScreenShakeCountdown(countdown);
+        dependencies.entityInputs().updateEntityScreenShakeCountdown(countdown);
     }
 
     @Override
@@ -63,17 +63,17 @@ final class RoomEntityControl implements RoomEntityState {
 
     @Override
     public void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
-        dependencies.entityInputs().updateSetEntityPowerBraceletButtonHeld(buttonHeld);
+        dependencies.entityInputs().updateEntityPowerBraceletButtonHeld(buttonHeld);
     }
 
     @Override
     public void setEntityBombButtonHeld(boolean buttonHeld) {
-        dependencies.entityInputs().updateSetEntityBombButtonHeld(buttonHeld);
+        dependencies.entityInputs().updateEntityBombButtonHeld(buttonHeld);
     }
 
     @Override
     public void setEntityAttackStepAnimationCountdown(int countdown) {
-        dependencies.entityInputs().updateSetEntityAttackStepAnimationCountdown(countdown);
+        dependencies.entityInputs().updateEntityAttackStepAnimationCountdown(countdown);
     }
 
     @Override
@@ -138,19 +138,19 @@ final class RoomEntityControl implements RoomEntityState {
 
     @Override
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
-        dependencies.roomSessionViews().setColorShellSoundSink(soundSink);
+        dependencies.entityFrame().setColorShellSoundSink(soundSink);
     }
 
     record Dependencies(
             RoomEntityBridge entityBridge,
             RoomEntityInputs entityInputs,
             RoomFollowerState followers,
-            RoomSessionViews roomSessionViews) {
+            RoomEntitySessionState entityFrame) {
         Dependencies {
             java.util.Objects.requireNonNull(entityBridge, "entityBridge");
             java.util.Objects.requireNonNull(entityInputs, "entityInputs");
             java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
         }
     }
 }

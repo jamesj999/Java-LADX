@@ -25,7 +25,7 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
 
     @Override
     public void applyWarp(Warp warp, Link link) {
-        var destination = dependencies.roomLoadCoordinator().acquireWarp(warp).room;
+        var destination = dependencies.roomLoadCoordinator().loadWarpGeneration(warp).room;
         link.motion()
                 .setRoomPhysicsForRoom(
                         dependencies.roomSessionViews().roomLoadToken(),
@@ -100,7 +100,7 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
 
     @Override
     public void loadWarpDestination(Warp warp) {
-        dependencies.roomLoadCoordinator().acquireWarp(warp);
+        dependencies.roomLoadCoordinator().loadWarpGeneration(warp);
     }
 
     @Override
@@ -150,7 +150,7 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
             dependencies.roomState().overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
         }
         dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(nextRoomId);
-        dependencies.roomLoadCoordinator().acquireLoadOverworld(nextRoomId, true);
+        dependencies.roomLoadCoordinator().loadOverworldGeneration(nextRoomId, true);
         if (discoveredTailKeyRoom) {
             dependencies
                     .entityRuntimeState()
@@ -167,7 +167,7 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
             RoomRuntime loaded, ScrollController scrollController, int linkScreenX, int linkScreenY) {
         RoomRenderSnapshot previousRoom = loaded.renderSnapshot();
         dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
-        dependencies.roomLoadCoordinator().acquireLoadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
+        dependencies.roomLoadCoordinator().loadOverworldGeneration(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
         scrollController.start(
                 ScrollController.UP,
                 linkScreenX,
