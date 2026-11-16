@@ -24,7 +24,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       # Public CI cannot distribute a ROM. The local pre-merge gate is
       # ./gradlew spotlessApply test with the contributor's own LA_ROM.
-      - run: ./gradlew spotlessCheck classes romFreeTest distZip -PallPlatforms
+      - run: ./gradlew spotlessCheck compileJava compileTestJava romFreeTest distZip -PallPlatforms
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
