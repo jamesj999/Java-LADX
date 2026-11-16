@@ -1,12 +1,6 @@
 package linksawakening.app;
 
-import java.io.UncheckedIOException;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.UUID;
-import linksawakening.app.debug.DebugLog;
 import linksawakening.app.flow.SaveCoordinator;
 import linksawakening.app.flow.ScreenRouter;
 import linksawakening.app.flow.SessionContext;
@@ -28,7 +22,7 @@ import linksawakening.app.story.OpeningStory;
 import linksawakening.app.wiring.SessionWiring;
 import linksawakening.config.AppConfig;
 import linksawakening.gameplay.PcmSoundOutput;
-import linksawakening.recording.GameplayRecorder;
+import linksawakening.recording.RecordingControl;
 import linksawakening.recording.RecordingOptions;
 import linksawakening.startup.StartupCoordinator;
 import linksawakening.world.entity.RomRandomByteSource;
@@ -36,54 +30,21 @@ import linksawakening.world.transition.Warp;
 
 /** Owns the desktop and headless frame loops and delegates to retained session flows. */
 public class GameSession implements AutoCloseable {
-    GameplayRecorder recorder;
+    // Recording can be configured before SessionWiring builds the host and runtime.
+    final RecordingControl recording = new RecordingControl();
     private boolean closed;
-    private RecordingOptions recordingSettings = RecordingOptions.defaults(Path.of("recordings/gameplay.mp4"));
-
-    /** Toggle from the input callback, between complete simulation frames. */
-    void toggleRecording() {
-        if (closed) return;
-        try {
-            if (recordingActive()) {
-                GameplayRecorder finished = recorder;
-                recorder = null; // Detach audio before finalizing, including on encoder failure.
-                finished.close();
-                DebugLog.log("Recording stopped");
-            } else {
-                var directory = recordingSettings.output().toAbsolutePath().getParent();
-                var output = directory.resolve("gameplay-"
-                        + LocalDateTime.now(java.time.ZoneId.systemDefault())
-                                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
-                        + "-" + UUID.randomUUID() + ".mp4");
-                recorder = new GameplayRecorder(new RecordingOptions(
-                        output, recordingSettings.scale(), recordingSettings.crf(), recordingSettings.ffmpeg()));
-                DebugLog.log("Recording started: " + output);
-            }
-        } catch (UncheckedIOException failure) {
-            DebugLog.warning("Recording failed: " + failure.getMessage() + ": "
-                    + failure.getCause().getMessage());
-        } finally {
-            context.host().recordingStatus(recordingActive());
-        }
-    }
 
     /** Configure before initializing either a desktop or headless session. */
     public void configureRecording(RecordingOptions options) {
-        if (context != null || recordingActive() || closed)
-            throw new IllegalStateException("Session already initialized or closed");
-        recorder = new GameplayRecorder(options);
-        recordingSettings = options;
-    }
-
-    private boolean recordingActive() {
-        return recorder != null;
+        if (context != null || closed) throw new IllegalStateException("Session already initialized or closed");
+        recording.configure(options);
     }
 
     private void renderFrame() {
-        if (recordingActive()) recorder.beginFrame();
+        recording.beginFrame();
         update();
         context.runtime().presentation().composeFrameBuffer();
-        if (recordingActive()) recorder.captureFrame(context.services().visual().indexedDisplayBuffer());
+        recording.captureFrame(context.services().visual().indexedDisplayBuffer());
     }
 
     private final FrameClock clock = new FrameClock();
@@ -173,7 +134,7 @@ public class GameSession implements AutoCloseable {
                 context.runtime().flows().router().startTitleScreenWithoutIntro();
             }
             context.host().open(this::onKeyEvent);
-            context.host().recordingStatus(recordingActive());
+            recording.notifyHost();
             FramePacer pacer = options.headless() ? null : new FramePacer();
             long rendered = 0;
             while (!context.host().shouldClose()
@@ -233,7 +194,7 @@ public class GameSession implements AutoCloseable {
         try {
             if (context != null) context.runtime().shutdown().close();
         } finally {
-            if (recordingActive()) recorder.close();
+            recording.close();
         }
     }
 
@@ -246,23 +207,16 @@ public class GameSession implements AutoCloseable {
 
     private void initialize(boolean headless) {
         if (closed || context != null) throw new IllegalStateException("Session already initialized or closed");
-        context = SessionWiring.build(
-                random,
-                headlessPcm,
-                clock,
-                opening,
-                sounds,
-                headless,
-                host -> new linksawakening.recording.RecordingHost(host, () -> recorder));
+        context = SessionWiring.build(random, headlessPcm, clock, opening, sounds, headless, recording::decorateHost);
     }
 
     void onKeyEvent(int key, int action) {
         if (key >= 0 && key == context.services().input().inputConfig().recordingKey()) {
             if (action == linksawakening.input.KeyCodes.PRESS
-                    && (recordingActive()
+                    && (recording.active()
                             || context.state().screens().currentScreen
                                     instanceof linksawakening.app.screen.GameplayScreen)) {
-                toggleRecording();
+                recording.toggle();
             }
             return;
         }
