@@ -109,8 +109,8 @@ public final class EntityPlayerCommands {
 
         int slot = state.slot();
         RoomEntity entity = this.slots.get(slot);
-        this.events.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
-        this.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(
+        this.events.preTickLinkAttackStep(new LinkAttackStepRequest(slot));
+        this.events.preTickCombat(new EntityCombatEvent(
                 slot,
                 entity.type(),
                 0,
@@ -250,14 +250,14 @@ public final class EntityPlayerCommands {
     }
 
     void presentWitchGotItem(int slot) {
-        this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.events.linkMotionBlock(new LinkMotionBlockRequest(slot));
+        this.events.linkHeldItemPose(new LinkHeldItemPoseRequest(slot));
     }
 
     void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
         int slot = entity.slot();
-        this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.events.linkMotionBlock(new LinkMotionBlockRequest(slot));
+        this.events.linkHeldItemPose(new LinkHeldItemPoseRequest(slot));
         int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
         RoomEntity held = withPositionAndVariant(entity, x, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         this.slots.replace(slot, withZ(held, linkZ & 0xFF));

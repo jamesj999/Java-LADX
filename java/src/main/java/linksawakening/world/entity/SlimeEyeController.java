@@ -453,13 +453,11 @@ public final class SlimeEyeController {
     }
 
     void sound(int s, int id) {
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                s, EntityRomConstants.ENTITY_SLIME_EYE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, id));
+        this.events.sound(s, EntityRomConstants.ENTITY_SLIME_EYE, EntityCombatEvent.SoundChannel.JINGLE, id);
     }
 
     void noise(int s, int id) {
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                s, EntityRomConstants.ENTITY_SLIME_EYE, 0, false, EntityCombatEvent.SoundChannel.NOISE, id));
+        this.events.sound(s, EntityRomConstants.ENTITY_SLIME_EYE, EntityCombatEvent.SoundChannel.NOISE, id);
     }
 
     void resolveCombat(SlimeEyeCombatFrame inputs) {

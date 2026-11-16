@@ -26,7 +26,7 @@ final class EntityRoomInspectionQueries {
     }
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
-        return List.copyOf(runtime.events.projectileLaunchRequests);
+        return List.copyOf(runtime.events.projectileLaunchRequests());
     }
 
     int activePlayerArrowCount() {

@@ -117,8 +117,7 @@ public final class EntityBombInteractions {
         int slot = entity.slot();
         BombMotion.Decision decision = BombMotion.decide(this.physicsTables.readEnemyTransitionCountdown(slot) & 0xFF);
         if (decision.playExplosionSound()) {
-            this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, EntityRomConstants.ENTITY_BOMB, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
+            this.events.sound(slot, EntityRomConstants.ENTITY_BOMB, EntityCombatEvent.SoundChannel.NOISE, 0x0C);
         }
         if (decision.countdownOverride().isPresent()) {
             this.physicsTables.writeEnemyTransitionCountdown(
@@ -172,7 +171,7 @@ public final class EntityBombInteractions {
 
         int bombX = bomb.x() & 0xFF;
         int bombVisualY = (bomb.y() - bomb.z()) & 0xFF;
-        this.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
+        this.events.bombExplosion(new BombExplosionEvent(
                 bombSlot,
                 BombExplosionEvent.OBJECT_TARGET,
                 bombX,
@@ -202,7 +201,7 @@ public final class EntityBombInteractions {
                     || !isWithinBombExplosionWindow((target.y() - target.z()) & 0xFF, bombVisualY)) {
                 continue;
             }
-            this.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
+            this.events.bombExplosion(new BombExplosionEvent(
                     bombSlot, targetSlot, bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
             this.applyBombDamage(bomb, target);
         }
@@ -300,18 +299,17 @@ public final class EntityBombInteractions {
                 }
             }
 
-            this.events.pendingEntityEvents.add(
-                    linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
-                            .linkDamage(0)
-                            .swordHit(false)
-                            .enemyDamage(enemyDamage)
-                            .enemySpecialAction(specialAction)
-                            .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
-                            .soundId(0x03)
-                            .secondarySoundChannel(secondaryChannel)
-                            .secondarySoundId(secondarySoundId)
-                            .swordPokeVfx(null)
-                            .build());
+            this.events.combat(linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
+                    .linkDamage(0)
+                    .swordHit(false)
+                    .enemyDamage(enemyDamage)
+                    .enemySpecialAction(specialAction)
+                    .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                    .soundId(0x03)
+                    .secondarySoundChannel(secondaryChannel)
+                    .secondarySoundId(secondarySoundId)
+                    .swordPokeVfx(null)
+                    .build());
         }
 
         var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);

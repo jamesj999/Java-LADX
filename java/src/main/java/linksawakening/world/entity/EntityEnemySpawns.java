@@ -427,8 +427,7 @@ public final class EntityEnemySpawns {
         var stalfosEvasiveMotion = this.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
         stalfosEvasiveMotion.initializeClone(freeSlot, request.speedX(), request.speedY());
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0A));
+        this.events.sound(source.slot(), source.type(), EntityCombatEvent.SoundChannel.NOISE, 0x0A);
         return true;
     }
 

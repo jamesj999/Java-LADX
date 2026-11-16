@@ -117,7 +117,7 @@ public final class EntityBackgroundMechanics {
         boolean clear = object.sampled()
                 && object.objectId() != EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
                 && object.physicsFlag() == 0;
-        this.events.hookshotBridgeUpdates.add(
+        this.events.hookshotBridge(
                 new HookshotBridgeUpdate(cell.objectLeft(), cell.objectTop(), bridgeState.direction(), !clear));
         if (clear) {
             this.lifecycle.clearEntity(entity.slot());
@@ -179,13 +179,8 @@ public final class EntityBackgroundMechanics {
         this.physicsTables.writeEnemyTransitionCountdown(slot, longFallingTransition ? 0x6F : 0x48);
         if (!longFallingTransition && ignoreHitsCountdown == 0) {
             this.physicsTables.writeEnemyTransitionCountdown(slot, 0x2F);
-            this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot,
-                    entity.type(),
-                    0,
-                    false,
-                    EntityCombatEvent.SoundChannel.JINGLE,
-                    EntityRomConstants.FALLING_JINGLE_ID));
+            this.events.sound(
+                    slot, entity.type(), EntityCombatEvent.SoundChannel.JINGLE, EntityRomConstants.FALLING_JINGLE_ID);
         }
         return true;
     }
@@ -218,13 +213,8 @@ public final class EntityBackgroundMechanics {
         int phase = (transition >>> 4) & 0x03;
         this.physicsTables.writeFallingVisualYOffset(slot, EntityRomConstants.FALLING_VISUAL_Y_OFFSETS[phase]);
         if (transition == 0x3F) {
-            this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    slot,
-                    entity.type(),
-                    0,
-                    false,
-                    EntityCombatEvent.SoundChannel.JINGLE,
-                    EntityRomConstants.FALLING_JINGLE_ID));
+            this.events.sound(
+                    slot, entity.type(), EntityCombatEvent.SoundChannel.JINGLE, EntityRomConstants.FALLING_JINGLE_ID);
         }
 
         FallingVector vector = vectorTowardsTarget(
@@ -339,7 +329,7 @@ public final class EntityBackgroundMechanics {
         if (entity == null || policy == null || !policy.restoreFinalPosition()) {
             return;
         }
-        this.events.pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(
+        this.events.linkFinalPosition(new LinkFinalPositionRequest(
                 entity.slot(),
                 policy.resetPegasusBoots(),
                 policy.resetHookshotChain(),

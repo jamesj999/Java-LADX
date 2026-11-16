@@ -324,8 +324,7 @@ public final class EntitySlotLifecycle {
         this.combatTables.writeDyingCountdown(slot, 0x1F);
         this.combatTables.writePowerRecoilDeath(slot, false);
         this.slots.replace(slot, withDeathPresentation(withStatus(entity, EntityStatus.DYING), 3, false));
-        this.events.pendingEntityEvents.add(
-                new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        this.events.sound(slot, entity.type(), EntityCombatEvent.SoundChannel.NOISE, 0x13);
     }
 
     void decrementSlowTransitionCountdown(int slot, int frameCounter) {

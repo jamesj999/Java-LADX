@@ -36,8 +36,7 @@ final class EntityFrameCollision {
                 && entity.status() == EntityStatus.THROWN
                 && checksThrownRoomEventTriggers(entity.type())) {
             state.events()
-                    .pendingThrownBackgroundCollisions
-                    .add(new ThrownBackgroundCollisionEvent(
+                    .thrownBackgroundCollision(new ThrownBackgroundCollisionEvent(
                             entity.slot(), entity.type(), direction, result.objectId()));
         }
         return result.blocked();

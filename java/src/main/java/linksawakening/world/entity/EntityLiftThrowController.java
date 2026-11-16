@@ -173,12 +173,11 @@ public final class EntityLiftThrowController {
             }
         }
         int visualY = (entity.y() - entity.z()) & 255;
-        this.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
+        this.events.vfx(new linksawakening.world.entity.event.TransientVfxRequest(
                 linksawakening.vfx.TransientVfxType.POOF, entity.x(), visualY));
-        this.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
+        this.events.vfx(new linksawakening.world.entity.event.TransientVfxRequest(
                 linksawakening.vfx.TransientVfxType.POOF, entity.x(), (visualY - 16) & 255));
-        this.events.pendingEntityEvents.add(
-                new EntityCombatEvent(entity.slot(), 0x9D, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x29));
+        this.events.sound(entity.slot(), 0x9D, EntityCombatEvent.SoundChannel.NOISE, 0x29);
     }
 
     RoomEntity advanceThrownEntity(
@@ -377,8 +376,7 @@ public final class EntityLiftThrowController {
         this.physicsTables.writeFallingVisualYOffset(slot, 0);
         var bushCrawlerMotion = this.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new);
         bushCrawlerMotion.clear(slot);
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
+        this.events.sound(slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, EntityCombatEvent.SoundChannel.WAVE, 0x02);
 
         int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
@@ -509,7 +507,7 @@ public final class EntityLiftThrowController {
     }
 
     public void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {
-        this.events.pendingSideViewPotLinkRequests.add(new SideViewPotLinkRequest(
+        this.events.sideViewPotLink(new SideViewPotLinkRequest(
                 sourceSlot,
                 contact.resetPegasusBoots(),
                 contact.restoreFinalPositionX(),

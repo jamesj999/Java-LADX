@@ -213,51 +213,51 @@ final class EntitySlotPipeline {
 
     private static void resetSlotAndLinkEffects(EntityFrameExecution state) {
 
-        state.events().projectileLaunchRequests.clear();
+        state.events().clearProjectileLaunchRequests();
         state.physicsTables().clearEnemyProjectileSpawnedThisFrame();
         state.physicsTables().clearDynamicEntitySpawnedThisFrame();
         state.genie().beginFrame();
         Arrays.fill(state.slotProperties().state.storageWingedSwordAttackThisFrame(), false);
         Arrays.fill(state.slotProperties().state.storageWingedStateTwoThisFrame(), false);
-        state.events().transientVfxRequests.clear();
-        state.events().pendingLinkFinalPositionRequests.clear();
-        state.events().pendingRoosterLinkStateRequests.clear();
-        state.events().pendingLinkMotionBlockRequests.clear();
-        state.events().pendingSideViewPlatformLinkRequests.clear();
-        state.events().pendingSideViewPotLinkRequests.clear();
-        state.events().pendingHinoxLinkEffectRequests.clear();
-        state.events().pendingLinkFallenPoseRequests.clear();
-        state.events().pendingLinkFacingRequests.clear();
-        state.events().pendingLinkAttackStepRequests.clear();
-        state.events().pendingLinkAttackStepRequests.addAll(state.events().pendingPreTickLinkAttackStepRequests);
-        state.events().pendingPreTickLinkAttackStepRequests.clear();
-        state.events().pendingLinkAttackClearRequests.clear();
-        state.events().pendingRoomStatusPersistenceRequests.clear();
-        state.events().pendingLinkHeldItemPoseRequests.clear();
-        state.events().pendingLinkSwordSpinPoseRequests.clear();
-        state.events().pendingLinkSwordFinalPoseRequests.clear();
-        state.events().pendingScreenShakeRequests.clear();
+        state.events().clearTransientVfxRequests();
+        state.events().clearPendingLinkFinalPositionRequests();
+        state.events().clearPendingRoosterLinkStateRequests();
+        state.events().clearPendingLinkMotionBlockRequests();
+        state.events().clearPendingSideViewPlatformLinkRequests();
+        state.events().clearPendingSideViewPotLinkRequests();
+        state.events().clearPendingHinoxLinkEffectRequests();
+        state.events().clearPendingLinkFallenPoseRequests();
+        state.events().clearPendingLinkFacingRequests();
+        state.events().clearPendingLinkAttackStepRequests();
+        state.events().linkAttackStep(state.events().pendingPreTickLinkAttackStepRequests());
+        state.events().clearPendingPreTickLinkAttackStepRequests();
+        state.events().clearPendingLinkAttackClearRequests();
+        state.events().clearPendingRoomStatusPersistenceRequests();
+        state.events().clearPendingLinkHeldItemPoseRequests();
+        state.events().clearPendingLinkSwordSpinPoseRequests();
+        state.events().clearPendingLinkSwordFinalPoseRequests();
+        state.events().clearPendingScreenShakeRequests();
     }
 
     private static void resetRewardsAndObjects(EntityFrameExecution state) {
 
-        state.events().boomerangObjectRequests.clear();
-        state.events().magicRodObjectRequests.clear();
-        state.events().magicPowderObjectRequests.clear();
-        state.events().pendingDialogRequests.clear();
-        state.events().pendingEntityEvents.clear();
-        state.events().pendingThrownBackgroundCollisions.clear();
-        state.events().pendingEntityEvents.addAll(state.events().pendingPreTickEntityEvents);
-        state.events().pendingPreTickEntityEvents.clear();
-        state.events().pendingWarpLinkStateRequests.clear();
-        state.events().pendingChestRewardEvents.clear();
-        state.events().pendingHeartContainerRewards.clear();
-        state.events().pendingMadamMeowMeowFullHealRequests.clear();
-        state.events().pendingSwordPickupRewards.clear();
-        state.events().pendingToadstoolRewards.clear();
-        state.events().pendingInstrumentRewards.clear();
-        state.events().pendingInstrumentCompletions.clear();
-        state.events().pendingRichardProgressEvents.clear();
+        state.events().clearBoomerangObjectRequests();
+        state.events().clearMagicRodObjectRequests();
+        state.events().clearMagicPowderObjectRequests();
+        state.events().clearPendingDialogRequests();
+        state.events().clearPendingEntityEvents();
+        state.events().clearPendingThrownBackgroundCollisions();
+        state.events().combat(state.events().pendingPreTickEntityEvents());
+        state.events().clearPendingPreTickEntityEvents();
+        state.events().clearPendingWarpLinkStateRequests();
+        state.events().clearPendingChestRewardEvents();
+        state.events().clearPendingHeartContainerRewards();
+        state.events().clearPendingMadamMeowMeowFullHealRequests();
+        state.events().clearPendingSwordPickupRewards();
+        state.events().clearPendingToadstoolRewards();
+        state.events().clearPendingInstrumentRewards();
+        state.events().clearPendingInstrumentCompletions();
+        state.events().clearPendingRichardProgressEvents();
     }
 
     private static void prepareLateFrameEvents(EntityFrameExecution state) {
@@ -266,24 +266,21 @@ final class EntitySlotPipeline {
             state.bossRewards().state.postBossAgonySfxCountdown(-1);
             if (state.bossRewards().state.readBossAgonySfxCountdown() == 0) {
                 state.events()
-                        .pendingEntityEvents
-                        .add(new EntityCombatEvent(
+                        .sound(
                                 state.bossRewards().state.readBossAgonySourceSlot(),
                                 EntityRomConstants.ENTITY_GENIE,
-                                0,
-                                false,
                                 EntityCombatEvent.SoundChannel.WAVE,
-                                0x10));
+                                0x10);
             }
         }
-        state.events().pendingWitchExchangeEvents.clear();
-        state.events().pendingWitchRewardEvents.clear();
-        state.events().pendingOwlEventCompletions.clear();
-        state.events().pendingSlimeKeyRewardEvents.clear();
-        state.events().pendingKeyQuicksandEvents.clear();
-        state.events().pendingLikeLikeEvents.clear();
-        state.events().pendingBombExplosionEvents.clear();
-        state.events().hookshotBridgeUpdates.clear();
+        state.events().clearPendingWitchExchangeEvents();
+        state.events().clearPendingWitchRewardEvents();
+        state.events().clearPendingOwlEventCompletions();
+        state.events().clearPendingSlimeKeyRewardEvents();
+        state.events().clearPendingKeyQuicksandEvents();
+        state.events().clearPendingLikeLikeEvents();
+        state.events().clearPendingBombExplosionEvents();
+        state.events().clearHookshotBridgeUpdates();
         state.roomVariables().writePendingSwitchBlockAnimationRequest(false);
         if (state.linkState().readLinkPlayingOcarinaCountdown() >= 0x10
                 && state.linkState().readOcarinaAnimationCounter() == 0x14) {
@@ -666,10 +663,7 @@ final class EntitySlotPipeline {
             // hit recoil has expired; bosses use their handlers above.
             if (presentationCountdown >= 0x20 && state.combatTables().readEnemyIgnoreHitsCountdown(slot) == 0) {
                 state.combatTables().writeDyingCountdown(slot, 0x1F);
-                state.events()
-                        .pendingEntityEvents
-                        .add(new EntityCombatEvent(
-                                slot, slotState.entity().type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                state.events().sound(slot, slotState.entity().type(), EntityCombatEvent.SoundChannel.NOISE, 0x13);
             }
             RoomEntity updated = state.combatTables().readEnemyIgnoreHitsCountdown(slot) > 0
                     ? state.background()
@@ -834,14 +828,11 @@ final class EntitySlotPipeline {
             if (laserUpdate.spawnBeam()) {
                 if (state.enemySpawns().spawnLaserBeam(slotState.entity())) {
                     state.events()
-                            .pendingEntityEvents
-                            .add(new EntityCombatEvent(
+                            .sound(
                                     slotState.entity().slot(),
                                     slotState.entity().type(),
-                                    0,
-                                    false,
                                     EntityCombatEvent.SoundChannel.NOISE,
-                                    0x08));
+                                    0x08);
                 }
             }
         }
@@ -921,8 +912,7 @@ final class EntitySlotPipeline {
                                 frameInput.projectileLinkState().direction());
                 if (event.swordPokeVfx()) {
                     state.events()
-                            .transientVfxRequests
-                            .add(new TransientVfxRequest(
+                            .vfx(new TransientVfxRequest(
                                     TransientVfxType.SWORD_POKE,
                                     slotState.updated().x(),
                                     slotState.updated().y()));
@@ -937,8 +927,7 @@ final class EntitySlotPipeline {
                 }
                 slotState.updated(beamUpdate.entity());
                 state.events()
-                        .transientVfxRequests
-                        .add(new TransientVfxRequest(
+                        .vfx(new TransientVfxRequest(
                                 TransientVfxType.LASER_BEAM,
                                 slotState.updated().x() + 0x04,
                                 slotState.updated().y()));
@@ -1107,20 +1096,16 @@ final class EntitySlotPipeline {
             }
             if (groundResult.waterSplash()) {
                 state.events()
-                        .transientVfxRequests
-                        .add(new TransientVfxRequest(
+                        .vfx(new TransientVfxRequest(
                                 TransientVfxType.WATER_SPLASH,
                                 slotState.updated().x(),
                                 slotState.updated().y()));
                 state.events()
-                        .pendingEntityEvents
-                        .add(new EntityCombatEvent(
+                        .sound(
                                 slotState.updated().slot(),
                                 slotState.updated().type(),
-                                0,
-                                false,
                                 EntityCombatEvent.SoundChannel.JINGLE,
-                                0x0E));
+                                0x0E);
             }
             if (groundResult.unloaded()) {
                 state.lifecycle()

@@ -12,7 +12,6 @@ import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.ChestRewardEvent;
-import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -251,19 +250,17 @@ public final class EntityPickupController {
                         this.physicsTables.readEnemyTransitionCountdown(slot),
                         this.linkState.readDialogActive(),
                         this.state.readHeartPiecesCount());
-        this.events.heartPieceUpdates.add(update);
+        this.events.heartPiece(update);
         if (update.incrementPiece()) this.state.postHeartPiecesCount(1);
         if (update.newContainer()) this.state.writeHeartPiecesCount(0);
-        if (update.dialogId() >= 0) this.events.pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
-        if (update.newContainer())
-            this.events.pendingEntityEvents.add(
-                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x19));
+        if (update.dialogId() >= 0) this.events.dialog(0, update.dialogId());
+        if (update.newContainer()) this.events.sound(slot, entity.type(), EntityCombatEvent.SoundChannel.JINGLE, 0x19);
         if (update.complete()) {
             this.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.events.linkMotionBlock(new LinkMotionBlockRequest(slot));
+        this.events.linkHeldItemPose(new LinkHeldItemPoseRequest(slot));
         this.slots.replace(slot, withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z));
     }
 
@@ -273,13 +270,11 @@ public final class EntityPickupController {
         this.state.writeChestSpeedY(slot, 0xFC);
         this.state.writeChestSpeedYAccumulator(slot, 0);
         this.state.writeChestInertia(slot, 0);
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.events.sound(
                 slot,
                 EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                0,
-                false,
                 EntityCombatEvent.SoundChannel.NOISE,
-                EntityRomConstants.CHEST_OPEN_NOISE_ID));
+                EntityRomConstants.CHEST_OPEN_NOISE_ID);
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
             for (int candidateSlotIndex = 0; candidateSlotIndex < this.slots.size(); candidateSlotIndex++) {
                 RoomEntity candidate = this.slots.get(candidateSlotIndex);
@@ -291,7 +286,7 @@ public final class EntityPickupController {
             }
         }
         if (itemType < ChestContentsTable.CHEST_MESSAGE) {
-            this.events.pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
+            this.events.chestReward(new ChestRewardEvent(slot, itemType));
         }
     }
 
@@ -320,13 +315,11 @@ public final class EntityPickupController {
         if (inertia == 0x08) {
             int soundValue = this.chestContentsTable.presentationSoundValue(itemType);
             if (soundValue == EntityRomConstants.CHEST_TREASURE_JINGLE_ID) {
-                this.events.pendingEntityEvents.add(new EntityCombatEvent(
+                this.events.sound(
                         slot,
                         EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                        0,
-                        false,
                         EntityCombatEvent.SoundChannel.JINGLE,
-                        EntityRomConstants.CHEST_TREASURE_JINGLE_ID));
+                        EntityRomConstants.CHEST_TREASURE_JINGLE_ID);
             } else if (soundValue != 0) {
                 this.presentationState.writePendingMusicTrack(soundValue);
             }
@@ -341,8 +334,7 @@ public final class EntityPickupController {
                     this.roomVariables.readEntityMapId() < 0 ? 0 : this.roomVariables.readEntityMapId(),
                     roomId < 0 ? 0 : roomId);
             int tableId = itemType == ChestContentsTable.CHEST_MESSAGE && roomId == 0x96 ? 1 : 0;
-            if (dialogLow != EntityChestContents.NO_DIALOG)
-                this.events.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
+            if (dialogLow != EntityChestContents.NO_DIALOG) this.events.dialog(tableId, dialogLow);
         }
         if (inertia == 0x28) {
             this.lifecycle.clearEntity(slot);
@@ -382,8 +374,7 @@ public final class EntityPickupController {
         this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOL));
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                freeSlot, EntityRomConstants.ENTITY_ZOL, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
+        this.events.sound(freeSlot, EntityRomConstants.ENTITY_ZOL, EntityCombatEvent.SoundChannel.JINGLE, 0x1D);
     }
 
     void spawnEnemyDrop(RoomEntity source, int itemType) {

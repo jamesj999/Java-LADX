@@ -52,19 +52,19 @@ public final class EntityEnemyInspection {
     }
 
     public List<TransientVfxRequest> transientVfxRequests() {
-        return List.copyOf(this.events.transientVfxRequests);
+        return List.copyOf(this.events.transientVfxRequests());
     }
 
     public List<BoomerangObjectRequest> boomerangObjectRequests() {
-        return List.copyOf(this.events.boomerangObjectRequests);
+        return List.copyOf(this.events.boomerangObjectRequests());
     }
 
     public List<MagicRodObjectRequest> magicRodObjectRequests() {
-        return List.copyOf(this.events.magicRodObjectRequests);
+        return List.copyOf(this.events.magicRodObjectRequests());
     }
 
     public List<MagicPowderObjectRequest> magicPowderObjectRequests() {
-        return List.copyOf(this.events.magicPowderObjectRequests);
+        return List.copyOf(this.events.magicPowderObjectRequests());
     }
 
     public int physicsFlags(int slot) {

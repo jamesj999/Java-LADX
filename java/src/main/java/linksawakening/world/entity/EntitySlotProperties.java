@@ -111,13 +111,11 @@ public final class EntitySlotProperties {
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
                 ? threeOfAKindMotion.matchedJingle(coordinatorSlot)
                 : 0x1D;
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.events.sound(
                 coordinatorSlot,
                 EntityRomConstants.ENTITY_THREE_OF_A_KIND,
-                0,
-                false,
                 EntityCombatEvent.SoundChannel.JINGLE,
-                jingle));
+                jingle);
         if (result != ThreeOfAKindMotion.PuzzleResult.MATCH) {
             return;
         }
@@ -135,13 +133,8 @@ public final class EntitySlotProperties {
         }
         // The source writes the shared noise register once per card in the
         // same handler pass; only the final register value is audible.
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                coordinatorSlot,
-                EntityRomConstants.ENTITY_THREE_OF_A_KIND,
-                0,
-                false,
-                EntityCombatEvent.SoundChannel.NOISE,
-                0x13));
+        this.events.sound(
+                coordinatorSlot, EntityRomConstants.ENTITY_THREE_OF_A_KIND, EntityCombatEvent.SoundChannel.NOISE, 0x13);
     }
 
     int initialHealth(int type) {

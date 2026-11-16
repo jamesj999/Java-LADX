@@ -267,13 +267,7 @@ public final class EntityPlayerSpawns {
             this.slots.clear(freeSlot);
             return -1;
         }
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                freeSlot,
-                EntityRomConstants.ENTITY_LIFTABLE_ROCK,
-                0,
-                false,
-                EntityCombatEvent.SoundChannel.WAVE,
-                0x02));
+        this.events.sound(freeSlot, EntityRomConstants.ENTITY_LIFTABLE_ROCK, EntityCombatEvent.SoundChannel.WAVE, 0x02);
         return freeSlot;
     }
 
@@ -850,13 +844,8 @@ public final class EntityPlayerSpawns {
         enemyRecoilMotion.clear(freeSlot);
         runtime.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.BOMB_OPTIONS1);
         if (soundId >= 0) {
-            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                    freeSlot,
-                    EntityRomConstants.ENTITY_LIFTABLE_ROCK,
-                    0,
-                    false,
-                    EntityCombatEvent.SoundChannel.NOISE,
-                    soundId));
+            runtime.events.sound(
+                    freeSlot, EntityRomConstants.ENTITY_LIFTABLE_ROCK, EntityCombatEvent.SoundChannel.NOISE, soundId);
         }
         runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;

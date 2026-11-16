@@ -201,83 +201,83 @@ public final class EntityFrameExecution {
     }
 
     public void emit(DialogRequest event) {
-        events.pendingDialogRequests.add(event);
+        events.dialog(event);
     }
 
     public void emit(DungeonWarpRequest event) {
-        events.pendingDungeonWarpRequests.add(event);
+        events.dungeonWarp(event);
     }
 
     public void emit(EntityCombatEvent event) {
-        events.pendingEntityEvents.add(event);
+        events.combat(event);
     }
 
     public void emit(HinoxLinkEffectRequest event) {
-        events.pendingHinoxLinkEffectRequests.add(event);
+        events.hinoxLinkEffect(event);
     }
 
     public void emit(KeyQuicksandEvent event) {
-        events.pendingKeyQuicksandEvents.add(event);
+        events.keyQuicksand(event);
     }
 
     public void emit(KeyRewardEvent event) {
-        events.pendingKeyRewardEvents.add(event);
+        events.keyReward(event);
     }
 
     public void emit(LikeLikeEvent event) {
-        events.pendingLikeLikeEvents.add(event);
+        events.likeLike(event);
     }
 
     public void emit(LinkAttackClearRequest event) {
-        events.pendingLinkAttackClearRequests.add(event);
+        events.linkAttackClear(event);
     }
 
     public void emit(LinkFacingRequest event) {
-        events.pendingLinkFacingRequests.add(event);
+        events.linkFacing(event);
     }
 
     public void emit(LinkFallenPoseRequest event) {
-        events.pendingLinkFallenPoseRequests.add(event);
+        events.linkFallenPose(event);
     }
 
     public void emit(LinkMotionBlockRequest event) {
-        events.pendingLinkMotionBlockRequests.add(event);
+        events.linkMotionBlock(event);
     }
 
     public void emit(RoomStatusPersistenceRequest event) {
-        events.pendingRoomStatusPersistenceRequests.add(event);
+        events.roomStatusPersistence(event);
     }
 
     public void emit(RoosterLinkStateRequest event) {
-        events.pendingRoosterLinkStateRequests.add(event);
+        events.roosterLinkState(event);
     }
 
     public void emit(ScreenShakeRequest event) {
-        events.pendingScreenShakeRequests.add(event);
+        events.screenShake(event);
     }
 
     public void emit(SideViewPlatformLinkRequest event) {
-        events.pendingSideViewPlatformLinkRequests.add(event);
+        events.sideViewPlatformLink(event);
     }
 
     public void emit(SlimeKeyRewardEvent event) {
-        events.pendingSlimeKeyRewardEvents.add(event);
+        events.slimeKeyReward(event);
     }
 
     public void emit(WarpLinkStateRequest event) {
-        events.pendingWarpLinkStateRequests.add(event);
+        events.warpLinkState(event);
     }
 
     public void emit(WitchExchangeEvent event) {
-        events.pendingWitchExchangeEvents.add(event);
+        events.witchExchange(event);
     }
 
     public void emit(WitchRewardEvent event) {
-        events.pendingWitchRewardEvents.add(event);
+        events.witchReward(event);
     }
 
     public void emit(TransientVfxRequest event) {
-        events.transientVfxRequests.add(event);
+        events.vfx(event);
     }
 
     public EntitySlotLifecycle lifecycle() {
@@ -345,11 +345,11 @@ public final class EntityFrameExecution {
     }
 
     public void emit(linksawakening.world.entity.event.HookshotBridgeUpdate update) {
-        events.hookshotBridgeUpdates.add(update);
+        events.hookshotBridge(update);
     }
 
     public void emit(RoamingEnemyMotion.LaunchRequest request) {
-        events.projectileLaunchRequests.add(request);
+        events.projectileLaunch(request);
     }
 
     public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {

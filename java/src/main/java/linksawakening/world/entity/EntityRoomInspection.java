@@ -283,7 +283,7 @@ public final class EntityRoomInspection {
     }
 
     public List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
-        return List.copyOf(this.events.hookshotBridgeUpdates);
+        return List.copyOf(this.events.hookshotBridgeUpdates());
     }
 
     public RoomEntity firstLoadedEntityOfType(int type) {

@@ -90,13 +90,11 @@ public final class EntityProjectileController {
     public void playBoomerangSoundIfDue(RoomEntity entity) {
         // PlayBoomerangSfx ($20:4C98) only reads the shared clock.
         if (state.readBoomerangSfxCounter() == 0) {
-            this.events.pendingEntityEvents.add(new EntityCombatEvent(
+            this.events.sound(
                     entity.slot(),
                     entity.type(),
-                    0,
-                    false,
                     EntityCombatEvent.SoundChannel.NOISE,
-                    EntityRomConstants.BOOMERANG_SFX_ID));
+                    EntityRomConstants.BOOMERANG_SFX_ID);
         }
     }
 
@@ -119,13 +117,11 @@ public final class EntityProjectileController {
             int y = (linkEntityY + SwordBeamMotion.firstHandlerOffsetY(romLinkDirection)) & 0xFF;
             swordBeamMotion.initializeFirstHandler(slot, romLinkDirection);
             this.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
-            this.events.pendingEntityEvents.add(new EntityCombatEvent(
+            this.events.sound(
                     slot,
                     EntityRomConstants.ENTITY_SWORD_BEAM,
-                    0,
-                    false,
                     EntityCombatEvent.SoundChannel.JINGLE,
-                    EntityRomConstants.SWORD_BEAM_JINGLE_ID));
+                    EntityRomConstants.SWORD_BEAM_JINGLE_ID);
             // The state-0 handler only applies the Link-relative launch
             // offset and enters state 1; it does not render the beam yet.
             this.slots.replace(index, withPositionAndVariant(entity, x, y, -1));
@@ -155,14 +151,14 @@ public final class EntityProjectileController {
             // Physics $FF unloads inside bank $03, bypassing this branch.
             if (objectCollision != ProjectileObjectCollision.UNLOAD
                     && (entityCollision.blocked() || objectCollision == ProjectileObjectCollision.BLOCKED)) {
-                this.events.transientVfxRequests.add(new TransientVfxRequest(
+                this.events.vfx(new TransientVfxRequest(
                         TransientVfxType.SWORD_POKE, entity.x(), (entity.y() - entity.z() + 3) & 0xFF));
             }
             return;
         }
 
         if (((frame + 1) & 0x03) == 0) {
-            this.events.transientVfxRequests.add(new TransientVfxRequest(
+            this.events.vfx(new TransientVfxRequest(
                     TransientVfxType.SWORD_BEAM, entity.x(), (entity.y() - entity.z()) & 0xFF, variant));
         }
         this.slots.replace(index, withPositionAndVariant(moved, moved.x(), moved.y(), variant));
@@ -698,7 +694,7 @@ public final class EntityProjectileController {
 
             if (bushCollision) {
                 int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-                owner.events.boomerangObjectRequests.add(
+                owner.events.boomerangObject(
                         new BoomerangObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
             }
 
@@ -718,17 +714,12 @@ public final class EntityProjectileController {
                     boomerangMotion.setState(slot, 1);
                 } else if (stateCollision) {
                     boomerangMotion.setTransitionCountdown(slot, 0);
-                    owner.events.transientVfxRequests.add(new TransientVfxRequest(
+                    owner.events.vfx(new TransientVfxRequest(
                             TransientVfxType.SWORD_POKE,
                             positioned.x(),
                             (positioned.y() - positioned.z() + 0x03) & 0xFF));
-                    owner.events.pendingEntityEvents.add(new EntityCombatEvent(
-                            slot,
-                            EntityRomConstants.ENTITY_BOOMERANG,
-                            0,
-                            false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            0x07));
+                    owner.events.sound(
+                            slot, EntityRomConstants.ENTITY_BOOMERANG, EntityCombatEvent.SoundChannel.JINGLE, 0x07);
                 }
             } else {
                 if ((frame & 0x03) == 0) {
@@ -849,7 +840,7 @@ public final class EntityProjectileController {
                 int objectLeft = entity.x() & 0xF0;
                 int objectTop = entity.y() & 0xF0;
                 int location = (objectTop | (objectLeft >>> 4)) & 0xFF;
-                owner.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                owner.events.magicPowderObject(new MagicPowderObjectRequest(
                         slot, location, objectLeft, objectTop, MagicPowderObjectAction.EXTINGUISH_TORCH));
                 // Keep the palette state visible to later powder handlers in
                 // this pass, before RoomSession applies their object requests.
@@ -891,17 +882,15 @@ public final class EntityProjectileController {
             if (!owner.indoorRoom
                     && (objectId == EntityRomConstants.OBJECT_BUSH
                             || objectId == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS)) {
-                owner.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                owner.events.magicPowderObject(new MagicPowderObjectRequest(
                         slot, location, objectLeft, objectTop, MagicPowderObjectAction.REVEAL));
-                owner.events.transientVfxRequests.add(
+                owner.events.vfx(
                         new TransientVfxRequest(TransientVfxType.POOF, entity.x(), (entity.y() - entity.z()) & 0xFF));
-                owner.events.pendingEntityEvents.add(new EntityCombatEvent(
+                owner.events.sound(
                         slot,
                         EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
-                        0,
-                        false,
                         EntityCombatEvent.SoundChannel.JINGLE,
-                        EntityRomConstants.MAGIC_POWDER_POOF_JINGLE_ID));
+                        EntityRomConstants.MAGIC_POWDER_POOF_JINGLE_ID);
                 owner.lifecycle.clearEntity(slot);
                 return false;
             }
@@ -930,15 +919,13 @@ public final class EntityProjectileController {
                         ? entity.spriteDefinition()
                         : owner.slotProperties.spriteViews().forMagicPowderTorchState(true);
                 owner.slots.replace(index, withDefinition(torch, torchDefinition, 0));
-                owner.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                owner.events.magicPowderObject(new MagicPowderObjectRequest(
                         slot, location, objectLeft, objectTop, MagicPowderObjectAction.IGNITE_TORCH));
-                owner.events.pendingEntityEvents.add(new EntityCombatEvent(
+                owner.events.sound(
                         slot,
                         EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
-                        0,
-                        false,
                         EntityCombatEvent.SoundChannel.NOISE,
-                        0x12));
+                        0x12);
                 return false;
             }
 
@@ -1083,7 +1070,7 @@ public final class EntityProjectileController {
                         owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
                 magicRodFireballMotion.setCollision(slot, false);
                 int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-                owner.events.magicRodObjectRequests.add(
+                owner.events.magicRodObject(
                         new MagicRodObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
                 owner.slots.replace(index, withVariant(positioned, variant));
                 return false;
@@ -1248,18 +1235,17 @@ public final class EntityProjectileController {
 
         private boolean emitDamageEvent() {
 
-            owner.events.pendingEntityEvents.add(
-                    linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
-                            .linkDamage(0)
-                            .swordHit(false)
-                            .enemyDamage(enemyDamage)
-                            .enemySpecialAction(specialAction)
-                            .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
-                            .soundId(0x03)
-                            .secondarySoundChannel(secondaryChannel)
-                            .secondarySoundId(secondarySoundId)
-                            .swordPokeVfx(null)
-                            .build());
+            owner.events.combat(linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
+                    .linkDamage(0)
+                    .swordHit(false)
+                    .enemyDamage(enemyDamage)
+                    .enemySpecialAction(specialAction)
+                    .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                    .soundId(0x03)
+                    .secondarySoundChannel(secondaryChannel)
+                    .secondarySoundId(secondarySoundId)
+                    .swordPokeVfx(null)
+                    .build());
             return true;
         }
 

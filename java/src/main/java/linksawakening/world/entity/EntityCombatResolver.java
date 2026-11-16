@@ -134,21 +134,20 @@ public final class EntityCombatResolver {
         // the updated position tables when selecting Link's recoil vector.
         var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 moved.x(), moved.y(), moved.z(), this.contactLinkX[slot], this.contactLinkY[slot], 0x14);
-        this.events.pendingEntityEvents.add(
-                linksawakening.world.entity.event.EntityCombatEvent.builder(slot, moved.type())
-                        .linkDamage(0)
-                        .swordHit(false)
-                        .enemyDamage(0)
-                        .enemySpecialAction(-1)
-                        .soundChannel(EntityCombatEvent.SoundChannel.NONE)
-                        .soundId(-1)
-                        .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
-                        .secondarySoundId(-1)
-                        .swordPokeVfx(null)
-                        .linkAction(EntityCombatEvent.LinkAction.NONE)
-                        .linkCollisionResponse(
-                                new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10))
-                        .build());
+        this.events.combat(linksawakening.world.entity.event.EntityCombatEvent.builder(slot, moved.type())
+                .linkDamage(0)
+                .swordHit(false)
+                .enemyDamage(0)
+                .enemySpecialAction(-1)
+                .soundChannel(EntityCombatEvent.SoundChannel.NONE)
+                .soundId(-1)
+                .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                .secondarySoundId(-1)
+                .swordPokeVfx(null)
+                .linkAction(EntityCombatEvent.LinkAction.NONE)
+                .linkCollisionResponse(
+                        new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10))
+                .build());
     }
 
     public List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
