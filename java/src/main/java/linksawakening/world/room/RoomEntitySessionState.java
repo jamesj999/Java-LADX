@@ -8,6 +8,14 @@ import linksawakening.world.entity.EnemyProjectileCollision;
 final class RoomEntitySessionState {
     final RoomEntityOutbox outbox = new RoomEntityOutbox();
 
+    void clearGameOverPowerCounter() {
+        enemyDropCounters = new EnemyDropResolver.CounterState(enemyDropCounters.guardianAcornCounter(), 0);
+    }
+
+    void clearRecentRoomEntityClears() {
+        recentRoomEntityClears.reset();
+    }
+
     void advanceBoomerangSoundClock(boolean worldGameplay) {
         if (worldGameplay)
             boomerangSoundCounter = (boomerangSoundCounter + 1)

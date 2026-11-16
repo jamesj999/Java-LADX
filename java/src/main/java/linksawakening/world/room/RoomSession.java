@@ -98,7 +98,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
                 config, loadedRooms, this::installRoom, this::roomLoaded, this::resetRoomTransients);
 
         dungeonView = components.roomState().view();
-        roles = RoomRoleViews.create(components, this);
+        roles = RoomRoleViews.create(components, this, loadedRooms);
         doors = components.roomDoorInteractions();
         transitions = new RoomTransitionsView(components.roomTransitionController(), this);
         playerItems = components.roomPlayerItemActions();

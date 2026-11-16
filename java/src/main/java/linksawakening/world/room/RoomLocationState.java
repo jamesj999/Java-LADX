@@ -21,6 +21,10 @@ final class RoomLocationState {
     int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     boolean shouldGetLostInMysteriousWoods;
 
+    void onMapBoundaryWarp(Runnable callback) {
+        mapBoundaryWarp = java.util.Objects.requireNonNull(callback);
+    }
+
     void setRespawnPoint(Warp point, int indoorRoom) {
         respawnPoint = point;
         respawnIndoorRoom = indoorRoom;

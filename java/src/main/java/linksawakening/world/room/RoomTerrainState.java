@@ -8,6 +8,11 @@ import linksawakening.world.entity.event.HookshotBridgeUpdate;
 
 /** Link ground registers and switch state persist across room changes. */
 final class RoomTerrainState {
+    void resetGameOverSwitchBlocks() {
+        switchBlocksState = 0;
+        switchableObjectAnimationStage = 0;
+    }
+
     int crackedFloorCounter;
     int linkGroundRoomPosition;
     int linkGroundFinalRoomPosition;
