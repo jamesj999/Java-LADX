@@ -10,12 +10,11 @@ record RoomRoleViews(
     static RoomRoleViews create(RoomSessionComponents components, RoomSession session, LoadedRoomHandle loadedRooms) {
         return new RoomRoleViews(
                 new RoomEntitiesView(new RoomEntitiesView.Dependencies(session)),
-                new RoomEntityStateView(new RoomEntityStateView.Dependencies(
+                new RoomEntityControl(new RoomEntityControl.Dependencies(
                         components.entityBridge(),
                         components.entityInputs(),
                         components.followers(),
-                        components.roomSessionViews(),
-                        session)),
+                        components.roomSessionViews())),
                 components.roomLoadCoordinator(),
                 components.roomState(),
                 new RoomProgression(

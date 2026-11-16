@@ -103,7 +103,7 @@ final class RoomSessionContext {
                         values.transientVfxSystem,
                         values.romData,
                         values.roomTilemapBuilder));
-        values.entityInputs = new RoomEntityInputs();
+        values.entityInputs = new RoomEntityInputs(loadedRooms);
         values.roomRuntimeServices = new RoomRuntime.Services(
                 values.roomCollisionQueries, values.roomObjectMutations, values.entityFrame, transientVfxSystem);
         values.roomPlayerItemActions = new RoomPlayerItemActions(
@@ -262,18 +262,20 @@ final class RoomSessionContext {
                 values.roomTransitionController);
         values.entityCombatBridge = new RoomEntityCombatBridge(new RoomEntityCombatBridge.Dependencies(
                 values.entityFrame, values.followers, values.entityFrame, values.roomEntityRewards, values.roomState));
-        values.entityBridge = new RoomEntityBridge(new RoomEntityBridge.Dependencies(
-                values.entityFrame,
-                values.followers,
-                values.items,
-                values.location,
-                values.terrain,
-                values.entityEffects,
-                values.entityCombatBridge,
-                values.entityConfiguration,
-                values.entityRandomByteSource,
-                values.gpu,
-                values.romData,
-                values.roomLoadCoordinator));
+        values.entityBridge = new RoomEntityBridge(
+                loadedRooms,
+                new RoomEntityBridge.Dependencies(
+                        values.entityFrame,
+                        values.followers,
+                        values.items,
+                        values.location,
+                        values.terrain,
+                        values.entityEffects,
+                        values.entityCombatBridge,
+                        values.entityConfiguration,
+                        values.entityRandomByteSource,
+                        values.gpu,
+                        values.romData,
+                        values.roomLoadCoordinator));
     }
 }

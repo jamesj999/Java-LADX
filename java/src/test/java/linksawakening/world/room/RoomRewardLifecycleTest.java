@@ -183,7 +183,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(0x04, RoomDebugFixture.of(session).indoorTorchPaletteEffectAddressForTest());
 
         session.entityState().setToadstoolPlayerState(true, 0);
-        session.setEntityInventorySlots(0, 0x0C);
+        session.components.entityInputs().updateSetEntityInventorySlots(0, 0x0C);
         session.entityState().setEntityActionButtonsHeld(false, true);
         session.story().setEntityDefaultMusicTrack(0x0C);
         tickInteractive(session, 0, witch);
@@ -364,7 +364,7 @@ final class RoomRewardLifecycleTest {
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xC6);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
-        session.setEntityGoldenLeavesCount(5);
+        session.components.entityInputs().updateSetEntityGoldenLeavesCount(5);
 
         session.entities().tickEntities(0, 0x20, 0x30);
         session.entities().tickEntities(1, 0x20, 0x30);
@@ -615,7 +615,7 @@ final class RoomRewardLifecycleTest {
                 0x100,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
 
-        session.setEntityMusicActive(true);
+        session.components.entityInputs().updateSetEntityMusicActive(true);
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntities(89, 0x50, 0x60);
         assertEquals(-1, session.consumePendingMusicTrack());
@@ -624,7 +624,7 @@ final class RoomRewardLifecycleTest {
         session.entities().tickEntities(90, 0x50, 0x60);
         assertEquals(-1, session.consumePendingMusicTrack());
 
-        session.setEntityMusicActive(false);
+        session.components.entityInputs().updateSetEntityMusicActive(false);
         session.entities().tickEntities(91, 0x50, 0x60);
 
         assertEquals(0x20, session.consumePendingMusicTrack());
@@ -644,7 +644,7 @@ final class RoomRewardLifecycleTest {
         int pieces = 0;
         boolean completed = false, dialogOpened = false;
         for (int frame = 1; frame < 220 && !completed; frame++) {
-            session.setHeartPiecesCount(pieces);
+            session.components.entityInputs().updateSetHeartPiecesCount(pieces);
             session.entities().tickEntities(frame, 72, 80);
             assertFalse(session.rooms().liftedEntityState().active());
             for (var update : session.consumeHeartPieceUpdates()) {

@@ -8,6 +8,10 @@ import linksawakening.world.entity.EnemyProjectileCollision;
 final class RoomEntitySessionState {
     final RoomEntityOutbox outbox = new RoomEntityOutbox();
 
+    void overrideEnemyDropLowHealth(boolean low) {
+        enemyDropLowHealth = low;
+    }
+
     void clearGameOverPowerCounter() {
         enemyDropCounters = new EnemyDropResolver.CounterState(enemyDropCounters.guardianAcornCounter(), 0);
     }

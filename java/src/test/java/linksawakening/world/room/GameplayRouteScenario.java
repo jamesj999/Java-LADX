@@ -359,9 +359,12 @@ final class GameplayRouteScenario {
                 InventoryItem.MAGIC_POWDER.romValue(),
                 route.playerState.inventory().itemA());
         route.session.entityState().setToadstoolPlayerState(true, 0);
-        route.session.setEntityInventorySlots(
-                route.playerState.inventory().itemA(),
-                route.playerState.inventory().itemB());
+        route.session
+                .components
+                .entityInputs()
+                .updateSetEntityInventorySlots(
+                        route.playerState.inventory().itemA(),
+                        route.playerState.inventory().itemB());
         route.session.entityState().setEntityActionButtonsHeld(true, false);
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
@@ -441,9 +444,12 @@ final class GameplayRouteScenario {
         assertTrue(route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3F));
 
-        route.session.setEntityInventorySlots(
-                route.playerState.inventory().itemA(),
-                route.playerState.inventory().itemB());
+        route.session
+                .components
+                .entityInputs()
+                .updateSetEntityInventorySlots(
+                        route.playerState.inventory().itemA(),
+                        route.playerState.inventory().itemB());
         route.session
                 .entityState()
                 .setToadstoolPlayerState(false, route.playerState.ammunition().magicPowderCount());
@@ -1466,7 +1472,7 @@ final class GameplayRouteScenario {
                         .getFirst()
                         .globalDialogId());
         route.session.entityState().setEntityDialogActive(true);
-        route.session.setEntityMusicActive(true);
+        route.session.components.entityInputs().updateSetEntityMusicActive(true);
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
@@ -1474,7 +1480,7 @@ final class GameplayRouteScenario {
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
-        route.session.setEntityMusicActive(false);
+        route.session.components.entityInputs().updateSetEntityMusicActive(false);
         route.session
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
@@ -2456,7 +2462,7 @@ final class GameplayRouteScenario {
                 int linkEntityY = (maskedMimic.y() + 0x20) & 0xFF;
                 // The first handler tick mirrors Link's down input. The next
                 // sees Link behind that facing and selects vulnerable options $08.
-                route.session.setEntityPressedButtonsMask(0x08);
+                route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0x08);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 maskedMimic = route.session
@@ -2482,7 +2488,7 @@ final class GameplayRouteScenario {
                                         && event.swordHit()
                                         && event.enemyDamage() == 1),
                         hitEvents.toString());
-                route.session.setEntityPressedButtonsMask(0);
+                route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
                 for (int recovery = 0; recovery < 0x30; recovery++) {
                     route.session
                             .entities()
@@ -2531,7 +2537,7 @@ final class GameplayRouteScenario {
                                 .count());
             }
         }
-        route.session.setEntityPressedButtonsMask(0);
+        route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
         route.mimicEventDeadline = route.frame + 0x300;
         while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.mimicEventDeadline) {
@@ -2770,7 +2776,7 @@ final class GameplayRouteScenario {
             assertEquals(EntityStatus.ACTIVE, route.maskedMimic.status());
             int linkEntityX = route.maskedMimic.x();
             int linkEntityY = (route.maskedMimic.y() + 0x20) & 0xFF;
-            route.session.setEntityPressedButtonsMask(0x08);
+            route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0x08);
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             route.maskedMimic =
@@ -2800,7 +2806,7 @@ final class GameplayRouteScenario {
                                 .filter(entity -> entity.type() == 0x2E)
                                 .count());
             }
-            route.session.setEntityPressedButtonsMask(0);
+            route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
             for (int recovery = 0; recovery < 0x30; recovery++) {
                 route.session
                         .entities()
@@ -3134,7 +3140,7 @@ final class GameplayRouteScenario {
                 assertEquals(0x21, RoomDebugFixture.of(route.session).activeRoomEventForTest());
             }
         }
-        route.session.setEntityPressedButtonsMask(0);
+        route.session.components.entityInputs().updateSetEntityPressedButtonsMask(0);
         route.room30EventDeadline = route.frame + 0x300;
         while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.room30EventDeadline) {
@@ -5677,7 +5683,7 @@ final class GameplayRouteScenario {
         assertEquals(0x78, route.room3BPots.get(1).x());
         assertEquals(0x70, route.room3BPots.get(1).y());
 
-        route.session.setEntityInventorySlots(0x00, 0x03);
+        route.session.components.entityInputs().updateSetEntityInventorySlots(0x00, 0x03);
         route.session.entityState().setEntityPowerBraceletButtonHeld(true);
         route.session.entityState().setEntityActionButtonsHeld(false, true);
         route.session.entityState().setEntityAttackStepAnimationCountdown(0);

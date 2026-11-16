@@ -110,7 +110,9 @@ final class RoomNavigationFixture {
         link.motion().update();
         session.entityState()
                 .setEntityAttackStepAnimationCountdown(link.equipment().romAttackStepAnimationCountdown());
-        session.setEntityFinalPositionX(link.position().romFinalPositionX());
+        session.components
+                .entityInputs()
+                .updateSetEntityFinalPositionX(link.position().romFinalPositionX());
         RoomEntityTickBuilder.frame(frame)
                 .position(
                         link.position().romEntityX(),

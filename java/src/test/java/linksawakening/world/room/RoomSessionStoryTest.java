@@ -133,7 +133,7 @@ final class RoomSessionStoryTest {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x80);
         session.story().setChestPlayerLevels(0, 1, 0);
-        session.setEnemyDropPlayerState(3, 3, true);
+        session.components.entityBridge().updateSetEnemyDropPlayerState(3, 3, true);
 
         int frame = 0;
         boolean restoredPowerMusic = false;
@@ -186,7 +186,7 @@ final class RoomSessionStoryTest {
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x58);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
-        session.setEntityGoldenLeavesCount(4);
+        session.components.entityInputs().updateSetEntityGoldenLeavesCount(4);
 
         session.entities().tickEntities(0, 0x20, 0x30);
         session.entities().tickEntities(1, 0x40, 0x50);
@@ -290,7 +290,7 @@ final class RoomSessionStoryTest {
         session.entityState().setEntityActionButtonsHeld(false, false);
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntities(3, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
-        session.setEntityDialogAskSelectionIndex(1);
+        session.components.entityInputs().updateSetEntityDialogAskSelectionIndex(1);
         session.entityState().setEntityDialogActive(false);
         session.entities().tickEntities(4, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 

@@ -168,14 +168,6 @@ public final class RoomSession implements RoomEntityOutputSource {
                 : components.entityCombatBridge().resolveEntityCombat(loadedRoom, inputs);
     }
 
-    boolean deferContactRecoil(int slot, int x, int y) {
-        return hasRoom() && components.entityCombatBridge().deferContactRecoil(loadedRoom, slot, x, y);
-    }
-
-    int clearEntity(int slot) {
-        return !hasRoom() ? 0 : components.entityCombatBridge().clearEntity(loadedRoom, slot);
-    }
-
     linksawakening.world.entity.EntityPickupEvent collectEntityIfNeeded(EntityPickupFrameInputs inputs) {
         // Evaluate both required groups before the no-room default, preserving boundary validation.
         if (inputs instanceof EntityPickupInputs owned) {
@@ -212,94 +204,6 @@ public final class RoomSession implements RoomEntityOutputSource {
                 frame,
                 new EntityPickupInputs.Link(x, y, airborne, interactive, direction, z),
                 new SwordBox(false, 0, 0, 0, 0)));
-    }
-
-    void setEntityDialogActive(boolean active) {
-        components.entityInputs().setEntityDialogActive(active);
-        if (hasRoom()) components.entityInputs().applyDialogActive(loadedRoom, active);
-    }
-
-    void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        components.entityInputs().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
-        if (hasRoom())
-            components.entityInputs().applyTalkState(loadedRoom, inventoryAppearing, dialogCooldown, windowY);
-    }
-
-    void setEntityDialogAskSelectionIndex(int selectionIndex) {
-        components.entityInputs().setEntityDialogAskSelectionIndex(selectionIndex);
-        if (hasRoom()) components.entityInputs().applyDialogAskSelectionIndex(loadedRoom, selectionIndex);
-    }
-
-    void setEntityMusicActive(boolean active) {
-        components.entityInputs().setEntityMusicActive(active);
-        if (hasRoom()) components.entityInputs().applyMusicActive(loadedRoom, active);
-    }
-
-    void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        components.entityInputs().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
-        if (hasRoom())
-            components.entityInputs().applyActionButtonsHeld(loadedRoom, actionButtonAHeld, actionButtonBHeld);
-    }
-
-    void setEntityJoypadHeld(boolean joypadHeld) {
-        components.entityInputs().setEntityJoypadHeld(joypadHeld);
-        if (hasRoom()) components.entityInputs().applyJoypadHeld(loadedRoom, joypadHeld);
-    }
-
-    void setEntityPressedButtonsMask(int pressedButtonsMask) {
-        components.entityInputs().setEntityPressedButtonsMask(pressedButtonsMask);
-        if (hasRoom()) components.entityInputs().applyPressedButtonsMask(loadedRoom, pressedButtonsMask);
-    }
-
-    void setEntityInventorySlots(int itemA, int itemB) {
-        components.entityInputs().setEntityInventorySlots(itemA, itemB);
-        if (hasRoom()) components.entityInputs().applyInventorySlots(loadedRoom, itemA, itemB);
-    }
-
-    void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        components.entityInputs().setToadstoolPlayerState(hasToadstool, magicPowderCount);
-        if (hasRoom()) components.entityInputs().applyToadstoolPlayerState(loadedRoom, hasToadstool, magicPowderCount);
-    }
-
-    void setEntityGoldenLeavesCount(int goldenLeavesCount) {
-        components.entityInputs().setEntityGoldenLeavesCount(goldenLeavesCount);
-        if (hasRoom()) components.entityInputs().applyGoldenLeavesCount(loadedRoom, goldenLeavesCount);
-    }
-
-    void setSecretSeashellPegasusCollisionState(
-            boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
-        components
-                .entityInputs()
-                .setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY);
-        if (hasRoom())
-            components
-                    .entityInputs()
-                    .applySecretSeashellPegasusCollisionState(
-                            loadedRoom, screenShakeActive, collisionActive, collisionX, collisionY);
-    }
-
-    void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
-        components.entityInputs().setEntityPowerBraceletButtonHeld(buttonHeld);
-        if (hasRoom()) components.entityInputs().applyPowerBraceletButtonHeld(loadedRoom, buttonHeld);
-    }
-
-    void setEntityBombButtonHeld(boolean buttonHeld) {
-        components.entityInputs().setEntityBombButtonHeld(buttonHeld);
-        if (hasRoom()) components.entityInputs().applyBombButtonHeld(loadedRoom, buttonHeld);
-    }
-
-    void setEntityAttackStepAnimationCountdown(int countdown) {
-        components.entityInputs().setEntityAttackStepAnimationCountdown(countdown);
-        if (hasRoom()) components.entityInputs().applyAttackStepAnimationCountdown(loadedRoom, countdown);
-    }
-
-    void setEntityFinalPositionX(int positionX) {
-        components.entityInputs().setEntityFinalPositionX(positionX);
-        if (hasRoom()) components.entityInputs().applyFinalPositionX(loadedRoom, positionX);
-    }
-
-    void setEntityActionButtonsHeld(boolean held) {
-        setEntityActionButtonsHeld(held, held);
     }
 
     void tickEntities(int frameCounter) {
@@ -377,15 +281,6 @@ public final class RoomSession implements RoomEntityOutputSource {
                 new SwordBox(false, 0, 0, 0, 0)));
     }
 
-    void configureEnemyDropRuntime() {
-        if (hasRoom()) components.roomLoadCoordinator().configureEnemyDropRuntime(loadedRoom);
-    }
-
-    void setEnemyDropPlayerState(int maxHearts, int health, boolean power) {
-        components.entityBridge().setEnemyDropPlayerState(maxHearts, health, power);
-        configureEnemyDropRuntime();
-    }
-
     @Override
     public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
         var events = !hasRoom() ? List.<EntityCombatEvent>of() : loadedRoom.entities.consumePendingEntityEvents();
@@ -457,10 +352,6 @@ public final class RoomSession implements RoomEntityOutputSource {
         return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkFallenPoseRequests();
     }
 
-    void setFreeMovementMode(boolean enabled) {
-        if (hasRoom()) loadedRoom.entities.setFreeMovementMode(enabled);
-    }
-
     @Override
     public List<LinkFacingRequest> consumeLinkFacingRequests() {
         return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkFacingRequests();
@@ -468,7 +359,7 @@ public final class RoomSession implements RoomEntityOutputSource {
 
     @Override
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkAttackClearRequests();
+        return components.entityBridge().consumeLinkAttackClearRequests();
     }
 
     @Override
@@ -479,18 +370,6 @@ public final class RoomSession implements RoomEntityOutputSource {
     @Override
     public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
         return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingLinkHeldItemPoseRequests();
-    }
-
-    boolean gotItemPresentationActive() {
-        return hasRoom() && loadedRoom.entities.inspection().witchGotItemPresentationActive();
-    }
-
-    boolean powerUpPickupSequenceActive() {
-        return hasRoom() && loadedRoom.entities.inspection().powerUpPickupSequenceActive();
-    }
-
-    boolean swordPickupSequenceActive() {
-        return hasRoom() && loadedRoom.entities.inspection().swordPickupSequenceActive();
     }
 
     @Override
@@ -532,18 +411,7 @@ public final class RoomSession implements RoomEntityOutputSource {
     }
 
     List<DialogRequest> consumeEntityDialogRequests() {
-        if (components.entityFrame().outbox.pendingRoomDialogRequests.isEmpty())
-            return !hasRoom() ? List.of() : loadedRoom.entities.consumePendingDialogRequests();
-        List<DialogRequest> requests = new ArrayList<>(components.entityFrame().outbox.pendingRoomDialogRequests);
-        components.entityFrame().outbox.pendingRoomDialogRequests.clear();
-        if (hasRoom()) {
-            requests.addAll(loadedRoom.entities.consumePendingDialogRequests());
-        }
-        return List.copyOf(requests);
-    }
-
-    int entityHealth(int slot) {
-        return loadedRoom.entities.enemies().enemyHealth(slot);
+        return components.entityBridge().consumeEntityDialogRequests();
     }
 
     @Override
@@ -557,29 +425,6 @@ public final class RoomSession implements RoomEntityOutputSource {
             }
         }
         return updates;
-    }
-
-    void setHeartPiecesCount(int count) {
-        if (hasRoom()) loadedRoom.entities.setHeartPiecesCount(count);
-    }
-
-    void resetGuardianAcornCounterOnHurt() {
-        boolean roomPresent = hasRoom();
-        var counters = roomPresent
-                ? loadedRoom.entities.inspection().enemyDropCounters()
-                : components.entityFrame().enemyDropCounters;
-        components.entityFrame().enemyDropCounters =
-                linksawakening.world.entity.EnemyDropResolver.resetGuardianAcornCounter(counters);
-        if (hasRoom())
-            loadedRoom.entities.configuration().setEnemyDropCounters(components.entityFrame().enemyDropCounters);
-    }
-
-    boolean gelClingingToLink() {
-        return hasRoom() && loadedRoom.entities.gelClingingToLink();
-    }
-
-    void setEntityScreenShakeCountdown(int countdown) {
-        if (hasRoom()) loadedRoom.entities.configuration().setScreenShakeCountdown(countdown);
     }
 
     /** Explicit lifecycle reset; no room-only collaborator accepts an absent generation. */
@@ -607,10 +452,6 @@ public final class RoomSession implements RoomEntityOutputSource {
             components.entityInputs().entityInventoryAppearing = false;
         }
         return requests;
-    }
-
-    void setLiftStrengthBoost(boolean redTunic, boolean power) {
-        if (hasRoom()) loadedRoom.entities.configuration().setLiftStrengthBoost(redTunic, power);
     }
 
     /** ResetRoomVariables runs even when subsequent room acquisition fails. */
