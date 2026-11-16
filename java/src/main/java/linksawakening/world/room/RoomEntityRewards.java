@@ -7,7 +7,6 @@ import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_2;
 import java.util.List;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.InstrumentCompletionEvent;
-import linksawakening.world.entity.event.KeyRewardEvent;
 import linksawakening.world.entity.event.RichardProgressEvent;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
@@ -27,21 +26,6 @@ final class RoomEntityRewards {
         }
         dependencies.roomState().overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
         dependencies.roomState().indoorARoomStatus[0xF8] |= (byte) 0x20;
-    }
-
-    void harvestKeyRewardEvents(RoomRuntime loaded) {
-
-        List<KeyRewardEvent> rewards = loaded.entities.outbox().consumePendingKeyRewardEvents();
-        for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
-            KeyRewardEvent reward = rewards.get(rewardIndex);
-
-            if (reward.itemType() >= ChestContentsTable.CHEST_MAP
-                    && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
-            }
-            dependencies.roomState().markCompleted(loaded.room);
-        }
-        RoomEntityOutbox.append(dependencies.entityRuntimeState().outbox.pendingKeyRewardEvents, rewards);
     }
 
     void harvestHeartContainerRewards(RoomRuntime loaded) {

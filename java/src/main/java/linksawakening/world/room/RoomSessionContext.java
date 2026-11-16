@@ -146,7 +146,12 @@ final class RoomSessionContext {
                         values.roomTilemapBuilder));
         values.entityInputs = new RoomEntityInputs(loadedRooms);
         values.roomRuntimeServices = new RoomRuntime.Services(
-                values.roomCollisionQueries, values.roomObjectMutations, values.entityFrame, transientVfxSystem);
+                values.roomCollisionQueries,
+                values.roomObjectMutations,
+                values.entityFrame,
+                values.followers,
+                values.roomState,
+                transientVfxSystem);
         values.roomPlayerItemActions = new RoomPlayerItemActions(
                 loadedRooms,
                 new RoomPlayerItemActions.Dependencies(
@@ -301,8 +306,6 @@ final class RoomSessionContext {
                 values.roomState,
                 values.roomStoryState,
                 values.roomTransitionController);
-        values.entityCombatBridge = new RoomEntityCombatBridge(new RoomEntityCombatBridge.Dependencies(
-                values.entityFrame, values.followers, values.entityFrame, values.roomEntityRewards, values.roomState));
         values.entityBridge = new RoomEntityBridge(
                 loadedRooms,
                 new RoomEntityBridge.Dependencies(
@@ -314,7 +317,6 @@ final class RoomSessionContext {
                         values.location,
                         values.terrain,
                         values.entityEffects,
-                        values.entityCombatBridge,
                         values.entityConfiguration,
                         values.entityRandomByteSource,
                         values.gpu,

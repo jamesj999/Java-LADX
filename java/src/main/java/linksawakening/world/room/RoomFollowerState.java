@@ -11,6 +11,11 @@ final class RoomFollowerState {
         followingLinkDirection = direction & 0xFF;
     }
 
+    void observePickup(int z, int direction) {
+        followingLinkZ = z & 0xFF;
+        followingLinkDirection = direction & 0xFF;
+    }
+
     final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     FollowingNpcState followingNpcState = FollowingNpcState.none();
     int followingLinkX = 8;

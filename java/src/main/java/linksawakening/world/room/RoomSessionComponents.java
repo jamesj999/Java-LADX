@@ -63,7 +63,6 @@ record RoomSessionComponents(
         RoomEntityInputs entityInputs,
         RoomEntitySimulation.EffectsDependencies entityEffects,
         RoomEntitySimulation.SetupDependencies entityConfiguration,
-        RoomEntityCombatBridge entityCombatBridge,
         LinkOutputs.Dependencies linkOutputsDependencies,
         RewardOutputs.Dependencies rewardOutputsDependencies,
         RoomRuntime.Services roomRuntimeServices) {
@@ -110,7 +109,6 @@ record RoomSessionComponents(
         RoomEntityInputs entityInputs;
         RoomEntitySimulation.EffectsDependencies entityEffects;
         RoomEntitySimulation.SetupDependencies entityConfiguration;
-        RoomEntityCombatBridge entityCombatBridge;
         final RoomLocationState location = new RoomLocationState();
         final RoomTerrainState terrain = new RoomTerrainState();
         final RoomFollowerState followers = new RoomFollowerState();
@@ -167,7 +165,6 @@ record RoomSessionComponents(
                     entityInputs,
                     entityEffects,
                     entityConfiguration,
-                    entityCombatBridge,
                     new LinkOutputs.Dependencies(entityBridge),
                     new RewardOutputs.Dependencies(entityFrame),
                     roomRuntimeServices);

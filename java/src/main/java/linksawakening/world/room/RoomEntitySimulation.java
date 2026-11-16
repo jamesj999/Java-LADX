@@ -307,7 +307,7 @@ final class RoomEntitySimulation {
         }
         RoomEntityOutbox.append(effects.entityBridge().outbox.pendingChestRewardEvents, chestRewards);
         effects.roomEntityRewards().harvestKeyQuicksandEvents(loaded);
-        effects.roomEntityRewards().harvestKeyRewardEvents(loaded);
+        loaded.interactions.harvestKeyRewardEvents();
         effects.roomEntityRewards().harvestSlimeKeyRewardEvents(loaded);
         effects.roomPuzzleController().harvestThrownRoomEventCollisions(loaded);
         effects.roomEntityRewards().harvestHeartContainerRewards(loaded);

@@ -101,12 +101,12 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
 
     int clearEntity(int slot) {
         RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? 0 : dependencies.entityCombatBridge().clearEntity(loaded, slot);
+        return loaded == null ? 0 : loaded.interactions.clearEntity(slot);
     }
 
     boolean deferContactRecoil(int slot, int x, int y) {
         RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && dependencies.entityCombatBridge().deferContactRecoil(loaded, slot, x, y);
+        return loaded != null && loaded.entities.combat().deferContactRecoil(slot, x, y);
     }
 
     @Override
@@ -135,9 +135,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
         if (inputs instanceof EntityCombatInputs owned) java.util.Objects.requireNonNull(owned.sword(), "sword");
         else inputs.swordCollisionActive();
         RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null
-                ? java.util.List.of()
-                : dependencies.entityCombatBridge().resolveEntityCombat(loaded, inputs);
+        return loaded == null ? java.util.List.of() : loaded.interactions.resolveEntityCombat(inputs);
     }
 
     @Override
@@ -151,7 +149,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
             inputs.swordActive();
         }
         RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? null : dependencies.entityCombatBridge().collectEntityIfNeeded(loaded, inputs);
+        return loaded == null ? null : loaded.interactions.collectEntityIfNeeded(inputs);
     }
 
     @Override
@@ -440,7 +438,6 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     }
 
     final RoomEntityOutbox outbox;
-    final RoomEntityCombatBridge combat;
     private final Dependencies dependencies;
 
     private final RoomEntitySimulation roomEntitySimulation;
@@ -449,7 +446,6 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
         this.rooms = java.util.Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
         outbox = dependencies.entityFrame().outbox;
-        combat = dependencies.entityCombatBridge();
 
         roomEntitySimulation = new RoomEntitySimulation(
                 new RoomEntitySimulation.Dependencies(
@@ -528,7 +524,6 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
             RoomLocationState location,
             RoomTerrainState terrain,
             RoomEntitySimulation.EffectsDependencies entityEffects,
-            RoomEntityCombatBridge entityCombatBridge,
             RoomEntitySimulation.SetupDependencies entityConfiguration,
             RomRandomByteSource entityRandomByteSource,
             GPU gpu,
@@ -543,7 +538,6 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
             java.util.Objects.requireNonNull(location, "location");
             java.util.Objects.requireNonNull(terrain, "terrain");
             java.util.Objects.requireNonNull(entityEffects, "entityEffects");
-            java.util.Objects.requireNonNull(entityCombatBridge, "entityCombatBridge");
             java.util.Objects.requireNonNull(entityConfiguration, "entityConfiguration");
             java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             java.util.Objects.requireNonNull(gpu, "gpu");

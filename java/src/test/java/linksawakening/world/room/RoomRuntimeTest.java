@@ -117,6 +117,28 @@ class RoomRuntimeTest {
     }
 
     @Test
+    void replacementCombatPolicyUsesOnlyTheNewGenerationsEntityOwners() {
+        var session = RoomRenderAllocationTest.room();
+        var original = RoomSessionInspection.loadedRoom(session);
+        var replacementEntities = new linksawakening.world.entity.RoomEntityRuntimeBuilder(
+                        original.entities.inspection().snapshot())
+                .build();
+        var replacement = new RoomRuntime(
+                original.contents,
+                replacementEntities,
+                RoomSessionInspection.component(session, RoomRuntime.Services.class));
+        session.installRoom(replacement);
+        session.entityState().clearEntity(0);
+        org.junit.jupiter.api.Assertions.assertTrue(
+                original.entities.inspection().view().slots().get(0).loaded());
+        org.junit.jupiter.api.Assertions.assertFalse(
+                replacementEntities.inspection().view().slots().get(0).loaded());
+        org.junit.jupiter.api.Assertions.assertFalse(
+                session.rooms().requireActiveRoom().entityView().slots().get(0).loaded());
+        assertNotSame(original.interactions, replacement.interactions);
+    }
+
+    @Test
     void cachedInputsStillValidateAndPersistBeforeTheFirstLoad() {
         var rom = linksawakening.testing.TestRoms.partial(new byte[0x100000]);
         var session = new RoomSession(new RoomSessionConfig(
