@@ -19,13 +19,13 @@ final class RoomEntityCombatBridge {
 
     List<EntityCombatEvent> resolveEntityCombat(RoomRuntime loaded, EnemyCombatInputs inputs) {
 
-        List<EntityCombatEvent> events = loaded.entities.resolveCombat(inputs);
+        List<EntityCombatEvent> events = loaded.entities.combat().resolveCombat(inputs);
         loaded.room.replaceEntities(loaded.entities.inspection().view());
         return events;
     }
 
     boolean deferContactRecoil(RoomRuntime loaded, int slot, int linkX, int linkY) {
-        return loaded.entities.deferContactRecoil(slot, linkX, linkY);
+        return loaded.entities.combat().deferContactRecoil(slot, linkX, linkY);
     }
 
     int clearEntity(RoomRuntime loaded, int slot) {

@@ -183,10 +183,6 @@ public final class RoomEntityRuntime {
         return new RoomEntityRuntimeBuilder(initial);
     }
 
-    public boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return combat().deferContactRecoil(slot, linkX, linkY);
-    }
-
     public int clearEntity(int slot) {
         return lifecycle().clearEntity(slot);
     }
@@ -201,14 +197,6 @@ public final class RoomEntityRuntime {
 
     public EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
         return pickups().collectIfNeeded(inputs);
-    }
-
-    public List<EntityCombatEvent> resolveCombat(EntitySwordContactFrame inputs) {
-        return combat().resolveCombat(inputs);
-    }
-
-    public List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
-        return combat().resolveCombat(inputs);
     }
 
     public boolean consumePendingSwitchBlockAnimationRequest() {
