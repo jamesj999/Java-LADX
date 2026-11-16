@@ -681,19 +681,43 @@ sequenceDiagram
 
 ## Entity system
 
-`RoomEntityRuntime` is the source-compatible room facade and the single
-composition root. It constructs shared state first, then concrete controllers
-in dependency order. There are no lazy service bindings or suppliers of the
-runtime. `EntityRuntimeState` composes cross-cutting slot, combat, physics,
-room and presentation data; neither class inherits fields or constants.
-`EntityRomConstants` is a final, non-instantiable holder used directly by callers.
+`RoomEntityRuntimeBuilder` is the single composition root. It validates named
+inputs, constructs concrete owners in dependency order using local variables,
+initializes the room, then creates `RoomEntityRuntime`. Controllers receive
+neither the builder nor the runtime. There are no lazy service bindings or
+suppliers of either object.
+
+The room-held runtime provides `tick(context)` and role accessors returning the
+behavior owner directly: `combat`, `pickups`, `spawns`, `enemySpawns`, `lifecycle`,
+`outbox`, `commands`, `background`, `inspection`, `configuration`, `debug` and
+`enemies`. For example, use `runtime.combat().resolveCombat(inputs)`. Required
+legacy operations are one-line delegates in the single marked seam-bridge
+section; internal-only forwarding overloads are removed. The
+[seam migration inventory](archive/history/entity-runtime-seam.md) maps every
+retained overload to its replacement and external caller files. Migrate those
+callers before removing the corresponding bridge and guard entry.
+
+`EntitySlots` owns fixed slot values and their combat/physics columns, which
+share ROM slot identity. Its descending allocation search resets its own hitbox
+column. Controllers cannot be wired with an unrelated combat or physics table;
+they obtain those columns and the stable read-only list view from the slot owner.
+Per-family state is separate. `EntityRuntimeState` is construction-owned shared
+state, not a dependency passed around to controllers. `EntityRomConstants` is a
+final, non-instantiable holder; none of these classes inherits implementation.
+
+Constructor review combines only genuinely shared slot storage and removes
+repeated references to the same inspection or sprite cache. Distinct behavior
+owners stay explicit. Frame execution, lifecycle resets, inspection and the
+runtime role constructor can still be wide; a Services/Dependencies bundle would
+hide these edges rather than remove them. The seam inventory records each
+constructor's grouping and the retained responsibilities.
 
 Per-type state belongs to its motion or encounter. State needed by both an
 inspector/reset path and a behavior controller has an independent owner:
 bomb, projectile, lift, pickup, reward, story, boss and slot-presentation state,
 plus Genie and Slime Eye encounter state. This breaks construction cycles
 without exposing a partially constructed controller. Controllers receive final,
-validated concrete dependencies. `RoomEntityRuntime.builder(snapshot)` selects
+validated concrete dependencies. `new RoomEntityRuntimeBuilder(snapshot)` selects
 explicit ROM-backed or ROM-free policies during construction. Room loading and
 follower synchronization supply the real RNG, sprite catalog, combat tables,
 chest table and ROM readers. The ROM-free fixture supplies deterministic RNG
@@ -767,12 +791,25 @@ do not establish the schedule.
 
 `EntityFrameContext` is immutable frame input. Use its builder or `toBuilder`
 when changing Link state, collision inputs, RNG or interaction gates; referenced
-services retain their identity. `EntityFrameExecution` owns nested frame-input,
-timer-gate, slot-execution and presentation scratch, with no public mutable
-fields. The runtime reuses one execution object. Acquisition resets frame
-scratch, descending visits reset slot scratch, and the pipeline releases the
+services retain their identity. `EntityFrameExecution` holds explicit final
+collaborators, never `RoomEntityRuntime`. Its four nested scratch concepts are
+`EntityFrameInputs`, `EntityTimerGates`, `EntitySlotExecution` and
+`EntityPresentationFlags`. They remain nested because they share frame
+acquisition/reset/release, not to satisfy a file-size limit. The pipeline reuses
+one execution object and owns frame setup plus Link-speed/deferred-recoil
+cleanup. Acquisition resets frame scratch, descending visits reset slot scratch, and the pipeline releases the
 frame in a `finally` block. Reentrant frames use a separate execution object.
 Stable collision adapters and typed state views retain their identities.
+Mutable entity fields are private. Cross-owner access to Link input and motion
+latches uses methods on `EntityLinkState`, preserving the original write order.
+
+`architecture/EntityRuntimeShapeTest` uses the shared class-file reader to reject
+runtime references from every entity main class except the composition root and
+the runtime itself. It restricts the public runtime surface to tick, zero-argument
+role accessors and exact signatures in `SEAM_BRIDGES`. Since the shared reader
+does not decode field-write instructions, the third assertion enforces the
+stronger declaration rule: every non-final entity field must be private. The
+bridge set rejects stale entries and must shrink with room-side migration.
 
 `EntityRoomInspection.snapshot()` captures an owned immutable copy for retained
 state and consumers that require ownership. `view()` returns a cached read-only
@@ -813,12 +850,14 @@ Room, entity and sprite catalogs share the typed session ROM. Room-status arrays
 are mutable RAM state, not ROM buffers. Class and table comments name the
 ported routines and original labels, including unnamed disassembly tables.
 
-Use `RoomEntityRuntime.builder(snapshot)` for construction. Test-side
+Use `new RoomEntityRuntimeBuilder(snapshot)` for construction; the old static
+`RoomEntityRuntime.builder` factory remains a construction seam bridge. Test-side
 `EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` supply
 real ROM-free state, explicit service defaults and focused setup. Tests remain
 split by entity family and behavior. Room consumers use runtime/frame builders, `EntityPickupFrame`,
 `EnemyCombatFrame`, `EntitySwordContactFrame` and `FollowingNpcSpawn`; the old
-`from`, `ForTest` and wide operation adapters are removed. Preserve externally
+`from` and `ForTest` adapters are removed. Still-used operation bridges remain
+only in the marked migration seam. Preserve externally
 used signatures when consolidating internal code. Cohesion determines class
 boundaries; there is no file-length limit. Main and test imports are explicit.
 
@@ -837,8 +876,9 @@ To add an entity type:
 
 Add focused behavior coverage with the fixtures and ROM-backed tables; never
 add extracted assets. The required headless refactor oracle is
-`LA_ROM=/path/to/user/rom ./gradlew spotlessApply test` from `java/`, including
-its default session replays. Explicitly tagged `known-gap` routes are excluded
+`LA_ROM=/path/to/user/rom ./gradlew spotlessApply check` from `java/`, including
+its default session replays and architecture checks. Javac lint and Error Prone
+warnings are fatal. Explicitly tagged `known-gap` routes are excluded
 and are not refactor validation targets. Preserve consumer and sprite contracts
 within the entity boundary.
 

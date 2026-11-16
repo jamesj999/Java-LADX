@@ -146,3 +146,60 @@ those families without owning their behavior. These are explicit edges, not
 parameters to combine into an aggregate service locator merely to meet a limit.
 The review groups the shared slot storage and removes duplicate identities;
 it does not change the order of lifecycle resets or move queries through a hub.
+
+### Constructor decisions by owner
+
+All changes below are cohesive grouping or removal of duplicate identities; no
+new controller slices or dependency records were introduced. Immutable frame,
+event and snapshot value constructors are data contracts, not lists of service
+collaborators, and were not regrouped.
+
+| Constructor | Decision |
+| --- | --- |
+| `EntityBackgroundMechanics` | Combat and physics columns come from `EntitySlots`; one sprite-cache instance replaces duplicate parameters. |
+| `EntityBombInteractions` | Combat and physics columns come from `EntitySlots`. |
+| `EntityBossRewards` | Combat and physics columns come from `EntitySlots`. |
+| `EntityCombatResolver` | Combat and physics columns come from `EntitySlots`. |
+| `EntityEnemyInspection` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters. |
+| `EntityEnemySpawns` | Combat and physics columns come from `EntitySlots`. |
+| `EntityFrameExecution` | Combat and physics columns come from `EntitySlots`; slot list comes from the same owner. |
+| `EntityLiftThrowController` | Combat and physics columns come from `EntitySlots`. |
+| `EntityPickupController` | Combat and physics columns come from `EntitySlots`. |
+| `EntityPlayerCommands` | Combat and physics columns come from `EntitySlots`. |
+| `EntityPlayerSpawns` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters. |
+| `EntityProjectileController` | Combat and physics columns come from `EntitySlots`. |
+| `EntityRewardController` | Combat and physics columns come from `EntitySlots`; one sprite-cache instance replaces duplicate parameters. |
+| `EntityRoomInitialization` | Combat and physics columns come from `EntitySlots`. |
+| `EntityRoomInspection` | Combat and physics columns come from `EntitySlots`. |
+| `EntityRuntimeConfiguration` | Physics columns come from `EntitySlots`; one sprite-cache instance replaces duplicate parameters. |
+| `EntitySlotLifecycle` | Combat and physics columns come from `EntitySlots`. |
+| `EntitySlotProperties` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters. |
+| `EntityStoryController` | Combat and physics columns come from `EntitySlots`; one inspection instance replaces duplicate parameters; one sprite-cache instance replaces duplicate parameters. |
+| `GenieEntityController` | Combat and physics columns come from `EntitySlots`. |
+| `SlimeEyeController` | Combat and physics columns come from `EntitySlots`; slot list comes from the same owner. |
+| `RoomEntityRuntime` | Retains explicit execution and role references; grouping these into a service bundle would recreate the removed hub. |
+
+### Shape enforcement
+
+`architecture/EntityRuntimeShapeTest` checks compiled references through the
+shared reader, the exact public seam signatures, and private ownership of every
+mutable field. The reader does not decode field-write bytecodes, so the final
+check uses the stronger allowed alternative: no non-private non-final fields.
+The runtime itself and `RoomEntityRuntimeBuilder` are the only entity main
+classes permitted to reference the runtime type. Nested frame scratch remains
+with its shared acquisition/reset/release lifecycle. Cross-owner Link-state
+reads/writes use owner methods; the arithmetic and operation order are unchanged.
+
+### Final validation
+
+The required ROM-configured `./gradlew spotlessApply check` passes with fatal
+javac lint and Error Prone: 2,994 tests, zero failures/errors, one existing skip.
+No existing tests or fixtures were removed or weakened. The runtime shape test
+contributes three assertions as separate tests.
+
+With `-XX:-DoEscapeAnalysis` supplied through a temporary, uncommitted init
+script, the representative entity tick measured 834.59 bytes (budget 1,100),
+two-enemy combat 400 bytes (budget 570), cached sprite and repeated Marin
+presentation zero, idle session zero and active session 137 bytes per frame.
+The cold falling-definition decode remains 2,480 bytes; cached reads allocate
+zero. Existing allocation guard thresholds remain unchanged.
