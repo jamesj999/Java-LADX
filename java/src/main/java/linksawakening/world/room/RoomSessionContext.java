@@ -15,14 +15,16 @@ final class RoomSessionContext {
 
     static RoomSessionComponents create(
             RoomSessionConfig config,
+            LoadedRoomHandle loadedRooms,
             java.util.function.Consumer<RoomRuntime> installRoom,
             java.util.function.UnaryOperator<RoomRuntime> roomLoaded,
             Runnable resetRoomTransients) {
-        return new RoomSessionContext(config, installRoom, roomLoaded, resetRoomTransients).values.build();
+        return new RoomSessionContext(config, loadedRooms, installRoom, roomLoaded, resetRoomTransients).values.build();
     }
 
     private RoomSessionContext(
             RoomSessionConfig config,
+            LoadedRoomHandle loadedRooms,
             java.util.function.Consumer<RoomRuntime> installRoom,
             java.util.function.UnaryOperator<RoomRuntime> roomLoaded,
             Runnable resetRoomTransients) {
@@ -148,20 +150,22 @@ final class RoomSessionContext {
                 values.roomState,
                 installRoom,
                 values.roomRuntimeServices));
-        values.roomDoorInteractions = new RoomDoorInteractions(new RoomDoorInteractions.Dependencies(
-                values.entityFrame,
-                values.followers,
-                values.location,
-                values.puzzles,
-                values.chestContentsTable,
-                values.entityFrame,
-                values.overworldBushInteraction,
-                values.overworldCollision,
-                values.romData,
-                values.roomObjectMutations,
-                values.roomSessionViews,
-                values.roomState,
-                values.roomObjectMutations));
+        values.roomDoorInteractions = new RoomDoorInteractions(
+                loadedRooms,
+                new RoomDoorInteractions.Dependencies(
+                        values.entityFrame,
+                        values.followers,
+                        values.location,
+                        values.puzzles,
+                        values.chestContentsTable,
+                        values.entityFrame,
+                        values.overworldBushInteraction,
+                        values.overworldCollision,
+                        values.romData,
+                        values.roomObjectMutations,
+                        values.roomSessionViews,
+                        values.roomState,
+                        values.roomObjectMutations));
         values.roomLoadCoordinator = new RoomLoadCoordinator(new RoomLoadCoordinator.Dependencies(
                 values.entityFrame,
                 values.followers,

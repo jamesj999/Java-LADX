@@ -3,7 +3,6 @@ package linksawakening.world.room;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.Link;
-import linksawakening.state.Direction;
 import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityPickupFrameInputs;
@@ -61,6 +60,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
 
     // The sole optional current generation; room-only code receives a non-null value.
     private RoomRuntime loadedRoom;
+    private final LoadedRoomHandle loadedRooms = new LoadedRoomHandle();
 
     RoomRuntime loadedRoomOrNull() {
         return loadedRoom;
@@ -69,6 +69,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
     void installRoom(RoomRuntime room) {
         java.util.Objects.requireNonNull(room, "room");
         loadedRoom = room;
+        loadedRooms.install(room);
         dungeonView.setRoomMap(room.room.mapId());
     }
 
@@ -93,11 +94,12 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         roomLoadListener = config.presentation().roomLoadListener() == null
                 ? room -> {}
                 : config.presentation().roomLoadListener();
-        components = RoomSessionContext.create(config, this::installRoom, this::roomLoaded, this::resetRoomTransients);
+        components = RoomSessionContext.create(
+                config, loadedRooms, this::installRoom, this::roomLoaded, this::resetRoomTransients);
 
         dungeonView = new RoomDungeonLiveView(components.roomState(), -1);
         roles = RoomRoleViews.create(components, this);
-        doors = new RoomDoorsView(this);
+        doors = components.roomDoorInteractions();
         transitions = new RoomTransitionsView(components.roomTransitionController(), this);
         playerItems = new RoomPlayerItemsView(this);
         story = new RoomStoryView(components.roomStoryState(), this);
@@ -753,151 +755,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
 
     boolean breakIndoorSwordCrystal(int location) {
         return hasRoom() && components.roomObjectMutations().breakIndoorSwordCrystal(loadedRoom, location);
-    }
-
-    ChestOpenResult tryOpenChest(
-            int linkPixelX, int linkPixelY, Direction linkDirection, boolean actionPressed, int swordLevel) {
-        if (!hasRoom()) {
-            return new ChestOpenResult(false, -1, -1, -1);
-        }
-        return components
-                .roomDoorInteractions()
-                .tryOpenChest(loadedRoom, linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
-    }
-
-    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryUnlockIndoorKeyDoor(loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType);
-    }
-
-    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryPushIndoorBlock(loadedRoom, linkPixelX, linkPixelY, linkDirection, collisionType);
-    }
-
-    boolean tryLiftObject(
-            int x,
-            int y,
-            Direction direction,
-            boolean held,
-            int buttons,
-            boolean power,
-            int level,
-            boolean anyPowerUp) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryLiftObject(loadedRoom, x, y, direction, held, buttons, power, level, anyPowerUp);
-    }
-
-    boolean tryLiftObject(int x, int y, Direction direction, boolean held, int buttons, boolean power, int level) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryLiftObject(loadedRoom, x, y, direction, held, buttons, power, level);
-    }
-
-    boolean tryLiftIndoorObject(
-            int linkPixelX,
-            int linkPixelY,
-            Direction linkDirection,
-            boolean braceletButtonHeld,
-            int pressedButtonsMask) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryLiftIndoorObject(
-                        loadedRoom, linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
-    }
-
-    boolean tryLiftIndoorObject(
-            int linkPixelX,
-            int linkPixelY,
-            Direction linkDirection,
-            boolean braceletButtonHeld,
-            int pressedButtonsMask,
-            boolean pieceOfPowerActive) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryLiftIndoorObject(
-                        loadedRoom,
-                        linkPixelX,
-                        linkPixelY,
-                        linkDirection,
-                        braceletButtonHeld,
-                        pressedButtonsMask,
-                        pieceOfPowerActive);
-    }
-
-    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryInteractWithIndoorBlock(loadedRoom, linkPixelX, linkPixelY, linkDirection, collisionType);
-    }
-
-    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryUnlockIndoorKeyholeBlock(loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType);
-    }
-
-    boolean tryUnlockTailCaveKeyhole(
-            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, boolean hasTailKey) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryUnlockTailCaveKeyhole(
-                        loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
-    }
-
-    boolean tryUnlockKeyCavernKeyhole(
-            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, int goldenLeavesCount) {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components
-                .roomDoorInteractions()
-                .tryUnlockKeyCavernKeyhole(
-                        loadedRoom.contents, linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
-    }
-
-    int tickTailCaveKeyholeSequence() {
-        if (!hasRoom()) {
-            return 0;
-        }
-        return components.roomDoorInteractions().tickTailCaveKeyholeSequence(loadedRoom.contents);
-    }
-
-    boolean tailCaveKeyholeSequenceActive() {
-        if (!hasRoom()) {
-            return false;
-        }
-        return components.roomDoorInteractions().tailCaveKeyholeSequenceActive(loadedRoom.contents);
     }
 
     int entityHealth(int slot) {
