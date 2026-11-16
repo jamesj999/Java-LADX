@@ -57,7 +57,7 @@ final class RoomPuzzleController {
 
     void harvestThrownRoomEventCollisions(RoomRuntime loaded) {
 
-        var collisions = loaded.entities.consumePendingThrownBackgroundCollisions();
+        var collisions = loaded.entities.outbox().consumePendingThrownBackgroundCollisions();
         for (int i = 0; i < collisions.size(); i++) {
             var collision = collisions.get(i);
             int objectId = collision.objectId();

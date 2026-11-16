@@ -247,7 +247,7 @@ final class RoomEntitySimulation {
     }
 
     private void synchronizeQuestState(RoomRuntime loaded) {
-        var dungeonWarpRequests = loaded.entities.consumePendingDungeonWarpRequests();
+        var dungeonWarpRequests = loaded.entities.outbox().consumePendingDungeonWarpRequests();
         for (int requestIndex = 0; requestIndex < dungeonWarpRequests.size(); requestIndex++) {
             DungeonWarpRequest request = dungeonWarpRequests.get(requestIndex);
 
@@ -287,10 +287,10 @@ final class RoomEntitySimulation {
     }
 
     private List<BombExplosionEvent> harvestRewards(RoomRuntime loaded) {
-        List<BombExplosionEvent> bombExplosionEvents = loaded.entities.consumeBombExplosionEvents();
+        List<BombExplosionEvent> bombExplosionEvents = loaded.entities.outbox().consumeBombExplosionEvents();
         effects.entityBridge().outbox.pendingBombExplosionEvents.clear();
         RoomEntityOutbox.append(effects.entityBridge().outbox.pendingBombExplosionEvents, bombExplosionEvents);
-        List<ChestRewardEvent> chestRewards = loaded.entities.consumePendingChestRewardEvents();
+        List<ChestRewardEvent> chestRewards = loaded.entities.outbox().consumePendingChestRewardEvents();
         for (int rewardIndex = 0; rewardIndex < chestRewards.size(); rewardIndex++) {
             ChestRewardEvent reward = chestRewards.get(rewardIndex);
 
@@ -307,7 +307,7 @@ final class RoomEntitySimulation {
         effects.roomEntityRewards().harvestHeartContainerRewards(loaded);
         RoomEntityOutbox.append(
                 effects.entityBridge().outbox.pendingMadamMeowMeowFullHealRequests,
-                loaded.entities.consumePendingMadamMeowMeowFullHealRequests());
+                loaded.entities.outbox().consumePendingMadamMeowMeowFullHealRequests());
         effects.roomEntityRewards().harvestSwordPickupRewards(loaded);
         effects.roomEntityRewards().harvestToadstoolRewards(loaded);
         effects.roomEntityRewards().harvestInstrumentRewards(loaded);
@@ -319,7 +319,7 @@ final class RoomEntitySimulation {
     }
 
     private void persistEffects(RoomRuntime loaded) {
-        var roomStatusPersistenceRequests = loaded.entities.consumePendingRoomStatusPersistenceRequests();
+        var roomStatusPersistenceRequests = loaded.entities.outbox().consumePendingRoomStatusPersistenceRequests();
         for (int requestIndex = 0; requestIndex < roomStatusPersistenceRequests.size(); requestIndex++) {
             RoomStatusPersistenceRequest request = roomStatusPersistenceRequests.get(requestIndex);
 
@@ -328,7 +328,7 @@ final class RoomEntitySimulation {
             }
             effects.followers().tarinFlag = request.tarinFlag();
         }
-        if (loaded.entities.consumePendingSwitchBlockAnimationRequest()
+        if (loaded.entities.outbox().consumePendingSwitchBlockAnimationRequest()
                 && effects.terrain().switchableObjectAnimationStage == 0) {
             effects.terrain().switchableObjectAnimationStage = 0x01;
         }
@@ -342,11 +342,11 @@ final class RoomEntitySimulation {
                         .spawn(request.type(), request.worldX(), request.worldY(), request.variant());
             }
         }
-        int clearedMask = loaded.entities.consumePendingClearedEntityMask();
+        int clearedMask = loaded.entities.outbox().consumePendingClearedEntityMask();
         if (clearedMask != 0) {
             effects.entityFrame().recentRoomEntityClears.addMask(loaded.room.roomId(), clearedMask);
         }
-        int roomStatusMask = loaded.entities.consumePendingRoomStatusMask();
+        int roomStatusMask = loaded.entities.outbox().consumePendingRoomStatusMask();
         if (roomStatusMask != 0 && loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             byte[] status = effects.roomSessionViews().indoorStatusTableForMap(loaded.room.mapId());
             status[loaded.room.roomId()] |= (byte) roomStatusMask;

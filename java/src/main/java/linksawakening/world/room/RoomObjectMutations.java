@@ -185,7 +185,7 @@ final class RoomObjectMutations implements RoomTerrain {
         // Link runs before the entity tick, which clears its frame outbox.
         RoomEntityOutbox.append(
                 dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents,
-                loaded.entities.consumePendingEntityEvents());
+                loaded.entities.outbox().consumePendingEntityEvents());
 
         return true;
     }

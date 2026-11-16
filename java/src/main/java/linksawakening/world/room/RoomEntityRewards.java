@@ -22,7 +22,7 @@ final class RoomEntityRewards {
     }
 
     void harvestKeyQuicksandEvents(RoomRuntime loaded) {
-        if (loaded.entities.consumePendingKeyQuicksandEvents().isEmpty()) {
+        if (loaded.entities.outbox().consumePendingKeyQuicksandEvents().isEmpty()) {
             return;
         }
         dependencies.roomState().overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
@@ -31,7 +31,7 @@ final class RoomEntityRewards {
 
     void harvestKeyRewardEvents(RoomRuntime loaded) {
 
-        List<KeyRewardEvent> rewards = loaded.entities.consumePendingKeyRewardEvents();
+        List<KeyRewardEvent> rewards = loaded.entities.outbox().consumePendingKeyRewardEvents();
         for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
             KeyRewardEvent reward = rewards.get(rewardIndex);
 
@@ -46,7 +46,7 @@ final class RoomEntityRewards {
 
     void harvestHeartContainerRewards(RoomRuntime loaded) {
 
-        List<HeartContainerRewardEvent> rewards = loaded.entities.consumePendingHeartContainerRewards();
+        List<HeartContainerRewardEvent> rewards = loaded.entities.outbox().consumePendingHeartContainerRewards();
         if (rewards.isEmpty()) {
             return;
         }
@@ -56,7 +56,7 @@ final class RoomEntityRewards {
 
     void harvestSwordPickupRewards(RoomRuntime loaded) {
 
-        List<SwordPickupRewardEvent> rewards = loaded.entities.consumePendingSwordPickupRewards();
+        List<SwordPickupRewardEvent> rewards = loaded.entities.outbox().consumePendingSwordPickupRewards();
         if (rewards.isEmpty()) {
             return;
         }
@@ -68,11 +68,11 @@ final class RoomEntityRewards {
 
         RoomEntityOutbox.append(
                 dependencies.entityRuntimeState().outbox.pendingToadstoolRewards,
-                loaded.entities.consumePendingToadstoolRewards());
+                loaded.entities.outbox().consumePendingToadstoolRewards());
     }
 
     void harvestInstrumentRewards(RoomRuntime loaded) {
-        if (loaded.entities.consumePendingInstrumentRewards().isEmpty()
+        if (loaded.entities.outbox().consumePendingInstrumentRewards().isEmpty()
                 || loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
@@ -88,7 +88,7 @@ final class RoomEntityRewards {
 
     void harvestInstrumentCompletions(RoomRuntime loaded) {
 
-        var instrumentCompletions = loaded.entities.consumePendingInstrumentCompletions();
+        var instrumentCompletions = loaded.entities.outbox().consumePendingInstrumentCompletions();
         for (int completionIndex = 0; completionIndex < instrumentCompletions.size(); completionIndex++) {
             InstrumentCompletionEvent completion = instrumentCompletions.get(completionIndex);
 
@@ -103,7 +103,7 @@ final class RoomEntityRewards {
 
     void harvestRichardProgressEvents(RoomRuntime loaded) {
 
-        List<RichardProgressEvent> events = loaded.entities.consumePendingRichardProgressEvents();
+        List<RichardProgressEvent> events = loaded.entities.outbox().consumePendingRichardProgressEvents();
         for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
             RichardProgressEvent event = events.get(eventIndex);
 
@@ -121,15 +121,15 @@ final class RoomEntityRewards {
 
         RoomEntityOutbox.append(
                 dependencies.entityRuntimeState().outbox.pendingWitchExchangeEvents,
-                loaded.entities.consumePendingWitchExchangeEvents());
+                loaded.entities.outbox().consumePendingWitchExchangeEvents());
         RoomEntityOutbox.append(
                 dependencies.entityRuntimeState().outbox.pendingWitchRewardEvents,
-                loaded.entities.consumePendingWitchRewardEvents());
+                loaded.entities.outbox().consumePendingWitchRewardEvents());
     }
 
     void harvestOwlEventCompletions(RoomRuntime loaded) {
 
-        if (loaded.entities.consumePendingOwlEventCompletions().isEmpty()) {
+        if (loaded.entities.outbox().consumePendingOwlEventCompletions().isEmpty()) {
             return;
         }
         dependencies.roomState().overworldRoomStatus[loaded.room.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
@@ -137,7 +137,7 @@ final class RoomEntityRewards {
 
     void harvestSlimeKeyRewardEvents(RoomRuntime loaded) {
 
-        List<SlimeKeyRewardEvent> rewards = loaded.entities.consumePendingSlimeKeyRewardEvents();
+        List<SlimeKeyRewardEvent> rewards = loaded.entities.outbox().consumePendingSlimeKeyRewardEvents();
         for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
             SlimeKeyRewardEvent reward = rewards.get(rewardIndex);
 
