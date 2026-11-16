@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -25,13 +27,15 @@ public final class HinoxMotion {
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState3Table: wandering steps before the charge decision.
+    final int[] wanderStepCount = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: Link-motion blocking interval after the grab.
+    final int[] linkHoldCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] entityCollisionFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] bombOriginX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] bombOriginY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -66,13 +70,13 @@ public final class HinoxMotion {
         validateSlot(slot);
         state[slot] = STATE_INITIAL;
         privateState1[slot] = 0;
-        privateState3[slot] = 0;
+        wanderStepCount[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         inertia[slot] = 0;
-        privateCountdown1[slot] = 0;
+        linkHoldCountdown[slot] = 0;
         entityCollisionFlags[slot] = 0;
         bombOriginX[slot] = 0;
         bombOriginY[slot] = 0;
@@ -198,13 +202,13 @@ public final class HinoxMotion {
 
     int privateCountdown1(int slot) {
         validateSlot(slot);
-        return privateCountdown1[slot] & 0xFF;
+        return linkHoldCountdown[slot] & 0xFF;
     }
 
     public void decrementPrivateCountdown1(int slot) {
         validateSlot(slot);
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
+        if (linkHoldCountdown[slot] > 0) {
+            linkHoldCountdown[slot]--;
         }
     }
 
@@ -300,7 +304,7 @@ public final class HinoxMotion {
             int linkY,
             int linkZ,
             int linkMotionState,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction,
             int entityCollisionFlagsForFrame,
             int flashCountdown) {
@@ -322,7 +326,7 @@ public final class HinoxMotion {
         private int linkZ;
         private int linkMotionState;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int entityCollisionFlagsForFrame;
         private int flashCountdown;
@@ -345,7 +349,7 @@ public final class HinoxMotion {
         private int spriteVariant;
 
         HinoxStep(HinoxMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         private HinoxMotion.Update run() {
@@ -376,9 +380,9 @@ public final class HinoxMotion {
 
         private boolean advanceWander() {
             if (transition == 0) {
-                owner.privateState3[slot] = (owner.privateState3[slot] + 1) & 0xFF;
-                if (owner.privateState3[slot] == 2) {
-                    owner.privateState3[slot] = 0;
+                owner.wanderStepCount[slot] = (owner.wanderStepCount[slot] + 1) & 0xFF;
+                if (owner.wanderStepCount[slot] == 2) {
+                    owner.wanderStepCount[slot] = 0;
                     if ((randomByteSupplier.getAsInt() & 0x01) == 0) {
                         owner.state[slot] = STATE_CHARGE_WINDUP;
                         transition = 0x30;
@@ -469,7 +473,7 @@ public final class HinoxMotion {
                 jingle = 0x08;
                 linkX = x;
                 linkY = y;
-                owner.privateCountdown1[slot] = 0x50;
+                owner.linkHoldCountdown[slot] = 0x50;
 
                 completedResult =
                         result(entity.spriteVariant(), linkMotionBlockedAtEntry, linkX, linkY, linkZ, true, false);
@@ -526,7 +530,7 @@ public final class HinoxMotion {
             }
 
             slot = entity.slot();
-            linkMotionBlockedAtEntry = owner.privateCountdown1[slot] != 0;
+            linkMotionBlockedAtEntry = owner.linkHoldCountdown[slot] != 0;
             x = entity.x() & 0xFF;
             y = entity.y() & 0xFF;
             transition = transitionCountdown & 0xFF;

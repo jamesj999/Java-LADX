@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.LinkFallenPoseRequest;
@@ -17,7 +18,7 @@ public final class LinkOutputs {
 
     LinkOutputs(Dependencies dependencies, RoomEntityOutputSource source) {
         this.dependencies = dependencies;
-        this.source = java.util.Objects.requireNonNull(source);
+        this.source = Objects.requireNonNull(source);
     }
 
     public void drainPositionWrites(LinkWriteSink.Positions target) {
@@ -86,7 +87,7 @@ public final class LinkOutputs {
 
     record Dependencies(RoomEntityBridge entityBridge) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
+            Objects.requireNonNull(entityBridge, "entityBridge");
         }
     }
 }

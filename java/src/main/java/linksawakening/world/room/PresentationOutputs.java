@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
@@ -9,7 +10,7 @@ public final class PresentationOutputs {
     private final RoomEntityOutputSource source;
 
     PresentationOutputs(RoomEntityOutputSource source) {
-        this.source = java.util.Objects.requireNonNull(source);
+        this.source = Objects.requireNonNull(source);
     }
 
     public List<ScreenShakeRequest> consumeScreenShakeRequests() {

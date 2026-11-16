@@ -5,6 +5,7 @@ import static linksawakening.world.room.RoomSessionRules.OBJECT_LIFTABLE_POT;
 import static linksawakening.world.room.RoomSessionRules.OBJECT_POT_WITH_SWITCH;
 import static linksawakening.world.room.RoomSessionRules.OBJECT_SWITCH_BUTTON;
 
+import java.util.Objects;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.state.Direction;
 import linksawakening.world.object.OverworldBushInteraction;
@@ -120,15 +121,15 @@ final class RoomLiftInteractions {
             RoomObjectMutations roomTileRedraw,
             RoomDoorInteractions owner) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(roomDoorInteractions, "roomDoorInteractions");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
-            java.util.Objects.requireNonNull(owner, "owner");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(roomDoorInteractions, "roomDoorInteractions");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            Objects.requireNonNull(owner, "owner");
         }
     }
 

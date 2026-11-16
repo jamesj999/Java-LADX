@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_NONE;
 
+import java.util.Objects;
 import linksawakening.vfx.TransientVfxSystem;
 
 /** RoomTransientState operations for the live room session. */
@@ -120,12 +121,12 @@ final class RoomTransientState {
             RoomEntitySessionState entityRuntimeState,
             TransientVfxSystem transientVfxSystem) {
         Dependencies {
-            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
-            java.util.Objects.requireNonNull(droppableRupeeSystem, "droppableRupeeSystem");
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
+            Objects.requireNonNull(droppableRupeeSystem, "droppableRupeeSystem");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
         }
     }
 }

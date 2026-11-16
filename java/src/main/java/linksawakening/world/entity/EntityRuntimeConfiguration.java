@@ -45,20 +45,20 @@ public final class EntityRuntimeConfiguration {
             SlimeEyeController slimeEye) {
         EntityPhysicsTables physicsTables = slots.physics();
         EntitySpriteViews spriteViews = spriteHandlers;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.pickups = java.util.Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.slimeEye = java.util.Objects.requireNonNull(slimeEye, "slimeEye");
-        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.pickups = Objects.requireNonNull(pickups, "pickups");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.story = Objects.requireNonNull(story, "story");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.slimeEye = Objects.requireNonNull(slimeEye, "slimeEye");
+        this.spriteViews = Objects.requireNonNull(spriteViews, "spriteViews");
     }
 
     public void setBoomerangSoundCounterForFrame(int counter) {
@@ -144,7 +144,8 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setBowWowState(int bowWowState) {
-        this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(bowWowState & 0xFF);
+        var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+        bowWowMotion.writeBowWowState(bowWowState & 0xFF);
     }
 
     public void setLikeLikeLinkInventory(int itemA, int itemB) {
@@ -255,21 +256,12 @@ public final class EntityRuntimeConfiguration {
             boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
         EntitySlotValidation.validateByte(collisionX, "Pegasus collision X");
         EntitySlotValidation.validateByte(collisionY, "Pegasus collision Y");
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellScreenShakeActive(screenShakeActive);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionActive(collisionActive);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionCoordinatesKnown(true);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionX(collisionX);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionY(collisionY);
+        var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        secretSeashellMotion.writeSecretSeashellScreenShakeActive(screenShakeActive);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionActive(collisionActive);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionCoordinatesKnown(true);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionX(collisionX);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionY(collisionY);
     }
 
     public void setHouseNpcStoryState(int tarinFlag, int tradeItem, int instrument3Flags, int walrusStatus) {
@@ -320,15 +312,15 @@ public final class EntityRuntimeConfiguration {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
-        this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new).writeFollowingNpcState(state);
-        if (state.bowWowFollowing())
-            this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(1);
+        var followingNpcMotion = this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        followingNpcMotion.writeFollowingNpcState(state);
+        var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+        if (state.bowWowFollowing()) bowWowMotion.writeBowWowState(1);
     }
 
     public void setColorShellWorld(ColorShellWorld world) {
-        this.motions
-                .get(ColorShellMotion.class, ColorShellMotion::new)
-                .writeColorShellWorld(java.util.Objects.requireNonNullElse(world, ColorShellWorld.none()));
+        var colorShellMotion = this.motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        colorShellMotion.writeColorShellWorld(Objects.requireNonNullElse(world, ColorShellWorld.none()));
     }
 
     public void setSwitchBlockAnimationActive(boolean active) {
@@ -393,7 +385,8 @@ public final class EntityRuntimeConfiguration {
 
     public void setBooBuddyTriggerCount(int value) {
         EntitySlotValidation.validateByte(value, "Boo Buddy trigger count");
-        this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).writeBooBuddyTriggerCount(value);
+        var booBuddyMotion = this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        booBuddyMotion.writeBooBuddyTriggerCount(value);
     }
 
     public void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags, int defaultMusicTrack) {

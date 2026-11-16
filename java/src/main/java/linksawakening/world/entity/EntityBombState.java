@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import java.util.Arrays;
+
 /** Shared bombInteractions slot state, independent of behavior dispatch and construction order. */
 final class EntityBombState {
     private final boolean[] bombFinalPresentationPending = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -136,6 +138,6 @@ final class EntityBombState {
     }
 
     void clearBombFinalPresentations() {
-        java.util.Arrays.fill(bombFinalPresentationPending, false);
+        Arrays.fill(bombFinalPresentationPending, false);
     }
 }

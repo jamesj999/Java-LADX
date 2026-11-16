@@ -1,6 +1,8 @@
 package linksawakening.world.entity;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
@@ -23,7 +25,7 @@ public final class EntitySpriteViews {
     }
 
     private EntitySpriteViews(Source source) {
-        this.source = java.util.Objects.requireNonNull(source);
+        this.source = Objects.requireNonNull(source);
     }
 
     EntitySpriteViews(
@@ -219,7 +221,7 @@ public final class EntitySpriteViews {
 
     private static EntitySpriteDefinition[] unsupportedDefinitions() {
         EntitySpriteDefinition[] definitions = new EntitySpriteDefinition[256];
-        java.util.Arrays.setAll(definitions, EntitySpriteDefinition::unsupported);
+        Arrays.setAll(definitions, EntitySpriteDefinition::unsupported);
         return definitions;
     }
 
@@ -326,7 +328,7 @@ public final class EntitySpriteViews {
 
     private record RomSource(EntitySpriteHandlerCatalog catalog) implements Source {
         private RomSource {
-            java.util.Objects.requireNonNull(catalog, "catalog");
+            Objects.requireNonNull(catalog, "catalog");
         }
 
         @Override

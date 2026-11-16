@@ -7,6 +7,9 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.function.ToIntFunction;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
@@ -28,7 +31,7 @@ public final class SlimeEyeController {
     private static final RomAddress HALF_SPEED_X = RomSymbols.Data_004_4E94; // ROM Data_004_4E94
     private static final RomAddress HALF_SPEED_Y = RomSymbols.Data_004_4E9C; // ROM Data_004_4E9C
 
-    final java.util.List<RoomEntity> slotEntities;
+    final List<RoomEntity> slotEntities;
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityBossRewards bossRewards;
@@ -43,7 +46,7 @@ public final class SlimeEyeController {
     final EntitySlots slots;
     final State encounter;
     // The ROM-free reader retains the original encounter-table precondition.
-    private final java.util.function.ToIntFunction<RomAddress> readByte;
+    private final ToIntFunction<RomAddress> readByte;
     private int screenShakeCountdown;
 
     SlimeEyeController(
@@ -59,7 +62,7 @@ public final class SlimeEyeController {
             RomEnemyCombatTables enemyCombatTables,
             EntitySlots slots,
             Rom rom) {
-        java.util.List<RoomEntity> slotEntities = slots.view();
+        List<RoomEntity> slotEntities = slots.view();
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         this.readByte = rom == null
@@ -67,20 +70,20 @@ public final class SlimeEyeController {
                     throw new IllegalStateException("Slime Eye requires ROM encounter tables");
                 }
                 : rom::u8;
-        this.encounter = java.util.Objects.requireNonNull(encounter, "encounter");
-        this.slotEntities = java.util.Objects.requireNonNull(slotEntities, "slotEntities");
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.encounter = Objects.requireNonNull(encounter, "encounter");
+        this.slotEntities = Objects.requireNonNull(slotEntities, "slotEntities");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
+        this.slots = Objects.requireNonNull(slots, "slots");
     }
 
     public void setScreenShakeCountdown(int value) {
@@ -146,14 +149,13 @@ public final class SlimeEyeController {
     }
 
     private void advanceHandler(EntityFrameExecution frame) {
-        var runtime = this;
         RoomEntity entity = frame.slotFrame().entity();
         int slot = entity.slot();
         if (entity.status() == EntityStatus.INIT) {
             this.clear(slot);
-            runtime.combatTables.writeEnemyHealth(slot, 0x50);
-            runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
-            runtime.slots.replace(slot, withZ(withStatus(entity, EntityStatus.ACTIVE), 0x7E));
+            this.combatTables.writeEnemyHealth(slot, 0x50);
+            this.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
+            this.slots.replace(slot, withZ(withStatus(entity, EntityStatus.ACTIVE), 0x7E));
             this.render(slot);
             return;
         }
@@ -174,15 +176,15 @@ public final class SlimeEyeController {
                 frame.lifecycle().delayInteractions(2);
             }
         }
-        runtime.lifecycle.decrementSlowTransitionCountdown(slot, frame.inputs().frame());
+        this.lifecycle.decrementSlowTransitionCountdown(slot, frame.inputs().frame());
         if (!frame.link().inventoryAppearing() && !frame.roomInspection().roomTransitionActive()) {
-            BossIntroMotion.Update intro = runtime.motions
+            BossIntroMotion.Update intro = this.motions
                     .get(BossIntroMotion.class, BossIntroMotion::new)
                     .advance(
-                            runtime.slotProperties.options1(slot),
+                            this.slotProperties.options1(slot),
                             entity.type(),
-                            runtime.roomVariables.readEntityMapId(),
-                            runtime.lifecycle.transitionSequenceCounter());
+                            this.roomVariables.readEntityMapId(),
+                            this.lifecycle.transitionSequenceCounter());
             if (intro.musicTrack() >= 0) frame.requestMusic(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
                 frame.emit(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
@@ -192,10 +194,10 @@ public final class SlimeEyeController {
         }
         // Main's combat pass precedes tick. Restore the fresh write that the
         // common flash tick would otherwise age before the ROM collision site.
-        if (this.hitThisFrame(slot, frame.inputs().frame())) runtime.combatTables.writeEnemyFlashCountdown(slot, 0x18);
+        if (this.hitThisFrame(slot, frame.inputs().frame())) this.combatTables.writeEnemyFlashCountdown(slot, 0x18);
         // RenderActiveEntitySpritesRect runs before this frame's state changes.
         this.render(slot);
-        if (runtime.physicsTables.readSlowTransitionCountdown(slot) != 0) {
+        if (this.physicsTables.readSlowTransitionCountdown(slot) != 0) {
             frame.emit(new LinkMotionBlockRequest(slot));
             frame.emit(new LinkFallenPoseRequest(slot));
         }
@@ -210,7 +212,7 @@ public final class SlimeEyeController {
             this.advanceDeath(frame);
             return;
         }
-        if (this.encounter.half[slot] == 0) runtime.combatTables.writeEnemyHealth(slot, 0x50);
+        if (this.encounter.half[slot] == 0) this.combatTables.writeEnemyHealth(slot, 0x50);
         if ((this.encounter.half[slot] != 0 || this.encounter.state[slot] != 0)
                 && (!frame.gates().handlerInteractive() || frame.gates().countdownBlocksInteraction())) return;
         if (this.encounter.half[slot] == 0) this.advanceBody(frame);
@@ -454,13 +456,11 @@ public final class SlimeEyeController {
     }
 
     void sound(int s, int id) {
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                s, EntityRomConstants.ENTITY_SLIME_EYE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, id));
+        this.events.sound(s, EntityRomConstants.ENTITY_SLIME_EYE, EntityCombatEvent.SoundChannel.JINGLE, id);
     }
 
     void noise(int s, int id) {
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
-                s, EntityRomConstants.ENTITY_SLIME_EYE, 0, false, EntityCombatEvent.SoundChannel.NOISE, id));
+        this.events.sound(s, EntityRomConstants.ENTITY_SLIME_EYE, EntityCombatEvent.SoundChannel.NOISE, id);
     }
 
     void resolveCombat(SlimeEyeCombatFrame inputs) {
@@ -534,7 +534,7 @@ public final class SlimeEyeController {
             int sh,
             // Optional attack details; null selects the existing default attack context.
             EnemyAttackContext attack,
-            java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events) {}
+            List<linksawakening.world.entity.event.EntityCombatEvent> events) {}
 
     static final class SlimeEyeCombatStep {
         private final linksawakening.world.entity.SlimeEyeController owner;
@@ -554,14 +554,14 @@ public final class SlimeEyeController {
         private int sh;
         // Optional attack details; null selects the existing default attack context.
         private linksawakening.world.entity.EnemyAttackContext attack;
-        private java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
+        private List<linksawakening.world.entity.event.EntityCombatEvent> events;
         private int s;
         private boolean isHalf;
         private int hitbox;
         private boolean hit;
 
         SlimeEyeCombatStep(linksawakening.world.entity.SlimeEyeController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -659,10 +659,8 @@ public final class SlimeEyeController {
             owner.combatTables.writeEnemyHealth(s, Math.max(0, owner.combatTables.readEnemyHealth(s) - amount));
             owner.combatTables.writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
             owner.combatTables.writeEnemyFlashCountdown(s, 0x18);
-            if (isHalf)
-                owner.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
+            var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+            if (isHalf) enemyRecoilMotion.configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
             if (isHalf && owner.combatTables.readEnemyHealth(s) == 0) {
                 owner.encounter.state[s] = 0;
                 owner.slots.replace(s, withStatus(e, EntityStatus.DYING));
@@ -747,7 +745,7 @@ public final class SlimeEyeController {
         private linksawakening.world.entity.RoomEntity e;
 
         SlimeEyeHalfStep(linksawakening.world.entity.SlimeEyeController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -764,9 +762,8 @@ public final class SlimeEyeController {
             }
             if (owner.combatTables.readEnemyIgnoreHitsCountdown(s) != 0
                     && !owner.hitThisFrame(s, f.inputs().frame())) {
-                if (owner.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .isActive(s)) {
+                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+                if (enemyRecoilMotion.isActive(s)) {
                     e = owner.backgroundMechanics
                             .applyEnemyRecoilIfNeeded(e, f.inputs().backgroundCollision())
                             .entity();

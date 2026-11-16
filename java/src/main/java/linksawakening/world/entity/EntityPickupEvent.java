@@ -3,7 +3,7 @@ package linksawakening.world.entity;
 /** The ROM entity slot and type that completed a Link pickup collision. */
 public record EntityPickupEvent(int slot, int type, int persistentClearMask, int sourceVariant) {
 
-    /** Compatibility constructor for ordinary pickable handlers. */
+    /** Pickup without a floating-item source variant. */
     public EntityPickupEvent(int slot, int type, int persistentClearMask) {
         this(slot, type, persistentClearMask, -1);
     }

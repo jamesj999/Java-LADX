@@ -10,7 +10,7 @@ public record LinkMotion(boolean airborne, int rawState, boolean shield, int inv
     public Optional<LinkMotionState> knownState() {
         return Optional.ofNullable(stateForRomByte(rawState));
     }
-    /** Legacy nullable classification; absent for unknown ROM dispatch bytes. */
+    /** Nullable classification; absent for unknown ROM dispatch bytes. */
     public LinkMotionState state() {
         return stateForRomByte(rawState);
     }

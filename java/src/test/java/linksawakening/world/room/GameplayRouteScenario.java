@@ -36,7 +36,12 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
@@ -561,7 +566,7 @@ final class GameplayRouteScenario {
 
         // Exercise Main's collision bridge with the source upward collision
         // bit and the two source keyhole-probe coordinates.
-        route.tailCaveSounds = new java.util.ArrayList<GameplaySoundEvent>();
+        route.tailCaveSounds = new ArrayList<GameplaySoundEvent>();
         route.session.entityState().setColorShellSoundSink(route.tailCaveSounds::add);
         assertTrue(route.session
                 .doors()
@@ -1535,7 +1540,7 @@ final class GameplayRouteScenario {
         assertEquals(0x80, route.session.story().bowWowState());
 
         route.instrumentOwlDialogOpened = false;
-        route.instrumentOwlDialogs = new java.util.ArrayList<Integer>();
+        route.instrumentOwlDialogs = new ArrayList<Integer>();
         route.instrumentOwlDeadline = route.frame + 0x100;
         while (!route.instrumentOwlDialogOpened && route.frame < route.instrumentOwlDeadline) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
@@ -2307,8 +2312,8 @@ final class GameplayRouteScenario {
                         + String.format("%02X", route.room33RaisedBlockLocation));
         assertEquals(
                 6,
-                java.util.stream.IntStream.range(0, 6)
-                        .filter(offset -> objectAt(route.session, 0x62 + offset) == 0xDC)
+                IntStream.range(0, 6)
+                        .filter((offset) -> objectAt(route.session, 98 + offset) == 220)
                         .count());
         assertEquals(0xC0, objectAt(route.session, 0x23));
         assertEquals(0xC0, objectAt(route.session, 0x26));
@@ -4137,8 +4142,8 @@ final class GameplayRouteScenario {
                         route.hinoxSwordBox.width(),
                         route.hinoxSwordBox.y(),
                         route.hinoxSwordBox.height()),
-                "position=" + java.util.Arrays.toString(route.firstSwordPosition) + " sword=" + route.hinoxSwordBox
-                        + " hinox=" + route.hinox);
+                "position=" + Arrays.toString(route.firstSwordPosition) + " sword=" + route.hinoxSwordBox + " hinox="
+                        + route.hinox);
         route.hinoxHit = route.session
                 .entities()
                 .resolveEntityCombat(new EntityCombatInputs(
@@ -4444,7 +4449,7 @@ final class GameplayRouteScenario {
                                 route.link.position().romEntityX(),
                                 route.link.position().romEntityY())
                         + " entity=" + String.format("%02X/%02X", route.armedRoom36Warp.x(), route.armedRoom36Warp.y())
-                        + " pathEnd=" + java.util.Arrays.toString(route.room36WarpContactPath.getLast()));
+                        + " pathEnd=" + Arrays.toString(route.room36WarpContactPath.getLast()));
         for (int remaining = route.room36WarpCountdown; remaining > 0; remaining--) {
             tickInteractiveEntities(
                     route.session,
@@ -4858,8 +4863,8 @@ final class GameplayRouteScenario {
         assertEquals(4, route.room22Hearts.size());
         assertTrue(route.room22Hearts.stream().allMatch(entity -> entity.y() == 0x60));
         assertEquals(
-                java.util.Set.of(0x38, 0x48, 0x58, 0x68),
-                route.room22Hearts.stream().map(RoomEntity::x).collect(java.util.stream.Collectors.toSet()));
+                Set.of(0x38, 0x48, 0x58, 0x68),
+                route.room22Hearts.stream().map(RoomEntity::x).collect(Collectors.toSet()));
         assertEquals(
                 ChestContentsTable.CHEST_SMALL_KEY,
                 new ChestContentsTable((route.rom == null ? (Rom) null : TestRoms.partial(route.rom)))
@@ -4904,7 +4909,7 @@ final class GameplayRouteScenario {
                 route.link.position().romEntityX(),
                 route.link.position().romSwordCollisionY(),
                 route.link.animation().direction());
-        route.room22SwitchHit = java.util.List.of();
+        route.room22SwitchHit = List.of();
         for (int contactFrame = 0;
                 contactFrame < 2
                         && route.room22SwitchHit.stream()
@@ -5358,7 +5363,7 @@ final class GameplayRouteScenario {
                 route.link.position().romEntityX(),
                 route.link.position().romSwordCollisionY(),
                 route.link.animation().direction());
-        route.room24SwitchHit = java.util.List.of();
+        route.room24SwitchHit = List.of();
         for (int contactFrame = 0;
                 contactFrame < 2
                         && route.room24SwitchHit.stream()
@@ -5461,7 +5466,7 @@ final class GameplayRouteScenario {
 
         route.room25PolsVoices = route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x18)
-                .sorted(java.util.Comparator.comparingInt(RoomEntity::sourceLoadOrder))
+                .sorted(Comparator.comparingInt(RoomEntity::sourceLoadOrder))
                 .toList();
         route.room25PotLocations = new int[] {0x11, 0x12};
         route.room25PotLinkX = new int[] {0x10, 0x20};
@@ -5699,7 +5704,7 @@ final class GameplayRouteScenario {
                 .orElseThrow();
         route.room3BPots = route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xD6)
-                .sorted(java.util.Comparator.comparingInt(RoomEntity::sourceLoadOrder))
+                .sorted(Comparator.comparingInt(RoomEntity::sourceLoadOrder))
                 .toList();
         assertEquals(0x38, route.room3BPlatform.x());
         assertEquals(0x50, route.room3BPlatform.y());

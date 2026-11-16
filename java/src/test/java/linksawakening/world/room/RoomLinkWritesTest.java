@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.ArrayList;
 import java.util.List;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
@@ -80,7 +81,7 @@ class RoomLinkWritesTest {
 
     @Test
     void directVisitorsPreserveTiePrecedenceAndStreamOrderWithoutWrapperLists() {
-        var calls = new java.util.ArrayList<String>();
+        var calls = new ArrayList<String>();
         var target = new LinkWriteSink.Positions() {
             @Override
             public void platform(SideViewPlatformLinkRequest r) {

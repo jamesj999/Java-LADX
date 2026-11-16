@@ -6,6 +6,8 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
 
+import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
@@ -34,7 +36,7 @@ public final class EntityPlayerCommands {
     private final RoomEntity[] marinPresentations = new RoomEntity[8];
 
     {
-        java.util.Arrays.fill(marinPresentations, UNREAD_PRESENTATION);
+        Arrays.fill(marinPresentations, UNREAD_PRESENTATION);
     }
 
     EntityPlayerCommands(
@@ -49,17 +51,17 @@ public final class EntityPlayerCommands {
             EntitySlots slots) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.rewards = java.util.Objects.requireNonNull(rewards, "rewards");
-        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.rewards = Objects.requireNonNull(rewards, "rewards");
+        this.inspection = Objects.requireNonNull(inspection, "inspection");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.slots = Objects.requireNonNull(slots, "slots");
     }
 
     public boolean beginLift(int slot, int romDirection) {
@@ -88,9 +90,8 @@ public final class EntityPlayerCommands {
         this.physicsTables.writeEnemyTransitionCountdown(slot, 0x02);
         if (entity.type() == EntityRomConstants.ENTITY_BOMB) {
             if (this.bombInteractions.readPlacedBombMotionInitialized(slot)) {
-                this.motions
-                        .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                        .clear(slot);
+                var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+                thrownEntityMotion.clear(slot);
                 this.bombInteractions.writePlacedBombMotionInitialized(slot, false);
             }
             this.bombInteractions.setBombFinalPresentationPending(slot, false);
@@ -110,8 +111,8 @@ public final class EntityPlayerCommands {
 
         int slot = state.slot();
         RoomEntity entity = this.slots.get(slot);
-        this.events.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
-        this.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(
+        this.events.preTickLinkAttackStep(new LinkAttackStepRequest(slot));
+        this.events.preTickCombat(new EntityCombatEvent(
                 slot,
                 entity.type(),
                 0,
@@ -120,8 +121,10 @@ public final class EntityPlayerCommands {
                 EntityRomConstants.LIFTED_THROW_JINGLE_ID));
         if (entity.type() == EntityRomConstants.ENTITY_SIDE_VIEW_POT) {
             this.liftThrow.writeThrownDirection(slot, romDirection);
-            this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new).start(slot, romDirection);
-            this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+            var sideViewPotMotion = this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new);
+            sideViewPotMotion.start(slot, romDirection);
+            var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+            thrownEntityMotion.clear(slot);
             this.liftThrow.writeThrownMotionInitialized(slot, false);
             this.liftThrow.writeLiftedStateInitialized(slot, false);
             this.liftThrow.writeLiftedPhase(slot, 0);
@@ -133,9 +136,9 @@ public final class EntityPlayerCommands {
             return true;
         }
         this.liftThrow.writeThrownDirection(slot, romDirection);
-        this.motions
-                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                .start(slot, romDirection, entity.type(), this.physicsTables.readGroundInteractionSideScrolling());
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        thrownEntityMotion.start(
+                slot, romDirection, entity.type(), this.physicsTables.readGroundInteractionSideScrolling());
         this.liftThrow.writeThrownMotionInitialized(slot, true);
         this.liftThrow.writeLiftedStateInitialized(slot, false);
         this.liftThrow.writeLiftedPhase(slot, 0);
@@ -249,14 +252,14 @@ public final class EntityPlayerCommands {
     }
 
     void presentWitchGotItem(int slot) {
-        this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.events.linkMotionBlock(new LinkMotionBlockRequest(slot));
+        this.events.linkHeldItemPose(new LinkHeldItemPoseRequest(slot));
     }
 
     void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
         int slot = entity.slot();
-        this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.events.linkMotionBlock(new LinkMotionBlockRequest(slot));
+        this.events.linkHeldItemPose(new LinkHeldItemPoseRequest(slot));
         int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
         RoomEntity held = withPositionAndVariant(entity, x, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         this.slots.replace(slot, withZ(held, linkZ & 0xFF));

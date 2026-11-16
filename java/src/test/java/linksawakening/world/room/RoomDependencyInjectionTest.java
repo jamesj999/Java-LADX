@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 class RoomDependencyInjectionTest {
@@ -70,7 +71,7 @@ class RoomDependencyInjectionTest {
         }
         for (var type : List.of(RoomEntityOutbox.class, RoomRenderLiveView.class, RoomDungeonLiveView.class)) {
             for (var field : type.getDeclaredFields())
-                assertFalse(java.util.function.Supplier.class.isAssignableFrom(field.getType()), field.toString());
+                assertFalse(Supplier.class.isAssignableFrom(field.getType()), field.toString());
         }
     }
 }

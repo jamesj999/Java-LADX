@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 
 /** Immutable frame inputs; referenced collision and RNG services retain their identity. */
@@ -29,8 +30,7 @@ public record EntityFrameContext(
         boolean handlerLinkCollisionEnabled) {
 
     public EntityFrameContext {
-        randomByteSupplier =
-                java.util.Objects.requireNonNullElse(randomByteSupplier, EntityFrameRandom.REQUIRED_SOURCE);
+        randomByteSupplier = Objects.requireNonNullElse(randomByteSupplier, EntityFrameRandom.REQUIRED_SOURCE);
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         objectCollision = RoomEntityObjectCollision.orNone(objectCollision);
     }

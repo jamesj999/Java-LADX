@@ -8,7 +8,7 @@ public interface RoomEntityBackgroundInteraction {
     /** No room probe: preserves the absent-interaction path without allocating a result. */
     RoomEntityBackgroundInteraction NONE = (entity, direction, x, y) -> EntityBackgroundCollisionResult.NONE;
 
-    /** Compatibility boundary for callers predating explicit room defaults. */
+    /** An absent rich probe selects the explicit no-interaction policy. */
     static RoomEntityBackgroundInteraction orNone(RoomEntityBackgroundInteraction value) {
         return Objects.requireNonNullElse(value, NONE);
     }
@@ -21,7 +21,7 @@ public interface RoomEntityBackgroundInteraction {
 
     EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY);
 
-    /** Explicit no-result value for legacy probes that return null. */
+    /** Normalize a probe reporting no result to the nonallocating absence value. */
     default EntityBackgroundCollisionResult probeOrNone(
             RoomEntity entity, int direction, int x, int y, int ignoreHits, int frame) {
         return Objects.requireNonNullElse(

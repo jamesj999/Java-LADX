@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 
@@ -20,7 +21,7 @@ public final class RoomEntitySnapshot {
     }
 
     private RoomEntitySnapshot(EntityRoomInspection liveSource) {
-        java.util.Objects.requireNonNull(liveSource, "live source");
+        Objects.requireNonNull(liveSource, "live source");
         data = new Live(
                 liveSource, new EntityLiveSlotList(liveSource, false), new EntityLiveSlotList(liveSource, true));
     }
@@ -45,7 +46,7 @@ public final class RoomEntitySnapshot {
     private static boolean sameValues(List<?> first, List<?> second) {
         if (first == second) return true;
         if (first.size() != second.size()) return false;
-        for (int i = 0; i < first.size(); i++) if (!java.util.Objects.equals(first.get(i), second.get(i))) return false;
+        for (int i = 0; i < first.size(); i++) if (!Objects.equals(first.get(i), second.get(i))) return false;
         return true;
     }
 
@@ -479,7 +480,7 @@ public final class RoomEntitySnapshot {
 
         @Override
         public int visualYOffset(int slot) {
-            java.util.Objects.checkIndex(slot, RoomEntity.SLOT_COUNT);
+            Objects.checkIndex(slot, RoomEntity.SLOT_COUNT);
             return room.physicsTables.readFallingVisualYOffset(slot);
         }
 

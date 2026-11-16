@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
@@ -48,9 +49,9 @@ public final class EntityEffectConsumption {
 
     EntityEffectConsumption(
             EntityEventChannels events, EntityPresentationState presentationState, EntityRoomVariables roomVariables) {
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
     }
 
     public boolean consumePendingSwitchBlockAnimationRequest() {
@@ -72,15 +73,15 @@ public final class EntityEffectConsumption {
     }
 
     public List<EntityCombatEvent> consumePendingEntityEvents() {
-        var first = this.events.pendingPreTickEntityEvents;
-        var second = this.events.pendingEntityEvents;
+        var first = this.events.pendingPreTickEntityEvents();
+        var second = this.events.pendingEntityEvents();
         int size = first.size() + second.size();
         if (size == 0) return List.of();
         List<EntityCombatEvent> pending = new ArrayList<>(size);
         for (int i = 0; i < first.size(); i++) pending.add(first.get(i));
         for (int i = 0; i < second.size(); i++) pending.add(second.get(i));
-        first.clear();
-        second.clear();
+        events.clearPendingPreTickEntityEvents();
+        events.clearPendingEntityEvents();
         return List.copyOf(pending);
     }
 
@@ -133,15 +134,15 @@ public final class EntityEffectConsumption {
     }
 
     public List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
-        var first = this.events.pendingPreTickLinkAttackStepRequests;
-        var second = this.events.pendingLinkAttackStepRequests;
+        var first = this.events.pendingPreTickLinkAttackStepRequests();
+        var second = this.events.pendingLinkAttackStepRequests();
         int size = first.size() + second.size();
         if (size == 0) return List.of();
         List<LinkAttackStepRequest> pending = new ArrayList<>(size);
         for (int i = 0; i < first.size(); i++) pending.add(first.get(i));
         for (int i = 0; i < second.size(); i++) pending.add(second.get(i));
-        first.clear();
-        second.clear();
+        events.clearPendingPreTickLinkAttackStepRequests();
+        events.clearPendingLinkAttackStepRequests();
         return List.copyOf(pending);
     }
 
@@ -206,68 +207,68 @@ public final class EntityEffectConsumption {
     }
 
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
-        var result = List.copyOf(events.heartPieceUpdates);
-        events.heartPieceUpdates.clear();
+        var result = List.copyOf(events.heartPieceUpdates());
+        events.clearHeartPieceUpdates();
         return result;
     }
 
     public List<HeartContainerRewardEvent> consumePendingHeartContainerRewards() {
-        List<HeartContainerRewardEvent> rewards = List.copyOf(this.events.pendingHeartContainerRewards);
-        this.events.pendingHeartContainerRewards.clear();
+        List<HeartContainerRewardEvent> rewards = List.copyOf(this.events.pendingHeartContainerRewards());
+        this.events.clearPendingHeartContainerRewards();
         return rewards;
     }
 
     public List<MadamMeowMeowFullHealRequest> consumePendingMadamMeowMeowFullHealRequests() {
-        List<MadamMeowMeowFullHealRequest> requests = List.copyOf(this.events.pendingMadamMeowMeowFullHealRequests);
-        this.events.pendingMadamMeowMeowFullHealRequests.clear();
+        List<MadamMeowMeowFullHealRequest> requests = List.copyOf(this.events.pendingMadamMeowMeowFullHealRequests());
+        this.events.clearPendingMadamMeowMeowFullHealRequests();
         return requests;
     }
 
     public List<SwordPickupRewardEvent> consumePendingSwordPickupRewards() {
-        List<SwordPickupRewardEvent> rewards = List.copyOf(this.events.pendingSwordPickupRewards);
-        this.events.pendingSwordPickupRewards.clear();
+        List<SwordPickupRewardEvent> rewards = List.copyOf(this.events.pendingSwordPickupRewards());
+        this.events.clearPendingSwordPickupRewards();
         return rewards;
     }
 
     public List<ToadstoolRewardEvent> consumePendingToadstoolRewards() {
-        List<ToadstoolRewardEvent> rewards = List.copyOf(this.events.pendingToadstoolRewards);
-        this.events.pendingToadstoolRewards.clear();
+        List<ToadstoolRewardEvent> rewards = List.copyOf(this.events.pendingToadstoolRewards());
+        this.events.clearPendingToadstoolRewards();
         return rewards;
     }
 
     public List<InstrumentRewardEvent> consumePendingInstrumentRewards() {
-        List<InstrumentRewardEvent> rewards = List.copyOf(this.events.pendingInstrumentRewards);
-        this.events.pendingInstrumentRewards.clear();
+        List<InstrumentRewardEvent> rewards = List.copyOf(this.events.pendingInstrumentRewards());
+        this.events.clearPendingInstrumentRewards();
         return rewards;
     }
 
     public List<InstrumentCompletionEvent> consumePendingInstrumentCompletions() {
-        List<InstrumentCompletionEvent> completions = List.copyOf(this.events.pendingInstrumentCompletions);
-        this.events.pendingInstrumentCompletions.clear();
+        List<InstrumentCompletionEvent> completions = List.copyOf(this.events.pendingInstrumentCompletions());
+        this.events.clearPendingInstrumentCompletions();
         return completions;
     }
 
     public List<RichardProgressEvent> consumePendingRichardProgressEvents() {
-        List<RichardProgressEvent> events = List.copyOf(this.events.pendingRichardProgressEvents);
-        this.events.pendingRichardProgressEvents.clear();
+        List<RichardProgressEvent> events = List.copyOf(this.events.pendingRichardProgressEvents());
+        this.events.clearPendingRichardProgressEvents();
         return events;
     }
 
     public List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {
-        List<WitchExchangeEvent> events = List.copyOf(this.events.pendingWitchExchangeEvents);
-        this.events.pendingWitchExchangeEvents.clear();
+        List<WitchExchangeEvent> events = List.copyOf(this.events.pendingWitchExchangeEvents());
+        this.events.clearPendingWitchExchangeEvents();
         return events;
     }
 
     public List<WitchRewardEvent> consumePendingWitchRewardEvents() {
-        List<WitchRewardEvent> events = List.copyOf(this.events.pendingWitchRewardEvents);
-        this.events.pendingWitchRewardEvents.clear();
+        List<WitchRewardEvent> events = List.copyOf(this.events.pendingWitchRewardEvents());
+        this.events.clearPendingWitchRewardEvents();
         return events;
     }
 
     public List<OwlEventCompletion> consumePendingOwlEventCompletions() {
-        List<OwlEventCompletion> completions = List.copyOf(this.events.pendingOwlEventCompletions);
-        this.events.pendingOwlEventCompletions.clear();
+        List<OwlEventCompletion> completions = List.copyOf(this.events.pendingOwlEventCompletions());
+        this.events.clearPendingOwlEventCompletions();
         return completions;
     }
 }

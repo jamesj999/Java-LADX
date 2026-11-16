@@ -13,6 +13,7 @@ import static linksawakening.world.room.RoomSessionRules.STAIRCASE_ACTIVE;
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_INACTIVE;
 import static linksawakening.world.room.RoomSessionRules.STAIRCASE_NONE;
 
+import java.util.Objects;
 import linksawakening.entity.Link;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -67,14 +68,12 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
 
     @Override
     public Warp consumeInstrumentTransitionRequest() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? consumeInstrumentTransitionRequest(loaded) : null;
+        return rooms.readOr(this, null, (room, transitions) -> transitions.consumeInstrumentTransitionRequest(room));
     }
 
     @Override
     public Warp consumeManboPondTransitionRequest() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? consumeManboPondTransitionRequest(loaded) : null;
+        return rooms.readOr(this, null, (room, transitions) -> transitions.consumeManboPondTransitionRequest(room));
     }
 
     @Override
@@ -88,14 +87,14 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
     public void startAdjacentIndoorScroll(
             linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
         RoomRuntime loaded = rooms.currentOrNull();
-        startAdjacentIndoorScroll(java.util.Objects.requireNonNull(loaded), scroll, direction, x, y);
+        startAdjacentIndoorScroll(Objects.requireNonNull(loaded), scroll, direction, x, y);
     }
 
     @Override
     public void startAdjacentOverworldScroll(
             linksawakening.world.transition.ScrollController scroll, int direction, int x, int y) {
         RoomRuntime loaded = rooms.currentOrNull();
-        startAdjacentOverworldScroll(java.util.Objects.requireNonNull(loaded), scroll, direction, x, y);
+        startAdjacentOverworldScroll(Objects.requireNonNull(loaded), scroll, direction, x, y);
     }
 
     @Override
@@ -110,7 +109,7 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
         if (dependencies.puzzles().dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
         if (--dependencies.puzzles().dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement)
             return -1;
-        return 0x56 + java.util.Objects.requireNonNull(loaded).room.mapId();
+        return 0x56 + Objects.requireNonNull(loaded).room.mapId();
     }
 
     @Override
@@ -135,7 +134,7 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
     private final Dependencies dependencies;
 
     RoomTransitionController(LoadedRoomHandle rooms, Dependencies dependencies) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
     }
 
@@ -342,18 +341,18 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
             RoomWorldState roomState,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(manboWarpResolver, "manboWarpResolver");
-            java.util.Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(puzzles, "puzzles");
+            Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomStoryState, "roomStoryState");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(manboWarpResolver, "manboWarpResolver");
+            Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(scrollNavigation, "scrollNavigation");
         }
     }
 

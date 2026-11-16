@@ -4,6 +4,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_ARROW
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_KING;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityBossRewards;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityFrameInputLatch;
@@ -57,7 +58,7 @@ final class MoblinKingHandler {
         private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         MoblinKingHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-            this.state = java.util.Objects.requireNonNull(state, "state");
+            this.state = Objects.requireNonNull(state, "state");
         }
 
         boolean run() {

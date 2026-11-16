@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -495,11 +496,11 @@ public final class ColorShellMotion {
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        IntSupplier randomByteSupplier = inputs.randomByteSupplier();
         RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
         ColorShellWorld world = inputs.world();
-        java.util.List<RoomEntity> allEntities = inputs.allEntities();
+        List<RoomEntity> allEntities = inputs.allEntities();
         if (entity == null || randomByteSupplier == null) {
             throw new IllegalArgumentException("Color Shell motion inputs cannot be null");
         }
@@ -581,16 +582,15 @@ public final class ColorShellMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int ignoreHitsCountdown,
             ColorShellWorld world,
-            /* Optional occupancy list; absence selects the current entity only, and absent entries are ignored. */ java
-                                    .util.List<
+            /* Optional occupancy list; absence selects the current entity only, and absent entries are ignored. */ List<
                             RoomEntity>
                     allEntities) {
         public ColorShellFrame {
-            world = java.util.Objects.requireNonNullElse(world, ColorShellWorld.none());
+            world = Objects.requireNonNullElse(world, ColorShellWorld.none());
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         }
     }

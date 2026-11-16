@@ -1,5 +1,6 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
 import linksawakening.world.transition.Warp;
 
 final class RoomProgression implements RoomProgress {
@@ -8,7 +9,7 @@ final class RoomProgression implements RoomProgress {
 
     RoomProgression(Dependencies dependencies, LoadedRoomHandle rooms) {
         this.dependencies = dependencies;
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
     }
 
     @Override
@@ -34,8 +35,7 @@ final class RoomProgression implements RoomProgress {
     @Override
     public void clearGameOverPowerCounter() {
         dependencies.entityFrame().clearGameOverPowerCounter();
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) dependencies.loads().configureEnemyDropRuntime(loaded);
+        rooms.update(dependencies, (room, state) -> state.loads().configureEnemyDropRuntime(room));
     }
 
     @Override
@@ -50,10 +50,10 @@ final class RoomProgression implements RoomProgress {
             RoomTerrainState terrain,
             RoomLoadCoordinator loads) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(loads, "loads");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(loads, "loads");
         }
     }
 }

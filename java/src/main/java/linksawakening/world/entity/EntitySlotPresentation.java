@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.motion.PincerMotion;
 
 /** Shared slotProperties slot state, independent of behavior dispatch and construction order. */
@@ -10,7 +11,7 @@ final class EntitySlotPresentation {
     private final EntitySpriteViews spriteViews;
 
     EntitySlotPresentation(EntitySpriteViews spriteViews) {
-        this.spriteViews = java.util.Objects.requireNonNull(spriteViews, "spriteViews");
+        this.spriteViews = Objects.requireNonNull(spriteViews, "spriteViews");
     }
 
     EntitySpriteViews spriteViews() {
@@ -95,13 +96,14 @@ final class EntitySlotPresentation {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
                 continue;
             }
+            var pincerMotion = motions.get(PincerMotion.class, PincerMotion::new);
             entries.addAll(PincerBodyOam.entries(
                     entity.slot(),
-                    motions.get(PincerMotion.class, PincerMotion::new).holeX(entity.slot()),
-                    motions.get(PincerMotion.class, PincerMotion::new).holeY(entity.slot()),
+                    pincerMotion.holeX(entity.slot()),
+                    pincerMotion.holeY(entity.slot()),
                     entity.x(),
                     entity.y(),
-                    motions.get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
+                    pincerMotion.state(entity.slot())));
         }
         writePincerBodyOam(List.copyOf(entries));
     }

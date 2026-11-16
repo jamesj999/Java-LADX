@@ -8,6 +8,8 @@ import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.IntUnaryOperator;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.BooBuddyMotion;
@@ -67,23 +69,23 @@ public final class EntitySlotProperties {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         EntityRoomInspection inspection = roomInspection;
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.projectiles = java.util.Objects.requireNonNull(projectiles, "projectiles");
-        this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection, "roomInspection");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
+        this.inspection = Objects.requireNonNull(inspection, "inspection");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
         this.puzzleCountdown = physicsTables::readEnemyTransitionCountdown;
         this.puzzleEntities = slots.view();
     }
@@ -93,16 +95,15 @@ public final class EntitySlotProperties {
     }
 
     void resolveThreeOfAKindPuzzle() {
-        var runtime = this;
-        ThreeOfAKindMotion.PuzzleResult result = runtime.motions
-                .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                .resolvePuzzle(this.puzzleEntities(), this.puzzleCountdown);
+        var threeOfAKindMotion = this.motions.get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new);
+        ThreeOfAKindMotion.PuzzleResult result =
+                threeOfAKindMotion.resolvePuzzle(this.puzzleEntities(), this.puzzleCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
             return;
         }
         int coordinatorSlot = 0;
-        for (int entitySlotIndex = 0; entitySlotIndex < runtime.slots.size(); entitySlotIndex++) {
-            RoomEntity entity = runtime.slots.get(entitySlotIndex);
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
 
             if (entity.status() == EntityStatus.ACTIVE && entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND) {
                 coordinatorSlot = entity.slot();
@@ -110,45 +111,32 @@ public final class EntitySlotProperties {
             }
         }
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
-                ? runtime.motions
-                        .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                        .matchedJingle(coordinatorSlot)
+                ? threeOfAKindMotion.matchedJingle(coordinatorSlot)
                 : 0x1D;
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.events.sound(
                 coordinatorSlot,
                 EntityRomConstants.ENTITY_THREE_OF_A_KIND,
-                0,
-                false,
                 EntityCombatEvent.SoundChannel.JINGLE,
-                jingle));
+                jingle);
         if (result != ThreeOfAKindMotion.PuzzleResult.MATCH) {
             return;
         }
-        for (int index = 0; index < runtime.slots.size(); index++) {
-            RoomEntity entity = runtime.slots.get(index);
+        for (int index = 0; index < this.slots.size(); index++) {
+            RoomEntity entity = this.slots.get(index);
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_THREE_OF_A_KIND) {
                 continue;
             }
             int slot = entity.slot();
-            runtime.bossRewards.writeDroppedItemBySlot(
-                    slot,
-                    runtime.motions
-                            .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                            .matchedDrop(slot));
-            runtime.combatTables.writeDyingCountdown(slot, 0x1F);
-            runtime.combatTables.writeEnemyHealth(slot, 0);
-            runtime.physicsTables.writeEnemyPhysicsFlags(slot, 0x04);
-            runtime.slots.replace(index, withStatus(entity, EntityStatus.DYING));
+            this.bossRewards.writeDroppedItemBySlot(slot, threeOfAKindMotion.matchedDrop(slot));
+            this.combatTables.writeDyingCountdown(slot, 0x1F);
+            this.combatTables.writeEnemyHealth(slot, 0);
+            this.physicsTables.writeEnemyPhysicsFlags(slot, 0x04);
+            this.slots.replace(index, withStatus(entity, EntityStatus.DYING));
         }
         // The source writes the shared noise register once per card in the
         // same handler pass; only the final register value is audible.
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                coordinatorSlot,
-                EntityRomConstants.ENTITY_THREE_OF_A_KIND,
-                0,
-                false,
-                EntityCombatEvent.SoundChannel.NOISE,
-                0x13));
+        this.events.sound(
+                coordinatorSlot, EntityRomConstants.ENTITY_THREE_OF_A_KIND, EntityCombatEvent.SoundChannel.NOISE, 0x13);
     }
 
     int initialHealth(int type) {
@@ -190,44 +178,28 @@ public final class EntitySlotProperties {
     }
 
     void updateBowWowChain(int frame) {
-        var runtime = this;
         List<BowWowChain.Entry> entries = bowWowEntries;
         entries.clear();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
-        if (runtime.roomVariables.readTransitionSequenceCounter() != 4
-                && !runtime.roomVariables.readRoomTransitionActive()
-                && !runtime.linkState.readDialogActive()
-                && !runtime.linkState.readInventoryAppearing()
-                && !runtime.inspection.witchGotItemPresentationActive()) {
+        if (this.roomVariables.readTransitionSequenceCounter() != 4
+                && !this.roomVariables.readRoomTransitionActive()
+                && !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
+                && !this.inspection.witchGotItemPresentationActive()) {
             this.state.writeBowWowChainOam(List.of());
             return;
         }
-        boolean moving = (runtime.linkState.readCurrentLinkSpeedX()
-                        | runtime.linkState.readCurrentLinkSpeedY()
-                        | runtime.linkState.readCurrentLinkVelocityZ())
+        boolean moving = (this.linkState.readCurrentLinkSpeedX()
+                        | this.linkState.readCurrentLinkSpeedY()
+                        | this.linkState.readCurrentLinkVelocityZ())
                 != 0;
-        for (int slot = 0; slot < runtime.slots.size(); slot++) {
-            RoomEntity entity = runtime.slots.get(slot);
+        for (int slot = 0; slot < this.slots.size(); slot++) {
+            RoomEntity entity = this.slots.get(slot);
             if (entity.type() != EntityRomConstants.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
-            runtime.slots.replace(
-                    slot,
-                    runtime.motions
-                            .get(BowWowMotion.class, BowWowMotion::new)
-                            .advanceChain(
-                                    entity,
-                                    runtime.motions
-                                            .get(BowWowMotion.class, BowWowMotion::new)
-                                            .readBowWowState(),
-                                    moving));
-            entries.addAll(runtime.motions
-                    .get(BowWowMotion.class, BowWowMotion::new)
-                    .chainEntries(
-                            slot,
-                            runtime.motions
-                                    .get(BowWowMotion.class, BowWowMotion::new)
-                                    .readBowWowState(),
-                            frame));
+            var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+            this.slots.replace(slot, bowWowMotion.advanceChain(entity, bowWowMotion.readBowWowState(), moving));
+            entries.addAll(bowWowMotion.chainEntries(slot, bowWowMotion.readBowWowState(), frame));
         }
         this.state.writeBowWowChainOam(List.copyOf(entries));
     }
@@ -245,11 +217,10 @@ public final class EntitySlotProperties {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
+            var wingedOctorokMotion = this.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
-                    this.motions
-                            .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
-                            .privateState2(entity.slot()),
+                    wingedOctorokMotion.privateState2(entity.slot()),
                     entity.x(),
                     entity.y(),
                     entity.z()));
@@ -381,10 +352,10 @@ public final class EntitySlotProperties {
         };
     }
 
-    final java.util.function.IntUnaryOperator puzzleCountdown;
-    private final java.util.List<RoomEntity> puzzleEntities;
+    final IntUnaryOperator puzzleCountdown;
+    private final List<RoomEntity> puzzleEntities;
 
-    java.util.List<RoomEntity> puzzleEntities() {
+    List<RoomEntity> puzzleEntities() {
         return puzzleEntities;
     }
 

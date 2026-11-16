@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
@@ -111,7 +112,7 @@ final class MiniMoldormMotionTest {
                         0x04,
                         0x5A49,
                         0,
-                        java.util.List.of(java.util.List.of(new EntitySpriteDefinition.DynamicSprite(
+                        List.of(List.of(new EntitySpriteDefinition.DynamicSprite(
                                 0,
                                 0,
                                 new EntitySpriteDefinition.OamAttribute(0x70, 0),

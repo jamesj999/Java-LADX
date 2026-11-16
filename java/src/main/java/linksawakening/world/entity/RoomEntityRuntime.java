@@ -1,6 +1,7 @@
 package linksawakening.world.entity;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
 /** Room-facing entity execution and access to the collaborators owning each operation. */
@@ -41,23 +42,23 @@ public final class RoomEntityRuntime {
             EntityFlyingEnemyInspection flyingEnemyInspection,
             EntityPickupInspection pickupInspection,
             EntityFrameExecution frameExecution) {
-        this.pipeline = java.util.Objects.requireNonNull(pipeline);
-        this.combat = java.util.Objects.requireNonNull(combat);
-        this.rewards = java.util.Objects.requireNonNull(rewards);
-        this.entityPlayerSpawns = java.util.Objects.requireNonNull(entityPlayerSpawns);
-        this.entityEnemySpawns = java.util.Objects.requireNonNull(entityEnemySpawns);
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle);
-        this.effects = java.util.Objects.requireNonNull(effects);
-        this.playerCommands = java.util.Objects.requireNonNull(playerCommands);
-        this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics);
-        this.roomInspection = java.util.Objects.requireNonNull(roomInspection);
-        this.entityRuntimeConfiguration = java.util.Objects.requireNonNull(entityRuntimeConfiguration);
-        this.entityDebugConfiguration = java.util.Objects.requireNonNull(entityDebugConfiguration);
-        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection);
-        this.bossInspection = java.util.Objects.requireNonNull(bossInspection);
-        this.flyingEnemyInspection = java.util.Objects.requireNonNull(flyingEnemyInspection);
-        this.pickupInspection = java.util.Objects.requireNonNull(pickupInspection);
-        this.frameExecution = java.util.Objects.requireNonNull(frameExecution);
+        this.pipeline = Objects.requireNonNull(pipeline);
+        this.combat = Objects.requireNonNull(combat);
+        this.rewards = Objects.requireNonNull(rewards);
+        this.entityPlayerSpawns = Objects.requireNonNull(entityPlayerSpawns);
+        this.entityEnemySpawns = Objects.requireNonNull(entityEnemySpawns);
+        this.lifecycle = Objects.requireNonNull(lifecycle);
+        this.effects = Objects.requireNonNull(effects);
+        this.playerCommands = Objects.requireNonNull(playerCommands);
+        this.backgroundMechanics = Objects.requireNonNull(backgroundMechanics);
+        this.roomInspection = Objects.requireNonNull(roomInspection);
+        this.entityRuntimeConfiguration = Objects.requireNonNull(entityRuntimeConfiguration);
+        this.entityDebugConfiguration = Objects.requireNonNull(entityDebugConfiguration);
+        this.enemyInspection = Objects.requireNonNull(enemyInspection);
+        this.bossInspection = Objects.requireNonNull(bossInspection);
+        this.flyingEnemyInspection = Objects.requireNonNull(flyingEnemyInspection);
+        this.pickupInspection = Objects.requireNonNull(pickupInspection);
+        this.frameExecution = Objects.requireNonNull(frameExecution);
     }
 
     public List<EntityProjectileEvent> tick(EntityFrameContext context) {

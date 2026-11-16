@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityTypeRules.checksThrownRoomEventTriggers;
 
+import java.util.Objects;
 import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
 
 /** Stable adapters for a frame's current rich and boolean background probes. */
@@ -11,7 +12,7 @@ final class EntityFrameCollision {
     private final RoomEntityBackgroundInteraction richProbe = this::probeBooleanInput;
 
     EntityFrameCollision(EntityFrameExecution state) {
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state");
     }
 
     RoomEntityBackgroundCollision booleanProbe() {
@@ -36,8 +37,7 @@ final class EntityFrameCollision {
                 && entity.status() == EntityStatus.THROWN
                 && checksThrownRoomEventTriggers(entity.type())) {
             state.events()
-                    .pendingThrownBackgroundCollisions
-                    .add(new ThrownBackgroundCollisionEvent(
+                    .thrownBackgroundCollision(new ThrownBackgroundCollisionEvent(
                             entity.slot(), entity.type(), direction, result.objectId()));
         }
         return result.blocked();

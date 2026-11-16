@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -64,7 +65,7 @@ public final class PokeyMotion {
         int flashCountdown = inputs.flashCountdown();
         int linkEntityX = inputs.linkEntityX();
         int linkEntityY = inputs.linkEntityY();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        IntSupplier randomByteSupplier = inputs.randomByteSupplier();
         RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         checkType(entity);
         validateByte(inertia, "Pokey inertia");
@@ -109,7 +110,7 @@ public final class PokeyMotion {
         // PokeyEntityHandler calls ApplyEntityInteractionWithBackground after
         // its position update. The room runtime owns the authoritative probe;
         // retain the probe ordering without inventing a snap coordinate in
-        // this boolean-only motion seam.
+        // this boolean-only background probe.
         collisionMask(moved, backgroundCollision);
         return new Update(
                 moved,
@@ -327,7 +328,7 @@ public final class PokeyMotion {
             int flashCountdown,
             int linkEntityX,
             int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
         public PokeyFrame {
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);

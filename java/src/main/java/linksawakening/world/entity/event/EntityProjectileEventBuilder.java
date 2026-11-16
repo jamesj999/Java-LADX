@@ -3,7 +3,7 @@ package linksawakening.world.entity.event;
 import linksawakening.world.entity.event.EntityProjectileEvent.Kind;
 import linksawakening.world.entity.event.EntityProjectileEvent.SoundChannel;
 
-/** Named event construction; defaults match the legacy collision constructors. */
+/** Named projectile effects; omitted collision and sound effects remain inactive. */
 public final class EntityProjectileEventBuilder {
     private final int slot;
     private final int type;

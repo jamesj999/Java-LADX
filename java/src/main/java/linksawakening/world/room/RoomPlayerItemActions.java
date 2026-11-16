@@ -1,5 +1,6 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.world.object.OverworldBushInteraction;
@@ -90,8 +91,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     @Override
     public boolean lastBombPlacementPlayedBump() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? lastBombPlacementPlayedBump(loaded) : false;
+        return rooms.test(room -> room.entities.inspection().lastBombPlacementPlayedBump());
     }
 
     @Override
@@ -119,26 +119,22 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     @Override
     public int activeProjectileCount() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? activeProjectileCount(loaded) : 0;
+        return rooms.intOr(0, room -> room.entities.inspection().activeProjectileCount());
     }
 
     @Override
     public boolean bombActive() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? bombActive(loaded) : false;
+        return rooms.test(room -> room.entities.inspection().bombActive());
     }
 
     @Override
     public boolean hookshotActive() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? hookshotActive(loaded) : false;
+        return rooms.test(room -> room.entities.inspection().hookshotActive());
     }
 
     @Override
     public boolean boomerangActive() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? boomerangActive(loaded) : false;
+        return rooms.test(room -> room.entities.inspection().boomerangActive());
     }
 
     private final LoadedRoomHandle rooms;
@@ -146,7 +142,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
     private final RoomShovelActions roomShovelActions;
 
     RoomPlayerItemActions(LoadedRoomHandle rooms, Dependencies dependencies) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
 
         roomShovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
                 dependencies.entityRuntimeState(),
@@ -351,16 +347,16 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
             RoomSessionViews roomSessionViews,
             RoomObjectMutations roomTileRedraw) {
         Dependencies {
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(items, "items");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(items, "items");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(romTables, "romTables");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }
     }
 }

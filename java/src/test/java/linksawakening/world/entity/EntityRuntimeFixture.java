@@ -1,13 +1,15 @@
 package linksawakening.world.entity;
 
+import java.util.Arrays;
+
 /** Test-side entity setup and inspection using real ROM-free runtime collaborators. */
 public final class EntityRuntimeFixture {
     private EntityRuntimeFixture() {}
 
     static RoomEntityRuntime emptyRuntime() {
         RoomEntity[] slots = new RoomEntity[RoomEntity.SLOT_COUNT];
-        java.util.Arrays.setAll(slots, RoomEntity::disabled);
-        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(java.util.Arrays.asList(slots)))
+        Arrays.setAll(slots, RoomEntity::disabled);
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(Arrays.asList(slots)))
                 .randomByteSupplier(() -> 0)
                 .build();
     }

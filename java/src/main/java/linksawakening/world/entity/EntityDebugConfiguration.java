@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.world.entity.motion.ColorShellMotion;
 
 /** Room entity configuration preserving source-shaped handler inputs. */
@@ -8,8 +9,8 @@ public final class EntityDebugConfiguration {
     private final EntityMotionRegistry motions;
 
     EntityDebugConfiguration(EntityCombatTables combatTables, EntityMotionRegistry motions) {
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.motions = Objects.requireNonNull(motions, "motions");
     }
 
     public void setEnemyIgnoreHitsCountdown(int slot, int value) {
@@ -19,7 +20,7 @@ public final class EntityDebugConfiguration {
 
     public void setColorShellState(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        motions.get(ColorShellMotion.class, ColorShellMotion::new)
-                .restoreState(slot, state, transitionCountdown, direction, speedX, speedY);
+        var colorShellMotion = motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        colorShellMotion.restoreState(slot, state, transitionCountdown, direction, speedX, speedY);
     }
 }

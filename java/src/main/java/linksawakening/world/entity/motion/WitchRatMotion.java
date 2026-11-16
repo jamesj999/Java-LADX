@@ -185,7 +185,7 @@ public final class WitchRatMotion {
         private linksawakening.world.entity.RoomEntity entity;
         private int frameCounter;
         private int transitionCountdown;
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int slot;
         private int countdown;
@@ -196,7 +196,7 @@ public final class WitchRatMotion {
         private boolean appliesBackgroundInteraction;
 
         WitchRatFrameStep(WitchRatMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.WitchRatMotion.Update run() {
@@ -308,7 +308,7 @@ public final class WitchRatMotion {
                 linksawakening.world.entity.RoomEntity entity,
                 int frameCounter,
                 int transitionCountdown,
-                java.util.function.IntSupplier randomByteSupplier,
+                IntSupplier randomByteSupplier,
                 linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
             if (inUse) {
                 return new WitchRatFrameStep(owner)

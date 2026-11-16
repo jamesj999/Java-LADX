@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -29,7 +30,8 @@ public final class BooBuddyMotion {
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: movement and contact pause after reflecting around the room center.
+    final int[] reflectionCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $50 uses the ordinary no-op initialization path. */
@@ -41,7 +43,7 @@ public final class BooBuddyMotion {
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         privateState1[slot] = 0;
-        privateCountdown1[slot] = 0;
+        reflectionCooldown[slot] = 0;
         initialized[slot] = true;
     }
 
@@ -73,8 +75,8 @@ public final class BooBuddyMotion {
 
     public void tickTimers(int slot) {
         ensureInitialized(slot);
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
+        if (reflectionCooldown[slot] > 0) {
+            reflectionCooldown[slot]--;
         }
     }
 
@@ -135,7 +137,7 @@ public final class BooBuddyMotion {
     }
 
     int privateCountdown1(int slot) {
-        return privateCountdown1[slot];
+        return reflectionCooldown[slot];
     }
 
     public boolean allowsEnemyCollision(int slot, int roomTriggerCount, int transitionCountdown, boolean swordMiddle) {
@@ -147,7 +149,7 @@ public final class BooBuddyMotion {
         // State 0 calls label_3B44 only on its ordinary drift path. The
         // transition and private-countdown branches, plus the sword-middle
         // branch, clear movement and return without a Link collision check.
-        return state[slot] == 0 && (transitionCountdown & 0xFF) == 0 && privateCountdown1[slot] == 0 && !swordMiddle;
+        return state[slot] == 0 && (transitionCountdown & 0xFF) == 0 && reflectionCooldown[slot] == 0 && !swordMiddle;
     }
 
     public boolean allowsSwordCollision(int slot, int roomTriggerCount) {
@@ -274,7 +276,7 @@ public final class BooBuddyMotion {
             int transitionCountdown,
             int roomTriggerCount,
             boolean swordMiddle,
-            java.util.function.IntSupplier randomByteSupplier) {}
+            IntSupplier randomByteSupplier) {}
 
     static final class BooBuddyFrameStep {
         private final BooBuddyMotion owner;
@@ -289,7 +291,7 @@ public final class BooBuddyMotion {
         private int roomTriggerCount;
         private boolean swordMiddle;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private int slot;
         private int countdown;
         private int x;
@@ -300,7 +302,7 @@ public final class BooBuddyMotion {
         private int healthOverride;
 
         BooBuddyFrameStep(BooBuddyMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.BooBuddyMotion.Update run() {
@@ -364,7 +366,7 @@ public final class BooBuddyMotion {
                 owner.state[slot] = 1;
                 return true;
             }
-            if (swordMiddle && countdown == 0 && owner.privateCountdown1[slot] == 0) {
+            if (swordMiddle && countdown == 0 && owner.reflectionCooldown[slot] == 0) {
                 if (!BooBuddyMotion.withinSwordTriggerWindow(x, y, linkEntityX, linkEntityY)) {
                     // Both distant-swing branches jump straight to animation.
                     variant = BooBuddyMotion.directionVariant(x, linkEntityX, frameCounter);
@@ -379,7 +381,7 @@ public final class BooBuddyMotion {
                 if (owner.privateState1[slot] != 0) {
                     // func_006_7AB0 sets this flag at countdown one, then
                     // func_006_7A8C reflects the position around ($50,$48).
-                    owner.privateCountdown1[slot] = 0x20;
+                    owner.reflectionCooldown[slot] = 0x20;
                     owner.privateState1[slot] = 0;
                     x = (0xA0 - x) & 0xFF;
                     y = (0x90 - y) & 0xFF;
@@ -387,7 +389,7 @@ public final class BooBuddyMotion {
                 }
                 return true;
             }
-            if (owner.privateCountdown1[slot] != 0) {
+            if (owner.reflectionCooldown[slot] != 0) {
                 owner.speedX[slot] = 0;
                 owner.speedY[slot] = 0;
                 variant = owner.animateTransition(frameCounter, x, linkEntityX, slot, countdown);

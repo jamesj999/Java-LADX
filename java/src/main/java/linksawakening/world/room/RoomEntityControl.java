@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
@@ -147,10 +148,10 @@ final class RoomEntityControl implements RoomEntityState {
             RoomFollowerState followers,
             RoomEntitySessionState entityFrame) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityBridge, "entityBridge");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(entityBridge, "entityBridge");
+            Objects.requireNonNull(entityInputs, "entityInputs");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(entityFrame, "entityFrame");
         }
     }
 }

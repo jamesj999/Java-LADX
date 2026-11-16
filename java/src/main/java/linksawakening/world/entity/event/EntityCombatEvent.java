@@ -1,5 +1,6 @@
 package linksawakening.world.entity.event;
 
+import java.util.Locale;
 import linksawakening.world.entity.RoomEntity;
 
 /** A single room-entity combat result produced by the ROM collision pass. */
@@ -40,7 +41,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for callers that already provide raw sound. */
+    /** Combat result with one raw sound request. */
     public EntityCombatEvent(
             int slot, int type, int linkDamage, boolean swordHit, SoundChannel soundChannel, int soundId) {
         this(
@@ -59,7 +60,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for callers that provide combat data and one raw sound. */
+    /** Combat damage and special action with one raw sound request. */
     public EntityCombatEvent(
             int slot,
             int type,
@@ -85,7 +86,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for a generic Link collision response. */
+    /** Combat result carrying a generic Link collision response. */
     public EntityCombatEvent {
         if (slot < 0 || slot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -165,11 +166,11 @@ public record EntityCombatEvent(
         }
         if (channel == SoundChannel.NONE && id != -1) {
             throw new IllegalArgumentException(
-                    "A sound id requires a " + label.toLowerCase(java.util.Locale.getDefault()) + " sound channel");
+                    "A sound id requires a " + label.toLowerCase(Locale.getDefault()) + " sound channel");
         }
         if (channel != SoundChannel.NONE && id == -1) {
             throw new IllegalArgumentException(
-                    "A " + label.toLowerCase(java.util.Locale.getDefault()) + " sound channel requires a sound id");
+                    "A " + label.toLowerCase(Locale.getDefault()) + " sound channel requires a sound id");
         }
     }
 

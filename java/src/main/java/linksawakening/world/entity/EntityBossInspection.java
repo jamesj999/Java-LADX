@@ -1,5 +1,6 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
 import linksawakening.world.entity.motion.MoldormMotion;
 
@@ -15,14 +16,15 @@ final class EntityBossInspection {
             EntityEnemyInspection enemyInspection,
             EntityMotionRegistry motions,
             EntityPhysicsTables physicsTables) {
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.enemyInspection = java.util.Objects.requireNonNull(enemyInspection, "enemyInspection");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.enemyInspection = Objects.requireNonNull(enemyInspection, "enemyInspection");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
     }
 
     int armosKnightState(int slot) {
-        return motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new).state(slot);
+        var armosKnightMotion = motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
+        return armosKnightMotion.state(slot);
     }
 
     int armosKnightTransitionCountdown(int slot) {
@@ -30,28 +32,34 @@ final class EntityBossInspection {
     }
 
     int armosKnightSpeedX(int slot) {
-        return motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new).speedX(slot);
+        var armosKnightMotion = motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
+        return armosKnightMotion.speedX(slot);
     }
 
     int armosKnightSpeedY(int slot) {
-        return motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new).speedY(slot);
+        var armosKnightMotion = motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
+        return armosKnightMotion.speedY(slot);
     }
 
     int armosKnightSpeedZ(int slot) {
-        return motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new).speedZ(slot);
+        var armosKnightMotion = motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
+        return armosKnightMotion.speedZ(slot);
     }
 
     int armosKnightPrivateCountdown1(int slot) {
-        return motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new).privateCountdown1(slot);
+        var armosKnightMotion = motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
+        return armosKnightMotion.privateCountdown1(slot);
     }
 
     int armosKnightInertia(int slot) {
-        return motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new).inertia(slot);
+        var armosKnightMotion = motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
+        return armosKnightMotion.inertia(slot);
     }
 
     int moldormHeadSpriteVariant(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return motions.get(MoldormMotion.class, MoldormMotion::new).headSpriteVariant(slot);
+        var moldormMotion = motions.get(MoldormMotion.class, MoldormMotion::new);
+        return moldormMotion.headSpriteVariant(slot);
     }
 
     int moldormTransitionCountdown(int slot) {
@@ -61,7 +69,8 @@ final class EntityBossInspection {
 
     int moldormPrivateCountdown2(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return motions.get(MoldormMotion.class, MoldormMotion::new).privateCountdown2(slot);
+        var moldormMotion = motions.get(MoldormMotion.class, MoldormMotion::new);
+        return moldormMotion.privateCountdown2(slot);
     }
 
     int moldormDestructionState(int slot) {
@@ -71,6 +80,7 @@ final class EntityBossInspection {
 
     int moldormInertia(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return motions.get(MoldormMotion.class, MoldormMotion::new).inertia(slot);
+        var moldormMotion = motions.get(MoldormMotion.class, MoldormMotion::new);
+        return moldormMotion.inertia(slot);
     }
 }

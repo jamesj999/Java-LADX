@@ -6,6 +6,9 @@ import static linksawakening.world.room.RoomSessionRules.EVENT_EFFECT_OPEN_LOCKE
 import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_1;
 import static linksawakening.world.room.RoomSessionRules.ROOM_STATUS_EVENT_2;
 
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
@@ -79,8 +82,7 @@ final class RoomLoadCoordinator implements RoomRooms {
     private final Dependencies dependencies;
 
     PreviousPalettes previousPalettes() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? PreviousPalettes.NONE : PreviousPalettes.from(loaded);
+        return rooms.readOr(PreviousPalettes.NONE, PreviousPalettes::from);
     }
 
     @Override
@@ -91,7 +93,7 @@ final class RoomLoadCoordinator implements RoomRooms {
     @Override
     public ActiveRoom requireActiveRoom() {
         RoomRuntime loaded = rooms.currentOrNull();
-        return java.util.Objects.requireNonNull(loaded).room;
+        return Objects.requireNonNull(loaded).room;
     }
 
     @Override
@@ -121,46 +123,39 @@ final class RoomLoadCoordinator implements RoomRooms {
 
     @Override
     public LiftedEntityState liftedEntityState() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null
-                ? LiftedEntityState.none()
-                : loaded.entities.inspection().liftedEntityState();
+        return rooms.readOrGet(
+                linksawakening.world.entity.event.LiftedEntityState::none,
+                room -> room.entities.inspection().liftedEntityState());
     }
 
     @Override
     public RoomRenderSnapshot renderSnapshotOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? loaded.renderSnapshot() : null;
+        return rooms.readOr(null, room -> room.renderSnapshot());
     }
 
     @Override
     public RoomRenderSnapshot.View renderViewOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? loaded.renderView : null;
+        return rooms.readOr(null, room -> room.renderView);
     }
 
     @Override
     public String moblinKingTrace() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? "-1" : loaded.entities.inspection().moblinKingTrace();
+        return rooms.readOr("-1", room -> room.entities.inspection().moblinKingTrace());
     }
 
     @Override
     public String instrumentTrace() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? "" : loaded.entities.inspection().instrumentTrace();
+        return rooms.readOr("", room -> room.entities.inspection().instrumentTrace());
     }
 
     @Override
     public boolean heartPiecePickupActive() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && loaded.entities.inspection().heartPiecePickupActive();
+        return rooms.test(room -> room.entities.inspection().heartPiecePickupActive());
     }
 
     @Override
     public int[][] palettesOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? null : loaded.room.palettes();
+        return rooms.readOr(null, room -> room.room.palettes());
     }
 
     @Override
@@ -175,37 +170,35 @@ final class RoomLoadCoordinator implements RoomRooms {
     @Override
     public int mapId() {
         RoomRuntime loaded = rooms.currentOrNull();
-        return java.util.Objects.requireNonNull(loaded).room.mapId();
+        return Objects.requireNonNull(loaded).room.mapId();
     }
 
     @Override
     public int mapCategory() {
         RoomRuntime loaded = rooms.currentOrNull();
-        return java.util.Objects.requireNonNull(loaded).room.mapCategory();
+        return Objects.requireNonNull(loaded).room.mapCategory();
     }
 
     @Override
     public int currentRoomId() {
         RoomRuntime loaded = rooms.currentOrNull();
-        return java.util.Objects.requireNonNull(loaded).room.roomId();
+        return Objects.requireNonNull(loaded).room.roomId();
     }
 
     @Override
     public boolean hasActiveRoom() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null;
+        return rooms.hasRoom();
     }
 
     @Override
     public ActiveRoom activeRoomOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? loaded.room : null;
+        return rooms.readOr(null, room -> room.room);
     }
 
     boolean musicSelectionIsScroll;
 
     RoomLoadCoordinator(LoadedRoomHandle rooms, Dependencies dependencies) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
     }
 
@@ -409,7 +402,7 @@ final class RoomLoadCoordinator implements RoomRooms {
             OwlEventDialogResolver owlEventDialogResolver,
             Rom romData,
             RomTables romTables,
-            java.util.function.UnaryOperator<RoomRuntime> roomLoaded,
+            UnaryOperator<RoomRuntime> roomLoaded,
             RoomLoader roomLoader,
             RoomObjectMutations roomObjectMutations,
             RoomPaletteLoader roomPaletteLoader,
@@ -418,44 +411,44 @@ final class RoomLoadCoordinator implements RoomRooms {
             RoomWorldState roomState,
             RoomStoryState roomStoryState,
             Runnable resetRoomTransients,
-            java.util.function.Consumer<RoomRuntime> installRoom,
+            Consumer<RoomRuntime> installRoom,
             RoomRuntime.Services roomRuntimeServices) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(followers, "followers");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(chestContentsTable, "chestContentsTable");
-            java.util.Objects.requireNonNull(dungeonRoomEventTable, "dungeonRoomEventTable");
-            java.util.Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
-            java.util.Objects.requireNonNull(enemyDropResolver, "enemyDropResolver");
-            java.util.Objects.requireNonNull(entityInputs, "entityInputs");
-            java.util.Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
-            java.util.Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
-            java.util.Objects.requireNonNull(gpu, "gpu");
-            java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(overworldTilesetTable, "overworldTilesetTable");
-            java.util.Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
-            java.util.Objects.requireNonNull(romData, "romData");
-            java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomLoader, "roomLoader");
-            java.util.Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            java.util.Objects.requireNonNull(roomPaletteLoader, "roomPaletteLoader");
-            java.util.Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
-            java.util.Objects.requireNonNull(resetRoomTransients, "resetRoomTransients");
-            java.util.Objects.requireNonNull(installRoom, "installRoom");
-            java.util.Objects.requireNonNull(roomLoaded, "roomLoaded");
-            java.util.Objects.requireNonNull(roomRuntimeServices, "roomRuntimeServices");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(puzzles, "puzzles");
+            Objects.requireNonNull(followers, "followers");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(chestContentsTable, "chestContentsTable");
+            Objects.requireNonNull(dungeonRoomEventTable, "dungeonRoomEventTable");
+            Objects.requireNonNull(enemyCombatTables, "enemyCombatTables");
+            Objects.requireNonNull(enemyDropResolver, "enemyDropResolver");
+            Objects.requireNonNull(entityInputs, "entityInputs");
+            Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
+            Objects.requireNonNull(entitySpriteHandlerCatalog, "entitySpriteHandlerCatalog");
+            Objects.requireNonNull(gpu, "gpu");
+            Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(overworldTilesetTable, "overworldTilesetTable");
+            Objects.requireNonNull(owlEventDialogResolver, "owlEventDialogResolver");
+            Objects.requireNonNull(romData, "romData");
+            Objects.requireNonNull(romTables, "romTables");
+            Objects.requireNonNull(roomLoader, "roomLoader");
+            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
+            Objects.requireNonNull(roomPaletteLoader, "roomPaletteLoader");
+            Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(roomStoryState, "roomStoryState");
+            Objects.requireNonNull(resetRoomTransients, "resetRoomTransients");
+            Objects.requireNonNull(installRoom, "installRoom");
+            Objects.requireNonNull(roomLoaded, "roomLoaded");
+            Objects.requireNonNull(roomRuntimeServices, "roomRuntimeServices");
         }
     }
 
     private RoomEntitySnapshot prepareEntities(LoadedRoom room, int[][] objectPalettes) {
-        RoomEntitySnapshot entities = java.util.Objects.requireNonNull(room.entities(), "loaded room entities");
+        RoomEntitySnapshot entities = Objects.requireNonNull(room.entities(), "loaded room entities");
         if (objectPalettes != null && entities.spriteSelection() != null) {
             entities = entities.withSpriteSelection(entities.spriteSelection().withObjectPalettes(objectPalettes));
         }

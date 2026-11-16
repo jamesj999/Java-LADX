@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 final class SwitchBlockAnimationTest {
@@ -43,12 +44,10 @@ final class SwitchBlockAnimationTest {
     @Test
     void initialCopiesSelectTheRomFinalTableForEitherState() {
         assertEquals(
-                java.util.List.of(
-                        new SwitchBlockAnimation.TileCopy(0x00, 0x104), new SwitchBlockAnimation.TileCopy(0x80, 0x108)),
+                List.of(new SwitchBlockAnimation.TileCopy(0x00, 0x104), new SwitchBlockAnimation.TileCopy(0x80, 0x108)),
                 SwitchBlockAnimation.initialCopies(0x00));
         assertEquals(
-                java.util.List.of(
-                        new SwitchBlockAnimation.TileCopy(0x80, 0x104), new SwitchBlockAnimation.TileCopy(0x00, 0x108)),
+                List.of(new SwitchBlockAnimation.TileCopy(0x80, 0x104), new SwitchBlockAnimation.TileCopy(0x00, 0x108)),
                 SwitchBlockAnimation.initialCopies(0x02));
     }
 

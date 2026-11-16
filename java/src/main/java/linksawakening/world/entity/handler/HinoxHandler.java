@@ -2,6 +2,7 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HINOX;
 
+import java.util.Objects;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -47,7 +48,7 @@ final class HinoxHandler {
         private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
         HinoxHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-            this.state = java.util.Objects.requireNonNull(state, "state");
+            this.state = Objects.requireNonNull(state, "state");
         }
 
         boolean run() {

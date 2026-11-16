@@ -1,13 +1,16 @@
 package linksawakening.world.entity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
 public final class EntityHandlerRegistry {
@@ -59,14 +62,14 @@ public final class EntityHandlerRegistry {
     }
 
     EntityHandlerRegistry(EntityMotionRegistry motions) {
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
+        this.motions = Objects.requireNonNull(motions, "motions");
     }
 
-    public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {
+    public <T> T motion(Class<T> type, Supplier<? extends T> factory) {
         return motions.get(type, factory);
     }
 
-    public void registerInitializer(int type, java.util.function.BiConsumer<RoomEntity, IntSupplier> initializer) {
+    public void registerInitializer(int type, BiConsumer<RoomEntity, IntSupplier> initializer) {
         Objects.requireNonNull(initializer);
         Binding binding = binding(type);
         if (binding.initializerRegistered)
@@ -80,7 +83,7 @@ public final class EntityHandlerRegistry {
     private final boolean[] registered = new boolean[256];
 
     {
-        java.util.Arrays.setAll(handlers, ignored -> new Binding());
+        Arrays.setAll(handlers, ignored -> new Binding());
     }
 
     void register(int type, EntityHandler handler) {
@@ -144,8 +147,7 @@ public final class EntityHandlerRegistry {
         return true;
     }
 
-    public void registerTick(
-            int type, EntityTickStage stage, java.util.function.Predicate<EntityFrameExecution> callback) {
+    public void registerTick(int type, EntityTickStage stage, Predicate<EntityFrameExecution> callback) {
         registerTick(type, stage, 0, callback);
     }
 }

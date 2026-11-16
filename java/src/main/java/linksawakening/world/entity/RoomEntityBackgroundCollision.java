@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
+
 /**
  * Background collision query used by handlers that move an entity one axis at
  * a time. The proposed coordinates are the ROM entity position after the
@@ -11,9 +13,9 @@ public interface RoomEntityBackgroundCollision {
     /** Open space: the former absent-collision path never blocks movement. */
     RoomEntityBackgroundCollision OPEN = (entity, direction, x, y) -> false;
 
-    /** Compatibility boundary for callers predating explicit room defaults. */
+    /** An absent geometry probe selects the explicit open-space policy. */
     static RoomEntityBackgroundCollision orOpen(RoomEntityBackgroundCollision value) {
-        return java.util.Objects.requireNonNullElse(value, OPEN);
+        return Objects.requireNonNullElse(value, OPEN);
     }
 
     boolean blocks(RoomEntity entity, int direction, int nextX, int nextY);

@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -11,7 +12,8 @@ public final class StalfosEvasiveMotion {
     private static final int[] RANDOM_DIRECTION_SPEEDS = {0x00, 0x06, 0xFA, 0xFA, 0x06};
 
     final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: post-hit delay gating the clone response.
+    final int[] hitResponseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -45,7 +47,7 @@ public final class StalfosEvasiveMotion {
 
     void reset(int slot) {
         privateState1[slot] = 0;
-        privateCountdown1[slot] = 0;
+        hitResponseCountdown[slot] = 0;
         state[slot] = 0;
         inertia[slot] = 0;
         speedX[slot] = 0;
@@ -80,7 +82,7 @@ public final class StalfosEvasiveMotion {
             speedX[slot] = 0x08;
             speedY[slot] = 0x08;
             inertia[slot] = 0;
-            privateCountdown1[slot] = 0x10;
+            hitResponseCountdown[slot] = 0x10;
         }
         return new Update(
                 withPositionAndVariant(entity, x, y, z, 0x02), transitionCountdown, false, false, cloneRequest);
@@ -109,7 +111,7 @@ public final class StalfosEvasiveMotion {
 
     public void clear(int slot) {
         privateState1[slot] = 0;
-        privateCountdown1[slot] = 0;
+        hitResponseCountdown[slot] = 0;
         state[slot] = 0;
         inertia[slot] = 0;
         speedX[slot] = 0;
@@ -126,7 +128,7 @@ public final class StalfosEvasiveMotion {
     }
 
     public int privateCountdown1(int slot) {
-        return privateCountdown1[slot];
+        return hitResponseCountdown[slot];
     }
 
     int state(int slot) {
@@ -267,7 +269,7 @@ public final class StalfosEvasiveMotion {
             boolean actionButtonsHeld,
             int transitionCountdown,
             int ignoreHitsCountdown,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int mapId) {
         public StalfosEvasiveFrame {
@@ -288,7 +290,7 @@ public final class StalfosEvasiveMotion {
         private int transitionCountdown;
         private int ignoreHitsCountdown;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int mapId;
         private int slot;
@@ -307,7 +309,7 @@ public final class StalfosEvasiveMotion {
         private int variant;
 
         StalfosEvasiveFrameStep(StalfosEvasiveMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run() {
@@ -344,9 +346,9 @@ public final class StalfosEvasiveMotion {
                 owner.initializeForActiveEntity(slot);
             }
             cloneBranchReady = false;
-            if (owner.privateCountdown1[slot] > 0) {
-                owner.privateCountdown1[slot]--;
-                cloneBranchReady = owner.privateCountdown1[slot] == 1;
+            if (owner.hitResponseCountdown[slot] > 0) {
+                owner.hitResponseCountdown[slot]--;
+                cloneBranchReady = owner.hitResponseCountdown[slot] == 1;
             }
 
             frame = frameCounter & 0xFF;
@@ -407,7 +409,7 @@ public final class StalfosEvasiveMotion {
                     && StalfosEvasiveMotion.distanceInJumpWindow(distanceX)
                     && StalfosEvasiveMotion.distanceInJumpWindow(distanceY)) {
                 transitionCountdown = 0x08;
-                owner.privateCountdown1[slot] = 0;
+                owner.hitResponseCountdown[slot] = 0;
                 owner.inertia[slot] = 1;
                 owner.speedZ[slot] = 0x15;
                 StalfosEvasiveMotion.Vector vector = StalfosEvasiveMotion.vectorTowardsLink(

@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Arrays;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
@@ -41,7 +42,7 @@ public final class LaserMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public LaserMotion() {
-        java.util.Arrays.fill(roles, Role.NONE);
+        Arrays.fill(roles, Role.NONE);
     }
 
     public void initializeForEntity(RoomEntity entity) {

@@ -9,6 +9,7 @@ import static linksawakening.world.room.RoomSessionRules.ENTITY_OPT1_NO_GROUND_I
 import static linksawakening.world.room.RoomSessionRules.ENTITY_PEAHAT;
 import static linksawakening.world.room.RoomSessionRules.ENTITY_ROOSTER;
 
+import java.util.Objects;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
@@ -210,7 +211,7 @@ final class RoomCollisionQueries {
         if (previous == null
                 || previous.entity() != updated
                 || previous.groundStatus() != groundStatus
-                || !java.util.Objects.equals(previous.pitTransition(), pit)
+                || !Objects.equals(previous.pitTransition(), pit)
                 || previous.unloaded()
                 || previous.waterSplash() != splash) {
             previous = new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
@@ -232,12 +233,12 @@ final class RoomCollisionQueries {
             OverworldCollision overworldCollision,
             RomTables romTables) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityBackgroundCollisionResolver, "entityBackgroundCollisionResolver");
-            java.util.Objects.requireNonNull(entityCollisionPointProbe, "entityCollisionPointProbe");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(romTables, "romTables");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(entityBackgroundCollisionResolver, "entityBackgroundCollisionResolver");
+            Objects.requireNonNull(entityCollisionPointProbe, "entityCollisionPointProbe");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(romTables, "romTables");
         }
     }
 

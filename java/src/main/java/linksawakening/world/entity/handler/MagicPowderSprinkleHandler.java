@@ -27,13 +27,7 @@ final class MagicPowderSprinkleHandler {
             EntityTimerGates timerGates,
             EntityProjectileController projectiles) {
         if (slotState.status() == EntityStatus.ACTIVE) {
-            projectiles.advanceMagicPowderSprinkleEntity(
-                    slotState.index(),
-                    slotState.entity(),
-                    frameInput.frame(),
-                    frameInput.projectileLinkState().motionState(),
-                    timerGates.handlerInteractive() && !frameInput.creditsGameplay(),
-                    timerGates.projectileTimersInteractive());
+            projectiles.advanceMagicPowderSprinkleEntity(slotState, frameInput, timerGates);
             return false;
         }
         return true;

@@ -7,6 +7,7 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
 
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.BoomerangObjectRequest;
@@ -71,32 +72,30 @@ public final class EntityProjectileController {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         this.indoorRoom = indoorRoom;
-        this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.entityPlayerSpawns = java.util.Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.enemyCombatTables = java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
+        this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.liftThrow = Objects.requireNonNull(liftThrow, "liftThrow");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.entityPlayerSpawns = Objects.requireNonNull(entityPlayerSpawns, "entityPlayerSpawns");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.state = Objects.requireNonNull(state, "state");
     }
 
     public void playBoomerangSoundIfDue(RoomEntity entity) {
         // PlayBoomerangSfx ($20:4C98) only reads the shared clock.
         if (state.readBoomerangSfxCounter() == 0) {
-            this.events.pendingEntityEvents.add(new EntityCombatEvent(
+            this.events.sound(
                     entity.slot(),
                     entity.type(),
-                    0,
-                    false,
                     EntityCombatEvent.SoundChannel.NOISE,
-                    EntityRomConstants.BOOMERANG_SFX_ID));
+                    EntityRomConstants.BOOMERANG_SFX_ID);
         }
     }
 
@@ -105,48 +104,43 @@ public final class EntityProjectileController {
     }
 
     public void advanceSwordBeamEntity(
-            int index,
-            RoomEntity entity,
-            int frame,
-            int linkEntityX,
-            int linkEntityY,
-            int romLinkDirection,
-            boolean handlerInteractive) {
-        var runtime = this;
+            EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+        int index = slotState.index();
+        RoomEntity entity = slotState.entity();
+        int frame = inputs.frame();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int romLinkDirection = inputs.romLinkDirection();
+        boolean handlerInteractive = timers.handlerInteractive();
         int slot = entity.slot();
-        if (runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).state(slot) == 0) {
+        var swordBeamMotion = this.motions.get(SwordBeamMotion.class, SwordBeamMotion::new);
+        if (swordBeamMotion.state(slot) == 0) {
             int x = (linkEntityX + SwordBeamMotion.firstHandlerOffsetX(romLinkDirection)) & 0xFF;
             int y = (linkEntityY + SwordBeamMotion.firstHandlerOffsetY(romLinkDirection)) & 0xFF;
-            runtime.motions
-                    .get(SwordBeamMotion.class, SwordBeamMotion::new)
-                    .initializeFirstHandler(slot, romLinkDirection);
-            runtime.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
-            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+            swordBeamMotion.initializeFirstHandler(slot, romLinkDirection);
+            this.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
+            this.events.sound(
                     slot,
                     EntityRomConstants.ENTITY_SWORD_BEAM,
-                    0,
-                    false,
                     EntityCombatEvent.SoundChannel.JINGLE,
-                    EntityRomConstants.SWORD_BEAM_JINGLE_ID));
+                    EntityRomConstants.SWORD_BEAM_JINGLE_ID);
             // The state-0 handler only applies the Link-relative launch
             // offset and enters state 1; it does not render the beam yet.
-            runtime.slots.replace(index, withPositionAndVariant(entity, x, y, -1));
+            this.slots.replace(index, withPositionAndVariant(entity, x, y, -1));
             return;
         }
 
-        int variant =
-                runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).direction(slot);
+        int variant = swordBeamMotion.direction(slot);
         if (!handlerInteractive) {
             // ReturnIfNonInteractive_19 renders state 1, then returns before
             // damage, movement, object intersection, or VFX creation.
-            runtime.slots.replace(index, withPositionAndVariant(entity, entity.x(), entity.y(), variant));
+            this.slots.replace(index, withPositionAndVariant(entity, entity.x(), entity.y(), variant));
             return;
         }
 
         ProjectileEntityCollision entityCollision = this.collideSwordBeamWithEntities(entity, frame);
-        RoomEntity moved =
-                runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).advancePosition(entity);
-        RoomEntityObjectQuery intersectionQuery = runtime.physicsTables.readObjectIntersectionQuery();
+        RoomEntity moved = swordBeamMotion.advancePosition(entity);
+        RoomEntityObjectQuery intersectionQuery = this.physicsTables.readObjectIntersectionQuery();
         RoomEntityObjectSample object = intersectionQuery.sampleOrAbsent(moved);
         ProjectileObjectCollision objectCollision = !object.sampled()
                 ? ProjectileObjectCollision.NONE
@@ -154,27 +148,27 @@ public final class EntityProjectileController {
         if (entityCollision.unload()
                 || entityCollision.blocked()
                 || objectCollision != ProjectileObjectCollision.NONE) {
-            runtime.lifecycle.clearEntity(slot);
+            this.lifecycle.clearEntity(slot);
             // $45A0 clears the slot and falls through to the shared poke VFX.
             // Physics $FF unloads inside bank $03, bypassing this branch.
             if (objectCollision != ProjectileObjectCollision.UNLOAD
                     && (entityCollision.blocked() || objectCollision == ProjectileObjectCollision.BLOCKED)) {
-                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+                this.events.vfx(new TransientVfxRequest(
                         TransientVfxType.SWORD_POKE, entity.x(), (entity.y() - entity.z() + 3) & 0xFF));
             }
             return;
         }
 
         if (((frame + 1) & 0x03) == 0) {
-            runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+            this.events.vfx(new TransientVfxRequest(
                     TransientVfxType.SWORD_BEAM, entity.x(), (entity.y() - entity.z()) & 0xFF, variant));
         }
-        runtime.slots.replace(index, withPositionAndVariant(moved, moved.x(), moved.y(), variant));
+        this.slots.replace(index, withPositionAndVariant(moved, moved.x(), moved.y(), variant));
     }
 
     public void advanceMagicRodFireballEntity(
-            int index, RoomEntity entity, int frame, boolean handlerInteractive, boolean timersInteractive) {
-        this.magicRodFrameStep.run(index, entity, frame, handlerInteractive, timersInteractive);
+            EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+        this.magicRodFrameStep.run(slotState, inputs, timers);
     }
 
     boolean isMagicRodBurnableObject(RoomEntityObjectSample object) {
@@ -189,27 +183,21 @@ public final class EntityProjectileController {
     }
 
     public void advanceMagicPowderSprinkleEntity(
-            int index,
-            RoomEntity entity,
-            int frame,
-            int linkMotionState,
-            boolean handlerInteractive,
-            boolean timersInteractive) {
-        this.magicPowderStep.run(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive);
+            EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+        this.magicPowderStep.run(slotState, inputs, timers);
     }
 
     boolean collideMagicPowderWithEntities(RoomEntity sprinkle, int frame) {
-        var runtime = this;
         int sourceSlot = sprinkle.slot();
         int sourceVisualY = (sprinkle.y() - sprinkle.z()) & 0xFF;
         boolean collided = false;
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots.get(targetSlot);
-            int targetPhysics = runtime.physicsTables.readEnemyPhysicsFlags(targetSlot);
+            RoomEntity target = this.slots.get(targetSlot);
+            int targetPhysics = this.physicsTables.readEnemyPhysicsFlags(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
                     || (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
@@ -218,27 +206,23 @@ public final class EntityProjectileController {
                     || ((target.y() - target.z() - sourceVisualY + 0x0C) & 0xFF) >= 0x18) {
                 continue;
             }
-            if (!runtime.indoorRoom
+            var tarinRaccoonMotion = this.motions.get(TarinRaccoonMotion.class, TarinRaccoonMotion::new);
+            if (!this.indoorRoom
                     && (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) == 0
                     && target.type() == EntityRomConstants.ENTITY_TARIN
-                    && runtime.motions
-                                    .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
-                                    .state(targetSlot)
-                            == 0) {
-                runtime.motions
-                        .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
-                        .startPowderTransformation(targetSlot);
-                runtime.physicsTables.writeSlowTransitionCountdown(targetSlot, 0x7F);
-                runtime.physicsTables.writeSlowTimerInitialized(targetSlot, true);
-                runtime.combatTables.writeEnemyFlashCountdown(targetSlot, 0x10);
+                    && tarinRaccoonMotion.state(targetSlot) == 0) {
+                tarinRaccoonMotion.startPowderTransformation(targetSlot);
+                this.physicsTables.writeSlowTransitionCountdown(targetSlot, 0x7F);
+                this.physicsTables.writeSlowTimerInitialized(targetSlot, true);
+                this.combatTables.writeEnemyFlashCountdown(targetSlot, 0x10);
                 collided = true;
                 continue;
             }
             if ((targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) != 0
                     || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
-                    || (runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
+                    || (this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
                             != 0
-                    || runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+                    || this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
 
@@ -282,18 +266,17 @@ public final class EntityProjectileController {
     }
 
     ProjectileEntityCollision collideSwordBeamWithEntities(RoomEntity beam, int frame) {
-        var runtime = this;
         int sourceSlot = beam.slot();
         int sourceVisualY = (beam.y() - beam.z()) & 0xFF;
         boolean unload = false;
         boolean blocked = false;
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots.get(targetSlot);
-            int targetPhysics = runtime.physicsTables.readEnemyPhysicsFlags(targetSlot);
+            RoomEntity target = this.slots.get(targetSlot);
+            int targetPhysics = this.physicsTables.readEnemyPhysicsFlags(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
                     || (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) != 0
@@ -306,19 +289,15 @@ public final class EntityProjectileController {
             }
 
             // $7656 forces a collision before reading the ignore-hits timer.
-            if ((runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
-                    != 0) {
+            if ((this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0) {
                 blocked = true;
                 continue;
             }
-            if (runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+            if (this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
-            if (this.ironMaskBlocksProjectile(
-                    target,
-                    runtime.motions
-                            .get(SwordBeamMotion.class, SwordBeamMotion::new)
-                            .direction(sourceSlot))) {
+            var swordBeamMotion = this.motions.get(SwordBeamMotion.class, SwordBeamMotion::new);
+            if (this.ironMaskBlocksProjectile(target, swordBeamMotion.direction(sourceSlot))) {
                 blocked = true;
                 continue;
             }
@@ -326,28 +305,23 @@ public final class EntityProjectileController {
             this.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_SWORD_BEAM,
-                    runtime.motions
-                            .get(SwordBeamMotion.class, SwordBeamMotion::new)
-                            .speedX(sourceSlot),
-                    runtime.motions
-                            .get(SwordBeamMotion.class, SwordBeamMotion::new)
-                            .speedY(sourceSlot));
+                    swordBeamMotion.speedX(sourceSlot),
+                    swordBeamMotion.speedY(sourceSlot));
         }
         return new ProjectileEntityCollision(unload, blocked);
     }
 
     boolean collideMagicRodFireballWithEntities(RoomEntity fireball, int frame) {
-        var runtime = this;
         int sourceSlot = fireball.slot();
         int sourceVisualY = (fireball.y() - fireball.z()) & 0xFF;
         boolean unloadOnHit = false;
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots.get(targetSlot);
-            int targetPhysics = runtime.physicsTables.readEnemyPhysicsFlags(targetSlot);
+            RoomEntity target = this.slots.get(targetSlot);
+            int targetPhysics = this.physicsTables.readEnemyPhysicsFlags(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
                     || (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) != 0
@@ -359,71 +333,56 @@ public final class EntityProjectileController {
                 continue;
             }
 
-            if ((runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
-                    != 0) {
-                runtime.motions
-                        .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                        .setCollision(sourceSlot, true);
+            if ((this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0) {
+                var magicRodFireballMotion =
+                        this.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+                magicRodFireballMotion.setCollision(sourceSlot, true);
                 continue;
             }
-            if (runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+            if (this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
+            var magicRodFireballMotion = this.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+            var roamingEnemyMotion = this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+            var unmaskedIronMaskMotion = this.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
             if (target.type() == EntityRomConstants.ENTITY_IRON_MASK
-                    && runtime.motions
-                                    .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                                    .maskRemovalState(targetSlot)
-                            == 0
-                    && (runtime.motions
-                                            .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                            .direction(targetSlot)
-                                    ^ 0x01)
-                            == runtime.motions
-                                    .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                                    .direction(sourceSlot)) {
-                runtime.motions
-                        .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                        .setCollision(sourceSlot, true);
+                    && unmaskedIronMaskMotion.maskRemovalState(targetSlot) == 0
+                    && (roamingEnemyMotion.direction(targetSlot) ^ 0x01)
+                            == magicRodFireballMotion.direction(sourceSlot)) {
+                magicRodFireballMotion.setCollision(sourceSlot, true);
                 continue;
             }
 
-            unloadOnHit |= !runtime.motions
-                    .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                    .collided(sourceSlot);
+            unloadOnHit |= !magicRodFireballMotion.collided(sourceSlot);
             this.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_MAGIC_ROD,
-                    runtime.motions
-                            .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                            .speedX(sourceSlot),
-                    runtime.motions
-                            .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                            .speedY(sourceSlot));
+                    magicRodFireballMotion.speedX(sourceSlot),
+                    magicRodFireballMotion.speedY(sourceSlot));
         }
         return unloadOnHit;
     }
 
     public boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) {
-        var runtime = this;
         boolean unload = false;
         int arrowSlot = arrow.slot();
-        int attackType = runtime.bombInteractions.readPlayerArrowBombArrow(arrowSlot)
+        int attackType = this.bombInteractions.readPlayerArrowBombArrow(arrowSlot)
                 ? EntityRomConstants.DAMAGE_TYPE_BOMB_ARROW
                 : EntityRomConstants.DAMAGE_TYPE_ARROW;
         int arrowVisualY = (arrow.y() - arrow.z()) & 0xFF;
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == arrowSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots.get(targetSlot);
+            RoomEntity target = this.slots.get(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
                     || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
-                    || (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot)
+                    || (this.physicsTables.readEnemyPhysicsFlags(targetSlot)
                                     & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE)
                             != 0
-                    || (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot)
+                    || (this.physicsTables.readEnemyPhysicsFlags(targetSlot)
                                     & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP)
                             != 0
                     || target.spriteVariant() < 0) {
@@ -435,35 +394,26 @@ public final class EntityProjectileController {
                 continue;
             }
 
-            if ((runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
-                    != 0) {
-                runtime.motions
-                        .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                        .markCollision(arrowSlot);
+            if ((this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0) {
+                var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
+                playerArrowMotion.markCollision(arrowSlot);
                 continue;
             }
-            if (runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+            if (this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
-            if (this.ironMaskBlocksProjectile(
-                    target,
-                    runtime.motions
-                            .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                            .direction(arrowSlot))) {
-                runtime.motions
-                        .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                        .markCollision(arrowSlot);
+            var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
+            if (this.ironMaskBlocksProjectile(target, playerArrowMotion.direction(arrowSlot))) {
+                playerArrowMotion.markCollision(arrowSlot);
                 continue;
             }
-            unload |= !runtime.motions
-                    .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                    .collided(arrowSlot);
+            unload |= !playerArrowMotion.collided(arrowSlot);
             if (attackType == EntityRomConstants.DAMAGE_TYPE_BOMB_ARROW) {
                 // BombArrowHandler selects DAMAGE_TYPE_BOMB_ARROW. The
                 // shared damage helper deliberately treats this active-arrow
                 // state as a harmless target transition rather than calling
                 // ApplySwordDamagesToEnemy.
-                runtime.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x03);
+                this.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x03);
             } else {
                 this.applyPlayerArrowDamage(arrow, target);
             }
@@ -472,17 +422,16 @@ public final class EntityProjectileController {
     }
 
     boolean collideBoomerangWithEntities(RoomEntity boomerang, int frame) {
-        var runtime = this;
         int sourceSlot = boomerang.slot();
         int sourceVisualY = (boomerang.y() - boomerang.z()) & 0xFF;
         boolean collided = false;
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots.get(targetSlot);
-            int targetPhysics = runtime.physicsTables.readEnemyPhysicsFlags(targetSlot);
+            RoomEntity target = this.slots.get(targetSlot);
+            int targetPhysics = this.physicsTables.readEnemyPhysicsFlags(targetSlot);
             boolean grabbable = (targetPhysics & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE) != 0;
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
@@ -496,74 +445,61 @@ public final class EntityProjectileController {
 
             if (grabbable) {
                 collided = true;
-                runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).setTransitionCountdown(sourceSlot, 0);
+                var boomerangMotion = this.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+                boomerangMotion.setTransitionCountdown(sourceSlot, 0);
                 // The source writes sourceSlot + 1 to the target's private
                 // state five. The current runtime has no consumer for that
                 // field, but the source-side transition is still observable.
                 continue;
             }
-            if ((runtime.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS)
-                    != 0) {
+            if ((this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0) {
                 collided = true;
-                runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).setTransitionCountdown(sourceSlot, 0);
+                var boomerangMotion = this.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+                boomerangMotion.setTransitionCountdown(sourceSlot, 0);
                 continue;
             }
-            if (runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+            if (this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
             collided = true;
-            runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).setTransitionCountdown(sourceSlot, 0);
-            if (this.ironMaskBlocksProjectile(
-                    target,
-                    runtime.motions
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .direction(sourceSlot))) {
+            var boomerangMotion = this.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+            boomerangMotion.setTransitionCountdown(sourceSlot, 0);
+            if (this.ironMaskBlocksProjectile(target, boomerangMotion.direction(sourceSlot))) {
                 continue;
             }
             this.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_BOOMERANG,
-                    runtime.motions
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .speedX(sourceSlot),
-                    runtime.motions
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .speedY(sourceSlot));
+                    boomerangMotion.speedX(sourceSlot),
+                    boomerangMotion.speedY(sourceSlot));
         }
         return collided;
     }
 
     boolean ironMaskBlocksProjectile(RoomEntity target, int direction) {
+        var roamingEnemyMotion = this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+        var unmaskedIronMaskMotion = this.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
         return target.type() == EntityRomConstants.ENTITY_IRON_MASK
-                && this.motions
-                                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                                .maskRemovalState(target.slot())
-                        == 0
-                && (this.motions
-                                        .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                        .direction(target.slot())
-                                ^ 1)
-                        == direction;
+                && unmaskedIronMaskMotion.maskRemovalState(target.slot()) == 0
+                && (roamingEnemyMotion.direction(target.slot()) ^ 1) == direction;
     }
 
     public boolean collideBouncingBombiteWithEntities(RoomEntity source, int frame) {
-        var runtime = this;
         int sourceSlot = source.slot();
         int sourceVisualY = (source.y() - source.z()) & 0xFF;
-        int sourceSpeedX =
-                runtime.motions.get(BombiteMotion.class, BombiteMotion::new).speedX(sourceSlot);
-        int sourceSpeedY =
-                runtime.motions.get(BombiteMotion.class, BombiteMotion::new).speedY(sourceSlot);
+        var bombiteMotion = this.motions.get(BombiteMotion.class, BombiteMotion::new);
+        int sourceSpeedX = bombiteMotion.speedX(sourceSlot);
+        int sourceSpeedY = bombiteMotion.speedY(sourceSlot);
         boolean collided = false;
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots.get(targetSlot);
+            RoomEntity target = this.slots.get(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
-                    || (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot)
+                    || (this.physicsTables.readEnemyPhysicsFlags(targetSlot)
                                     & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP)
                             != 0
                     || ((source.x() - target.x() + 0x0C) & 0xFF) >= 0x18
@@ -575,13 +511,11 @@ public final class EntityProjectileController {
             collided = true;
             // GetEntityTransitionCountdown uses BC, which remains the active
             // source slot throughout func_003_75A2.
-            runtime.physicsTables.writeEnemyTransitionCountdown(sourceSlot, 0);
+            this.physicsTables.writeEnemyTransitionCountdown(sourceSlot, 0);
             if (target.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE) {
-                runtime.motions
-                        .get(BombiteMotion.class, BombiteMotion::new)
-                        .enterBouncingLitFromEntityCollision(targetSlot, sourceSpeedX, sourceSpeedY);
-                runtime.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x40);
-                runtime.bombInteractions.writeBombPrivateCountdown1(targetSlot, 0x08);
+                bombiteMotion.enterBouncingLitFromEntityCollision(targetSlot, sourceSpeedX, sourceSpeedY);
+                this.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x40);
+                this.bombInteractions.writeBombPrivateCountdown1(targetSlot, 0x08);
             }
         }
         return collided;
@@ -589,60 +523,44 @@ public final class EntityProjectileController {
 
     public boolean collideHookshotWithEntities(
             RoomEntity hookshot, HookshotChainMotion.State hookshotState, int frame) {
-        var runtime = this;
         boolean unmasked = false;
         int sourceSlot = hookshot.slot();
         // $7C39 moves WRAM, but $7C59's shared hit test still reads the
         // hActiveEntity coordinates cached at the beginning of this pass.
         int sourceVisualY = (hookshot.y() - hookshot.z()) & 0xFF;
-        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
 
-            RoomEntity target = runtime.slots.get(targetSlot);
+            RoomEntity target = this.slots.get(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
-                    || (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot)
+                    || (this.physicsTables.readEnemyPhysicsFlags(targetSlot)
                                     & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP)
                             != 0
                     || ((hookshot.x() - target.x() + 0x0C) & 0xFF) >= 0x18
                     || ((target.y() - target.z() - sourceVisualY + 0x0C) & 0xFF) >= 0x18
                     || target.spriteVariant() == -1
-                    || runtime.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
+                    || this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
 
+            var roamingEnemyMotion = this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+            var unmaskedIronMaskMotion = this.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
             if (target.type() != EntityRomConstants.ENTITY_IRON_MASK
-                    || ((runtime.motions
-                                            .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                            .direction(targetSlot)
-                                    ^ 0x01)
-                            != hookshotState.direction())
-                    || runtime.motions
-                                    .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                                    .maskRemovalState(targetSlot)
-                            != 0) {
+                    || ((roamingEnemyMotion.direction(targetSlot) ^ 0x01) != hookshotState.direction())
+                    || unmaskedIronMaskMotion.maskRemovalState(targetSlot) != 0) {
                 continue;
             }
 
-            runtime.motions
-                    .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                    .setMaskRemovalState(targetSlot, 1);
-            runtime.motions
-                    .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                    .initializeFromMasked(
-                            targetSlot,
-                            runtime.motions
-                                    .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                    .direction(targetSlot),
-                            runtime.motions
-                                    .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                    .speedX(targetSlot),
-                            runtime.motions
-                                    .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                    .speedY(targetSlot));
-            runtime.entityPlayerSpawns.spawnIronMasksMask(
+            unmaskedIronMaskMotion.setMaskRemovalState(targetSlot, 1);
+            unmaskedIronMaskMotion.initializeFromMasked(
+                    targetSlot,
+                    roamingEnemyMotion.direction(targetSlot),
+                    roamingEnemyMotion.speedX(targetSlot),
+                    roamingEnemyMotion.speedY(targetSlot));
+            this.entityPlayerSpawns.spawnIronMasksMask(
                     hookshotState.x(), hookshotState.y(), hookshot.spriteVariant() & 0x01, sourceSlot);
             unmasked = true;
         }
@@ -650,17 +568,14 @@ public final class EntityProjectileController {
     }
 
     void applyPlayerArrowDamage(RoomEntity arrow, RoomEntity target) {
+        var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
         applyPlayerProjectileDamage(
                 target,
                 this.bombInteractions.readPlayerArrowBombArrow(arrow.slot())
                         ? EntityRomConstants.DAMAGE_TYPE_BOMB_ARROW
                         : EntityRomConstants.DAMAGE_TYPE_ARROW,
-                this.motions
-                        .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                        .speedX(arrow.slot()),
-                this.motions
-                        .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                        .speedY(arrow.slot()));
+                playerArrowMotion.speedX(arrow.slot()),
+                playerArrowMotion.speedY(arrow.slot()));
     }
 
     void applyPlayerProjectileDamage(RoomEntity target, int damageType, int speedX, int speedY) {
@@ -680,11 +595,13 @@ public final class EntityProjectileController {
     }
 
     public int swordMoblinAlertingSoundCounter() {
-        return this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).readSwordMoblinAlertingSoundCounter();
+        var moblinSwordMotion = this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+        return moblinSwordMotion.readSwordMoblinAlertingSoundCounter();
     }
 
     public void setSwordMoblinAlertingSoundCounter(int value) {
-        this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(value);
+        var moblinSwordMotion = this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+        moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(value);
     }
 
     final PlayerProjectileDamageFrameStep playerProjectileDamageFrameStep = new PlayerProjectileDamageFrameStep(this);
@@ -720,7 +637,7 @@ public final class EntityProjectileController {
         private boolean stateCollision;
 
         BoomerangStep(linksawakening.world.entity.EntityProjectileController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -742,11 +659,11 @@ public final class EntityProjectileController {
             timersInteractive = inputs.timersInteractive();
             slot = entity.slot();
             if (timersInteractive) {
-                owner.motions.get(BoomerangMotion.class, BoomerangMotion::new).decrementTransitionCountdown(slot);
+                var boomerangMotion = owner.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+                boomerangMotion.decrementTransitionCountdown(slot);
             }
-            variant = owner.motions
-                    .get(BoomerangMotion.class, BoomerangMotion::new)
-                    .advanceSpriteVariant(slot, frame, handlerInteractive);
+            var boomerangMotion = owner.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+            variant = boomerangMotion.advanceSpriteVariant(slot, frame, handlerInteractive);
             if (!handlerInteractive) {
                 owner.slots.replace(index, withVariant(entity, variant));
                 return false;
@@ -757,9 +674,7 @@ public final class EntityProjectileController {
             // vector for recoil. This pass also clears the outbound countdown on
             // a successful enemy/object collision, as the ROM does.
             owner.collideBoomerangWithEntities(entity, frame);
-            moved = owner.motions
-                    .get(BoomerangMotion.class, BoomerangMotion::new)
-                    .advancePosition(entity);
+            moved = boomerangMotion.advancePosition(entity);
             intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
             object = intersectionQuery.sampleOrAbsent(moved);
             objectCollision = object.sampled()
@@ -768,13 +683,7 @@ public final class EntityProjectileController {
                     && !owner.indoorRoom
                     && (object.objectId() == EntityRomConstants.OBJECT_BUSH
                             || object.objectId() == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS);
-            positioned = objectCollision
-                            && owner.motions
-                                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                                            .transitionCountdown(slot)
-                                    != 0
-                    ? entity
-                    : moved;
+            positioned = objectCollision && boomerangMotion.transitionCountdown(slot) != 0 ? entity : moved;
             return true;
         }
 
@@ -782,7 +691,7 @@ public final class EntityProjectileController {
 
             if (bushCollision) {
                 int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-                owner.events.boomerangObjectRequests.add(
+                owner.events.boomerangObject(
                         new BoomerangObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
             }
 
@@ -795,38 +704,23 @@ public final class EntityProjectileController {
 
         private boolean advanceOutboundOrReturn() {
 
-            if (owner.motions.get(BoomerangMotion.class, BoomerangMotion::new).state(slot) == 0) {
-                if (owner.motions
-                                .get(BoomerangMotion.class, BoomerangMotion::new)
-                                .transitionCountdown(slot)
-                        == 0) {
-                    owner.motions
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .setVectorTowardsLink(slot, positioned, linkEntityX, linkEntityY, 0x08);
-                    owner.motions
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .setState(slot, 1);
+            var boomerangMotion = owner.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+            if (boomerangMotion.state(slot) == 0) {
+                if (boomerangMotion.transitionCountdown(slot) == 0) {
+                    boomerangMotion.setVectorTowardsLink(slot, positioned, linkEntityX, linkEntityY, 0x08);
+                    boomerangMotion.setState(slot, 1);
                 } else if (stateCollision) {
-                    owner.motions
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .setTransitionCountdown(slot, 0);
-                    owner.events.transientVfxRequests.add(new TransientVfxRequest(
+                    boomerangMotion.setTransitionCountdown(slot, 0);
+                    owner.events.vfx(new TransientVfxRequest(
                             TransientVfxType.SWORD_POKE,
                             positioned.x(),
                             (positioned.y() - positioned.z() + 0x03) & 0xFF));
-                    owner.events.pendingEntityEvents.add(new EntityCombatEvent(
-                            slot,
-                            EntityRomConstants.ENTITY_BOOMERANG,
-                            0,
-                            false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            0x07));
+                    owner.events.sound(
+                            slot, EntityRomConstants.ENTITY_BOOMERANG, EntityCombatEvent.SoundChannel.JINGLE, 0x07);
                 }
             } else {
                 if ((frame & 0x03) == 0) {
-                    owner.motions
-                            .get(BoomerangMotion.class, BoomerangMotion::new)
-                            .setVectorTowardsLink(slot, positioned, linkEntityX, linkEntityY, 0x20);
+                    boomerangMotion.setVectorTowardsLink(slot, positioned, linkEntityX, linkEntityY, 0x20);
                 }
                 if (((frame ^ slot) & 0x01) != 0
                         && linkEntityZ == 0
@@ -907,7 +801,7 @@ public final class EntityProjectileController {
         private int objectId;
 
         MagicPowderStep(linksawakening.world.entity.EntityProjectileController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -943,7 +837,7 @@ public final class EntityProjectileController {
                 int objectLeft = entity.x() & 0xF0;
                 int objectTop = entity.y() & 0xF0;
                 int location = (objectTop | (objectLeft >>> 4)) & 0xFF;
-                owner.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                owner.events.magicPowderObject(new MagicPowderObjectRequest(
                         slot, location, objectLeft, objectTop, MagicPowderObjectAction.EXTINGUISH_TORCH));
                 // Keep the palette state visible to later powder handlers in
                 // this pass, before RoomSession applies their object requests.
@@ -985,17 +879,15 @@ public final class EntityProjectileController {
             if (!owner.indoorRoom
                     && (objectId == EntityRomConstants.OBJECT_BUSH
                             || objectId == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS)) {
-                owner.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                owner.events.magicPowderObject(new MagicPowderObjectRequest(
                         slot, location, objectLeft, objectTop, MagicPowderObjectAction.REVEAL));
-                owner.events.transientVfxRequests.add(
+                owner.events.vfx(
                         new TransientVfxRequest(TransientVfxType.POOF, entity.x(), (entity.y() - entity.z()) & 0xFF));
-                owner.events.pendingEntityEvents.add(new EntityCombatEvent(
+                owner.events.sound(
                         slot,
                         EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
-                        0,
-                        false,
                         EntityCombatEvent.SoundChannel.JINGLE,
-                        EntityRomConstants.MAGIC_POWDER_POOF_JINGLE_ID));
+                        EntityRomConstants.MAGIC_POWDER_POOF_JINGLE_ID);
                 owner.lifecycle.clearEntity(slot);
                 return false;
             }
@@ -1024,15 +916,13 @@ public final class EntityProjectileController {
                         ? entity.spriteDefinition()
                         : owner.slotProperties.spriteViews().forMagicPowderTorchState(true);
                 owner.slots.replace(index, withDefinition(torch, torchDefinition, 0));
-                owner.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                owner.events.magicPowderObject(new MagicPowderObjectRequest(
                         slot, location, objectLeft, objectTop, MagicPowderObjectAction.IGNITE_TORCH));
-                owner.events.pendingEntityEvents.add(new EntityCombatEvent(
+                owner.events.sound(
                         slot,
                         EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE,
-                        0,
-                        false,
                         EntityCombatEvent.SoundChannel.NOISE,
-                        0x12));
+                        0x12);
                 return false;
             }
 
@@ -1048,16 +938,15 @@ public final class EntityProjectileController {
 
         private boolean inUse;
 
-        void run(
-                int index,
-                linksawakening.world.entity.RoomEntity entity,
-                int frame,
-                int linkMotionState,
-                boolean handlerInteractive,
-                boolean timersInteractive) {
+        void run(EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+            int index = slotState.index();
+            RoomEntity entity = slotState.entity();
+            int frame = inputs.frame();
+            int linkMotionState = inputs.projectileLinkState().motionState();
+            boolean handlerInteractive = timers.handlerInteractive() && !inputs.creditsGameplay();
+            boolean timersInteractive = timers.projectileTimersInteractive();
             if (inUse) {
-                new MagicPowderStep(owner)
-                        .run(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive);
+                new MagicPowderStep(owner).run(slotState, inputs, timers);
                 return;
             }
             inUse = true;
@@ -1112,7 +1001,7 @@ public final class EntityProjectileController {
         private linksawakening.world.entity.RoomEntity positioned;
 
         MagicRodFrameStep(linksawakening.world.entity.EntityProjectileController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -1133,16 +1022,10 @@ public final class EntityProjectileController {
                 owner.lifecycle.disableEntityWithoutPersistence(slot);
                 return false;
             }
-            variant = owner.motions
-                    .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                    .advanceSpriteVariant(slot, frame);
-            if (owner.motions
-                            .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                            .privateCountdown1(slot)
-                    != 0) {
-                if (owner.motions
-                        .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                        .tickFireTransition(slot, timersInteractive)) {
+            var magicRodFireballMotion = owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+            variant = magicRodFireballMotion.advanceSpriteVariant(slot, frame);
+            if (magicRodFireballMotion.privateCountdown1(slot) != 0) {
+                if (magicRodFireballMotion.tickFireTransition(slot, timersInteractive)) {
                     owner.lifecycle.clearEntity(slot);
                     return false;
                 }
@@ -1160,9 +1043,7 @@ public final class EntityProjectileController {
                 return false;
             }
 
-            moved = owner.motions
-                    .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                    .advancePosition(entity);
+            moved = magicRodFireballMotion.advancePosition(entity);
             intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
             object = intersectionQuery.sampleOrAbsent(moved);
             return true;
@@ -1181,27 +1062,23 @@ public final class EntityProjectileController {
             // position before the fireball handler can clear a burnable collision.
             positioned = objectCollision == ProjectileObjectCollision.BLOCKED ? entity : moved;
             if (owner.isMagicRodBurnableObject(object)) {
-                owner.motions
-                        .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                        .setCollision(slot, false);
+                var magicRodFireballMotion =
+                        owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+                magicRodFireballMotion.setCollision(slot, false);
                 int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-                owner.events.magicRodObjectRequests.add(
+                owner.events.magicRodObject(
                         new MagicRodObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
                 owner.slots.replace(index, withVariant(positioned, variant));
                 return false;
             }
 
-            if (owner.motions
-                            .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                            .collided(slot)
-                    || objectCollision == ProjectileObjectCollision.BLOCKED) {
+            var magicRodFireballMotion = owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+            if (magicRodFireballMotion.collided(slot) || objectCollision == ProjectileObjectCollision.BLOCKED) {
                 // ArrowRenderAndMove writes privateCountdown1 after the normal
                 // fireball display has already been rendered. Keep the normal
                 // definition for this frame; the next handler tick switches to
                 // FireSpriteVariants and decrements the $30 countdown.
-                owner.motions
-                        .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                        .beginFireTransition(slot);
+                magicRodFireballMotion.beginFireTransition(slot);
             }
             owner.slots.replace(index, withVariant(positioned, variant));
             return true;
@@ -1209,14 +1086,14 @@ public final class EntityProjectileController {
 
         private boolean inUse;
 
-        void run(
-                int index,
-                linksawakening.world.entity.RoomEntity entity,
-                int frame,
-                boolean handlerInteractive,
-                boolean timersInteractive) {
+        void run(EntitySlotExecution slotState, EntityFrameInputLatch inputs, EntityTimerGates timers) {
+            int index = slotState.index();
+            RoomEntity entity = slotState.entity();
+            int frame = inputs.frame();
+            boolean handlerInteractive = timers.handlerInteractive();
+            boolean timersInteractive = timers.projectileTimersInteractive();
             if (inUse) {
-                new MagicRodFrameStep(owner).run(index, entity, frame, handlerInteractive, timersInteractive);
+                new MagicRodFrameStep(owner).run(slotState, inputs, timers);
                 return;
             }
             inUse = true;
@@ -1269,7 +1146,7 @@ public final class EntityProjectileController {
         private int secondarySoundId;
 
         PlayerProjectileDamageFrameStep(linksawakening.world.entity.EntityProjectileController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         void run() {
@@ -1281,9 +1158,8 @@ public final class EntityProjectileController {
         private boolean prepareDamage() {
 
             targetSlot = target.slot();
-            owner.motions
-                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                    .configureFromSpeed(targetSlot, speedX, speedY);
+            var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+            enemyRecoilMotion.configureFromSpeed(targetSlot, speedX, speedY);
 
             damageResult = owner.enemyCombatTables.resolveAttackDamage(
                     target.type(), owner.combatTables.readEnemyHealthGroup(target.slot()), damageType);
@@ -1308,9 +1184,8 @@ public final class EntityProjectileController {
                 owner.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
                 owner.physicsTables.writeEnemyPhysicsFlags(
                         targetSlot, (owner.physicsTables.readEnemyPhysicsFlags(targetSlot) + 2) & 0xFF);
-                owner.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .clear(targetSlot);
+                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+                enemyRecoilMotion.clear(targetSlot);
                 owner.slots.replace(targetSlot, withStatus(target, EntityStatus.BURNING));
                 secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
                 secondarySoundId = 0x12;
@@ -1319,17 +1194,15 @@ public final class EntityProjectileController {
                 owner.combatTables.writeEnemyStunnedCountdown(targetSlot, 0xFF);
                 owner.combatTables.writeEnemyFlashCountdown(targetSlot, 0);
                 owner.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-                owner.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .clear(targetSlot);
+                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+                enemyRecoilMotion.clear(targetSlot);
                 owner.slots.replace(targetSlot, withStatus(target, EntityStatus.STUNNED));
             } else if (rawDamage == 0xFD) {
                 // The fairy-conversion branch is entity-specific in the ROM. The
                 // generic table result is still surfaced so the pending special
                 // action is not silently changed into numeric damage.
-                owner.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .clear(targetSlot);
+                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+                enemyRecoilMotion.clear(targetSlot);
             } else {
                 owner.combatTables.writeEnemyHealth(
                         targetSlot, Math.max(0, owner.combatTables.readEnemyHealth(targetSlot) - enemyDamage));
@@ -1339,7 +1212,8 @@ public final class EntityProjectileController {
                     owner.slots.replace(
                             targetSlot, withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false));
                 } else if (isZolGelType(target.type())) {
-                    owner.motions.get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(targetSlot);
+                    var zolGelMotion = owner.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+                    zolGelMotion.onSwordHit(targetSlot);
                     if (target.type() == EntityRomConstants.ENTITY_ZOL) {
                         owner.slots.replace(
                                 targetSlot,
@@ -1357,18 +1231,17 @@ public final class EntityProjectileController {
 
         private boolean emitDamageEvent() {
 
-            owner.events.pendingEntityEvents.add(
-                    linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
-                            .linkDamage(0)
-                            .swordHit(false)
-                            .enemyDamage(enemyDamage)
-                            .enemySpecialAction(specialAction)
-                            .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
-                            .soundId(0x03)
-                            .secondarySoundChannel(secondaryChannel)
-                            .secondarySoundId(secondarySoundId)
-                            .swordPokeVfx(null)
-                            .build());
+            owner.events.combat(linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
+                    .linkDamage(0)
+                    .swordHit(false)
+                    .enemyDamage(enemyDamage)
+                    .enemySpecialAction(specialAction)
+                    .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                    .soundId(0x03)
+                    .secondarySoundChannel(secondaryChannel)
+                    .secondarySoundId(secondarySoundId)
+                    .swordPokeVfx(null)
+                    .build());
             return true;
         }
 

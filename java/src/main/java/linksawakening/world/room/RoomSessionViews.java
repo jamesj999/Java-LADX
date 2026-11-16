@@ -1,5 +1,7 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
+
 /** Read-only room queries; borrowed projections follow room replacement and owned snapshots preserve history. */
 final class RoomSessionViews {
     private final Dependencies dependencies;
@@ -90,10 +92,10 @@ final class RoomSessionViews {
             RoomWorldState roomState,
             RoomScrollNavigation scrollNavigation) {
         Dependencies {
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(roomState, "roomState");
-            java.util.Objects.requireNonNull(scrollNavigation, "scrollNavigation");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(scrollNavigation, "scrollNavigation");
         }
     }
 }

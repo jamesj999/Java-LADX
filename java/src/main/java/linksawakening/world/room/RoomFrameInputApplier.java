@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Objects;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
 /** Owns ordered frame input application and synchronous ticking; borrowed values are never retained. */
@@ -14,11 +15,11 @@ final class RoomFrameInputApplier {
 
     RoomFrameInputApplier(
             RoomEntityInputs entityInputs, RoomEntityBridge bridge, RoomEntitySessionState frame, RoomStory story) {
-        this.entityInputs = java.util.Objects.requireNonNull(entityInputs);
-        this.bridge = java.util.Objects.requireNonNull(bridge);
+        this.entityInputs = Objects.requireNonNull(entityInputs);
+        this.bridge = Objects.requireNonNull(bridge);
 
-        this.frame = java.util.Objects.requireNonNull(frame);
-        this.story = java.util.Objects.requireNonNull(story);
+        this.frame = Objects.requireNonNull(frame);
+        this.story = Objects.requireNonNull(story);
     }
 
     List<EntityProjectileEvent> tick(EntityTickValues inputs) {

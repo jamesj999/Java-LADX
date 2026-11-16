@@ -1,6 +1,8 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.rom.Rom;
@@ -67,7 +69,7 @@ public final class RoomEntityRuntimeBuilder {
     }
 
     RomEnemyCombatTables enemyCombatTables() {
-        return java.util.Objects.requireNonNullElse(enemyCombatTables, RomEnemyCombatTables.DEFAULTS);
+        return Objects.requireNonNullElse(enemyCombatTables, RomEnemyCombatTables.DEFAULTS);
     }
 
     public RoomEntityRuntimeBuilder enemyCombatTables(RomEnemyCombatTables value) {
@@ -103,7 +105,7 @@ public final class RoomEntityRuntimeBuilder {
         return romDataSupplied;
     }
 
-    java.util.function.IntUnaryOperator entityOptionsLookup() {
+    IntUnaryOperator entityOptionsLookup() {
         return romTablesSupplied ? romTables.entityPropertyTables()::entityOptions1 : ignored -> 0;
     }
 
@@ -179,7 +181,7 @@ public final class RoomEntityRuntimeBuilder {
         final EntityPickupInspection pickupInspection;
         final EntityEnemyInspection enemyInspection;
         final EntitySpriteTileSnapshot spriteTiles;
-        final java.util.function.IntUnaryOperator entityProperties;
+        final IntUnaryOperator entityProperties;
         final EntityFrameRandom frameRandom;
         final WarpMotion warpMotion;
 
@@ -197,9 +199,9 @@ public final class RoomEntityRuntimeBuilder {
         spriteTiles = initial.spriteTiles();
         entityState.physicsTables.writeGroundInteractionSideScrolling(initial.sideScrolling());
 
-        java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
-        java.util.Objects.requireNonNull(enemyCombatTables, "combat rules");
-        java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
+        Objects.requireNonNull(spriteHandlers, "sprite source");
+        Objects.requireNonNull(enemyCombatTables, "combat rules");
+        Objects.requireNonNull(chestContentsTable, "chest contents");
         entityProperties = this.entityOptionsLookup();
         slotPropertiesState = new EntitySlotPresentation(spriteHandlers);
         entityDebugConfiguration = new EntityDebugConfiguration(entityState.combatTables, entityState.motions);

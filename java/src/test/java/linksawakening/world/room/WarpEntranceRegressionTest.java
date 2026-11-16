@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gpu.GPU;
@@ -42,7 +44,7 @@ final class WarpEntranceRegressionTest {
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
         var transition = new TransitionController();
-        var sounds = new java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
+        var sounds = new ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
         var coordinator = session.transitions()
                 .coordinator(new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
         var input = new InputState();
@@ -56,7 +58,7 @@ final class WarpEntranceRegressionTest {
             coordinator.handleWarpAndIndoorBoundaries(link);
         }
         assertTrue(transition.isActive());
-        assertEquals(java.util.List.of(linksawakening.gameplay.GameplaySoundEvent.STAIRS), sounds);
+        assertEquals(List.of(linksawakening.gameplay.GameplaySoundEvent.STAIRS), sounds);
         while (transition.isActive()) transition.tick();
         input.onKeyEvent(config.upKey(), 0);
         sounds.clear();
@@ -69,7 +71,7 @@ final class WarpEntranceRegressionTest {
         link.position().setPixelPosition(0x40, 0x50);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertTrue(transition.isActive());
-        assertEquals(java.util.List.of(linksawakening.gameplay.GameplaySoundEvent.STAIRS), sounds);
+        assertEquals(List.of(linksawakening.gameplay.GameplaySoundEvent.STAIRS), sounds);
     }
 
     @Test
@@ -89,7 +91,7 @@ final class WarpEntranceRegressionTest {
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
         var transition = new TransitionController();
-        var sounds = new java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
+        var sounds = new ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
         var coordinator = session.transitions()
                 .coordinator(new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
         var link = new Link(
@@ -108,7 +110,7 @@ final class WarpEntranceRegressionTest {
             link.position().setRoomEntryPixelPosition(72, 128);
             coordinator.handleWarpAndIndoorBoundaries(link);
             assertTrue(transition.isActive());
-            assertEquals(java.util.List.of(linksawakening.gameplay.GameplaySoundEvent.STAIRS), sounds);
+            assertEquals(List.of(linksawakening.gameplay.GameplaySoundEvent.STAIRS), sounds);
             sounds.clear();
             while (transition.isActive()) transition.tick();
             assertEquals(exit.destRoom(), session.rooms().currentRoomId());

@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
@@ -50,7 +51,7 @@ final class RoomTransitionBoundariesTest {
                 new ItemRegistry());
         // Finish a flip over the south boundary; the scroll waits for landing.
         int[] floor = new int[0x100];
-        java.util.Arrays.fill(floor, 0x09);
+        Arrays.fill(floor, 0x09);
         collision.setRoom(floor);
         link.position().setPixelPosition(0x40, 0x74);
         link.airborne().useRocsFeather();

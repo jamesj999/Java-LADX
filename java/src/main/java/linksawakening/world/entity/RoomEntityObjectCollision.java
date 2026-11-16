@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import java.util.Objects;
+
 /**
  * Source-backed static room-object query for handlers that do not use the
  * ordinary one-axis background movement callback.
@@ -9,7 +11,7 @@ public interface RoomEntityObjectCollision {
     RoomEntityObjectCollision NONE = entity -> false;
 
     static RoomEntityObjectCollision orNone(RoomEntityObjectCollision value) {
-        return java.util.Objects.requireNonNullElse(value, NONE);
+        return Objects.requireNonNullElse(value, NONE);
     }
 
     boolean collides(RoomEntity entity);

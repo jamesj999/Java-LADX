@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -299,7 +300,7 @@ public final class RoamingEnemyMotion {
             linksawakening.world.entity.RoomEntity entity,
             int linkEntityX,
             int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown,
             int frameCounter,
@@ -314,7 +315,7 @@ public final class RoamingEnemyMotion {
         private int linkEntityX;
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
         private int frameCounter;
@@ -325,7 +326,7 @@ public final class RoamingEnemyMotion {
         private int variant;
 
         RoamingEnemyFrameStep(RoamingEnemyMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.RoamingEnemyMotion.Update run() {

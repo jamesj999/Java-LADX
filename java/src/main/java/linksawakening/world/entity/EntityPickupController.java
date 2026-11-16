@@ -10,9 +10,10 @@ import static linksawakening.world.entity.EntitySnapshots.withZ;
 import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
+import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.ChestRewardEvent;
-import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -39,8 +40,7 @@ public final class EntityPickupController {
             new EntityPickupController.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
 
     {
-        java.util.Arrays.fill(
-                commonUpdates, new EntityPickupController.CommonDroppableUpdate(RoomEntity.disabled(0), false));
+        Arrays.fill(commonUpdates, new EntityPickupController.CommonDroppableUpdate(RoomEntity.disabled(0), false));
     }
 
     // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
@@ -86,21 +86,21 @@ public final class EntityPickupController {
             EntityChestContents chestContentsTable) {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
-        this.state = java.util.Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
-        this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
-        this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
-        this.events = java.util.Objects.requireNonNull(events, "events");
-        this.linkState = java.util.Objects.requireNonNull(linkState, "linkState");
-        this.motions = java.util.Objects.requireNonNull(motions, "motions");
-        this.physicsTables = java.util.Objects.requireNonNull(physicsTables, "physicsTables");
-        this.presentationState = java.util.Objects.requireNonNull(presentationState, "presentationState");
-        this.roomVariables = java.util.Objects.requireNonNull(roomVariables, "roomVariables");
-        this.lifecycle = java.util.Objects.requireNonNull(lifecycle, "lifecycle");
-        this.slotProperties = java.util.Objects.requireNonNull(slotProperties, "slotProperties");
-        this.story = java.util.Objects.requireNonNull(story, "story");
-        this.slots = java.util.Objects.requireNonNull(slots, "slots");
-        this.chestContentsTable = java.util.Objects.requireNonNull(chestContentsTable, "chest contents");
+        this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
+        this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
+        this.events = Objects.requireNonNull(events, "events");
+        this.linkState = Objects.requireNonNull(linkState, "linkState");
+        this.motions = Objects.requireNonNull(motions, "motions");
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
+        this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
+        this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
+        this.story = Objects.requireNonNull(story, "story");
+        this.slots = Objects.requireNonNull(slots, "slots");
+        this.chestContentsTable = Objects.requireNonNull(chestContentsTable, "chest contents");
     }
 
     void initializeCommonDroppable(RoomEntity entity) {
@@ -132,15 +132,14 @@ public final class EntityPickupController {
     }
 
     void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) {
-        var runtime = this;
         int slot = entity.slot();
-        runtime.bossRewards.writeDroppablePrivateState3(slot, 0);
-        runtime.bossRewards.writeDroppablePrivateState4(slot, 0);
-        runtime.bossRewards.writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
-        runtime.physicsTables.writeSlowTransitionCountdown(slot, EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN);
-        runtime.physicsTables.writeSlowTimerInitialized(slot, true);
+        this.bossRewards.writeDroppablePrivateState3(slot, 0);
+        this.bossRewards.writeDroppablePrivateState4(slot, 0);
+        this.bossRewards.writeDropPrivateCountdown1(slot, EntityRomConstants.DROPPABLE_REVEAL_COUNTDOWN);
+        this.physicsTables.writeSlowTransitionCountdown(slot, EntityRomConstants.DROPPABLE_REVEAL_SLOW_COUNTDOWN);
+        this.physicsTables.writeSlowTimerInitialized(slot, true);
 
-        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
+        this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
             Vector vector = vectorAwayFromLink(
                     entity.x(),
@@ -148,27 +147,25 @@ public final class EntityPickupController {
                     linkEntityX,
                     linkEntityY,
                     EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-            runtime.motions.get(FairyMotion.class, FairyMotion::new).setSpeed(slot, vector.x(), vector.y());
+            var fairyMotion = this.motions.get(FairyMotion.class, FairyMotion::new);
+            fairyMotion.setSpeed(slot, vector.x(), vector.y());
             return;
         }
 
-        runtime.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initialize(
-                        slot,
-                        runtime.physicsTables.readGroundInteractionSideScrolling(),
-                        EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
-        runtime.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initializeAwayFromLink(
-                        slot,
-                        entity.x(),
-                        entity.y(),
-                        linkEntityX,
-                        linkEntityY,
-                        EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-        runtime.bossRewards.writeEnemyDropActive(slot, true);
-        runtime.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
+        var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        enemyDropMotion.initialize(
+                slot,
+                this.physicsTables.readGroundInteractionSideScrolling(),
+                EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
+        enemyDropMotion.initializeAwayFromLink(
+                slot,
+                entity.x(),
+                entity.y(),
+                linkEntityX,
+                linkEntityY,
+                EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
+        this.bossRewards.writeEnemyDropActive(slot, true);
+        this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
     }
 
     public SlimeKeyTransitionUpdate advanceHidingSlimeKey(
@@ -215,9 +212,8 @@ public final class EntityPickupController {
             initializeCommonDroppable(entity);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            this.motions
-                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                    .ensureInitialized(slot, this.roomVariables.readEntityRoomId());
+            var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+            secretSeashellMotion.ensureInitialized(slot, this.roomVariables.readEntityRoomId());
             this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1);
         }
         if (this.indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
@@ -255,19 +251,17 @@ public final class EntityPickupController {
                         this.physicsTables.readEnemyTransitionCountdown(slot),
                         this.linkState.readDialogActive(),
                         this.state.readHeartPiecesCount());
-        this.events.heartPieceUpdates.add(update);
+        this.events.heartPiece(update);
         if (update.incrementPiece()) this.state.postHeartPiecesCount(1);
         if (update.newContainer()) this.state.writeHeartPiecesCount(0);
-        if (update.dialogId() >= 0) this.events.pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
-        if (update.newContainer())
-            this.events.pendingEntityEvents.add(
-                    new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x19));
+        if (update.dialogId() >= 0) this.events.dialog(0, update.dialogId());
+        if (update.newContainer()) this.events.sound(slot, entity.type(), EntityCombatEvent.SoundChannel.JINGLE, 0x19);
         if (update.complete()) {
             this.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        this.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        this.events.linkMotionBlock(new LinkMotionBlockRequest(slot));
+        this.events.linkHeldItemPose(new LinkHeldItemPoseRequest(slot));
         this.slots.replace(slot, withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z));
     }
 
@@ -277,13 +271,11 @@ public final class EntityPickupController {
         this.state.writeChestSpeedY(slot, 0xFC);
         this.state.writeChestSpeedYAccumulator(slot, 0);
         this.state.writeChestInertia(slot, 0);
-        this.events.pendingEntityEvents.add(new EntityCombatEvent(
+        this.events.sound(
                 slot,
                 EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                0,
-                false,
                 EntityCombatEvent.SoundChannel.NOISE,
-                EntityRomConstants.CHEST_OPEN_NOISE_ID));
+                EntityRomConstants.CHEST_OPEN_NOISE_ID);
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
             for (int candidateSlotIndex = 0; candidateSlotIndex < this.slots.size(); candidateSlotIndex++) {
                 RoomEntity candidate = this.slots.get(candidateSlotIndex);
@@ -295,7 +287,7 @@ public final class EntityPickupController {
             }
         }
         if (itemType < ChestContentsTable.CHEST_MESSAGE) {
-            this.events.pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
+            this.events.chestReward(new ChestRewardEvent(slot, itemType));
         }
     }
 
@@ -324,13 +316,11 @@ public final class EntityPickupController {
         if (inertia == 0x08) {
             int soundValue = this.chestContentsTable.presentationSoundValue(itemType);
             if (soundValue == EntityRomConstants.CHEST_TREASURE_JINGLE_ID) {
-                this.events.pendingEntityEvents.add(new EntityCombatEvent(
+                this.events.sound(
                         slot,
                         EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                        0,
-                        false,
                         EntityCombatEvent.SoundChannel.JINGLE,
-                        EntityRomConstants.CHEST_TREASURE_JINGLE_ID));
+                        EntityRomConstants.CHEST_TREASURE_JINGLE_ID);
             } else if (soundValue != 0) {
                 this.presentationState.writePendingMusicTrack(soundValue);
             }
@@ -345,8 +335,7 @@ public final class EntityPickupController {
                     this.roomVariables.readEntityMapId() < 0 ? 0 : this.roomVariables.readEntityMapId(),
                     roomId < 0 ? 0 : roomId);
             int tableId = itemType == ChestContentsTable.CHEST_MESSAGE && roomId == 0x96 ? 1 : 0;
-            if (dialogLow != EntityChestContents.NO_DIALOG)
-                this.events.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
+            if (dialogLow != EntityChestContents.NO_DIALOG) this.events.dialog(tableId, dialogLow);
         }
         if (inertia == 0x28) {
             this.lifecycle.clearEntity(slot);
@@ -357,12 +346,11 @@ public final class EntityPickupController {
     }
 
     void spawnChestZol(RoomEntity chest) {
-        var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOL);
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_ZOL);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity zol = new RoomEntity(
                 freeSlot,
@@ -378,27 +366,25 @@ public final class EntityPickupController {
                 0x06,
                 -1,
                 false);
-        runtime.slots.replace(freeSlot, zol);
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
-        runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareChestSpawn(freeSlot);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
-        runtime.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
-        runtime.combatTables.writeEnemyHealth(
-                freeSlot, runtime.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOL));
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                freeSlot, EntityRomConstants.ENTITY_ZOL, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
+        this.slots.replace(freeSlot, zol);
+        this.lifecycle.initializeHealthGroup(freeSlot);
+        var zolGelMotion = this.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+        zolGelMotion.prepareChestSpawn(freeSlot);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
+        this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
+        this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOL));
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        this.events.sound(freeSlot, EntityRomConstants.ENTITY_ZOL, EntityCombatEvent.SoundChannel.JINGLE, 0x1D);
     }
 
     void spawnEnemyDrop(RoomEntity source, int itemType) {
-        var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         if (itemType == EntityRomConstants.ENTITY_KEY_DROP_POINT
                 && source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
@@ -418,34 +404,35 @@ public final class EntityPickupController {
                 source.z(),
                 -1,
                 false);
-        runtime.slots.replace(freeSlot, drop);
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        this.slots.replace(freeSlot, drop);
+        this.lifecycle.initializeHealthGroup(freeSlot);
         this.resetEnemyDropState(freeSlot);
-        runtime.physicsTables.writeSlowTransitionCountdown(freeSlot, 0x80);
-        runtime.physicsTables.writeSlowTimerInitialized(freeSlot, true);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
-        runtime.combatTables.writeEnemyHealth(freeSlot, runtime.slotProperties.initialHealth(itemType));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeEntityGroundStatus(freeSlot, 0);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.bossRewards.writeDropPrivateCountdown1(freeSlot, 0x18);
-        runtime.bossRewards.writeDropPrivateCountdown3(freeSlot, 0x03);
+        this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0x80);
+        this.physicsTables.writeSlowTimerInitialized(freeSlot, true);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
+        this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(itemType));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
+        this.bossRewards.writeDropPrivateCountdown1(freeSlot, 0x18);
+        this.bossRewards.writeDropPrivateCountdown3(freeSlot, 0x03);
         if (itemType == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            runtime.motions.get(FairyMotion.class, FairyMotion::new).initialize(freeSlot);
+            var fairyMotion = this.motions.get(FairyMotion.class, FairyMotion::new);
+            fairyMotion.initialize(freeSlot);
         } else {
-            runtime.motions
-                    .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                    .initialize(freeSlot, runtime.physicsTables.readGroundInteractionSideScrolling());
-            runtime.bossRewards.writeEnemyDropActive(freeSlot, true);
+            var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+            enemyDropMotion.initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling());
+            this.bossRewards.writeEnemyDropActive(freeSlot, true);
         }
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
     void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) {
@@ -460,13 +447,12 @@ public final class EntityPickupController {
     }
 
     int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) {
-        var runtime = this;
-        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot < 0) {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
+        EntitySpriteDefinition definition = this.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
         RoomEntity drop = new RoomEntity(
                 freeSlot,
@@ -482,30 +468,30 @@ public final class EntityPickupController {
                 z,
                 -1,
                 false);
-        runtime.slots.replace(freeSlot, drop);
-        runtime.lifecycle.initializeHealthGroup(freeSlot);
+        this.slots.replace(freeSlot, drop);
+        this.lifecycle.initializeHealthGroup(freeSlot);
         this.resetEnemyDropState(freeSlot);
-        runtime.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initialize(freeSlot, runtime.physicsTables.readGroundInteractionSideScrolling(), speedZ);
-        runtime.bossRewards.writeEnemyDropActive(freeSlot, true);
-        runtime.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
-        runtime.physicsTables.writeSlowTimerInitialized(freeSlot, false);
-        runtime.bossRewards.writeDropPrivateCountdown1(freeSlot, privateCountdown1);
-        runtime.bossRewards.writeDropPrivateCountdown3(freeSlot, 0);
-        runtime.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
-        runtime.combatTables.writeDyingCountdown(freeSlot, 0);
-        runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
-        runtime.combatTables.writeEnemyHealth(freeSlot, runtime.slotProperties.initialHealth(itemType));
-        runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.physicsTables.writeEntityGroundStatus(freeSlot, 0);
-        runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
-        runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        runtime.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
+        var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        enemyDropMotion.initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling(), speedZ);
+        this.bossRewards.writeEnemyDropActive(freeSlot, true);
+        this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
+        this.physicsTables.writeSlowTimerInitialized(freeSlot, false);
+        this.bossRewards.writeDropPrivateCountdown1(freeSlot, privateCountdown1);
+        this.bossRewards.writeDropPrivateCountdown3(freeSlot, 0);
+        this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
+        this.combatTables.writeDyingCountdown(freeSlot, 0);
+        this.combatTables.writePowerRecoilDeath(freeSlot, false);
+        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
+        this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(itemType));
+        this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
+        this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
+        this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
+        this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
+        this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
+        this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
 
@@ -527,7 +513,7 @@ public final class EntityPickupController {
         private int hiddenState;
 
         DroppablePickupFrameStep(linksawakening.world.entity.EntityPickupController owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.EntityPickupController.CommonDroppableUpdate run() {
@@ -552,26 +538,17 @@ public final class EntityPickupController {
                         }
                     }
                 } else if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS) {
-                    reveal = owner.motions
-                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                    .readSecretSeashellScreenShakeActive()
-                            && owner.motions
-                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                    .readSecretSeashellPegasusCollisionActive()
-                            && (!owner.motions
-                                            .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                            .readSecretSeashellPegasusCollisionCoordinatesKnown()
+                    var secretSeashellMotion = owner.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+                    reveal = secretSeashellMotion.readSecretSeashellScreenShakeActive()
+                            && secretSeashellMotion.readSecretSeashellPegasusCollisionActive()
+                            && (!secretSeashellMotion.readSecretSeashellPegasusCollisionCoordinatesKnown()
                                     || (withinUnsignedWindow(
                                                     entity.x() + 0x08,
-                                                    owner.motions
-                                                            .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                            .readSecretSeashellPegasusCollisionX(),
+                                                    secretSeashellMotion.readSecretSeashellPegasusCollisionX(),
                                                     0x10)
                                             && withinUnsignedWindow(
                                                     entity.y() + 0x08,
-                                                    owner.motions
-                                                            .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                            .readSecretSeashellPegasusCollisionY(),
+                                                    secretSeashellMotion.readSecretSeashellPegasusCollisionY(),
                                                     0x10)));
                 }
 
@@ -597,9 +574,8 @@ public final class EntityPickupController {
                             : EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
             if (entity.type() != EntityRomConstants.ENTITY_DROPPABLE_FAIRY
                     && !owner.bossRewards.readEnemyDropActive(slot)) {
-                owner.motions
-                        .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                        .initialize(slot, owner.physicsTables.readGroundInteractionSideScrolling());
+                var enemyDropMotion = owner.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+                enemyDropMotion.initialize(slot, owner.physicsTables.readGroundInteractionSideScrolling());
                 owner.bossRewards.writeEnemyDropActive(slot, true);
             }
             return owner.commonUpdate(

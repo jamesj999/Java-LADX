@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -24,9 +25,12 @@ public final class ZolGelMotion {
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: temporarily bypasses background interaction after a Gel split.
+    final int[] backgroundCollisionBypassCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown2Table: holds the walking sprite phase for eight ticks.
+    final int[] walkAnimationCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown3Table: collision grace after the state-4 jump begins.
+    final int[] jumpCollisionGraceCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] flashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -42,9 +46,9 @@ public final class ZolGelMotion {
     public void initialize(int slot, int entityType, IntSupplier randomByteSupplier) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateCountdown2[slot] = 0;
-        privateCountdown3[slot] = 0;
+        backgroundCollisionBypassCountdown[slot] = 0;
+        walkAnimationCountdown[slot] = 0;
+        jumpCollisionGraceCountdown[slot] = 0;
         direction[slot] = entityType == ENTITY_GEL ? randomByteSupplier.getAsInt() & 0x03 : 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -69,7 +73,7 @@ public final class ZolGelMotion {
     }
 
     public boolean skipsEnemyCollision(int slot) {
-        return state[slot] == 4 || privateCountdown3[slot] != 0;
+        return state[slot] == 4 || jumpCollisionGraceCountdown[slot] != 0;
     }
 
     public Update advance(
@@ -102,15 +106,15 @@ public final class ZolGelMotion {
         state[slot] = 3;
         speedX[slot] = 0x08;
         speedZ[slot] = 0x18;
-        privateCountdown1[slot] = 0x50;
+        backgroundCollisionBypassCountdown[slot] = 0x50;
     }
 
     public void clear(int slot) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateCountdown2[slot] = 0;
-        privateCountdown3[slot] = 0;
+        backgroundCollisionBypassCountdown[slot] = 0;
+        walkAnimationCountdown[slot] = 0;
+        jumpCollisionGraceCountdown[slot] = 0;
         flashCountdown[slot] = 0;
         direction[slot] = 0;
         speedX[slot] = 0;
@@ -144,7 +148,7 @@ public final class ZolGelMotion {
     }
 
     public int privateCountdown1(int slot) {
-        return privateCountdown1[slot];
+        return backgroundCollisionBypassCountdown[slot];
     }
 
     void decrementCountdowns(int slot) {
@@ -154,14 +158,14 @@ public final class ZolGelMotion {
         if (state[slot] != 4 && transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
+        if (backgroundCollisionBypassCountdown[slot] > 0) {
+            backgroundCollisionBypassCountdown[slot]--;
         }
-        if (privateCountdown2[slot] > 0) {
-            privateCountdown2[slot]--;
+        if (walkAnimationCountdown[slot] > 0) {
+            walkAnimationCountdown[slot]--;
         }
-        if (privateCountdown3[slot] > 0) {
-            privateCountdown3[slot]--;
+        if (jumpCollisionGraceCountdown[slot] > 0) {
+            jumpCollisionGraceCountdown[slot]--;
         }
         if (flashCountdown[slot] > 0) {
             flashCountdown[slot]--;
@@ -181,7 +185,7 @@ public final class ZolGelMotion {
         // it does call the helper, it temporarily exposes ignore-hits value
         // $02 to the rich room probe.
         RoomEntityBackgroundInteraction physicsInteraction =
-                privateCountdown1[entity.slot()] == 0 ? backgroundInteraction : null;
+                backgroundCollisionBypassCountdown[entity.slot()] == 0 ? backgroundInteraction : null;
         return move(entity, x, y, physicsInteraction, 0x02, frameCounter);
     }
 
@@ -207,9 +211,9 @@ public final class ZolGelMotion {
     void resetForGel(int slot) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateCountdown2[slot] = 0;
-        privateCountdown3[slot] = 0;
+        backgroundCollisionBypassCountdown[slot] = 0;
+        walkAnimationCountdown[slot] = 0;
+        jumpCollisionGraceCountdown[slot] = 0;
         direction[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -353,7 +357,7 @@ public final class ZolGelMotion {
             int linkEntityX,
             int linkEntityY,
             int linkEntityZ,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction,
             int frameCounter,
             int ignoreHitsCountdown,
@@ -373,7 +377,7 @@ public final class ZolGelMotion {
         private int linkEntityY;
         private int linkEntityZ;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int frameCounter;
         private int ignoreHitsCountdown;
@@ -393,7 +397,7 @@ public final class ZolGelMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         ZolGelStep(linksawakening.world.entity.motion.ZolGelMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.ZolGelMotion.Update run() {
@@ -445,10 +449,10 @@ public final class ZolGelMotion {
                 type = ENTITY_GEL;
             }
 
-            if (owner.privateCountdown2[slot] == 0) {
+            if (owner.walkAnimationCountdown[slot] == 0) {
                 owner.spriteVariant[slot] = owner.state[slot] & 0x01;
                 if (owner.spriteVariant[slot] == 1) {
-                    owner.privateCountdown2[slot] = 8;
+                    owner.walkAnimationCountdown[slot] = 8;
                 }
             }
 
@@ -521,7 +525,7 @@ public final class ZolGelMotion {
                     }
                 } else if (owner.state[slot] == 4) {
                     if (owner.transitionCountdown[slot] == 0) {
-                        owner.privateCountdown3[slot] = 0x30;
+                        owner.jumpCollisionGraceCountdown[slot] = 0x30;
                         ZolGelMotion.Vector vector =
                                 ZolGelMotion.vectorTowardsLink(x, y, linkEntityX, linkEntityY, 0x10);
                         owner.speedX[slot] = vector.x();

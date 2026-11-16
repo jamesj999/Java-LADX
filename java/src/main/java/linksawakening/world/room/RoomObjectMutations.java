@@ -15,6 +15,7 @@ import static linksawakening.world.room.RoomSessionRules.OW_ROOM_STATUS_OPENED;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
@@ -38,27 +39,36 @@ import linksawakening.world.transition.Warp;
 final class RoomObjectMutations implements RoomTerrain {
     @Override
     public boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && tickCrackedFloor(loaded, frame, dialogGotItemActive);
+        return rooms.testFrame(
+                this,
+                frame,
+                dialogGotItemActive,
+                (room, terrain, inputs, gotItem) -> terrain.tickCrackedFloor(room, inputs, gotItem));
     }
 
     @Override
     public boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && applyCrackedFloorGroundPhysics(loaded.contents, frame, dialogGotItemActive);
+        return rooms.testFrame(
+                this,
+                frame,
+                dialogGotItemActive,
+                (room, terrain, inputs, gotItem) ->
+                        terrain.applyCrackedFloorGroundPhysics(room.contents, inputs, gotItem));
     }
 
     @Override
     public boolean breakIndoorSwordCrystal(int location) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && breakIndoorSwordCrystal(loaded, location);
+        return rooms.testInt(
+                this,
+                location,
+                (room, terrain, objectLocation) -> terrain.breakIndoorSwordCrystal(room, objectLocation));
     }
 
     private final LoadedRoomHandle rooms;
     private final Dependencies dependencies;
 
     RoomObjectMutations(LoadedRoomHandle rooms, Dependencies dependencies) {
-        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.rooms = Objects.requireNonNull(rooms);
         this.dependencies = dependencies;
     }
 
@@ -693,18 +703,18 @@ final class RoomObjectMutations implements RoomTerrain {
             linksawakening.rom.Rom romData,
             RoomTilemapBuilder roomTilemapBuilder) {
         Dependencies {
-            java.util.Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
-            java.util.Objects.requireNonNull(entityFrame, "entityFrame");
-            java.util.Objects.requireNonNull(location, "location");
-            java.util.Objects.requireNonNull(puzzles, "puzzles");
-            java.util.Objects.requireNonNull(terrain, "terrain");
-            java.util.Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            java.util.Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
-            java.util.Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
-            java.util.Objects.requireNonNull(overworldCollision, "overworldCollision");
-            java.util.Objects.requireNonNull(romTables, "romTables");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomState, "roomState");
+            Objects.requireNonNull(transientVfxSystem, "transientVfxSystem");
+            Objects.requireNonNull(entityFrame, "entityFrame");
+            Objects.requireNonNull(location, "location");
+            Objects.requireNonNull(puzzles, "puzzles");
+            Objects.requireNonNull(terrain, "terrain");
+            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
+            Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
+            Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
+            Objects.requireNonNull(overworldCollision, "overworldCollision");
+            Objects.requireNonNull(romTables, "romTables");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomState, "roomState");
         }
     }
 

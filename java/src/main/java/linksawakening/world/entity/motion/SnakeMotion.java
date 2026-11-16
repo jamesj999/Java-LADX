@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -20,7 +21,8 @@ public final class SnakeMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: delay before the next Link-targeted dash.
+    final int[] dashCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -31,7 +33,7 @@ public final class SnakeMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        privateCountdown1[slot] = 0x30;
+        dashCooldown[slot] = 0x30;
         animationVariant[slot] = 0;
         initialized[slot] = true;
     }
@@ -65,7 +67,7 @@ public final class SnakeMotion {
     }
 
     public int privateCountdown1(int slot) {
-        return privateCountdown1[slot];
+        return dashCooldown[slot];
     }
 
     public int speedX(int slot) {
@@ -77,7 +79,7 @@ public final class SnakeMotion {
     }
 
     int startDashIfNeeded(int slot, int entityX, int entityY, int linkEntityX, int linkEntityY, int countdown) {
-        if (privateCountdown1[slot] != 0) {
+        if (dashCooldown[slot] != 0) {
             return countdown;
         }
 
@@ -193,7 +195,7 @@ public final class SnakeMotion {
         private int linkEntityX;
         private int linkEntityY;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
         private int transitionCountdown;
         private int slot;
@@ -207,7 +209,7 @@ public final class SnakeMotion {
         private linksawakening.world.entity.RoomEntity updated;
 
         SnakeFrameStep(SnakeMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.SnakeMotion.Update run() {
@@ -223,8 +225,8 @@ public final class SnakeMotion {
             if (!owner.initialized[slot]) {
                 owner.initialize(slot);
             }
-            if (owner.privateCountdown1[slot] > 0) {
-                owner.privateCountdown1[slot]--;
+            if (owner.dashCooldown[slot] > 0) {
+                owner.dashCooldown[slot]--;
             }
 
             countdown = transitionCountdown & 0xFF;
@@ -246,7 +248,7 @@ public final class SnakeMotion {
             if (moved.collided()) {
                 owner.state[slot] = 0;
                 countdown = 0x08;
-                owner.privateCountdown1[slot] = 0x20;
+                owner.dashCooldown[slot] = 0x20;
             }
 
             switch (owner.state[slot]) {
@@ -302,7 +304,7 @@ public final class SnakeMotion {
             if (countdown == 0) {
                 countdown = 0x20;
                 owner.state[slot] = 0;
-                owner.privateCountdown1[slot] = 0x40;
+                owner.dashCooldown[slot] = 0x40;
             }
             owner.setAnimationVariant(slot, SnakeMotion.dashingAnimation(frameCounter));
 
@@ -316,7 +318,7 @@ public final class SnakeMotion {
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
-                java.util.function.IntSupplier randomByteSupplier,
+                IntSupplier randomByteSupplier,
                 linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision,
                 int transitionCountdown) {
             if (inUse) {

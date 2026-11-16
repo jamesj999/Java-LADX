@@ -18,7 +18,7 @@ public final class MotionTestFixture {
 
     public static void setPrivateCountdown1ForTest(StalfosEvasiveMotion motion, int slot, int value) {
         motion.initialized[slot] = true;
-        motion.privateCountdown1[slot] = value & 0xFF;
+        motion.hitResponseCountdown[slot] = value & 0xFF;
     }
 
     public static void setFleeingForTest(StalfosEvasiveMotion motion, int slot, int newSpeedX, int newSpeedY) {
@@ -30,7 +30,7 @@ public final class MotionTestFixture {
     }
 
     public static void setPrivateCountdownsForTest(MoblinKingMotion motion, int slot, int countdown1, int countdown2) {
-        motion.privateCountdown1[slot] = countdown1 & 0xFF;
+        motion.hopShotCountdown[slot] = countdown1 & 0xFF;
         motion.privateCountdown2[slot] = countdown2 & 0xFF;
     }
 
@@ -117,8 +117,8 @@ public final class MotionTestFixture {
             throw new IllegalArgumentException("Wizrobe sprite variant out of range: " + spriteVariant);
         }
         motion.state[slot] = newState;
-        motion.privateState1[slot] = newPrivateState1;
-        motion.privateCountdown1[slot] = newPrivateCountdown1;
+        motion.phaseStep[slot] = newPrivateState1;
+        motion.phaseCountdown[slot] = newPrivateCountdown1;
         motion.direction[slot] = newDirection;
         motion.currentSpriteVariant[slot] = spriteVariant;
         motion.initialized[slot] = true;
@@ -161,7 +161,7 @@ public final class MotionTestFixture {
             int newSpeedZ) {
         motion.ensureInitialized(slot);
         motion.state[slot] = newState & 0xFF;
-        motion.privateState1[slot] = newPrivateState1 & 0xFF;
+        motion.angerBuildup[slot] = newPrivateState1 & 0xFF;
         motion.speedX[slot] = newSpeedX & 0xFF;
         motion.speedY[slot] = newSpeedY & 0xFF;
         motion.speedZ[slot] = newSpeedZ & 0xFF;
@@ -172,7 +172,7 @@ public final class MotionTestFixture {
 
     public static void setPrivateStateForTest(CuccoMotion motion, int slot, int value) {
         motion.ensureInitialized(slot);
-        motion.privateState1[slot] = value & 0xFF;
+        motion.angerBuildup[slot] = value & 0xFF;
     }
 
     public static void setSpeedForTest(MimicMotion motion, int slot, int newSpeedX, int newSpeedY) {
@@ -186,7 +186,7 @@ public final class MotionTestFixture {
     }
 
     public static void setPrivateCountdown1ForTest(ZolGelMotion motion, int slot, int value) {
-        motion.privateCountdown1[slot] = value & 0xFF;
+        motion.backgroundCollisionBypassCountdown[slot] = value & 0xFF;
     }
 
     public static void setStateForTest(
@@ -195,7 +195,7 @@ public final class MotionTestFixture {
         if (value < 0 || value > HinoxMotion.STATE_BOMB) throw new IllegalArgumentException("Invalid Hinox state");
         motion.state[slot] = value;
         motion.privateState1[slot] = privateState1Value & 0x03;
-        motion.privateState3[slot] = privateState3Value & 0xFF;
+        motion.wanderStepCount[slot] = privateState3Value & 0xFF;
         motion.initialized[slot] = true;
     }
 
@@ -217,12 +217,12 @@ public final class MotionTestFixture {
 
     public static void setPrivateState3ForTest(HinoxMotion motion, int slot, int value) {
         HinoxMotion.validateSlot(slot);
-        motion.privateState3[slot] = value & 0xFF;
+        motion.wanderStepCount[slot] = value & 0xFF;
     }
 
     public static void setPrivateCountdown1ForTest(HinoxMotion motion, int slot, int value) {
         HinoxMotion.validateSlot(slot);
-        motion.privateCountdown1[slot] = value & 0xFF;
+        motion.linkHoldCountdown[slot] = value & 0xFF;
     }
 
     public static void setParentForTest(LaserMotion motion, int slot, int countdown, int newSpeedX, int newSpeedY) {
@@ -276,7 +276,7 @@ public final class MotionTestFixture {
             int newSpeedX,
             int newSpeedY) {
         motion.state[slot] = newState & 0xFF;
-        motion.privateState1[slot] = newPrivateState1 & 0xFF;
+        motion.disguiseMode[slot] = newPrivateState1 & 0xFF;
         motion.privateState2[slot] = newState == 1 ? 4 : 0;
         motion.privateState4[slot] = newPrivateState4 & 0x01;
         motion.speedX[slot] = newSpeedX & 0xFF;
@@ -290,7 +290,7 @@ public final class MotionTestFixture {
     public static void forcePrivateStateForTest(
             BushCrawlerMotion motion, int slot, int newPrivateState1, int transitionCountdown) {
         motion.state[slot] = 0;
-        motion.privateState1[slot] = newPrivateState1 & 0xFF;
+        motion.disguiseMode[slot] = newPrivateState1 & 0xFF;
         motion.privateState2[slot] = 0;
         motion.privateState4[slot] = 0;
         motion.speedX[slot] = 0;

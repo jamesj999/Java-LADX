@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
@@ -21,7 +22,8 @@ public final class ZombieMotion {
     static final int[] SPAWN_X = {0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88};
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: zero for the hidden room marker, nonzero for its spawned Zombie.
+    final int[] spawnedZombieFlag = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -51,7 +53,7 @@ public final class ZombieMotion {
     /** Seeds the private-state-$01 child created by SpawnNewEntityInRange. */
     public void initializeChild(int slot) {
         reset(slot);
-        privateState1[slot] = 1;
+        spawnedZombieFlag[slot] = 1;
         initialized[slot] = true;
     }
 
@@ -60,7 +62,7 @@ public final class ZombieMotion {
     }
 
     boolean isChild(int slot) {
-        return initialized[slot] && privateState1[slot] != 0;
+        return initialized[slot] && spawnedZombieFlag[slot] != 0;
     }
 
     int state(int slot) {
@@ -68,12 +70,12 @@ public final class ZombieMotion {
     }
 
     int privateState1(int slot) {
-        return privateState1[slot];
+        return spawnedZombieFlag[slot];
     }
 
     /** State 2 is the only Zombie handler branch that calls enemy damage collision. */
     public boolean allowsEnemyCollision(int slot) {
-        return initialized[slot] && privateState1[slot] != 0 && state[slot] == 2;
+        return initialized[slot] && spawnedZombieFlag[slot] != 0 && state[slot] == 2;
     }
 
     int speedX(int slot) {
@@ -101,7 +103,7 @@ public final class ZombieMotion {
         return new Update(
                 entity,
                 state[entity.slot()],
-                privateState1[entity.slot()],
+                spawnedZombieFlag[entity.slot()],
                 countdown & 0xFF,
                 physicsFlags & 0xFF,
                 nextSpeedX & 0xFF,
@@ -215,7 +217,7 @@ public final class ZombieMotion {
 
     private void reset(int slot) {
         state[slot] = 0;
-        privateState1[slot] = 0;
+        spawnedZombieFlag[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -253,7 +255,7 @@ public final class ZombieMotion {
             int physicsFlags,
             int linkEntityX,
             int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
+            IntSupplier randomByteSupplier,
             RoomEntityObjectQuery objectQuery,
             RoomEntityBackgroundInteraction backgroundInteraction,
             int ignoreHitsCountdown) {
@@ -273,7 +275,7 @@ public final class ZombieMotion {
         private int physicsFlags;
         private int linkEntityX;
         private int linkEntityY;
-        private java.util.function.IntSupplier randomByteSupplier;
+        private IntSupplier randomByteSupplier;
         private linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
         private linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
         private int ignoreHitsCountdown;
@@ -294,7 +296,7 @@ public final class ZombieMotion {
         private int variant;
 
         ZombieStep(ZombieMotion owner) {
-            this.owner = java.util.Objects.requireNonNull(owner, "owner");
+            this.owner = Objects.requireNonNull(owner, "owner");
         }
 
         linksawakening.world.entity.motion.ZombieMotion.Update run() {
@@ -408,7 +410,7 @@ public final class ZombieMotion {
 
         private boolean advanceMarkerOrZombie() {
 
-            if (owner.privateState1[slot] == 0) {
+            if (owner.spawnedZombieFlag[slot] == 0) {
                 // The room-loaded entity is a permanently hidden spawn marker. The
                 // handler still relocates it before testing the object physics.
                 int variant = -1;

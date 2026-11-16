@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.List;
 import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.EntityStatus;
@@ -89,7 +90,7 @@ public final class ThreeOfAKindMotion {
         return new Update(withPositionAndVariant(entity, x, y, variant), transitionCountdown);
     }
 
-    public PuzzleResult resolvePuzzle(List<RoomEntity> entities, java.util.function.IntUnaryOperator countdown) {
+    public PuzzleResult resolvePuzzle(List<RoomEntity> entities, IntUnaryOperator countdown) {
         int first = -1, second = -1, third = -1, count = 0;
         for (int i = 0; i < entities.size(); i++) {
             RoomEntity entity = entities.get(i);

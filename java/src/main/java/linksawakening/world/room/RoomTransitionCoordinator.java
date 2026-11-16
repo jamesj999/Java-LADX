@@ -1,5 +1,6 @@
 package linksawakening.world.room;
 
+import java.util.Objects;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
@@ -25,12 +26,12 @@ public final class RoomTransitionCoordinator {
             TransitionController transitionController,
             ScrollController scrollController,
             GameplaySoundSink soundSink) {
-        this.soundSink = java.util.Objects.requireNonNull(soundSink);
-        this.dependencies = java.util.Objects.requireNonNull(dependencyValues);
-        this.boundaryOperations = java.util.Objects.requireNonNull(boundaryOperations);
-        this.boundaryController = java.util.Objects.requireNonNull(boundaryController);
-        this.transitionController = java.util.Objects.requireNonNull(transitionController);
-        this.scrollController = java.util.Objects.requireNonNull(scrollController);
+        this.soundSink = Objects.requireNonNull(soundSink);
+        this.dependencies = Objects.requireNonNull(dependencyValues);
+        this.boundaryOperations = Objects.requireNonNull(boundaryOperations);
+        this.boundaryController = Objects.requireNonNull(boundaryController);
+        this.transitionController = Objects.requireNonNull(transitionController);
+        this.scrollController = Objects.requireNonNull(scrollController);
     }
 
     /**
@@ -176,10 +177,10 @@ public final class RoomTransitionCoordinator {
             RoomStoryState roomStoryState,
             RoomTransitionController roomTransitionController) {
         Dependencies {
-            java.util.Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
-            java.util.Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            java.util.Objects.requireNonNull(roomStoryState, "roomStoryState");
-            java.util.Objects.requireNonNull(roomTransitionController, "roomTransitionController");
+            Objects.requireNonNull(roomCollisionQueries, "roomCollisionQueries");
+            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
+            Objects.requireNonNull(roomStoryState, "roomStoryState");
+            Objects.requireNonNull(roomTransitionController, "roomTransitionController");
         }
     }
 
