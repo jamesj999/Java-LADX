@@ -742,21 +742,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         return List.copyOf(requests);
     }
 
-    boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive) {
-        return hasRoom() && components.roomObjectMutations().tickCrackedFloor(loadedRoom, frame, dialogGotItemActive);
-    }
-
-    boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive) {
-        return hasRoom()
-                && components
-                        .roomObjectMutations()
-                        .applyCrackedFloorGroundPhysics(loadedRoom.contents, frame, dialogGotItemActive);
-    }
-
-    boolean breakIndoorSwordCrystal(int location) {
-        return hasRoom() && components.roomObjectMutations().breakIndoorSwordCrystal(loadedRoom, location);
-    }
-
     int entityHealth(int slot) {
         return loadedRoom.entities.enemies().enemyHealth(slot);
     }

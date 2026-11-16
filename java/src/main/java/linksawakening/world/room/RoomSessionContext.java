@@ -86,21 +86,23 @@ final class RoomSessionContext {
                 values.entityCollisionPointProbe,
                 values.overworldCollision,
                 values.romTables));
-        values.roomObjectMutations = new RoomObjectMutations(new RoomObjectMutations.Dependencies(
-                values.entityFrame,
-                values.location,
-                values.puzzles,
-                values.terrain,
-                values.entityFrame,
-                values.indoorTorchPaletteEffect,
-                values.overworldBushInteraction,
-                values.overworldCollision,
-                values.romTables,
-                values.roomSessionViews,
-                values.roomState,
-                values.transientVfxSystem,
-                values.romData,
-                values.roomTilemapBuilder));
+        values.roomObjectMutations = new RoomObjectMutations(
+                loadedRooms,
+                new RoomObjectMutations.Dependencies(
+                        values.entityFrame,
+                        values.location,
+                        values.puzzles,
+                        values.terrain,
+                        values.entityFrame,
+                        values.indoorTorchPaletteEffect,
+                        values.overworldBushInteraction,
+                        values.overworldCollision,
+                        values.romTables,
+                        values.roomSessionViews,
+                        values.roomState,
+                        values.transientVfxSystem,
+                        values.romData,
+                        values.roomTilemapBuilder));
         values.entityInputs = new RoomEntityInputs();
         values.roomRuntimeServices = new RoomRuntime.Services(
                 values.roomCollisionQueries, values.roomObjectMutations, values.entityFrame, transientVfxSystem);

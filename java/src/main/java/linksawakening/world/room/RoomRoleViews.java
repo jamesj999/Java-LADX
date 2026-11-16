@@ -24,6 +24,6 @@ record RoomRoleViews(
                         new RoomProgressView.Dependencies(
                                 components.entityFrame(), components.location(), components.terrain()),
                         session),
-                new RoomTerrainView(session));
+                components.roomObjectMutations());
     }
 }
