@@ -27,6 +27,16 @@ public final class CutsceneManager implements CutsceneContext {
         playback = new IntroPlayback(this::setScene);
     }
 
+    /** Adds observation before the current intro noise sink without replacing its routing. */
+    public void observeIntroNoiseSound(IntConsumer observer) {
+        Objects.requireNonNull(observer);
+        IntConsumer original = noiseSound;
+        setIntroNoiseSound(id -> {
+            observer.accept(id);
+            original.accept(id);
+        });
+    }
+
     public void setIntroNoiseSound(IntConsumer sink) {
         noiseSound = Objects.requireNonNull(sink);
         playback.setNoiseSound(noiseSound);

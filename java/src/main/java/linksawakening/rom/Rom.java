@@ -96,6 +96,11 @@ public final class Rom {
         return new RomCursor(view(address, size() - checkedOffset(address, 0)));
     }
 
+    /** Borrowed backing storage for package-level ownership checks; callers must not mutate it. */
+    byte[] backingStorage() {
+        return data;
+    }
+
     int unsignedByteAt(int offset) {
         return Byte.toUnsignedInt(data[offset]);
     }
