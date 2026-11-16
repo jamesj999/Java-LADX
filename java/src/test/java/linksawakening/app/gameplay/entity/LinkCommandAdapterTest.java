@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkCommand;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.event.HinoxLinkEffectRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -20,20 +19,19 @@ final class LinkCommandAdapterTest {
         Link link = link();
         link.position().applyRomSpeed(0xEC, 0xEC);
         link.status().setCollisionIgnoreFrames(0x10);
-        var event = new EntityCombatEvent(
-                2,
-                0x0E,
-                0,
-                false,
-                0,
-                -1,
-                EntityCombatEvent.SoundChannel.NONE,
-                -1,
-                EntityCombatEvent.SoundChannel.NONE,
-                -1,
-                null,
-                EntityCombatEvent.LinkAction.NONE,
-                new EntityCombatEvent.LinkCollisionResponse(0, 0xEC, 0x10));
+        var event = EntityCombatEvent.builder(2, 0x0E)
+                .linkDamage(0)
+                .swordHit(false)
+                .enemyDamage(0)
+                .enemySpecialAction(-1)
+                .soundChannel(EntityCombatEvent.SoundChannel.NONE)
+                .soundId(-1)
+                .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                .secondarySoundId(-1)
+                .swordPokeVfx(null)
+                .linkAction(EntityCombatEvent.LinkAction.NONE)
+                .linkCollisionResponse(new EntityCombatEvent.LinkCollisionResponse(0, 0xEC, 0x10))
+                .build();
         link.apply(LinkCommandAdapter.from(event));
         link.motion().update();
         assertEquals(64, link.position().pixelX());
@@ -91,7 +89,19 @@ final class LinkCommandAdapterTest {
         assertEquals(new LinkCommand.Facing(2, true), LinkCommandAdapter.from(new LinkFacingRequest(0, 2, true)));
         assertEquals(
                 new LinkCommand.HinoxGrab(1, 2, 3, 4, 5, 6, linksawakening.entity.Link.GrabFlags.of(2, true, false)),
-                LinkCommandAdapter.from(new HinoxLinkEffectRequest(0, 1, 2, 3, 4, 5, 6, 2, 8, true, false)));
+                LinkCommandAdapter.from(new linksawakening.testing.HinoxEffects()
+                        .sourceSlot(0)
+                        .heldX(1)
+                        .heldY(2)
+                        .heldZ(3)
+                        .speedX(4)
+                        .speedY(5)
+                        .velocityZ(6)
+                        .airborneState(2)
+                        .damage(8)
+                        .motionBlocked(true)
+                        .applyHeldLinkPose(false)
+                        .build()));
         assertEquals(
                 new LinkCommand.RoosterFlight(1, 2, 3, 4, 2),
                 LinkCommandAdapter.from(new RoosterLinkStateRequest(0, 1, 2, 3, 4, 2)));

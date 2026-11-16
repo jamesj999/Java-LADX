@@ -25,6 +25,7 @@ import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.room.RoomConstants;
 import linksawakening.world.room.RoomRenderSnapshot;
@@ -77,20 +78,20 @@ final class SceneConstructionFixture {
                                 16, 0, new EntitySpriteDefinition.OamAttribute(0x48, 3)))));
         var entities = new ArrayList<RoomEntity>();
         for (int i = 0; i < 10; i++)
-            entities.add(new RoomEntity(
-                    i,
-                    i,
-                    (highEntityTypes ? 0x90 : 0x35) + i,
-                    16 + i * 12,
-                    36 + (i % 2) * 8,
-                    EntityStatus.ACTIVE,
-                    i == 5 ? rectangle : pair,
-                    0,
-                    0,
-                    0,
-                    0,
-                    -1,
-                    false));
+            entities.add(new RoomEntityBuilder()
+                    .slot(i)
+                    .sourceLoadOrder(i)
+                    .type((highEntityTypes ? 0x90 : 0x35) + i)
+                    .at(16 + i * 12, 36 + (i % 2) * 8)
+                    .status(EntityStatus.ACTIVE)
+                    .spriteDefinition(i == 5 ? rectangle : pair)
+                    .spriteVariant(0)
+                    .entityFlipAttribute(0)
+                    .spriteTileOffset(0)
+                    .z(0)
+                    .deathSpriteVariant(-1)
+                    .powerRecoilDeath(false)
+                    .build());
         while (entities.size() < 16) entities.add(RoomEntity.disabled(entities.size()));
         var selection =
                 new EntitySpriteSelection(EntityRoomLoader.RoomTable.OVERWORLD, 0x92, 0, new int[4], true, palettes);
