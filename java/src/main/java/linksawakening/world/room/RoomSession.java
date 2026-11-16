@@ -6,7 +6,6 @@ import linksawakening.entity.Link;
 import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityPickupFrameInputs;
-import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -102,7 +101,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         doors = components.roomDoorInteractions();
         transitions = new RoomTransitionsView(components.roomTransitionController(), this);
         playerItems = components.roomPlayerItemActions();
-        story = new RoomStoryView(components.roomStoryState(), this);
+        story = components.roomStoryState();
         frameInputs = new RoomFrameInputApplier(
                 components.entityInputs(),
                 components.entityBridge(),
@@ -379,62 +378,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
                 new LinkMotion(linkAirborne, linkMotionState, usingShield, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
-    }
-
-    boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        return hasRoom() && components.roomStoryState().applyMarinWakeUpPresentation(loadedRoom, x, y, spriteVariant);
-    }
-
-    void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
-        if (hasRoom()) components.roomStoryState().updateHouseTarinPresentation(loadedRoom, frameCounter, linkX, linkY);
-    }
-
-    void setFollowerSpriteOverrides(java.util.Map<Integer, linksawakening.entity.EntitySpriteDefinition> overrides) {
-        if (hasRoom()) components.roomStoryState().setFollowerSpriteOverrides(loadedRoom, overrides);
-    }
-
-    void setTailKeyOwned(boolean owned) {
-        components.roomStoryState().setTailKeyOwned(owned);
-        if (hasRoom()) components.roomStoryState().applyTailKeyOwned(loadedRoom, owned);
-    }
-
-    void restoreRoomStatuses(
-            byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
-        components
-                .roomStoryState()
-                .restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
-        if (hasRoom())
-            components
-                    .roomStoryState()
-                    .applyRestoredRoomStatuses(
-                            loadedRoom, overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
-    }
-
-    void setFollowingNpcState(
-            FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) {
-        components.roomStoryState().setFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
-        if (hasRoom()) components.roomStoryState().synchronizeFollowingNpcEntitiesIfNeeded(loadedRoom);
-    }
-
-    void setBowWowState(int state) {
-        components.roomStoryState().setBowWowState(state);
-        if (hasRoom()) components.roomStoryState().applyBowWowState(loadedRoom, state);
-    }
-
-    void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
-        components.roomStoryState().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
-        if (hasRoom())
-            components.roomStoryState().applyChestPlayerLevels(loadedRoom, shieldLevel, swordLevel, powerBraceletLevel);
-    }
-
-    void setHouseNpcTradeItem(int tradeItem) {
-        components.roomStoryState().setHouseNpcTradeItem(tradeItem);
-        if (hasRoom()) components.roomStoryState().configureHouseNpcStoryState(loadedRoom);
-    }
-
-    void setEntityDefaultMusicTrack(int trackId) {
-        components.roomStoryState().setEntityDefaultMusicTrack(trackId);
-        if (hasRoom()) components.roomStoryState().updateWitchEnvironment(loadedRoom);
     }
 
     void configureEnemyDropRuntime() {
@@ -877,11 +820,6 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
 
     void setLiftStrengthBoost(boolean redTunic, boolean power) {
         if (hasRoom()) loadedRoom.entities.configuration().setLiftStrengthBoost(redTunic, power);
-    }
-
-    void initializeNewGameWorldState() {
-        components.roomStoryState().initializeNewGameWorldState();
-        resetRoomTransients();
     }
 
     ActiveRoom requireActiveRoom() {

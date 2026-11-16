@@ -16,12 +16,96 @@ import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 
 /** LoadRoomEntities story flags and restoration; follower and NPC presentation have distinct owners. */
-final class RoomStoryState {
+final class RoomStoryState implements RoomStory {
+    private final LoadedRoomHandle rooms;
+    private final RoomTransientState transients;
+
+    @Override
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        return loaded != null && applyMarinWakeUpPresentation(loaded, x, y, spriteVariant);
+    }
+
+    @Override
+    public void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) updateHouseTarinPresentation(loaded, frameCounter, linkX, linkY);
+    }
+
+    @Override
+    public void setFollowerSpriteOverrides(
+            java.util.Map<Integer, linksawakening.entity.EntitySpriteDefinition> overrides) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded != null) setFollowerSpriteOverrides(loaded, overrides);
+    }
+
+    @Override
+    public void setTailKeyOwned(boolean owned) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberSetTailKeyOwned(owned);
+        if (loaded != null) applyTailKeyOwned(loaded, owned);
+    }
+
+    @Override
+    public void restoreRoomStatuses(
+            byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberRestoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
+        if (loaded != null)
+            applyRestoredRoomStatuses(loaded, overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
+    }
+
+    @Override
+    public void setFollowingNpcState(
+            FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberSetFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
+        if (loaded != null) synchronizeFollowingNpcEntitiesIfNeeded(loaded);
+    }
+
+    @Override
+    public void setBowWowState(int state) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberSetBowWowState(state);
+        if (loaded != null) applyBowWowState(loaded, state);
+    }
+
+    @Override
+    public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberSetChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+        if (loaded != null) applyChestPlayerLevels(loaded, shieldLevel, swordLevel, powerBraceletLevel);
+    }
+
+    @Override
+    public void setHouseNpcTradeItem(int tradeItem) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberSetHouseNpcTradeItem(tradeItem);
+        if (loaded != null) configureHouseNpcStoryState(loaded);
+    }
+
+    @Override
+    public void setEntityDefaultMusicTrack(int trackId) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberSetEntityDefaultMusicTrack(trackId);
+        if (loaded != null) updateWitchEnvironment(loaded);
+    }
+
+    @Override
+    public void initializeNewGameWorldState() {
+        RoomRuntime loaded = rooms.currentOrNull();
+        rememberInitializeNewGameWorldState();
+        if (loaded != null) transients.clearTransientRoomState(loaded.contents);
+        else transients.clearTransientRoomState();
+    }
+
     private final Dependencies dependencies;
     private final RoomNpcPresentation roomNpcPresentation;
     private final RoomFollowerSynchronizer roomFollowerSynchronizer;
 
-    RoomStoryState(Dependencies dependencies) {
+    RoomStoryState(LoadedRoomHandle rooms, RoomTransientState transients, Dependencies dependencies) {
+        this.rooms = java.util.Objects.requireNonNull(rooms);
+        this.transients = java.util.Objects.requireNonNull(transients);
         this.dependencies = dependencies;
         roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(dependencies.followers()));
         roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
@@ -52,15 +136,16 @@ final class RoomStoryState {
         roomNpcPresentation.updateHouseTarinPresentation(loaded, frameCounter, linkX, linkY);
     }
 
-    void setBirdKeyOwned(boolean owned) {
+    @Override
+    public void setBirdKeyOwned(boolean owned) {
         dependencies.followers().hasBirdKey = owned;
     }
 
-    void setTailKeyOwned(boolean owned) {
+    void rememberSetTailKeyOwned(boolean owned) {
         dependencies.followers().hasTailKey = owned;
     }
 
-    void initializeNewGameWorldState() {
+    void rememberInitializeNewGameWorldState() {
         Arrays.fill(dependencies.roomState().overworldRoomStatus, (byte) 0);
         Arrays.fill(dependencies.roomState().indoorARoomStatus, (byte) 0);
         Arrays.fill(dependencies.roomState().indoorBRoomStatus, (byte) 0);
@@ -92,7 +177,7 @@ final class RoomStoryState {
         dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     }
 
-    void restoreRoomStatuses(
+    void rememberRestoreRoomStatuses(
             byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
         dependencies.roomState().restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
     }
@@ -101,7 +186,7 @@ final class RoomStoryState {
         roomNpcPresentation.setFollowerSpriteOverrides(loaded, overrides);
     }
 
-    void setFollowingNpcState(
+    void rememberSetFollowingNpcState(
             FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
@@ -117,44 +202,50 @@ final class RoomStoryState {
         dependencies.followers().followingNpcState = state;
     }
 
-    FollowingNpcState followingNpcState() {
+    @Override
+    public FollowingNpcState followingNpcState() {
         return dependencies.followers().followingNpcState;
     }
 
-    int bowWowState() {
+    @Override
+    public int bowWowState() {
         return dependencies.followers().bowWowState & 0xFF;
     }
 
-    void setBowWowState(int state) {
+    void rememberSetBowWowState(int state) {
         if ((state & ~0xFF) != 0) {
             throw new IllegalArgumentException("BowWow state must be an unsigned byte");
         }
         dependencies.followers().bowWowState = state;
     }
 
-    int richardSpokenFlag() {
+    @Override
+    public int richardSpokenFlag() {
         return dependencies.followers().richardSpokenFlag & 0xFF;
     }
 
-    void setRichardSpokenFlag(int flag) {
+    @Override
+    public void setRichardSpokenFlag(int flag) {
         if ((flag & ~0xFF) != 0) {
             throw new IllegalArgumentException("Richard spoken flag must be an unsigned byte");
         }
         dependencies.followers().richardSpokenFlag = flag;
     }
 
-    int tarinFlag() {
+    @Override
+    public int tarinFlag() {
         return dependencies.followers().tarinFlag & 0xFF;
     }
 
-    void setTarinFlag(int flag) {
+    @Override
+    public void setTarinFlag(int flag) {
         if ((flag & ~0xFF) != 0) {
             throw new IllegalArgumentException("Tarin flag must be an unsigned byte");
         }
         dependencies.followers().tarinFlag = flag;
     }
 
-    void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
+    void rememberSetChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
         if ((shieldLevel & ~0xFF) != 0 || (swordLevel & ~0xFF) != 0 || (powerBraceletLevel & ~0xFF) != 0) {
             throw new IllegalArgumentException("Player upgrade levels must be unsigned bytes");
         }
@@ -163,7 +254,7 @@ final class RoomStoryState {
         dependencies.followers().playerBraceletLevel = powerBraceletLevel;
     }
 
-    void setHouseNpcTradeItem(int tradeItem) {
+    void rememberSetHouseNpcTradeItem(int tradeItem) {
         if ((tradeItem & ~0xFF) != 0) throw new IllegalArgumentException("Trade item must be a byte");
         dependencies.followers().houseNpcTradeItem = tradeItem;
     }
@@ -178,7 +269,7 @@ final class RoomStoryState {
                         Byte.toUnsignedInt(dependencies.roomState().overworldRoomStatus[0xFD]));
     }
 
-    void setEntityDefaultMusicTrack(int trackId) {
+    void rememberSetEntityDefaultMusicTrack(int trackId) {
         if ((trackId & ~0xFF) != 0) {
             throw new IllegalArgumentException("Default music track must be an unsigned byte");
         }
@@ -194,7 +285,8 @@ final class RoomStoryState {
                         dependencies.followers().entityDefaultMusicTrack);
     }
 
-    boolean shouldGetLostInMysteriousWoods() {
+    @Override
+    public boolean shouldGetLostInMysteriousWoods() {
         return dependencies.location().shouldGetLostInMysteriousWoods;
     }
 
