@@ -26,7 +26,6 @@ class EntityRuntimeShapeTest {
             "beginLift(int,int)",
             "builder(RoomEntitySnapshot)",
             "clearEntity(int)",
-            "collectIfNeeded(EntityPickupFrameInputs)",
             "consumeBombExplosionEvents()",
             "consumeHeartPieceUpdates()",
             "consumePendingChestRewardEvents()",

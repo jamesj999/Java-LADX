@@ -45,7 +45,7 @@ final class RoomEntityCombatBridge {
 
         dependencies.followers().followingLinkZ = linkZ & 0xFF;
         dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
-        EntityPickupEvent event = loaded.entities.collectIfNeeded(inputs);
+        EntityPickupEvent event = loaded.entities.pickups().collectIfNeeded(inputs);
         if (event == null) {
             return null;
         }

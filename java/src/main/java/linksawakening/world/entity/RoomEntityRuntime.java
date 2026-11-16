@@ -195,10 +195,6 @@ public final class RoomEntityRuntime {
         return commands().thrownDirection(slot);
     }
 
-    public EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
-        return pickups().collectIfNeeded(inputs);
-    }
-
     public boolean consumePendingSwitchBlockAnimationRequest() {
         return outbox().consumePendingSwitchBlockAnimationRequest();
     }
